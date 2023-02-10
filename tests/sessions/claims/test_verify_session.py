@@ -30,6 +30,7 @@ from tests.utils import (
     teardown_function,
     start_st,
     AsyncMock,
+    MagicMock,
     st_init_common_args,
 )
 
@@ -59,6 +60,7 @@ def st_init_generator_with_overriden_global_validators(
         "recipe_list": [
             session.init(
                 anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(
                     functions=session_function_override
                 ),
@@ -84,6 +86,7 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
         "recipe_list": [
             session.init(
                 anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(
                     functions=session_function_override
                 ),
@@ -231,7 +234,12 @@ async def test_should_allow_without_claims_required_or_present(
 ):
     st_init_args = {
         **st_init_common_args,
-        "recipe_list": [session.init(anti_csrf="VIA_TOKEN")],
+        "recipe_list": [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ],
     }
     init(**st_init_args)  # type: ignore
     start_st()
@@ -348,12 +356,15 @@ async def test_should_reject_if_assert_claims_returns_an_error(
     start_st()
 
     recipe_implementation_mock = AsyncMock()
+    session_config_mock = MagicMock()
     s = Session(
         recipe_implementation_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:
@@ -389,13 +400,16 @@ async def test_should_allow_if_assert_claims_returns_no_error(
     recipe_impl_mock.validate_claims.return_value = ClaimsValidationResult(  # type: ignore
         invalid_claims=[]
     )
+    session_config_mock = MagicMock()
 
     s = Session(
         recipe_impl_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:

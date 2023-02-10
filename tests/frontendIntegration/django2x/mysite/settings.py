@@ -51,11 +51,12 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [  # type: ignore
+CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [
     "Content-Type",
     "rid",
     "fdi-version",
     "anti-csrf",
+    "st-auth-mode",
 ]
 
 # Application definition

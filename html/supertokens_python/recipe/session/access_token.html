@@ -41,13 +41,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Union
+from typing import Any, Dict, Union
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwt import get_payload
+from .jwt import ParsedJWTInfo, verify_jwt
 
 
 def sanitize_string(s: Any) -&gt; Union[str, None]:
@@ -69,10 +69,14 @@ def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
 
 
 def get_info_from_access_token(
-    token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool
+    jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool
 ):
     try:
-        payload = get_payload(token, jwt_signing_public_key)
+        verify_jwt(jwt_info, jwt_signing_public_key)
+        payload = jwt_info.payload
+
+        validate_access_token_structure(payload)
+
         session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
         user_id = sanitize_string(payload.get(&#34;userId&#34;))
         refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
@@ -84,18 +88,10 @@ def get_info_from_access_token(
         expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
         time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
 
-        if (
-            (session_handle is None)
-            or (user_data is None)
-            or (refresh_token_hash_1 is None)
-            or (user_data is None)
-            or (anti_csrf_token is None and do_anti_csrf_check)
-            or (expiry_time is None)
-            or (time_created is None)
-        ):
-            raise Exception(
-                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-            )
+        if anti_csrf_token is None and do_anti_csrf_check:
+            raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
+
+        assert isinstance(expiry_time, int)
 
         if expiry_time &lt; get_timestamp_ms():
             raise Exception(&#34;Access token expired&#34;)
@@ -114,7 +110,20 @@ def get_info_from_access_token(
         log_debug_message(
             &#34;getSession: Returning TRY_REFRESH_TOKEN because failed to decode access token&#34;
         )
-        raise_try_refresh_token_exception(e)</code></pre>
+        raise_try_refresh_token_exception(e)
+
+
+def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
+    if (
+        not isinstance(payload.get(&#34;sessionHandle&#34;), str)
+        or payload.get(&#34;userData&#34;) is None
+        or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
+        or not isinstance(payload.get(&#34;expiryTime&#34;), int)
+        or not isinstance(payload.get(&#34;timeCreated&#34;), int)
+    ):
+        raise Exception(
+            &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -125,7 +134,7 @@ def get_info_from_access_token(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.access_token.get_info_from_access_token"><code class="name flex">
-<span>def <span class="ident">get_info_from_access_token</span></span>(<span>token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool)</span>
+<span>def <span class="ident">get_info_from_access_token</span></span>(<span>jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -134,10 +143,14 @@ def get_info_from_access_token(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_info_from_access_token(
-    token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool
+    jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool
 ):
     try:
-        payload = get_payload(token, jwt_signing_public_key)
+        verify_jwt(jwt_info, jwt_signing_public_key)
+        payload = jwt_info.payload
+
+        validate_access_token_structure(payload)
+
         session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
         user_id = sanitize_string(payload.get(&#34;userId&#34;))
         refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
@@ -149,18 +162,10 @@ def get_info_from_access_token(
         expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
         time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
 
-        if (
-            (session_handle is None)
-            or (user_data is None)
-            or (refresh_token_hash_1 is None)
-            or (user_data is None)
-            or (anti_csrf_token is None and do_anti_csrf_check)
-            or (expiry_time is None)
-            or (time_created is None)
-        ):
-            raise Exception(
-                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-            )
+        if anti_csrf_token is None and do_anti_csrf_check:
+            raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
+
+        assert isinstance(expiry_time, int)
 
         if expiry_time &lt; get_timestamp_ms():
             raise Exception(&#34;Access token expired&#34;)
@@ -218,6 +223,28 @@ def get_info_from_access_token(
     return s.strip()</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.access_token.validate_access_token_structure"><code class="name flex">
+<span>def <span class="ident">validate_access_token_structure</span></span>(<span>payload: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
+    if (
+        not isinstance(payload.get(&#34;sessionHandle&#34;), str)
+        or payload.get(&#34;userData&#34;) is None
+        or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
+        or not isinstance(payload.get(&#34;expiryTime&#34;), int)
+        or not isinstance(payload.get(&#34;timeCreated&#34;), int)
+    ):
+        raise Exception(
+            &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
+        )</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -239,6 +266,7 @@ def get_info_from_access_token(
 <li><code><a title="supertokens_python.recipe.session.access_token.get_info_from_access_token" href="#supertokens_python.recipe.session.access_token.get_info_from_access_token">get_info_from_access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.access_token.sanitize_number" href="#supertokens_python.recipe.session.access_token.sanitize_number">sanitize_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.access_token.sanitize_string" href="#supertokens_python.recipe.session.access_token.sanitize_string">sanitize_string</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.access_token.validate_access_token_structure" href="#supertokens_python.recipe.session.access_token.validate_access_token_structure">validate_access_token_structure</a></code></li>
 </ul>
 </li>
 </ul>

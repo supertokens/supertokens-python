@@ -42,7 +42,7 @@
 import json
 from datetime import datetime
 from math import ceil
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -70,7 +70,7 @@ class DjangoResponse(BaseResponse):
         value: str,
         expires: int,
         path: str = &#34;/&#34;,
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = &#34;lax&#34;,
@@ -97,10 +97,13 @@ class DjangoResponse(BaseResponse):
     def set_header(self, key: str, value: str):
         self.response[key] = value
 
-    def get_header(self, key: str):
+    def get_header(self, key: str) -&gt; Optional[str]:
         if self.response.has_header(key):
             return self.response[key]
         return None
+
+    def remove_header(self, key: str):
+        del self.response[key]
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
@@ -158,7 +161,7 @@ inheritance.</p></div>
         value: str,
         expires: int,
         path: str = &#34;/&#34;,
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = &#34;lax&#34;,
@@ -185,10 +188,13 @@ inheritance.</p></div>
     def set_header(self, key: str, value: str):
         self.response[key] = value
 
-    def get_header(self, key: str):
+    def get_header(self, key: str) -&gt; Optional[str]:
         if self.response.has_header(key):
             return self.response[key]
         return None
+
+    def remove_header(self, key: str):
+        del self.response[key]
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
@@ -218,7 +224,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.django.django_response.DjangoResponse.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>self, key: str)</span>
+<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -226,10 +232,23 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_header(self, key: str):
+<pre><code class="python">def get_header(self, key: str) -&gt; Optional[str]:
     if self.response.has_header(key):
         return self.response[key]
     return None</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.django.django_response.DjangoResponse.remove_header"><code class="name flex">
+<span>def <span class="ident">remove_header</span></span>(<span>self, key: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_header(self, key: str):
+    del self.response[key]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_response.DjangoResponse.set_cookie"><code class="name flex">
@@ -247,7 +266,7 @@ inheritance.</p></div>
     value: str,
     expires: int,
     path: str = &#34;/&#34;,
-    domain: Union[str, None] = None,
+    domain: Optional[str] = None,
     secure: bool = False,
     httponly: bool = False,
     samesite: str = &#34;lax&#34;,
@@ -356,6 +375,7 @@ inheritance.</p></div>
 <ul class="two-column">
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.HttpResponse" href="#supertokens_python.framework.django.django_response.DjangoResponse.HttpResponse">HttpResponse</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.get_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.remove_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_cookie" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_header">set_header</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_html_content" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_html_content">set_html_content</a></code></li>

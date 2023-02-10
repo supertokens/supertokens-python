@@ -43,7 +43,23 @@ _allowed_headers = [
 ]
 
 
-def get_payload(jwt: str, signing_public_key: str):
+class ParsedJWTInfo:
+    def __init__(
+        self,
+        raw_token_string: str,
+        raw_payload: str,
+        header: str,
+        payload: Dict[str, Any],
+        signature: str,
+    ) -> None:
+        self.raw_token_string = raw_token_string
+        self.raw_payload = raw_payload
+        self.header = header
+        self.payload = payload
+        self.signature = signature
+
+
+def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     splitted_input = jwt.split(".")
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")
@@ -52,23 +68,24 @@ def get_payload(jwt: str, signing_public_key: str):
     if header not in _allowed_headers:
         raise Exception("jwt header mismatch")
 
+    return ParsedJWTInfo(
+        raw_token_string=jwt,
+        raw_payload=payload,
+        header=header,
+        # Ideally we would only parse this after the signature verification is done
+        # We do this at the start, since we want to check if a token can be a supertokens access token or not.
+        payload=loads(utf_base64decode(payload)),
+        signature=signature,
+    )
+
+
+def verify_jwt(info: ParsedJWTInfo, jwt_signing_public_key: str):
     public_key = RSA.import_key(
-        _key_start + "\n".join(wrap(signing_public_key, width=64)) + _key_end
+        _key_start + "\n".join(wrap(jwt_signing_public_key, width=64)) + _key_end
     )
     verifier = PKCS115_SigScheme(public_key)
-    to_verify = SHA256.new((header + "." + payload).encode("utf-8"))
+    to_verify = SHA256.new((info.header + "." + info.raw_payload).encode("utf-8"))
     try:
-        verifier.verify(to_verify, b64decode(signature.encode("utf-8")))
+        verifier.verify(to_verify, b64decode(info.signature.encode("utf-8")))
     except BaseException:
         raise Exception("jwt verification failed")
-
-    return loads(utf_base64decode(payload))
-
-
-def get_payload_without_verifying(jwt: str) -> Dict[str, Any]:
-    splitted_input = jwt.split(".")
-    if len(splitted_input) != 3:
-        raise Exception("invalid jwt")
-
-    payload = splitted_input[1]
-    return loads(utf_base64decode(payload))

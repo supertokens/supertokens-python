@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## unreleased
+
+## [0.12.1] - 2023-02-06
+
+-   Email template updates
+
+# [0.12.0] - 2023-02-03
+### Breaking changes
+
+-   The frontend SDK should be updated to a version supporting the header-based sessions!
+    -   supertokens-auth-react: >= 0.31.0
+    -   supertokens-web-js: >= 0.5.0
+    -   supertokens-website: >= 16.0.0
+    -   supertokens-react-native: >= 4.0.0
+    -   supertokens-ios >= 0.2.0
+    -   supertokens-android >= 0.3.0
+    -   supertokens-flutter >= 0.1.0
+- Only supporting FDI 1.16
+
+### Added
+
+-   Added support for authorizing requests using the `Authorization` header instead of cookies
+    -   Added `get_token_transfer_method` config option
+    -   Check out https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/sessions/token-transfer-method for more information
+
+### Changed
+- Remove constraints on `werkzeug` version
+
+
 # [0.11.13] - 2023-01-06
 
 - Add missing `original` attribute to flask response and remove logic for cases where `response` is `None`

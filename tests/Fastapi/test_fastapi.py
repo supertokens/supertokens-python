@@ -31,15 +31,20 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
+from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface
+from supertokens_python.recipe.session.interfaces import APIOptions as SessionAPIOptions
 from tests.utils import (
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
     TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
     TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
     TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH,
+    assert_info_clears_tokens,
     clean_st,
     extract_all_cookies,
+    extract_info,
+    get_st_init_args,
     reset,
     setup_st,
     start_st,
@@ -107,6 +112,16 @@ async def driver_config_client():
         await session.revoke_session()
         return {}  # type: ignore
 
+    @app.post("/create")
+    async def _create(request: Request):  # type: ignore
+        await create_new_session(request, "userId", {}, {})
+        return ""
+
+    @app.post("/create-throw")
+    async def _create_throw(request: Request):  # type: ignore
+        await create_new_session(request, "userId", {}, {})
+        raise UnauthorisedError("unauthorised")
+
     return TestClient(app)
 
 
@@ -130,6 +145,7 @@ async def test_login_refresh(driver_config_client: TestClient):
             session.init(
                 anti_csrf="VIA_TOKEN",
                 cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=apis_override_session),
             )
         ],
@@ -142,13 +158,10 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -157,45 +170,30 @@ async def test_login_refresh(driver_config_client: TestClient):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
 
     response_3 = driver_config_client.post(
         url="/refresh",
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sRefreshToken": cookies_1["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     cookies_3 = extract_all_cookies(response_3)
 
     assert cookies_3["sAccessToken"]["value"] != cookies_1["sAccessToken"]["value"]
     assert cookies_3["sRefreshToken"]["value"] != cookies_1["sRefreshToken"]["value"]
-    assert (
-        cookies_3["sIdRefreshToken"]["value"] != cookies_1["sIdRefreshToken"]["value"]
-    )
     assert response_3.headers.get("anti-csrf") is not None
     assert cookies_3["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_3["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_3["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_3["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_3["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_3["sAccessToken"]["httponly"]
     assert cookies_3["sRefreshToken"]["httponly"]
-    assert cookies_3["sIdRefreshToken"]["httponly"]
     assert (
         cookies_3["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
     assert (
         cookies_3["sRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
-    assert (
-        cookies_3["sIdRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
 
@@ -212,7 +210,11 @@ async def test_login_logout(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()
@@ -223,13 +225,10 @@ async def test_login_logout(driver_config_client: TestClient):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -238,34 +237,25 @@ async def test_login_logout(driver_config_client: TestClient):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
     assert cookies_1["sAccessToken"]["secure"] is None
     assert cookies_1["sRefreshToken"]["secure"] is None
-    assert cookies_1["sIdRefreshToken"]["secure"] is None
 
     response_2 = driver_config_client.post(
         url="/logout",
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sAccessToken": cookies_1["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     cookies_2 = extract_all_cookies(response_2)
     assert response_2.headers.get("anti-csrf") is None
     assert cookies_2["sAccessToken"]["value"] == ""
     assert cookies_2["sRefreshToken"]["value"] == ""
-    assert cookies_2["sIdRefreshToken"]["value"] == ""
     assert cookies_2["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_2["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_2["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_2["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_2["sAccessToken"]["httponly"]
     assert cookies_2["sRefreshToken"]["httponly"]
-    assert cookies_2["sIdRefreshToken"]["httponly"]
     assert (
         cookies_2["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -274,13 +264,8 @@ async def test_login_logout(driver_config_client: TestClient):
         cookies_2["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_2["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
     assert cookies_2["sAccessToken"]["secure"] is None
     assert cookies_2["sRefreshToken"]["secure"] is None
-    assert cookies_2["sIdRefreshToken"]["secure"] is None
 
 
 @mark.asyncio
@@ -295,7 +280,11 @@ async def test_login_info(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()
@@ -306,13 +295,10 @@ async def test_login_info(driver_config_client: TestClient):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -321,20 +307,14 @@ async def test_login_info(driver_config_client: TestClient):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
     assert cookies_1["sAccessToken"]["secure"] is None
     assert cookies_1["sRefreshToken"]["secure"] is None
-    assert cookies_1["sIdRefreshToken"]["secure"] is None
 
     response_2 = driver_config_client.get(
         url="/info",
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sAccessToken": cookies_1["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     cookies_2 = extract_all_cookies(response_2)
@@ -353,7 +333,11 @@ async def test_login_handle(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()
@@ -364,13 +348,10 @@ async def test_login_handle(driver_config_client: TestClient):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -379,20 +360,14 @@ async def test_login_handle(driver_config_client: TestClient):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
     assert cookies_1["sAccessToken"]["secure"] is None
     assert cookies_1["sRefreshToken"]["secure"] is None
-    assert cookies_1["sIdRefreshToken"]["secure"] is None
 
     response_2 = driver_config_client.get(
         url="/handle",
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sAccessToken": cookies_1["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     result_dict = json.loads(response_2.content)
@@ -411,7 +386,11 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()
@@ -422,13 +401,10 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -437,13 +413,8 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
     assert cookies_1["sAccessToken"]["secure"] is None
     assert cookies_1["sRefreshToken"]["secure"] is None
-    assert cookies_1["sIdRefreshToken"]["secure"] is None
 
     response_3 = driver_config_client.post(
         url="/refresh",
@@ -512,7 +483,9 @@ async def test_optional_session(driver_config_client: TestClient):
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
     start_st()
 
@@ -545,7 +518,10 @@ def test_fastapi_root_path(fastapi_root_path: str):
             api_base_path=f"{fastapi_root_path}/auth",  # It's important to prepend the root path here
         ),
         framework="fastapi",
-        recipe_list=[session.init(), emailpassword.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -563,3 +539,87 @@ def test_fastapi_root_path(fastapi_root_path: str):
     # The API should migrate (and return 404 here)
     response = test_client.get("/auth/signup/email/exists?email=test@example.com")
     assert response.status_code == 404
+
+
+@mark.asyncio
+@mark.parametrize("token_transfer_method", ["cookie", "header"])
+async def test_should_clear_all_response_during_refresh_if_unauthorized(
+    driver_config_client: TestClient, token_transfer_method: str
+):
+    def override_session_apis(oi: APIInterface):
+        oi_refresh_post = oi.refresh_post
+
+        async def refresh_post(
+            api_options: SessionAPIOptions, user_context: Dict[str, Any]
+        ):
+            await oi_refresh_post(api_options, user_context)
+            raise UnauthorisedError("unauthorized", clear_tokens=True)
+
+        oi.refresh_post = refresh_post
+        return oi
+
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    override=session.InputOverrideConfig(apis=override_session_apis),
+                )
+            ]
+        )
+    )  # type: ignore
+    start_st()
+
+    res = driver_config_client.post(
+        "/create", headers={"st-auth-mode": token_transfer_method}
+    )
+    info = extract_info(res)
+
+    assert info["accessTokenFromAny"] is not None
+    assert info["refreshTokenFromAny"] is not None
+
+    headers: Dict[str, Any] = {}
+    cookies: Dict[str, Any] = {}
+
+    if token_transfer_method == "header":
+        headers.update({"authorization": f"Bearer {info['refreshTokenFromAny']}"})
+    else:
+        cookies.update(
+            {"sRefreshToken": info["refreshTokenFromAny"], "sIdRefreshToken": "asdf"}
+        )
+
+    if info["antiCsrf"] is not None:
+        headers.update({"anti-csrf": info["antiCsrf"]})
+
+    res = driver_config_client.post(
+        "/auth/session/refresh", headers=headers, cookies=cookies
+    )
+    info = extract_info(res)
+
+    assert res.status_code == 401
+    assert_info_clears_tokens(info, token_transfer_method)
+
+
+@mark.asyncio
+@mark.parametrize("token_transfer_method", ["cookie", "header"])
+async def test_revoking_session_after_create_new_session_with_throwing_unauthorized_error(
+    driver_config_client: TestClient, token_transfer_method: str
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                )
+            ]
+        )
+    )  # type: ignore
+    start_st()
+
+    res = driver_config_client.post(
+        "/create-throw", headers={"st-auth-mode": token_transfer_method}
+    )
+    info = extract_info(res)
+
+    assert res.status_code == 401
+    assert_info_clears_tokens(info, token_transfer_method)

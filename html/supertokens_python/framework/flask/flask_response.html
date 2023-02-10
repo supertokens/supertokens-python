@@ -40,7 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -68,7 +68,7 @@ class FlaskResponse(BaseResponse):
         value: str,
         expires: int,
         path: str = &#34;/&#34;,
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = &#34;lax&#34;,
@@ -85,10 +85,13 @@ class FlaskResponse(BaseResponse):
         )
 
     def set_header(self, key: str, value: str):
-        self.response.headers.add(key, value)
+        self.response.headers.set(key, value)
 
-    def get_header(self, key: str) -&gt; Union[None, str]:
+    def get_header(self, key: str) -&gt; Optional[str]:
         return self.response.headers.get(key)
+
+    def remove_header(self, key: str):
+        del self.response.headers[key]
 
     def set_status_code(self, status_code: int):
         if not self.status_set:
@@ -155,7 +158,7 @@ inheritance.</p></div>
         value: str,
         expires: int,
         path: str = &#34;/&#34;,
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = &#34;lax&#34;,
@@ -172,10 +175,13 @@ inheritance.</p></div>
         )
 
     def set_header(self, key: str, value: str):
-        self.response.headers.add(key, value)
+        self.response.headers.set(key, value)
 
-    def get_header(self, key: str) -&gt; Union[None, str]:
+    def get_header(self, key: str) -&gt; Optional[str]:
         return self.response.headers.get(key)
+
+    def remove_header(self, key: str):
+        del self.response.headers[key]
 
     def set_status_code(self, status_code: int):
         if not self.status_set:
@@ -237,7 +243,7 @@ when testing to get the test client response data as JSON.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_header(self, key: str) -&gt; Union[None, str]:
+<pre><code class="python">def get_header(self, key: str) -&gt; Optional[str]:
     return self.response.headers.get(key)</code></pre>
 </details>
 </dd>
@@ -252,6 +258,19 @@ when testing to get the test client response data as JSON.</p>
 </summary>
 <pre><code class="python">def get_headers(self):
     return self.response.headers</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.remove_header"><code class="name flex">
+<span>def <span class="ident">remove_header</span></span>(<span>self, key: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_header(self, key: str):
+    del self.response.headers[key]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie"><code class="name flex">
@@ -269,7 +288,7 @@ when testing to get the test client response data as JSON.</p>
     value: str,
     expires: int,
     path: str = &#34;/&#34;,
-    domain: Union[str, None] = None,
+    domain: Optional[str] = None,
     secure: bool = False,
     httponly: bool = False,
     samesite: str = &#34;lax&#34;,
@@ -296,7 +315,7 @@ when testing to get the test client response data as JSON.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def set_header(self, key: str, value: str):
-    self.response.headers.add(key, value)</code></pre>
+    self.response.headers.set(key, value)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_html_content"><code class="name flex">
@@ -377,6 +396,7 @@ when testing to get the test client response data as JSON.</p>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.Response" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.Response">Response</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.get_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers">get_headers</a></code></li>
+<li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.remove_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.set_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.set_header">set_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.set_html_content" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.set_html_content">set_html_content</a></code></li>

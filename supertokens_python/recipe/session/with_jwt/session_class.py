@@ -67,7 +67,7 @@ def get_session_with_jwt(
             jwt=existing_jwt, options={"verify_signature": False, "verify_exp": False}
         )
 
-        if decoded_payload is None:
+        if decoded_payload is None or decoded_payload.get("exp") is None:
             raise Exception("Error reading JWT from session")
 
         jwt_expiry = 1

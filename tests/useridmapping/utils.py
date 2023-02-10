@@ -23,5 +23,9 @@ st_config = {
         website_domain="supertokens.io",
     ),
     "framework": "fastapi",
-    "recipe_list": [emailpassword.init(), usermetadata.init(), session.init()],
+    "recipe_list": [
+        emailpassword.init(),
+        usermetadata.init(),
+        session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+    ],
 }

@@ -71,6 +71,7 @@ six==1.16.0
 sniffio==1.2.0
 sqlparse==0.4.2
 starlette==0.14.2
+-e .
 tldextract==3.1.0
 toml==0.10.2
 tomli==2.0.1

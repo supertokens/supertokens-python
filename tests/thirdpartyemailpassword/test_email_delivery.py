@@ -118,7 +118,10 @@ async def test_reset_password_default_backward_compatibility(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[thirdpartyemailpassword.init(), session.init()],
+        recipe_list=[
+            thirdpartyemailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -167,7 +170,10 @@ async def test_reset_password_default_backward_compatibility_suppress_error(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[thirdpartyemailpassword.init(), session.init()],
+        recipe_list=[
+            thirdpartyemailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -228,7 +234,7 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
                     create_and_send_custom_email=custom_create_and_send_custom_email,
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -280,7 +286,7 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
                     override=email_delivery_override,
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -397,7 +403,7 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
                     override=email_delivery_override,
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -443,7 +449,7 @@ async def test_reset_password_backward_compatibility_non_existent_user(
                     create_and_send_custom_email=custom_create_and_send_custom_email,
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -480,7 +486,7 @@ async def test_email_verification_default_backward_compatibility(
         recipe_list=[
             emailverification.init(mode="OPTIONAL"),
             thirdpartyemailpassword.init(),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -491,7 +497,7 @@ async def test_email_verification_default_backward_compatibility(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -510,7 +516,6 @@ async def test_email_verification_default_backward_compatibility(
         resp = email_verify_token_request(
             driver_config_client,
             response["accessToken"]["token"],
-            response["idRefreshToken"]["token"],
             response.get("antiCsrf", ""),
             user_id,
             True,
@@ -545,7 +550,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
         recipe_list=[
             emailverification.init(mode="OPTIONAL"),
             thirdpartyemailpassword.init(),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -556,7 +561,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -575,7 +580,6 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
         resp = email_verify_token_request(
             driver_config_client,
             response["accessToken"]["token"],
-            response["idRefreshToken"]["token"],
             response.get("antiCsrf", ""),
             user_id,
             True,
@@ -620,7 +624,7 @@ async def test_email_verification_backward_compatibility(
                 create_and_send_custom_email=custom_create_and_send_custom_email,
             ),
             thirdpartyemailpassword.init(),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -631,12 +635,11 @@ async def test_email_verification_backward_compatibility(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, False, {}, {})
 
     res = email_verify_token_request(
         driver_config_client,
         response["accessToken"]["token"],
-        response["idRefreshToken"]["token"],
         response.get("antiCsrf", ""),
         user_id,
         True,
@@ -690,7 +693,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
                 ),
             ),
             thirdpartyemailpassword.init(),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -701,7 +704,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -718,7 +721,6 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         resp = email_verify_token_request(
             driver_config_client,
             response["accessToken"]["token"],
-            response["idRefreshToken"]["token"],
             response.get("antiCsrf", ""),
             user_id,
             True,
@@ -821,7 +823,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
                 ),
             ),
             thirdpartyemailpassword.init(),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -832,12 +834,11 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     resp = email_verify_token_request(
         driver_config_client,
         response["accessToken"]["token"],
-        response["idRefreshToken"]["token"],
         response.get("antiCsrf", ""),
         user_id,
         True,
@@ -894,7 +895,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
                     create_and_send_custom_email=custom_create_and_send_custom_email,
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -907,12 +908,11 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     res = email_verify_token_request(
         driver_config_client,
         response["accessToken"]["token"],
-        response["idRefreshToken"]["token"],
         response.get("antiCsrf", ""),
         user_id,
         True,
@@ -967,7 +967,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
                     )
                 ],  # Note: Provider must be passed to init TP recipe
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -980,12 +980,11 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     res = email_verify_token_request(
         driver_config_client,
         response["accessToken"]["token"],
-        response["idRefreshToken"]["token"],
         response.get("antiCsrf", ""),
         user_id,
         True,

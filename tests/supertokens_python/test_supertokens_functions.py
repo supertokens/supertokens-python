@@ -49,7 +49,10 @@ async def test_supertokens_functions():
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 

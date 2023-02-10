@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
+from unittest.mock import MagicMock
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.asyncio import create_new_session
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -344,7 +346,9 @@ async def test_same_site_values():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -359,7 +363,9 @@ async def test_same_site_values():
             website_domain="https://platform-ui-uat.com",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -399,7 +405,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -418,7 +426,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -437,7 +447,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -456,7 +468,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -494,7 +508,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -513,7 +529,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -532,7 +550,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -701,8 +721,14 @@ async def test_samesite_invalid_config():
                     api_domain=api_domain,
                 ),
                 framework="fastapi",
-                recipe_list=[session.init(cookie_same_site="none")],
+                recipe_list=[
+                    session.init(
+                        cookie_same_site="none",
+                        get_token_transfer_method=lambda _, __, ___: "cookie",
+                    )
+                ],
             )
+            await create_new_session(MagicMock(), "userId", {}, {})
         except Exception as e:
             assert (
                 str(e)

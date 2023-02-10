@@ -29,12 +29,13 @@ from supertokens_python.utils import (
     send_non_200_response,
     send_non_200_response_with_message,
 )
-from tldextract import extract  # type: ignore
 from typing_extensions import Literal
 
 from ...types import MaybeAwaitable
-from .constants import SESSION_REFRESH
-from .cookie_and_header import clear_cookies
+from .constants import SESSION_REFRESH, AUTH_MODE_HEADER_KEY
+from .cookie_and_header import (
+    clear_session_from_all_token_transfer_methods,
+)
 from .exceptions import ClaimValidationError
 from .with_jwt.constants import (
     ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
@@ -103,24 +104,6 @@ def get_url_scheme(url: str) -> str:
     return url_obj.scheme
 
 
-def get_top_level_domain_for_same_site_resolution(url: str) -> str:
-    url_obj = urlparse(url)
-    hostname = url_obj.hostname
-
-    if hostname is None:
-        raise Exception("Should not come here")
-
-    if hostname.startswith("localhost") or is_an_ip_address(hostname):
-        return "localhost"
-    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
-    if parsed_url.domain == "":  # type: ignore
-        raise Exception(
-            "Please make sure that the apiDomain and websiteDomain have correct values"
-        )
-
-    return parsed_url.domain + "." + parsed_url.suffix  # type: ignore
-
-
 class ErrorHandlers:
     def __init__(
         self,
@@ -154,8 +137,8 @@ class ErrorHandlers:
         user_id: str,
         response: BaseResponse,
     ) -> BaseResponse:
-        log_debug_message("Clearing cookies because of TOKEN_THEFT_DETECTED response")
-        clear_cookies(recipe, response)
+        log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
+        clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -175,8 +158,8 @@ class ErrorHandlers:
         response: BaseResponse,
     ):
         if do_clear_cookies:
-            log_debug_message("Clearing cookies because of UNAUTHORISED response")
-            clear_cookies(recipe, response)
+            log_debug_message("Clearing tokens because of UNAUTHORISED response")
+            clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
@@ -288,6 +271,31 @@ async def default_invalid_claim_callback(
     )
 
 
+def get_auth_mode_from_header(request: BaseRequest) -> Optional[str]:
+    auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
+    if auth_mode is None:
+        return None
+    return auth_mode.lower()
+
+
+def get_token_transfer_method_default(
+    req: BaseRequest,
+    for_create_new_session: bool,
+    user_context: Dict[str, Any],
+):
+    _ = user_context
+
+    # We allow fallback (checking headers then cookies) by default when validating
+    if not for_create_new_session:
+        return "any"
+
+    auth_mode = get_auth_mode_from_header(req)
+    if auth_mode in ("header", "cookie"):
+        return auth_mode
+
+    return "any"
+
+
 class InputOverrideConfig:
     def __init__(
         self,
@@ -331,6 +339,10 @@ class JWTConfig:
         self.issuer = issuer
 
 
+TokenType = Literal["access", "refresh"]
+TokenTransferMethod = Literal["cookie", "header"]
+
+
 class SessionConfig:
     def __init__(
         self,
@@ -341,24 +353,30 @@ class SessionConfig:
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
         anti_csrf: str,
+        get_token_transfer_method: Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal["any"]],
+        ],
         override: OverrideConfig,
         framework: str,
         mode: str,
         jwt: JWTConfig,
         invalid_claim_status_code: int,
     ):
+        self.session_expired_status_code = session_expired_status_code
+        self.invalid_claim_status_code = invalid_claim_status_code
+
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
         self.cookie_secure = cookie_secure
-        self.session_expired_status_code = session_expired_status_code
         self.error_handlers = error_handlers
         self.anti_csrf = anti_csrf
+        self.get_token_transfer_method = get_token_transfer_method
         self.override = override
         self.framework = framework
         self.mode = mode
         self.jwt = jwt
-        self.invalid_claim_status_code = invalid_claim_status_code
 
 
 def validate_and_normalise_user_input(
@@ -368,6 +386,13 @@ def validate_and_normalise_user_input(
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
     session_expired_status_code: Union[int, None] = None,
     anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    get_token_transfer_method: Union[
+        Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal["any"]],
+        ],
+        None,
+    ] = None,
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
@@ -390,12 +415,8 @@ def validate_and_normalise_user_input(
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
     )
-    top_level_api_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.api_domain.get_as_string_dangerous()
-    )
-    top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.website_domain.get_as_string_dangerous()
-    )
+    top_level_api_domain = app_info.top_level_api_domain
+    top_level_website_domain = app_info.top_level_website_domain
 
     api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
     website_domain_scheme = get_url_scheme(
@@ -433,29 +454,11 @@ def validate_and_normalise_user_input(
     if anti_csrf is None:
         anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
 
+    if get_token_transfer_method is None:
+        get_token_transfer_method = get_token_transfer_method_default
+
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
-
-    if (
-        (cookie_same_site == "none")
-        and not cookie_secure
-        and not (
-            (
-                top_level_api_domain == "localhost"
-                or is_an_ip_address(top_level_api_domain)
-            )
-            and (
-                top_level_website_domain == "localhost"
-                or is_an_ip_address(top_level_website_domain)
-            )
-        )
-    ):
-        # We can allow insecure cookie when both website & API domain are localhost or an IP
-        # When either of them is a different domain, API domain needs to have https and a secure cookie to work
-        raise_general_exception(
-            "Since your API and website domain are different, for sessions to work, please use "
-            "https on your apiDomain and don't set cookieSecure to false."
-        )
 
     if override is None:
         override = InputOverrideConfig()
@@ -471,6 +474,7 @@ def validate_and_normalise_user_input(
         session_expired_status_code,
         error_handlers,
         anti_csrf,
+        get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,
         app_info.mode,

@@ -150,7 +150,10 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -191,7 +194,10 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -230,7 +236,10 @@ async def test_singin_api_throws_an_error_when_email_does_not_match(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -269,7 +278,10 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -306,7 +318,10 @@ async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClie
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -335,7 +350,10 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -366,7 +384,13 @@ async def test_that_a_successful_signin_yields_a_session(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init(anti_csrf="VIA_TOKEN")],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+        ],
     )
     start_st()
 
@@ -394,7 +418,6 @@ async def test_that_a_successful_signin_yields_a_session(
     assert cookies["sAccessToken"] is not None
     assert cookies["sRefreshToken"] is not None
     assert response_2.headers.get("anti-csrf") is not None
-    assert cookies["sIdRefreshToken"] is not None
 
 
 @mark.asyncio
@@ -408,7 +431,10 @@ async def test_email_field_validation_error(driver_config_client: TestClient):
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -445,7 +471,10 @@ async def test_formFields_has_no_email_field(driver_config_client: TestClient):
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -475,7 +504,10 @@ async def test_formFields_has_no_password_field(driver_config_client: TestClient
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 

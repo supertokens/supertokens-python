@@ -19,10 +19,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
 from .access_token import get_info_from_access_token
-from .jwt import get_payload_without_verifying
+from .jwt import ParsedJWTInfo
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
+    from .utils import TokenTransferMethod
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -39,16 +40,19 @@ from .exceptions import (
 async def create_new_session(
     recipe_implementation: RecipeImplementation,
     user_id: str,
+    disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data: Union[None, Dict[str, Any]],
-):
+) -> Dict[str, Any]:
     if session_data is None:
         session_data = {}
     if access_token_payload is None:
         access_token_payload = {}
 
     handshake_info = await recipe_implementation.get_handshake_info()
-    enable_anti_csrf = handshake_info.anti_csrf == "VIA_TOKEN"
+    enable_anti_csrf = (
+        disable_anti_csrf is False and handshake_info.anti_csrf == "VIA_TOKEN"
+    )
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session"),
         {
@@ -73,7 +77,7 @@ async def create_new_session(
 
 async def get_session(
     recipe_implementation: RecipeImplementation,
-    access_token: str,
+    parsed_access_token: ParsedJWTInfo,
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     contains_custom_header: bool,
@@ -85,7 +89,7 @@ async def get_session(
     for key in handshake_info.get_jwt_signing_public_key_list():
         try:
             access_token_info = get_info_from_access_token(
-                access_token,
+                parsed_access_token,
                 key["publicKey"],
                 handshake_info.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
             )
@@ -93,18 +97,10 @@ async def get_session(
             found_a_sign_key_that_is_older_than_the_access_token = True
 
         except Exception as e:
-            payload = None
-
-            if e.__class__ != TryRefreshTokenError:
+            if not isinstance(e, TryRefreshTokenError):
                 raise e
 
-            try:
-                payload = get_payload_without_verifying(access_token)
-            except BaseException:
-                raise e
-
-            if payload is None:
-                raise e
+            payload = parsed_access_token.payload
 
             if not isinstance(payload["timeCreated"], int) or not isinstance(
                 payload["expiryTime"], int
@@ -173,7 +169,7 @@ async def get_session(
     )
 
     data = {
-        "accessToken": access_token,
+        "accessToken": parsed_access_token.raw_token_string,
         "doAntiCsrfCheck": do_anti_csrf_check,
         "enableAntiCsrf": handshake_info.anti_csrf == "VIA_TOKEN",
     }
@@ -221,16 +217,18 @@ async def refresh_session(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     contains_custom_header: bool,
-):
+    transfer_method: TokenTransferMethod,
+) -> Dict[str, Any]:
     handshake_info = await recipe_implementation.get_handshake_info()
     data = {
         "refreshToken": refresh_token,
-        "enableAntiCsrf": handshake_info.anti_csrf == "VIA_TOKEN",
+        "enableAntiCsrf": transfer_method == "cookie"
+        and handshake_info.anti_csrf == "VIA_TOKEN",
     }
     if anti_csrf_token is not None:
         data["antiCsrfToken"] = anti_csrf_token
 
-    if handshake_info.anti_csrf == "VIA_CUSTOM_HEADER":
+    if handshake_info.anti_csrf == "VIA_CUSTOM_HEADER" and transfer_method == "cookie":
         if not contains_custom_header:
             log_debug_message(
                 "refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed"

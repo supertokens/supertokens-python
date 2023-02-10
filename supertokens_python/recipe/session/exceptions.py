@@ -13,27 +13,30 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
 
+if TYPE_CHECKING:
+    from .interfaces import ResponseMutator
 
-def raise_token_theft_exception(user_id: str, session_handle: str):
+
+def raise_token_theft_exception(user_id: str, session_handle: str) -> NoReturn:
     raise TokenTheftError(user_id, session_handle)
 
 
-def raise_try_refresh_token_exception(ex: Union[str, Exception]):
+def raise_try_refresh_token_exception(ex: Union[str, Exception]) -> NoReturn:
     if isinstance(ex, SuperTokensError):
         raise ex
     raise TryRefreshTokenError(ex) from None
 
 
-def raise_unauthorised_exception(msg: str, clear_cookies: bool = True):
-    raise UnauthorisedError(msg, clear_cookies) from None
+def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -> NoReturn:
+    raise UnauthorisedError(msg, clear_tokens) from None
 
 
 class SuperTokensSessionError(SuperTokensError):
-    pass
+    response_mutators: List[ResponseMutator] = []
 
 
 class TokenTheftError(SuperTokensSessionError):
@@ -44,9 +47,9 @@ class TokenTheftError(SuperTokensSessionError):
 
 
 class UnauthorisedError(SuperTokensSessionError):
-    def __init__(self, msg: str, clear_cookies: bool = True):
+    def __init__(self, msg: str, clear_tokens: bool = True):
         super().__init__(msg)
-        self.clear_cookies = clear_cookies
+        self.clear_tokens = clear_tokens
 
 
 class TryRefreshTokenError(SuperTokensSessionError):

@@ -39,17 +39,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from .utils import TokenTransferMethod
+
 SESSION_REFRESH = &#34;/session/refresh&#34;
 SIGNOUT = &#34;/signout&#34;
 ACCESS_TOKEN_COOKIE_KEY = &#34;sAccessToken&#34;
 REFRESH_TOKEN_COOKIE_KEY = &#34;sRefreshToken&#34;
-ID_REFRESH_TOKEN_COOKIE_KEY = &#34;sIdRefreshToken&#34;
 FRONT_TOKEN_HEADER_SET_KEY = &#34;front-token&#34;
 ANTI_CSRF_HEADER_KEY = &#34;anti-csrf&#34;
 RID_HEADER_KEY = &#34;rid&#34;
-ID_REFRESH_TOKEN_HEADER_SET_KEY = &#34;id-refresh-token&#34;
-ID_REFRESH_TOKEN_HEADER_GET_KEY = &#34;id-refresh-token&#34;
-ACCESS_CONTROL_EXPOSE_HEADERS = &#34;Access-Control-Expose-Headers&#34;</code></pre>
+AUTH_MODE_HEADER_KEY = &#34;st-auth-mode&#34;
+AUTHORIZATION_HEADER_KEY = &#34;authorization&#34;
+ACCESS_TOKEN_HEADER_KEY = &#34;st-access-token&#34;
+REFRESH_TOKEN_HEADER_KEY = &#34;st-refresh-token&#34;
+ACCESS_CONTROL_EXPOSE_HEADERS = &#34;Access-Control-Expose-Headers&#34;
+
+available_token_transfer_methods: List[TokenTransferMethod] = [&#34;cookie&#34;, &#34;header&#34;]</code></pre>
 </details>
 </section>
 <section>

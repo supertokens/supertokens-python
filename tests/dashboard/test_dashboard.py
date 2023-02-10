@@ -61,7 +61,7 @@ async def test_dashboard_recipe(app: TestClient):
 
     st_args = get_st_init_args(
         [
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             dashboard.init(
                 api_key="someKey",
                 override=InputOverrideConfig(functions=override_dashboard_functions),
@@ -95,7 +95,7 @@ async def test_dashboard_users_get(app: TestClient):
 
     st_args = get_st_init_args(
         [
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             emailpassword.init(),
             usermetadata.init(),
             dashboard.init(

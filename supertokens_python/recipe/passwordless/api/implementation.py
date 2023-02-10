@@ -288,7 +288,11 @@ class APIImplementation(APIInterface):
                     )
 
         session = await create_new_session(
-            api_options.request, user.user_id, {}, {}, user_context=user_context
+            api_options.request,
+            user.user_id,
+            {},
+            {},
+            user_context=user_context,
         )
 
         return ConsumeCodePostOkResult(

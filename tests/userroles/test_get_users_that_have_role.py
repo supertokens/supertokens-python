@@ -43,7 +43,10 @@ async def test_get_users_that_have_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -82,7 +85,10 @@ async def test_get_users_for_unknown_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 

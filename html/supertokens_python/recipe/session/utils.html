@@ -57,12 +57,13 @@ from supertokens_python.utils import (
     send_non_200_response,
     send_non_200_response_with_message,
 )
-from tldextract import extract  # type: ignore
 from typing_extensions import Literal
 
 from ...types import MaybeAwaitable
-from .constants import SESSION_REFRESH
-from .cookie_and_header import clear_cookies
+from .constants import SESSION_REFRESH, AUTH_MODE_HEADER_KEY
+from .cookie_and_header import (
+    clear_session_from_all_token_transfer_methods,
+)
 from .exceptions import ClaimValidationError
 from .with_jwt.constants import (
     ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
@@ -131,24 +132,6 @@ def get_url_scheme(url: str) -&gt; str:
     return url_obj.scheme
 
 
-def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
-    url_obj = urlparse(url)
-    hostname = url_obj.hostname
-
-    if hostname is None:
-        raise Exception(&#34;Should not come here&#34;)
-
-    if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
-        return &#34;localhost&#34;
-    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
-    if parsed_url.domain == &#34;&#34;:  # type: ignore
-        raise Exception(
-            &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
-        )
-
-    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix  # type: ignore
-
-
 class ErrorHandlers:
     def __init__(
         self,
@@ -182,8 +165,8 @@ class ErrorHandlers:
         user_id: str,
         response: BaseResponse,
     ) -&gt; BaseResponse:
-        log_debug_message(&#34;Clearing cookies because of TOKEN_THEFT_DETECTED response&#34;)
-        clear_cookies(recipe, response)
+        log_debug_message(&#34;Clearing tokens because of TOKEN_THEFT_DETECTED response&#34;)
+        clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -203,8 +186,8 @@ class ErrorHandlers:
         response: BaseResponse,
     ):
         if do_clear_cookies:
-            log_debug_message(&#34;Clearing cookies because of UNAUTHORISED response&#34;)
-            clear_cookies(recipe, response)
+            log_debug_message(&#34;Clearing tokens because of UNAUTHORISED response&#34;)
+            clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
@@ -316,6 +299,31 @@ async def default_invalid_claim_callback(
     )
 
 
+def get_auth_mode_from_header(request: BaseRequest) -&gt; Optional[str]:
+    auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
+    if auth_mode is None:
+        return None
+    return auth_mode.lower()
+
+
+def get_token_transfer_method_default(
+    req: BaseRequest,
+    for_create_new_session: bool,
+    user_context: Dict[str, Any],
+):
+    _ = user_context
+
+    # We allow fallback (checking headers then cookies) by default when validating
+    if not for_create_new_session:
+        return &#34;any&#34;
+
+    auth_mode = get_auth_mode_from_header(req)
+    if auth_mode in (&#34;header&#34;, &#34;cookie&#34;):
+        return auth_mode
+
+    return &#34;any&#34;
+
+
 class InputOverrideConfig:
     def __init__(
         self,
@@ -359,6 +367,10 @@ class JWTConfig:
         self.issuer = issuer
 
 
+TokenType = Literal[&#34;access&#34;, &#34;refresh&#34;]
+TokenTransferMethod = Literal[&#34;cookie&#34;, &#34;header&#34;]
+
+
 class SessionConfig:
     def __init__(
         self,
@@ -369,24 +381,30 @@ class SessionConfig:
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
         anti_csrf: str,
+        get_token_transfer_method: Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal[&#34;any&#34;]],
+        ],
         override: OverrideConfig,
         framework: str,
         mode: str,
         jwt: JWTConfig,
         invalid_claim_status_code: int,
     ):
+        self.session_expired_status_code = session_expired_status_code
+        self.invalid_claim_status_code = invalid_claim_status_code
+
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
         self.cookie_secure = cookie_secure
-        self.session_expired_status_code = session_expired_status_code
         self.error_handlers = error_handlers
         self.anti_csrf = anti_csrf
+        self.get_token_transfer_method = get_token_transfer_method
         self.override = override
         self.framework = framework
         self.mode = mode
         self.jwt = jwt
-        self.invalid_claim_status_code = invalid_claim_status_code
 
 
 def validate_and_normalise_user_input(
@@ -396,6 +414,13 @@ def validate_and_normalise_user_input(
     cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
     session_expired_status_code: Union[int, None] = None,
     anti_csrf: Union[Literal[&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None] = None,
+    get_token_transfer_method: Union[
+        Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal[&#34;any&#34;]],
+        ],
+        None,
+    ] = None,
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
@@ -418,12 +443,8 @@ def validate_and_normalise_user_input(
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
     )
-    top_level_api_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.api_domain.get_as_string_dangerous()
-    )
-    top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.website_domain.get_as_string_dangerous()
-    )
+    top_level_api_domain = app_info.top_level_api_domain
+    top_level_website_domain = app_info.top_level_website_domain
 
     api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
     website_domain_scheme = get_url_scheme(
@@ -461,29 +482,11 @@ def validate_and_normalise_user_input(
     if anti_csrf is None:
         anti_csrf = &#34;VIA_CUSTOM_HEADER&#34; if cookie_same_site == &#34;none&#34; else &#34;NONE&#34;
 
+    if get_token_transfer_method is None:
+        get_token_transfer_method = get_token_transfer_method_default
+
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
-
-    if (
-        (cookie_same_site == &#34;none&#34;)
-        and not cookie_secure
-        and not (
-            (
-                top_level_api_domain == &#34;localhost&#34;
-                or is_an_ip_address(top_level_api_domain)
-            )
-            and (
-                top_level_website_domain == &#34;localhost&#34;
-                or is_an_ip_address(top_level_website_domain)
-            )
-        )
-    ):
-        # We can allow insecure cookie when both website &amp; API domain are localhost or an IP
-        # When either of them is a different domain, API domain needs to have https and a secure cookie to work
-        raise_general_exception(
-            &#34;Since your API and website domain are different, for sessions to work, please use &#34;
-            &#34;https on your apiDomain and don&#39;t set cookieSecure to false.&#34;
-        )
 
     if override is None:
         override = InputOverrideConfig()
@@ -499,6 +502,7 @@ def validate_and_normalise_user_input(
         session_expired_status_code,
         error_handlers,
         anti_csrf,
+        get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,
         app_info.mode,
@@ -662,6 +666,22 @@ async def validate_claims_in_payload(
     )</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.utils.get_auth_mode_from_header"><code class="name flex">
+<span>def <span class="ident">get_auth_mode_from_header</span></span>(<span>request: BaseRequest) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_auth_mode_from_header(request: BaseRequest) -&gt; Optional[str]:
+    auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
+    if auth_mode is None:
+        return None
+    return auth_mode.lower()</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.utils.get_required_claim_validators"><code class="name flex">
 <span>async def <span class="ident">get_required_claim_validators</span></span>(<span>session: SessionContainer, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]], user_context: Dict[str, Any]) ‑> List[SessionClaimValidator]</span>
 </code></dt>
@@ -704,8 +724,8 @@ async def validate_claims_in_payload(
     return global_claim_validators</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.utils.get_top_level_domain_for_same_site_resolution"><code class="name flex">
-<span>def <span class="ident">get_top_level_domain_for_same_site_resolution</span></span>(<span>url: str) ‑> str</span>
+<dt id="supertokens_python.recipe.session.utils.get_token_transfer_method_default"><code class="name flex">
+<span>def <span class="ident">get_token_transfer_method_default</span></span>(<span>req: BaseRequest, for_create_new_session: bool, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -713,22 +733,22 @@ async def validate_claims_in_payload(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
-    url_obj = urlparse(url)
-    hostname = url_obj.hostname
+<pre><code class="python">def get_token_transfer_method_default(
+    req: BaseRequest,
+    for_create_new_session: bool,
+    user_context: Dict[str, Any],
+):
+    _ = user_context
 
-    if hostname is None:
-        raise Exception(&#34;Should not come here&#34;)
+    # We allow fallback (checking headers then cookies) by default when validating
+    if not for_create_new_session:
+        return &#34;any&#34;
 
-    if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
-        return &#34;localhost&#34;
-    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
-    if parsed_url.domain == &#34;&#34;:  # type: ignore
-        raise Exception(
-            &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
-        )
+    auth_mode = get_auth_mode_from_header(req)
+    if auth_mode in (&#34;header&#34;, &#34;cookie&#34;):
+        return auth_mode
 
-    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix  # type: ignore</code></pre>
+    return &#34;any&#34;</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.get_url_scheme"><code class="name flex">
@@ -806,7 +826,7 @@ async def validate_claims_in_payload(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, error_handlers: Union[<a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, None] = None, override: Union[<a title="supertokens_python.recipe.session.utils.InputOverrideConfig" href="#supertokens_python.recipe.session.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, jwt: Union[<a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>, None] = None, invalid_claim_status_code: Union[int, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[<a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, None] = None, override: Union[<a title="supertokens_python.recipe.session.utils.InputOverrideConfig" href="#supertokens_python.recipe.session.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, jwt: Union[<a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>, None] = None, invalid_claim_status_code: Union[int, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -821,6 +841,13 @@ async def validate_claims_in_payload(
     cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
     session_expired_status_code: Union[int, None] = None,
     anti_csrf: Union[Literal[&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None] = None,
+    get_token_transfer_method: Union[
+        Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal[&#34;any&#34;]],
+        ],
+        None,
+    ] = None,
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
@@ -843,12 +870,8 @@ async def validate_claims_in_payload(
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
     )
-    top_level_api_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.api_domain.get_as_string_dangerous()
-    )
-    top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.website_domain.get_as_string_dangerous()
-    )
+    top_level_api_domain = app_info.top_level_api_domain
+    top_level_website_domain = app_info.top_level_website_domain
 
     api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
     website_domain_scheme = get_url_scheme(
@@ -886,29 +909,11 @@ async def validate_claims_in_payload(
     if anti_csrf is None:
         anti_csrf = &#34;VIA_CUSTOM_HEADER&#34; if cookie_same_site == &#34;none&#34; else &#34;NONE&#34;
 
+    if get_token_transfer_method is None:
+        get_token_transfer_method = get_token_transfer_method_default
+
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
-
-    if (
-        (cookie_same_site == &#34;none&#34;)
-        and not cookie_secure
-        and not (
-            (
-                top_level_api_domain == &#34;localhost&#34;
-                or is_an_ip_address(top_level_api_domain)
-            )
-            and (
-                top_level_website_domain == &#34;localhost&#34;
-                or is_an_ip_address(top_level_website_domain)
-            )
-        )
-    ):
-        # We can allow insecure cookie when both website &amp; API domain are localhost or an IP
-        # When either of them is a different domain, API domain needs to have https and a secure cookie to work
-        raise_general_exception(
-            &#34;Since your API and website domain are different, for sessions to work, please use &#34;
-            &#34;https on your apiDomain and don&#39;t set cookieSecure to false.&#34;
-        )
 
     if override is None:
         override = InputOverrideConfig()
@@ -924,6 +929,7 @@ async def validate_claims_in_payload(
         session_expired_status_code,
         error_handlers,
         anti_csrf,
+        get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,
         app_info.mode,
@@ -1012,8 +1018,8 @@ async def validate_claims_in_payload(
         user_id: str,
         response: BaseResponse,
     ) -&gt; BaseResponse:
-        log_debug_message(&#34;Clearing cookies because of TOKEN_THEFT_DETECTED response&#34;)
-        clear_cookies(recipe, response)
+        log_debug_message(&#34;Clearing tokens because of TOKEN_THEFT_DETECTED response&#34;)
+        clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -1033,8 +1039,8 @@ async def validate_claims_in_payload(
         response: BaseResponse,
     ):
         if do_clear_cookies:
-            log_debug_message(&#34;Clearing cookies because of UNAUTHORISED response&#34;)
-            clear_cookies(recipe, response)
+            log_debug_message(&#34;Clearing tokens because of UNAUTHORISED response&#34;)
+            clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
@@ -1096,8 +1102,8 @@ async def validate_claims_in_payload(
     user_id: str,
     response: BaseResponse,
 ) -&gt; BaseResponse:
-    log_debug_message(&#34;Clearing cookies because of TOKEN_THEFT_DETECTED response&#34;)
-    clear_cookies(recipe, response)
+    log_debug_message(&#34;Clearing tokens because of TOKEN_THEFT_DETECTED response&#34;)
+    clear_session_from_all_token_transfer_methods(response, recipe)
     return await resolve(
         self.__on_token_theft_detected(request, session_handle, user_id, response)
     )</code></pre>
@@ -1137,8 +1143,8 @@ async def validate_claims_in_payload(
     response: BaseResponse,
 ):
     if do_clear_cookies:
-        log_debug_message(&#34;Clearing cookies because of UNAUTHORISED response&#34;)
-        clear_cookies(recipe, response)
+        log_debug_message(&#34;Clearing tokens because of UNAUTHORISED response&#34;)
+        clear_session_from_all_token_transfer_methods(response, recipe)
     return await resolve(self.__on_unauthorised(request, message, response))</code></pre>
 </details>
 </dd>
@@ -1272,7 +1278,7 @@ async def validate_claims_in_payload(
 </dd>
 <dt id="supertokens_python.recipe.session.utils.SessionConfig"><code class="flex name class">
 <span>class <span class="ident">SessionConfig</span></span>
-<span>(</span><span>refresh_token_path: NormalisedURLPath, cookie_domain: Union[None, str], cookie_same_site: "Literal['lax', 'strict', 'none']", cookie_secure: bool, session_expired_status_code: int, error_handlers: <a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, anti_csrf: str, override: <a title="supertokens_python.recipe.session.utils.OverrideConfig" href="#supertokens_python.recipe.session.utils.OverrideConfig">OverrideConfig</a>, framework: str, mode: str, jwt: <a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>, invalid_claim_status_code: int)</span>
+<span>(</span><span>refresh_token_path: NormalisedURLPath, cookie_domain: Union[None, str], cookie_same_site: "Literal['lax', 'strict', 'none']", cookie_secure: bool, session_expired_status_code: int, error_handlers: <a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, anti_csrf: str, get_token_transfer_method: "Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]]", override: <a title="supertokens_python.recipe.session.utils.OverrideConfig" href="#supertokens_python.recipe.session.utils.OverrideConfig">OverrideConfig</a>, framework: str, mode: str, jwt: <a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>, invalid_claim_status_code: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1290,24 +1296,30 @@ async def validate_claims_in_payload(
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
         anti_csrf: str,
+        get_token_transfer_method: Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal[&#34;any&#34;]],
+        ],
         override: OverrideConfig,
         framework: str,
         mode: str,
         jwt: JWTConfig,
         invalid_claim_status_code: int,
     ):
+        self.session_expired_status_code = session_expired_status_code
+        self.invalid_claim_status_code = invalid_claim_status_code
+
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
         self.cookie_secure = cookie_secure
-        self.session_expired_status_code = session_expired_status_code
         self.error_handlers = error_handlers
         self.anti_csrf = anti_csrf
+        self.get_token_transfer_method = get_token_transfer_method
         self.override = override
         self.framework = framework
         self.mode = mode
-        self.jwt = jwt
-        self.invalid_claim_status_code = invalid_claim_status_code</code></pre>
+        self.jwt = jwt</code></pre>
 </details>
 </dd>
 </dl>
@@ -1330,8 +1342,9 @@ async def validate_claims_in_payload(
 <li><code><a title="supertokens_python.recipe.session.utils.default_token_theft_detected_callback" href="#supertokens_python.recipe.session.utils.default_token_theft_detected_callback">default_token_theft_detected_callback</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.default_try_refresh_token_callback" href="#supertokens_python.recipe.session.utils.default_try_refresh_token_callback">default_try_refresh_token_callback</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.default_unauthorised_callback" href="#supertokens_python.recipe.session.utils.default_unauthorised_callback">default_unauthorised_callback</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.utils.get_auth_mode_from_header" href="#supertokens_python.recipe.session.utils.get_auth_mode_from_header">get_auth_mode_from_header</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.get_required_claim_validators" href="#supertokens_python.recipe.session.utils.get_required_claim_validators">get_required_claim_validators</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.utils.get_top_level_domain_for_same_site_resolution" href="#supertokens_python.recipe.session.utils.get_top_level_domain_for_same_site_resolution">get_top_level_domain_for_same_site_resolution</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.utils.get_token_transfer_method_default" href="#supertokens_python.recipe.session.utils.get_token_transfer_method_default">get_token_transfer_method_default</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.get_url_scheme" href="#supertokens_python.recipe.session.utils.get_url_scheme">get_url_scheme</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.normalise_same_site" href="#supertokens_python.recipe.session.utils.normalise_same_site">normalise_same_site</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.normalise_session_scope" href="#supertokens_python.recipe.session.utils.normalise_session_scope">normalise_session_scope</a></code></li>
