@@ -29,9 +29,9 @@ from ...post_init_callbacks import PostSTInitCallbacks
 from .interfaces import (
     APIInterface,
     APIOptions,
-    TypeGetTenantIdsForUserId,
+    TypeGetTenantIdForUserId,
     TypeGetAllowedDomainsForTenantId,
-    TenantIdsOkResult,
+    TenantIdOkResult,
     UnknownUserIdError,
 )
 
@@ -78,7 +78,7 @@ class MultitenancyRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        get_tenant_ids_for_user_id: Optional[TypeGetTenantIdsForUserId] = None,
+        get_tenant_id_for_user_id: Optional[TypeGetTenantIdForUserId] = None,
         get_allowed_domains_for_tenant_id: Optional[
             TypeGetAllowedDomainsForTenantId
         ] = None,
@@ -87,7 +87,7 @@ class MultitenancyRecipe(RecipeModule):
     ) -> None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            get_tenant_ids_for_user_id,
+            get_tenant_id_for_user_id,
             get_allowed_domains_for_tenant_id,
             error_handlers,
             override,
@@ -109,8 +109,8 @@ class MultitenancyRecipe(RecipeModule):
             else self.config.override.apis(api_implementation)
         )
 
-        self.get_tenant_ids_for_user_id_funcs_from_other_recipes: List[
-            TypeGetTenantIdsForUserId
+        self.get_tenant_id_for_user_id_funcs_from_other_recipes: List[
+            TypeGetTenantIdForUserId
         ] = []
 
         self.static_third_party_providers: List[ProviderInput] = []
@@ -169,7 +169,7 @@ class MultitenancyRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        get_tenant_ids_for_user_id: Union[TypeGetTenantIdsForUserId, None] = None,
+        get_tenant_id_for_user_id: Union[TypeGetTenantIdForUserId, None] = None,
         get_allowed_domains_for_tenant_id: Union[
             TypeGetAllowedDomainsForTenantId, None
         ] = None,
@@ -181,7 +181,7 @@ class MultitenancyRecipe(RecipeModule):
                 MultitenancyRecipe.__instance = MultitenancyRecipe(
                     MultitenancyRecipe.recipe_id,
                     app_info,
-                    get_tenant_ids_for_user_id,
+                    get_tenant_id_for_user_id,
                     get_allowed_domains_for_tenant_id,
                     error_handlers,
                     override,
@@ -219,23 +219,23 @@ class MultitenancyRecipe(RecipeModule):
             raise_general_exception("calling testing function in non testing env")
         MultitenancyRecipe.__instance = None
 
-    async def get_tenant_ids_for_user_id(
+    async def get_tenant_id_for_user_id(
         self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[TenantIdsOkResult, UnknownUserIdError]:
-        if self.config.get_tenant_ids_for_user_id is not None:
-            res = await self.config.get_tenant_ids_for_user_id(user_id, user_context)
+    ) -> Union[TenantIdOkResult, UnknownUserIdError]:
+        if self.config.get_tenant_id_for_user_id is not None:
+            res = await self.config.get_tenant_id_for_user_id(user_id, user_context)
             if not isinstance(res, UnknownUserIdError):
                 return res
 
-        for f in self.get_tenant_ids_for_user_id_funcs_from_other_recipes:
+        for f in self.get_tenant_id_for_user_id_funcs_from_other_recipes:
             res = await f(user_id, user_context)
             if not isinstance(res, UnknownUserIdError):
                 return res
 
         return UnknownUserIdError()
 
-    def add_get_tenant_ids_for_user_id_func(self, f: TypeGetTenantIdsForUserId):
-        self.get_tenant_ids_for_user_id_funcs_from_other_recipes.append(f)
+    def add_get_tenant_id_for_user_id_func(self, f: TypeGetTenantIdForUserId):
+        self.get_tenant_id_for_user_id_funcs_from_other_recipes.append(f)
 
 
 class APIImplementation(APIInterface):
@@ -286,12 +286,12 @@ class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
         async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
             recipe = MultitenancyRecipe.get_instance()
-            tenant_ids_res = await recipe.get_tenant_ids_for_user_id(
+            tenant_ids_res = await recipe.get_tenant_id_for_user_id(
                 user_id, user_context
             )
 
-            if isinstance(tenant_ids_res, TenantIdsOkResult):
-                for tenant_id in tenant_ids_res.tenant_ids:
+            if isinstance(tenant_ids_res, TenantIdOkResult):
+                for tenant_id in tenant_ids_res.tenant_id:
                     if recipe.config.get_allowed_domains_for_tenant_id is None:
                         return (
                             []

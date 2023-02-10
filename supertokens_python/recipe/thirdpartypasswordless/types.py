@@ -42,6 +42,14 @@ class User:
         self.phone_number: Union[str, None] = phone_number
         self.time_joined: int = time_joined
         self.third_party_info: Union[ThirdPartyInfo, None] = third_party_info
+        self.tenant_id: Union[str, None] = None
+
+        self._update_tenant_ids()
+
+    def _update_tenant_ids(self):
+        if self.third_party_info is not None:
+            if "|" in self.third_party_info.user_id:
+                self.tenant_id = self.third_party_info.user_id.split("|")[1]
 
 
 _T = TypeVar("_T")

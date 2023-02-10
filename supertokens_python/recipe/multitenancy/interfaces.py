@@ -254,18 +254,18 @@ class APIInterface(ABC):
         pass
 
 
-class TenantIdsOkResult:
-    def __init__(self, tenant_ids: List[str]):
-        self.tenant_ids = tenant_ids
+class TenantIdOkResult:
+    def __init__(self, tenant_id: str):
+        self.tenant_id = tenant_id
 
 
 class UnknownUserIdError(Exception):
     pass
 
 
-TypeGetTenantIdsForUserId = Callable[
+TypeGetTenantIdForUserId = Callable[
     [str, Dict[str, Any]],
-    Awaitable[Union[TenantIdsOkResult, UnknownUserIdError]],
+    Awaitable[Union[TenantIdOkResult, UnknownUserIdError]],
 ]
 
 TypeGetAllowedDomainsForTenantId = Callable[

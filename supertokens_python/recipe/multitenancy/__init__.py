@@ -26,12 +26,12 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
     from ...recipe_module import RecipeModule
-    from .interfaces import TypeGetTenantIdsForUserId, TypeGetAllowedDomainsForTenantId
+    from .interfaces import TypeGetTenantIdForUserId, TypeGetAllowedDomainsForTenantId
     from .utils import InputErrorHandlers, InputOverrideConfig
 
 
 def init(
-    get_tenant_ids_for_user_id: Union[TypeGetTenantIdsForUserId, None] = None,
+    get_tenant_id_for_user_id: Union[TypeGetTenantIdForUserId, None] = None,
     get_allowed_domains_for_tenant_id: Union[
         TypeGetAllowedDomainsForTenantId, None
     ] = None,
@@ -39,7 +39,7 @@ def init(
     override: Union[InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return recipe.MultitenancyRecipe.init(
-        get_tenant_ids_for_user_id,
+        get_tenant_id_for_user_id,
         get_allowed_domains_for_tenant_id,
         error_handlers,
         override,

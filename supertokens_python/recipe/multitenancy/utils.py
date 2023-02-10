@@ -25,7 +25,7 @@ from supertokens_python.utils import (
 if TYPE_CHECKING:
     from typing import Union
     from .interfaces import (
-        TypeGetTenantIdsForUserId,
+        TypeGetTenantIdForUserId,
         TypeGetAllowedDomainsForTenantId,
         RecipeInterface,
         APIInterface,
@@ -125,19 +125,19 @@ class OverrideConfig:
 class MultitenancyConfig:
     def __init__(
         self,
-        get_tenant_ids_for_user_id: Union[TypeGetTenantIdsForUserId, None],
+        get_tenant_id_for_user_id: Union[TypeGetTenantIdForUserId, None],
         get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId],
         error_handlers: ErrorHandlers,
         override: OverrideConfig,
     ):
-        self.get_tenant_ids_for_user_id = get_tenant_ids_for_user_id
+        self.get_tenant_id_for_user_id = get_tenant_id_for_user_id
         self.get_allowed_domains_for_tenant_id = get_allowed_domains_for_tenant_id
         self.error_handlers = error_handlers
         self.override = override
 
 
 def validate_and_normalise_user_input(
-    get_tenant_ids_for_user_id: Optional[TypeGetTenantIdsForUserId],
+    get_tenant_id_for_user_id: Optional[TypeGetTenantIdForUserId],
     get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId],
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
@@ -155,7 +155,7 @@ def validate_and_normalise_user_input(
         override = InputOverrideConfig()
 
     return MultitenancyConfig(
-        get_tenant_ids_for_user_id,
+        get_tenant_id_for_user_id,
         get_allowed_domains_for_tenant_id,
         error_handlers,
         OverrideConfig(override.functions, override.apis),

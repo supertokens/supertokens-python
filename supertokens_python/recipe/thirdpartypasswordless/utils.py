@@ -29,7 +29,7 @@ from supertokens_python.recipe.passwordless import (
     ContactEmailOrPhoneConfig,
     ContactPhoneOnlyConfig,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider, ProviderInput
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
