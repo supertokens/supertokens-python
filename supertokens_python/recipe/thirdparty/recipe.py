@@ -18,10 +18,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.multitenancy.interfaces import (
-    TenantIdOkResult,
-    UnknownUserIdError as MTUnknownUserIdError,
-)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
@@ -92,9 +88,6 @@ class ThirdPartyRecipe(RecipeModule):
             mt_recipe = MultitenancyRecipe.get_instance_optional()
             if mt_recipe:
                 mt_recipe.static_third_party_providers = self.providers
-                mt_recipe.add_get_tenant_id_for_user_id_func(
-                    self.get_tenant_id_for_user_id
-                )
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -211,14 +204,3 @@ class ThirdPartyRecipe(RecipeModule):
             return GetEmailForUserIdOkResult(user_info.email)
 
         return UnknownUserIdError()
-
-    async def get_tenant_id_for_user_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ):
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is None:
-            return MTUnknownUserIdError()
-
-        return TenantIdOkResult(user_info.tenant_ids)

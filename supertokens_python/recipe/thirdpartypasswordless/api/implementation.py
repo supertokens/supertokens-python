@@ -124,6 +124,7 @@ class APIImplementation(APIInterface):
                     None,
                     result.user.third_party_info,
                     result.user.time_joined,
+                    result.user.tenant_id,
                 ),
                 result.created_new_user,
                 result.session,
@@ -198,6 +199,7 @@ class APIImplementation(APIInterface):
                     result.user.phone_number,
                     None,
                     result.user.time_joined,
+                    None,
                 ),
                 result.session,
             )

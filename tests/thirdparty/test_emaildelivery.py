@@ -51,8 +51,6 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.smtp imp
 from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
 )
-from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
-from supertokens_python.recipe.thirdparty.interfaces import SignInUpOkResult
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
     UserInfo,

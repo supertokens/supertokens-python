@@ -16,7 +16,6 @@ from supertokens_python.recipe.thirdparty.providers.utils import (
     get_actual_client_id_from_development_client_id,
     is_using_oauth_development_client_id,
 )
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 from ..provider import (
@@ -191,7 +190,6 @@ class GenericProvider(Provider):
             async def default_generate_fake_email(
                 third_party_user_id: str, _: Dict[str, Any]
             ) -> str:
-                third_party_user_id = third_party_user_id.replace("|", ".")
                 return f"{third_party_user_id}@{self.input_config.third_party_id}.fakeemail.com"
 
             self.input_config.generate_fake_email = default_generate_fake_email
@@ -360,12 +358,6 @@ class GenericProvider(Provider):
         user_info_result = get_supertokens_user_info_result_from_raw_user_info(
             self.config, raw_user_info_from_provider
         )
-
-        if (
-            self.config.tenant_id is not None
-            and self.config.tenant_id != DEFAULT_TENANT_ID
-        ):
-            user_info_result.third_party_user_id += "|" + self.config.tenant_id
 
         return UserInfo(
             third_party_user_id=user_info_result.third_party_user_id,

@@ -31,19 +31,13 @@ class User:
         email: str,
         time_joined: int,
         third_party_info: Union[ThirdPartyInfo, None] = None,
+        tenant_id: Union[str, None] = None,
     ):
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
         self.third_party_info = third_party_info
-        self.tenant_id: Union[str, None] = None
-
-        self._update_tenant_ids()
-
-    def _update_tenant_ids(self):
-        if self.third_party_info is not None:
-            if "|" in self.third_party_info.user_id:
-                self.tenant_id = self.third_party_info.user_id.split("|")[1]
+        self.tenant_id = tenant_id
 
 
 # Export:

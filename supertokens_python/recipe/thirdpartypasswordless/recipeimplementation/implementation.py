@@ -174,6 +174,7 @@ class RecipeImplementation(RecipeInterface):
                 time_joined=pless_user.time_joined,
                 third_party_info=None,
                 phone_number=pless_user.phone_number,
+                tenant_id=None,
             )
 
         if self.tp_get_user_by_id is None:
@@ -188,6 +189,7 @@ class RecipeImplementation(RecipeInterface):
             time_joined=tp_user.time_joined,
             third_party_info=tp_user.third_party_info,
             phone_number=None,
+            tenant_id=tp_user.tenant_id,
         )
 
     async def get_users_by_email(
@@ -204,6 +206,7 @@ class RecipeImplementation(RecipeInterface):
                     time_joined=pless_user.time_joined,
                     third_party_info=None,
                     phone_number=pless_user.phone_number,
+                    tenant_id=None,
                 )
             )
 
@@ -220,6 +223,7 @@ class RecipeImplementation(RecipeInterface):
                     time_joined=tp_user.time_joined,
                     third_party_info=tp_user.third_party_info,
                     phone_number=None,
+                    tenant_id=tp_user.tenant_id,
                 )
             )
 
@@ -246,6 +250,7 @@ class RecipeImplementation(RecipeInterface):
             time_joined=tp_user.time_joined,
             third_party_info=tp_user.third_party_info,
             phone_number=None,
+            tenant_id=tp_user.tenant_id,
         )
 
     async def thirdparty_sign_in_up(
@@ -307,6 +312,7 @@ class RecipeImplementation(RecipeInterface):
                 time_joined=pless_user.time_joined,
                 third_party_info=None,
                 phone_number=pless_user.phone_number,
+                tenant_id=None,
             )
 
         return None
@@ -361,6 +367,7 @@ class RecipeImplementation(RecipeInterface):
                     result.user.phone_number,
                     None,
                     result.user.time_joined,
+                    None,
                 ),
             )
         return result

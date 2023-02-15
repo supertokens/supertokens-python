@@ -37,18 +37,13 @@ class User:
         email: str,
         time_joined: int,
         third_party_info: ThirdPartyInfo,
+        tenant_id: Union[str, None],
     ):
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
         self.third_party_info: ThirdPartyInfo = third_party_info
-        self.tenant_id: Union[str, None] = None
-
-        self._update_tenant_ids()
-
-    def _update_tenant_ids(self):
-        if "|" in self.third_party_info.user_id:
-            self.tenant_id = self.third_party_info.user_id.split("|")[1]
+        self.tenant_id = tenant_id
 
 
 class UserInfoEmail:

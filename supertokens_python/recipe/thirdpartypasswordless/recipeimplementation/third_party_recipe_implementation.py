@@ -46,6 +46,7 @@ class RecipeImplementation(RecipeInterface):
             email=user.email,
             time_joined=user.time_joined,
             third_party_info=user.third_party_info,
+            tenant_id=user.tenant_id,
         )
 
     async def get_users_by_email(
@@ -65,6 +66,7 @@ class RecipeImplementation(RecipeInterface):
                         email=user.email,
                         time_joined=user.time_joined,
                         third_party_info=user.third_party_info,
+                        tenant_id=user.tenant_id,
                     )
                 )
 
@@ -90,6 +92,7 @@ class RecipeImplementation(RecipeInterface):
             email=user.email,
             time_joined=user.time_joined,
             third_party_info=user.third_party_info,
+            tenant_id=user.tenant_id,
         )
 
     async def sign_in_up(

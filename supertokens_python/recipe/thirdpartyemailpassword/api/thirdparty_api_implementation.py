@@ -74,6 +74,7 @@ def get_interface_impl(
                         result.user.email,
                         result.user.time_joined,
                         result.user.third_party_info,
+                        result.user.tenant_id,
                     ),
                     result.created_new_user,
                     result.session,
