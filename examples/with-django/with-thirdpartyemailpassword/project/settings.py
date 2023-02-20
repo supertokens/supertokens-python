@@ -65,7 +65,7 @@ init(
     framework="django",
     mode="wsgi",
     recipe_list=[
-        session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        session.init(),
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
