@@ -52,31 +52,19 @@ class FastApiResponse(BaseResponse):
         # Note: For FastAPI response object, the expires value
         # doesn't mean the absolute time in ms, but the duration in seconds
         # So we need to convert our absolute expiry time (ms) to a duration (seconds)
-        if domain is None:
-            # we do ceil because if we do floor, we tests may fail where the access
-            # token lifetime is set to 1 second
-            self.response.set_cookie(
-                key=key,
-                value=value,
-                expires=ceil((expires - get_timestamp_ms()) / 1000),
-                path=path,
-                secure=secure,
-                httponly=httponly,
-                samesite=samesite,
-            )
-        else:
-            # we do ceil because if we do floor, we tests may fail where the access
-            # token lifetime is set to 1 second
-            self.response.set_cookie(
-                key=key,
-                value=value,
-                expires=ceil((expires - get_timestamp_ms()) / 1000),
-                path=path,
-                domain=domain,
-                secure=secure,
-                httponly=httponly,
-                samesite=samesite,
-            )
+
+        # we do ceil because if we do floor, we tests may fail where the access
+        # token lifetime is set to 1 second
+        self.response.set_cookie(
+            key=key,
+            value=value,  # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
+            expires=ceil((expires - get_timestamp_ms()) / 1000),
+            path=path,
+            domain=domain,  # type: ignore # starlette didn't set domain as optional type but their default value is None anyways
+            secure=secure,
+            httponly=httponly,
+            samesite=samesite,
+        )
 
     def set_header(self, key: str, value: str):
         self.response.headers[key] = value

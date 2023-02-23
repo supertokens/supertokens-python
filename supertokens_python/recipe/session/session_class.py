@@ -99,7 +99,7 @@ class Session(SessionContainer):
             # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
             # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
             # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-            # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+            # Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
             self.response_mutators.append(
                 token_response_mutator(
                     self.config,
