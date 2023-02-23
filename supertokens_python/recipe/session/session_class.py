@@ -11,13 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
+from supertokens_python.utils import get_timestamp_ms
 
 from .cookie_and_header import (
     clear_session_response_mutator,
@@ -25,6 +25,7 @@ from .cookie_and_header import (
     token_response_mutator,
 )
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
+from .utils import HUNDRED_YEARS_IN_MS
 
 _T = TypeVar("_T")
 
@@ -95,12 +96,16 @@ class Session(SessionContainer):
                     self.access_token_payload,
                 )
             )
+            # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+            # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+            # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+            # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
             self.response_mutators.append(
                 token_response_mutator(
                     self.config,
                     "access",
                     result.access_token.token,
-                    int(datetime.now().timestamp()) + 3153600000000,
+                    get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
                     self.transfer_method,
                 )
             )
