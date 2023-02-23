@@ -45,6 +45,8 @@ class FastApiRequest(BaseRequest):
         return self.request.method
 
     def get_cookie(self, key: str) -> Union[str, None]:
+        # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
+        # It also takes care of escaping the quotes while fetching the value
         return self.request.cookies.get(key)
 
     def get_header(self, key: str) -> Union[str, None]:
