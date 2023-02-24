@@ -13,17 +13,24 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
-from supertokens_python.framework import BaseRequest
-from .interfaces import (
-    RecipeInterface,
-)
 from supertokens_python.constants import DASHBOARD_VERSION
+from supertokens_python.framework import BaseRequest
+from supertokens_python.normalised_url_path import NormalisedURLPath
+
+from .interfaces import RecipeInterface
 from .utils import DashboardConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.querier import Querier
 
 
 class RecipeImplementation(RecipeInterface):
+    def __init__(self, querier: Querier):
+        super().__init__()
+        self.querier = querier
+
     async def get_dashboard_bundle_location(self, user_context: Dict[str, Any]) -> str:
         return f"https://cdn.jsdelivr.net/gh/supertokens/dashboard@v{DASHBOARD_VERSION}/build/"
 
@@ -36,9 +43,24 @@ class RecipeImplementation(RecipeInterface):
         api_key_header_value = request.get_header("authorization")
 
         # We receive the api key as `Bearer API_KEY`, this retrieves just the key
-        api_key = api_key_header_value.split(" ")[1] if api_key_header_value else None
+        api_key = api_key_header_value.split(
+            " ")[1] if api_key_header_value else None
 
         if api_key is None:
             return False
 
         return api_key == config.api_key
+
+    async def sign_in(self, email: str, password: str) -> Dict[str, Any]:
+        data = {"email": email, "password": password}
+        response = await self.querier.send_post_request(NormalisedURLPath("/recipe/dashboard/signin"), data)
+        return response
+
+    async def verify(self, sessionId: str) -> Dict[str, Any]:
+        data = {"sessionId": sessionId}
+        response = await self.querier.send_post_request(NormalisedURLPath('/recipe/dashboard/session/verify'), data)
+        return response
+
+    async def sign_out(self, sessionId: str) -> Dict[str, Any]:
+        response = await self.querier.send_delete_request(NormalisedURLPath("/recipe/dashboard/session"), {"sessionId": sessionId})
+        return response

@@ -14,9 +14,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, List,
+                    Optional, Union)
 
-from supertokens_python.recipe.session.interfaces import SessionInformationResult
+from supertokens_python.recipe.session.interfaces import \
+    SessionInformationResult
 from supertokens_python.types import User
 
 from ...supertokens import AppInfo
@@ -52,6 +54,18 @@ class RecipeInterface(ABC):
         config: DashboardConfig,
         user_context: Dict[str, Any],
     ) -> bool:
+        pass
+
+    @abstractmethod
+    async def sign_in(self, email: str, password: str) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def verify(self, sessionId: str) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def sign_out(self, sessionId: str) -> Dict[str, Any]:
         pass
 
 
@@ -285,3 +299,51 @@ class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status, "error": self.error}
+
+
+class SignInPostOK(APIResponse):
+    sessionId: str = ""
+
+    def __init__(self, sessionId: str):
+        self.sessionId = sessionId
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "sessionId": self.sessionId
+        }
+
+
+class SignInPostInvalidCredentials(APIResponse):
+    status: str = "INVAlID_CREDENTIALS_ERROR"
+
+    def to_json(self) -> Dict[str, str]:
+        return {"status": self.status}
+
+class SignInPostUserSuspended(APIResponse):
+    status: str = "USER_SUSPENDED_ERROR"
+
+    def to_json(self) -> Dict[str, str]:
+        return {"status": self.status}
+
+
+class VerifyPostOK(APIResponse):
+    def to_json(self):
+        return {"status": "OK"}
+
+
+class VerifyPostUserSuspended(APIResponse):
+    status: str = "USER_SUSPENDED_ERROR"
+
+    def to_json(self) -> Dict[str, str]:
+        return {"status": self.status}
+
+class VerifyPostInvalidSession(APIResponse):
+    status: str = "INVAlID_SESSION_ERROR"
+
+    def to_json(self) -> Dict[str, str]:
+        return {"status": self.status}
+
+class SignOutOK(APIResponse):
+    def to_json(self):
+        return {"status": "OK"}
