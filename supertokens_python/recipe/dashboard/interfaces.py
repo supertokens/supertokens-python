@@ -285,3 +285,8 @@ class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status, "error": self.error}
+
+
+class SignOutOK(APIResponse):
+    def to_json(self):
+        return {"status": "OK"}
