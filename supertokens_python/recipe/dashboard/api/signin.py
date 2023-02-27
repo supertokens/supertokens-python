@@ -16,9 +16,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.dashboard.interfaces import (APIInterface,
-                                                                APIOptions)
+    from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 
-
+# pylint: disable=unused-argument
 async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIOptions):
     pass

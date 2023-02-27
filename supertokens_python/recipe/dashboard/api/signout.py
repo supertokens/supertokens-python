@@ -16,11 +16,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.dashboard.interfaces import (APIInterface,
-                                                                APIOptions)
+    from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 
 from ..interfaces import SignOutOK
 
 
-async def handle_signout(api_implementation: APIInterface, api_options: APIOptions) -> SignOutOK:
-    pass
+# pylint: disable=unused-argument
+async def handle_signout(
+    api_implementation: APIInterface, api_options: APIOptions
+) -> SignOutOK:
+    return SignOutOK()
