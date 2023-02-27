@@ -30,7 +30,7 @@ from ..interfaces import SignOutOK
 async def handle_signout(
     api_implementation: APIInterface, api_options: APIOptions
 ) -> SignOutOK:
-    if api_options.config.api_key:
+    if api_options.config.auth_mode == "api-key":
         send_200_response({"status": "OK"}, api_options.response)
     else:
         sessionIdFormAuthHeader = api_options.request.get_header("authorization")
