@@ -13,10 +13,13 @@
 # under the License.
 from .api_key_protector import api_key_protector
 from .dashboard import handle_dashboard_api
+from .signin import handle_sign_in_api
+from .signout import handle_signout
 from .userdetails.user_delete import handle_user_delete
 from .userdetails.user_email_verify_get import handle_user_email_verify_get
 from .userdetails.user_email_verify_put import handle_user_email_verify_put
-from .userdetails.user_email_verify_token_post import handle_email_verify_token_post
+from .userdetails.user_email_verify_token_post import \
+    handle_email_verify_token_post
 from .userdetails.user_get import handle_user_get
 from .userdetails.user_metadata_get import handle_metadata_get
 from .userdetails.user_metadata_put import handle_metadata_put
@@ -45,4 +48,6 @@ __all__ = [
     "handle_user_sessions_post",
     "handle_user_password_put",
     "handle_email_verify_token_post",
+    "handle_sign_in_api",
+    "handle_signout"
 ]

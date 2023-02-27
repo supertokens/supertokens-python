@@ -15,47 +15,36 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
+if TYPE_CHECKING:
+    from supertokens_python.framework.request import BaseRequest
+
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
-from supertokens_python.recipe.emailpassword.asyncio import (
-    get_user_by_id as ep_get_user_by_id,
-)
+from supertokens_python.recipe.emailpassword.asyncio import \
+    get_user_by_id as ep_get_user_by_id
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
-from supertokens_python.recipe.passwordless.asyncio import (
-    get_user_by_id as pless_get_user_by_id,
-)
+from supertokens_python.recipe.passwordless.asyncio import \
+    get_user_by_id as pless_get_user_by_id
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.recipe.thirdparty.asyncio import (
-    get_user_by_id as tp_get_user_by_idx,
-)
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    ThirdPartyEmailPasswordRecipe,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    get_user_by_id as tpep_get_user_by_id,
-)
-from supertokens_python.recipe.thirdpartypasswordless import (
-    ThirdPartyPasswordlessRecipe,
-)
-from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    get_user_by_id as tppless_get_user_by_id,
-)
+from supertokens_python.recipe.thirdparty.asyncio import \
+    get_user_by_id as tp_get_user_by_idx
+from supertokens_python.recipe.thirdpartyemailpassword import \
+    ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
+    get_user_by_id as tpep_get_user_by_id
+from supertokens_python.recipe.thirdpartypasswordless import \
+    ThirdPartyPasswordlessRecipe
+from supertokens_python.recipe.thirdpartypasswordless.asyncio import \
+    get_user_by_id as tppless_get_user_by_id
 from supertokens_python.types import User
 from supertokens_python.utils import Awaitable
 
 from ...normalised_url_path import NormalisedURLPath
 from ...supertokens import AppInfo
-from .constants import (
-    DASHBOARD_API,
-    USER_API,
-    USER_EMAIL_VERIFY_API,
-    USER_EMAIL_VERIFY_TOKEN_API,
-    USER_METADATA_API,
-    USER_PASSWORD_API,
-    USER_SESSION_API,
-    USERS_COUNT_API,
-    USERS_LIST_GET_API,
-    VALIDATE_KEY_API,
-)
+from .constants import (DASHBOARD_API, EMAIL_PASSSWORD_SIGNOUT,
+                        EMAIL_PASSWORD_SIGN_IN, USER_API,
+                        USER_EMAIL_VERIFY_API, USER_EMAIL_VERIFY_TOKEN_API,
+                        USER_METADATA_API, USER_PASSWORD_API, USER_SESSION_API,
+                        USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API)
 
 if TYPE_CHECKING:
     from .interfaces import APIInterface, RecipeInterface
@@ -143,7 +132,8 @@ class UserWithMetadata:
 class InputOverrideConfig:
     def __init__(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        functions: Union[Callable[[RecipeInterface],
+                                  RecipeInterface], None] = None,
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
     ):
         self.functions = functions
@@ -153,7 +143,8 @@ class InputOverrideConfig:
 class OverrideConfig:
     def __init__(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        functions: Union[Callable[[RecipeInterface],
+                                  RecipeInterface], None] = None,
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
     ):
         self.functions = functions
@@ -165,9 +156,11 @@ class DashboardConfig:
         self,
         api_key: str,
         override: OverrideConfig,
+        auth_mode: str
     ):
         self.api_key = api_key
         self.override = override
+        self.auth_mode = auth_mode
 
 
 def validate_and_normalise_user_input(
@@ -175,8 +168,6 @@ def validate_and_normalise_user_input(
     api_key: str,
     override: Optional[InputOverrideConfig] = None,
 ) -> DashboardConfig:
-    if api_key.strip() == "":
-        raise Exception("apiKey provided to Dashboard recipe cannot be empty")
 
     if override is None:
         override = InputOverrideConfig()
@@ -187,6 +178,7 @@ def validate_and_normalise_user_input(
             functions=override.functions,
             apis=override.apis,
         ),
+        "api-key" if api_key else "email-password"
     )
 
 
@@ -198,7 +190,8 @@ def is_api_path(path: NormalisedURLPath, app_info: AppInfo) -> bool:
     if not path.startswith(dashboard_recipe_base_path):
         return False
 
-    path_without_dashboard_path = path.get_as_string_dangerous().split(DASHBOARD_API)[1]
+    path_without_dashboard_path = path.get_as_string_dangerous().split(DASHBOARD_API)[
+        1]
 
     if len(path_without_dashboard_path) > 0 and path_without_dashboard_path[0] == "/":
         path_without_dashboard_path = path_without_dashboard_path[1:]
@@ -230,6 +223,10 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return USER_PASSWORD_API
     if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == "post":
         return USER_EMAIL_VERIFY_TOKEN_API
+    if path_str.endswith(EMAIL_PASSWORD_SIGN_IN) and method == "post":
+        return EMAIL_PASSWORD_SIGN_IN
+    if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == "post":
+        return EMAIL_PASSSWORD_SIGNOUT
 
     return None
 
@@ -245,15 +242,16 @@ class GetUserForRecipeIdResult:
 
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.types import User as EmailPasswordUser
-    from supertokens_python.recipe.passwordless.types import User as PasswordlessUser
-    from supertokens_python.recipe.thirdparty.types import User as ThirdPartyUser
-    from supertokens_python.recipe.thirdpartyemailpassword.types import (
-        User as ThirdPartyEmailPasswordUser,
-    )
-    from supertokens_python.recipe.thirdpartypasswordless.types import (
-        User as ThirdPartyPasswordlessUser,
-    )
+    from supertokens_python.recipe.emailpassword.types import \
+        User as EmailPasswordUser
+    from supertokens_python.recipe.passwordless.types import \
+        User as PasswordlessUser
+    from supertokens_python.recipe.thirdparty.types import \
+        User as ThirdPartyUser
+    from supertokens_python.recipe.thirdpartyemailpassword.types import \
+        User as ThirdPartyEmailPasswordUser
+    from supertokens_python.recipe.thirdpartypasswordless.types import \
+        User as ThirdPartyPasswordlessUser
 
     GetUserResult = Union[
         EmailPasswordUser,
@@ -385,3 +383,10 @@ def is_recipe_initialised(recipeId: str) -> bool:
                 pass
 
     return isRecipeInitialised
+
+
+def validate_APIKey(req: BaseRequest, config: DashboardConfig) -> bool:
+    apiKeyHeaderValue = req.get_header("authorization")
+    if not apiKeyHeaderValue:
+        return False
+    return apiKeyHeaderValue == config.api_key

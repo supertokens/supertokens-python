@@ -19,24 +19,14 @@ from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
-from .api import (
-    api_key_protector,
-    handle_dashboard_api,
-    handle_email_verify_token_post,
-    handle_metadata_get,
-    handle_metadata_put,
-    handle_sessions_get,
-    handle_user_delete,
-    handle_user_email_verify_get,
-    handle_user_email_verify_put,
-    handle_user_get,
-    handle_user_password_put,
-    handle_user_put,
-    handle_user_sessions_post,
-    handle_users_count_get_api,
-    handle_users_get_api,
-    handle_validate_key_api,
-)
+from .api import (api_key_protector, handle_dashboard_api,
+                  handle_email_verify_token_post, handle_metadata_get,
+                  handle_metadata_put, handle_sessions_get, handle_sign_in_api,
+                  handle_signout, handle_user_delete,
+                  handle_user_email_verify_get, handle_user_email_verify_put,
+                  handle_user_get, handle_user_password_put, handle_user_put,
+                  handle_user_sessions_post, handle_users_count_get_api,
+                  handle_users_get_api, handle_validate_key_api)
 from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
 from .interfaces import APIInterface, APIOptions
@@ -48,26 +38,16 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
     from supertokens_python.types import APIResponse
 
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
 
-from .constants import (
-    DASHBOARD_API,
-    USER_API,
-    USER_EMAIL_VERIFY_API,
-    USER_EMAIL_VERIFY_TOKEN_API,
-    USER_METADATA_API,
-    USER_PASSWORD_API,
-    USER_SESSION_API,
-    USERS_COUNT_API,
-    USERS_LIST_GET_API,
-    VALIDATE_KEY_API,
-)
-from .utils import (
-    InputOverrideConfig,
-    get_api_if_matched,
-    is_api_path,
-    validate_and_normalise_user_input,
-)
+from .constants import (DASHBOARD_API, EMAIL_PASSSWORD_SIGNOUT,
+                        EMAIL_PASSWORD_SIGN_IN, USER_API,
+                        USER_EMAIL_VERIFY_API, USER_EMAIL_VERIFY_TOKEN_API,
+                        USER_METADATA_API, USER_PASSWORD_API, USER_SESSION_API,
+                        USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API)
+from .utils import (InputOverrideConfig, get_api_if_matched, is_api_path,
+                    validate_and_normalise_user_input)
 
 
 class DashboardRecipe(RecipeModule):
@@ -136,6 +116,8 @@ class DashboardRecipe(RecipeModule):
             return await handle_dashboard_api(self.api_implementation, api_options)
         if request_id == VALIDATE_KEY_API:
             return await handle_validate_key_api(self.api_implementation, api_options)
+        if request_id == EMAIL_PASSWORD_SIGN_IN:
+            return await handle_sign_in_api(self.api_implementation, api_options)
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
@@ -171,6 +153,8 @@ class DashboardRecipe(RecipeModule):
             api_function = handle_user_password_put
         elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
             api_function = handle_email_verify_token_post
+        elif request_id == EMAIL_PASSSWORD_SIGNOUT:
+            api_function = handle_signout
 
         if api_function is not None:
             return await api_key_protector(
@@ -221,7 +205,8 @@ class DashboardRecipe(RecipeModule):
         if ("SUPERTOKENS_ENV" not in environ) or (
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
-            raise_general_exception("calling testing function in non testing env")
+            raise_general_exception(
+                "calling testing function in non testing env")
         DashboardRecipe.__instance = None
 
     def return_api_id_if_can_handle_request(
