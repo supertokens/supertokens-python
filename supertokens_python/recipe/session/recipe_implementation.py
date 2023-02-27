@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 from supertokens_python.framework import BaseRequest
@@ -33,14 +32,14 @@ from ...types import MaybeAwaitable
 from . import session_functions
 from .access_token import validate_access_token_structure
 from .cookie_and_header import (
+    anti_csrf_response_mutator,
+    clear_session_response_mutator,
+    front_token_response_mutator,
     get_anti_csrf_header,
     get_rid_header,
     get_token,
-    token_response_mutator,
-    front_token_response_mutator,
-    anti_csrf_response_mutator,
     set_cookie_response_mutator,
-    clear_session_response_mutator,
+    token_response_mutator,
 )
 from .exceptions import (
     TokenTheftError,
@@ -50,12 +49,12 @@ from .exceptions import (
 )
 from .interfaces import (
     AccessTokenObj,
-    ResponseMutator,
     ClaimsValidationResult,
     GetClaimValueOkResult,
     JSONObject,
     RecipeInterface,
     RegenerateAccessTokenOkResult,
+    ResponseMutator,
     SessionClaim,
     SessionClaimValidator,
     SessionDoesNotExistError,
@@ -64,13 +63,17 @@ from .interfaces import (
 )
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
-from .utils import SessionConfig, TokenTransferMethod, validate_claims_in_payload
+from .utils import (
+    HUNDRED_YEARS_IN_MS,
+    SessionConfig,
+    TokenTransferMethod,
+    validate_claims_in_payload,
+)
 
 if TYPE_CHECKING:
     from typing import List, Union
     from supertokens_python import AppInfo
     from supertokens_python.querier import Querier
-
 
 from .constants import available_token_transfer_methods
 from .interfaces import SessionContainer
@@ -248,12 +251,16 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 new_session.access_token_payload,
             )
         )
+        # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+        # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+        # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+        # Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
         response_mutators.append(
             token_response_mutator(
                 self.config,
                 "access",
                 new_access_token_info["token"],
-                int(datetime.now().timestamp()) + 3153600000000,
+                get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
                 new_session.transfer_method,
             )
         )
@@ -262,7 +269,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 self.config,
                 "refresh",
                 new_refresh_token_info["token"],
-                new_refresh_token_info["expiry"],
+                new_refresh_token_info[
+                    "expiry"
+                ],  # This comes from the core and is 100 days
                 new_session.transfer_method,
             )
         )
@@ -456,12 +465,16 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     session.access_token_payload,
                 )
             )
+            # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+            # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+            # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+            # Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
             session.response_mutators.append(
                 token_response_mutator(
                     self.config,
                     "access",
                     session.access_token,
-                    int(datetime.now().timestamp()) + 3153600000000,
+                    get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
                     session.transfer_method,
                 )
             )
@@ -603,12 +616,16 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                         session.access_token_payload,
                     )
                 )
+                # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+                # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+                # Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
                 response_mutators.append(
                     token_response_mutator(
                         self.config,
                         "access",
                         new_access_token_info["token"],
-                        int(datetime.now().timestamp()) + 3153600000000,
+                        get_timestamp_ms() + HUNDRED_YEARS_IN_MS,  # 100 years
                         session.transfer_method,
                     )
                 )
@@ -618,7 +635,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                         self.config,
                         "refresh",
                         new_refresh_token_info["token"],
-                        new_refresh_token_info["expiry"],
+                        new_refresh_token_info[
+                            "expiry"
+                        ],  # This comes from the core and is 100 days
                         session.transfer_method,
                     )
                 )

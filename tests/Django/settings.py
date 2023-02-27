@@ -44,5 +44,5 @@ DATABASES = {
 }
 
 MIDDLEWARE = [
-    "supertokens-Fastapi.core.framework.django.django_middleware.middleware",
+    "supertokens_python.framework.django.django_middleware.middleware",
 ]

@@ -45,6 +45,8 @@ import json
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 from urllib.parse import urlparse
 
+from typing_extensions import Literal
+
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -57,13 +59,10 @@ from supertokens_python.utils import (
     send_non_200_response,
     send_non_200_response_with_message,
 )
-from typing_extensions import Literal
 
 from ...types import MaybeAwaitable
-from .constants import SESSION_REFRESH, AUTH_MODE_HEADER_KEY
-from .cookie_and_header import (
-    clear_session_from_all_token_transfer_methods,
-)
+from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
+from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .exceptions import ClaimValidationError
 from .with_jwt.constants import (
     ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
@@ -83,6 +82,8 @@ if TYPE_CHECKING:
     from .recipe import SessionRecipe
 
 from supertokens_python.logger import log_debug_message
+
+HUNDRED_YEARS_IN_MS = 3153600000000
 
 
 def normalise_session_scope(session_scope: str) -&gt; str:

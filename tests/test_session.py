@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import MagicMock
 
@@ -28,9 +29,6 @@ from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
     create_new_session as async_create_new_session,
 )
-from supertokens_python.recipe.session.jwt import (
-    parse_jwt_without_signature_verification,
-)
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
@@ -44,6 +42,9 @@ from supertokens_python.recipe.session.asyncio import (
     update_session_data,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.recipe.session.jwt import (
+    parse_jwt_without_signature_verification,
+)
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.session.session_functions import (
     create_new_session,
@@ -356,10 +357,10 @@ async def test_should_use_override_functions_in_session_container_methods():
 from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
 from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
 from tests.utils import (
-    extract_all_cookies,
-    get_st_init_args,
-    extract_info,
     assert_info_clears_tokens,
+    extract_all_cookies,
+    extract_info,
+    get_st_init_args,
 )
 
 
@@ -578,3 +579,72 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
 
     assert cookies["sAccessToken"]["value"] != ""
     assert cookies["sRefreshToken"]["value"] != ""
+
+
+async def test_token_cookie_expires(
+    driver_config_client: TestClient,
+):
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    for c in response.cookies:
+        if c.name == "sAccessToken":  # 100 years (set by the SDK)
+            # some time must have elasped since the cookie was set. So less than current time
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=365.25 * 100)
+                < datetime.now()
+            )
+        if c.name == "sRefreshToken":  # 100 days (set by the core)
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=100)
+                < datetime.now()
+            )
+
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+        },
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 200
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    for c in response.cookies:
+        if c.name == "sAccessToken":  # 100 years (set by the SDK)
+            # some time must have elasped since the cookie was set. So less than current time
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=365.25 * 100)
+                < datetime.now()
+            )
+        if c.name == "sRefreshToken":  # 100 days (set by the core)
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=100)
+                < datetime.now()
+            )
+
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
