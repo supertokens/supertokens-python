@@ -166,7 +166,9 @@ class OverrideConfig:
 
 
 class DashboardConfig:
-    def __init__(self, api_key: str, override: OverrideConfig, auth_mode: str):
+    def __init__(
+        self, api_key: Union[str, None], override: OverrideConfig, auth_mode: str
+    ):
         self.api_key = api_key
         self.override = override
         self.auth_mode = auth_mode
@@ -174,7 +176,7 @@ class DashboardConfig:
 
 def validate_and_normalise_user_input(
     # app_info: AppInfo,
-    api_key: str,
+    api_key: Union[str, None],
     override: Optional[InputOverrideConfig] = None,
 ) -> DashboardConfig:
 

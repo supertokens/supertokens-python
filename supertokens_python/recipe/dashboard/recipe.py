@@ -82,7 +82,7 @@ class DashboardRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        api_key: str,
+        api_key: Union[str, None],
         override: Union[InputOverrideConfig, None] = None,
     ):
         super().__init__(recipe_id, app_info)
@@ -197,7 +197,7 @@ class DashboardRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        api_key: str,
+        api_key: Union[str, None],
         override: Union[InputOverrideConfig, None] = None,
     ):
         def func(app_info: AppInfo):
