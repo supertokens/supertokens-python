@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+## [0.12.3] - 2023-02-27
+- Adds APIs and logic to the dashboard recipe to enable email password based login
 ## [0.12.2] - 2023-02-23
 - Fix expiry time of access token cookie.
 
