@@ -19,7 +19,7 @@ from _pytest.fixtures import fixture
 from flask import Flask, g, jsonify, make_response, request
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.flask import Middleware
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import emailpassword, session, thirdparty
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
@@ -106,6 +106,18 @@ def driver_config_app():
             emailpassword.init(
                 override=emailpassword.InputOverrideConfig(
                     apis=override_email_password_apis
+                )
+            ),
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        thirdparty.Apple(
+                            client_id="4398792-io.supertokens.example.service",
+                            client_key_id="7M48Y4RYDL",
+                            client_team_id="YWQCXGJRJL",
+                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        )
+                    ]
                 )
             ),
         ],
@@ -398,6 +410,23 @@ def test_optional_session(driver_config_app: Any):
     dict_response = json.loads(response.data)
     assert response.status_code == 200
     assert dict_response["s"] == "empty session"
+
+
+def test_thirdparty_parsing_works(driver_config_app: Any):
+    start_st()
+
+    test_client = driver_config_app.test_client()
+    data = {
+        "state": "afc596274293e1587315c",
+        "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
+    }
+    response = test_client.post("/auth/callback/apple", data=data)
+
+    assert response.status_code == 200
+    assert (
+        response.data
+        == b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>'
+    )
 
 
 from flask.wrappers import Response

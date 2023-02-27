@@ -13,18 +13,20 @@
 # under the License.
 
 import json
+from urllib.parse import urlencode
 from datetime import datetime
 from inspect import isawaitable
 from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
 from supertokens_python.framework.django.django_response import (
     DjangoResponse as SuperTokensDjangoWrapper,
 )
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import emailpassword, session, thirdparty
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
@@ -392,6 +394,56 @@ class SupertokensTest(TestCase):
         assert response.status_code == 200
         dict_response = json.loads(response.content)
         assert dict_response["s"] == "empty session"
+
+    async def test_thirdparty_parsing_works(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="django",
+            mode="asgi",
+            recipe_list=[
+                thirdparty.init(
+                    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                        providers=[
+                            thirdparty.Apple(
+                                client_id="4398792-io.supertokens.example.service",
+                                client_key_id="7M48Y4RYDL",
+                                client_team_id="YWQCXGJRJL",
+                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                            )
+                        ]
+                    )
+                ),
+            ],
+        )
+
+        start_st()
+
+        data = {
+            "state": "afc596274293e1587315c",
+            "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
+        }
+
+        request = self.factory.post(
+            "/auth/callback/apple",
+            urlencode(data).encode(),
+            content_type="application/x-www-form-urlencoded",
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.content,
+            b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>',
+        )
 
 
 def test_remove_header_works():
