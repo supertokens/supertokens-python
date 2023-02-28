@@ -43,6 +43,11 @@ async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIO
         )
     if "status" in response and response["status"] == "INVALID_CREDENTIALS_ERROR":
         return send_200_response(
-            {"status": "INVALID_CREDENTIALS_ERROR"}, api_options.response
+            {"status": "INVALID_CREDENTIALS_ERROR", "message": response["message"]},
+            api_options.response,
         )
-    return send_200_response({"status": "USER_SUSPENDED_ERROR"}, api_options.response)
+    if "status" in response and response["status"] == "USER_SUSPENDED_ERROR":
+        return send_200_response(
+            {"status": "USER_SUSPENDED_ERROR", "message": response["message"]},
+            api_options.response,
+        )
