@@ -169,7 +169,7 @@ class Querier:
     async def send_delete_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
     ):
-        if not params:
+        if params is None:
             params = {}
 
         async def f(url: str) -> Response:

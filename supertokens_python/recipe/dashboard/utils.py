@@ -394,8 +394,8 @@ def is_recipe_initialised(recipeId: str) -> bool:
     return isRecipeInitialised
 
 
-def validate_APIKey(req: BaseRequest, config: DashboardConfig) -> bool:
-    apiKeyHeaderValue = req.get_header("authorization")
-    if not apiKeyHeaderValue:
+def validate_api_key(req: BaseRequest, config: DashboardConfig) -> bool:
+    api_key_header_value = req.get_header("authorization")
+    if not api_key_header_value:
         return False
-    return apiKeyHeaderValue == config.api_key
+    return api_key_header_value == config.api_key

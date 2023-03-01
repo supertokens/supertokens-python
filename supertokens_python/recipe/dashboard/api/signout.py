@@ -25,20 +25,19 @@ from supertokens_python.querier import Querier
 from ..interfaces import SignOutOK
 
 
-# pylint: disable=unused-argument
-async def handle_signout(
-    api_implementation: APIInterface, api_options: APIOptions
+async def handle_emailpassword_signout_api(
+    _: APIInterface, api_options: APIOptions
 ) -> SignOutOK:
     if api_options.config.auth_mode == "api-key":
         return SignOutOK()
-    sessionIdFormAuthHeader = api_options.request.get_header("authorization")
-    if not sessionIdFormAuthHeader:
+    session_id_form_auth_header = api_options.request.get_header("authorization")
+    if not session_id_form_auth_header:
         return raise_bad_input_exception(
             "Neither 'API Key' nor 'Authorization' header was found"
         )
-    sessionIdFormAuthHeader = sessionIdFormAuthHeader.split()[1]
+    session_id_form_auth_header = session_id_form_auth_header.split()[1]
     await Querier.get_instance().send_delete_request(
         NormalisedURLPath("/recipe/dashboard/session"),
-        {"sessionId": sessionIdFormAuthHeader},
+        {"sessionId": session_id_form_auth_header},
     )
     return SignOutOK()

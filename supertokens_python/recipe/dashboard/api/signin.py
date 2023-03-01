@@ -24,17 +24,18 @@ from supertokens_python.querier import Querier
 from supertokens_python.utils import send_200_response
 
 
-# pylint: disable=unused-argument
-async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptions):
     body = await api_options.request.form_data()
+    email = body.get("email")
+    password = body.get("password")
 
-    if not body["email"]:
+    if email is None or not isinstance(email, str):
         raise_bad_input_exception("Missing required parameter 'email'")
-    if not body["password"]:
+    if password is None or not isinstance(password, str):
         raise_bad_input_exception("Missing required parameter 'password'")
     response = await Querier.get_instance().send_post_request(
         NormalisedURLPath("/recipe/dashboard/signin"),
-        {"email": body["email"], "password": body["password"]},
+        {"email": email, "password": password},
     )
 
     if "status" in response and response["status"] == "OK":

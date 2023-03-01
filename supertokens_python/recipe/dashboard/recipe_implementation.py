@@ -21,7 +21,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 
 from .interfaces import RecipeInterface
-from .utils import DashboardConfig, validate_APIKey
+from .utils import DashboardConfig, validate_api_key
 
 
 class RecipeImplementation(RecipeInterface):
@@ -35,20 +35,20 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -> bool:
         if not config.api_key:
-            authHeaderValue = request.get_header("authorization")
+            auth_header_value = request.get_header("authorization")
 
-            if not authHeaderValue:
+            if not auth_header_value:
                 return False
 
-            authHeaderValue = authHeaderValue.split()[1]
-            sessionVerificationResponse = (
+            auth_header_value = auth_header_value.split()[1]
+            session_verification_response = (
                 await Querier.get_instance().send_post_request(
                     NormalisedURLPath("/recipe/dashboard/session/verify"),
-                    {"sessionId": authHeaderValue},
+                    {"sessionId": auth_header_value},
                 )
             )
             return (
-                "status" in sessionVerificationResponse
-                and sessionVerificationResponse["status"] == "OK"
+                "status" in session_verification_response
+                and session_verification_response["status"] == "OK"
             )
-        return validate_APIKey(request, config)
+        return validate_api_key(request, config)

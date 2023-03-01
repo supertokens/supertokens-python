@@ -288,5 +288,7 @@ class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
 
 
 class SignOutOK(APIResponse):
+    status: str = "OK"
+
     def to_json(self):
-        return {"status": "OK"}
+        return {"status": self.status}
