@@ -60,7 +60,8 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
-    from supertokens_python.recipe import dashboard
+
+    # from supertokens_python.recipe import dashboard
 
 import json
 from os import environ
@@ -203,11 +204,11 @@ class Supertokens:
             map(lambda func: func(self.app_info), recipe_list)
         )
 
-        filtered = list(
-            filter(lambda func: isinstance(func, type(dashboard.init)), recipe_list)
-        )
-        if len(filtered) == 0:
-            self.recipe_modules.append(dashboard.init(None)(self.app_info))
+        # filtered = list(
+        #     filter(lambda func: isinstance(func, type(dashboard.init)), recipe_list)
+        # )
+        # if len(filtered) == 0:
+        #     self.recipe_modules.append(dashboard.init(None)(self.app_info))
 
         if telemetry is None:
             # If telemetry is not provided, enable it by default for production environment
