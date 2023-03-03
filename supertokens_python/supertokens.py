@@ -49,10 +49,10 @@ from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     execute_async,
     get_rid_from_header,
+    get_top_level_domain_for_same_site_resolution,
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
-    get_top_level_domain_for_same_site_resolution,
 )
 
 if TYPE_CHECKING:
@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
+    from .recipe import dashboard
 
 import json
 from os import environ
@@ -201,6 +202,12 @@ class Supertokens:
         self.recipe_modules: List[RecipeModule] = list(
             map(lambda func: func(self.app_info), recipe_list)
         )
+
+        filtered = list(
+            filter(lambda func: isinstance(func, type(dashboard.init)), recipe_list)
+        )
+        if len(filtered) == 0:
+            self.recipe_modules.append(dashboard.init(None)(self.app_info))
 
         if telemetry is None:
             # If telemetry is not provided, enable it by default for production environment
