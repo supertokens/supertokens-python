@@ -61,8 +61,6 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
 
-    # from supertokens_python.recipe import dashboard
-
 import json
 from os import environ
 
@@ -203,12 +201,16 @@ class Supertokens:
         self.recipe_modules: List[RecipeModule] = list(
             map(lambda func: func(self.app_info), recipe_list)
         )
+        # Global import for the following was avoided because of circular import errors
+        # ! below code for initializing dashboard by default, curretnly not done because of major refactoring required to make this viable
+        # from supertokens_python.recipe.dashboard import init as dashboard_init
 
-        # filtered = list(
-        #     filter(lambda func: isinstance(func, type(dashboard.init)), recipe_list)
+        # is_dashboard_initialised = (
+        #     len([r for r in self.recipe_modules if r.get_recipe_id() == "dashboard"])
+        #     == 1
         # )
-        # if len(filtered) == 0:
-        #     self.recipe_modules.append(dashboard.init(None)(self.app_info))
+        # if not is_dashboard_initialised:
+        #     self.recipe_modules.append(dashboard_init()(self.app_info))
 
         if telemetry is None:
             # If telemetry is not provided, enable it by default for production environment

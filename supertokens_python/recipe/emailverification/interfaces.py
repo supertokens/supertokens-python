@@ -14,16 +14,17 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.types import APIResponse, GeneralErrorResponse
+
 from ..session.interfaces import SessionContainer
-from ...supertokens import AppInfo
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
+    from ...supertokens import AppInfo
     from .types import User, VerificationEmailTemplateVars
     from .utils import EmailVerificationConfig
 

@@ -19,12 +19,13 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
 from supertokens_python.types import User
 
-from ...supertokens import AppInfo
 from ...types import APIResponse
-from .utils import DashboardConfig, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+
+    from ...supertokens import AppInfo
+    from .utils import DashboardConfig, UserWithMetadata
 
 
 class SessionInfo:

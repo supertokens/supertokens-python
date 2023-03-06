@@ -2,6 +2,8 @@ import os
 from typing import Any, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
+from typing_extensions import Literal
+
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
@@ -14,7 +16,7 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     userroles,
 )
-from supertokens_python.recipe.dashboard import DashboardRecipe
+from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
@@ -85,7 +87,6 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
 )
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.types import GeneralErrorResponse
-from typing_extensions import Literal
 
 from .store import save_code, save_url_with_token
 

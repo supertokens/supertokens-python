@@ -14,24 +14,27 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
+from typing_extensions import Literal
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import APIResponse, GeneralErrorResponse
-from typing_extensions import Literal
 
 # if TYPE_CHECKING:
 from .types import (
     DeviceType,
-    SMSDeliveryIngredient,
     PasswordlessLoginEmailTemplateVars,
     PasswordlessLoginSMSTemplateVars,
+    SMSDeliveryIngredient,
     User,
 )
 from .utils import PasswordlessConfig
-from ...supertokens import AppInfo
+
+if TYPE_CHECKING:
+    from ...supertokens import AppInfo
 
 
 class CreateCodeOkResult:

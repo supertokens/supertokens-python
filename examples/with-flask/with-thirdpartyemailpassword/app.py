@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, abort, g, jsonify
 from flask_cors import CORS
+
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -11,9 +12,9 @@ from supertokens_python import (
 )
 from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import (
+    emailverification,
     session,
     thirdpartyemailpassword,
-    emailverification,
 )
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.thirdpartyemailpassword import (

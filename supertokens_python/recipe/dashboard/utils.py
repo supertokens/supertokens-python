@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
+    from ...supertokens import AppInfo
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -46,7 +47,6 @@ from supertokens_python.types import User
 from supertokens_python.utils import Awaitable
 
 from ...normalised_url_path import NormalisedURLPath
-from ...supertokens import AppInfo
 from .constants import (
     DASHBOARD_API,
     EMAIL_PASSSWORD_SIGNOUT,
