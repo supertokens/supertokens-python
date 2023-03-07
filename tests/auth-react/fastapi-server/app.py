@@ -25,6 +25,8 @@ from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
+from typing_extensions import Literal
+
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -44,7 +46,7 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     userroles,
 )
-from supertokens_python.recipe.dashboard import DashboardRecipe
+from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
@@ -131,7 +133,6 @@ from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
 )
 from supertokens_python.types import GeneralErrorResponse
-from typing_extensions import Literal
 
 load_dotenv()
 

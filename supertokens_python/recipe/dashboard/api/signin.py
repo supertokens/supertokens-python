@@ -18,6 +18,39 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 
-# pylint: disable=unused-argument
-async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIOptions):
-    pass
+from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+from supertokens_python.utils import send_200_response
+
+
+async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptions):
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception("Please send body")
+    email = body.get("email")
+    password = body.get("password")
+
+    if email is None or not isinstance(email, str):
+        raise_bad_input_exception("Missing required parameter 'email'")
+    if password is None or not isinstance(password, str):
+        raise_bad_input_exception("Missing required parameter 'password'")
+    response = await Querier.get_instance().send_post_request(
+        NormalisedURLPath("/recipe/dashboard/signin"),
+        {"email": email, "password": password},
+    )
+
+    if "status" in response and response["status"] == "OK":
+        return send_200_response(
+            {"status": "OK", "sessionId": response["sessionId"]}, api_options.response
+        )
+    if "status" in response and response["status"] == "INVALID_CREDENTIALS_ERROR":
+        return send_200_response(
+            {"status": "INVALID_CREDENTIALS_ERROR"},
+            api_options.response,
+        )
+    if "status" in response and response["status"] == "USER_SUSPENDED_ERROR":
+        return send_200_response(
+            {"status": "USER_SUSPENDED_ERROR", "message": response["message"]},
+            api_options.response,
+        )

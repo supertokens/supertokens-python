@@ -13,7 +13,6 @@
 # under the License.
 import asyncio
 from datetime import datetime, timezone
-from urllib.parse import unquote
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
 from shutil import rmtree
@@ -21,14 +20,15 @@ from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
 from typing import Any, Dict, List, cast
+from urllib.parse import unquote
 
+from fastapi.testclient import TestClient
 from requests.models import Response
 from yaml import FullLoader, dump, load
 
-from fastapi.testclient import TestClient
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
-from supertokens_python.recipe.dashboard import DashboardRecipe
+from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
@@ -492,7 +492,6 @@ def min_api_version(min_version: str) -> Any:
 
 # Import AsyncMock
 import sys
-
 from unittest.mock import MagicMock
 
 if sys.version_info >= (3, 8):

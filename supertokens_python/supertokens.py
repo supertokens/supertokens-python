@@ -49,10 +49,10 @@ from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     execute_async,
     get_rid_from_header,
+    get_top_level_domain_for_same_site_resolution,
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
-    get_top_level_domain_for_same_site_resolution,
 )
 
 if TYPE_CHECKING:

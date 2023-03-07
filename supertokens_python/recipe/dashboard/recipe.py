@@ -23,11 +23,11 @@ from .api import (
     api_key_protector,
     handle_dashboard_api,
     handle_email_verify_token_post,
+    handle_emailpassword_signin_api,
+    handle_emailpassword_signout_api,
     handle_metadata_get,
     handle_metadata_put,
     handle_sessions_get,
-    handle_sign_in_api,
-    handle_signout,
     handle_user_delete,
     handle_user_email_verify_get,
     handle_user_email_verify_put,
@@ -141,7 +141,9 @@ class DashboardRecipe(RecipeModule):
         if request_id == VALIDATE_KEY_API:
             return await handle_validate_key_api(self.api_implementation, api_options)
         if request_id == EMAIL_PASSWORD_SIGN_IN:
-            return await handle_sign_in_api(self.api_implementation, api_options)
+            return await handle_emailpassword_signin_api(
+                self.api_implementation, api_options
+            )
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
@@ -178,7 +180,7 @@ class DashboardRecipe(RecipeModule):
         elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
             api_function = handle_email_verify_token_post
         elif request_id == EMAIL_PASSSWORD_SIGNOUT:
-            api_function = handle_signout
+            api_function = handle_emailpassword_signout_api
 
         if api_function is not None:
             return await api_key_protector(

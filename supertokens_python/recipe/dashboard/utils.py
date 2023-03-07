@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
+    from ...supertokens import AppInfo
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -46,7 +47,6 @@ from supertokens_python.types import User
 from supertokens_python.utils import Awaitable
 
 from ...normalised_url_path import NormalisedURLPath
-from ...supertokens import AppInfo
 from .constants import (
     DASHBOARD_API,
     EMAIL_PASSSWORD_SIGNOUT,
@@ -394,8 +394,10 @@ def is_recipe_initialised(recipeId: str) -> bool:
     return isRecipeInitialised
 
 
-def validate_APIKey(req: BaseRequest, config: DashboardConfig) -> bool:
-    apiKeyHeaderValue = req.get_header("authorization")
-    if not apiKeyHeaderValue:
+def validate_api_key(req: BaseRequest, config: DashboardConfig) -> bool:
+    api_key_header_value = req.get_header("authorization")
+    if not api_key_header_value:
         return False
-    return apiKeyHeaderValue == config.api_key
+    # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+    api_key_header_value = api_key_header_value.split(" ")[1]
+    return api_key_header_value == config.api_key
