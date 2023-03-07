@@ -400,5 +400,4 @@ def validate_api_key(req: BaseRequest, config: DashboardConfig) -> bool:
         return False
     # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
     api_key_header_value = api_key_header_value.split(" ")[1]
-    print(config.api_key)
     return api_key_header_value == config.api_key
