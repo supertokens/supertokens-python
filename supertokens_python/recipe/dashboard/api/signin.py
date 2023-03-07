@@ -51,6 +51,6 @@ async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptio
         )
     if "status" in response and response["status"] == "USER_SUSPENDED_ERROR":
         return send_200_response(
-            {"status": "USER_SUSPENDED_ERROR"},
+            {"status": "USER_SUSPENDED_ERROR", "message": response["message"]},
             api_options.response,
         )
