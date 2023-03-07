@@ -23,7 +23,7 @@ SUPPORTED_CDI_VERSIONS = [
     "2.17",
     "2.18",
 ]
-VERSION = "0.12.2"
+VERSION = "0.12.3"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
