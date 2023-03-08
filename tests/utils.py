@@ -28,7 +28,7 @@ from yaml import FullLoader, dump, load
 
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
-from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
+from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
@@ -476,7 +476,6 @@ def min_api_version(min_version: str) -> Any:
     """
     Skips the test if the local ST core doesn't satisfy
     version requirements for the tests.
-
     Fetches the core version only once throughout the testing session.
     """
 
@@ -528,7 +527,6 @@ def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
 
 def is_subset(dict1: Any, dict2: Any) -> bool:
     """Check if dict2 is subset of dict1 in a nested manner
-
     Iteratively compares list items with recursion if key's value is a list
     """
     if isinstance(dict1, list):

@@ -20,14 +20,13 @@ if TYPE_CHECKING:
     from supertokens_python import AppInfo, RecipeModule
     from supertokens_python.recipe.dashboard.utils import InputOverrideConfig
 
+from .recipe import DashboardRecipe
+
 
 def init(
     api_key: Union[str, None] = None,
     override: Optional[InputOverrideConfig] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
-    # Global import for the following was avoided because of circular import errors
-    from .recipe import DashboardRecipe
-
     return DashboardRecipe.init(
         api_key,
         override,

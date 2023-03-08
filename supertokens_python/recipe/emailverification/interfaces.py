@@ -19,12 +19,12 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Unio
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
+from ...supertokens import AppInfo
 from ..session.interfaces import SessionContainer
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
-    from ...supertokens import AppInfo
     from .types import User, VerificationEmailTemplateVars
     from .utils import EmailVerificationConfig
 

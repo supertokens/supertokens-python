@@ -34,7 +34,7 @@ class RecipeImplementation(RecipeInterface):
         config: DashboardConfig,
         user_context: Dict[str, Any],
     ) -> bool:
-        if not config.api_key:
+        if config.auth_mode == "email-password":
             auth_header_value = request.get_header("authorization")
 
             if not auth_header_value:
