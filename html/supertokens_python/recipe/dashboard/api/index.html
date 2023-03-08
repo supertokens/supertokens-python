@@ -41,6 +41,8 @@
 # under the License.
 from .api_key_protector import api_key_protector
 from .dashboard import handle_dashboard_api
+from .signin import handle_emailpassword_signin_api
+from .signout import handle_emailpassword_signout_api
 from .userdetails.user_delete import handle_user_delete
 from .userdetails.user_email_verify_get import handle_user_email_verify_get
 from .userdetails.user_email_verify_put import handle_user_email_verify_put
@@ -73,6 +75,8 @@ __all__ = [
     &#34;handle_user_sessions_post&#34;,
     &#34;handle_user_password_put&#34;,
     &#34;handle_email_verify_token_post&#34;,
+    &#34;handle_emailpassword_signin_api&#34;,
+    &#34;handle_emailpassword_signout_api&#34;,
 ]</code></pre>
 </details>
 </section>
@@ -84,6 +88,14 @@ __all__ = [
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.signin" href="signin.html">supertokens_python.recipe.dashboard.api.signin</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.signout" href="signout.html">supertokens_python.recipe.dashboard.api.signout</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -212,6 +224,74 @@ __all__ = [
     )
 
     return UserEmailVerifyTokenPostAPIOkResponse()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api"><code class="name flex">
+<span>async def <span class="ident">handle_emailpassword_signin_api</span></span>(<span>_: APIInterface, api_options: APIOptions)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptions):
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please send body&#34;)
+    email = body.get(&#34;email&#34;)
+    password = body.get(&#34;password&#34;)
+
+    if email is None or not isinstance(email, str):
+        raise_bad_input_exception(&#34;Missing required parameter &#39;email&#39;&#34;)
+    if password is None or not isinstance(password, str):
+        raise_bad_input_exception(&#34;Missing required parameter &#39;password&#39;&#34;)
+    response = await Querier.get_instance().send_post_request(
+        NormalisedURLPath(&#34;/recipe/dashboard/signin&#34;),
+        {&#34;email&#34;: email, &#34;password&#34;: password},
+    )
+
+    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
+        return send_200_response(
+            {&#34;status&#34;: &#34;OK&#34;, &#34;sessionId&#34;: response[&#34;sessionId&#34;]}, api_options.response
+        )
+    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;INVALID_CREDENTIALS_ERROR&#34;:
+        return send_200_response(
+            {&#34;status&#34;: &#34;INVALID_CREDENTIALS_ERROR&#34;},
+            api_options.response,
+        )
+    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;USER_SUSPENDED_ERROR&#34;:
+        return send_200_response(
+            {&#34;status&#34;: &#34;USER_SUSPENDED_ERROR&#34;, &#34;message&#34;: response[&#34;message&#34;]},
+            api_options.response,
+        )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api"><code class="name flex">
+<span>async def <span class="ident">handle_emailpassword_signout_api</span></span>(<span>_: APIInterface, api_options: APIOptions) ‑> SignOutOK</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_emailpassword_signout_api(
+    _: APIInterface, api_options: APIOptions
+) -&gt; SignOutOK:
+    if api_options.config.auth_mode == &#34;api-key&#34;:
+        return SignOutOK()
+    session_id_form_auth_header = api_options.request.get_header(&#34;authorization&#34;)
+    if not session_id_form_auth_header:
+        return raise_bad_input_exception(
+            &#34;Neither &#39;API Key&#39; nor &#39;Authorization&#39; header was found&#34;
+        )
+    session_id_form_auth_header = session_id_form_auth_header.split()[1]
+    await Querier.get_instance().send_delete_request(
+        NormalisedURLPath(&#34;/recipe/dashboard/session&#34;),
+        {&#34;sessionId&#34;: session_id_form_auth_header},
+    )
+    return SignOutOK()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_metadata_get"><code class="name flex">
@@ -824,7 +904,7 @@ __all__ = [
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_validate_key_api"><code class="name flex">
-<span>async def <span class="ident">handle_validate_key_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions)</span>
+<span>async def <span class="ident">handle_validate_key_api</span></span>(<span>_api_implementation: APIInterface, api_options: APIOptions)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -833,21 +913,14 @@ __all__ = [
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_validate_key_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    _api_implementation: APIInterface, api_options: APIOptions
 ):
-    _ = api_implementation
 
-    should_allow_accesss = await api_options.recipe_implementation.should_allow_access(
-        api_options.request,
-        api_options.config,
-        default_user_context(api_options.request),
-    )
-    if should_allow_accesss is False:
-        return send_non_200_response_with_message(
-            &#34;Unauthorized access&#34;, 401, api_options.response
-        )
+    is_valid_key = validate_api_key(api_options.request, api_options.config)
 
-    return send_200_response({&#34;status&#34;: &#34;OK&#34;}, api_options.response)</code></pre>
+    if is_valid_key:
+        return send_200_response({&#34;status&#34;: &#34;OK&#34;}, api_options.response)
+    return send_non_200_response_with_message(&#34;Unauthorised&#34;, 401, api_options.response)</code></pre>
 </details>
 </dd>
 </dl>
@@ -870,6 +943,8 @@ __all__ = [
 <ul>
 <li><code><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.signin" href="signin.html">supertokens_python.recipe.dashboard.api.signin</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.signout" href="signout.html">supertokens_python.recipe.dashboard.api.signout</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.userdetails" href="userdetails/index.html">supertokens_python.recipe.dashboard.api.userdetails</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.users_count_get" href="users_count_get.html">supertokens_python.recipe.dashboard.api.users_count_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.users_get" href="users_get.html">supertokens_python.recipe.dashboard.api.users_get</a></code></li>
@@ -881,6 +956,8 @@ __all__ = [
 <li><code><a title="supertokens_python.recipe.dashboard.api.api_key_protector" href="#supertokens_python.recipe.dashboard.api.api_key_protector">api_key_protector</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_dashboard_api" href="#supertokens_python.recipe.dashboard.api.handle_dashboard_api">handle_dashboard_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_email_verify_token_post" href="#supertokens_python.recipe.dashboard.api.handle_email_verify_token_post">handle_email_verify_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api">handle_emailpassword_signin_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api">handle_emailpassword_signout_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_get" href="#supertokens_python.recipe.dashboard.api.handle_metadata_get">handle_metadata_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_put" href="#supertokens_python.recipe.dashboard.api.handle_metadata_put">handle_metadata_put</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_sessions_get" href="#supertokens_python.recipe.dashboard.api.handle_sessions_get">handle_sessions_get</a></code></li>

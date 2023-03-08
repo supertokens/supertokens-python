@@ -50,28 +50,22 @@ if TYPE_CHECKING:
     )
 
 from supertokens_python.utils import (
-    default_user_context,
     send_200_response,
     send_non_200_response_with_message,
 )
 
+from ..utils import validate_api_key
+
 
 async def handle_validate_key_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    _api_implementation: APIInterface, api_options: APIOptions
 ):
-    _ = api_implementation
 
-    should_allow_accesss = await api_options.recipe_implementation.should_allow_access(
-        api_options.request,
-        api_options.config,
-        default_user_context(api_options.request),
-    )
-    if should_allow_accesss is False:
-        return send_non_200_response_with_message(
-            &#34;Unauthorized access&#34;, 401, api_options.response
-        )
+    is_valid_key = validate_api_key(api_options.request, api_options.config)
 
-    return send_200_response({&#34;status&#34;: &#34;OK&#34;}, api_options.response)</code></pre>
+    if is_valid_key:
+        return send_200_response({&#34;status&#34;: &#34;OK&#34;}, api_options.response)
+    return send_non_200_response_with_message(&#34;Unauthorised&#34;, 401, api_options.response)</code></pre>
 </details>
 </section>
 <section>
@@ -82,7 +76,7 @@ async def handle_validate_key_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.validate_key.handle_validate_key_api"><code class="name flex">
-<span>async def <span class="ident">handle_validate_key_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions)</span>
+<span>async def <span class="ident">handle_validate_key_api</span></span>(<span>_api_implementation: APIInterface, api_options: APIOptions)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -91,21 +85,14 @@ async def handle_validate_key_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_validate_key_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    _api_implementation: APIInterface, api_options: APIOptions
 ):
-    _ = api_implementation
 
-    should_allow_accesss = await api_options.recipe_implementation.should_allow_access(
-        api_options.request,
-        api_options.config,
-        default_user_context(api_options.request),
-    )
-    if should_allow_accesss is False:
-        return send_non_200_response_with_message(
-            &#34;Unauthorized access&#34;, 401, api_options.response
-        )
+    is_valid_key = validate_api_key(api_options.request, api_options.config)
 
-    return send_200_response({&#34;status&#34;: &#34;OK&#34;}, api_options.response)</code></pre>
+    if is_valid_key:
+        return send_200_response({&#34;status&#34;: &#34;OK&#34;}, api_options.response)
+    return send_non_200_response_with_message(&#34;Unauthorised&#34;, 401, api_options.response)</code></pre>
 </details>
 </dd>
 </dl>

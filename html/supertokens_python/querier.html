@@ -194,11 +194,18 @@ class Querier:
 
         return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))
 
-    async def send_delete_request(self, path: NormalisedURLPath):
+    async def send_delete_request(
+        self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+    ):
+        if params is None:
+            params = {}
+
         async def f(url: str) -&gt; Response:
             async with AsyncClient() as client:
                 return await client.delete(  # type:ignore
-                    url, headers=await self.__get_headers_with_api_version(path)
+                    url,
+                    params=params,
+                    headers=await self.__get_headers_with_api_version(path),
                 )
 
         return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))
@@ -421,11 +428,18 @@ class Querier:
 
         return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))
 
-    async def send_delete_request(self, path: NormalisedURLPath):
+    async def send_delete_request(
+        self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+    ):
+        if params is None:
+            params = {}
+
         async def f(url: str) -&gt; Response:
             async with AsyncClient() as client:
                 return await client.delete(  # type:ignore
-                    url, headers=await self.__get_headers_with_api_version(path)
+                    url,
+                    params=params,
+                    headers=await self.__get_headers_with_api_version(path),
                 )
 
         return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))
@@ -621,7 +635,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_delete_request"><code class="name flex">
-<span>async def <span class="ident">send_delete_request</span></span>(<span>self, path: NormalisedURLPath)</span>
+<span>async def <span class="ident">send_delete_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -629,11 +643,18 @@ def reset():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_delete_request(self, path: NormalisedURLPath):
+<pre><code class="python">async def send_delete_request(
+    self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+):
+    if params is None:
+        params = {}
+
     async def f(url: str) -&gt; Response:
         async with AsyncClient() as client:
             return await client.delete(  # type:ignore
-                url, headers=await self.__get_headers_with_api_version(path)
+                url,
+                params=params,
+                headers=await self.__get_headers_with_api_version(path),
             )
 
     return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))</code></pre>
