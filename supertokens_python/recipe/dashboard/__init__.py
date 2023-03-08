@@ -14,16 +14,17 @@
 
 from __future__ import annotations
 
-from typing import Optional, Callable
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
-from supertokens_python import AppInfo, RecipeModule
-from supertokens_python.recipe.dashboard.utils import InputOverrideConfig
+if TYPE_CHECKING:
+    from supertokens_python import AppInfo, RecipeModule
+    from supertokens_python.recipe.dashboard.utils import InputOverrideConfig
 
 from .recipe import DashboardRecipe
 
 
 def init(
-    api_key: str,
+    api_key: Union[str, None] = None,
     override: Optional[InputOverrideConfig] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return DashboardRecipe.init(

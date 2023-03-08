@@ -15,6 +15,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
+if TYPE_CHECKING:
+    from supertokens_python.framework.request import BaseRequest
+    from ...supertokens import AppInfo
+
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
     get_user_by_id as ep_get_user_by_id,
@@ -43,9 +47,10 @@ from supertokens_python.types import User
 from supertokens_python.utils import Awaitable
 
 from ...normalised_url_path import NormalisedURLPath
-from ...supertokens import AppInfo
 from .constants import (
     DASHBOARD_API,
+    EMAIL_PASSSWORD_SIGNOUT,
+    EMAIL_PASSWORD_SIGN_IN,
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_EMAIL_VERIFY_TOKEN_API,
@@ -162,21 +167,18 @@ class OverrideConfig:
 
 class DashboardConfig:
     def __init__(
-        self,
-        api_key: str,
-        override: OverrideConfig,
+        self, api_key: Union[str, None], override: OverrideConfig, auth_mode: str
     ):
         self.api_key = api_key
         self.override = override
+        self.auth_mode = auth_mode
 
 
 def validate_and_normalise_user_input(
     # app_info: AppInfo,
-    api_key: str,
+    api_key: Union[str, None],
     override: Optional[InputOverrideConfig] = None,
 ) -> DashboardConfig:
-    if api_key.strip() == "":
-        raise Exception("apiKey provided to Dashboard recipe cannot be empty")
 
     if override is None:
         override = InputOverrideConfig()
@@ -187,6 +189,7 @@ def validate_and_normalise_user_input(
             functions=override.functions,
             apis=override.apis,
         ),
+        "api-key" if api_key else "email-password",
     )
 
 
@@ -230,6 +233,10 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return USER_PASSWORD_API
     if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == "post":
         return USER_EMAIL_VERIFY_TOKEN_API
+    if path_str.endswith(EMAIL_PASSWORD_SIGN_IN) and method == "post":
+        return EMAIL_PASSWORD_SIGN_IN
+    if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == "post":
+        return EMAIL_PASSSWORD_SIGNOUT
 
     return None
 
@@ -385,3 +392,12 @@ def is_recipe_initialised(recipeId: str) -> bool:
                 pass
 
     return isRecipeInitialised
+
+
+def validate_api_key(req: BaseRequest, config: DashboardConfig) -> bool:
+    api_key_header_value = req.get_header("authorization")
+    if not api_key_header_value:
+        return False
+    # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+    api_key_header_value = api_key_header_value.split(" ")[1]
+    return api_key_header_value == config.api_key

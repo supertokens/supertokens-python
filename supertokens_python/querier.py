@@ -166,11 +166,18 @@ class Querier:
 
         return await self.__send_request_helper(path, "POST", f, len(self.__hosts))
 
-    async def send_delete_request(self, path: NormalisedURLPath):
+    async def send_delete_request(
+        self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+    ):
+        if params is None:
+            params = {}
+
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
                 return await client.delete(  # type:ignore
-                    url, headers=await self.__get_headers_with_api_version(path)
+                    url,
+                    params=params,
+                    headers=await self.__get_headers_with_api_version(path),
                 )
 
         return await self.__send_request_helper(path, "DELETE", f, len(self.__hosts))

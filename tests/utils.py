@@ -13,7 +13,6 @@
 # under the License.
 import asyncio
 from datetime import datetime, timezone
-from urllib.parse import unquote
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
 from shutil import rmtree
@@ -21,11 +20,12 @@ from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
 from typing import Any, Dict, List, cast
+from urllib.parse import unquote
 
+from fastapi.testclient import TestClient
 from requests.models import Response
 from yaml import FullLoader, dump, load
 
-from fastapi.testclient import TestClient
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard import DashboardRecipe
@@ -476,7 +476,6 @@ def min_api_version(min_version: str) -> Any:
     """
     Skips the test if the local ST core doesn't satisfy
     version requirements for the tests.
-
     Fetches the core version only once throughout the testing session.
     """
 
@@ -492,7 +491,6 @@ def min_api_version(min_version: str) -> Any:
 
 # Import AsyncMock
 import sys
-
 from unittest.mock import MagicMock
 
 if sys.version_info >= (3, 8):
@@ -529,7 +527,6 @@ def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
 
 def is_subset(dict1: Any, dict2: Any) -> bool:
     """Check if dict2 is subset of dict1 in a nested manner
-
     Iteratively compares list items with recursion if key's value is a list
     """
     if isinstance(dict1, list):

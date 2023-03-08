@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Optional, Union
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
 from flask_cors import CORS
+from typing_extensions import Literal
+
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -124,7 +126,6 @@ from supertokens_python.recipe.userroles.syncio import (
     create_new_role_or_add_permissions,
 )
 from supertokens_python.types import GeneralErrorResponse
-from typing_extensions import Literal
 
 load_dotenv()
 
