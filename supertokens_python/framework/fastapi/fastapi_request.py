@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
@@ -34,6 +34,9 @@ class FastApiRequest(BaseRequest):
         self, key: str, default: Union[str, None] = None
     ) -> Union[str, None]:
         return self.request.query_params.get(key, default)
+
+    def get_query_params(self) -> Dict[str, Any]:
+        return dict(self.request.query_params.items())  # type: ignore
 
     async def json(self) -> Union[Any, None]:
         try:
