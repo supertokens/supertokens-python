@@ -238,7 +238,7 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return EMAIL_PASSWORD_SIGN_IN
     if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == "post":
         return EMAIL_PASSSWORD_SIGNOUT
-    if path_str.endswith(SEARCH_TAGS_API) and method == "post":
+    if path_str.endswith(SEARCH_TAGS_API) and method == "get":
         return SEARCH_TAGS_API
 
     return None
