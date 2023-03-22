@@ -17,14 +17,14 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
-    from supertokens_python.types import APIResponse
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.dashboard.interfaces import SearchTagsOK
 
 
-async def handle_get_tags(_: APIInterface, __: APIOptions) -> APIResponse:
+async def handle_get_tags(_: APIInterface, __: APIOptions) -> SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
         NormalisedURLPath("/user/search/tags")
     )
-    return response
+    return SearchTagsOK(tags=response["tags"])
