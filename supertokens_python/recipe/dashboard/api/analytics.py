@@ -57,7 +57,12 @@ async def handle_analytics_post(
             NormalisedURLPath("/telemetry")
         )
         if response is not None:
-            telemetry_id = response["telemetryId"]
+            if (
+                "exists" in response
+                and response["exists"]
+                and "telemetryId" in response
+            ):
+                telemetry_id = response["telemetryId"]
 
         number_of_users = await Supertokens.get_instance().get_user_count(
             include_recipe_ids=None
@@ -74,16 +79,18 @@ async def handle_analytics_post(
     )
 
     data = {
-        "websiteDomain": websiteDomain,
-        "apiDomain": apiDomain,
+        "websiteDomain": websiteDomain.get_as_string_dangerous(),
+        "apiDomain": apiDomain.get_as_string_dangerous(),
         "appName": appName,
         "sdk": "supertokens-python",
         "sdkVersion": SDKVersion,
-        "telemetryId": telemetry_id,
         "numberOfUsers": number_of_users,
         "email": email,
         "dashboardVersion": dashboard_version,
     }
+
+    if telemetry_id is not None:
+        data["telemetryId"] = telemetry_id
 
     try:
         async with AsyncClient() as client:
