@@ -293,3 +293,10 @@ class SignOutOK(APIResponse):
 
     def to_json(self):
         return {"status": self.status}
+
+
+class AnalyticsResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
