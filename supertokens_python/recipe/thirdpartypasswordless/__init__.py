@@ -39,6 +39,7 @@ Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
 Bitbucket = thirdparty.Bitbucket
+GitLab = thirdparty.GitLab
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig

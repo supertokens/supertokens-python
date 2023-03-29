@@ -18,3 +18,4 @@ from .github import Github  # type: ignore
 from .google import Google  # type: ignore
 from .google_workspaces import GoogleWorkspaces  # type: ignore
 from .bitbucket import Bitbucket  # type: ignore
+from .gitlab import GitLab  # type: ignore

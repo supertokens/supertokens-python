@@ -36,6 +36,7 @@ Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
 Bitbucket = thirdparty.Bitbucket
+GitLab = thirdparty.GitLab
 SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:

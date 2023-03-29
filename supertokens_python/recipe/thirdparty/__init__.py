@@ -30,6 +30,7 @@ Github = providers.Github
 Google = providers.Google
 GoogleWorkspaces = providers.GoogleWorkspaces
 Bitbucket = providers.Bitbucket
+GitLab = providers.GitLab
 exceptions = ex
 
 if TYPE_CHECKING:
