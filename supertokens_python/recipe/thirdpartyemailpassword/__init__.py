@@ -35,6 +35,7 @@ Facebook = thirdparty.Facebook
 Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
+Bitbucket = thirdparty.Bitbucket
 SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:

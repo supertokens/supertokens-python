@@ -29,6 +29,7 @@ Facebook = providers.Facebook
 Github = providers.Github
 Google = providers.Google
 GoogleWorkspaces = providers.GoogleWorkspaces
+Bitbucket = providers.Bitbucket
 exceptions = ex
 
 if TYPE_CHECKING:

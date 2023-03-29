@@ -38,6 +38,7 @@ Facebook = thirdparty.Facebook
 Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
+Bitbucket = thirdparty.Bitbucket
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig

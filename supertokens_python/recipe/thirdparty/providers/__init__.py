@@ -17,3 +17,4 @@ from .facebook import Facebook  # type: ignore
 from .github import Github  # type: ignore
 from .google import Google  # type: ignore
 from .google_workspaces import GoogleWorkspaces  # type: ignore
+from .bitbucket import Bitbucket  # type: ignore
