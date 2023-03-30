@@ -39,6 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from .analytics import handle_analytics_post
 from .api_key_protector import api_key_protector
 from .dashboard import handle_dashboard_api
 from .signin import handle_emailpassword_signin_api
@@ -77,12 +78,17 @@ __all__ = [
     &#34;handle_email_verify_token_post&#34;,
     &#34;handle_emailpassword_signin_api&#34;,
     &#34;handle_emailpassword_signout_api&#34;,
+    &#34;handle_analytics_post&#34;,
 ]</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.analytics" href="analytics.html">supertokens_python.recipe.dashboard.api.analytics</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -148,6 +154,87 @@ __all__ = [
 
     response = await api_function(api_implementation, api_options)
     return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_analytics_post"><code class="name flex">
+<span>async def <span class="ident">handle_analytics_post</span></span>(<span>_: APIInterface, api_options: APIOptions) ‑> AnalyticsResponse</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_analytics_post(
+    _: APIInterface, api_options: APIOptions
+) -&gt; AnalyticsResponse:
+    if not Supertokens.get_instance().telemetry:
+        return AnalyticsResponse()
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please send body&#34;)
+    email = body.get(&#34;email&#34;)
+    dashboard_version = body.get(&#34;dashboardVersion&#34;)
+
+    if email is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;email&#39;&#34;)
+    if dashboard_version is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;dashboardVersion&#39;&#34;)
+
+    telemetry_id = None
+
+    try:
+        response = await Querier.get_instance().send_get_request(
+            NormalisedURLPath(&#34;/telemetry&#34;)
+        )
+        if response is not None:
+            if (
+                &#34;exists&#34; in response
+                and response[&#34;exists&#34;]
+                and &#34;telemetryId&#34; in response
+            ):
+                telemetry_id = response[&#34;telemetryId&#34;]
+
+        number_of_users = await Supertokens.get_instance().get_user_count(
+            include_recipe_ids=None
+        )
+
+    except Exception as __:
+        # If either telemetry id API or user count fetch fails, no event should be sent
+        return AnalyticsResponse()
+
+    apiDomain, websiteDomain, appName = (
+        api_options.app_info.api_domain,
+        api_options.app_info.website_domain,
+        api_options.app_info.app_name,
+    )
+
+    data = {
+        &#34;websiteDomain&#34;: websiteDomain.get_as_string_dangerous(),
+        &#34;apiDomain&#34;: apiDomain.get_as_string_dangerous(),
+        &#34;appName&#34;: appName,
+        &#34;sdk&#34;: &#34;python&#34;,
+        &#34;sdkVersion&#34;: SDKVersion,
+        &#34;numberOfUsers&#34;: number_of_users,
+        &#34;email&#34;: email,
+        &#34;dashboardVersion&#34;: dashboard_version,
+    }
+
+    if telemetry_id is not None:
+        data[&#34;telemetryId&#34;] = telemetry_id
+
+    try:
+        async with AsyncClient() as client:
+            await client.post(  # type: ignore
+                url=TELEMETRY_SUPERTOKENS_API_URL,
+                json=data,
+                headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
+            )
+    except Exception as __:
+        # If telemetry event fails, no error should be thrown
+        pass
+
+    return AnalyticsResponse()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_dashboard_api"><code class="name flex">
@@ -941,6 +1028,7 @@ __all__ = [
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="supertokens_python.recipe.dashboard.api.analytics" href="analytics.html">supertokens_python.recipe.dashboard.api.analytics</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.signin" href="signin.html">supertokens_python.recipe.dashboard.api.signin</a></code></li>
@@ -954,6 +1042,7 @@ __all__ = [
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.api.api_key_protector" href="#supertokens_python.recipe.dashboard.api.api_key_protector">api_key_protector</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_analytics_post" href="#supertokens_python.recipe.dashboard.api.handle_analytics_post">handle_analytics_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_dashboard_api" href="#supertokens_python.recipe.dashboard.api.handle_dashboard_api">handle_dashboard_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_email_verify_token_post" href="#supertokens_python.recipe.dashboard.api.handle_email_verify_token_post">handle_email_verify_token_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api">handle_emailpassword_signin_api</a></code></li>
