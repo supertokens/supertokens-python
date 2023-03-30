@@ -24,17 +24,17 @@ SUPPORTED_CDI_VERSIONS = [
     "2.18",
     "2.19",
 ]
-VERSION = "0.12.4"
+VERSION = "0.12.5"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
 USERS = "/users"
 TELEMETRY_SUPERTOKENS_API_URL = "https://api.supertokens.com/0/st/telemetry"
-TELEMETRY_SUPERTOKENS_API_VERSION = "2"
+TELEMETRY_SUPERTOKENS_API_VERSION = "3"
 ERROR_MESSAGE_KEY = "message"
 API_KEY_HEADER = "api-key"
 RID_KEY_HEADER = "rid"
 FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.4"
+DASHBOARD_VERSION = "0.5"

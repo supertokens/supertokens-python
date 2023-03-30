@@ -21,6 +21,7 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
     api_key_protector,
+    handle_analytics_post,
     handle_dashboard_api,
     handle_email_verify_token_post,
     handle_emailpassword_signin_api,
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 
 from .constants import (
+    DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
     EMAIL_PASSSWORD_SIGNOUT,
     EMAIL_PASSWORD_SIGN_IN,
@@ -181,6 +183,9 @@ class DashboardRecipe(RecipeModule):
             api_function = handle_email_verify_token_post
         elif request_id == EMAIL_PASSSWORD_SIGNOUT:
             api_function = handle_emailpassword_signout_api
+        elif request_id == DASHBOARD_ANALYTICS_API:
+            if method == "post":
+                api_function = handle_analytics_post
 
         if api_function is not None:
             return await api_key_protector(
