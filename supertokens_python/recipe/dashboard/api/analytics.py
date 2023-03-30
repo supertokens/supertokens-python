@@ -82,7 +82,7 @@ async def handle_analytics_post(
         "websiteDomain": websiteDomain.get_as_string_dangerous(),
         "apiDomain": apiDomain.get_as_string_dangerous(),
         "appName": appName,
-        "sdk": "supertokens-python",
+        "sdk": "python",
         "sdkVersion": SDKVersion,
         "numberOfUsers": number_of_users,
         "email": email,
