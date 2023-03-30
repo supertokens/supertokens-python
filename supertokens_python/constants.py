@@ -24,7 +24,7 @@ SUPPORTED_CDI_VERSIONS = [
     "2.18",
     "2.19",
 ]
-VERSION = "0.12.4"
+VERSION = "0.12.5"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
@@ -37,4 +37,4 @@ RID_KEY_HEADER = "rid"
 FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.4"
+DASHBOARD_VERSION = "0.5"
