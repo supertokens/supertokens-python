@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+## [0.12.4] - 2023-03-29
 ### Changed
-
 - Update all example apps to initialise dashboard recipe
+
+### Added
+- Login with gitlab (single tenant only) and bitbucket
 
 ## [0.12.3] - 2023-02-27
 - Adds APIs and logic to the dashboard recipe to enable email password based login
