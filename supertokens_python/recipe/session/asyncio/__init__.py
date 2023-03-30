@@ -44,13 +44,13 @@ async def create_new_session(
     request: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
-    session_data: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
         user_context = {}
-    if session_data is None:
-        session_data = {}
+    if session_data_in_database is None:
+        session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
 
@@ -72,7 +72,7 @@ async def create_new_session(
         request,
         user_id,
         final_access_token_payload,
-        session_data,
+        session_data_in_database,
         user_context=user_context,
     )
 
@@ -336,14 +336,14 @@ async def get_session_information(
     )
 
 
-async def update_session_data(
+async def update_session_data_in_database(
     session_handle: str,
     new_session_data: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data_in_database(
         session_handle, new_session_data, user_context
     )
 

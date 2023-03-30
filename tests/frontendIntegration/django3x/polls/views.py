@@ -246,14 +246,18 @@ def functions_override_session(param: RecipeInterface):
         request: BaseRequest,
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
-        session_data: Union[Dict[str, Any], None],
+        session_data_in_database: Union[Dict[str, Any], None],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
-            request, user_id, access_token_payload, session_data, user_context
+            request,
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            user_context,
         )
 
     param.create_new_session = create_new_session_custom

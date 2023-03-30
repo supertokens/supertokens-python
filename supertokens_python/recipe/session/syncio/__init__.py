@@ -42,7 +42,7 @@ def create_new_session(
     request: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
-    session_data: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -54,7 +54,7 @@ def create_new_session(
             request,
             user_id,
             access_token_payload,
-            session_data,
+            session_data_in_database,
             user_context=user_context,
         )
     )
@@ -147,17 +147,19 @@ def get_session_information(
     return sync(async_get_session_information(session_handle, user_context))
 
 
-def update_session_data(
+def update_session_data_in_database(
     session_handle: str,
     new_session_data: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> bool:
     from supertokens_python.recipe.session.asyncio import (
-        update_session_data as async_update_session_data,
+        update_session_data_in_database as async_update_session_data_in_database,
     )
 
     return sync(
-        async_update_session_data(session_handle, new_session_data, user_context)
+        async_update_session_data_in_database(
+            session_handle, new_session_data, user_context
+        )
     )
 
 

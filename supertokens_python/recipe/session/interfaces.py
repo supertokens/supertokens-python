@@ -64,14 +64,14 @@ class SessionInformationResult:
         self,
         session_handle: str,
         user_id: str,
-        session_data: Dict[str, Any],
+        session_data_in_database: Dict[str, Any],
         expiry: int,
         access_token_payload: Dict[str, Any],
         time_created: int,
     ):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
-        self.session_data: Dict[str, Any] = session_data
+        self.session_data_in_database: Dict[str, Any] = session_data_in_database
         self.expiry: int = expiry
         self.access_token_payload: Dict[str, Any] = access_token_payload
         self.time_created: int = time_created
@@ -115,7 +115,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         request: BaseRequest,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
-        session_data: Union[None, Dict[str, Any]],
+        session_data_in_database: Union[None, Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         pass
@@ -196,7 +196,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         session_handle: str,
         new_session_data: Dict[str, Any],
@@ -373,13 +373,13 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def get_session_data(
+    async def get_session_data_from_database(
         self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         pass
 
     @abstractmethod
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         new_session_data: Dict[str, Any],
         user_context: Optional[Dict[str, Any]] = None,
@@ -475,10 +475,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     ) -> None:
         return sync(self.revoke_session(user_context=user_context))
 
-    def sync_get_session_data(
+    def sync_get_session_data_from_database(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -> Dict[str, Any]:
-        return sync(self.get_session_data(user_context))
+        return sync(self.get_session_data_from_database(user_context))
 
     def sync_get_time_created(
         self, user_context: Optional[Dict[str, Any]] = None
@@ -505,12 +505,14 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
             self.update_access_token_payload(new_access_token_payload, user_context)
         )
 
-    def sync_update_session_data(
+    def sync_update_session_data_in_database(
         self,
         new_session_data: Dict[str, Any],
         user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
-        return sync(self.update_session_data(new_session_data, user_context))
+        return sync(
+            self.update_session_data_in_database(new_session_data, user_context)
+        )
 
     # Session claims sync functions:
     def sync_assert_claims(

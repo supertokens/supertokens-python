@@ -168,7 +168,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         request: BaseRequest,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
-        session_data: Union[None, Dict[str, Any]],
+        session_data_in_database: Union[None, Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         log_debug_message("createNewSession: Started")
@@ -211,7 +211,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             user_id,
             disable_anti_csrf,
             access_token_payload,
-            session_data,
+            session_data_in_database,
         )
 
         response_mutators: List[ResponseMutator] = []
@@ -698,13 +698,13 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     ) -> Union[SessionInformationResult, None]:
         return await session_functions.get_session_information(self, session_handle)
 
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         session_handle: str,
         new_session_data: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        return await session_functions.update_session_data(
+        return await session_functions.update_session_data_in_database(
             self, session_handle, new_session_data
         )
 
