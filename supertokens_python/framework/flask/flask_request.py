@@ -31,6 +31,9 @@ class FlaskRequest(BaseRequest):
     def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
 
+    def get_query_params(self) -> Dict[str, Any]:
+        return self.request.args.to_dict()
+
     async def json(self) -> Union[Any, None]:
         try:
             return self.request.get_json()
