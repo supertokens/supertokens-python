@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from .analytics import handle_analytics_post
 from .api_key_protector import api_key_protector
 from .dashboard import handle_dashboard_api
 from .search.getTags import handle_get_tags
@@ -51,4 +52,5 @@ __all__ = [
     "handle_emailpassword_signin_api",
     "handle_emailpassword_signout_api",
     "handle_get_tags",
+    "handle_analytics_post",
 ]

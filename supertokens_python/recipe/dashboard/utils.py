@@ -48,6 +48,7 @@ from supertokens_python.utils import Awaitable
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
+    DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
     EMAIL_PASSSWORD_SIGNOUT,
     EMAIL_PASSWORD_SIGN_IN,
@@ -240,6 +241,8 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return EMAIL_PASSSWORD_SIGNOUT
     if path_str.endswith(SEARCH_TAGS_API) and method == "get":
         return SEARCH_TAGS_API
+    if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == "post":
+        return DASHBOARD_ANALYTICS_API
 
     return None
 

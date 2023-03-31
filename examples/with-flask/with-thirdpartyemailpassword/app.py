@@ -12,6 +12,7 @@ from supertokens_python import (
 )
 from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import (
+    dashboard,
     emailverification,
     session,
     thirdpartyemailpassword,
@@ -50,6 +51,7 @@ init(
     framework="flask",
     recipe_list=[
         session.init(),
+        dashboard.init(),
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[

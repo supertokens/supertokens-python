@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
+
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -14,9 +15,10 @@ from supertokens_python import (
 )
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import (
+    dashboard,
+    emailverification,
     session,
     thirdpartyemailpassword,
-    emailverification,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
@@ -56,6 +58,7 @@ init(
     framework="fastapi",
     recipe_list=[
         session.init(),
+        dashboard.init(),
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[

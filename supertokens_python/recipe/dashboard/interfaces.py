@@ -304,3 +304,10 @@ class SearchTagsOK(APIResponse):
 
     def to_json(self):
         return {"status": self.status, "tags": self.tags}
+
+
+class AnalyticsResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
