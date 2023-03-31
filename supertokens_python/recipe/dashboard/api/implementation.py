@@ -93,7 +93,7 @@ class APIImplementation(APIInterface):
                 dashboardPath=dashboard_path,
                 connectionURI=connection_uri,
                 authMode=auth_mode,
-                isSearchEnabled=is_search_enabled,
+                isSearchEnabled=str(is_search_enabled).lower(),
             )
 
         self.dashboard_get = dashboard_get
