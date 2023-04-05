@@ -39,7 +39,7 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.asyncio import (
     update_access_token_payload,
-    update_session_data,
+    update_session_data_in_database,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 from supertokens_python.recipe.session.jwt import (
@@ -216,7 +216,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         )
         assert is_updated
 
-        is_updated = await update_session_data(handle, {"foo": "bar"})
+        is_updated = await update_session_data_in_database(handle, {"foo": "bar"})
         assert is_updated
 
     # Confirm that update funcs worked:
@@ -225,7 +225,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         assert info is not None
         assert info.user_id == "someUser"
         assert info.access_token_payload == {"someKey2": "someValue"}
-        assert info.session_data == {"foo": "bar"}
+        assert info.session_data_in_database == {"foo": "bar"}
 
     # Regenerate access token with new access_token_payload
     for i, token in enumerate(access_tokens):
@@ -243,7 +243,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     # Try updating invalid handles:
     is_updated = await update_access_token_payload("invalidHandle", {"foo": "bar"})
     assert is_updated is False
-    is_updated = await update_session_data("invalidHandle", {"foo": "bar"})
+    is_updated = await update_session_data_in_database("invalidHandle", {"foo": "bar"})
     assert is_updated is False
 
 
@@ -316,7 +316,7 @@ async def test_should_use_override_functions_in_session_container_methods():
         ):
             info = await oi_get_session_information(session_handle, user_context)
             assert info is not None
-            info.session_data["foo"] = "bar"
+            info.session_data_in_database["foo"] = "bar"
             return info
 
         oi.get_session_information = get_session_information
@@ -349,7 +349,7 @@ async def test_should_use_override_functions_in_session_container_methods():
     mock_response = MagicMock()
 
     my_session = await async_create_new_session(mock_response, "test_id")
-    data = await my_session.get_session_data()
+    data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
 

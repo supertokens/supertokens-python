@@ -45,7 +45,7 @@ class Session(SessionContainer):
             )
         )
 
-    async def get_session_data(
+    async def get_session_data_from_database(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -> Dict[str, Any]:
         if user_context is None:
@@ -56,16 +56,16 @@ class Session(SessionContainer):
         if session_info is None:
             raise_unauthorised_exception("Session does not exist anymore.")
 
-        return session_info.session_data
+        return session_info.session_data_in_database
 
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         new_session_data: Dict[str, Any],
         user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
         if user_context is None:
             user_context = {}
-        updated = await self.recipe_implementation.update_session_data(
+        updated = await self.recipe_implementation.update_session_data_in_database(
             self.session_handle, new_session_data, user_context
         )
         if not updated:

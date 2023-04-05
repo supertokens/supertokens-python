@@ -32,7 +32,7 @@ class SessionInfo:
     def __init__(self, info: SessionInformationResult) -> None:
         self.session_handle = info.session_handle
         self.user_id = info.user_id
-        self.session_data = info.session_data
+        self.session_data_in_database = info.session_data_in_database
         self.expiry = info.expiry
         self.access_token_payload = info.access_token_payload
         self.time_created = info.time_created
@@ -165,7 +165,7 @@ class UserSessionsGetAPIResponse(APIResponse):
             {
                 "accessTokenPayload": s.access_token_payload,
                 "expiry": s.expiry,
-                "sessionData": s.session_data,
+                "sessionDataInDatabase": s.session_data_in_database,
                 "status": "OK",
                 "timeCreated": s.time_created,
                 "userId": s.user_id,

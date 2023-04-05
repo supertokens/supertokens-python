@@ -115,7 +115,7 @@ async def test_user_context(driver_config_client: TestClient):
             request: Any,
             user_id: str,
             access_token_payload: Union[None, Dict[str, Any]],
-            session_data: Union[None, Dict[str, Any]],
+            session_data_in_database: Union[None, Dict[str, Any]],
             user_context: Dict[str, Any],
         ):
             if (
@@ -125,7 +125,11 @@ async def test_user_context(driver_config_client: TestClient):
             ):
                 user_context["preCreateNewSession"] = True
             response = await og_create_new_session(
-                request, user_id, access_token_payload, session_data, user_context
+                request,
+                user_id,
+                access_token_payload,
+                session_data_in_database,
+                user_context,
             )
             if (
                 "preSignInPOST" in user_context
@@ -218,7 +222,7 @@ async def test_default_context(driver_config_client: TestClient):
             request: Any,
             user_id: str,
             access_token_payload: Union[None, Dict[str, Any]],
-            session_data: Union[None, Dict[str, Any]],
+            session_data_in_database: Union[None, Dict[str, Any]],
             user_context: Dict[str, Any],
         ):
             req = user_context.get("_default", {}).get("request")
@@ -227,7 +231,11 @@ async def test_default_context(driver_config_client: TestClient):
                 create_new_session_context_works = True
 
             response = await og_create_new_session(
-                request, user_id, access_token_payload, session_data, user_context
+                request,
+                user_id,
+                access_token_payload,
+                session_data_in_database,
+                user_context,
             )
             return response
 

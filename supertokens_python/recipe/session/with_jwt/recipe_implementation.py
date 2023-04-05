@@ -57,7 +57,7 @@ def get_recipe_implementation_with_jwt(
         request: BaseRequest,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
-        session_data: Union[None, Dict[str, Any]],
+        session_data_in_database: Union[None, Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         if access_token_payload is None:
@@ -78,7 +78,7 @@ def get_recipe_implementation_with_jwt(
             request,
             user_id,
             access_token_payload,
-            session_data,
+            session_data_in_database,
             user_context=user_context,
         )
         return get_session_with_jwt(session, openid_recipe_implementation)

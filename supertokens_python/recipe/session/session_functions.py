@@ -42,10 +42,10 @@ async def create_new_session(
     user_id: str,
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
-    session_data: Union[None, Dict[str, Any]],
+    session_data_in_database: Union[None, Dict[str, Any]],
 ) -> Dict[str, Any]:
-    if session_data is None:
-        session_data = {}
+    if session_data_in_database is None:
+        session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
 
@@ -58,7 +58,7 @@ async def create_new_session(
         {
             "userId": user_id,
             "userDataInJWT": access_token_payload,
-            "userDataInDatabase": session_data,
+            "userDataInDatabase": session_data_in_database,
             "enableAntiCsrf": enable_anti_csrf,
         },
     )
@@ -294,7 +294,7 @@ async def revoke_multiple_sessions(
     return response["sessionHandlesRevoked"]
 
 
-async def update_session_data(
+async def update_session_data_in_database(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_session_data: Dict[str, Any],

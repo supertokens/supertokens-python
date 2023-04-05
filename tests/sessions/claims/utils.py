@@ -27,7 +27,7 @@ def session_functions_override_with_claim(
             request: BaseRequest,
             user_id: str,
             access_token_payload: Union[None, Dict[str, Any]],
-            session_data: Union[None, Dict[str, Any]],
+            session_data_in_database: Union[None, Dict[str, Any]],
             user_context: Dict[str, Any],
         ):
             payload_update = await claim.build(user_id, user_context)
@@ -40,7 +40,11 @@ def session_functions_override_with_claim(
             }
 
             return await oi_create_new_session(
-                request, user_id, access_token_payload, session_data, user_context
+                request,
+                user_id,
+                access_token_payload,
+                session_data_in_database,
+                user_context,
             )
 
         oi.create_new_session = new_create_new_session
