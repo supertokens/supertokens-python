@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
-- Rename `get_session_data` to `get_session_data_from_database` to clarity that it always hits the DB
+- Renamed `get_session_data` to `get_session_data_from_database` to clarity that it always hits the DB
 - Renamed `update_session_data` to `update_session_data_in_database`
 - Renamed `session_data` to `session_data_in_database` in `SessionInformation` and the input to `create_new_session`
 

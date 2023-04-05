@@ -11,6 +11,6 @@ def get_session_info(request: HttpRequest) -> JsonResponse:
             "sessionHandle": session_.get_handle(),
             "userId": session_.get_user_id(),
             "accessTokenPayload": session_.get_access_token_payload(),
-            # 'sessionData': session_.get_session_data(),
+            # "sessionData": session_.sync_get_session_data_from_database(),
         }
     )
