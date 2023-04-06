@@ -42,7 +42,6 @@ class APIImplementation(APIInterface):
     ) -> SessionContainer:
         return await refresh_session_in_request(
             api_options.request,
-            # api_options.response,
             user_context,
             api_options.config,
             api_options.recipe_implementation,
@@ -80,15 +79,13 @@ class APIImplementation(APIInterface):
         if incoming_path.equals(refresh_token_path) and method == "post":
             return await refresh_session_in_request(
                 api_options.request,
-                # api_options.response,
                 user_context,
                 api_options.config,
                 api_options.recipe_implementation,
             )
 
-        return await get_session_from_request(  # FIXME:
+        return await get_session_from_request(
             api_options.request,
-            # api_options.response,
             api_options.config,
             api_options.recipe_implementation,
             user_context=user_context,

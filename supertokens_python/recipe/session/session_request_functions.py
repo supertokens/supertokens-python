@@ -53,17 +53,16 @@ from supertokens_python.utils import (
 from supertokens_python.recipe.session.interfaces import (
     RecipeInterface as SessionRecipeInterface,
     SessionClaimValidator,
-    GetSessionUnauthorizedResponse,
-    GetSessionTryRefreshTokenErrorResponse,
-    RefreshSessionOkResponse,
-    RefreshSessionTokenTheftErrorResponse,
-    RefreshSessionUnauthorizedResponse,
+    GetSessionUnauthorizedErrorResult,
+    GetSessionTryRefreshTokenErrorResult,
+    RefreshSessionOkResult,
+    RefreshSessionTokenTheftErrorResult,
+    RefreshSessionUnauthorizedResult,
 )
 
 
 async def get_session_from_request(
     request: Any,
-    # response: Any,
     config: SessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
     session_required: Optional[bool] = None,
@@ -189,7 +188,7 @@ async def get_session_from_request(
     )
 
     if isinstance(
-        result, (GetSessionTryRefreshTokenErrorResponse, GetSessionUnauthorizedResponse)
+        result, (GetSessionTryRefreshTokenErrorResult, GetSessionUnauthorizedErrorResult)
     ):
         raise result.error
 
@@ -202,7 +201,6 @@ async def get_session_from_request(
 
     await session.attach_to_request_response(
         request,
-        # response,
         request_transfer_method,
     )
 
@@ -215,7 +213,6 @@ async def get_session_from_request(
 
 async def create_new_session_in_request(
     request: Any,
-    # response: Any,
     user_context: Dict[str, Any],
     recipe_instance: SessionRecipe,
     access_token_payload: Dict[str, Any],
@@ -310,7 +307,6 @@ async def create_new_session_in_request(
 
 async def refresh_session_in_request(
     request: Any,
-    # response: Any,
     user_context: Dict[str, Any],
     config: SessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
@@ -408,11 +404,11 @@ async def refresh_session_in_request(
         refresh_token, anti_csrf_token, disable_anti_csrf, user_context
     )
 
-    if not isinstance(result, RefreshSessionOkResponse):
+    if not isinstance(result, RefreshSessionOkResult):
         if (
-            isinstance(result, RefreshSessionUnauthorizedResponse)
+            isinstance(result, RefreshSessionUnauthorizedResult)
             and result.error.clear_tokens is True
-        ) or isinstance(result, RefreshSessionTokenTheftErrorResponse):
+        ) or isinstance(result, RefreshSessionTokenTheftErrorResult):
             # We clear the LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME here because we want to limit the scope of
             # this legacy/migration code so the token clearing functions in the error handlers do not.
             if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
@@ -436,7 +432,7 @@ async def refresh_session_in_request(
         "refreshSession: Attaching refreshed session info as " + request_transfer_method
     )
 
-    assert isinstance(result, RefreshSessionOkResponse)
+    assert isinstance(result, RefreshSessionOkResult)
 
     # We clear the tokens in all token transfer methods we are not going to overwrite:
     for transfer_method in available_token_transfer_methods:

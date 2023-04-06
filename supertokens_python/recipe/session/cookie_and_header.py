@@ -321,14 +321,14 @@ def access_token_mutator(
     def mutator(
         response: BaseResponse,
     ):
-        set_access_token_in_response(
+        _set_access_token_in_response(
             response, access_token, front_token, config, transfer_method
         )
 
     return mutator
 
 
-def set_access_token_in_response(
+def _set_access_token_in_response(
     res: BaseResponse,
     access_token: str,
     front_token: str,
@@ -361,10 +361,3 @@ def set_access_token_in_response(
             get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
             "header",
         )
-
-
-def set_anti_csrf_token_in_header(res: BaseResponse, anti_csrf_token: str):
-    set_header(res, ANTI_CSRF_HEADER_KEY, anti_csrf_token, allow_duplicate=False)
-    set_header(
-        res, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, allow_duplicate=True
-    )

@@ -39,7 +39,6 @@ async def handle_signout_api(api_implementation: APIInterface, api_options: APIO
 
     session = await get_session_from_request(
         api_options.request,
-        # api_options.response,
         api_options.config,
         api_options.recipe_implementation,
         session_required=False,

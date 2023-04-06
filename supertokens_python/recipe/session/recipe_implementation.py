@@ -49,12 +49,12 @@ from .interfaces import (
     SessionInformationResult,
     SessionObj,
     CreateNewSessionResult,
-    GetSessionOkResponse,
-    GetSessionUnauthorizedResponse,
-    GetSessionTryRefreshTokenErrorResponse,
-    RefreshSessionOkResponse,
-    RefreshSessionUnauthorizedResponse,
-    RefreshSessionTokenTheftErrorResponse,
+    GetSessionOkResult,
+    GetSessionUnauthorizedErrorResult,
+    GetSessionTryRefreshTokenErrorResult,
+    RefreshSessionOkResult,
+    RefreshSessionUnauthorizedResult,
+    RefreshSessionTokenTheftErrorResult,
 )
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
@@ -279,9 +279,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         ] = None,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Union[
-        GetSessionOkResponse,
-        GetSessionUnauthorizedResponse,
-        GetSessionTryRefreshTokenErrorResponse,
+        GetSessionOkResult,
+        GetSessionUnauthorizedErrorResult,
+        GetSessionTryRefreshTokenErrorResult,
     ]:
         if (
             anti_csrf_check is not False
@@ -303,9 +303,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             log_debug_message(
                 "getSession: Returning UNAUTHORISED because parsing failed"
             )
-            return GetSessionUnauthorizedResponse(
-                e
-            )  # FIXME: e should be exception or dict?
+            return GetSessionUnauthorizedErrorResult(
+                UnauthorisedError(str(e), False)
+            )  # FIXME: Is this correct?
 
         try:
             response = await session_functions.get_session(
@@ -320,16 +320,16 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 log_debug_message(
                     "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during get_session"
                 )
-                return GetSessionUnauthorizedResponse(
+                return GetSessionUnauthorizedErrorResult(
                     e
-                )  # FIXME: e should be exception or dict?
+                )  # FIXME: Is this correct?
 
             log_debug_message(
                 "getSession: Returning UNAUTHORISED because of an exception during get_session"
             )
-            return GetSessionUnauthorizedResponse(
-                e
-            )  # FIXME: e should be exception or dict?
+            return GetSessionUnauthorizedErrorResult(
+                UnauthorisedError(str(e), False)
+            )  # FIXME: Is this correct?
 
         log_debug_message("getSession: Success!")
 
@@ -362,7 +362,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             access_token_updated,
         )
 
-        return GetSessionOkResponse(session)
+        return GetSessionOkResult(session)
 
     async def refresh_session(
         self,
@@ -371,9 +371,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         disable_anti_csrf: bool,
         user_context: Dict[str, Any],
     ) -> Union[
-        RefreshSessionOkResponse,
-        RefreshSessionUnauthorizedResponse,
-        RefreshSessionTokenTheftErrorResponse,
+        RefreshSessionOkResult,
+        RefreshSessionUnauthorizedResult,
+        RefreshSessionTokenTheftErrorResult,
     ]:
         if (
             disable_anti_csrf is not True
@@ -416,18 +416,18 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 req_res_info=None,
                 access_token_updated=True,
             )
-            return RefreshSessionOkResponse(session)
+            return RefreshSessionOkResult(session)
         except Exception as e:
             if isinstance(e, SuperTokensError):
                 if isinstance(e, TokenTheftError):
-                    return RefreshSessionTokenTheftErrorResponse(e)
-                # FIXME: e should be exception or dict?
+                    return RefreshSessionTokenTheftErrorResult(e)
+                # FIXME: Is this correct?
                 if isinstance(e, UnauthorisedError):
-                    return RefreshSessionUnauthorizedResponse(e)
+                    return RefreshSessionUnauthorizedResult(e)
 
-            return RefreshSessionUnauthorizedResponse(
+            return RefreshSessionUnauthorizedResult(
                 UnauthorisedError("UNAUTHORIZED", clear_tokens=True)
-            )  # FIXME: e should be exception or dict?
+            )  # FIXME: Is this correct?
 
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]

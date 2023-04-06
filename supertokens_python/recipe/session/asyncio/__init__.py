@@ -28,14 +28,14 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     JSONObject,
     GetClaimValueOkResult,
-    GetSessionUnauthorizedResponse,
-    GetSessionTryRefreshTokenErrorResponse,
-    GetSessionClaimValidationErrorResponse,
+    GetSessionUnauthorizedErrorResult,
+    GetSessionTryRefreshTokenErrorResult,
+    GetSessionClaimValidationErrorResult,
     CreateNewSessionResult,
-    GetSessionOkResponse,
-    RefreshSessionOkResponse,
-    RefreshSessionUnauthorizedResponse,
-    RefreshSessionTokenTheftErrorResponse,
+    GetSessionOkResult,
+    RefreshSessionOkResult,
+    RefreshSessionUnauthorizedResult,
+    RefreshSessionTokenTheftErrorResult,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.session_request_functions import (
@@ -57,8 +57,7 @@ _T = TypeVar("_T")
 
 
 async def create_new_session(
-    request: BaseRequest,
-    # response: BaseResponse,
+    request: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -77,7 +76,6 @@ async def create_new_session(
 
     return await create_new_session_in_request(
         request,
-        # response,
         user_context,
         recipe_instance,
         access_token_payload,
@@ -280,7 +278,6 @@ async def remove_claim(
 
 async def get_session(
     request: BaseRequest,
-    # response: BaseResponse,
     session_required: Optional[bool] = None,
     anti_csrf_check: Optional[bool] = None,
     check_database: Optional[bool] = None,
@@ -301,7 +298,6 @@ async def get_session(
 
     return await get_session_from_request(
         request,
-        # response,
         config,
         recipe_interface_impl,
         session_required=session_required,
@@ -312,7 +308,6 @@ async def get_session(
     )
 
 
-# TODO: Add comments
 async def get_session_without_request_response(
     access_token: str,
     anti_csrf_token: Optional[str] = None,
@@ -326,11 +321,35 @@ async def get_session_without_request_response(
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
-    GetSessionOkResponse,
-    GetSessionUnauthorizedResponse,
-    GetSessionTryRefreshTokenErrorResponse,
-    GetSessionClaimValidationErrorResponse,
+    GetSessionOkResult,
+    GetSessionUnauthorizedErrorResult,
+    GetSessionTryRefreshTokenErrorResult,
+    GetSessionClaimValidationErrorResult,
 ]:
+    """Tries to validate an access token and build a Session object from it.
+
+    Notes about anti-csrf checking:
+    - if the `antiCsrf` is set to VIA_HEADER in the Session recipe config you have to handle anti-csrf checking before calling this function and set antiCsrfCheck to false in the options.
+    - you can disable anti-csrf checks by setting antiCsrf to NONE in the Session recipe config. We only recommend this if you are always getting the access-token from the Authorization header.
+    - if the antiCsrf check fails the returned status will be TRY_REFRESH_TOKEN_ERROR
+
+    args:
+    - access_token: The access token extracted from the authorization header or cookies
+    - anti_csrf_token: The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
+    - anti_csrf_check: If true, anti-csrf checking will be done. If false, it will be skipped. Defaults behaviour to check.
+    - check_database: If true, the session will be checked in the database. If false, it will be skipped. Defaults behaviour to skip.
+    - override_global_claim_validators: Alter the
+    - user_context: user context
+
+    Returned values:
+    - GetSessionOkResult: The session was successfully validated, including claim validation
+    - GetSessionClaimValidationErrorResult: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
+    - GetSessionTryRefreshTokenErrorResult: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
+    - You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
+    - GetSessionUnauthorizedErrorResult: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
+    """
+
+
     if user_context is None:
         user_context = {}
 
@@ -345,7 +364,7 @@ async def get_session_without_request_response(
         user_context,
     )
 
-    if isinstance(res, GetSessionOkResponse):
+    if isinstance(res, GetSessionOkResult):
         claim_validators = await get_required_claim_validators(
             res.session, override_global_claim_validators, user_context
         )
@@ -353,7 +372,7 @@ async def get_session_without_request_response(
             await res.session.assert_claims(claim_validators, user_context)
         except SuperTokensError as e:
             if isinstance(e, InvalidClaimsError):
-                return GetSessionClaimValidationErrorResponse(e)  # FIXME
+                return GetSessionClaimValidationErrorResult(e)  # FIXME: is this correct?
             raise e
 
     return res
@@ -361,7 +380,6 @@ async def get_session_without_request_response(
 
 async def refresh_session(
     request: Any,
-    # response: BaseResponse,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -372,15 +390,12 @@ async def refresh_session(
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
 
-    # TODO: wrap response if required
-
     recipe_instance = SessionRecipe.get_instance()
     config = recipe_instance.config
     recipe_interface_impl = recipe_instance.recipe_implementation
 
     return await refresh_session_in_request(
         request,
-        # response,
         user_context,
         config,
         recipe_interface_impl,
@@ -393,9 +408,9 @@ async def refresh_session_without_request_response(
     anti_csrf_token: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
-    RefreshSessionOkResponse,
-    RefreshSessionUnauthorizedResponse,
-    RefreshSessionTokenTheftErrorResponse,
+    RefreshSessionOkResult,
+    RefreshSessionUnauthorizedResult,
+    RefreshSessionTokenTheftErrorResult,
 ]:
     if user_context is None:
         user_context = {}

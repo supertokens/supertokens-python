@@ -30,7 +30,8 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
 
 from ...utils import resolve
-from .exceptions import ClaimValidationError, UnauthorisedError, TokenTheftError
+from .exceptions import ClaimValidationError, UnauthorisedError, TokenTheftError, TryRefreshTokenError, \
+    InvalidClaimsError
 from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
@@ -77,50 +78,12 @@ class SessionInformationResult:
         self.time_created: int = time_created
 
 
-# class GetSessionOptions:
-#     def __init__(
-#         self,
-#         anti_csrf_check: Optional[bool] = None,
-#         check_database: Optional[bool] = None,
-#         override_global_claim_validators: Optional[
-#             Callable[
-#                 [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-#                 MaybeAwaitable[List[SessionClaimValidator]],
-#             ]
-#         ] = None,
-#     ):
-#         self.anti_csrf_check = anti_csrf_check
-#         self.check_database = check_database
-#         self.override_global_claim_validators = override_global_claim_validators
-#
-
-
 class ReqResInfo:
     def __init__(self, request: BaseRequest, transfer_method: TokenTransferMethod):
         self.request = request
         self.transfer_method = transfer_method
 
         self.response_mutators = []  # TODO: Use this everywhere!
-
-
-class VerifySessionOptions:
-    def __init__(
-        self,
-        session_required: Optional[bool] = None,
-        anti_csrf_check: Optional[bool] = None,
-        check_database: Optional[bool] = None,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ] = None,
-    ):
-        self.session_required = session_required
-        self.anti_csrf_check = anti_csrf_check
-        self.check_database = check_database
-        self.override_global_claim_validators = override_global_claim_validators
-
 
 class CreateNewSessionResult:
     status = "OK"
@@ -129,49 +92,49 @@ class CreateNewSessionResult:
         self.session = session
 
 
-class GetSessionOkResponse:
+class GetSessionOkResult:
     status = "OK"
 
     def __init__(self, session: SessionContainer):
         self.session = session
 
 
-class GetSessionUnauthorizedResponse:
-    status = "UNAUTHORISED"
-
-    def __init__(self, error: Exception):
-        self.error = error
-
-
-class GetSessionTryRefreshTokenErrorResponse:
-    status = "TRY_REFRESH_TOKEN_ERROR"
-
-    def __init__(self, error: Exception):
-        self.error = error
-
-
-class GetSessionClaimValidationErrorResponse:
-    status = "CLAIM_VALIDATION_ERROR"
-
-    def __init__(self, error: Exception):
-        self.error = error
-
-
-class RefreshSessionOkResponse:
-    status = "OK"
-
-    def __init__(self, session: SessionContainer):
-        self.session = session
-
-
-class RefreshSessionUnauthorizedResponse:
+class GetSessionUnauthorizedErrorResult:
     status = "UNAUTHORISED"
 
     def __init__(self, error: UnauthorisedError):
         self.error = error
 
 
-class RefreshSessionTokenTheftErrorResponse:
+class GetSessionTryRefreshTokenErrorResult:
+    status = "TRY_REFRESH_TOKEN_ERROR"
+
+    def __init__(self, error: TryRefreshTokenError):
+        self.error = error
+
+
+class GetSessionClaimValidationErrorResult:
+    status = "CLAIM_VALIDATION_ERROR"
+
+    def __init__(self, error: InvalidClaimsError):
+        self.error = error
+
+
+class RefreshSessionOkResult:
+    status = "OK"
+
+    def __init__(self, session: SessionContainer):
+        self.session = session
+
+
+class RefreshSessionUnauthorizedResult:
+    status = "UNAUTHORISED"
+
+    def __init__(self, error: UnauthorisedError):
+        self.error = error
+
+
+class RefreshSessionTokenTheftErrorResult:
     status = "TOKEN_THEFT_ERROR"
 
     def __init__(self, error: TokenTheftError):
@@ -245,9 +208,9 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         ] = None,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Union[
-        GetSessionOkResponse,
-        GetSessionUnauthorizedResponse,
-        GetSessionTryRefreshTokenErrorResponse,
+        GetSessionOkResult,
+        GetSessionUnauthorizedErrorResult,
+        GetSessionTryRefreshTokenErrorResult,
     ]:
         pass
 
@@ -279,9 +242,9 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         disable_anti_csrf: bool,
         user_context: Dict[str, Any],
     ) -> Union[
-        RefreshSessionOkResponse,
-        RefreshSessionUnauthorizedResponse,
-        RefreshSessionTokenTheftErrorResponse,
+        RefreshSessionOkResult,
+        RefreshSessionUnauthorizedResult,
+        RefreshSessionTokenTheftErrorResult,
     ]:
         pass
 
