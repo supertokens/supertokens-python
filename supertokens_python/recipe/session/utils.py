@@ -36,10 +36,6 @@ from ...types import MaybeAwaitable
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
 from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .exceptions import ClaimValidationError
-from .with_jwt.constants import (
-    ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
-    JWT_RESERVED_KEY_USE_ERROR_MESSAGE,
-)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -326,18 +322,7 @@ class JWTConfig:
         property_name_in_access_token_payload: Union[str, None] = None,
         issuer: Union[str, None] = None,
     ):
-        if property_name_in_access_token_payload is None:
-            property_name_in_access_token_payload = "jwt"
-        if (
-            property_name_in_access_token_payload
-            == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-        ):
-            raise Exception(JWT_RESERVED_KEY_USE_ERROR_MESSAGE)
         self.enable = enable
-        self.property_name_in_access_token_payload = (
-            property_name_in_access_token_payload
-        )
-        self.issuer = issuer
 
 
 TokenType = Literal["access", "refresh"]

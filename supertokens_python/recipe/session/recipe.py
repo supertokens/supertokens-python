@@ -40,9 +40,6 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.session.with_jwt import (
-    get_recipe_implementation_with_jwt,
-)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
@@ -143,16 +140,11 @@ class SessionRecipe(RecipeModule):
                 recipe_id,
                 app_info,
                 None,
-                self.config.jwt.issuer,
+                None,  # FIXME
                 openid_feature_override,
             )
             recipe_implementation = RecipeImplementation(
                 Querier.get_instance(recipe_id), self.config, self.app_info
-            )
-            recipe_implementation = get_recipe_implementation_with_jwt(
-                recipe_implementation,
-                self.config,
-                self.openid_recipe.recipe_implementation,
             )
         else:
             recipe_implementation = RecipeImplementation(
