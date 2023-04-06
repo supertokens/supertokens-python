@@ -24,21 +24,28 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import normalise_http_method
 
-from ..utils import get_required_claim_validators
-
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import APIOptions
     from ..interfaces import SessionContainer
 
 from typing import Any, Dict
 
+from supertokens_python.recipe.session.session_request_functions import (
+    get_session_from_request,
+    refresh_session_in_request,
+)
+
 
 class APIImplementation(APIInterface):
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -> SessionContainer:
-        return await api_options.recipe_implementation.refresh_session(
-            api_options.request, user_context
+        return await refresh_session_in_request(
+            api_options.request,
+            # api_options.response,
+            user_context,
+            api_options.config,
+            api_options.recipe_implementation,
         )
 
     async def signout_post(
@@ -69,23 +76,20 @@ class APIImplementation(APIInterface):
             return None
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
+
         if incoming_path.equals(refresh_token_path) and method == "post":
-            return await api_options.recipe_implementation.refresh_session(
-                api_options.request, user_context
-            )
-        session = await api_options.recipe_implementation.get_session(
-            api_options.request,
-            anti_csrf_check,
-            session_required,
-            user_context,
-        )
-
-        if session is not None:
-            claim_validators = await get_required_claim_validators(
-                session,
-                override_global_claim_validators,
+            return await refresh_session_in_request(
+                api_options.request,
+                # api_options.response,
                 user_context,
+                api_options.config,
+                api_options.recipe_implementation,
             )
-            await session.assert_claims(claim_validators, user_context)
 
-        return session
+        return await get_session_from_request(  # FIXME:
+            api_options.request,
+            # api_options.response,
+            api_options.config,
+            api_options.recipe_implementation,
+            user_context=user_context,
+        )

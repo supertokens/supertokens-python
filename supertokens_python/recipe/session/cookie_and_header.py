@@ -31,48 +31,47 @@ from .constants import (
     RID_HEADER_KEY,
     available_token_transfer_methods,
 )
+from ...logger import log_debug_message
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from .recipe import SessionRecipe
-    from .utils import TokenTransferMethod, TokenType, SessionConfig
+    from .utils import (
+        TokenTransferMethod,
+        TokenType,
+        SessionConfig,
+        HUNDRED_YEARS_IN_MS,
+    )
 
 from json import dumps
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
-from supertokens_python.utils import get_header, utf_base64encode
+from supertokens_python.utils import get_header, utf_base64encode, get_timestamp_ms
+
+
+def build_front_token(
+    user_id: str, at_expiry: int, access_token_payload: Optional[Dict[str, Any]] = None
+):
+    if access_token_payload is None:
+        access_token_payload = {}
+    token_info = {"uid": user_id, "ate": at_expiry, "up": access_token_payload}
+    return utf_base64encode(dumps(token_info, separators=(",", ":"), sort_keys=True))
 
 
 def _set_front_token_in_headers(
     response: BaseResponse,
-    user_id: str,
-    expires: int,
-    jwt_payload: Union[None, Dict[str, Any]] = None,
+    front_token: str,
 ):
-    if jwt_payload is None:
-        jwt_payload = {}
-    token_info = {"uid": user_id, "ate": expires, "up": jwt_payload}
-    set_header(
-        response,
-        FRONT_TOKEN_HEADER_SET_KEY,
-        utf_base64encode(dumps(token_info, separators=(",", ":"), sort_keys=True)),
-        False,
-    )
+    set_header(response, FRONT_TOKEN_HEADER_SET_KEY, front_token, False)
     set_header(
         response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
     )
 
 
-def front_token_response_mutator(
-    user_id: str,
-    expires: int,
-    jwt_payload: Union[None, Dict[str, Any]] = None,
-):
-    def mutator(
-        response: BaseResponse,
-    ):
-        return _set_front_token_in_headers(response, user_id, expires, jwt_payload)
+def front_token_response_mutator(front_token: str):
+    def mutator(response: BaseResponse):
+        return _set_front_token_in_headers(response, front_token)
 
     return mutator
 
@@ -188,6 +187,15 @@ def clear_session_from_all_token_transfer_methods(
         _clear_session(response, recipe.config, transfer_method)
 
 
+def clear_session_mutator(config: SessionConfig, transfer_method: TokenTransferMethod):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _clear_session(response, config, transfer_method)
+
+    return mutator
+
+
 def _clear_session(
     response: BaseResponse,
     config: SessionConfig,
@@ -261,6 +269,7 @@ def _set_token(
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
+    log_debug_message(f"Setting {token_type} token as {transfer_method}")
     if transfer_method == "cookie":
         _set_cookie(
             response,
@@ -301,3 +310,61 @@ def token_response_mutator(
 def set_token_in_header(response: BaseResponse, name: str, value: str):
     set_header(response, name, value, allow_duplicate=False)
     set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, name, allow_duplicate=True)
+
+
+def access_token_mutator(
+    access_token: str,
+    front_token: str,
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+):
+    def mutator(
+        response: BaseResponse,
+    ):
+        set_access_token_in_response(
+            response, access_token, front_token, config, transfer_method
+        )
+
+    return mutator
+
+
+def set_access_token_in_response(
+    res: BaseResponse,
+    access_token: str,
+    front_token: str,
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+):
+    _set_front_token_in_headers(res, front_token)
+    _set_token(
+        res,
+        config,
+        "access",
+        access_token,
+        # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+        # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+        # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+        # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+        get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
+        transfer_method,
+    )
+
+    if (
+        config.expose_access_token_to_frontend_in_cookie_based_auth
+        and transfer_method == "cookie"
+    ):
+        _set_token(
+            res,
+            config,
+            "access",
+            access_token,
+            get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
+            "header",
+        )
+
+
+def set_anti_csrf_token_in_header(res: BaseResponse, anti_csrf_token: str):
+    set_header(res, ANTI_CSRF_HEADER_KEY, anti_csrf_token, allow_duplicate=False)
+    set_header(
+        res, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, allow_duplicate=True
+    )

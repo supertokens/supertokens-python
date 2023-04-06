@@ -75,6 +75,8 @@ class SessionRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
         cookie_domain: Union[str, None] = None,
         cookie_secure: Union[bool, None] = None,
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
@@ -98,6 +100,8 @@ class SessionRecipe(RecipeModule):
         self.openid_recipe: Union[None, OpenIdRecipe] = None
         self.config = validate_and_normalise_user_input(
             app_info,
+            use_dynamic_access_token_signing_key,
+            expose_access_token_to_frontend_in_cookie_based_auth,
             cookie_domain,
             cookie_secure,
             cookie_same_site,
@@ -289,12 +293,16 @@ class SessionRecipe(RecipeModule):
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
                 SessionRecipe.__instance = SessionRecipe(
                     SessionRecipe.recipe_id,
                     app_info,
+                    use_dynamic_access_token_signing_key,
+                    expose_access_token_to_frontend_in_cookie_based_auth,
                     cookie_domain,
                     cookie_secure,
                     cookie_same_site,

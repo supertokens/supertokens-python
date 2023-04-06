@@ -47,7 +47,7 @@ def get_info_from_access_token(
         verify_jwt(jwt_info, jwt_signing_public_key)
         payload = jwt_info.payload
 
-        validate_access_token_structure(payload)
+        validate_access_token_structure(payload, jwt_info.version)
 
         session_handle = sanitize_string(payload.get("sessionHandle"))
         user_id = sanitize_string(payload.get("userId"))
@@ -85,7 +85,19 @@ def get_info_from_access_token(
         raise_try_refresh_token_exception(e)
 
 
-def validate_access_token_structure(payload: Dict[str, Any]) -> None:
+def validate_access_token_structure(payload: Dict[str, Any], version: int) -> None:
+    if version >= 3:
+        if (
+            not isinstance(payload.get("sub"), str)
+            or not isinstance(payload.get("exp"), int)
+            or not isinstance(payload.get("iat"), int)
+            or not isinstance(payload.get("sessionHandle"), str)
+            or not isinstance(payload.get("refreshTokenHash1"), str)
+        ):
+            raise Exception(
+                "Access token does not contain all the information. Maybe the structure has changed?"
+            )
+
     if (
         not isinstance(payload.get("sessionHandle"), str)
         or payload.get("userData") is None
