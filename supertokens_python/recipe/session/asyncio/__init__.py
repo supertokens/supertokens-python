@@ -333,7 +333,7 @@ async def get_session_without_request_response(
     - you can disable anti-csrf checks by setting antiCsrf to NONE in the Session recipe config. We only recommend this if you are always getting the access-token from the Authorization header.
     - if the antiCsrf check fails the returned status will be TRY_REFRESH_TOKEN_ERROR
 
-    args:
+    Args:
     - access_token: The access token extracted from the authorization header or cookies
     - anti_csrf_token: The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
     - anti_csrf_check: If true, anti-csrf checking will be done. If false, it will be skipped. Defaults behaviour to check.
@@ -348,8 +348,6 @@ async def get_session_without_request_response(
     - You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
     - GetSessionUnauthorizedErrorResult: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
     """
-
-
     if user_context is None:
         user_context = {}
 
@@ -372,7 +370,9 @@ async def get_session_without_request_response(
             await res.session.assert_claims(claim_validators, user_context)
         except SuperTokensError as e:
             if isinstance(e, InvalidClaimsError):
-                return GetSessionClaimValidationErrorResult(e)  # FIXME: is this correct?
+                return GetSessionClaimValidationErrorResult(
+                    e
+                )  # FIXME: is this correct?
             raise e
 
     return res

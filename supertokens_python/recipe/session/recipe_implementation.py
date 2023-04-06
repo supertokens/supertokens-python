@@ -320,9 +320,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 log_debug_message(
                     "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during get_session"
                 )
-                return GetSessionUnauthorizedErrorResult(
-                    e
-                )  # FIXME: Is this correct?
+                return GetSessionUnauthorizedErrorResult(e)  # FIXME: Is this correct?
 
             log_debug_message(
                 "getSession: Returning UNAUTHORISED because of an exception during get_session"

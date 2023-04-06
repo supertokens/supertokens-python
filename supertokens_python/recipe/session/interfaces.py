@@ -30,8 +30,13 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
 
 from ...utils import resolve
-from .exceptions import ClaimValidationError, UnauthorisedError, TokenTheftError, TryRefreshTokenError, \
-    InvalidClaimsError
+from .exceptions import (
+    ClaimValidationError,
+    UnauthorisedError,
+    TokenTheftError,
+    TryRefreshTokenError,
+    InvalidClaimsError,
+)
 from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
@@ -84,6 +89,7 @@ class ReqResInfo:
         self.transfer_method = transfer_method
 
         self.response_mutators = []  # TODO: Use this everywhere!
+
 
 class CreateNewSessionResult:
     status = "OK"

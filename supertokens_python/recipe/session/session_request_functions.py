@@ -188,7 +188,8 @@ async def get_session_from_request(
     )
 
     if isinstance(
-        result, (GetSessionTryRefreshTokenErrorResult, GetSessionUnauthorizedErrorResult)
+        result,
+        (GetSessionTryRefreshTokenErrorResult, GetSessionUnauthorizedErrorResult),
     ):
         raise result.error
 
