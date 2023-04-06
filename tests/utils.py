@@ -44,6 +44,7 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.utils import is_version_gte
+import json
 
 INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
@@ -549,3 +550,38 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
         return False
 
     return dict1 == dict2
+
+
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
+from supertokens_python.recipe.passwordless.asyncio import create_code, consume_code
+from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
+
+
+async def create_users(
+    emailpassword: bool = False, passwordless: bool = False, thirdparty: bool = False
+):
+    with open(
+        "/Users/iresharma/Documents/supertokens/supertokens-python/tests/users.json",
+        "r",
+    ) as json_data:
+        users = json.loads(json_data.read())["users"]
+    for user in users:
+        if user["recipe"] == "emailpassword" and emailpassword:
+            await sign_up(user["email"], user["password"])
+        elif user["recipe"] == "passwordless" and passwordless:
+            if user.get("email"):
+                coderesponse = await create_code(user["email"])
+                await consume_code(
+                    coderesponse.pre_auth_session_id,
+                    coderesponse.user_input_code,
+                    coderesponse.device_id,
+                )
+            else:
+                coderesponse = await create_code(None, user["phone"])
+                await consume_code(
+                    coderesponse.pre_auth_session_id,
+                    coderesponse.user_input_code,
+                    coderesponse.device_id,
+                )
+        elif user["recipe"] == "thirdparty" and thirdparty:
+            await sign_in_up(user["provider"], user["userId"], user["email"])
