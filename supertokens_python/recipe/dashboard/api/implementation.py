@@ -60,8 +60,8 @@ class APIImplementation(APIInterface):
             querier = Querier.get_instance(options.recipe_id)
             cdiVersion = await querier.get_api_version()
             if not cdiVersion:
-                return ""
-            if is_version_gte(cdiVersion, "2.20"):
+                is_search_enabled = True
+            elif is_version_gte(cdiVersion, "2.20"):
                 is_search_enabled = True
 
             return Template(
