@@ -323,6 +323,17 @@ class SignOutOK(APIResponse):
         return {&#34;status&#34;: self.status}
 
 
+class SearchTagsOK(APIResponse):
+    status: str = &#34;OK&#34;
+    tags: List[str]
+
+    def __init__(self, tags: List[str]) -&gt; None:
+        self.tags = tags
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;tags&#34;: self.tags}
+
+
 class AnalyticsResponse(APIResponse):
     status: str = &#34;OK&#34;
 
@@ -608,6 +619,60 @@ async def should_allow_access(
     user_context: Dict[str, Any],
 ) -&gt; bool:
     pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK"><code class="flex name class">
+<span>class <span class="ident">SearchTagsOK</span></span>
+<span>(</span><span>tags: List[str])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SearchTagsOK(APIResponse):
+    status: str = &#34;OK&#34;
+    tags: List[str]
+
+    def __init__(self, tags: List[str]) -&gt; None:
+        self.tags = tags
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;tags&#34;: self.tags}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.tags"><code class="name">var <span class="ident">tags</span> : List[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status, &#34;tags&#34;: self.tags}</code></pre>
 </details>
 </dd>
 </dl>
@@ -1677,6 +1742,14 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface.get_dashboard_bundle_location" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface.get_dashboard_bundle_location">get_dashboard_bundle_location</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface.should_allow_access" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface.should_allow_access">should_allow_access</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK" href="#supertokens_python.recipe.dashboard.interfaces.SearchTagsOK">SearchTagsOK</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.status" href="#supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.tags" href="#supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.tags">tags</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.to_json" href="#supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>

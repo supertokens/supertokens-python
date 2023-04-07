@@ -42,6 +42,7 @@
 from .analytics import handle_analytics_post
 from .api_key_protector import api_key_protector
 from .dashboard import handle_dashboard_api
+from .search.getTags import handle_get_tags
 from .signin import handle_emailpassword_signin_api
 from .signout import handle_emailpassword_signout_api
 from .userdetails.user_delete import handle_user_delete
@@ -78,6 +79,7 @@ __all__ = [
     &#34;handle_email_verify_token_post&#34;,
     &#34;handle_emailpassword_signin_api&#34;,
     &#34;handle_emailpassword_signout_api&#34;,
+    &#34;handle_get_tags&#34;,
     &#34;handle_analytics_post&#34;,
 ]</code></pre>
 </details>
@@ -94,6 +96,10 @@ __all__ = [
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.search" href="search/index.html">supertokens_python.recipe.dashboard.api.search</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -379,6 +385,22 @@ __all__ = [
         {&#34;sessionId&#34;: session_id_form_auth_header},
     )
     return SignOutOK()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_get_tags"><code class="name flex">
+<span>async def <span class="ident">handle_get_tags</span></span>(<span>_: APIInterface, __: APIOptions) ‑> SearchTagsOK</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
+    response = await Querier.get_instance().send_get_request(
+        NormalisedURLPath(&#34;/user/search/tags&#34;)
+    )
+    return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_metadata_get"><code class="name flex">
@@ -935,6 +957,7 @@ __all__ = [
         time_joined_order=time_joined_order,  # type: ignore
         pagination_token=pagination_token,
         include_recipe_ids=None,
+        query=api_options.request.get_query_params(),
     )
 
     # user metadata bulk fetch with batches:
@@ -1031,6 +1054,7 @@ __all__ = [
 <li><code><a title="supertokens_python.recipe.dashboard.api.analytics" href="analytics.html">supertokens_python.recipe.dashboard.api.analytics</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.search" href="search/index.html">supertokens_python.recipe.dashboard.api.search</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.signin" href="signin.html">supertokens_python.recipe.dashboard.api.signin</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.signout" href="signout.html">supertokens_python.recipe.dashboard.api.signout</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.userdetails" href="userdetails/index.html">supertokens_python.recipe.dashboard.api.userdetails</a></code></li>
@@ -1047,6 +1071,7 @@ __all__ = [
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_email_verify_token_post" href="#supertokens_python.recipe.dashboard.api.handle_email_verify_token_post">handle_email_verify_token_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api">handle_emailpassword_signin_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api">handle_emailpassword_signout_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_get_tags" href="#supertokens_python.recipe.dashboard.api.handle_get_tags">handle_get_tags</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_get" href="#supertokens_python.recipe.dashboard.api.handle_metadata_get">handle_metadata_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_put" href="#supertokens_python.recipe.dashboard.api.handle_metadata_put">handle_metadata_put</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_sessions_get" href="#supertokens_python.recipe.dashboard.api.handle_sessions_get">handle_sessions_get</a></code></li>

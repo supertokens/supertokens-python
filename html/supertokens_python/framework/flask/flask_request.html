@@ -59,6 +59,9 @@ class FlaskRequest(BaseRequest):
     def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
 
+    def get_query_params(self) -&gt; Dict[str, Any]:
+        return self.request.args.to_dict()
+
     async def json(self) -&gt; Union[Any, None]:
         try:
             return self.request.get_json()
@@ -135,6 +138,9 @@ inheritance.</p></div>
 
     def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
+
+    def get_query_params(self) -&gt; Dict[str, Any]:
+        return self.request.args.to_dict()
 
     async def json(self) -&gt; Union[Any, None]:
         try:
@@ -275,6 +281,19 @@ specific ones.</p></div>
     return self.request.args.get(key, default)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_params"><code class="name flex">
+<span>def <span class="ident">get_query_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_query_params(self) -&gt; Dict[str, Any]:
+    return self.request.args.to_dict()</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.get_session"><code class="name flex">
 <span>def <span class="ident">get_session</span></span>(<span>self) ‑> Union[SessionContainer, None]</span>
 </code></dt>
@@ -374,6 +393,7 @@ specific ones.</p></div>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_header" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_path" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_param" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_param">get_query_param</a></code></li>
+<li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_params" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_params">get_query_params</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_session" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.json" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.method" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.method">method</a></code></li>
