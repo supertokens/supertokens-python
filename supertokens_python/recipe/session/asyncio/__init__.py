@@ -31,6 +31,7 @@ from supertokens_python.recipe.session.interfaces import (
     GetSessionUnauthorizedErrorResult,
     GetSessionTryRefreshTokenErrorResult,
     GetSessionClaimValidationErrorResult,
+    GetSessionClaimValidationErrorResponseObject,
     CreateNewSessionResult,
     GetSessionOkResult,
     RefreshSessionOkResult,
@@ -371,8 +372,11 @@ async def get_session_without_request_response(
         except SuperTokensError as e:
             if isinstance(e, InvalidClaimsError):
                 return GetSessionClaimValidationErrorResult(
-                    e
-                )  # FIXME: is this correct?
+                    error=e,
+                    response=GetSessionClaimValidationErrorResponseObject(
+                        message="invalid claim", claim_validation_errors=e.payload
+                    ),
+                )
             raise e
 
     return res

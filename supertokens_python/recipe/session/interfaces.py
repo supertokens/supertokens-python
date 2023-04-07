@@ -88,8 +88,6 @@ class ReqResInfo:
         self.request = request
         self.transfer_method = transfer_method
 
-        self.response_mutators = []  # TODO: Use this everywhere!
-
 
 class CreateNewSessionResult:
     status = "OK"
@@ -108,7 +106,7 @@ class GetSessionOkResult:
 class GetSessionUnauthorizedErrorResult:
     status = "UNAUTHORISED"
 
-    def __init__(self, error: UnauthorisedError):
+    def __init__(self, error: Exception):
         self.error = error
 
 
@@ -119,11 +117,24 @@ class GetSessionTryRefreshTokenErrorResult:
         self.error = error
 
 
+class GetSessionClaimValidationErrorResponseObject:
+    def __init__(
+        self, message: str, claim_validation_errors: List[ClaimValidationError]
+    ):
+        self.message = message
+        self.claim_validation_errors = claim_validation_errors
+
+
 class GetSessionClaimValidationErrorResult:
     status = "CLAIM_VALIDATION_ERROR"
 
-    def __init__(self, error: InvalidClaimsError):
+    def __init__(
+        self,
+        error: InvalidClaimsError,
+        response: GetSessionClaimValidationErrorResponseObject,
+    ):
         self.error = error
+        self.response = response
 
 
 class RefreshSessionOkResult:

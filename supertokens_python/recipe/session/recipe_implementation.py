@@ -102,9 +102,6 @@ class HandshakeInfo:
         ]
 
 
-LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
-
-
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self, querier: Querier, config: SessionConfig, app_info: AppInfo):
         super().__init__()
@@ -296,16 +293,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         access_token_obj: Optional[ParsedJWTInfo] = None
         try:
             access_token_obj = parse_jwt_without_signature_verification(access_token)
-            validate_access_token_structure(
-                access_token_obj.payload, access_token_obj.version
-            )
+            validate_access_token_structure(access_token_obj.payload)
         except Exception as e:
             log_debug_message(
                 "getSession: Returning UNAUTHORISED because parsing failed"
             )
-            return GetSessionUnauthorizedErrorResult(
-                UnauthorisedError(str(e), False)
-            )  # FIXME: Is this correct?
+            return GetSessionUnauthorizedErrorResult(e)
 
         try:
             response = await session_functions.get_session(
@@ -320,14 +313,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 log_debug_message(
                     "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during get_session"
                 )
-                return GetSessionUnauthorizedErrorResult(e)  # FIXME: Is this correct?
+                return GetSessionUnauthorizedErrorResult(e)
 
             log_debug_message(
                 "getSession: Returning UNAUTHORISED because of an exception during get_session"
             )
-            return GetSessionUnauthorizedErrorResult(
-                UnauthorisedError(str(e), False)
-            )  # FIXME: Is this correct?
+            return GetSessionUnauthorizedErrorResult(e)
 
         log_debug_message("getSession: Success!")
 
@@ -340,9 +331,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             access_token_updated = True
         else:
             payload = access_token_obj.payload
-            access_token_str = (
-                access_token_obj.raw_token_string
-            )  # FIXME: Is this correct?
+            access_token_str = access_token
             expiry_time = response["session"]["expiryTime"]
             access_token_updated = False
 
@@ -384,7 +373,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         log_debug_message("refreshSession: Started")
 
         try:
-            response = await session_functions.refresh_session(  # FIXME: Update the real definition
+            response = await session_functions.refresh_session(
                 self,
                 refresh_token,
                 anti_csrf_token,
@@ -419,13 +408,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             if isinstance(e, SuperTokensError):
                 if isinstance(e, TokenTheftError):
                     return RefreshSessionTokenTheftErrorResult(e)
-                # FIXME: Is this correct?
                 if isinstance(e, UnauthorisedError):
                     return RefreshSessionUnauthorizedResult(e)
 
             return RefreshSessionUnauthorizedResult(
-                UnauthorisedError("UNAUTHORIZED", clear_tokens=True)
-            )  # FIXME: Is this correct?
+                UnauthorisedError(str(e), clear_tokens=False)
+            )
 
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]

@@ -140,7 +140,7 @@ class SessionRecipe(RecipeModule):
                 recipe_id,
                 app_info,
                 None,
-                None,  # FIXME
+                None,
                 openid_feature_override,
             )
             recipe_implementation = RecipeImplementation(

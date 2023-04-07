@@ -34,9 +34,6 @@ from supertokens_python.recipe.session.jwt import (
     ParsedJWTInfo,
     parse_jwt_without_signature_verification,
 )
-from supertokens_python.recipe.session.recipe_implementation import (
-    LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-)
 from supertokens_python.recipe.session.utils import (
     SessionConfig,
     TokenTransferMethod,
@@ -59,6 +56,8 @@ from supertokens_python.recipe.session.interfaces import (
     RefreshSessionTokenTheftErrorResult,
     RefreshSessionUnauthorizedResult,
 )
+
+LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
 
 async def get_session_from_request(
@@ -106,7 +105,7 @@ async def get_session_from_request(
         if token_string is not None:
             try:
                 info = parse_jwt_without_signature_verification(token_string)
-                validate_access_token_structure(info.payload, info.version)
+                validate_access_token_structure(info.payload)
                 log_debug_message(
                     "getSession: got access token from %s", transfer_method
                 )
@@ -208,10 +207,6 @@ async def get_session_from_request(
     return session
 
 
-# In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
-# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
-
-
 async def create_new_session_in_request(
     request: Any,
     user_context: Dict[str, Any],
@@ -284,10 +279,6 @@ async def create_new_session_in_request(
 
     log_debug_message("createNewSession: Session created in core built")
 
-    # available_token_transfer_methods = config.get_token_transfer_methods(
-    #     request, user_context
-    # )
-
     for transfer_method in available_token_transfer_methods:
         if (
             transfer_method != output_transfer_method
@@ -304,6 +295,10 @@ async def create_new_session_in_request(
         log_debug_message("createNewSession: Attached new tokens to res")
 
     return result.session
+
+
+# In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
+# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
 
 
 async def refresh_session_in_request(
@@ -325,10 +320,6 @@ async def refresh_session_in_request(
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
     refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
-
-    # available_token_transfer_methods = config.get_token_transfer_methods(
-    #     request, user_context
-    # )
 
     for transfer_method in available_token_transfer_methods:
         refresh_tokens[transfer_method] = get_token(request, "refresh", transfer_method)

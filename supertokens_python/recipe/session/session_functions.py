@@ -149,7 +149,7 @@ async def get_session(
 
     if (
         access_token_info is not None
-        and not handshake_info.access_token_blacklisting_enabled
+        and not always_check_core
         and access_token_info["parentRefreshTokenHash1"] is None
     ):
         return {

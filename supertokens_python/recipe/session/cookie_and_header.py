@@ -32,6 +32,7 @@ from .constants import (
     available_token_transfer_methods,
 )
 from ...logger import log_debug_message
+from .utils import HUNDRED_YEARS_IN_MS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -41,7 +42,6 @@ if TYPE_CHECKING:
         TokenTransferMethod,
         TokenType,
         SessionConfig,
-        HUNDRED_YEARS_IN_MS,
     )
 
 from json import dumps
@@ -67,13 +67,6 @@ def _set_front_token_in_headers(
     set_header(
         response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
     )
-
-
-def front_token_response_mutator(front_token: str):
-    def mutator(response: BaseResponse):
-        return _set_front_token_in_headers(response, front_token)
-
-    return mutator
 
 
 def get_cors_allowed_headers():

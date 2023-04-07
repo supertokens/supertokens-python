@@ -11,7 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, TypeVar, Union
+from typing import Any, Dict, List, TypeVar, Union, Optional
+from typing_extensions import TypedDict
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
@@ -31,11 +32,18 @@ from .interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from .jwt import parse_jwt_without_signature_verification
 from .recipe_implementation import protected_props
 from ...framework import BaseRequest
 
 _T = TypeVar("_T")
+
+
+class GetSessionTokensDangerouslyDict(TypedDict):
+    accessToken: str
+    accessAndFrontTokenUpdated: bool
+    refreshToken: Optional[str]
+    frontToken: str
+    antiCsrfToken: Optional[str]
 
 
 class Session(SessionContainer):
@@ -129,11 +137,13 @@ class Session(SessionContainer):
     def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.access_token
 
-    def get_all_session_tokens_dangerously(self) -> Dict[str, Any]:
+    def get_all_session_tokens_dangerously(self) -> GetSessionTokensDangerouslyDict:
         return {
             "accessToken": self.access_token,
             "accessAndFrontTokenUpdated": self.access_token_updated,
-            "refreshToken": self.refresh_token,
+            "refreshToken": None
+            if self.refresh_token is None
+            else self.refresh_token.token,
             "frontToken": self.front_token,
             "antiCsrfToken": self.anti_csrf_token,
         }
@@ -263,14 +273,7 @@ class Session(SessionContainer):
             raise_unauthorised_exception("Session does not exist anymore.")
 
         if response.access_token is not None:
-            resp_token = parse_jwt_without_signature_verification(
-                response.access_token.token
-            )
-            payload = (
-                response.session.user_data_in_jwt
-                if resp_token.version < 3
-                else resp_token.payload
-            )
+            payload = response.session.user_data_in_jwt
             self.user_data_in_access_token = payload
             self.access_token = response.access_token.token
             self.front_token = build_front_token(
