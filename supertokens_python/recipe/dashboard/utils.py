@@ -52,6 +52,7 @@ from .constants import (
     DASHBOARD_API,
     EMAIL_PASSSWORD_SIGNOUT,
     EMAIL_PASSWORD_SIGN_IN,
+    SEARCH_TAGS_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_EMAIL_VERIFY_TOKEN_API,
@@ -238,6 +239,8 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return EMAIL_PASSWORD_SIGN_IN
     if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == "post":
         return EMAIL_PASSSWORD_SIGNOUT
+    if path_str.endswith(SEARCH_TAGS_API) and method == "get":
+        return SEARCH_TAGS_API
     if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == "post":
         return DASHBOARD_ANALYTICS_API
 
