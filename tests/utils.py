@@ -12,9 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import asyncio
+import json
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
+from pathlib import Path
 from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
@@ -44,7 +46,6 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.utils import is_version_gte
-import json
 
 INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
@@ -553,7 +554,7 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
 
 
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
-from supertokens_python.recipe.passwordless.asyncio import create_code, consume_code
+from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
 from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
 
 
@@ -561,7 +562,7 @@ async def create_users(
     emailpassword: bool = False, passwordless: bool = False, thirdparty: bool = False
 ):
     with open(
-        "/Users/iresharma/Documents/supertokens/supertokens-python/tests/users.json",
+        Path(__file__).parent / "./users.json",
         "r",
     ) as json_data:
         users = json.loads(json_data.read())["users"]
