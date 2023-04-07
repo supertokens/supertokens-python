@@ -17,7 +17,7 @@ from typing import Any, Dict, Union
 from fastapi import Depends, FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture, mark
+from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
@@ -48,7 +48,28 @@ from tests.utils import (
     reset,
     setup_st,
     start_st,
+    create_users,
 )
+from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
+from supertokens_python.framework import BaseRequest
+from supertokens_python.querier import Querier
+from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.passwordless import PasswordlessRecipe, ContactConfig
+from supertokens_python.recipe import thirdparty
+
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
+
+
+def override_dashboard_functions(original_implementation: RecipeInterface):
+    async def should_allow_access(
+        request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
+    ):
+        auth_header = request.get_header("authorization")
+        return auth_header == "Bearer testapikey"
+
+    original_implementation.should_allow_access = should_allow_access  # type: ignore
+    return original_implementation
 
 
 def setup_function(_):
@@ -623,3 +644,375 @@ async def test_revoking_session_after_create_new_session_with_throwing_unauthori
 
     assert res.status_code == 401
     assert_info_clears_tokens(info, token_transfer_method)
+
+
+@mark.asyncio
+async def test_search_with_email_t(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            emailpassword.init(),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(emailpassword=True)
+    query = {"limit": "10", "email": "t"}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 5
+
+
+@mark.asyncio
+async def test_search_with_email_multiple_email_entry(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            emailpassword.init(),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(emailpassword=True)
+    query = {"limit": "10", "email": "iresh;john"}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 1
+
+
+@mark.asyncio
+async def test_search_with_email_iresh(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            emailpassword.init(),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(emailpassword=True)
+    query = {"limit": "10", "email": "iresh"}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 0
+
+
+@mark.asyncio
+async def test_search_with_phone_plus_one(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            PasswordlessRecipe.init(
+                contact_config=ContactConfig(contact_method="EMAIL"),
+                flow_type="USER_INPUT_CODE",
+            ),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(passwordless=True)
+    query = {"limit": "10", "phone": "+1"}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 3
+
+
+@mark.asyncio
+async def test_search_with_phone_one_bracket(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            PasswordlessRecipe.init(
+                contact_config=ContactConfig(contact_method="EMAIL"),
+                flow_type="USER_INPUT_CODE",
+            ),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(passwordless=True)
+    query = {"limit": "10", "phone": "1("}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 0
+
+
+@mark.asyncio
+async def test_search_with_provider_google(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        thirdparty.Apple(
+                            client_id="4398792-io.supertokens.example.service",
+                            client_key_id="7M48Y4RYDL",
+                            client_team_id="YWQCXGJRJL",
+                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        ),
+                        thirdparty.Google(
+                            client_id="467101b197249757c71f",
+                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        ),
+                        thirdparty.Github(
+                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                            client_secret="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",
+                        ),
+                    ]
+                )
+            ),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(thirdparty=True)
+    query = {"limit": "10", "provider": "google"}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 3
+
+
+@mark.asyncio
+async def test_search_with_provider_google_and_phone_1(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            PasswordlessRecipe.init(
+                contact_config=ContactConfig(contact_method="EMAIL"),
+                flow_type="USER_INPUT_CODE",
+            ),
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        thirdparty.Apple(
+                            client_id="4398792-io.supertokens.example.service",
+                            client_key_id="7M48Y4RYDL",
+                            client_team_id="YWQCXGJRJL",
+                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        ),
+                        thirdparty.Google(
+                            client_id="467101b197249757c71f",
+                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        ),
+                        thirdparty.Github(
+                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                            client_secret="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",
+                        ),
+                    ]
+                )
+            ),
+        ],
+    )
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        skip()
+    await create_users(thirdparty=True, passwordless=True)
+    query = {"limit": "10", "provider": "google", "phone": "1"}
+    res = driver_config_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        params=query,
+    )
+    info = extract_info(res)
+    assert res.status_code == 200
+    assert len(info["body"]["users"]) == 0

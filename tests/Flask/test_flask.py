@@ -15,6 +15,7 @@
 import json
 from typing import Any, Dict, Union
 
+import pytest
 from _pytest.fixtures import fixture
 from flask import Flask, g, jsonify, make_response, request
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -52,7 +53,15 @@ from tests.utils import (
     set_key_value_in_config,
     setup_st,
     start_st,
+    create_users,
 )
+from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
+from supertokens_python.framework import BaseRequest
+from supertokens_python.querier import Querier
+from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.passwordless import PasswordlessRecipe, ContactConfig
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
 
 
 def setup_function(_):
@@ -81,6 +90,16 @@ def driver_config_app():
             return await original_func(email, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
+        return original_implementation
+
+    def override_dashboard_functions(original_implementation: RecipeInterface):
+        async def should_allow_access(
+            request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
+        ):
+            auth_header = request.get_header("authorization")
+            return auth_header == "Bearer testapikey"
+
+        original_implementation.should_allow_access = should_allow_access  # type: ignore
         return original_implementation
 
     app = Flask(__name__)
@@ -116,9 +135,25 @@ def driver_config_app():
                             client_key_id="7M48Y4RYDL",
                             client_team_id="YWQCXGJRJL",
                             client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                        )
+                        ),
+                        thirdparty.Google(
+                            client_id="467101b197249757c71f",
+                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        ),
+                        thirdparty.Github(
+                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                            client_secret="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",
+                        ),
                     ]
                 )
+            ),
+            DashboardRecipe.init(
+                api_key="testapikey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
+            ),
+            PasswordlessRecipe.init(
+                contact_config=ContactConfig(contact_method="EMAIL"),
+                flow_type="USER_INPUT_CODE",
             ),
         ],
     )
@@ -443,3 +478,208 @@ def test_remove_header_works():
     assert st_response.get_header("foo") == "bar"
     st_response.remove_header("foo")
     assert st_response.get_header("foo") is None
+
+
+@pytest.mark.asyncio
+async def test_dashboard_search_tags(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdiVersion = await querier.get_api_version()
+    if not cdiVersion:
+        pytest.skip()
+    if not is_version_gte(cdiVersion, "2.20"):
+        pytest.skip()
+    test_client = driver_config_app.test_client()
+    response = test_client.get(
+        "/auth/dashboard/api/search/tags",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["tags"]) != 0
+
+
+@pytest.mark.asyncio
+async def test_search_with_email_t(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(emailpassword=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "email": "t"}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 5
+
+
+@pytest.mark.asyncio
+async def test_search_with_multiple_email_search_terms(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(emailpassword=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "email": "iresh;john"}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_search_with_email_iresh(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(emailpassword=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "email": "iresh"}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_search_with_phone_plus_one(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(passwordless=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "phone": "+1"}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_search_with_phone_one_bracket(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(passwordless=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "phone": "1("}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_search_with_provider_google(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(emailpassword=False, passwordless=False, thirdparty=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "provider": "google"}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_search_with_provider_google_and_phone_one(driver_config_app: Any):
+    start_st()
+    querier = Querier.get_instance(DashboardRecipe.recipe_id)
+    cdi_version = await querier.get_api_version()
+    if not cdi_version:
+        pytest.skip()
+    if not is_version_gte(cdi_version, "2.20"):
+        pytest.skip()
+    await create_users(emailpassword=False, passwordless=True, thirdparty=True)
+    test_client = driver_config_app.test_client()
+    query = {"limit": "10", "provider": "google", "phone": "1"}
+    response = test_client.get(
+        "/auth/dashboard/api/users",
+        headers={
+            "Authorization": "Bearer testapikey",
+            "Content-Type": "application/json",
+        },
+        query_string=query,
+    )
+
+    assert response.status_code == 200
+    data_json = json.loads(response.data)
+    assert len(data_json["users"]) == 0
