@@ -31,6 +31,7 @@ from typing import (
     List,
     TypeVar,
     Union,
+    Optional,
 )
 from urllib.parse import urlparse
 
@@ -254,8 +255,23 @@ def humanize_time(ms: int) -> str:
     return time_str
 
 
+def set_request_in_user_context_if_not_defined(
+    user_context: Optional[Dict[str, Any]], request: BaseRequest
+) -> Dict[str, Any]:
+    if user_context is None:
+        user_context = {}
+
+    if "_default" not in user_context:
+        user_context["_default"] = {}
+
+    if isinstance(user_context["_default"], dict):
+        user_context["_default"]["request"] = request
+
+    return user_context
+
+
 def default_user_context(request: BaseRequest) -> Dict[str, Any]:
-    return {"_default": {"request": request}}
+    return set_request_in_user_context_if_not_defined({}, request)
 
 
 async def resolve(obj: MaybeAwaitable[_T]) -> _T:

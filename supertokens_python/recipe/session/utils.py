@@ -36,10 +36,6 @@ from ...types import MaybeAwaitable
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
 from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .exceptions import ClaimValidationError
-from .with_jwt.constants import (
-    ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
-    JWT_RESERVED_KEY_USE_ERROR_MESSAGE,
-)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -326,18 +322,7 @@ class JWTConfig:
         property_name_in_access_token_payload: Union[str, None] = None,
         issuer: Union[str, None] = None,
     ):
-        if property_name_in_access_token_payload is None:
-            property_name_in_access_token_payload = "jwt"
-        if (
-            property_name_in_access_token_payload
-            == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-        ):
-            raise Exception(JWT_RESERVED_KEY_USE_ERROR_MESSAGE)
         self.enable = enable
-        self.property_name_in_access_token_payload = (
-            property_name_in_access_token_payload
-        )
-        self.issuer = issuer
 
 
 TokenType = Literal["access", "refresh"]
@@ -347,6 +332,8 @@ TokenTransferMethod = Literal["cookie", "header"]
 class SessionConfig:
     def __init__(
         self,
+        use_dynamic_access_token_signing_key: bool,
+        expose_access_token_to_frontend_in_cookie_based_auth: bool,
         refresh_token_path: NormalisedURLPath,
         cookie_domain: Union[None, str],
         cookie_same_site: Literal["lax", "strict", "none"],
@@ -368,6 +355,10 @@ class SessionConfig:
         self.invalid_claim_status_code = invalid_claim_status_code
 
         self.refresh_token_path = refresh_token_path
+        self.use_dynamic_access_token_signing_key = use_dynamic_access_token_signing_key
+        self.expose_access_token_to_frontend_in_cookie_based_auth = (
+            expose_access_token_to_frontend_in_cookie_based_auth
+        )
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
         self.cookie_secure = cookie_secure
@@ -382,6 +373,8 @@ class SessionConfig:
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
+    use_dynamic_access_token_signing_key: Optional[bool] = None,
+    expose_access_token_to_frontend_in_cookie_based_auth: Optional[bool] = None,
     cookie_domain: Union[str, None] = None,
     cookie_secure: Union[bool, None] = None,
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
@@ -467,7 +460,15 @@ def validate_and_normalise_user_input(
     if jwt is None:
         jwt = JWTConfig(False)
 
+    if use_dynamic_access_token_signing_key is None:
+        use_dynamic_access_token_signing_key = True
+
+    if expose_access_token_to_frontend_in_cookie_based_auth is None:
+        expose_access_token_to_frontend_in_cookie_based_auth = False
+
     return SessionConfig(
+        use_dynamic_access_token_signing_key,
+        expose_access_token_to_frontend_in_cookie_based_auth,
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
         cookie_same_site,

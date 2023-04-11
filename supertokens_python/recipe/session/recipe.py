@@ -40,9 +40,6 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.session.with_jwt import (
-    get_recipe_implementation_with_jwt,
-)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
@@ -75,6 +72,8 @@ class SessionRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
         cookie_domain: Union[str, None] = None,
         cookie_secure: Union[bool, None] = None,
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
@@ -98,6 +97,8 @@ class SessionRecipe(RecipeModule):
         self.openid_recipe: Union[None, OpenIdRecipe] = None
         self.config = validate_and_normalise_user_input(
             app_info,
+            use_dynamic_access_token_signing_key,
+            expose_access_token_to_frontend_in_cookie_based_auth,
             cookie_domain,
             cookie_secure,
             cookie_same_site,
@@ -139,16 +140,11 @@ class SessionRecipe(RecipeModule):
                 recipe_id,
                 app_info,
                 None,
-                self.config.jwt.issuer,
+                None,
                 openid_feature_override,
             )
             recipe_implementation = RecipeImplementation(
                 Querier.get_instance(recipe_id), self.config, self.app_info
-            )
-            recipe_implementation = get_recipe_implementation_with_jwt(
-                recipe_implementation,
-                self.config,
-                self.openid_recipe.recipe_implementation,
             )
         else:
             recipe_implementation = RecipeImplementation(
@@ -289,12 +285,16 @@ class SessionRecipe(RecipeModule):
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
                 SessionRecipe.__instance = SessionRecipe(
                     SessionRecipe.recipe_id,
                     app_info,
+                    use_dynamic_access_token_signing_key,
+                    expose_access_token_to_frontend_in_cookie_based_auth,
                     cookie_domain,
                     cookie_secure,
                     cookie_same_site,

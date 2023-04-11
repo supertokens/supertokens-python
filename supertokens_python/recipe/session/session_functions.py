@@ -23,7 +23,6 @@ from .jwt import ParsedJWTInfo
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
-    from .utils import TokenTransferMethod
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -80,7 +79,7 @@ async def get_session(
     parsed_access_token: ParsedJWTInfo,
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
-    contains_custom_header: bool,
+    always_check_core: bool,
 ) -> Dict[str, Any]:
     handshake_info = await recipe_implementation.get_handshake_info()
     access_token_info = None
@@ -141,19 +140,16 @@ async def get_session(
                     )
                     raise_try_refresh_token_exception("anti-csrf check failed")
 
-    elif handshake_info.anti_csrf == "VIA_CUSTOM_HEADER" and do_anti_csrf_check:
-        if not contains_custom_header:
-            log_debug_message(
-                "getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed"
-            )
-            raise_try_refresh_token_exception(
-                "anti-csrf check failed. Please pass 'rid: \"anti-csrf\"' header in the request, or set doAntiCsrfCheck to false "
-                "for this API"
-            )
+    elif handshake_info.anti_csrf == "VIA_CUSTOM_HEADER":
+        # The function should never be called by this (we check this outside the function as well)
+        # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
+        raise Exception(
+            "Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false"
+        )
 
     if (
         access_token_info is not None
-        and not handshake_info.access_token_blacklisting_enabled
+        and not always_check_core
         and access_token_info["parentRefreshTokenHash1"] is None
     ):
         return {
@@ -161,6 +157,7 @@ async def get_session(
                 "handle": access_token_info["sessionHandle"],
                 "userId": access_token_info["userId"],
                 "userDataInJWT": access_token_info["userData"],
+                "expiryTime": access_token_info["expiryTime"],
             }
         }
 
@@ -216,28 +213,25 @@ async def refresh_session(
     recipe_implementation: RecipeImplementation,
     refresh_token: str,
     anti_csrf_token: Union[str, None],
-    contains_custom_header: bool,
-    transfer_method: TokenTransferMethod,
+    disable_anti_csrf: bool,
 ) -> Dict[str, Any]:
-    handshake_info = await recipe_implementation.get_handshake_info()
     data = {
         "refreshToken": refresh_token,
-        "enableAntiCsrf": transfer_method == "cookie"
-        and handshake_info.anti_csrf == "VIA_TOKEN",
+        "antiCsrfToken": anti_csrf_token,
+        "enableAntiCsrf": not disable_anti_csrf
+        and recipe_implementation.config.anti_csrf == "VIA_TOKEN",
     }
-    if anti_csrf_token is not None:
-        data["antiCsrfToken"] = anti_csrf_token
 
-    if handshake_info.anti_csrf == "VIA_CUSTOM_HEADER" and transfer_method == "cookie":
-        if not contains_custom_header:
-            log_debug_message(
-                "refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed"
-            )
-            raise_unauthorised_exception(
-                "anti-csrf check failed. Please pass 'rid: \"session\"' header "
-                "in the request.",
-                False,
-            )
+    if (
+        recipe_implementation.config.anti_csrf == "VIA_CUSTOM_HEADER"
+        and not disable_anti_csrf
+    ):
+        # The function should never be called by this (we check this outside the function as well)
+        # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
+        raise Exception(
+            "Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false"
+        )
+
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session/refresh"), data
     )

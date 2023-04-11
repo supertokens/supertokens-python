@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from base64 import b64decode
 from json import dumps, loads
 from textwrap import wrap
@@ -20,6 +19,7 @@ from typing import Any, Dict
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
+
 from supertokens_python.utils import utf_base64decode, utf_base64encode
 
 _key_start = "-----BEGIN PUBLIC KEY-----\n"
