@@ -272,6 +272,7 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
+        query: Union[Dict[str, str], None] = None,
     ) -> UsersResponse:
         querier = Querier.get_instance(None)
         params = {"timeJoinedOrder": time_joined_order}
@@ -284,6 +285,9 @@ class Supertokens:
         if include_recipe_ids is not None:
             include_recipe_ids_str = ",".join(include_recipe_ids)
             params = {"includeRecipeIds": include_recipe_ids_str, **params}
+
+        if query is not None:
+            params = {**params, **query}
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None

@@ -300,6 +300,7 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
+        query: Union[Dict[str, str], None] = None,
     ) -&gt; UsersResponse:
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -312,6 +313,9 @@ class Supertokens:
         if include_recipe_ids is not None:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
             params = {&#34;includeRecipeIds&#34;: include_recipe_ids_str, **params}
+
+        if query is not None:
+            params = {**params, **query}
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None
@@ -867,6 +871,7 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
+        query: Union[Dict[str, str], None] = None,
     ) -&gt; UsersResponse:
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -879,6 +884,9 @@ class Supertokens:
         if include_recipe_ids is not None:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
             params = {&#34;includeRecipeIds&#34;: include_recipe_ids_str, **params}
+
+        if query is not None:
+            params = {**params, **query}
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None
@@ -1412,7 +1420,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_users"><code class="name flex">
-<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None], pagination_token: Union[str, None], include_recipe_ids: Union[None, List[str]]) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None], pagination_token: Union[str, None], include_recipe_ids: Union[None, List[str]], query: Union[Dict[str, str], None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1426,6 +1434,7 @@ def reset():
     limit: Union[int, None],
     pagination_token: Union[str, None],
     include_recipe_ids: Union[None, List[str]],
+    query: Union[Dict[str, str], None] = None,
 ) -&gt; UsersResponse:
     querier = Querier.get_instance(None)
     params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -1438,6 +1447,9 @@ def reset():
     if include_recipe_ids is not None:
         include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
         params = {&#34;includeRecipeIds&#34;: include_recipe_ids_str, **params}
+
+    if query is not None:
+        params = {**params, **query}
 
     response = await querier.send_get_request(NormalisedURLPath(USERS), params)
     next_pagination_token = None
