@@ -16,8 +16,6 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-import jwt
-
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import resolve
@@ -48,16 +46,17 @@ from .interfaces import (
     SessionInformationResult,
     SessionObj,
 )
+from .jwks import JWKClient
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
 from .utils import SessionConfig, validate_claims_in_payload
-
 
 if TYPE_CHECKING:
     from typing import List, Union
     from supertokens_python import AppInfo
     from supertokens_python.querier import Querier
 
+from .constants import JWKCacheMaxAgeInMs
 from .interfaces import SessionContainer
 
 protected_props = [
@@ -79,10 +78,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self.app_info = app_info
 
     @property
-    def JWK_Clients(self) -> List[jwt.PyJWKClient]:
-        # FIXME: Find params OR Implement caching
+    def JWK_clients(self) -> List[JWKClient]:
         return [
-            jwt.PyJWKClient(uri)
+            JWKClient(uri, cooldown_duration=500, cache_max_age=JWKCacheMaxAgeInMs)
             for uri in self.querier.get_all_core_urls_for_path(".well-known/jwks.json")
         ]
 

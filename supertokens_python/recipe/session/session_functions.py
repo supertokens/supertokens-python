@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
 from .access_token import get_info_from_access_token
+from .constants import JWKCacheMaxAgeInMs
 from .jwt import ParsedJWTInfo
 
 if TYPE_CHECKING:
@@ -27,9 +28,6 @@ if TYPE_CHECKING:
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
-
-JWKCacheMaxAgeInMs = 60000
-
 
 from .exceptions import (
     TryRefreshTokenError,
@@ -83,7 +81,7 @@ async def get_session(
     try:
         access_token_info = get_info_from_access_token(
             parsed_access_token,
-            recipe_implementation.JWK_Clients,  # FIXME: Use JWKS
+            recipe_implementation.JWK_clients,
             config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
         )
 

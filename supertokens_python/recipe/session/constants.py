@@ -31,3 +31,5 @@ REFRESH_TOKEN_HEADER_KEY = "st-refresh-token"
 ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
 
 available_token_transfer_methods: List[TokenTransferMethod] = ["cookie", "header"]
+
+JWKCacheMaxAgeInMs = 60000

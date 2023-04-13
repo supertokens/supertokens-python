@@ -22,6 +22,7 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
+from .jwks import JWKClient
 from .jwt import ParsedJWTInfo
 
 
@@ -45,37 +46,37 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
 
 def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    jwk_clients: List[jwt.PyJWKClient],
+    jwk_clients: List[JWKClient],
     do_anti_csrf_check: bool,
 ):
+    # TODO: Add different tests to verify this works as expected
     try:
         payload: Optional[Dict[str, Any]] = None
 
+        if jwt_info.version < 3:
+            # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
+            for client in jwk_clients:
+                keys = client.get_latest_keys()
+
+                for k in keys:
+                    try:
+                        payload = jwt.decode(jwt_info.raw_token_string, str(k.key), algorithms=["RS256"])  # type: ignore
+                        break
+                    except DecodeError:
+                        pass
+
+            if payload is None:
+                raise PyJWKClientError("No key found")
+
+        # Came here means token is v3 or above
         for client in jwk_clients:
-            try:
-                # TODO: verify this works as expected
-                signing_key: str = client.get_signing_key_from_jwt(jwt_info.raw_token_string).key  # type: ignore
-                payload = jwt.decode(  # type: ignore
-                    jwt_info.raw_token_string,
-                    signing_key,
-                    algorithms=["RS256"],
-                    options={"verify_signature": True, "verify_exp": True},
-                )
-            except PyJWKClientError as e:
-                # If no kid is present, this error is thrown
-                # So we'll have to try the token against all the keys if it's v2
-                if jwt_info.version == 2:
-                    for client in jwk_clients:
-                        keys = client.get_signing_keys()
-                        for k in keys:
-                            try:
-                                payload = jwt.decode(jwt_info.raw_token_string, str(k.key), algorithms=["RS256"])  # type: ignore
-                            except DecodeError:
-                                pass
-                    if payload is None:
-                        raise e
-            except DecodeError as e:
-                raise e
+            matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_key,
+                algorithms=["RS256"],
+                options={"verify_signature": True, "verify_exp": True},
+            )
 
         assert payload is not None
 
@@ -90,7 +91,7 @@ def get_info_from_access_token(
             user_id = sanitize_string(payload.get("sub"))
             expiry_time = sanitize_number(
                 payload.get("exp", 0) * 1000
-            )  # FIXME: Is adding 0 as default okay?
+            )  # FIXME: Is using 0 as default okay?
             time_created = sanitize_number(payload.get("iat", 0) * 1000)
             user_data = payload
 
