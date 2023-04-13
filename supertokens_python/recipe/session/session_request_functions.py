@@ -105,7 +105,7 @@ async def get_session_from_request(
         if token_string is not None:
             try:
                 info = parse_jwt_without_signature_verification(token_string)
-                validate_access_token_structure(info.payload)
+                validate_access_token_structure(info.payload, info.version)
                 log_debug_message(
                     "getSession: got access token from %s", transfer_method
                 )

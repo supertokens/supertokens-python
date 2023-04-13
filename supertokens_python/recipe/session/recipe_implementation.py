@@ -16,52 +16,42 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
+import jwt
+
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.process_state import AllowedProcessStates, ProcessState
-from supertokens_python.utils import (
-    execute_async,
-    get_timestamp_ms,
-    resolve,
-)
-from ...exceptions import SuperTokensError
+from supertokens_python.utils import resolve
 
+from ...exceptions import SuperTokensError
 from ...types import MaybeAwaitable
 from . import session_functions
 from .access_token import validate_access_token_structure
-from .cookie_and_header import (
-    build_front_token,
-)
-from .exceptions import (
-    TokenTheftError,
-    UnauthorisedError,
-)
+from .cookie_and_header import build_front_token
+from .exceptions import TokenTheftError, UnauthorisedError
 from .interfaces import (
     AccessTokenObj,
     ClaimsValidationResult,
+    CreateNewSessionResult,
     GetClaimValueOkResult,
+    GetSessionOkResult,
+    GetSessionTryRefreshTokenErrorResult,
+    GetSessionUnauthorizedErrorResult,
     JSONObject,
     RecipeInterface,
+    RefreshSessionOkResult,
+    RefreshSessionTokenTheftErrorResult,
+    RefreshSessionUnauthorizedResult,
     RegenerateAccessTokenOkResult,
     SessionClaim,
     SessionClaimValidator,
     SessionDoesNotExistError,
     SessionInformationResult,
     SessionObj,
-    CreateNewSessionResult,
-    GetSessionOkResult,
-    GetSessionUnauthorizedErrorResult,
-    GetSessionTryRefreshTokenErrorResult,
-    RefreshSessionOkResult,
-    RefreshSessionUnauthorizedResult,
-    RefreshSessionTokenTheftErrorResult,
 )
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
-from .utils import (
-    SessionConfig,
-    validate_claims_in_payload,
-)
+from .utils import SessionConfig, validate_claims_in_payload
+
 
 if TYPE_CHECKING:
     from typing import List, Union
@@ -69,7 +59,6 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
 from .interfaces import SessionContainer
-
 
 protected_props = [
     "sub",
@@ -82,86 +71,20 @@ protected_props = [
 ]
 
 
-class HandshakeInfo:
-    def __init__(self, info: Dict[str, Any]):
-        self.access_token_blacklisting_enabled = info["accessTokenBlacklistingEnabled"]
-        self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
-        self.anti_csrf = info["antiCsrf"]
-        self.access_token_validity = info["accessTokenValidity"]
-        self.refresh_token_validity = info["refreshTokenValidity"]
-
-    def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
-        self.raw_jwt_signing_public_key_list = updated_list
-
-    def get_jwt_signing_public_key_list(self) -> List[Dict[str, Any]]:
-        time_now = get_timestamp_ms()
-        return [
-            key
-            for key in self.raw_jwt_signing_public_key_list
-            if key["expiryTime"] > time_now
-        ]
-
-
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self, querier: Querier, config: SessionConfig, app_info: AppInfo):
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
-        self.handshake_info: Union[HandshakeInfo, None] = None
 
-        async def call_get_handshake_info():
-            try:
-                await self.get_handshake_info()
-            except Exception:
-                pass
-
-        try:
-            execute_async(config.mode, call_get_handshake_info)
-        except Exception:
-            pass
-
-    async def get_handshake_info(self, force_refetch: bool = False) -> HandshakeInfo:
-        if (
-            self.handshake_info is None
-            or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0
-            or force_refetch
-        ):
-            ProcessState.get_instance().add_state(
-                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
-            )
-            response = await self.querier.send_post_request(
-                NormalisedURLPath("/recipe/handshake"), {}
-            )
-            self.handshake_info = HandshakeInfo(
-                {**response, "antiCsrf": self.config.anti_csrf}
-            )
-
-            self.update_jwt_signing_public_key_info(
-                response["jwtSigningPublicKeyList"],
-                response["jwtSigningPublicKey"],
-                response["jwtSigningPublicKeyExpiryTime"],
-            )
-
-        return self.handshake_info
-
-    def update_jwt_signing_public_key_info(
-        self,
-        key_list: Union[List[Dict[str, Any]], None],
-        public_key: str,
-        expiry_time: int,
-    ):
-        if key_list is None:
-            key_list = [
-                {
-                    "publicKey": public_key,
-                    "expiryTime": expiry_time,
-                    "createdAt": get_timestamp_ms(),
-                }
-            ]
-
-        if self.handshake_info is not None:
-            self.handshake_info.set_jwt_signing_public_key_list(key_list)
+    @property
+    def JWK_Clients(self) -> List[jwt.PyJWKClient]:
+        # FIXME: Find params OR Implement caching
+        return [
+            jwt.PyJWKClient(uri)
+            for uri in self.querier.get_all_core_urls_for_path(".well-known/jwks.json")
+        ]
 
     async def create_new_session(
         self,
@@ -293,7 +216,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         access_token_obj: Optional[ParsedJWTInfo] = None
         try:
             access_token_obj = parse_jwt_without_signature_verification(access_token)
-            validate_access_token_structure(access_token_obj.payload)
+            validate_access_token_structure(
+                access_token_obj.payload, access_token_obj.version
+            )
         except Exception as e:
             log_debug_message(
                 "getSession: Returning UNAUTHORISED because parsing failed"
@@ -460,12 +385,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         return await session_functions.update_access_token_payload(
             self, session_handle, new_access_token_payload
         )
-
-    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        return (await self.get_handshake_info()).access_token_validity
-
-    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        return (await self.get_handshake_info()).refresh_token_validity
 
     async def merge_into_access_token_payload(
         self,

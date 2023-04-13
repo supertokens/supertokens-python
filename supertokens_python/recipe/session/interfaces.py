@@ -323,14 +323,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        pass
-
-    @abstractmethod
-    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        pass
-
-    @abstractmethod
     async def fetch_and_set_claim(
         self,
         session_handle: str,

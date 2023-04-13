@@ -13,13 +13,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Optional, Union
+
+import jwt
+from jwt.exceptions import DecodeError, PyJWKClientError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwt import ParsedJWTInfo, verify_jwt
+from .jwt import ParsedJWTInfo
 
 
 def sanitize_string(s: Any) -> Union[str, None]:
@@ -41,24 +44,62 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
 
 
 def get_info_from_access_token(
-    jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool
+    jwt_info: ParsedJWTInfo,
+    jwk_clients: List[jwt.PyJWKClient],
+    do_anti_csrf_check: bool,
 ):
     try:
-        verify_jwt(jwt_info, jwt_signing_public_key)
-        payload = jwt_info.payload
+        payload: Optional[Dict[str, Any]] = None
 
-        validate_access_token_structure(payload)
+        for client in jwk_clients:
+            try:
+                # TODO: verify this works as expected
+                signing_key: str = client.get_signing_key_from_jwt(jwt_info.raw_token_string).key  # type: ignore
+                payload = jwt.decode(  # type: ignore
+                    jwt_info.raw_token_string,
+                    signing_key,
+                    algorithms=["RS256"],
+                    options={"verify_signature": True, "verify_exp": True},
+                )
+            except PyJWKClientError as e:
+                # If no kid is present, this error is thrown
+                # So we'll have to try the token against all the keys if it's v2
+                if jwt_info.version == 2:
+                    for client in jwk_clients:
+                        keys = client.get_signing_keys()
+                        for k in keys:
+                            try:
+                                payload = jwt.decode(jwt_info.raw_token_string, str(k.key), algorithms=["RS256"])  # type: ignore
+                            except DecodeError:
+                                pass
+                    if payload is None:
+                        raise e
+            except DecodeError as e:
+                raise e
+
+        assert payload is not None
+
+        validate_access_token_structure(payload, jwt_info.version)
+
+        if jwt_info.version == 2:
+            user_id = sanitize_string(payload.get("userId"))
+            expiry_time = sanitize_number(payload.get("expiryTime"))
+            time_created = sanitize_number(payload.get("timeCreated"))
+            user_data = payload.get("userData")
+        else:
+            user_id = sanitize_string(payload.get("sub"))
+            expiry_time = sanitize_number(
+                payload.get("exp", 0) * 1000
+            )  # FIXME: Is adding 0 as default okay?
+            time_created = sanitize_number(payload.get("iat", 0) * 1000)
+            user_data = payload
 
         session_handle = sanitize_string(payload.get("sessionHandle"))
-        user_id = sanitize_string(payload.get("userId"))
         refresh_token_hash_1 = sanitize_string(payload.get("refreshTokenHash1"))
         parent_refresh_token_hash_1 = sanitize_string(
             payload.get("parentRefreshTokenHash1")
         )
-        user_data = payload.get("userData")
         anti_csrf_token = sanitize_string(payload.get("antiCsrfToken"))
-        expiry_time = sanitize_number(payload.get("expiryTime"))
-        time_created = sanitize_number(payload.get("timeCreated"))
 
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
@@ -85,8 +126,19 @@ def get_info_from_access_token(
         raise_try_refresh_token_exception(e)
 
 
-def validate_access_token_structure(payload: Dict[str, Any]) -> None:
-    if (
+def validate_access_token_structure(payload: Dict[str, Any], version: int) -> None:
+    if version >= 3:
+        if (
+            not isinstance(payload.get("sub"), str)
+            or not isinstance(payload.get("exp"), int)
+            or not isinstance(payload.get("iat"), int)
+            or not isinstance(payload.get("sessionHandle"), str)
+            or not isinstance(payload.get("refreshTokenHash1"), str)
+        ):
+            raise Exception(
+                "Access token does not contain all the information. Maybe the structure has changed?"
+            )
+    elif (
         not isinstance(payload.get("sessionHandle"), str)
         or payload.get("userData") is None
         or not isinstance(payload.get("refreshTokenHash1"), str)

@@ -28,6 +28,9 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 
+JWKCacheMaxAgeInMs = 60000
+
+
 from .exceptions import (
     TryRefreshTokenError,
     raise_token_theft_exception,
@@ -48,9 +51,9 @@ async def create_new_session(
     if access_token_payload is None:
         access_token_payload = {}
 
-    handshake_info = await recipe_implementation.get_handshake_info()
     enable_anti_csrf = (
-        disable_anti_csrf is False and handshake_info.anti_csrf == "VIA_TOKEN"
+        disable_anti_csrf is False
+        and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
     )
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session"),
@@ -61,15 +64,8 @@ async def create_new_session(
             "enableAntiCsrf": enable_anti_csrf,
         },
     )
-    recipe_implementation.update_jwt_signing_public_key_info(
-        response["jwtSigningPublicKeyList"],
-        response["jwtSigningPublicKey"],
-        response["jwtSigningPublicKeyExpiryTime"],
-    )
+
     response.pop("status", None)
-    response.pop("jwtSigningPublicKey", None)
-    response.pop("jwtSigningPublicKeyExpiryTime", None)
-    response.pop("jwtSigningPublicKeyList", None)
 
     return response
 
@@ -81,47 +77,78 @@ async def get_session(
     do_anti_csrf_check: bool,
     always_check_core: bool,
 ) -> Dict[str, Any]:
-    handshake_info = await recipe_implementation.get_handshake_info()
+    config = recipe_implementation.config
     access_token_info = None
-    found_a_sign_key_that_is_older_than_the_access_token = False
 
-    for key in handshake_info.get_jwt_signing_public_key_list():
-        try:
-            access_token_info = get_info_from_access_token(
-                parsed_access_token,
-                key["publicKey"],
-                handshake_info.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
+    try:
+        access_token_info = get_info_from_access_token(
+            parsed_access_token,
+            recipe_implementation.JWK_Clients,  # FIXME: Use JWKS
+            config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
+        )
+
+    except Exception as e:
+        if not isinstance(e, TryRefreshTokenError):
+            raise e
+
+        # if it comes here, it means token verification has failed.
+        # It may be due to:
+        # - signing key was updated and this token was signed with new key
+        # - access token is actually expired
+        # - access token was signed with the older signing key
+
+        # if access token is actually expired, we don't need to call core and
+        # just return TRY_REFRESH_TOKEN to the client
+
+        # if access token creation time is after this signing key was created
+        # we need to call core as there are chances that the token
+        # was signed with the updated signing key
+
+        # if access token creation time is before oldest signing key was created,
+        # so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
+        # the loop we just return TRY_REFRESH_TOKEN
+
+        payload = parsed_access_token.payload
+
+        time_created = payload["timeCreated"]
+        expiry_time = payload["expiryTime"]
+
+        if not isinstance(time_created, int) or not isinstance(expiry_time, int):
+            raise e
+
+        if parsed_access_token.version < 3:
+            if expiry_time < time.time():
+                raise e
+
+            # We check if the token was created since the last time we refreshed the keys from the core
+            # Since we do not know the exact timing of the last refresh, we check against the max age
+            if time_created <= time.time() - JWKCacheMaxAgeInMs:
+                raise e
+        else:
+            # Since v3 (and above) tokens contain a kid we can trust the cache-refresh mechanism of the pyjwt library
+            # This means we do not need to call the core since the signature wouldn't pass verification anyway.
+            raise e
+
+    if parsed_access_token.version > 3:
+        token_use_dynamic_key = (
+            parsed_access_token.kid.startswith("d-")
+            if parsed_access_token.kid is not None
+            else False
+        )
+
+        if token_use_dynamic_key != config.use_dynamic_access_token_signing_key:
+            log_debug_message(
+                "getSession: Returning TRY_REFRESH_TOKEN because the access token doesn't match the useDynamicAccessTokenSigningKey in the config"
             )
 
-            found_a_sign_key_that_is_older_than_the_access_token = True
+            raise_try_refresh_token_exception(
+                "The access token doesn't match the useDynamicAccessTokenSigningKey setting"
+            )
 
-        except Exception as e:
-            if not isinstance(e, TryRefreshTokenError):
-                raise e
+    # If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
+    # anti-csrf check if accesstokenInfo is not undefined which means token verification was successful
 
-            payload = parsed_access_token.payload
-
-            if not isinstance(payload["timeCreated"], int) or not isinstance(
-                payload["expiryTime"], int
-            ):
-                raise e
-
-            if payload["expiryTime"] < time.time():
-                raise e
-
-            if payload["timeCreated"] >= key["createdAt"]:
-                found_a_sign_key_that_is_older_than_the_access_token = True
-                break
-
-    if not found_a_sign_key_that_is_older_than_the_access_token:
-        log_debug_message(
-            "getSession: Returning TRY_REFRESH_TOKEN because signing key in handshake info is not up to date."
-        )
-        raise_try_refresh_token_exception(
-            "access token has expired. Please call the refresh API"
-        )
-
-    if handshake_info.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check:
+    if config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check:
         if access_token_info is not None:
             if (
                 anti_csrf_token is None
@@ -140,7 +167,7 @@ async def get_session(
                     )
                     raise_try_refresh_token_exception("anti-csrf check failed")
 
-    elif handshake_info.anti_csrf == "VIA_CUSTOM_HEADER":
+    elif config.anti_csrf == "VIA_CUSTOM_HEADER":
         # The function should never be called by this (we check this outside the function as well)
         # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
         raise Exception(
@@ -168,7 +195,8 @@ async def get_session(
     data = {
         "accessToken": parsed_access_token.raw_token_string,
         "doAntiCsrfCheck": do_anti_csrf_check,
-        "enableAntiCsrf": handshake_info.anti_csrf == "VIA_TOKEN",
+        "enableAntiCsrf": config.anti_csrf == "VIA_TOKEN",
+        "checkDatabase": always_check_core,
     }
     if anti_csrf_token is not None:
         data["antiCsrfToken"] = anti_csrf_token
@@ -177,31 +205,11 @@ async def get_session(
         NormalisedURLPath("/recipe/session/verify"), data
     )
     if response["status"] == "OK":
-        recipe_implementation.update_jwt_signing_public_key_info(
-            response["jwtSigningPublicKeyList"],
-            response["jwtSigningPublicKey"],
-            response["jwtSigningPublicKeyExpiryTime"],
-        )
         response.pop("status", None)
-        response.pop("jwtSigningPublicKey", None)
-        response.pop("jwtSigningPublicKeyExpiryTime", None)
-        response.pop("jwtSigningPublicKeyList", None)
         return response
     if response["status"] == "UNAUTHORISED":
         log_debug_message("getSession: Returning UNAUTHORISED because of core response")
         raise_unauthorised_exception(response["message"])
-    if (
-        response["jwtSigningPublicKeyList"] is not None
-        or response["jwtSigningPublicKey"] is not None
-        or response["jwtSigningPublicKeyExpiryTime"] is not None
-    ):
-        recipe_implementation.update_jwt_signing_public_key_info(
-            response["jwtSigningPublicKeyList"],
-            response["jwtSigningPublicKey"],
-            response["jwtSigningPublicKeyExpiryTime"],
-        )
-    else:
-        await recipe_implementation.get_handshake_info(True)
 
     log_debug_message(
         "getSession: Returning TRY_REFRESH_TOKEN because of core response"
@@ -218,8 +226,10 @@ async def refresh_session(
     data = {
         "refreshToken": refresh_token,
         "antiCsrfToken": anti_csrf_token,
-        "enableAntiCsrf": not disable_anti_csrf
-        and recipe_implementation.config.anti_csrf == "VIA_TOKEN",
+        "enableAntiCsrf": (
+            not disable_anti_csrf
+            and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
+        ),
     }
 
     if (

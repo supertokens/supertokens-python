@@ -518,20 +518,16 @@ async def merge_into_access_token_payload(
 
 async def create_jwt(
     payload: Dict[str, Any],
-    validity_seconds: Union[None, int] = None,
+    validity_seconds: Optional[int] = None,
+    use_static_signing_key: Optional[bool] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
-    if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.create_jwt(
-            payload, validity_seconds, user_context=user_context
-        )
-
-    raise Exception(
-        "create_jwt cannot be used without enabling the JWT feature. Please set 'enable: True' for jwt config when initialising the Session recipe"
+    return await openid_recipe.recipe_implementation.create_jwt(
+        payload, validity_seconds, use_static_signing_key, user_context
     )
 
 
@@ -539,12 +535,7 @@ async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSR
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
-    if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.get_jwks(user_context)
-
-    raise Exception(
-        "get_jwks cannot be used without enabling the JWT feature. Please set 'enable: True' for jwt config when initialising the Session recipe"
-    )
+    return await openid_recipe.recipe_implementation.get_jwks(user_context)
 
 
 async def get_open_id_discovery_configuration(
@@ -554,13 +545,10 @@ async def get_open_id_discovery_configuration(
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
-    if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
+    return (
+        await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
             user_context
         )
-
-    raise Exception(
-        "get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set 'enable: True' for jwt config when initialising the Session recipe"
     )
 
 

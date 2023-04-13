@@ -197,6 +197,25 @@ class Querier:
 
         return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))
 
+    def get_all_core_urls_for_path(self, path: str) -> List[str]:
+        if self.__hosts is None:
+            return []
+
+        normalized_path = NormalisedURLPath(path)
+
+        result: List[str] = []
+
+        for h in self.__hosts:
+            current_domain = h.domain.get_as_string_dangerous()
+            current_base_path = h.base_path.get_as_string_dangerous()
+
+            result.append(
+                current_domain
+                + current_base_path
+                + normalized_path.get_as_string_dangerous()
+            )
+        return result
+
     async def __send_request_helper(
         self,
         path: NormalisedURLPath,

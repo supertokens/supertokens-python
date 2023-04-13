@@ -199,22 +199,27 @@ def merge_into_access_token_payload(
 
 def create_jwt(
     payload: Dict[str, Any],
-    validity_seconds: Union[None, int] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    validity_seconds: Optional[int] = None,
+    use_static_signing_key: Optional[bool] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import create_jwt as async_create_jwt
 
-    return sync(async_create_jwt(payload, validity_seconds, user_context))
+    return sync(
+        async_create_jwt(
+            payload, validity_seconds, use_static_signing_key, user_context
+        )
+    )
 
 
-def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSResult:
+def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResult:
     from supertokens_python.recipe.session.asyncio import get_jwks as async_get_jwks
 
     return sync(async_get_jwks(user_context))
 
 
 def get_open_id_discovery_configuration(
-    user_context: Union[None, Dict[str, Any]] = None
+    user_context: Optional[Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,
