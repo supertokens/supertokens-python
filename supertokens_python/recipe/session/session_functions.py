@@ -145,32 +145,33 @@ async def get_session(
 
     # If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
     # anti-csrf check if accesstokenInfo is not undefined which means token verification was successful
+    
+    if do_anti_csrf_check:
+        if config.anti_csrf == "VIA_TOKEN":
+            if access_token_info is not None:
+                if (
+                    anti_csrf_token is None
+                    or anti_csrf_token != access_token_info["antiCsrfToken"]
+                ):
+                    if anti_csrf_token is None:
+                        log_debug_message(
+                            "getSession: Returning TRY_REFRESH_TOKEN because antiCsrfToken is missing from request"
+                        )
+                        raise_try_refresh_token_exception(
+                            "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API"
+                        )
+                    else:
+                        log_debug_message(
+                            "getSession: Returning TRY_REFRESH_TOKEN because the passed antiCsrfToken is not the same as in the access token"
+                        )
+                        raise_try_refresh_token_exception("anti-csrf check failed")
 
-    if config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check:
-        if access_token_info is not None:
-            if (
-                anti_csrf_token is None
-                or anti_csrf_token != access_token_info["antiCsrfToken"]
-            ):
-                if anti_csrf_token is None:
-                    log_debug_message(
-                        "getSession: Returning TRY_REFRESH_TOKEN because antiCsrfToken is missing from request"
-                    )
-                    raise_try_refresh_token_exception(
-                        "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API"
-                    )
-                else:
-                    log_debug_message(
-                        "getSession: Returning TRY_REFRESH_TOKEN because the passed antiCsrfToken is not the same as in the access token"
-                    )
-                    raise_try_refresh_token_exception("anti-csrf check failed")
-
-    elif config.anti_csrf == "VIA_CUSTOM_HEADER":
-        # The function should never be called by this (we check this outside the function as well)
-        # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
-        raise Exception(
-            "Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false"
-        )
+        elif config.anti_csrf == "VIA_CUSTOM_HEADER":
+            # The function should never be called by this (we check this outside the function as well)
+            # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
+            raise Exception(
+                "Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false"
+            )
 
     if (
         access_token_info is not None

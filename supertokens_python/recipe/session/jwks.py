@@ -8,22 +8,22 @@ from jwt.api_jwt import decode_complete as decode_token  # type: ignore
 
 from supertokens_python.utils import get_timestamp_ms
 
-from .constants import JWKCacheMaxAgeInMs
+from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 
 
 class JWKClient:
     def __init__(
         self,
         uri: str,
-        cooldown_duration: int = 500,
+        cooldown_duration: int = JWKRequestCooldownInMs,
         cache_max_age: int = JWKCacheMaxAgeInMs,
     ):
         """A client for retrieving JSON Web Key Sets (JWKS) from a given URI.
 
         Args:
             uri (str): The URI of the JWKS.
-            cooldown_duration (int, optional): The cooldown duration in ms. Defaults to 500.
-            cache_max_age (int, optional): The cache max age in ms. Defaults to 300.
+            cooldown_duration (int, optional): The cooldown duration in ms. Defaults to 500 seconds.
+            cache_max_age (int, optional): The cache max age in ms. Defaults to 5 minutes.
 
         Note: The JSON Web Key Set is fetched when no key matches the selection
         process but only as frequently as the `self.cooldown_duration` option
@@ -63,7 +63,8 @@ class JWKClient:
         if self.jwk_set is None or not self.is_fresh():
             self.reload()
 
-        assert self.jwk_set is not None
+        if self.jwk_set is None:
+            raise JWKSRequestError("Failed to fetch the latest keys")
 
         all_keys: List[PyJWK] = self.jwk_set.keys  # type: ignore
 

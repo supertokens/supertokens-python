@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
@@ -32,4 +33,5 @@ ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
 
 available_token_transfer_methods: List[TokenTransferMethod] = ["cookie", "header"]
 
-JWKCacheMaxAgeInMs = 60000
+JWKCacheMaxAgeInMs = 60 * 1000
+JWKRequestCooldownInMs = 500 * 1000

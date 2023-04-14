@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from supertokens_python import AppInfo
     from supertokens_python.querier import Querier
 
-from .constants import JWKCacheMaxAgeInMs
+from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 from .interfaces import SessionContainer
 
 protected_props = [
@@ -80,7 +80,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     @property
     def JWK_clients(self) -> List[JWKClient]:
         return [
-            JWKClient(uri, cooldown_duration=500, cache_max_age=JWKCacheMaxAgeInMs)
+            JWKClient(uri, cooldown_duration=JWKRequestCooldownInMs, cache_max_age=JWKCacheMaxAgeInMs)
             for uri in self.querier.get_all_core_urls_for_path(".well-known/jwks.json")
         ]
 
