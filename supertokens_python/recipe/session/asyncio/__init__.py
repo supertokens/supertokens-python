@@ -65,7 +65,7 @@ async def create_new_session(
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            SessionRecipe.get_instance().app_info.framework  # pyright: ignore
         ].wrap_request(request)
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
@@ -251,7 +251,7 @@ async def get_session(
         user_context = {}
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            SessionRecipe.get_instance().app_info.framework  # pyright: ignore
         ].wrap_request(request)
 
     session_recipe_impl = SessionRecipe.get_instance().recipe_implementation
@@ -278,7 +278,7 @@ async def refresh_session(
         user_context = {}
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            SessionRecipe.get_instance().app_info.framework  # pyright: ignore
         ].wrap_request(request)
 
     return await SessionRecipe.get_instance().recipe_implementation.refresh_session(
@@ -331,6 +331,7 @@ async def get_session_information(
 ) -> Union[SessionInformationResult, None]:
     if user_context is None:
         user_context = {}
+
     return await SessionRecipe.get_instance().recipe_implementation.get_session_information(
         session_handle, user_context
     )

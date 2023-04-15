@@ -13,6 +13,11 @@ extras_require = {
     # we use to develop the SDK with otherwise we get
     # a bunch of type errors on make dev-install depending
     # on changes in these frameworks
+    "litestar": (
+        [
+            "litestar>=2.0.0alpha4, <3.0.0",
+        ]
+    ),
     "fastapi": (
         [
             "respx==0.19.2",

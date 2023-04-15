@@ -13,8 +13,11 @@
 # under the License.
 from abc import ABC, abstractmethod
 from typing import Any, Awaitable, Dict, List, TypeVar, Union
+from typing_extensions import Literal
 
 _T = TypeVar("_T")
+
+SupportedFrameworks = Literal["fastapi", "flask", "django", "litestar"]
 
 
 class ThirdPartyInfo:

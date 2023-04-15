@@ -18,8 +18,6 @@ from typing import Any, Union
 
 from supertokens_python.framework.request import BaseRequest
 
-frameworks = ["fastapi", "flask", "django"]
-
 
 class FrameworkEnum(Enum):
     FASTAPI = 1

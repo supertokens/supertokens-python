@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Unio
 from typing_extensions import Literal
 
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
-
+from supertokens_python.types import SupportedFrameworks
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, USER_DELETE, USERS
 from .exceptions import SuperTokensError
 from .interfaces import (
@@ -95,7 +95,7 @@ class AppInfo:
         app_name: str,
         api_domain: str,
         website_domain: str,
-        framework: Literal["fastapi", "flask", "django"],
+        framework: SupportedFrameworks,
         api_gateway_path: str,
         api_base_path: str,
         website_base_path: str,
@@ -117,7 +117,7 @@ class AppInfo:
         self.website_base_path = NormalisedURLPath(website_base_path)
         if mode is not None:
             self.mode = mode
-        elif framework == "fastapi":
+        elif framework in ("fastapi", "litestar"):
             mode = "asgi"
         else:
             mode = "wsgi"
@@ -145,7 +145,7 @@ class Supertokens:
     def __init__(
         self,
         app_info: InputAppInfo,
-        framework: Literal["fastapi", "flask", "django"],
+        framework: SupportedFrameworks,
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Union[Literal["asgi", "wsgi"], None],
@@ -199,7 +199,7 @@ class Supertokens:
     @staticmethod
     def init(
         app_info: InputAppInfo,
-        framework: Literal["fastapi", "flask", "django"],
+        framework: SupportedFrameworks,
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Union[Literal["asgi", "wsgi"], None],

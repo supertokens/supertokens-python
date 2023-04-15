@@ -30,7 +30,7 @@ itsdangerous==2.1.2
 Jinja2==3.1.1
 jsonschema==3.2.0
 lazy-object-proxy==1.7.1
-Mako==1.2.0
+Mako==1.2.4
 Markdown==3.3.6
 MarkupSafe==2.1.1
 mccabe==0.6.1
@@ -48,7 +48,7 @@ py==1.11.0
 pycodestyle==2.8.0
 pycparser==2.21
 pycryptodome==3.10.4
-pydantic==1.9.0
+pydantic>=1.10.0, <2.0.0
 PyJWT==2.0.1
 pylint==2.12.2
 pyparsing==3.0.7
@@ -84,3 +84,4 @@ uvicorn==0.18.2
 Werkzeug==2.0.3
 wrapt==1.13.3
 zipp==3.7.0
+litestar>=2.0.0alpha4, <3.0.0

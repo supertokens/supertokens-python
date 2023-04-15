@@ -17,6 +17,7 @@ from typing import Callable, List, Union
 
 from . import supertokens
 from .recipe_module import RecipeModule
+from supertokens_python.types import SupportedFrameworks
 
 InputAppInfo = supertokens.InputAppInfo
 Supertokens = supertokens.Supertokens
@@ -26,7 +27,7 @@ AppInfo = supertokens.AppInfo
 
 def init(
     app_info: InputAppInfo,
-    framework: Literal["fastapi", "flask", "django"],
+    framework: SupportedFrameworks,
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
     mode: Union[Literal["asgi", "wsgi"], None] = None,
