@@ -70,7 +70,7 @@ async def handle_user_password_put(
         raise Exception("Should not come here")
 
     async def reset_password(
-        recipe: Any,  # FIXME
+        form_fields: List[NormalisedFormField],
         create_reset_password_token: Callable[
             [str],
             Awaitable[
@@ -89,7 +89,6 @@ async def handle_user_password_put(
     ) -> Union[
         UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse
     ]:
-        form_fields: List[NormalisedFormField] = recipe.get_instance().config.sign_up_feature.form_fields  # type: ignore # FIXME?
         password_form_field = [
             field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
         ][0]
@@ -122,14 +121,14 @@ async def handle_user_password_put(
 
     if recipe_to_use == "emailpassword":
         return await reset_password(
-            EmailPasswordRecipe,
+            EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
             ep_create_reset_password_token,
             ep_reset_password_using_token,
         )
 
     if recipe_to_use == "thirdpartyemailpassword":
         return await reset_password(
-            ThirdPartyEmailPasswordRecipe,
+            ThirdPartyEmailPasswordRecipe.get_instance().email_password_recipe.config.sign_up_feature.form_fields,
             tpep_create_reset_password_token,
             tpep_reset_password_using_token,
         )
