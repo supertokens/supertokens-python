@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+## [0.12.8] - 2023-04-19
+
+- Fixed an issues that threw 500 when changing password for user from dashboard
+
 ## [0.12.7] - 2023-04-18
 
 - Email template for verify email updated
