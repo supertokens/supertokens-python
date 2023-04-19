@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+## [0.12.7] - 2023-04-19
+
+- Fixed am issue that returned 500 when changing password of a user from dashboard 
+
 ## [0.12.6] - 2023-03-31
 
 - Adds search APIs to the dashboard recipe
