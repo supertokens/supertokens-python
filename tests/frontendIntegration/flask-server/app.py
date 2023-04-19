@@ -31,7 +31,6 @@ from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import (
     InputErrorHandlers,
-    SessionContainer,
     SessionRecipe,
 )
 from supertokens_python.recipe.session.framework.flask import verify_session
@@ -139,20 +138,20 @@ def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
     async def create_new_session_custom(
-        _request: BaseRequest,
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
+        disable_anti_csrf: Union[bool, None],
         user_context: Dict[str, Any],
-    ) -> SessionContainer:
+    ):
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
-            _request,
             user_id,
             access_token_payload,
             session_data_in_database,
+            disable_anti_csrf,
             user_context,
         )
 
@@ -192,7 +191,6 @@ def config(
                     override=session.InputOverrideConfig(
                         apis=apis_override_session, functions=functions_override_session
                     ),
-                    jwt=session.JWTConfig(enable_jwt, jwt_property_name),
                 )
             ],
             telemetry=False,

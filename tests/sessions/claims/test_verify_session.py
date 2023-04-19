@@ -22,6 +22,7 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimValidationResult,
     SessionContainer,
     ClaimsValidationResult,
+    ReqResInfo,
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim, NoneClaim
@@ -357,16 +358,20 @@ async def test_should_reject_if_assert_claims_returns_an_error(
 
     recipe_implementation_mock = AsyncMock()
     session_config_mock = MagicMock()
+
     s = Session(
         recipe_implementation_mock,
         session_config_mock,
         "test_access_token",
+        "test_front_token",
+        None,  # refresh token
+        None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
-        {},
-        "cookie",
+        {},  # user_data_in_access_token
+        ReqResInfo(None, None),
+        False,  # access_token_updated
     )
-
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:
         mock.side_effect = lambda _, __: raise_invalid_claims_exception(  # type: ignore
             "INVALID_CLAIM",
@@ -406,10 +411,14 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         recipe_impl_mock,
         session_config_mock,
         "test_access_token",
+        "test_front_token",
+        None,  # refresh token
+        None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
-        {},
-        "cookie",
+        {},  # user_data_in_access_token
+        ReqResInfo(None, None),
+        False,  # access_token_updated
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:

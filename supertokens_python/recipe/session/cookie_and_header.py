@@ -32,7 +32,7 @@ from .constants import (
     available_token_transfer_methods,
 )
 from ...logger import log_debug_message
-from .utils import HUNDRED_YEARS_IN_MS
+from supertokens_python.constants import HUNDRED_YEARS_IN_MS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest

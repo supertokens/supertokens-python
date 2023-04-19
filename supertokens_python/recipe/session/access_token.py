@@ -75,9 +75,11 @@ def get_info_from_access_token(
             if payload is None:
                 raise PyJWKClientError("No key found")
 
-        elif jwt_info.version > 3:
+        elif jwt_info.version >= 3:
             for client in jwk_clients:
-                matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
+                matching_key = client.get_matching_key_from_jwt(
+                    jwt_info.raw_token_string
+                )
                 payload = jwt.decode(  # type: ignore
                     jwt_info.raw_token_string,
                     matching_key,
@@ -97,9 +99,7 @@ def get_info_from_access_token(
             user_data = payload.get("userData")
         else:
             user_id = sanitize_string(payload.get("sub"))
-            expiry_time = sanitize_number(
-                payload.get("exp", 0) * 1000
-            )  # FIXME: Is using 0 as default okay?
+            expiry_time = sanitize_number(payload.get("exp", 0) * 1000)
             time_created = sanitize_number(payload.get("iat", 0) * 1000)
             user_data = payload
 
@@ -113,7 +113,9 @@ def get_info_from_access_token(
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(
+            expiry_time, (int, float)
+        )  # FIXME: Use only int once core is updated
 
         if expiry_time < get_timestamp_ms():
             raise Exception("Access token expired")
@@ -139,8 +141,12 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
     if version >= 3:
         if (
             not isinstance(payload.get("sub"), str)
-            or not isinstance(payload.get("exp"), int)
-            or not isinstance(payload.get("iat"), int)
+            or not isinstance(
+                payload.get("exp"), (int, float)
+            )  # TODO: Leave only int once core is updated
+            or not isinstance(
+                payload.get("iat"), (int, float)
+            )  # TODO: Leave only int once core is updated
             or not isinstance(payload.get("sessionHandle"), str)
             or not isinstance(payload.get("refreshTokenHash1"), str)
         ):

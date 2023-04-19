@@ -5,11 +5,12 @@ from unittest.mock import patch
 from pytest import mark
 from supertokens_python.recipe import session
 
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     JSONObject,
+    ReqResInfo,
     SessionClaimValidator,
     ClaimValidationResult,
     SessionClaim,
@@ -43,15 +44,19 @@ async def test_should_not_throw_for_empty_array():
         s.recipe_implementation,
         s.recipe_implementation.config,
         "test_access_token",
+        "test_front_token",
+        None,  # refresh token
+        None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
-        {},
-        "cookie",
+        {},  # user_data_in_access_token
+        ReqResInfo(None, None),
+        False,  # access_token_updated
     )
     with patch.object(
         Session,
-        "update_access_token_payload",
-        wraps=user_session.update_access_token_payload,
+        "merge_into_access_token_payload",
+        wraps=user_session.merge_into_access_token_payload,
     ) as mock:
         await user_session.assert_claims([])
         mock.assert_not_called()
@@ -71,14 +76,19 @@ async def test_should_call_validate_with_the_same_payload_object():
     assert isinstance(s.recipe_implementation, RecipeImplementation)
 
     payload = {"custom-key": "custom-value"}
+
     user_session = Session(
         s.recipe_implementation,
         s.recipe_implementation.config,
         "test_access_token",
+        "test_front_token",
+        None,  # refresh token
+        None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
-        payload,
-        "cookie",
+        payload,  # user_data_in_access_token
+        ReqResInfo(None, None),
+        False,  # access_token_updated
     )
 
     class DummyClaimValidator(SessionClaimValidator):
@@ -107,8 +117,8 @@ async def test_should_call_validate_with_the_same_payload_object():
 
     with patch.object(
         Session,
-        "update_access_token_payload",
-        wraps=user_session.update_access_token_payload,
+        "merge_into_access_token_payload",
+        wraps=user_session.merge_into_access_token_payload,
     ) as mock:
         await user_session.assert_claims([dummy_claim.validators.dummy_claim_validator])  # type: ignore
 

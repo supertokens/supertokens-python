@@ -45,6 +45,7 @@ from .interfaces import (
     SessionDoesNotExistError,
     SessionInformationResult,
     SessionObj,
+    TokenInfo,
 )
 from .jwks import JWKClient
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
@@ -59,16 +60,6 @@ if TYPE_CHECKING:
 from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 from .interfaces import SessionContainer
 
-protected_props = [
-    "sub",
-    "iat",
-    "exp",
-    "sessionHandle",
-    "parentRefreshTokenHash1",
-    "refreshTokenHash1",
-    "antiCsrfToken",
-]
-
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self, querier: Querier, config: SessionConfig, app_info: AppInfo):
@@ -80,8 +71,14 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     @property
     def JWK_clients(self) -> List[JWKClient]:
         return [
-            JWKClient(uri, cooldown_duration=JWKRequestCooldownInMs, cache_max_age=JWKCacheMaxAgeInMs)
-            for uri in self.querier.get_all_core_urls_for_path(".well-known/jwks.json")
+            JWKClient(
+                uri,
+                cooldown_duration=JWKRequestCooldownInMs,
+                cache_max_age=JWKCacheMaxAgeInMs,
+            )
+            for uri in self.querier.get_all_core_urls_for_path(
+                "./.well-known/jwks.json"
+            )
         ]
 
     async def create_new_session(
@@ -107,6 +104,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             result["accessToken"]["token"]
         ).payload
 
+        refresh_token = result.get("refreshToken")
+        refresh_token_info: Optional[TokenInfo] = None
+        if refresh_token is not None:
+            refresh_token_info = TokenInfo(
+                refresh_token["token"],
+                refresh_token["expiry"],
+                refresh_token["createdTime"],
+            )
+
         new_session = Session(
             self,
             self.config,
@@ -114,8 +120,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             build_front_token(
                 result["session"]["userId"], result["accessToken"]["expiry"], payload
             ),
-            result["refreshToken"],
-            result["antiCsrfToken"],
+            refresh_token_info,
+            result.get("antiCsrfToken"),
             result["session"]["handle"],
             result["session"]["userId"],
             payload,
@@ -309,6 +315,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response["accessToken"]["token"]
             ).payload
 
+            new_refresh_token: Optional[Dict[str, Any]] = response.get("refreshToken")
+            new_refresh_token_info: Optional[TokenInfo] = None
+            if new_refresh_token is not None:
+                new_refresh_token_info = TokenInfo(
+                    new_refresh_token["token"],
+                    new_refresh_token["expiry"],
+                    new_refresh_token["createdTime"],
+                )
+
             session = Session(
                 self,
                 self.config,
@@ -318,8 +333,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     response["accessToken"]["expiry"],
                     payload,
                 ),
-                response["refreshToken"],
-                response["antiCsrfToken"],
+                new_refresh_token_info,
+                response.get("antiCsrfToken"),
                 response["session"]["handle"],
                 response["session"]["userId"],
                 user_data_in_access_token=payload,

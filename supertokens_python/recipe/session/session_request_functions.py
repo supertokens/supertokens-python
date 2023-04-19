@@ -11,11 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Dict, Any, Optional, Callable, List, Union
+from __future__ import annotations
 
-from supertokens_python import AppInfo
+from typing import Any, Optional, Callable, List, Dict, Union
+
 from supertokens_python.logger import log_debug_message
-from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.utils import TokenTransferMethod
 from supertokens_python.recipe.session.access_token import (
     validate_access_token_structure,
 )
@@ -27,8 +29,18 @@ from supertokens_python.recipe.session.cookie_and_header import (
     set_cookie_response_mutator,
 )
 from supertokens_python.recipe.session.exceptions import (
-    raise_unauthorised_exception,
     raise_try_refresh_token_exception,
+    raise_unauthorised_exception,
+)
+from supertokens_python.recipe.session.interfaces import (
+    RecipeInterface as SessionRecipeInterface,
+    SessionClaimValidator,
+    SessionContainer,
+    GetSessionTryRefreshTokenErrorResult,
+    GetSessionUnauthorizedErrorResult,
+    RefreshSessionOkResult,
+    RefreshSessionUnauthorizedResult,
+    RefreshSessionTokenTheftErrorResult,
 )
 from supertokens_python.recipe.session.jwt import (
     ParsedJWTInfo,
@@ -36,27 +48,20 @@ from supertokens_python.recipe.session.jwt import (
 )
 from supertokens_python.recipe.session.utils import (
     SessionConfig,
-    TokenTransferMethod,
     get_required_claim_validators,
 )
+from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
     FRAMEWORKS,
-    is_an_ip_address,
     set_request_in_user_context_if_not_defined,
-    get_rid_from_header,
     normalise_http_method,
-)
-from supertokens_python.recipe.session.interfaces import (
-    RecipeInterface as SessionRecipeInterface,
-    SessionClaimValidator,
-    GetSessionUnauthorizedErrorResult,
-    GetSessionTryRefreshTokenErrorResult,
-    RefreshSessionOkResult,
-    RefreshSessionTokenTheftErrorResult,
-    RefreshSessionUnauthorizedResult,
+    get_rid_from_header,
+    is_an_ip_address,
 )
 
+# In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
+# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
 
@@ -294,11 +299,8 @@ async def create_new_session_in_request(
         await result.session.attach_to_request_response(request, output_transfer_method)
         log_debug_message("createNewSession: Attached new tokens to res")
 
+    # request.set_session(result.session)
     return result.session
-
-
-# In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
-# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
 
 
 async def refresh_session_in_request(

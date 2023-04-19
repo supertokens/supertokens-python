@@ -14,7 +14,6 @@
 from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
 
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
@@ -38,8 +37,10 @@ from supertokens_python.recipe.session.interfaces import (
     RefreshSessionUnauthorizedResult,
     RefreshSessionTokenTheftErrorResult,
 )
-from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.recipe.session.session_request_functions import (
+from supertokens_python.recipe.session.recipe import (
+    SessionRecipe,
+)
+from ..session_request_functions import (
     get_session_from_request,
     create_new_session_in_request,
     refresh_session_in_request,
@@ -278,7 +279,7 @@ async def remove_claim(
 
 
 async def get_session(
-    request: BaseRequest,
+    request: Any,
     session_required: Optional[bool] = None,
     anti_csrf_check: Optional[bool] = None,
     check_database: Optional[bool] = None,

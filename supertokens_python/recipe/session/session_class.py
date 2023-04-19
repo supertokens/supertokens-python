@@ -18,7 +18,8 @@ from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
-from . import TokenTransferMethod
+from .jwt import parse_jwt_without_signature_verification
+from .utils import TokenTransferMethod
 
 from .cookie_and_header import (
     clear_session_response_mutator,
@@ -28,11 +29,12 @@ from .cookie_and_header import (
     access_token_mutator,
 )
 from .interfaces import (
+    ReqResInfo,
     SessionClaim,
     SessionClaimValidator,
     SessionContainer,
 )
-from .recipe_implementation import protected_props
+from .constants import protected_props
 from ...framework import BaseRequest
 
 _T = TypeVar("_T")
@@ -50,6 +52,12 @@ class Session(SessionContainer):
     async def attach_to_request_response(
         self, request: BaseRequest, transfer_method: TokenTransferMethod
     ) -> None:
+        if self.req_res_info is None:
+            self.req_res_info = ReqResInfo(request, transfer_method)
+        else:
+            self.req_res_info.request = request
+            self.req_res_info.transfer_method = transfer_method
+
         if self.access_token_updated:
             self.response_mutators.append(
                 access_token_mutator(
@@ -73,6 +81,8 @@ class Session(SessionContainer):
                 self.response_mutators.append(
                     anti_csrf_response_mutator(self.anti_csrf_token)
                 )
+
+        request.set_session(self)
 
     async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
         if user_context is None:
@@ -253,7 +263,7 @@ class Session(SessionContainer):
         for k in protected_props:
             try:
                 del new_access_token_payload[k]
-            except ValueError:
+            except KeyError:
                 pass
 
         new_access_token_payload = {
@@ -273,7 +283,14 @@ class Session(SessionContainer):
             raise_unauthorised_exception("Session does not exist anymore.")
 
         if response.access_token is not None:
-            payload = response.session.user_data_in_jwt
+            resp_token = parse_jwt_without_signature_verification(
+                response.access_token.token
+            )
+            payload = (
+                resp_token.payload
+                if resp_token.version >= 3
+                else response.session.user_data_in_jwt
+            )
             self.user_data_in_access_token = payload
             self.access_token = response.access_token.token
             self.front_token = build_front_token(

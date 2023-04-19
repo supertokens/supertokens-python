@@ -62,8 +62,8 @@ def create_new_session(
 
 def get_session(
     request: Any,
-    anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    anti_csrf_check: Union[bool, None] = None,
     check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
         Callable[
@@ -80,8 +80,8 @@ def get_session(
     return sync(
         async_get_session(
             request,
-            anti_csrf_check,
             session_required,
+            anti_csrf_check,
             check_database,
             override_global_claim_validators,
             user_context,

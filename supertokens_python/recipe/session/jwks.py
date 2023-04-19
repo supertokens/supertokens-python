@@ -80,7 +80,7 @@ class JWKClient:
         assert self.jwk_set is not None
 
         try:
-            return str(self.jwk_set[kid].key)  # type: ignore
+            return self.jwk_set[kid].key  # type: ignore
         except KeyError:
             if not self.is_cooling_down():
                 # One more attempt to fetch the latest keys

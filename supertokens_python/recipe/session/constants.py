@@ -35,3 +35,12 @@ available_token_transfer_methods: List[TokenTransferMethod] = ["cookie", "header
 
 JWKCacheMaxAgeInMs = 60 * 1000
 JWKRequestCooldownInMs = 500 * 1000
+protected_props = [
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+]

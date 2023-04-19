@@ -59,6 +59,7 @@ async def create_new_session(
             "userId": user_id,
             "userDataInJWT": access_token_payload,
             "userDataInDatabase": session_data_in_database,
+            "useDynamicSigningKey": recipe_implementation.config.use_dynamic_access_token_signing_key,
             "enableAntiCsrf": enable_anti_csrf,
         },
     )
@@ -127,7 +128,7 @@ async def get_session(
             # This means we do not need to call the core since the signature wouldn't pass verification anyway.
             raise e
 
-    if parsed_access_token.version > 3:
+    if parsed_access_token.version >= 3:
         token_use_dynamic_key = (
             parsed_access_token.kid.startswith("d-")
             if parsed_access_token.kid is not None
@@ -145,7 +146,7 @@ async def get_session(
 
     # If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
     # anti-csrf check if accesstokenInfo is not undefined which means token verification was successful
-    
+
     if do_anti_csrf_check:
         if config.anti_csrf == "VIA_TOKEN":
             if access_token_info is not None:
@@ -224,12 +225,14 @@ async def refresh_session(
 ) -> Dict[str, Any]:
     data = {
         "refreshToken": refresh_token,
-        "antiCsrfToken": anti_csrf_token,
         "enableAntiCsrf": (
             not disable_anti_csrf
             and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
         ),
     }
+
+    if anti_csrf_token is not None:
+        data["antiCsrfToken"] = anti_csrf_token
 
     if (
         recipe_implementation.config.anti_csrf == "VIA_CUSTOM_HEADER"

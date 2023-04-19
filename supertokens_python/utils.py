@@ -170,7 +170,10 @@ def utf_base64encode(s: str) -> str:
 
 
 def utf_base64decode(s: str) -> str:
-    return b64decode(s.encode("utf-8")).decode("utf-8")
+    # Adding extra "==" based on
+    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+    # Otherwise it can raise "incorrect padding" error
+    return b64decode(s.encode("utf-8") + b"==").decode("utf-8")
 
 
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:

@@ -71,7 +71,7 @@ def call_api(
     auth_mode: str,
     auth_mode_header: Optional[str] = None,
 ):
-    access_token = info.get("accessToken") or info.get("accessTokenFromHeader")
+    access_token = info.get("accessTokenFromAny")
 
     headers = {}
     cookies = {}
@@ -262,10 +262,10 @@ async def test_should_follow_get_token_transfer_method(
         ("cookie", False, False, True, "validatecookie"),
     ],
 )
-def test_verify_session_parametrized(
+def test_verify_session_parametrized(  # from behaviour table
     app: TestClient,
-    transfer_method: TokenTransferMethod,
-    session_required: bool,
+    transfer_method: TokenTransferMethod,  # transfer method for session recipe config
+    session_required: bool,  # if session is required for verify session
     auth_header: bool,
     auth_cookie: bool,
     result: Optional[str],
@@ -301,7 +301,6 @@ def test_verify_session_parametrized(
         "/verify" if session_required else "/verify-optional",
         401 if result == "UNAUTHORISED" else 200,
         auth_mode,
-        # FIXME: missing auth_mode_header?
     )
     assert res.status_code == (401 if result == "UNAUTHORISED" else 200)
 
@@ -371,7 +370,7 @@ async def test_should_update_acccess_token_payload(
     assert update_info["refreshTokenFromHeader"] is None
 
     # Updated access token
-    assert update_info["accessToken"] is not None
+    assert update_info["accessToken"] is not None  # FIXME: this is failing
     assert update_info["accessToken"] != res["accessTokenFromHeader"]
     # Updated front token
     assert update_info["frontToken"] is not None
@@ -398,7 +397,7 @@ async def test_should_update_acccess_token_payload(
         ("cookie", True, True, "validatecookie", "cookies", "headers"),
     ],
 )
-async def test_xx(  # test_refresh_session_parametrized
+async def test_refresh_session_parametrized(
     app: TestClient,
     transfer_method: TokenTransferMethod,
     auth_header: bool,

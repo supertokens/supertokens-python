@@ -77,7 +77,12 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ],
     )
     start_st()
 
@@ -115,7 +120,6 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response["refreshToken"]["token"],
         response["antiCsrfToken"],
         True,
-        "cookie",
     )
 
     assert response2["session"] is not None
