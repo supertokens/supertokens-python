@@ -60,8 +60,6 @@ from supertokens_python.utils import (
     is_an_ip_address,
 )
 
-# In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
-# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
 
@@ -301,6 +299,10 @@ async def create_new_session_in_request(
 
     # request.set_session(result.session)
     return result.session
+
+
+# In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
+# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
 
 
 async def refresh_session_in_request(

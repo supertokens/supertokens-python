@@ -370,7 +370,7 @@ async def test_should_update_acccess_token_payload(
     assert update_info["refreshTokenFromHeader"] is None
 
     # Updated access token
-    assert update_info["accessToken"] is not None  # FIXME: this is failing
+    assert update_info["accessToken"] is not None
     assert update_info["accessToken"] != res["accessTokenFromHeader"]
     # Updated front token
     assert update_info["frontToken"] is not None
