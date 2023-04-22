@@ -55,7 +55,7 @@ def get_token_transfer_method(*args: Any) -> Any:
 
 
 def override_dashboard_functions(original_implementation: RecipeInterface):
-    async def should_allow_access(
+    def should_allow_access(
         request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
     ):
         auth_header = request.get_header("authorization")
@@ -77,7 +77,7 @@ def teardown_function(_):
 
 
 @fixture(scope="function")
-async def litestar_test_client() -> TestClient[Litestar]:
+def litestar_test_client() -> TestClient[Litestar]:
     @get("/login")
     async def login(request: Request[Any, Any, Any]) -> dict[str, Any]:
         user_id = "userId"
@@ -109,7 +109,7 @@ async def litestar_test_client() -> TestClient[Litestar]:
         "/handle-session-optional",
         dependencies={"session": Provide(verify_session(session_required=False))},
     )
-    async def handle_get_optional(session: SessionContainer) -> dict[str, Any]:
+    def handle_get_optional(session: SessionContainer) -> dict[str, Any]:
 
         if session is None:
             return {"s": "empty session"}
@@ -157,8 +157,7 @@ def apis_override_session(param: APIInterface):
     return param
 
 
-@mark.asyncio
-async def test_login_refresh(litestar_test_client: TestClient[Litestar]):
+def test_login_refresh(litestar_test_client: TestClient[Litestar]):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -228,8 +227,7 @@ async def test_login_refresh(litestar_test_client: TestClient[Litestar]):
     )
 
 
-@mark.asyncio
-async def test_login_logout(litestar_test_client: TestClient[Litestar]):
+def test_login_logout(litestar_test_client: TestClient[Litestar]):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -301,8 +299,7 @@ async def test_login_logout(litestar_test_client: TestClient[Litestar]):
     assert cookies_2["sRefreshToken"]["secure"] is None
 
 
-@mark.asyncio
-async def test_login_info(litestar_test_client: TestClient[Litestar]):
+def test_login_info(litestar_test_client: TestClient[Litestar]):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -357,8 +354,7 @@ async def test_login_info(litestar_test_client: TestClient[Litestar]):
     assert not cookies_2
 
 
-@mark.asyncio
-async def test_login_handle(litestar_test_client: TestClient[Litestar]):
+def test_login_handle(litestar_test_client: TestClient[Litestar]):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -413,8 +409,7 @@ async def test_login_handle(litestar_test_client: TestClient[Litestar]):
     assert "s" in result_dict
 
 
-@mark.asyncio
-async def test_login_refresh_error_handler(litestar_test_client: TestClient[Litestar]):
+def test_login_refresh_error_handler(litestar_test_client: TestClient[Litestar]):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -468,8 +463,7 @@ async def test_login_refresh_error_handler(litestar_test_client: TestClient[Lite
     assert response_3.status_code == 401  # not authorized because no refresh tokens
 
 
-@mark.asyncio
-async def test_custom_response(litestar_test_client: TestClient[Litestar]):
+def test_custom_response(litestar_test_client: TestClient[Litestar]):
     def override_email_password_apis(original_implementation: EPAPIInterface):
         original_func = original_implementation.email_exists_get
 
@@ -514,8 +508,7 @@ async def test_custom_response(litestar_test_client: TestClient[Litestar]):
     assert dict_response["custom"]
 
 
-@mark.asyncio
-async def test_optional_session(litestar_test_client: TestClient[Litestar]):
+def test_optional_session(litestar_test_client: TestClient[Litestar]):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -540,9 +533,8 @@ async def test_optional_session(litestar_test_client: TestClient[Litestar]):
     assert dict_response["s"] == "empty session"
 
 
-@mark.asyncio
 @mark.parametrize("token_transfer_method", ["cookie", "header"])
-async def test_should_clear_all_response_during_refresh_if_unauthorized(
+def test_should_clear_all_response_during_refresh_if_unauthorized(
     litestar_test_client: TestClient[Litestar], token_transfer_method: str
 ):
     def override_session_apis(oi: APIInterface):
@@ -597,9 +589,8 @@ async def test_should_clear_all_response_during_refresh_if_unauthorized(
     assert_info_clears_tokens(info, token_transfer_method)
 
 
-@mark.asyncio
 @mark.parametrize("token_transfer_method", ["cookie", "header"])
-async def test_revoking_session_after_create_new_session_with_throwing_unauthorized_error(
+def test_revoking_session_after_create_new_session_with_throwing_unauthorized_error(
     litestar_test_client: TestClient[Litestar], token_transfer_method: str
 ):
     init(
