@@ -10,7 +10,6 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_information,
     remove_claim,
 )
-from supertokens_python.recipe.session.interfaces import ReqResInfo
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
 from tests.utils import AsyncMock, setup_function, start_st, teardown_function
@@ -39,7 +38,7 @@ async def test_should_attempt_to_set_claim_to_none():
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,  # req_res_info
         False,  # access_token_updated
     )
     with patch.object(
@@ -78,9 +77,7 @@ async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
 
     session_info = await get_session_information(s.get_handle())
     assert session_info is not None
-    payload_after = (
-        session_info.access_token_payload
-    )  # FIXME: This doesn't have stuff other than userData?
+    payload_after = session_info.access_token_payload
     assert payload_after == {}
 
 

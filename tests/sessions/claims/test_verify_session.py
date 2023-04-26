@@ -22,7 +22,6 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimValidationResult,
     SessionContainer,
     ClaimsValidationResult,
-    ReqResInfo,
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim, NoneClaim
@@ -369,7 +368,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,  # req_res_info
         False,  # access_token_updated
     )
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:
@@ -417,7 +416,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,  # req_res_info
         False,  # access_token_updated
     )
 

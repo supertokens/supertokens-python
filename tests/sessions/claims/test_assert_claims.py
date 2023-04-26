@@ -10,7 +10,6 @@ from supertokens_python.recipe.session.recipe_implementation import RecipeImplem
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     JSONObject,
-    ReqResInfo,
     SessionClaimValidator,
     ClaimValidationResult,
     SessionClaim,
@@ -50,7 +49,7 @@ async def test_should_not_throw_for_empty_array():
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,
         False,  # access_token_updated
     )
     with patch.object(
@@ -87,7 +86,7 @@ async def test_should_call_validate_with_the_same_payload_object():
         "test_session_handle",
         "test_user_id",
         payload,  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,  # req_res_info
         False,  # access_token_updated
     )
 

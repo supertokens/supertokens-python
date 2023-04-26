@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 from pytest import mark
 
-from supertokens_python.recipe.session.interfaces import ReqResInfo
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
 from tests.utils import AsyncMock, MagicMock
@@ -30,7 +29,7 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,
         False,  # access_token_updated
     )
 
@@ -61,7 +60,7 @@ async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,  # req_res_info
         False,  # access_token_updated
     )
     with patch.object(

@@ -86,10 +86,9 @@ class SessionInformationResult:
 class ReqResInfo:
     def __init__(
         self,
-        request: Optional[BaseRequest] = None,
-        transfer_method: Optional[TokenTransferMethod] = None,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
     ):
-        # TODO: See if making args optional will cause any issues
         self.request = request
         self.transfer_method = transfer_method
 

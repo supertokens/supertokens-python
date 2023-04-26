@@ -9,7 +9,6 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_information,
     set_claim_value,
 )
-from supertokens_python.recipe.session.interfaces import ReqResInfo
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
 from tests.utils import AsyncMock, setup_function, start_st, teardown_function
@@ -40,7 +39,7 @@ async def test_should_merge_the_right_value(timestamp: int):
         "test_session_handle",
         "test_user_id",
         {},  # user_data_in_access_token
-        ReqResInfo(None, None),
+        None,  # req_res_info
         False,  # access_token_updated
     )
     with patch.object(
@@ -88,7 +87,6 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     s = await get_session_information(s.get_handle())
     assert s is not None
     payload = s.access_token_payload
-    # FIXME: Shouldn't this have other protected_keys as well??
     assert payload == {"st-true": {"t": timestamp, "v": False}}
 
 
