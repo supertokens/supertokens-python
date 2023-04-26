@@ -36,7 +36,7 @@ from supertokens_python.recipe.session.syncio import (
     create_new_session,
     get_session,
     revoke_all_sessions_for_user,
-    update_access_token_payload,
+    merge_into_access_token_payload,
 )
 from typing_extensions import Literal
 
@@ -111,7 +111,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 if value is not None and value.status_code != 200:
                     return value
                 session: SessionContainer = request.supertokens  # type: ignore
-                update_access_token_payload(
+                merge_into_access_token_payload(
                     session.get_handle(), json.loads(request.body)
                 )
                 resp = JsonResponse(session.get_access_token_payload())

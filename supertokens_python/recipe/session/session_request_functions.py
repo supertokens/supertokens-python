@@ -297,7 +297,6 @@ async def create_new_session_in_request(
         await result.session.attach_to_request_response(request, output_transfer_method)
         log_debug_message("createNewSession: Attached new tokens to res")
 
-    # request.set_session(result.session)
     return result.session
 
 

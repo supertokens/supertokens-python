@@ -310,15 +310,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def update_access_token_payload(
-        self,
-        session_handle: str,
-        new_access_token_payload: Dict[str, Any],
-        user_context: Dict[str, Any],
-    ) -> bool:
-        """DEPRECATED: Use merge_into_access_token_payload instead"""
-
-    @abstractmethod
     async def merge_into_access_token_payload(
         self,
         session_handle: str,

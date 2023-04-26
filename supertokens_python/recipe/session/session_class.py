@@ -52,11 +52,7 @@ class Session(SessionContainer):
     async def attach_to_request_response(
         self, request: BaseRequest, transfer_method: TokenTransferMethod
     ) -> None:
-        if self.req_res_info is None:
-            self.req_res_info = ReqResInfo(request, transfer_method)
-        else:
-            self.req_res_info.request = request
-            self.req_res_info.transfer_method = transfer_method
+        self.req_res_info = ReqResInfo(request, transfer_method)
 
         if self.access_token_updated:
             self.response_mutators.append(

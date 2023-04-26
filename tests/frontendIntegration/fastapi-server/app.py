@@ -38,7 +38,7 @@ from supertokens_python.recipe.session.asyncio import (
     SessionRecipe,
     create_new_session,
     revoke_all_sessions_for_user,
-    update_access_token_payload,
+    merge_into_access_token_payload,
 )
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
@@ -302,7 +302,7 @@ async def update_jwt_post(
 async def update_jwt_with_handle_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await update_access_token_payload(_session.get_handle(), await request.json())
+    await merge_into_access_token_payload(_session.get_handle(), await request.json())
     return JSONResponse(
         content=_session.get_access_token_payload(),
         headers={"Cache-Control": "no-cache, private"},

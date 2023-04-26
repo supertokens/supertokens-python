@@ -113,9 +113,7 @@ def get_info_from_access_token(
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
 
-        assert isinstance(
-            expiry_time, (int, float)
-        )  # FIXME: Use only int once core is updated
+        assert isinstance(expiry_time, int)
 
         if expiry_time < get_timestamp_ms():
             raise Exception("Access token expired")
@@ -141,12 +139,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
     if version >= 3:
         if (
             not isinstance(payload.get("sub"), str)
-            or not isinstance(
-                payload.get("exp"), (int, float)
-            )  # TODO: Leave only int once core is updated
-            or not isinstance(
-                payload.get("iat"), (int, float)
-            )  # TODO: Leave only int once core is updated
+            or not isinstance(payload.get("exp"), int)
+            or not isinstance(payload.get("iat"), int)
             or not isinstance(payload.get("sessionHandle"), str)
             or not isinstance(payload.get("refreshTokenHash1"), str)
         ):

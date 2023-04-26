@@ -38,7 +38,7 @@ from supertokens_python.recipe.session.asyncio import (
     revoke_session as asyncio_revoke_session,
 )
 from supertokens_python.recipe.session.asyncio import (
-    update_access_token_payload,
+    merge_into_access_token_payload,
     update_session_data_in_database,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
@@ -215,7 +215,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         assert info.user_id == "someUser"
         assert info.access_token_payload["someKey"] == "someValue"
 
-        is_updated = await update_access_token_payload(
+        is_updated = await merge_into_access_token_payload(
             handle, {"someKey2": "someValue"}
         )
         assert is_updated
@@ -245,7 +245,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         assert info.access_token_payload == {"bar": "baz"}
 
     # Try updating invalid handles:
-    is_updated = await update_access_token_payload("invalidHandle", {"foo": "bar"})
+    is_updated = await merge_into_access_token_payload("invalidHandle", {"foo": "bar"})
     assert is_updated is False
     is_updated = await update_session_data_in_database("invalidHandle", {"foo": "bar"})
     assert is_updated is False

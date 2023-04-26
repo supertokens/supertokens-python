@@ -41,7 +41,7 @@ from supertokens_python.recipe.session.asyncio import (
     revoke_all_sessions_for_user,
 )
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
-from supertokens_python.recipe.session.asyncio import update_access_token_payload
+from supertokens_python.recipe.session.asyncio import merge_into_access_token_payload
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, "../templates/index.html")
@@ -118,7 +118,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 if value is not None and value.status_code != 200:
                     return value
                 session: SessionContainer = request.supertokens  # type: ignore
-                await update_access_token_payload(
+                await merge_into_access_token_payload(
                     session.get_handle(), json.loads(request.body)
                 )
                 resp = JsonResponse(session.get_access_token_payload())

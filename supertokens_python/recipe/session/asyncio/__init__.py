@@ -46,7 +46,7 @@ from ..session_request_functions import (
     refresh_session_in_request,
 )
 from supertokens_python.types import MaybeAwaitable
-from supertokens_python.utils import FRAMEWORKS, resolve, deprecated_warn
+from supertokens_python.utils import FRAMEWORKS, resolve
 from ..exceptions import InvalidClaimsError
 from ..utils import get_required_claim_validators
 from ...jwt.interfaces import (
@@ -484,23 +484,6 @@ async def update_session_data_in_database(
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.update_session_data_in_database(
         session_handle, new_session_data, user_context
-    )
-
-
-async def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> bool:
-    if user_context is None:
-        user_context = {}
-
-    deprecated_warn(
-        "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
-    )
-
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
-        session_handle, new_access_token_payload, user_context
     )
 
 

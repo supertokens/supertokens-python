@@ -104,14 +104,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             result["accessToken"]["token"]
         ).payload
 
-        refresh_token = result.get("refreshToken")
-        refresh_token_info: Optional[TokenInfo] = None
-        if refresh_token is not None:
-            refresh_token_info = TokenInfo(
-                refresh_token["token"],
-                refresh_token["expiry"],
-                refresh_token["createdTime"],
-            )
+        refresh_token = result["refreshToken"]
+        refresh_token_info = TokenInfo(
+            refresh_token["token"],
+            refresh_token["expiry"],
+            refresh_token["createdTime"],
+        )
 
         new_session = Session(
             self,
@@ -315,14 +313,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response["accessToken"]["token"]
             ).payload
 
-            new_refresh_token: Optional[Dict[str, Any]] = response.get("refreshToken")
-            new_refresh_token_info: Optional[TokenInfo] = None
-            if new_refresh_token is not None:
-                new_refresh_token_info = TokenInfo(
-                    new_refresh_token["token"],
-                    new_refresh_token["expiry"],
-                    new_refresh_token["createdTime"],
-                )
+            new_refresh_token: Dict[str, Any] = response["refreshToken"]
+            new_refresh_token_info = TokenInfo(
+                new_refresh_token["token"],
+                new_refresh_token["expiry"],
+                new_refresh_token["createdTime"],
+            )
 
             session = Session(
                 self,
@@ -388,17 +384,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             self, session_handle, new_session_data
         )
 
-    async def update_access_token_payload(
-        self,
-        session_handle: str,
-        new_access_token_payload: Dict[str, Any],
-        user_context: Dict[str, Any],
-    ) -> bool:
-
-        return await session_functions.update_access_token_payload(
-            self, session_handle, new_access_token_payload
-        )
-
     async def merge_into_access_token_payload(
         self,
         session_handle: str,
@@ -417,8 +402,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             if new_access_token_payload[k] is None:
                 del new_access_token_payload[k]
 
-        return await self.update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
+        return await session_functions.update_access_token_payload(
+            self, session_handle, new_access_token_payload
         )
 
     async def fetch_and_set_claim(

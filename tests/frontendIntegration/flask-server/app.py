@@ -11,31 +11,27 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict
-from supertokens_python.recipe.session.syncio import update_access_token_payload
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
-from supertokens_python.framework import BaseRequest, BaseResponse
 import json
 import os
 import sys
 from functools import wraps
-from typing import Union
-
-from typing_extensions import Literal
+from typing import Any, Dict, Union
 
 from flask import Flask, g, jsonify, make_response, render_template, request
 from flask.wrappers import Response
 from flask_cors import CORS
+from typing_extensions import Literal
+
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import (
-    InputErrorHandlers,
-    SessionRecipe,
-)
+from supertokens_python.recipe.session import InputErrorHandlers, SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
 from supertokens_python.recipe.session.syncio import (
     create_new_session,
+    merge_into_access_token_payload,
     revoke_all_sessions_for_user,
 )
 
@@ -316,7 +312,7 @@ def update_jwt():
 # @supertokens_middleware()
 def update_jwt_post():
     _session = g.supertokens
-    _session.sync_update_access_token_payload(request.get_json())
+    _session.sync_merge_access_token_payload(request.get_json())
     Test.increment_get_session()
     resp = make_response(_session.get_access_token_payload())
     resp.headers["Cache-Control"] = "no-cache, private"
@@ -327,7 +323,7 @@ def update_jwt_post():
 @verify_session()
 def update_jwt_with_handle_post():
     _session = g.supertokens
-    update_access_token_payload(_session.get_handle(), request.get_json())
+    merge_into_access_token_payload(_session.get_handle(), request.get_json())
     resp = make_response(_session.get_access_token_payload())
     resp.headers["Cache-Control"] = "no-cache, private"
     return resp

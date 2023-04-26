@@ -165,22 +165,6 @@ def update_session_data_in_database(
     )
 
 
-def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> bool:
-    from supertokens_python.recipe.session.asyncio import (
-        update_access_token_payload as async_update_access_token_payload,
-    )
-
-    return sync(
-        async_update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
-        )
-    )
-
-
 def merge_into_access_token_payload(
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
