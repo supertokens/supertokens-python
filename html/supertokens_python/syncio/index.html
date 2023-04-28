@@ -39,7 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
@@ -60,10 +60,11 @@ def get_users_oldest_first(
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
+    query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            &#34;ASC&#34;, limit, pagination_token, include_recipe_ids
+            &#34;ASC&#34;, limit, pagination_token, include_recipe_ids, query
         )
     )
 
@@ -72,10 +73,11 @@ def get_users_newest_first(
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
+    query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            &#34;DESC&#34;, limit, pagination_token, include_recipe_ids
+            &#34;DESC&#34;, limit, pagination_token, include_recipe_ids, query
         )
     )
 
@@ -223,7 +225,7 @@ def update_or_delete_user_id_mapping_info(
 </details>
 </dd>
 <dt id="supertokens_python.syncio.get_users_newest_first"><code class="name flex">
-<span>def <span class="ident">get_users_newest_first</span></span>(<span>limit: Optional[int] = None, pagination_token: Optional[None] = None, include_recipe_ids: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>def <span class="ident">get_users_newest_first</span></span>(<span>limit: Optional[int] = None, pagination_token: Optional[None] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -235,16 +237,17 @@ def update_or_delete_user_id_mapping_info(
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
+    query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            &#34;DESC&#34;, limit, pagination_token, include_recipe_ids
+            &#34;DESC&#34;, limit, pagination_token, include_recipe_ids, query
         )
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.syncio.get_users_oldest_first"><code class="name flex">
-<span>def <span class="ident">get_users_oldest_first</span></span>(<span>limit: Optional[int] = None, pagination_token: Optional[None] = None, include_recipe_ids: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>def <span class="ident">get_users_oldest_first</span></span>(<span>limit: Optional[int] = None, pagination_token: Optional[None] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -256,10 +259,11 @@ def update_or_delete_user_id_mapping_info(
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
+    query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            &#34;ASC&#34;, limit, pagination_token, include_recipe_ids
+            &#34;ASC&#34;, limit, pagination_token, include_recipe_ids, query
         )
     )</code></pre>
 </details>
