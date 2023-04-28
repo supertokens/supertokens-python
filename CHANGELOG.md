@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.9] - 2023-04-28
 
-- Added missing arguments from `get_users_newest_first` and `get_users_oldest_first`
+- Added missing arguments in `get_users_newest_first` and `get_users_oldest_first`
 
 ## [0.12.8] - 2023-04-19
 
