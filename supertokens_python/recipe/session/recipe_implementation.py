@@ -20,25 +20,17 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import resolve
 
-from ...exceptions import SuperTokensError
 from ...types import MaybeAwaitable
 from . import session_functions
 from .access_token import validate_access_token_structure
 from .cookie_and_header import build_front_token
-from .exceptions import TokenTheftError, UnauthorisedError
+from .exceptions import UnauthorisedError
 from .interfaces import (
     AccessTokenObj,
     ClaimsValidationResult,
-    CreateNewSessionResult,
     GetClaimValueOkResult,
-    GetSessionOkResult,
-    GetSessionTryRefreshTokenErrorResult,
-    GetSessionUnauthorizedErrorResult,
     JSONObject,
     RecipeInterface,
-    RefreshSessionOkResult,
-    RefreshSessionTokenTheftErrorResult,
-    RefreshSessionUnauthorizedResult,
     RegenerateAccessTokenOkResult,
     SessionClaim,
     SessionClaimValidator,
@@ -88,7 +80,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
         user_context: Dict[str, Any],
-    ) -> CreateNewSessionResult:
+    ) -> SessionContainer:
         log_debug_message("createNewSession: Started")
 
         result = await session_functions.create_new_session(
@@ -127,7 +119,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             True,
         )
 
-        return CreateNewSessionResult(new_session)
+        return new_session
 
     async def validate_claims(
         self,
@@ -192,6 +184,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         access_token: str,
         anti_csrf_token: Optional[str],
         anti_csrf_check: Optional[bool] = None,
+        session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
         override_global_claim_validators: Optional[
             Callable[
@@ -200,11 +193,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             ]
         ] = None,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[
-        GetSessionOkResult,
-        GetSessionUnauthorizedErrorResult,
-        GetSessionTryRefreshTokenErrorResult,
-    ]:
+    ) -> Optional[SessionContainer]:
         if (
             anti_csrf_check is not False
             and self.config.anti_csrf == "VIA_CUSTOM_HEADER"
@@ -221,31 +210,24 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             validate_access_token_structure(
                 access_token_obj.payload, access_token_obj.version
             )
-        except Exception as e:
-            log_debug_message(
-                "getSession: Returning UNAUTHORISED because parsing failed"
-            )
-            return GetSessionUnauthorizedErrorResult(e)
-
-        try:
-            response = await session_functions.get_session(
-                self,
-                access_token_obj,
-                anti_csrf_token,
-                (anti_csrf_check is not False),
-                (check_database is True),
-            )
-        except Exception as e:
-            if isinstance(e, UnauthorisedError):
+        except Exception:
+            if (
+                session_required is False
+            ):  # FIXME: But we are setting the default to None instead of False
                 log_debug_message(
-                    "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during get_session"
+                    "getSession: Returning undefined because parsing failed and session_required is False"
                 )
-                return GetSessionUnauthorizedErrorResult(e)
+                return None
 
-            log_debug_message(
-                "getSession: Returning UNAUTHORISED because of an exception during get_session"
-            )
-            return GetSessionUnauthorizedErrorResult(e)
+            raise UnauthorisedError("Token parsing failed", clear_tokens=False)
+
+        response = await session_functions.get_session(
+            self,
+            access_token_obj,
+            anti_csrf_token,
+            (anti_csrf_check is not False),
+            (check_database is True),
+        )
 
         log_debug_message("getSession: Success!")
 
@@ -276,7 +258,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             access_token_updated,
         )
 
-        return GetSessionOkResult(session)
+        return session
 
     async def refresh_session(
         self,
@@ -284,11 +266,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         anti_csrf_token: Optional[str],
         disable_anti_csrf: bool,
         user_context: Dict[str, Any],
-    ) -> Union[
-        RefreshSessionOkResult,
-        RefreshSessionUnauthorizedResult,
-        RefreshSessionTokenTheftErrorResult,
-    ]:
+    ) -> SessionContainer:
         if (
             disable_anti_csrf is not True
             and self.config.anti_csrf == "VIA_CUSTOM_HEADER"
@@ -299,55 +277,45 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         log_debug_message("refreshSession: Started")
 
-        try:
-            response = await session_functions.refresh_session(
-                self,
-                refresh_token,
-                anti_csrf_token,
-                disable_anti_csrf,
-            )
+        response = await session_functions.refresh_session(
+            self,
+            refresh_token,
+            anti_csrf_token,
+            disable_anti_csrf,
+        )
 
-            log_debug_message("refreshSession: Success!")
+        log_debug_message("refreshSession: Success!")
 
-            payload = parse_jwt_without_signature_verification(
-                response["accessToken"]["token"]
-            ).payload
+        payload = parse_jwt_without_signature_verification(
+            response["accessToken"]["token"]
+        ).payload
 
-            new_refresh_token: Dict[str, Any] = response["refreshToken"]
-            new_refresh_token_info = TokenInfo(
-                new_refresh_token["token"],
-                new_refresh_token["expiry"],
-                new_refresh_token["createdTime"],
-            )
+        new_refresh_token: Dict[str, Any] = response["refreshToken"]
+        new_refresh_token_info = TokenInfo(
+            new_refresh_token["token"],
+            new_refresh_token["expiry"],
+            new_refresh_token["createdTime"],
+        )
 
-            session = Session(
-                self,
-                self.config,
-                response["accessToken"]["token"],
-                build_front_token(
-                    response["session"]["userId"],
-                    response["accessToken"]["expiry"],
-                    payload,
-                ),
-                new_refresh_token_info,
-                response.get("antiCsrfToken"),
-                response["session"]["handle"],
+        session = Session(
+            self,
+            self.config,
+            response["accessToken"]["token"],
+            build_front_token(
                 response["session"]["userId"],
-                user_data_in_access_token=payload,
-                req_res_info=None,
-                access_token_updated=True,
-            )
-            return RefreshSessionOkResult(session)
-        except Exception as e:
-            if isinstance(e, SuperTokensError):
-                if isinstance(e, TokenTheftError):
-                    return RefreshSessionTokenTheftErrorResult(e)
-                if isinstance(e, UnauthorisedError):
-                    return RefreshSessionUnauthorizedResult(e)
+                response["accessToken"]["expiry"],
+                payload,
+            ),
+            new_refresh_token_info,
+            response.get("antiCsrfToken"),
+            response["session"]["handle"],
+            response["session"]["userId"],
+            user_data_in_access_token=payload,
+            req_res_info=None,
+            access_token_updated=True,
+        )
 
-            return RefreshSessionUnauthorizedResult(
-                UnauthorisedError(str(e), clear_tokens=False)
-            )
+        return session
 
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]

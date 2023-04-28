@@ -11,8 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, TypeVar, Union, Optional
-from typing_extensions import TypedDict
+from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
@@ -33,19 +32,12 @@ from .interfaces import (
     SessionClaim,
     SessionClaimValidator,
     SessionContainer,
+    GetSessionTokensDangerouslyDict,
 )
 from .constants import protected_props
 from ...framework import BaseRequest
 
 _T = TypeVar("_T")
-
-
-class GetSessionTokensDangerouslyDict(TypedDict):
-    accessToken: str
-    accessAndFrontTokenUpdated: bool
-    refreshToken: Optional[str]
-    frontToken: str
-    antiCsrfToken: Optional[str]
 
 
 class Session(SessionContainer):

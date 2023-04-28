@@ -66,7 +66,7 @@ async def create_new_session(
 
     response.pop("status", None)
 
-    return response
+    return response  # FIXME: type the response
 
 
 async def get_session(
@@ -206,7 +206,7 @@ async def get_session(
     )
     if response["status"] == "OK":
         response.pop("status", None)
-        return response
+        return response  # FIXME: type the response
     if response["status"] == "UNAUTHORISED":
         log_debug_message("getSession: Returning UNAUTHORISED because of core response")
         raise_unauthorised_exception(response["message"])
@@ -249,7 +249,7 @@ async def refresh_session(
     )
     if response["status"] == "OK":
         response.pop("status", None)
-        return response
+        return response  # FIXME: type the response
     if response["status"] == "UNAUTHORISED":
         log_debug_message(
             "refreshSession: Returning UNAUTHORISED because of core response"
