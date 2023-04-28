@@ -37,7 +37,6 @@ from .interfaces import (
     SessionDoesNotExistError,
     SessionInformationResult,
     SessionObj,
-    TokenInfo,
 )
 from .jwks import JWKClient
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
@@ -93,27 +92,20 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         log_debug_message("createNewSession: Finished")
 
         payload = parse_jwt_without_signature_verification(
-            result["accessToken"]["token"]
+            result.accessToken.token
         ).payload
-
-        refresh_token = result["refreshToken"]
-        refresh_token_info = TokenInfo(
-            refresh_token["token"],
-            refresh_token["expiry"],
-            refresh_token["createdTime"],
-        )
 
         new_session = Session(
             self,
             self.config,
-            result["accessToken"]["token"],
+            result.accessToken.token,
             build_front_token(
-                result["session"]["userId"], result["accessToken"]["expiry"], payload
+                result.session.userId, result.accessToken.expiry, payload
             ),
-            refresh_token_info,
-            result.get("antiCsrfToken"),
-            result["session"]["handle"],
-            result["session"]["userId"],
+            result.refreshToken,
+            result.antiCsrfToken,
+            result.session.handle,
+            result.session.userId,
             payload,
             None,
             True,
@@ -231,28 +223,28 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         log_debug_message("getSession: Success!")
 
-        if "accessToken" in response:
+        if response.accessToken is not None:
             payload = parse_jwt_without_signature_verification(
-                response["accessToken"]["token"]
+                response.accessToken.token
             ).payload
-            access_token_str = response["accessToken"]["token"]
-            expiry_time = response["accessToken"]["expiry"]
+            access_token_str = response.accessToken.token
+            expiry_time = response.accessToken.expiry
             access_token_updated = True
         else:
             payload = access_token_obj.payload
             access_token_str = access_token
-            expiry_time = response["session"]["expiryTime"]
+            expiry_time = response.session.expiryTime
             access_token_updated = False
 
         session = Session(
             self,
             self.config,
             access_token_str,
-            build_front_token(response["session"]["userId"], expiry_time, payload),
+            build_front_token(response.session.userId, expiry_time, payload),
             None,  # refresh_token
             anti_csrf_token,
-            response["session"]["handle"],
-            response["session"]["userId"],
+            response.session.handle,
+            response.session.userId,
             payload,
             None,
             access_token_updated,
@@ -287,29 +279,22 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         log_debug_message("refreshSession: Success!")
 
         payload = parse_jwt_without_signature_verification(
-            response["accessToken"]["token"]
+            response.accessToken.token,
         ).payload
-
-        new_refresh_token: Dict[str, Any] = response["refreshToken"]
-        new_refresh_token_info = TokenInfo(
-            new_refresh_token["token"],
-            new_refresh_token["expiry"],
-            new_refresh_token["createdTime"],
-        )
 
         session = Session(
             self,
             self.config,
-            response["accessToken"]["token"],
+            response.accessToken.token,
             build_front_token(
-                response["session"]["userId"],
-                response["accessToken"]["expiry"],
+                response.session.userId,
+                response.accessToken.expiry,
                 payload,
             ),
-            new_refresh_token_info,
-            response.get("antiCsrfToken"),
-            response["session"]["handle"],
-            response["session"]["userId"],
+            response.refreshToken,
+            response.antiCsrfToken,
+            response.session.handle,
+            response.session.userId,
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
