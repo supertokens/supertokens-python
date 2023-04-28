@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
@@ -32,10 +32,11 @@ def get_users_oldest_first(
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
+    query: Union[None, Dict[str, str]] = None,
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            "ASC", limit, pagination_token, include_recipe_ids
+            "ASC", limit, pagination_token, include_recipe_ids, query
         )
     )
 
@@ -44,10 +45,11 @@ def get_users_newest_first(
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
+    query: Union[None, Dict[str, str]] = None,
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            "DESC", limit, pagination_token, include_recipe_ids
+            "DESC", limit, pagination_token, include_recipe_ids, query
         )
     )
 
