@@ -61,7 +61,11 @@ class CreateOrRefreshAPIResponse:
 
 class GetSessionAPIResponseSession:
     def __init__(
-        self, handle: str, userId: str, userDataInJWT: Dict[str, Any], expiryTime: int
+        self,
+        handle: str,
+        userId: str,
+        userDataInJWT: Dict[str, Any],
+        expiryTime: Optional[int] = None,
     ) -> None:
         self.handle = handle
         self.userId = userId
@@ -175,8 +179,8 @@ async def get_session(
 
         payload = parsed_access_token.payload
 
-        time_created = payload["timeCreated"]
-        expiry_time = payload["expiryTime"]
+        time_created = payload.get("timeCreated")
+        expiry_time = payload.get("expiryTime")
 
         if not isinstance(time_created, int) or not isinstance(expiry_time, int):
             raise e
@@ -276,8 +280,7 @@ async def get_session(
             GetSessionAPIResponseSession(
                 response["session"]["handle"],
                 response["session"]["userId"],
-                response["session"]["userData"],
-                response["session"]["expiresAt"],
+                response["session"]["userDataInJWT"],
             ),
             GetSessionAPIResponseAccessToken(
                 response["accessToken"]["token"],

@@ -59,9 +59,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self.config = config
         self.app_info = app_info
 
-    @property
-    def JWK_clients(self) -> List[JWKClient]:
-        return [
+        self.JWK_clients = [
             JWKClient(
                 uri,
                 cooldown_duration=JWKRequestCooldownInMs,
@@ -238,6 +236,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             self,
             self.config,
             access_token_str,
+            # FIXME: expiry time cannot be None
             build_front_token(response.session.userId, expiry_time, payload),
             None,  # refresh_token
             anti_csrf_token,
