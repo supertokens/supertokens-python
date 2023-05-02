@@ -58,6 +58,7 @@ from .interfaces import (
 from .recipe_implementation import (
     RecipeImplementation,
 )
+from .api import handle_refresh_api, handle_signout_api
 from .utils import (
     InputErrorHandlers,
     InputOverrideConfig,
@@ -191,9 +192,6 @@ class SessionRecipe(RecipeModule):
         method: str,
         response: BaseResponse,
     ) -> Union[BaseResponse, None]:
-        # TODO: See if this import can be done globally without triggering cyclic import issues
-        from .api import handle_refresh_api, handle_signout_api
-
         if request_id == SESSION_REFRESH:
             return await handle_refresh_api(
                 self.api_implementation,
@@ -216,7 +214,7 @@ class SessionRecipe(RecipeModule):
                     self.recipe_implementation,
                 ),
             )
-        return await self.openid_recipe.handle_api_request(  # FIXME: Update nested functions to also return None if nothing matches
+        return await self.openid_recipe.handle_api_request(
             request_id, request, path, method, response
         )
 

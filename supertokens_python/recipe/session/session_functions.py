@@ -117,7 +117,9 @@ async def create_new_session(
 
     return CreateOrRefreshAPIResponse(
         CreateOrRefreshAPIResponseSession(
-            response["handle"], response["userId"], response["userDataInJWT"]
+            response["session"]["handle"],
+            response["session"]["userId"],
+            response["session"]["userDataInJWT"],
         ),
         TokenInfo(
             response["accessToken"]["token"],
@@ -327,7 +329,9 @@ async def refresh_session(
         response.pop("status", None)
         return CreateOrRefreshAPIResponse(
             CreateOrRefreshAPIResponseSession(
-                response["handle"], response["userId"], response["userDataInJWT"]
+                response["session"]["handle"],
+                response["session"]["userId"],
+                response["session"]["userDataInJWT"],
             ),
             TokenInfo(
                 response["accessToken"]["token"],

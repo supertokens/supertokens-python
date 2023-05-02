@@ -11,38 +11,37 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
 from supertokens_python.recipe.session.interfaces import (
+    ClaimsValidationResult,
+    GetClaimValueOkResult,
+    JSONObject,
     RegenerateAccessTokenOkResult,
-    SessionContainer,
-    SessionInformationResult,
     SessionClaim,
     SessionClaimValidator,
+    SessionContainer,
     SessionDoesNotExistError,
-    ClaimsValidationResult,
-    JSONObject,
-    GetClaimValueOkResult,
+    SessionInformationResult,
 )
-from supertokens_python.recipe.session.recipe import (
-    SessionRecipe,
-)
-from ..session_request_functions import (
-    get_session_from_request,
-    create_new_session_in_request,
-    refresh_session_in_request,
-)
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import FRAMEWORKS, resolve
-from ..utils import get_required_claim_validators
+
 from ...jwt.interfaces import (
     CreateJwtOkResult,
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+from ..session_request_functions import (
+    create_new_session_in_request,
+    get_session_from_request,
+    refresh_session_in_request,
+)
+from ..utils import get_required_claim_validators
 
 _T = TypeVar("_T")
 
@@ -332,7 +331,7 @@ async def get_session_without_request_response(
     - override_global_claim_validators: Alter the
     - user_context: user context
 
-    Returned statuses:
+    Results:
     - OK: The session was successfully validated, including claim validation
     - CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
     - TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
@@ -347,7 +346,7 @@ async def get_session_without_request_response(
 
     recipe_interface_impl = SessionRecipe.get_instance().recipe_implementation
 
-    session_ = await recipe_interface_impl.get_session(
+    session = await recipe_interface_impl.get_session(
         access_token,
         anti_csrf_token,
         anti_csrf_check,
@@ -357,13 +356,13 @@ async def get_session_without_request_response(
         user_context,
     )
 
-    if session_ is not None:
+    if session is not None:
         claim_validators = await get_required_claim_validators(
-            session_, override_global_claim_validators, user_context
+            session, override_global_claim_validators, user_context
         )
-        await session_.assert_claims(claim_validators, user_context)
+        await session.assert_claims(claim_validators, user_context)
 
-    return session_
+    return session
 
 
 async def refresh_session(

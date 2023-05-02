@@ -203,9 +203,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 access_token_obj.payload, access_token_obj.version
             )
         except Exception:
-            if (
-                session_required is False
-            ):  # FIXME: But we are setting the default to None instead of False
+            if session_required is False:
                 log_debug_message(
                     "getSession: Returning undefined because parsing failed and session_required is False"
                 )

@@ -50,7 +50,7 @@ def get_info_from_access_token(
     do_anti_csrf_check: bool,
 ):
     # TODO: Add different tests to verify this works as expected
-    try:
+    try:  # pylint: disable=too-many-nested-blocks
         payload: Optional[Dict[str, Any]] = None
 
         if jwt_info.version < 3:

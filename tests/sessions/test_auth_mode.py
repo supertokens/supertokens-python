@@ -338,8 +338,14 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
         headers={"anti-csrf": res["antiCsrf"]},
     )
 
+    info = extract_info(response)
+
     assert response.status_code == 401
     assert response.json() == {"message": "try refresh token"}
+
+    assert (
+        "sIdRefreshToken" not in info
+    )  # Doesn't clear sIdRefreshToken from cookies in get_session (called by verify_session)
 
 
 # # SKIPPING:

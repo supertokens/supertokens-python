@@ -13,10 +13,9 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING
 
 from supertokens_python.logger import log_debug_message
-from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.access_token import (
     validate_access_token_structure,
 )
@@ -38,8 +37,8 @@ from supertokens_python.recipe.session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.recipe.session.exceptions import (
+    SuperTokensSessionError,
     TokenTheftError,
     UnauthorisedError,
 )
@@ -61,6 +60,10 @@ from supertokens_python.utils import (
     normalise_http_method,
     set_request_in_user_context_if_not_defined,
 )
+from supertokens_python import Supertokens
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.recipe import SessionRecipe
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
@@ -84,7 +87,7 @@ async def get_session_from_request(
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            Supertokens.get_instance().app_info.framework
         ].wrap_request(request)
 
     log_debug_message("getSession: Wrapping done")
@@ -219,7 +222,7 @@ async def create_new_session_in_request(
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            Supertokens.get_instance().app_info.framework
         ].wrap_request(request)
 
     log_debug_message("createNewSession: Wrapping done")
@@ -265,14 +268,12 @@ async def create_new_session_in_request(
         )
 
     disable_anti_csrf = output_transfer_method == "header"
-    session = (
-        await SessionRecipe.get_instance().recipe_implementation.create_new_session(
-            user_id,
-            final_access_token_payload,
-            session_data_in_database,
-            disable_anti_csrf,
-            user_context=user_context,
-        )
+    session = await recipe_instance.recipe_implementation.create_new_session(
+        user_id,
+        final_access_token_payload,
+        session_data_in_database,
+        disable_anti_csrf,
+        user_context=user_context,
     )
 
     log_debug_message("createNewSession: Session created in core built")
@@ -310,7 +311,7 @@ async def refresh_session_in_request(
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            Supertokens.get_instance().app_info.framework
         ].wrap_request(request)
 
     log_debug_message("refreshSession: Wrapping done")
@@ -370,6 +371,7 @@ async def refresh_session_in_request(
         return raise_unauthorised_exception(
             "Refresh token not found. Are you sending the refresh token in the request?",
             clear_tokens=False,
+            response_mutators=response_mutators,
         )
 
     assert refresh_token is not None
@@ -394,7 +396,7 @@ async def refresh_session_in_request(
         session = await recipe_interface_impl.refresh_session(
             refresh_token, anti_csrf_token, disable_anti_csrf, user_context
         )
-    except SuperTokensError as e:
+    except SuperTokensSessionError as e:
         if isinstance(e, TokenTheftError) or (
             isinstance(e, UnauthorisedError) and getattr(e, "clear_tokens") is True
         ):
@@ -414,6 +416,7 @@ async def refresh_session_in_request(
                     )
                 )
 
+        e.response_mutators.extend(response_mutators)
         raise e
 
     log_debug_message(

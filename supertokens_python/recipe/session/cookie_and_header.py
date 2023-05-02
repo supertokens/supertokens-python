@@ -262,7 +262,7 @@ def _set_token(
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
-    log_debug_message(f"Setting {token_type} token as {transfer_method}")
+    log_debug_message("Setting %s token as %s", token_type, transfer_method)
     if transfer_method == "cookie":
         _set_cookie(
             response,
