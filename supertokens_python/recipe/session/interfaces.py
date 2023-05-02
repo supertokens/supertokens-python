@@ -390,7 +390,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.session_handle = session_handle
         self.user_id = user_id
         self.user_data_in_access_token = user_data_in_access_token
-        self.req_res_info = req_res_info
+        self.req_res_info: Optional[ReqResInfo] = req_res_info
         self.access_token_updated = access_token_updated
 
         self.response_mutators: List[ResponseMutator] = []
