@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Callable
 
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordOkResult,
@@ -28,8 +28,10 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdError,
+    UpdateEmailOrPasswordPasswordPolicyViolationError,
 )
 from supertokens_python.recipe.emailpassword.types import User
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 from ..interfaces import (
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface,
@@ -39,9 +41,14 @@ from ..interfaces import (
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
+    def __init__(
+        self,
+        recipe_implementation: ThirdPartyEmailPasswordRecipeInterface,
+        get_emailpassword_config: Callable[[], EmailPasswordConfig],
+    ):
         super().__init__()
         self.recipe_implementation = recipe_implementation
+        self.get_emailpassword_config = get_emailpassword_config
 
     async def get_user_by_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -114,11 +121,13 @@ class RecipeImplementation(RecipeInterface):
         email: Union[str, None],
         password: Union[str, None],
         user_context: Dict[str, Any],
+        apply_password_policy: Union[bool, None],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         return await self.recipe_implementation.update_email_or_password(
-            user_id, email, password, user_context
+            user_id, email, password, user_context, apply_password_policy
         )

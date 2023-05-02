@@ -43,6 +43,9 @@ UpdateEmailOrPasswordOkResult = EPInterfaces.UpdateEmailOrPasswordOkResult
 UpdateEmailOrPasswordUnknownUserIdError = (
     EPInterfaces.UpdateEmailOrPasswordUnknownUserIdError
 )
+UpdateEmailOrPasswordPasswordPolicyViolationError = (
+    EPInterfaces.UpdateEmailOrPasswordPasswordPolicyViolationError
+)
 
 AuthorisationUrlGetOkResult = ThirdPartyInterfaces.AuthorisationUrlGetOkResult
 ThirdPartySignInUpPostNoEmailGivenByProviderResponse = (
@@ -134,10 +137,12 @@ class RecipeInterface(ABC):
         email: Union[str, None],
         password: Union[str, None],
         user_context: Dict[str, Any],
+        apply_password_policy: Union[bool, None],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         pass
 

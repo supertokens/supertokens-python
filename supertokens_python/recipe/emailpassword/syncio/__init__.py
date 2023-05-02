@@ -24,10 +24,15 @@ def update_email_or_password(
     email: Union[str, None] = None,
     password: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
+    apply_password_policy: Union[bool, None] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 
-    return sync(update_email_or_password(user_id, email, password, user_context))
+    return sync(
+        update_email_or_password(
+            user_id, email, password, user_context, apply_password_policy
+        )
+    )
 
 
 def get_user_by_id(

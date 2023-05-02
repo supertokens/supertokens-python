@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, Callable
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -30,17 +30,25 @@ from .interfaces import (
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdError,
+    UpdateEmailOrPasswordPasswordPolicyViolationError,
 )
 from .types import User
+from .utils import EmailPasswordConfig
+from .constants import FORM_FIELD_PASSWORD_ID
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier):
+    def __init__(
+        self,
+        querier: Querier,
+        get_emailpassword_config: Callable[[], EmailPasswordConfig],
+    ):
         super().__init__()
         self.querier = querier
+        self.get_emailpassword_config = get_emailpassword_config
 
     async def get_user_by_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -139,15 +147,28 @@ class RecipeImplementation(RecipeInterface):
         email: Union[str, None],
         password: Union[str, None],
         user_context: Dict[str, Any],
+        apply_password_policy: Union[bool, None],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         data = {"userId": user_id}
         if email is not None:
             data = {"email": email, **data}
         if password is not None:
+            if apply_password_policy is None or apply_password_policy:
+                form_fields = (
+                    self.get_emailpassword_config().sign_up_feature.form_fields
+                )
+                if form_fields is not None:
+                    password_field = list(
+                        filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
+                    )[0]
+                    error = await password_field.validate(password)
+                    if error is not None:
+                        return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
             data = {"password": password, **data}
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/user"), data
