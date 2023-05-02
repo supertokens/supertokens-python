@@ -12,21 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Union
+from typing import Any
 
 from fastapi import FastAPI
-from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, emailverification, session
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.asyncio import (
-    create_new_session,
-    get_session,
-    refresh_session,
-)
 from tests.utils import (
     setup_function,
     sign_up_request,
@@ -45,45 +38,6 @@ pytestmark = mark.asyncio
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
-
-    @app.get("/login")
-    async def login(request: Request):  # type: ignore
-        user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
-        return {"userId": user_id}
-
-    @app.post("/refresh")
-    async def custom_refresh(request: Request):  # type: ignore
-        await refresh_session(request)
-        return {}  # type: ignore
-
-    @app.get("/info")
-    async def info_get(request: Request):  # type: ignore
-        await get_session(request, True)
-        return {}  # type: ignore
-
-    @app.get("/custom/info")
-    def custom_info(_):  # type: ignore
-        return {}  # type: ignore
-
-    @app.options("/custom/handle")
-    def custom_handle_options(_):  # type: ignore
-        return {"method": "option"}
-
-    @app.get("/handle")
-    async def handle_get(request: Request):  # type: ignore
-        session: Union[SessionContainer, None] = await get_session(request, True)
-        if session is None:
-            raise Exception("Should never come here")
-        return {"s": session.get_handle()}
-
-    @app.post("/logout")
-    async def custom_logout(request: Request):  # type: ignore
-        session: Union[SessionContainer, None] = await get_session(request, True)
-        if session is None:
-            raise Exception("Should never come here")
-        await session.revoke_session()
-        return {}  # type: ignore
 
     return TestClient(app)
 
