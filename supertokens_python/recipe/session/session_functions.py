@@ -65,7 +65,7 @@ class GetSessionAPIResponseSession:
         handle: str,
         userId: str,
         userDataInJWT: Dict[str, Any],
-        expiryTime: Optional[int] = None,
+        expiryTime: int,
     ) -> None:
         self.handle = handle
         self.userId = userId
@@ -281,6 +281,7 @@ async def get_session(
                 response["session"]["handle"],
                 response["session"]["userId"],
                 response["session"]["userDataInJWT"],
+                response["accessToken"]["expiry"],
             ),
             GetSessionAPIResponseAccessToken(
                 response["accessToken"]["token"],

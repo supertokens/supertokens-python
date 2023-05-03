@@ -406,7 +406,7 @@ async def refresh_session_in_request(
                 log_debug_message(
                     "refreshSession: cleared legacy id refresh token because refresh token was not found"
                 )
-                response_mutators.append(  # FIXME: How will this have any effect since raise e won't let the mutator run?
+                response_mutators.append(
                     set_cookie_response_mutator(
                         config,
                         LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,

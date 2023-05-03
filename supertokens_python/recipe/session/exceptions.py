@@ -36,7 +36,7 @@ def raise_unauthorised_exception(
     clear_tokens: bool = True,
     response_mutators: Optional[List[ResponseMutator]] = None,
 ) -> NoReturn:
-    if response_mutators is not None:
+    if response_mutators is None:
         response_mutators = []
 
     err = UnauthorisedError(msg, clear_tokens)
