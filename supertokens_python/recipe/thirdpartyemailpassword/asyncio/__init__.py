@@ -100,13 +100,13 @@ async def update_email_or_password(
     user_id: str,
     email: Union[None, str] = None,
     password: Union[None, str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
     apply_password_policy: Union[bool, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(
-        user_id, email, password, user_context, apply_password_policy
+        user_id, email, password, apply_password_policy, user_context
     )
 
 

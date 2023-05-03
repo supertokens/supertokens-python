@@ -27,6 +27,7 @@ from tests.utils import (
     teardown_function,
 )
 from supertokens_python.recipe.emailpassword import InputFormField
+from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 
 _ = setup_function  # type: ignore
 _ = teardown_function  # type: ignore
@@ -71,7 +72,7 @@ async def test_update_email_or_password_with_default_validator(
 
     user_id = dict_response["user"]["id"]
 
-    r = await emailpassword.EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(
+    r = await update_email_or_password(
         user_id=user_id,
         email=None,
         password="test",
@@ -124,7 +125,7 @@ async def test_update_email_or_password_with_custom_validator(
 
     user_id = dict_response["user"]["id"]
 
-    r = await emailpassword.EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(
+    r = await update_email_or_password(
         user_id=user_id,
         email=None,
         password="te",

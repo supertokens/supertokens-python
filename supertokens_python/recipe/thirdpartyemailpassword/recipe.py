@@ -125,7 +125,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         )
 
         ep_recipe_implementation = EmailPasswordRecipeImplementation(
-            self.recipe_implementation, get_emailpassword_config
+            self.recipe_implementation
         )
 
         email_delivery_ingredient = ingredients.email_delivery

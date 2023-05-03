@@ -79,7 +79,7 @@ class RecipeImplementation(RecipeInterface):
             emailpassword_implementation.update_email_or_password
         )
 
-        derived_ep = DerivedEmailPasswordImplementation(self, get_emailpassword_config)
+        derived_ep = DerivedEmailPasswordImplementation(self)
         emailpassword_implementation.create_reset_password_token = (
             derived_ep.create_reset_password_token
         )
@@ -267,8 +267,8 @@ class RecipeImplementation(RecipeInterface):
         user_id: str,
         email: Union[None, str],
         password: Union[None, str],
-        user_context: Dict[str, Any],
         apply_password_policy: Union[bool, None],
+        user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
@@ -283,5 +283,5 @@ class RecipeImplementation(RecipeInterface):
                 "Cannot update email or password of a user who signed up using third party login."
             )
         return await self.ep_update_email_or_password(
-            user_id, email, password, user_context, apply_password_policy
+            user_id, email, password, apply_password_policy, user_context
         )

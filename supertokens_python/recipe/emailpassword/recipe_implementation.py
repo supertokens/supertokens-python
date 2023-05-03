@@ -146,8 +146,8 @@ class RecipeImplementation(RecipeInterface):
         user_id: str,
         email: Union[str, None],
         password: Union[str, None],
-        user_context: Dict[str, Any],
         apply_password_policy: Union[bool, None],
+        user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
@@ -162,13 +162,12 @@ class RecipeImplementation(RecipeInterface):
                 form_fields = (
                     self.get_emailpassword_config().sign_up_feature.form_fields
                 )
-                if form_fields is not None:
-                    password_field = list(
-                        filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
-                    )[0]
-                    error = await password_field.validate(password)
-                    if error is not None:
-                        return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
+                password_field = list(
+                    filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
+                )[0]
+                error = await password_field.validate(password)
+                if error is not None:
+                    return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
             data = {"password": password, **data}
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/user"), data
