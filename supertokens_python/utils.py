@@ -179,7 +179,7 @@ def utf_base64decode(s: str, urlsafe: bool) -> str:
     if urlsafe:
         return urlsafe_b64decode(s.encode("utf-8") + b"==").decode("utf-8")
 
-    return b64decode(s.encode("utf-8") + b"==").decode("utf-8")
+    return b64decode(s.encode("utf-8")).decode("utf-8")
 
 
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
