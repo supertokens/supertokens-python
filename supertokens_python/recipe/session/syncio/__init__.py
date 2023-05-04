@@ -60,10 +60,32 @@ def create_new_session(
     )
 
 
+def create_new_session_without_request_response(
+    user_id: str,
+    access_token_payload: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
+    disable_anti_csrf: bool = False,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        create_new_session_without_request_response as async_create_new_session_without_request_response,
+    )
+
+    return sync(
+        async_create_new_session_without_request_response(
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
+        )
+    )
+
+
 def get_session(
     request: Any,
-    anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    anti_csrf_check: Union[bool, None] = None,
     check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
         Callable[
@@ -80,6 +102,37 @@ def get_session(
     return sync(
         async_get_session(
             request,
+            session_required,
+            anti_csrf_check,
+            check_database,
+            override_global_claim_validators,
+            user_context,
+        )
+    )
+
+
+def get_session_without_request_response(
+    access_token: str,
+    anti_csrf_token: Optional[str] = None,
+    anti_csrf_check: Optional[bool] = None,
+    session_required: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Optional[SessionContainer]:
+    from supertokens_python.recipe.session.asyncio import (
+        get_session_without_request_response as async_get_session_without_request_response,
+    )
+
+    return sync(
+        async_get_session_without_request_response(
+            access_token,
+            anti_csrf_token,
             anti_csrf_check,
             session_required,
             check_database,
@@ -97,6 +150,26 @@ def refresh_session(
     )
 
     return sync(async_refresh_session(request, user_context))
+
+
+def refresh_session_without_request_response(
+    refresh_token: str,
+    disable_anti_csrf: bool = False,
+    anti_csrf_token: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        refresh_session_without_request_response as async_refresh_session_without_request_response,
+    )
+
+    return sync(
+        async_refresh_session_without_request_response(
+            refresh_token,
+            disable_anti_csrf,
+            anti_csrf_token,
+            user_context,
+        )
+    )
 
 
 def revoke_session(
@@ -161,22 +234,6 @@ def update_session_data_in_database(
     return sync(
         async_update_session_data_in_database(
             session_handle, new_session_data, user_context
-        )
-    )
-
-
-def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> bool:
-    from supertokens_python.recipe.session.asyncio import (
-        update_access_token_payload as async_update_access_token_payload,
-    )
-
-    return sync(
-        async_update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
         )
     )
 

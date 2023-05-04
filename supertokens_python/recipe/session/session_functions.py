@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
+from supertokens_python.recipe.session.interfaces import TokenInfo
 
 from .exceptions import (
     TryRefreshTokenError,
@@ -37,13 +38,65 @@ from .exceptions import (
 )
 
 
+class CreateOrRefreshAPIResponseSession:
+    def __init__(self, handle: str, userId: str, userDataInJWT: Any):
+        self.handle = handle
+        self.userId = userId
+        self.userDataInJWT = userDataInJWT
+
+
+class CreateOrRefreshAPIResponse:
+    def __init__(
+        self,
+        session: CreateOrRefreshAPIResponseSession,
+        accessToken: TokenInfo,
+        refreshToken: TokenInfo,
+        antiCsrfToken: Optional[str],
+    ):
+        self.session = session
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+        self.antiCsrfToken = antiCsrfToken
+
+
+class GetSessionAPIResponseSession:
+    def __init__(
+        self,
+        handle: str,
+        userId: str,
+        userDataInJWT: Dict[str, Any],
+        expiryTime: int,
+    ) -> None:
+        self.handle = handle
+        self.userId = userId
+        self.userDataInJWT = userDataInJWT
+        self.expiryTime = expiryTime
+
+
+class GetSessionAPIResponseAccessToken:
+    def __init__(self, token: str, expiry: int, createdTime: int) -> None:
+        self.token = token
+        self.expiry = expiry
+        self.createdTime = createdTime
+
+
+class GetSessionAPIResponse:
+    def __init__(
+        self,
+        session: GetSessionAPIResponseSession,
+        accessToken: Optional[GetSessionAPIResponseAccessToken] = None,
+    ) -> None:
+        self.session = session
+        self.accessToken = accessToken
+
+
 async def create_new_session(
     recipe_implementation: RecipeImplementation,
     user_id: str,
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
-) -> Dict[str, Any]:
+) -> CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
     if access_token_payload is None:
@@ -59,13 +112,31 @@ async def create_new_session(
             "userId": user_id,
             "userDataInJWT": access_token_payload,
             "userDataInDatabase": session_data_in_database,
+            "useDynamicSigningKey": recipe_implementation.config.use_dynamic_access_token_signing_key,
             "enableAntiCsrf": enable_anti_csrf,
         },
     )
 
     response.pop("status", None)
 
-    return response
+    return CreateOrRefreshAPIResponse(
+        CreateOrRefreshAPIResponseSession(
+            response["session"]["handle"],
+            response["session"]["userId"],
+            response["session"]["userDataInJWT"],
+        ),
+        TokenInfo(
+            response["accessToken"]["token"],
+            response["accessToken"]["expiry"],
+            response["accessToken"]["createdTime"],
+        ),
+        TokenInfo(
+            response["refreshToken"]["token"],
+            response["refreshToken"]["expiry"],
+            response["refreshToken"]["createdTime"],
+        ),
+        response["antiCsrfToken"] if "antiCsrfToken" in response else None,
+    )
 
 
 async def get_session(
@@ -74,9 +145,9 @@ async def get_session(
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     always_check_core: bool,
-) -> Dict[str, Any]:
+) -> GetSessionAPIResponse:
     config = recipe_implementation.config
-    access_token_info = None
+    access_token_info: Optional[Dict[str, Any]] = None
 
     try:
         access_token_info = get_info_from_access_token(
@@ -108,8 +179,8 @@ async def get_session(
 
         payload = parsed_access_token.payload
 
-        time_created = payload["timeCreated"]
-        expiry_time = payload["expiryTime"]
+        time_created = payload.get("timeCreated")
+        expiry_time = payload.get("expiryTime")
 
         if not isinstance(time_created, int) or not isinstance(expiry_time, int):
             raise e
@@ -127,7 +198,7 @@ async def get_session(
             # This means we do not need to call the core since the signature wouldn't pass verification anyway.
             raise e
 
-    if parsed_access_token.version > 3:
+    if parsed_access_token.version >= 3:
         token_use_dynamic_key = (
             parsed_access_token.kid.startswith("d-")
             if parsed_access_token.kid is not None
@@ -145,7 +216,7 @@ async def get_session(
 
     # If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
     # anti-csrf check if accesstokenInfo is not undefined which means token verification was successful
-    
+
     if do_anti_csrf_check:
         if config.anti_csrf == "VIA_TOKEN":
             if access_token_info is not None:
@@ -178,14 +249,14 @@ async def get_session(
         and not always_check_core
         and access_token_info["parentRefreshTokenHash1"] is None
     ):
-        return {
-            "session": {
-                "handle": access_token_info["sessionHandle"],
-                "userId": access_token_info["userId"],
-                "userDataInJWT": access_token_info["userData"],
-                "expiryTime": access_token_info["expiryTime"],
-            }
-        }
+        return GetSessionAPIResponse(
+            GetSessionAPIResponseSession(
+                access_token_info["sessionHandle"],
+                access_token_info["userId"],
+                access_token_info["userData"],
+                access_token_info["expiryTime"],
+            )
+        )
 
     ProcessState.get_instance().add_state(
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -205,7 +276,19 @@ async def get_session(
     )
     if response["status"] == "OK":
         response.pop("status", None)
-        return response
+        return GetSessionAPIResponse(
+            GetSessionAPIResponseSession(
+                response["session"]["handle"],
+                response["session"]["userId"],
+                response["session"]["userDataInJWT"],
+                response["accessToken"]["expiry"],
+            ),
+            GetSessionAPIResponseAccessToken(
+                response["accessToken"]["token"],
+                response["accessToken"]["expiry"],
+                response["accessToken"]["createdTime"],
+            ),
+        )
     if response["status"] == "UNAUTHORISED":
         log_debug_message("getSession: Returning UNAUTHORISED because of core response")
         raise_unauthorised_exception(response["message"])
@@ -221,15 +304,17 @@ async def refresh_session(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
-) -> Dict[str, Any]:
+) -> CreateOrRefreshAPIResponse:
     data = {
         "refreshToken": refresh_token,
-        "antiCsrfToken": anti_csrf_token,
         "enableAntiCsrf": (
             not disable_anti_csrf
             and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
         ),
     }
+
+    if anti_csrf_token is not None:
+        data["antiCsrfToken"] = anti_csrf_token
 
     if (
         recipe_implementation.config.anti_csrf == "VIA_CUSTOM_HEADER"
@@ -246,7 +331,24 @@ async def refresh_session(
     )
     if response["status"] == "OK":
         response.pop("status", None)
-        return response
+        return CreateOrRefreshAPIResponse(
+            CreateOrRefreshAPIResponseSession(
+                response["session"]["handle"],
+                response["session"]["userId"],
+                response["session"]["userDataInJWT"],
+            ),
+            TokenInfo(
+                response["accessToken"]["token"],
+                response["accessToken"]["expiry"],
+                response["accessToken"]["createdTime"],
+            ),
+            TokenInfo(
+                response["refreshToken"]["token"],
+                response["refreshToken"]["expiry"],
+                response["refreshToken"]["createdTime"],
+            ),
+            response["antiCsrfToken"] if "antiCsrfToken" in response else None,
+        )
     if response["status"] == "UNAUTHORISED":
         log_debug_message(
             "refreshSession: Returning UNAUTHORISED because of core response"

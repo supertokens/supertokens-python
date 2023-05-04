@@ -19,16 +19,20 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
 from supertokens_python.framework.response import BaseResponse
 from typing_extensions import Literal
 
-from supertokens_python.utils import default_user_context
+from supertokens_python.utils import (
+    default_user_context,
+)
 
-from .api import handle_refresh_api, handle_signout_api
-from .cookie_and_header import get_cors_allowed_headers
+from .cookie_and_header import (
+    get_cors_allowed_headers,
+)
 from .exceptions import (
     SuperTokensSessionError,
     TokenTheftError,
     UnauthorisedError,
     InvalidClaimsError,
 )
+from ... import AppInfo
 from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
@@ -42,7 +46,6 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
-from .api.implementation import APIImplementation
 from .constants import SESSION_REFRESH, SIGNOUT
 from .interfaces import (
     APIInterface,
@@ -55,11 +58,11 @@ from .interfaces import (
 from .recipe_implementation import (
     RecipeImplementation,
 )
+from .api import handle_refresh_api, handle_signout_api
 from .utils import (
     InputErrorHandlers,
     InputOverrideConfig,
     TokenTransferMethod,
-    JWTConfig,
     validate_and_normalise_user_input,
 )
 
@@ -72,8 +75,6 @@ class SessionRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        use_dynamic_access_token_signing_key: Union[bool, None] = None,
-        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
         cookie_domain: Union[str, None] = None,
         cookie_secure: Union[bool, None] = None,
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
@@ -90,8 +91,9 @@ class SessionRecipe(RecipeModule):
         ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        jwt: Union[JWTConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.openid_recipe = OpenIdRecipe(
@@ -103,8 +105,6 @@ class SessionRecipe(RecipeModule):
         )
         self.config = validate_and_normalise_user_input(
             app_info,
-            use_dynamic_access_token_signing_key,
-            expose_access_token_to_frontend_in_cookie_based_auth,
             cookie_domain,
             cookie_secure,
             cookie_same_site,
@@ -113,8 +113,9 @@ class SessionRecipe(RecipeModule):
             get_token_transfer_method,
             error_handlers,
             override,
-            jwt,
             invalid_claim_status_code,
+            use_dynamic_access_token_signing_key,
+            expose_access_token_to_frontend_in_cookie_based_auth,
         )
         log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
         if self.config.cookie_domain is not None:
@@ -145,6 +146,9 @@ class SessionRecipe(RecipeModule):
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)
         )
+
+        from .api.implementation import APIImplementation
+
         api_implementation = APIImplementation()
         self.api_implementation: APIInterface = (
             api_implementation
@@ -210,7 +214,7 @@ class SessionRecipe(RecipeModule):
                     self.recipe_implementation,
                 ),
             )
-        return await self.openid_recipe.handle_api_request(  # FIXME: Update nested functions to also return None if nothing matches
+        return await self.openid_recipe.handle_api_request(
             request_id, request, path, method, response
         )
 
@@ -266,7 +270,6 @@ class SessionRecipe(RecipeModule):
         ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        jwt: Union[JWTConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
         use_dynamic_access_token_signing_key: Union[bool, None] = None,
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
@@ -276,8 +279,6 @@ class SessionRecipe(RecipeModule):
                 SessionRecipe.__instance = SessionRecipe(
                     SessionRecipe.recipe_id,
                     app_info,
-                    use_dynamic_access_token_signing_key,
-                    expose_access_token_to_frontend_in_cookie_based_auth,
                     cookie_domain,
                     cookie_secure,
                     cookie_same_site,
@@ -286,8 +287,9 @@ class SessionRecipe(RecipeModule):
                     get_token_transfer_method,
                     error_handlers,
                     override,
-                    jwt,
                     invalid_claim_status_code,
+                    use_dynamic_access_token_signing_key,
+                    expose_access_token_to_frontend_in_cookie_based_auth,
                 )
                 return SessionRecipe.__instance
             raise_general_exception(

@@ -50,7 +50,7 @@ def get_info_from_access_token(
     do_anti_csrf_check: bool,
 ):
     # TODO: Add different tests to verify this works as expected
-    try:
+    try:  # pylint: disable=too-many-nested-blocks
         payload: Optional[Dict[str, Any]] = None
 
         if jwt_info.version < 3:
@@ -75,12 +75,14 @@ def get_info_from_access_token(
             if payload is None:
                 raise PyJWKClientError("No key found")
 
-        elif jwt_info.version > 3:
+        elif jwt_info.version >= 3:
             for client in jwk_clients:
-                matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
+                matching_key = client.get_matching_key_from_jwt(
+                    jwt_info.raw_token_string
+                )
                 payload = jwt.decode(  # type: ignore
                     jwt_info.raw_token_string,
-                    matching_key,
+                    matching_key.key,  # type: ignore
                     algorithms=["RS256"],
                     options={"verify_signature": True, "verify_exp": True},
                 )
@@ -97,9 +99,7 @@ def get_info_from_access_token(
             user_data = payload.get("userData")
         else:
             user_id = sanitize_string(payload.get("sub"))
-            expiry_time = sanitize_number(
-                payload.get("exp", 0) * 1000
-            )  # FIXME: Is using 0 as default okay?
+            expiry_time = sanitize_number(payload.get("exp", 0) * 1000)
             time_created = sanitize_number(payload.get("iat", 0) * 1000)
             user_data = payload
 

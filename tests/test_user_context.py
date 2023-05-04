@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional
 
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -112,10 +112,10 @@ async def test_user_context(driver_config_client: TestClient):
         og_create_new_session = param.create_new_session
 
         async def create_new_session(
-            request: Any,
             user_id: str,
-            access_token_payload: Union[None, Dict[str, Any]],
-            session_data_in_database: Union[None, Dict[str, Any]],
+            access_token_payload: Optional[Dict[str, Any]],
+            session_data_in_database: Optional[Dict[str, Any]],
+            disable_anti_csrf: Optional[bool],
             user_context: Dict[str, Any],
         ):
             if (
@@ -125,10 +125,10 @@ async def test_user_context(driver_config_client: TestClient):
             ):
                 user_context["preCreateNewSession"] = True
             response = await og_create_new_session(
-                request,
                 user_id,
                 access_token_payload,
                 session_data_in_database,
+                disable_anti_csrf,
                 user_context,
             )
             if (
@@ -219,10 +219,10 @@ async def test_default_context(driver_config_client: TestClient):
         og_create_new_session = param.create_new_session
 
         async def create_new_session(
-            request: Any,
             user_id: str,
-            access_token_payload: Union[None, Dict[str, Any]],
-            session_data_in_database: Union[None, Dict[str, Any]],
+            access_token_payload: Optional[Dict[str, Any]],
+            session_data_in_database: Optional[Dict[str, Any]],
+            disable_anti_csrf: Optional[bool],
             user_context: Dict[str, Any],
         ):
             req = user_context.get("_default", {}).get("request")
@@ -231,10 +231,10 @@ async def test_default_context(driver_config_client: TestClient):
                 create_new_session_context_works = True
 
             response = await og_create_new_session(
-                request,
                 user_id,
                 access_token_payload,
                 session_data_in_database,
+                disable_anti_csrf,
                 user_context,
             )
             return response

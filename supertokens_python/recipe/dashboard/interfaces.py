@@ -34,7 +34,7 @@ class SessionInfo:
         self.user_id = info.user_id
         self.session_data_in_database = info.session_data_in_database
         self.expiry = info.expiry
-        self.access_token_payload = info.access_token_payload
+        self.access_token_payload = info.custom_claims_in_access_token_payload
         self.time_created = info.time_created
 
 

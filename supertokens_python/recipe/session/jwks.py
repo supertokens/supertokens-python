@@ -70,7 +70,7 @@ class JWKClient:
 
         return all_keys
 
-    def get_matching_key_from_jwt(self, token: str) -> str:
+    def get_matching_key_from_jwt(self, token: str) -> PyJWK:
         header = decode_token(token, options={"verify_signature": False})["header"]
         kid: str = header["kid"]  # type: ignore
 
@@ -80,15 +80,15 @@ class JWKClient:
         assert self.jwk_set is not None
 
         try:
-            return str(self.jwk_set[kid].key)  # type: ignore
-        except KeyError:
+            return self.jwk_set[kid]  # type: ignore
+        except IndexError:
             if not self.is_cooling_down():
                 # One more attempt to fetch the latest keys
                 # and then try to find the key again.
                 self.reload()
                 try:
-                    return str(self.jwk_set[kid].key)  # type: ignore
-                except KeyError:
+                    return self.jwk_set[kid]  # type: ignore
+                except IndexError:
                     pass
 
         raise JWKSKeyNotFoundError("No key found for the given kid")

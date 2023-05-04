@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 from typing import Any, Dict
 
-from supertokens_python.recipe.session.session_request_functions import (
+from ..session_request_functions import (
     get_session_from_request,
     refresh_session_in_request,
 )
@@ -88,5 +88,8 @@ class APIImplementation(APIInterface):
             api_options.request,
             api_options.config,
             api_options.recipe_implementation,
+            session_required=session_required,
+            anti_csrf_check=anti_csrf_check,
+            override_global_claim_validators=override_global_claim_validators,
             user_context=user_context,
         )

@@ -32,7 +32,7 @@ from .constants import (
     available_token_transfer_methods,
 )
 from ...logger import log_debug_message
-from .utils import HUNDRED_YEARS_IN_MS
+from supertokens_python.constants import HUNDRED_YEARS_IN_MS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -262,7 +262,7 @@ def _set_token(
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
-    log_debug_message(f"Setting {token_type} token as {transfer_method}")
+    log_debug_message("Setting %s token as %s", token_type, transfer_method)
     if transfer_method == "cookie":
         _set_cookie(
             response,

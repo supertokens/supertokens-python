@@ -11,19 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from base64 import b64decode
 from json import dumps, loads
 from typing import Any, Dict, Optional
 
 from supertokens_python.utils import utf_base64decode, utf_base64encode
 
-"""
-why separators is used in dumps:
-- without it's use, output of dumps is: '{"alg": "RS256", "typ": "JWT", "version": "1"}'
-- with it's use, output of dumps is: '{"alg":"RS256","typ":"JWT","version":"1"}'
-
-we require the non-spaced version, else the base64 encoding string will end up different than required
-"""
+# why separators is used in dumps:
+# - without it's use, output of dumps is: '{"alg": "RS256", "typ": "JWT", "version": "1"}'
+# - with it's use, output of dumps is: '{"alg":"RS256","typ":"JWT","version":"1"}'
+# we require the non-spaced version, else the base64 encoding string will end up different than required
 _allowed_headers = [
     utf_base64encode(
         dumps(
@@ -68,7 +64,7 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     header, payload, signature = splitted_input
     # checking the header
     if header not in _allowed_headers:
-        parsed_header = loads(b64decode(header.encode()))
+        parsed_header = loads(utf_base64decode(header))
         header_version = parsed_header.get("version")
 
         # We have to ensure version is a string, otherwise Number.parseInt can have unexpected results

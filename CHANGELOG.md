@@ -9,9 +9,358 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
+- Added support for CDI version `2.21`
+- Dropped support for CDI version `2.8` - `2.20`
+- Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
+- `get_access_token_payload` will now return standard (`sub`, `iat`, `exp`) claims and some SuperTokens specific claims along the user defined ones in `get_access_token_payload`.
+- Some claim names are now prohibited in the root level of the access token payload:
+    - They are: `sub`, `iat`, `exp`, `sessionHandle`, `parentRefreshTokenHash1`, `refreshTokenHash1`, `antiCsrfToken`
+    - If you used these in the root level of the access token payload, then you'll need to migrate your sessions or they will be logged out during the next refresh
+    - These props should be renamed (e.g., by adding a prefix) or moved inside an object in the access token payload
+    - You can migrate these sessions by updating their payload to match your new structure, by calling `merge_into_access_token_payload`
+- New access tokens are valid JWTs now
+    - They can be used directly (i.e.: by calling `get_access_token` on the session) if you need a JWT
+    - The `jwt` prop in the access token payload is removed
+- Changed the Session recipe interface - `create_new_session`, `get_session` and `refresh_session` overrides now do not take response and request and return status instead of throwing
+
+### Configuration changes
+
+-   Added `use_dynamic_access_token_signing_key` (defaults to `True`) option to the Session recipe config
+-   Added `expose_access_token_to_frontend_in_cookie_based_auth` (defaults to `False`) option to the Session recipe config
+-   JWT and OpenId related configuration has been removed from the Session recipe config. If necessary, they can be added by initializing the OpenId recipe before the Session recipe.
+
+
+### Interface changes
+
 - Renamed `get_session_data` to `get_session_data_from_database` to clarity that it always hits the DB
 - Renamed `update_session_data` to `update_session_data_in_database`
 - Renamed `session_data` to `session_data_in_database` in `SessionInformation` and the input to `create_new_session`
+- Added new `check_database` param to `verify_session` and `get_session`
+- Removed `status` from `jwks_get` output (function & API)
+- Added new optional `use_static_signing_key` param to `createJWT`
+- Removed deprecated `update_access_token_payload` and `regenerate_access_token` from the Session recipe interface
+- Removed `get_access_token_lifetime_ms` and `get_refresh_token_lifetime_ms` functions
+
+
+## Changes
+
+-   The Session recipe now always initializes the OpenID recipe if it hasn't been initialized.
+-   Refactored how access token validation is done
+-   Removed the handshake call to improve start-up times
+-   Added support for new access token version
+
+### Added
+
+-   Added `create_new_session_without_request_response`, `get_session_without_request_response`, `refresh_session_without_request_response` to the Session recipe.
+-   Added `get_all_session_tokens_dangerously` to session objects (`SessionContainer`)
+-   Added `attach_to_request_response` to session objects (`SessionContainer`)
+
+### Migration
+
+#### If self-hosting core
+
+1. You need to update the core version
+2. There are manual migration steps needed. Check out the core changelogs for more details.
+
+#### If you used the jwt feature of the session recipe
+
+1. Add `expose_access_token_to_frontend_in_cookie_based_auth=true` to the Session recipe config on the backend if you need to access the JWT on the frontend.
+2. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
+
+```tsx
+let jwt = null;
+const accessTokenPayload = await Session.getAccessTokenPayloadSecurely();
+if (accessTokenPayload.jwt === undefined) {
+    jwt = await Session.getAccessToken();
+} else {
+    // This branch is only required if there are valid access tokens created before the update
+    // It can be removed after the validity period ends
+    jwt = accessTokenPayload.jwt;
+}
+```
+
+3. On the backend if you accessed the JWT before by `session.get_access_token_payload()['jwt']` please update to:
+
+```python
+jwt = None
+access_token_payload = await session.get_access_token_payload()
+if access_token_payload.get('jwt') is None:
+    jwt = await session.get_access_token()
+else:
+    # This branch is only required if there are valid access tokens created before the update
+    # It can be removed after the validity period ends
+    jwt = access_token_payload['jwt']
+```
+
+#### If you used to set an issuer in the session recipe `jwt` configuration
+
+-   You can add an issuer claim to access tokens by overriding the `create_new_session` function in the session recipe init.
+    -   Check out https://supertokens.com/docs/passwordless/common-customizations/sessions/claims/access-token-payload#during-session-creation for more information
+-   You can add an issuer claim to JWTs created by the JWT recipe by passing the `iss` claim as part of the payload.
+-   You can set the OpenId discovery configuration as follows:
+
+Before:
+
+```python
+from supertokens_python import init
+from supertokens_python.recipe import session
+
+init(
+    app_info="...",
+    recipe_list=[
+        session.init(jwt=session.JwtConfig(enable=True, issuer="...")) # FIXME: Verify against old types
+    ]
+)
+```
+
+After:
+
+```python
+from supertokens_python import init
+from supertokens_python.recipe import session, openid
+from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIDRecipeInterface
+
+async def openid_functions_override(oi: OpenIDRecipeInterface):
+    oi_get_openid_discovery_config = oi.get_open_id_discovery_configuration
+    
+    async def get_openid_discovery_configuration():
+        config = await oi_get_openid_discovery_config() # FIXME: Use the object directly
+        config.issuer = "your issuer"
+        config.jwks_uri = "https://your.api.domain/auth/jwt/keys"
+        return config
+
+    oi.get_open_id_discovery_configuration = get_openid_discovery_configuration
+    return oi
+
+init(
+    app_info="...",
+    recipe_list=[
+        session.init(
+            get_token_transfer_method= lambda *_: "header",
+            override=session.InputOverrideConfig(
+                openid_feature=openid.InputOverrideConfig(
+                    functions=openid_functions_override
+                )
+            )
+        )
+    ]
+)
+```
+
+#### If you used `session_data` (not `access_token_payload`)
+
+Related functions/prop names have changes (`session_data` became `session_data_from_database`):
+
+-   Renamed `get_session_data` to `get_session_data_from_database` to clarify that it always hits the DB
+-   Renamed `update_session_data` to `update_session_data_in_database`
+-   Renamed `session_data` to `session_data_in_database` in `SessionInformationResult` and the input to `create_new_session`
+
+#### If you used to set `access_token_blacklisting` in the core config
+
+-   You should now set `check_database` to true in the `verify_session` params.
+
+#### If you used to set `access_token_signing_key_dynamic` in the core config
+
+-   You should now set `use_dynamic_access_token_signing_key` in the Session recipe config.
+
+#### If you used to use standard/protected props in the access token payload root:
+
+1. Update you application logic to rename those props (e.g., by adding a prefix)
+2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding the `app` prefix):
+
+Before:
+
+```python
+from typing import Any, Dict, Optional
+from supertokens_python.recipe.session.interfaces import RecipeInterface as SessionRecipeInterface
+from supertokens_python.recipe import session
+
+async def override_session_functions(oi: SessionRecipeInterface):
+    oi_create_new_session = oi.create_new_session
+
+    async def create_new_session(
+        user_id: str,
+        access_token_payload: Optional[Dict[str, Any]],
+        session_data_in_database: Optional[Dict[str, Any]],
+        disable_anti_csrf: Optional[bool],
+        user_context: Dict[str, Any],
+    ):
+        return oi_create_new_session(
+            user_id,
+            {**access_token_payload, "sub": access_token_payload["userId"] + "!!!" }
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
+        )
+
+    oi.create_new_session = create_new_session
+
+session.init(
+    override=session.InputOverrideConfig(functions=override_session_functions)
+)
+```
+
+After:
+
+```python
+from typing import Any, Dict, Optional
+from supertokens_python.recipe.session.interfaces import RecipeInterface as SessionRecipeInterface
+from supertokens_python.recipe import session
+
+async def override_session_functions(oi: SessionRecipeInterface):
+    oi_get_session = oi.get_session
+    oi_create_new_session = oi.create_new_session
+
+    async def get_session(
+        access_token: str,
+        anti_csrf_token: Optional[str],
+        anti_csrf_check: Optional[bool] = None,
+        check_database: Optional[bool] = None,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ):
+        result = oi_get_session(input)
+        if result:
+            orig_payload = result.get_access_token_payload()
+            if orig_payload["appSub"] is None:
+                await result.merge_into_access_token_payload({"appSub": orig_payload["sub"], "sub": None})
+
+        return result
+
+    async def create_new_session(
+        user_id: str,
+        access_token_payload: Optional[Dict[str, Any]],
+        session_data_in_database: Optional[Dict[str, Any]],
+        disable_anti_csrf: Optional[bool],
+        user_context: Dict[str, Any],
+    ):
+        return oi_create_new_session(
+            user_id,
+            {**access_token_payload, "appSub": access_token_payload["userId"] + "!!!" }
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context
+        )
+
+    oi.get_session = get_session
+    oi.create_new_session = create_new_session
+
+session.init(
+    override=session.InputOverrideConfig(
+        functions=override_session_functions,
+    )
+)
+```
+
+#### If you added an override for `create_new_session`/`refresh_session`/`get_session`:
+
+This example uses `get_session`, but the changes required for the other ones are very similar. Before:
+
+```python
+from typing import Any, Dict, Optional
+from supertokens_python.recipe.session.interfaces import RecipeInterface as SessionRecipeInterface
+from supertokens_python.recipe import session
+
+
+async def override_session_functions():
+    oi.get_session = oi.get_session
+    
+    async def get_session(
+        request: Any,
+        access_token: str,
+        anti_csrf_token: Optional[str],
+        anti_csrf_check: Optional[bool] = None,
+        check_database: Optional[bool] = None,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ):
+        print(request)
+        try:
+            _session = await oi_get_session(
+                request,
+                access_token,
+                anti_csrf_token,
+                anti_csrf_check,
+                check_database,
+                override_global_claim_validators,
+                user_context,
+            )
+            print(_session)
+            return _session
+        except Exception as e:
+            print(e)
+            raise e
+
+session.init(
+    override=session.InputOverrideConfig(
+        functions=override_session_functions,
+    )
+)
+``` 
+
+After:
+
+```python
+from typing import Any, Dict, Optional
+from supertokens_python.recipe.session.interfaces import RecipeInterface as SessionRecipeInterface
+from supertokens_python.recipe import session
+
+async def override_session_functions():
+    oi.get_session = oi.get_session
+    
+    async def get_session(
+        access_token: str,
+        anti_csrf_token: Optional[str],
+        anti_csrf_check: Optional[bool] = None,
+        check_database: Optional[bool] = None,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ):
+        request = user_context["_default"]["request"]
+        print(request)
+
+        session_res = await oi_get_session(
+            request,
+            access_token,
+            anti_csrf_token,
+            anti_csrf_check,
+            check_database,
+            override_global_claim_validators,
+            user_context,
+        )
+        if session_res.status == "OK":
+            print(session_res.session)
+        else:
+            print(session_res.status)
+            print(session_res.error)
+
+        return session_res
+
+
+session.init(
+    override=session.InputOverrideConfig(
+        functions=override_session_functions,
+    )
+)
+```
+
+
+
 
 
 ## [0.12.4] - 2023-03-29
@@ -253,7 +602,7 @@ init(
 def verify_email_for_passwordless_users():
     pagination_token = None
     done = False
-    
+
     while not done:
         res = get_users_newest_first(
             limit=100,
@@ -266,7 +615,7 @@ def verify_email_for_passwordless_users():
                 token_res = create_email_verification_token(user.user_id, user.email)
                 if isinstance(token_res, CreateEmailVerificationTokenOkResult):
                     verify_email_using_token(token_res.token)
-        
+
         done = res.next_pagination_token is None
         if not done:
             pagination_token = res.next_pagination_token
@@ -296,7 +645,7 @@ The `UserRoles` recipe now adds role and permission information into the access 
 
 ## [0.10.2] - 2022-07-14
 ### Bug fix
-- Make `user_context` optional in userroles recipe syncio functions. 
+- Make `user_context` optional in userroles recipe syncio functions.
 
 ## [0.10.1] - 2022-07-11
 
@@ -831,4 +1180,4 @@ init(
 - Middleware, error handlers and verify session for each framework.
 - Created a wrapper for async to sync for supporting older version of python web frameworks.
 - Base tests for each framework.
-- New requirements in the setup file. 
+- New requirements in the setup file.
