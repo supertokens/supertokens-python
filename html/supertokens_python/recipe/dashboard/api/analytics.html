@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.recipe.dashboard.api.users_get API documentation</title>
+<title>supertokens_python.recipe.dashboard.api.analytics API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe.dashboard.api.users_get</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.dashboard.api.analytics</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,104 +39,99 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
-import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, List
+from typing import TYPE_CHECKING
 
-from supertokens_python.supertokens import Supertokens
+from httpx import AsyncClient
 
-from ...usermetadata import UserMetadataRecipe
-from ...usermetadata.asyncio import get_user_metadata
-from ..interfaces import DashboardUsersGetResponse
-from ..utils import UserWithMetadata
+from supertokens_python import Supertokens
+from supertokens_python.constants import (
+    TELEMETRY_SUPERTOKENS_API_URL,
+    TELEMETRY_SUPERTOKENS_API_VERSION,
+)
+from supertokens_python.constants import VERSION as SDKVersion
+from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+
+from ..interfaces import AnalyticsResponse
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.dashboard.interfaces import (
-        APIOptions,
-        APIInterface,
-    )
-    from supertokens_python.types import APIResponse
-
-from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
+    from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 
 
-async def handle_users_get_api(
-    api_implementation: APIInterface, api_options: APIOptions
-) -&gt; APIResponse:
-    _ = api_implementation
+async def handle_analytics_post(
+    _: APIInterface, api_options: APIOptions
+) -&gt; AnalyticsResponse:
+    if not Supertokens.get_instance().telemetry:
+        return AnalyticsResponse()
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please send body&#34;)
+    email = body.get(&#34;email&#34;)
+    dashboard_version = body.get(&#34;dashboardVersion&#34;)
 
-    limit = api_options.request.get_query_param(&#34;limit&#34;)
-    if limit is None:
-        raise_bad_input_exception(&#34;Missing required parameter &#39;limit&#39;&#34;)
+    if email is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;email&#39;&#34;)
+    if dashboard_version is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;dashboardVersion&#39;&#34;)
 
-    time_joined_order: str = api_options.request.get_query_param(  # type: ignore
-        &#34;timeJoinedOrder&#34;, &#34;DESC&#34;
-    )
-    if time_joined_order not in [&#34;ASC&#34;, &#34;DESC&#34;]:
-        raise_bad_input_exception(&#34;Invalid value recieved for &#39;timeJoinedOrder&#39;&#34;)
-
-    pagination_token = api_options.request.get_query_param(&#34;paginationToken&#34;)
-
-    users_response = await Supertokens.get_instance().get_users(
-        limit=int(limit),
-        time_joined_order=time_joined_order,  # type: ignore
-        pagination_token=pagination_token,
-        include_recipe_ids=None,
-        query=api_options.request.get_query_params(),
-    )
-
-    # user metadata bulk fetch with batches:
+    telemetry_id = None
 
     try:
-        UserMetadataRecipe.get_instance()
-    except GeneralError:
-        return DashboardUsersGetResponse(
-            users_response.users, users_response.next_pagination_token
+        response = await Querier.get_instance().send_get_request(
+            NormalisedURLPath(&#34;/telemetry&#34;)
+        )
+        if response is not None:
+            if (
+                &#34;exists&#34; in response
+                and response[&#34;exists&#34;]
+                and &#34;telemetryId&#34; in response
+            ):
+                telemetry_id = response[&#34;telemetryId&#34;]
+
+        number_of_users = await Supertokens.get_instance().get_user_count(
+            include_recipe_ids=None
         )
 
-    users_with_metadata: List[UserWithMetadata] = [
-        UserWithMetadata().from_user(user) for user in users_response.users
-    ]
-    metadata_fetch_awaitables: List[Awaitable[Any]] = []
+    except Exception as __:
+        # If either telemetry id API or user count fetch fails, no event should be sent
+        return AnalyticsResponse()
 
-    async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
-        user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id)
-        first_name = user_metadata.metadata.get(&#34;first_name&#34;)
-        last_name = user_metadata.metadata.get(&#34;last_name&#34;)
+    apiDomain, websiteDomain, appName = (
+        api_options.app_info.api_domain,
+        api_options.app_info.website_domain,
+        api_options.app_info.app_name,
+    )
 
-        # None becomes null which is acceptable for the dashboard.
-        users_with_metadata[user_idx].first_name = first_name
-        users_with_metadata[user_idx].last_name = last_name
+    data = {
+        &#34;websiteDomain&#34;: websiteDomain.get_as_string_dangerous(),
+        &#34;apiDomain&#34;: apiDomain.get_as_string_dangerous(),
+        &#34;appName&#34;: appName,
+        &#34;sdk&#34;: &#34;python&#34;,
+        &#34;sdkVersion&#34;: SDKVersion,
+        &#34;numberOfUsers&#34;: number_of_users,
+        &#34;email&#34;: email,
+        &#34;dashboardVersion&#34;: dashboard_version,
+    }
 
-    # Batch calls to get user metadata:
-    for i, _ in enumerate(users_response.users):
-        metadata_fetch_awaitables.append(get_user_metadata_and_update_user(i))
+    if telemetry_id is not None:
+        data[&#34;telemetryId&#34;] = telemetry_id
 
-    promise_arr_start_position = 0
-    batch_size = 5
-
-    while promise_arr_start_position &lt; len(metadata_fetch_awaitables):
-        # We want to query only 5 in parallel at a time
-        promises_to_call = [
-            metadata_fetch_awaitables[i]
-            for i in range(
-                promise_arr_start_position,
-                min(
-                    promise_arr_start_position + batch_size,
-                    len(metadata_fetch_awaitables),
-                ),
+    try:
+        async with AsyncClient() as client:
+            await client.post(  # type: ignore
+                url=TELEMETRY_SUPERTOKENS_API_URL,
+                json=data,
+                headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
             )
-        ]
-        await asyncio.gather(*promises_to_call)
+    except Exception as __:
+        # If telemetry event fails, no error should be thrown
+        pass
 
-        promise_arr_start_position += batch_size
-
-    return DashboardUsersGetResponse(
-        users_with_metadata,
-        users_response.next_pagination_token,
-    )</code></pre>
+    return AnalyticsResponse()</code></pre>
 </details>
 </section>
 <section>
@@ -146,8 +141,8 @@ async def handle_users_get_api(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api"><code class="name flex">
-<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions) ‑> APIResponse</span>
+<dt id="supertokens_python.recipe.dashboard.api.analytics.handle_analytics_post"><code class="name flex">
+<span>async def <span class="ident">handle_analytics_post</span></span>(<span>_: APIInterface, api_options: APIOptions) ‑> AnalyticsResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -155,82 +150,76 @@ async def handle_users_get_api(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def handle_users_get_api(
-    api_implementation: APIInterface, api_options: APIOptions
-) -&gt; APIResponse:
-    _ = api_implementation
+<pre><code class="python">async def handle_analytics_post(
+    _: APIInterface, api_options: APIOptions
+) -&gt; AnalyticsResponse:
+    if not Supertokens.get_instance().telemetry:
+        return AnalyticsResponse()
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please send body&#34;)
+    email = body.get(&#34;email&#34;)
+    dashboard_version = body.get(&#34;dashboardVersion&#34;)
 
-    limit = api_options.request.get_query_param(&#34;limit&#34;)
-    if limit is None:
-        raise_bad_input_exception(&#34;Missing required parameter &#39;limit&#39;&#34;)
+    if email is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;email&#39;&#34;)
+    if dashboard_version is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;dashboardVersion&#39;&#34;)
 
-    time_joined_order: str = api_options.request.get_query_param(  # type: ignore
-        &#34;timeJoinedOrder&#34;, &#34;DESC&#34;
-    )
-    if time_joined_order not in [&#34;ASC&#34;, &#34;DESC&#34;]:
-        raise_bad_input_exception(&#34;Invalid value recieved for &#39;timeJoinedOrder&#39;&#34;)
-
-    pagination_token = api_options.request.get_query_param(&#34;paginationToken&#34;)
-
-    users_response = await Supertokens.get_instance().get_users(
-        limit=int(limit),
-        time_joined_order=time_joined_order,  # type: ignore
-        pagination_token=pagination_token,
-        include_recipe_ids=None,
-        query=api_options.request.get_query_params(),
-    )
-
-    # user metadata bulk fetch with batches:
+    telemetry_id = None
 
     try:
-        UserMetadataRecipe.get_instance()
-    except GeneralError:
-        return DashboardUsersGetResponse(
-            users_response.users, users_response.next_pagination_token
+        response = await Querier.get_instance().send_get_request(
+            NormalisedURLPath(&#34;/telemetry&#34;)
+        )
+        if response is not None:
+            if (
+                &#34;exists&#34; in response
+                and response[&#34;exists&#34;]
+                and &#34;telemetryId&#34; in response
+            ):
+                telemetry_id = response[&#34;telemetryId&#34;]
+
+        number_of_users = await Supertokens.get_instance().get_user_count(
+            include_recipe_ids=None
         )
 
-    users_with_metadata: List[UserWithMetadata] = [
-        UserWithMetadata().from_user(user) for user in users_response.users
-    ]
-    metadata_fetch_awaitables: List[Awaitable[Any]] = []
+    except Exception as __:
+        # If either telemetry id API or user count fetch fails, no event should be sent
+        return AnalyticsResponse()
 
-    async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
-        user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id)
-        first_name = user_metadata.metadata.get(&#34;first_name&#34;)
-        last_name = user_metadata.metadata.get(&#34;last_name&#34;)
+    apiDomain, websiteDomain, appName = (
+        api_options.app_info.api_domain,
+        api_options.app_info.website_domain,
+        api_options.app_info.app_name,
+    )
 
-        # None becomes null which is acceptable for the dashboard.
-        users_with_metadata[user_idx].first_name = first_name
-        users_with_metadata[user_idx].last_name = last_name
+    data = {
+        &#34;websiteDomain&#34;: websiteDomain.get_as_string_dangerous(),
+        &#34;apiDomain&#34;: apiDomain.get_as_string_dangerous(),
+        &#34;appName&#34;: appName,
+        &#34;sdk&#34;: &#34;python&#34;,
+        &#34;sdkVersion&#34;: SDKVersion,
+        &#34;numberOfUsers&#34;: number_of_users,
+        &#34;email&#34;: email,
+        &#34;dashboardVersion&#34;: dashboard_version,
+    }
 
-    # Batch calls to get user metadata:
-    for i, _ in enumerate(users_response.users):
-        metadata_fetch_awaitables.append(get_user_metadata_and_update_user(i))
+    if telemetry_id is not None:
+        data[&#34;telemetryId&#34;] = telemetry_id
 
-    promise_arr_start_position = 0
-    batch_size = 5
-
-    while promise_arr_start_position &lt; len(metadata_fetch_awaitables):
-        # We want to query only 5 in parallel at a time
-        promises_to_call = [
-            metadata_fetch_awaitables[i]
-            for i in range(
-                promise_arr_start_position,
-                min(
-                    promise_arr_start_position + batch_size,
-                    len(metadata_fetch_awaitables),
-                ),
+    try:
+        async with AsyncClient() as client:
+            await client.post(  # type: ignore
+                url=TELEMETRY_SUPERTOKENS_API_URL,
+                json=data,
+                headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
             )
-        ]
-        await asyncio.gather(*promises_to_call)
+    except Exception as __:
+        # If telemetry event fails, no error should be thrown
+        pass
 
-        promise_arr_start_position += batch_size
-
-    return DashboardUsersGetResponse(
-        users_with_metadata,
-        users_response.next_pagination_token,
-    )</code></pre>
+    return AnalyticsResponse()</code></pre>
 </details>
 </dd>
 </dl>
@@ -251,7 +240,7 @@ async def handle_users_get_api(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api" href="#supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api">handle_users_get_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.analytics.handle_analytics_post" href="#supertokens_python.recipe.dashboard.api.analytics.handle_analytics_post">handle_analytics_post</a></code></li>
 </ul>
 </li>
 </ul>

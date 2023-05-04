@@ -366,6 +366,30 @@ session.init(
 
 
 
+## [0.13.0] - 2023-05-03
+
+- added optional password policy check in `update_email_or_password`
+
+## [0.12.9] - 2023-04-28
+
+- Added missing arguments in `get_users_newest_first` and `get_users_oldest_first`
+
+## [0.12.8] - 2023-04-19
+
+- Fixed an issues that threw 500 when changing password for user from dashboard
+
+## [0.12.7] - 2023-04-18
+
+- Email template for verify email updated
+
+## [0.12.6] - 2023-03-31
+
+- Adds search APIs to the dashboard recipe
+
+## [0.12.5] - 2023-03-30
+
+- Adds a telemetry API to the dashboard recipe
+
 ## [0.12.4] - 2023-03-29
 ### Changed
 - Update all example apps to initialise dashboard recipe

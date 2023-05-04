@@ -293,3 +293,21 @@ class SignOutOK(APIResponse):
 
     def to_json(self):
         return {"status": self.status}
+
+
+class SearchTagsOK(APIResponse):
+    status: str = "OK"
+    tags: List[str]
+
+    def __init__(self, tags: List[str]) -> None:
+        self.tags = tags
+
+    def to_json(self):
+        return {"status": self.status, "tags": self.tags}
+
+
+class AnalyticsResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}

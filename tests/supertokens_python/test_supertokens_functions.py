@@ -89,3 +89,28 @@ async def test_supertokens_functions():
     users_asc = (await st_asyncio.get_users_oldest_first(limit=10)).users
     emails_asc = [user.email for user in users_asc]
     assert emails[1] not in emails_asc  # The 2nd user must be deleted now.
+
+    if not is_version_gte(version, "2.20"):
+        # If the version is less than 2.20, query users doesn't exist, so we mark the test successful
+        return
+    users_asc = (
+        await st_asyncio.get_users_oldest_first(limit=10, query={"email": "baz"})
+    ).users
+    users_desc = (
+        await st_asyncio.get_users_newest_first(limit=10, query={"email": "baz"})
+    ).users
+    emails_asc = [user.email for user in users_asc]
+    emails_desc = [user.email for user in users_desc]
+    assert len(emails_asc) == 1
+    assert len(emails_desc) == 1
+
+    users_asc = (
+        await st_asyncio.get_users_oldest_first(limit=10, query={"email": "john"})
+    ).users
+    users_desc = (
+        await st_asyncio.get_users_newest_first(limit=10, query={"email": "john"})
+    ).users
+    emails_asc = [user.email for user in users_asc]
+    emails_desc = [user.email for user in users_desc]
+    assert len(emails_asc) == 0
+    assert len(emails_desc) == 0

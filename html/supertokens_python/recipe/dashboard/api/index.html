@@ -39,8 +39,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from .analytics import handle_analytics_post
 from .api_key_protector import api_key_protector
 from .dashboard import handle_dashboard_api
+from .search.getTags import handle_get_tags
 from .signin import handle_emailpassword_signin_api
 from .signout import handle_emailpassword_signout_api
 from .userdetails.user_delete import handle_user_delete
@@ -77,17 +79,27 @@ __all__ = [
     &#34;handle_email_verify_token_post&#34;,
     &#34;handle_emailpassword_signin_api&#34;,
     &#34;handle_emailpassword_signout_api&#34;,
+    &#34;handle_get_tags&#34;,
+    &#34;handle_analytics_post&#34;,
 ]</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.analytics" href="analytics.html">supertokens_python.recipe.dashboard.api.analytics</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.search" href="search/index.html">supertokens_python.recipe.dashboard.api.search</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -148,6 +160,87 @@ __all__ = [
 
     response = await api_function(api_implementation, api_options)
     return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_analytics_post"><code class="name flex">
+<span>async def <span class="ident">handle_analytics_post</span></span>(<span>_: APIInterface, api_options: APIOptions) ‑> AnalyticsResponse</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_analytics_post(
+    _: APIInterface, api_options: APIOptions
+) -&gt; AnalyticsResponse:
+    if not Supertokens.get_instance().telemetry:
+        return AnalyticsResponse()
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please send body&#34;)
+    email = body.get(&#34;email&#34;)
+    dashboard_version = body.get(&#34;dashboardVersion&#34;)
+
+    if email is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;email&#39;&#34;)
+    if dashboard_version is None:
+        raise_bad_input_exception(&#34;Missing required property &#39;dashboardVersion&#39;&#34;)
+
+    telemetry_id = None
+
+    try:
+        response = await Querier.get_instance().send_get_request(
+            NormalisedURLPath(&#34;/telemetry&#34;)
+        )
+        if response is not None:
+            if (
+                &#34;exists&#34; in response
+                and response[&#34;exists&#34;]
+                and &#34;telemetryId&#34; in response
+            ):
+                telemetry_id = response[&#34;telemetryId&#34;]
+
+        number_of_users = await Supertokens.get_instance().get_user_count(
+            include_recipe_ids=None
+        )
+
+    except Exception as __:
+        # If either telemetry id API or user count fetch fails, no event should be sent
+        return AnalyticsResponse()
+
+    apiDomain, websiteDomain, appName = (
+        api_options.app_info.api_domain,
+        api_options.app_info.website_domain,
+        api_options.app_info.app_name,
+    )
+
+    data = {
+        &#34;websiteDomain&#34;: websiteDomain.get_as_string_dangerous(),
+        &#34;apiDomain&#34;: apiDomain.get_as_string_dangerous(),
+        &#34;appName&#34;: appName,
+        &#34;sdk&#34;: &#34;python&#34;,
+        &#34;sdkVersion&#34;: SDKVersion,
+        &#34;numberOfUsers&#34;: number_of_users,
+        &#34;email&#34;: email,
+        &#34;dashboardVersion&#34;: dashboard_version,
+    }
+
+    if telemetry_id is not None:
+        data[&#34;telemetryId&#34;] = telemetry_id
+
+    try:
+        async with AsyncClient() as client:
+            await client.post(  # type: ignore
+                url=TELEMETRY_SUPERTOKENS_API_URL,
+                json=data,
+                headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
+            )
+    except Exception as __:
+        # If telemetry event fails, no error should be thrown
+        pass
+
+    return AnalyticsResponse()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_dashboard_api"><code class="name flex">
@@ -292,6 +385,22 @@ __all__ = [
         {&#34;sessionId&#34;: session_id_form_auth_header},
     )
     return SignOutOK()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_get_tags"><code class="name flex">
+<span>async def <span class="ident">handle_get_tags</span></span>(<span>_: APIInterface, __: APIOptions) ‑> SearchTagsOK</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
+    response = await Querier.get_instance().send_get_request(
+        NormalisedURLPath(&#34;/user/search/tags&#34;)
+    )
+    return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_metadata_get"><code class="name flex">
@@ -604,7 +713,7 @@ __all__ = [
         raise Exception(&#34;Should not come here&#34;)
 
     async def reset_password(
-        recipe: Any,  # FIXME
+        form_fields: List[NormalisedFormField],
         create_reset_password_token: Callable[
             [str],
             Awaitable[
@@ -623,7 +732,6 @@ __all__ = [
     ) -&gt; Union[
         UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse
     ]:
-        form_fields: List[NormalisedFormField] = recipe.get_instance().config.sign_up_feature.form_fields  # type: ignore # FIXME?
         password_form_field = [
             field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
         ][0]
@@ -656,14 +764,14 @@ __all__ = [
 
     if recipe_to_use == &#34;emailpassword&#34;:
         return await reset_password(
-            EmailPasswordRecipe,
+            EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
             ep_create_reset_password_token,
             ep_reset_password_using_token,
         )
 
     if recipe_to_use == &#34;thirdpartyemailpassword&#34;:
         return await reset_password(
-            ThirdPartyEmailPasswordRecipe,
+            ThirdPartyEmailPasswordRecipe.get_instance().email_password_recipe.config.sign_up_feature.form_fields,
             tpep_create_reset_password_token,
             tpep_reset_password_using_token,
         )</code></pre>
@@ -848,6 +956,7 @@ __all__ = [
         time_joined_order=time_joined_order,  # type: ignore
         pagination_token=pagination_token,
         include_recipe_ids=None,
+        query=api_options.request.get_query_params(),
     )
 
     # user metadata bulk fetch with batches:
@@ -941,8 +1050,10 @@ __all__ = [
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="supertokens_python.recipe.dashboard.api.analytics" href="analytics.html">supertokens_python.recipe.dashboard.api.analytics</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.search" href="search/index.html">supertokens_python.recipe.dashboard.api.search</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.signin" href="signin.html">supertokens_python.recipe.dashboard.api.signin</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.signout" href="signout.html">supertokens_python.recipe.dashboard.api.signout</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.userdetails" href="userdetails/index.html">supertokens_python.recipe.dashboard.api.userdetails</a></code></li>
@@ -954,10 +1065,12 @@ __all__ = [
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.api.api_key_protector" href="#supertokens_python.recipe.dashboard.api.api_key_protector">api_key_protector</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_analytics_post" href="#supertokens_python.recipe.dashboard.api.handle_analytics_post">handle_analytics_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_dashboard_api" href="#supertokens_python.recipe.dashboard.api.handle_dashboard_api">handle_dashboard_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_email_verify_token_post" href="#supertokens_python.recipe.dashboard.api.handle_email_verify_token_post">handle_email_verify_token_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signin_api">handle_emailpassword_signin_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api" href="#supertokens_python.recipe.dashboard.api.handle_emailpassword_signout_api">handle_emailpassword_signout_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_get_tags" href="#supertokens_python.recipe.dashboard.api.handle_get_tags">handle_get_tags</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_get" href="#supertokens_python.recipe.dashboard.api.handle_metadata_get">handle_metadata_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_put" href="#supertokens_python.recipe.dashboard.api.handle_metadata_put">handle_metadata_put</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_sessions_get" href="#supertokens_python.recipe.dashboard.api.handle_sessions_get">handle_sessions_get</a></code></li>
