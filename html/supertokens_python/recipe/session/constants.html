@@ -40,6 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
@@ -58,7 +59,19 @@ ACCESS_TOKEN_HEADER_KEY = &#34;st-access-token&#34;
 REFRESH_TOKEN_HEADER_KEY = &#34;st-refresh-token&#34;
 ACCESS_CONTROL_EXPOSE_HEADERS = &#34;Access-Control-Expose-Headers&#34;
 
-available_token_transfer_methods: List[TokenTransferMethod] = [&#34;cookie&#34;, &#34;header&#34;]</code></pre>
+available_token_transfer_methods: List[TokenTransferMethod] = [&#34;cookie&#34;, &#34;header&#34;]
+
+JWKCacheMaxAgeInMs = 60 * 1000  # 1min
+JWKRequestCooldownInMs = 500  # 0.5s
+protected_props = [
+    &#34;sub&#34;,
+    &#34;iat&#34;,
+    &#34;exp&#34;,
+    &#34;sessionHandle&#34;,
+    &#34;parentRefreshTokenHash1&#34;,
+    &#34;refreshTokenHash1&#34;,
+    &#34;antiCsrfToken&#34;,
+]</code></pre>
 </details>
 </section>
 <section>

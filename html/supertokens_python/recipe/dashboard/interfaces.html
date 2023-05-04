@@ -60,9 +60,9 @@ class SessionInfo:
     def __init__(self, info: SessionInformationResult) -&gt; None:
         self.session_handle = info.session_handle
         self.user_id = info.user_id
-        self.session_data = info.session_data
+        self.session_data_in_database = info.session_data_in_database
         self.expiry = info.expiry
-        self.access_token_payload = info.access_token_payload
+        self.access_token_payload = info.custom_claims_in_access_token_payload
         self.time_created = info.time_created
 
 
@@ -193,7 +193,7 @@ class UserSessionsGetAPIResponse(APIResponse):
             {
                 &#34;accessTokenPayload&#34;: s.access_token_payload,
                 &#34;expiry&#34;: s.expiry,
-                &#34;sessionData&#34;: s.session_data,
+                &#34;sessionDataInDatabase&#34;: s.session_data_in_database,
                 &#34;status&#34;: &#34;OK&#34;,
                 &#34;timeCreated&#34;: s.time_created,
                 &#34;userId&#34;: s.user_id,
@@ -691,9 +691,9 @@ inheritance.</p></div>
     def __init__(self, info: SessionInformationResult) -&gt; None:
         self.session_handle = info.session_handle
         self.user_id = info.user_id
-        self.session_data = info.session_data
+        self.session_data_in_database = info.session_data_in_database
         self.expiry = info.expiry
-        self.access_token_payload = info.access_token_payload
+        self.access_token_payload = info.custom_claims_in_access_token_payload
         self.time_created = info.time_created</code></pre>
 </details>
 </dd>
@@ -1608,7 +1608,7 @@ inheritance.</p></div>
             {
                 &#34;accessTokenPayload&#34;: s.access_token_payload,
                 &#34;expiry&#34;: s.expiry,
-                &#34;sessionData&#34;: s.session_data,
+                &#34;sessionDataInDatabase&#34;: s.session_data_in_database,
                 &#34;status&#34;: &#34;OK&#34;,
                 &#34;timeCreated&#34;: s.time_created,
                 &#34;userId&#34;: s.user_id,

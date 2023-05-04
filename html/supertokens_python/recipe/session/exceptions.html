@@ -59,8 +59,17 @@ def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
     raise TryRefreshTokenError(ex) from None
 
 
-def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -&gt; NoReturn:
-    raise UnauthorisedError(msg, clear_tokens) from None
+def raise_unauthorised_exception(
+    msg: str,
+    clear_tokens: bool = True,
+    response_mutators: Optional[List[ResponseMutator]] = None,
+) -&gt; NoReturn:
+    if response_mutators is None:
+        response_mutators = []
+
+    err = UnauthorisedError(msg, clear_tokens)
+    err.response_mutators.extend(UnauthorisedError.response_mutators)
+    raise err
 
 
 class SuperTokensSessionError(SuperTokensError):
@@ -156,7 +165,7 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_unauthorised_exception"><code class="name flex">
-<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True) ‑> NoReturn</span>
+<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True, response_mutators: Optional[List[ResponseMutator]] = None) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,8 +173,17 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -&gt; NoReturn:
-    raise UnauthorisedError(msg, clear_tokens) from None</code></pre>
+<pre><code class="python">def raise_unauthorised_exception(
+    msg: str,
+    clear_tokens: bool = True,
+    response_mutators: Optional[List[ResponseMutator]] = None,
+) -&gt; NoReturn:
+    if response_mutators is None:
+        response_mutators = []
+
+    err = UnauthorisedError(msg, clear_tokens)
+    err.response_mutators.extend(UnauthorisedError.response_mutators)
+    raise err</code></pre>
 </details>
 </dd>
 </dl>

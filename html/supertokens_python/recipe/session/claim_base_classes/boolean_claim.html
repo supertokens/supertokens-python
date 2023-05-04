@@ -81,7 +81,7 @@ class BooleanClaim(PrimitiveClaim[bool]):
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaim"><code class="flex name class">
 <span>class <span class="ident">BooleanClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[bool]], bool, ForwardRef(None)]], default_max_age_in_sec: Optional[None] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[bool]], bool, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -140,7 +140,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators"><code class="flex name class">
 <span>class <span class="ident">BooleanClaimValidators</span></span>
-<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[None])</span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[int])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
@@ -180,7 +180,7 @@ return default</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators.is_false"><code class="name flex">
-<span>def <span class="ident">is_false</span></span>(<span>self, max_age: Optional[None], id_: Optional[str] = None)</span>
+<span>def <span class="ident">is_false</span></span>(<span>self, max_age: Optional[int], id_: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -193,7 +193,7 @@ return default</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators.is_true"><code class="name flex">
-<span>def <span class="ident">is_true</span></span>(<span>self, max_age: Optional[None], id_: Optional[str] = None)</span>
+<span>def <span class="ident">is_true</span></span>(<span>self, max_age: Optional[int], id_: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

@@ -45,7 +45,7 @@ from __future__ import annotations
 import asyncio
 import json
 import warnings
-from base64 import b64decode, b64encode
+from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from math import floor
 from re import fullmatch
 from time import time
@@ -59,6 +59,7 @@ from typing import (
     List,
     TypeVar,
     Union,
+    Optional,
 )
 from urllib.parse import urlparse
 
@@ -192,11 +193,20 @@ def get_timestamp_ms() -&gt; int:
     return int(time() * 1000)
 
 
-def utf_base64encode(s: str) -&gt; str:
+def utf_base64encode(s: str, urlsafe: bool) -&gt; str:
+    if urlsafe:
+        return urlsafe_b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
+
     return b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
 
 
-def utf_base64decode(s: str) -&gt; str:
+def utf_base64decode(s: str, urlsafe: bool) -&gt; str:
+    # Adding extra &#34;==&#34; based on
+    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+    # Otherwise it can raise &#34;incorrect padding&#34; error
+    if urlsafe:
+        return urlsafe_b64decode(s.encode(&#34;utf-8&#34;) + b&#34;==&#34;).decode(&#34;utf-8&#34;)
+
     return b64decode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
 
 
@@ -282,8 +292,23 @@ def humanize_time(ms: int) -&gt; str:
     return time_str
 
 
+def set_request_in_user_context_if_not_defined(
+    user_context: Optional[Dict[str, Any]], request: BaseRequest
+) -&gt; Dict[str, Any]:
+    if user_context is None:
+        user_context = {}
+
+    if &#34;_default&#34; not in user_context:
+        user_context[&#34;_default&#34;] = {}
+
+    if isinstance(user_context[&#34;_default&#34;], dict):
+        user_context[&#34;_default&#34;][&#34;request&#34;] = request
+
+    return user_context
+
+
 def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
-    return {&#34;_default&#34;: {&#34;request&#34;: request}}
+    return set_request_in_user_context_if_not_defined({}, request)
 
 
 async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
@@ -328,7 +353,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
-    return {&#34;_default&#34;: {&#34;request&#34;: request}}</code></pre>
+    return set_request_in_user_context_if_not_defined({}, request)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.deprecated_warn"><code class="name flex">
@@ -394,7 +419,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.utils.find_max_version"><code class="name flex">
-<span>def <span class="ident">find_max_version</span></span>(<span>versions_1: List[str], versions_2: List[str]) ‑> Optional[None]</span>
+<span>def <span class="ident">find_max_version</span></span>(<span>versions_1: List[str], versions_2: List[str]) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -442,7 +467,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.utils.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>request: BaseRequest, key: str) ‑> Optional[None]</span>
+<span>def <span class="ident">get_header</span></span>(<span>request: BaseRequest, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -455,7 +480,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.utils.get_rid_from_header"><code class="name flex">
-<span>def <span class="ident">get_rid_from_header</span></span>(<span>request: BaseRequest) ‑> Optional[None]</span>
+<span>def <span class="ident">get_rid_from_header</span></span>(<span>request: BaseRequest) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -721,8 +746,8 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
     return send_non_200_response_with_message(&#34;Unauthorised access&#34;, 401, response)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.utils.utf_base64decode"><code class="name flex">
-<span>def <span class="ident">utf_base64decode</span></span>(<span>s: str) ‑> str</span>
+<dt id="supertokens_python.utils.set_request_in_user_context_if_not_defined"><code class="name flex">
+<span>def <span class="ident">set_request_in_user_context_if_not_defined</span></span>(<span>user_context: Optional[Dict[str, Any]], request: BaseRequest) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -730,12 +755,42 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def utf_base64decode(s: str) -&gt; str:
+<pre><code class="python">def set_request_in_user_context_if_not_defined(
+    user_context: Optional[Dict[str, Any]], request: BaseRequest
+) -&gt; Dict[str, Any]:
+    if user_context is None:
+        user_context = {}
+
+    if &#34;_default&#34; not in user_context:
+        user_context[&#34;_default&#34;] = {}
+
+    if isinstance(user_context[&#34;_default&#34;], dict):
+        user_context[&#34;_default&#34;][&#34;request&#34;] = request
+
+    return user_context</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.utf_base64decode"><code class="name flex">
+<span>def <span class="ident">utf_base64decode</span></span>(<span>s: str, urlsafe: bool) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def utf_base64decode(s: str, urlsafe: bool) -&gt; str:
+    # Adding extra &#34;==&#34; based on
+    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+    # Otherwise it can raise &#34;incorrect padding&#34; error
+    if urlsafe:
+        return urlsafe_b64decode(s.encode(&#34;utf-8&#34;) + b&#34;==&#34;).decode(&#34;utf-8&#34;)
+
     return b64decode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.utf_base64encode"><code class="name flex">
-<span>def <span class="ident">utf_base64encode</span></span>(<span>s: str) ‑> str</span>
+<span>def <span class="ident">utf_base64encode</span></span>(<span>s: str, urlsafe: bool) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -743,7 +798,10 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def utf_base64encode(s: str) -&gt; str:
+<pre><code class="python">def utf_base64encode(s: str, urlsafe: bool) -&gt; str:
+    if urlsafe:
+        return urlsafe_b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
+
     return b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)</code></pre>
 </details>
 </dd>
@@ -788,6 +846,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 <li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.send_non_200_response_with_message" href="#supertokens_python.utils.send_non_200_response_with_message">send_non_200_response_with_message</a></code></li>
 <li><code><a title="supertokens_python.utils.send_unauthorised_access_response" href="#supertokens_python.utils.send_unauthorised_access_response">send_unauthorised_access_response</a></code></li>
+<li><code><a title="supertokens_python.utils.set_request_in_user_context_if_not_defined" href="#supertokens_python.utils.set_request_in_user_context_if_not_defined">set_request_in_user_context_if_not_defined</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>
 </ul>

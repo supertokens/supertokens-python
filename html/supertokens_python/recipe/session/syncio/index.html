@@ -70,7 +70,7 @@ def create_new_session(
     request: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
-    session_data: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -82,16 +82,39 @@ def create_new_session(
             request,
             user_id,
             access_token_payload,
-            session_data,
+            session_data_in_database,
             user_context=user_context,
+        )
+    )
+
+
+def create_new_session_without_request_response(
+    user_id: str,
+    access_token_payload: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
+    disable_anti_csrf: bool = False,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        create_new_session_without_request_response as async_create_new_session_without_request_response,
+    )
+
+    return sync(
+        async_create_new_session_without_request_response(
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
         )
     )
 
 
 def get_session(
     request: Any,
-    anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    anti_csrf_check: Union[bool, None] = None,
+    check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -107,8 +130,40 @@ def get_session(
     return sync(
         async_get_session(
             request,
+            session_required,
+            anti_csrf_check,
+            check_database,
+            override_global_claim_validators,
+            user_context,
+        )
+    )
+
+
+def get_session_without_request_response(
+    access_token: str,
+    anti_csrf_token: Optional[str] = None,
+    anti_csrf_check: Optional[bool] = None,
+    session_required: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Optional[SessionContainer]:
+    from supertokens_python.recipe.session.asyncio import (
+        get_session_without_request_response as async_get_session_without_request_response,
+    )
+
+    return sync(
+        async_get_session_without_request_response(
+            access_token,
+            anti_csrf_token,
             anti_csrf_check,
             session_required,
+            check_database,
             override_global_claim_validators,
             user_context,
         )
@@ -123,6 +178,26 @@ def refresh_session(
     )
 
     return sync(async_refresh_session(request, user_context))
+
+
+def refresh_session_without_request_response(
+    refresh_token: str,
+    disable_anti_csrf: bool = False,
+    anti_csrf_token: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        refresh_session_without_request_response as async_refresh_session_without_request_response,
+    )
+
+    return sync(
+        async_refresh_session_without_request_response(
+            refresh_token,
+            disable_anti_csrf,
+            anti_csrf_token,
+            user_context,
+        )
+    )
 
 
 def revoke_session(
@@ -175,32 +250,18 @@ def get_session_information(
     return sync(async_get_session_information(session_handle, user_context))
 
 
-def update_session_data(
+def update_session_data_in_database(
     session_handle: str,
     new_session_data: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; bool:
     from supertokens_python.recipe.session.asyncio import (
-        update_session_data as async_update_session_data,
+        update_session_data_in_database as async_update_session_data_in_database,
     )
 
     return sync(
-        async_update_session_data(session_handle, new_session_data, user_context)
-    )
-
-
-def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; bool:
-    from supertokens_python.recipe.session.asyncio import (
-        update_access_token_payload as async_update_access_token_payload,
-    )
-
-    return sync(
-        async_update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
+        async_update_session_data_in_database(
+            session_handle, new_session_data, user_context
         )
     )
 
@@ -223,22 +284,27 @@ def merge_into_access_token_payload(
 
 def create_jwt(
     payload: Dict[str, Any],
-    validity_seconds: Union[None, int] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    validity_seconds: Optional[int] = None,
+    use_static_signing_key: Optional[bool] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import create_jwt as async_create_jwt
 
-    return sync(async_create_jwt(payload, validity_seconds, user_context))
+    return sync(
+        async_create_jwt(
+            payload, validity_seconds, use_static_signing_key, user_context
+        )
+    )
 
 
-def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetJWKSResult:
+def get_jwks(user_context: Optional[Dict[str, Any]] = None) -&gt; GetJWKSResult:
     from supertokens_python.recipe.session.asyncio import get_jwks as async_get_jwks
 
     return sync(async_get_jwks(user_context))
 
 
 def get_open_id_discovery_configuration(
-    user_context: Union[None, Dict[str, Any]] = None
+    user_context: Optional[Dict[str, Any]] = None
 ) -&gt; GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,
@@ -366,7 +432,7 @@ def validate_claims_in_jwt_payload(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.syncio.create_jwt"><code class="name flex">
-<span>def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
+<span>def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, use_static_signing_key: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -376,16 +442,21 @@ def validate_claims_in_jwt_payload(
 </summary>
 <pre><code class="python">def create_jwt(
     payload: Dict[str, Any],
-    validity_seconds: Union[None, int] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    validity_seconds: Optional[int] = None,
+    use_static_signing_key: Optional[bool] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import create_jwt as async_create_jwt
 
-    return sync(async_create_jwt(payload, validity_seconds, user_context))</code></pre>
+    return sync(
+        async_create_jwt(
+            payload, validity_seconds, use_static_signing_key, user_context
+        )
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.create_new_session"><code class="name flex">
-<span>def <span class="ident">create_new_session</span></span>(<span>request: Any, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>def <span class="ident">create_new_session</span></span>(<span>request: Any, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -397,7 +468,7 @@ def validate_claims_in_jwt_payload(
     request: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
-    session_data: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -409,8 +480,39 @@ def validate_claims_in_jwt_payload(
             request,
             user_id,
             access_token_payload,
-            session_data,
+            session_data_in_database,
             user_context=user_context,
+        )
+    )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.syncio.create_new_session_without_request_response"><code class="name flex">
+<span>def <span class="ident">create_new_session_without_request_response</span></span>(<span>user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, disable_anti_csrf: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_new_session_without_request_response(
+    user_id: str,
+    access_token_payload: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
+    disable_anti_csrf: bool = False,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        create_new_session_without_request_response as async_create_new_session_without_request_response,
+    )
+
+    return sync(
+        async_create_new_session_without_request_response(
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
         )
     )</code></pre>
 </details>
@@ -485,7 +587,7 @@ def validate_claims_in_jwt_payload(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetJWKSResult:
+<pre><code class="python">def get_jwks(user_context: Optional[Dict[str, Any]] = None) -&gt; GetJWKSResult:
     from supertokens_python.recipe.session.asyncio import get_jwks as async_get_jwks
 
     return sync(async_get_jwks(user_context))</code></pre>
@@ -501,7 +603,7 @@ def validate_claims_in_jwt_payload(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_open_id_discovery_configuration(
-    user_context: Union[None, Dict[str, Any]] = None
+    user_context: Optional[Dict[str, Any]] = None
 ) -&gt; GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,
@@ -511,7 +613,7 @@ def validate_claims_in_jwt_payload(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>request: Any, anti_csrf_check: Optional[bool] = None, session_required: bool = True, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>def <span class="ident">get_session</span></span>(<span>request: Any, session_required: bool = True, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -521,8 +623,9 @@ def validate_claims_in_jwt_payload(
 </summary>
 <pre><code class="python">def get_session(
     request: Any,
-    anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    anti_csrf_check: Union[bool, None] = None,
+    check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -538,8 +641,9 @@ def validate_claims_in_jwt_payload(
     return sync(
         async_get_session(
             request,
-            anti_csrf_check,
             session_required,
+            anti_csrf_check,
+            check_database,
             override_global_claim_validators,
             user_context,
         )
@@ -563,6 +667,46 @@ def validate_claims_in_jwt_payload(
     )
 
     return sync(async_get_session_information(session_handle, user_context))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.syncio.get_session_without_request_response"><code class="name flex">
+<span>def <span class="ident">get_session_without_request_response</span></span>(<span>access_token: str, anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_session_without_request_response(
+    access_token: str,
+    anti_csrf_token: Optional[str] = None,
+    anti_csrf_check: Optional[bool] = None,
+    session_required: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Optional[SessionContainer]:
+    from supertokens_python.recipe.session.asyncio import (
+        get_session_without_request_response as async_get_session_without_request_response,
+    )
+
+    return sync(
+        async_get_session_without_request_response(
+            access_token,
+            anti_csrf_token,
+            anti_csrf_check,
+            session_required,
+            check_database,
+            override_global_claim_validators,
+            user_context,
+        )
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.merge_into_access_token_payload"><code class="name flex">
@@ -607,6 +751,35 @@ def validate_claims_in_jwt_payload(
     )
 
     return sync(async_refresh_session(request, user_context))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.syncio.refresh_session_without_request_response"><code class="name flex">
+<span>def <span class="ident">refresh_session_without_request_response</span></span>(<span>refresh_token: str, disable_anti_csrf: bool = False, anti_csrf_token: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def refresh_session_without_request_response(
+    refresh_token: str,
+    disable_anti_csrf: bool = False,
+    anti_csrf_token: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        refresh_session_without_request_response as async_refresh_session_without_request_response,
+    )
+
+    return sync(
+        async_refresh_session_without_request_response(
+            refresh_token,
+            disable_anti_csrf,
+            anti_csrf_token,
+            user_context,
+        )
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.regenerate_access_token"><code class="name flex">
@@ -734,8 +907,8 @@ def validate_claims_in_jwt_payload(
     return sync(async_set_claim_value(session_handle, claim, value, user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.syncio.update_access_token_payload"><code class="name flex">
-<span>def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<dt id="supertokens_python.recipe.session.syncio.update_session_data_in_database"><code class="name flex">
+<span>def <span class="ident">update_session_data_in_database</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -743,42 +916,19 @@ def validate_claims_in_jwt_payload(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; bool:
-    from supertokens_python.recipe.session.asyncio import (
-        update_access_token_payload as async_update_access_token_payload,
-    )
-
-    return sync(
-        async_update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
-        )
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.syncio.update_session_data"><code class="name flex">
-<span>def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def update_session_data(
+<pre><code class="python">def update_session_data_in_database(
     session_handle: str,
     new_session_data: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; bool:
     from supertokens_python.recipe.session.asyncio import (
-        update_session_data as async_update_session_data,
+        update_session_data_in_database as async_update_session_data_in_database,
     )
 
     return sync(
-        async_update_session_data(session_handle, new_session_data, user_context)
+        async_update_session_data_in_database(
+            session_handle, new_session_data, user_context
+        )
     )</code></pre>
 </details>
 </dd>
@@ -863,6 +1013,7 @@ def validate_claims_in_jwt_payload(
 <ul class="">
 <li><code><a title="supertokens_python.recipe.session.syncio.create_jwt" href="#supertokens_python.recipe.session.syncio.create_jwt">create_jwt</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.create_new_session" href="#supertokens_python.recipe.session.syncio.create_new_session">create_new_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.syncio.create_new_session_without_request_response" href="#supertokens_python.recipe.session.syncio.create_new_session_without_request_response">create_new_session_without_request_response</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.fetch_and_set_claim" href="#supertokens_python.recipe.session.syncio.fetch_and_set_claim">fetch_and_set_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.get_all_session_handles_for_user" href="#supertokens_python.recipe.session.syncio.get_all_session_handles_for_user">get_all_session_handles_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.get_claim_value" href="#supertokens_python.recipe.session.syncio.get_claim_value">get_claim_value</a></code></li>
@@ -870,16 +1021,17 @@ def validate_claims_in_jwt_payload(
 <li><code><a title="supertokens_python.recipe.session.syncio.get_open_id_discovery_configuration" href="#supertokens_python.recipe.session.syncio.get_open_id_discovery_configuration">get_open_id_discovery_configuration</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.get_session" href="#supertokens_python.recipe.session.syncio.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.get_session_information" href="#supertokens_python.recipe.session.syncio.get_session_information">get_session_information</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.syncio.get_session_without_request_response" href="#supertokens_python.recipe.session.syncio.get_session_without_request_response">get_session_without_request_response</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.merge_into_access_token_payload" href="#supertokens_python.recipe.session.syncio.merge_into_access_token_payload">merge_into_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.refresh_session" href="#supertokens_python.recipe.session.syncio.refresh_session">refresh_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.syncio.refresh_session_without_request_response" href="#supertokens_python.recipe.session.syncio.refresh_session_without_request_response">refresh_session_without_request_response</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.regenerate_access_token" href="#supertokens_python.recipe.session.syncio.regenerate_access_token">regenerate_access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.remove_claim" href="#supertokens_python.recipe.session.syncio.remove_claim">remove_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.syncio.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.revoke_multiple_sessions" href="#supertokens_python.recipe.session.syncio.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.revoke_session" href="#supertokens_python.recipe.session.syncio.revoke_session">revoke_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.set_claim_value" href="#supertokens_python.recipe.session.syncio.set_claim_value">set_claim_value</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.syncio.update_access_token_payload" href="#supertokens_python.recipe.session.syncio.update_access_token_payload">update_access_token_payload</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.syncio.update_session_data" href="#supertokens_python.recipe.session.syncio.update_session_data">update_session_data</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.syncio.update_session_data_in_database" href="#supertokens_python.recipe.session.syncio.update_session_data_in_database">update_session_data_in_database</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.validate_claims_for_session_handle" href="#supertokens_python.recipe.session.syncio.validate_claims_for_session_handle">validate_claims_for_session_handle</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.validate_claims_in_jwt_payload" href="#supertokens_python.recipe.session.syncio.validate_claims_in_jwt_payload">validate_claims_in_jwt_payload</a></code></li>
 </ul>

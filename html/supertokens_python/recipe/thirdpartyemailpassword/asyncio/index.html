@@ -128,12 +128,13 @@ async def update_email_or_password(
     user_id: str,
     email: Union[None, str] = None,
     password: Union[None, str] = None,
+    apply_password_policy: Union[bool, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(
-        user_id, email, password, user_context
+        user_id, email, password, apply_password_policy, user_context
     )
 
 
@@ -341,7 +342,7 @@ async def send_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.update_email_or_password"><code class="name flex">
-<span>async def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[None] = None, password: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, apply_password_policy: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -353,12 +354,13 @@ async def send_email(
     user_id: str,
     email: Union[None, str] = None,
     password: Union[None, str] = None,
+    apply_password_policy: Union[bool, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(
-        user_id, email, password, user_context
+        user_id, email, password, apply_password_policy, user_context
     )</code></pre>
 </details>
 </dd>

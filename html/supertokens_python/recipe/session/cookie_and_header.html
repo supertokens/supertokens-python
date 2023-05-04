@@ -59,50 +59,44 @@ from .constants import (
     RID_HEADER_KEY,
     available_token_transfer_methods,
 )
+from ...logger import log_debug_message
+from supertokens_python.constants import HUNDRED_YEARS_IN_MS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from .recipe import SessionRecipe
-    from .utils import TokenTransferMethod, TokenType, SessionConfig
+    from .utils import (
+        TokenTransferMethod,
+        TokenType,
+        SessionConfig,
+    )
 
 from json import dumps
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
-from supertokens_python.utils import get_header, utf_base64encode
+from supertokens_python.utils import get_header, utf_base64encode, get_timestamp_ms
+
+
+def build_front_token(
+    user_id: str, at_expiry: int, access_token_payload: Optional[Dict[str, Any]] = None
+):
+    if access_token_payload is None:
+        access_token_payload = {}
+    token_info = {&#34;uid&#34;: user_id, &#34;ate&#34;: at_expiry, &#34;up&#34;: access_token_payload}
+    return utf_base64encode(
+        dumps(token_info, separators=(&#34;,&#34;, &#34;:&#34;), sort_keys=True), urlsafe=False
+    )
 
 
 def _set_front_token_in_headers(
     response: BaseResponse,
-    user_id: str,
-    expires: int,
-    jwt_payload: Union[None, Dict[str, Any]] = None,
+    front_token: str,
 ):
-    if jwt_payload is None:
-        jwt_payload = {}
-    token_info = {&#34;uid&#34;: user_id, &#34;ate&#34;: expires, &#34;up&#34;: jwt_payload}
-    set_header(
-        response,
-        FRONT_TOKEN_HEADER_SET_KEY,
-        utf_base64encode(dumps(token_info, separators=(&#34;,&#34;, &#34;:&#34;), sort_keys=True)),
-        False,
-    )
+    set_header(response, FRONT_TOKEN_HEADER_SET_KEY, front_token, False)
     set_header(
         response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
     )
-
-
-def front_token_response_mutator(
-    user_id: str,
-    expires: int,
-    jwt_payload: Union[None, Dict[str, Any]] = None,
-):
-    def mutator(
-        response: BaseResponse,
-    ):
-        return _set_front_token_in_headers(response, user_id, expires, jwt_payload)
-
-    return mutator
 
 
 def get_cors_allowed_headers():
@@ -216,6 +210,15 @@ def clear_session_from_all_token_transfer_methods(
         _clear_session(response, recipe.config, transfer_method)
 
 
+def clear_session_mutator(config: SessionConfig, transfer_method: TokenTransferMethod):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _clear_session(response, config, transfer_method)
+
+    return mutator
+
+
 def _clear_session(
     response: BaseResponse,
     config: SessionConfig,
@@ -289,6 +292,7 @@ def _set_token(
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
+    log_debug_message(&#34;Setting %s token as %s&#34;, token_type, transfer_method)
     if transfer_method == &#34;cookie&#34;:
         _set_cookie(
             response,
@@ -328,7 +332,58 @@ def token_response_mutator(
 
 def set_token_in_header(response: BaseResponse, name: str, value: str):
     set_header(response, name, value, allow_duplicate=False)
-    set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, name, allow_duplicate=True)</code></pre>
+    set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, name, allow_duplicate=True)
+
+
+def access_token_mutator(
+    access_token: str,
+    front_token: str,
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+):
+    def mutator(
+        response: BaseResponse,
+    ):
+        _set_access_token_in_response(
+            response, access_token, front_token, config, transfer_method
+        )
+
+    return mutator
+
+
+def _set_access_token_in_response(
+    res: BaseResponse,
+    access_token: str,
+    front_token: str,
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+):
+    _set_front_token_in_headers(res, front_token)
+    _set_token(
+        res,
+        config,
+        &#34;access&#34;,
+        access_token,
+        # We set the expiration to 100 years, because we can&#39;t really access the expiration of the refresh token everywhere we are setting it.
+        # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+        # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+        # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+        get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
+        transfer_method,
+    )
+
+    if (
+        config.expose_access_token_to_frontend_in_cookie_based_auth
+        and transfer_method == &#34;cookie&#34;
+    ):
+        _set_token(
+            res,
+            config,
+            &#34;access&#34;,
+            access_token,
+            get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
+            &#34;header&#34;,
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -338,6 +393,31 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.session.cookie_and_header.access_token_mutator"><code class="name flex">
+<span>def <span class="ident">access_token_mutator</span></span>(<span>access_token: str, front_token: str, config: SessionConfig, transfer_method: TokenTransferMethod)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def access_token_mutator(
+    access_token: str,
+    front_token: str,
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+):
+    def mutator(
+        response: BaseResponse,
+    ):
+        _set_access_token_in_response(
+            response, access_token, front_token, config, transfer_method
+        )
+
+    return mutator</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.anti_csrf_response_mutator"><code class="name flex">
 <span>def <span class="ident">anti_csrf_response_mutator</span></span>(<span>value: str)</span>
 </code></dt>
@@ -354,6 +434,26 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
         return _attach_anti_csrf_header(response, value)
 
     return mutator</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.cookie_and_header.build_front_token"><code class="name flex">
+<span>def <span class="ident">build_front_token</span></span>(<span>user_id: str, at_expiry: int, access_token_payload: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build_front_token(
+    user_id: str, at_expiry: int, access_token_payload: Optional[Dict[str, Any]] = None
+):
+    if access_token_payload is None:
+        access_token_payload = {}
+    token_info = {&#34;uid&#34;: user_id, &#34;ate&#34;: at_expiry, &#34;up&#34;: access_token_payload}
+    return utf_base64encode(
+        dumps(token_info, separators=(&#34;,&#34;, &#34;:&#34;), sort_keys=True), urlsafe=False
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.clear_session_from_all_token_transfer_methods"><code class="name flex">
@@ -378,6 +478,24 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
         _clear_session(response, recipe.config, transfer_method)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.cookie_and_header.clear_session_mutator"><code class="name flex">
+<span>def <span class="ident">clear_session_mutator</span></span>(<span>config: SessionConfig, transfer_method: TokenTransferMethod)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_session_mutator(config: SessionConfig, transfer_method: TokenTransferMethod):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _clear_session(response, config, transfer_method)
+
+    return mutator</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.clear_session_response_mutator"><code class="name flex">
 <span>def <span class="ident">clear_session_response_mutator</span></span>(<span>config: SessionConfig, transfer_method: TokenTransferMethod)</span>
 </code></dt>
@@ -395,28 +513,6 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
         response: BaseResponse,
     ):
         return _clear_session(response, config, transfer_method)
-
-    return mutator</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.cookie_and_header.front_token_response_mutator"><code class="name flex">
-<span>def <span class="ident">front_token_response_mutator</span></span>(<span>user_id: str, expires: int, jwt_payload: Union[None, Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def front_token_response_mutator(
-    user_id: str,
-    expires: int,
-    jwt_payload: Union[None, Dict[str, Any]] = None,
-):
-    def mutator(
-        response: BaseResponse,
-    ):
-        return _set_front_token_in_headers(response, user_id, expires, jwt_payload)
 
     return mutator</code></pre>
 </details>
@@ -661,10 +757,12 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.session.cookie_and_header.access_token_mutator" href="#supertokens_python.recipe.session.cookie_and_header.access_token_mutator">access_token_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.anti_csrf_response_mutator" href="#supertokens_python.recipe.session.cookie_and_header.anti_csrf_response_mutator">anti_csrf_response_mutator</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.cookie_and_header.build_front_token" href="#supertokens_python.recipe.session.cookie_and_header.build_front_token">build_front_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_from_all_token_transfer_methods" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_from_all_token_transfer_methods">clear_session_from_all_token_transfer_methods</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_mutator" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_mutator">clear_session_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_response_mutator" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_response_mutator">clear_session_response_mutator</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.cookie_and_header.front_token_response_mutator" href="#supertokens_python.recipe.session.cookie_and_header.front_token_response_mutator">front_token_response_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.get_anti_csrf_header" href="#supertokens_python.recipe.session.cookie_and_header.get_anti_csrf_header">get_anti_csrf_header</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.get_cookie" href="#supertokens_python.recipe.session.cookie_and_header.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.get_cookie_name_from_token_type" href="#supertokens_python.recipe.session.cookie_and_header.get_cookie_name_from_token_type">get_cookie_name_from_token_type</a></code></li>

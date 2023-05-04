@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable
 
 import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
 
@@ -69,6 +69,7 @@ from ..interfaces import (
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdError,
+    UpdateEmailOrPasswordPasswordPolicyViolationError,
 )
 from ..types import User
 from .email_password_recipe_implementation import (
@@ -77,15 +78,19 @@ from .email_password_recipe_implementation import (
 from .third_party_recipe_implementation import (
     RecipeImplementation as DerivedThirdPartyImplementation,
 )
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
-        self, emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None]
+        self,
+        emailpassword_querier: Querier,
+        thirdparty_querier: Union[Querier, None],
+        get_emailpassword_config: Callable[[], EmailPasswordConfig],
     ):
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation(
-            emailpassword_querier
+            emailpassword_querier, get_emailpassword_config
         )
 
         self.ep_get_user_by_id = emailpassword_implementation.get_user_by_id
@@ -290,11 +295,13 @@ class RecipeImplementation(RecipeInterface):
         user_id: str,
         email: Union[None, str],
         password: Union[None, str],
+        apply_password_policy: Union[bool, None],
         user_context: Dict[str, Any],
     ) -&gt; Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
@@ -304,7 +311,7 @@ class RecipeImplementation(RecipeInterface):
                 &#34;Cannot update email or password of a user who signed up using third party login.&#34;
             )
         return await self.ep_update_email_or_password(
-            user_id, email, password, user_context
+            user_id, email, password, apply_password_policy, user_context
         )</code></pre>
 </details>
 </section>
@@ -319,7 +326,7 @@ class RecipeImplementation(RecipeInterface):
 <dl>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.implementation.RecipeImplementation"><code class="flex name class">
 <span>class <span class="ident">RecipeImplementation</span></span>
-<span>(</span><span>emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None])</span>
+<span>(</span><span>emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None], get_emailpassword_config: Callable[[], EmailPasswordConfig])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -330,11 +337,14 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class RecipeImplementation(RecipeInterface):
     def __init__(
-        self, emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None]
+        self,
+        emailpassword_querier: Querier,
+        thirdparty_querier: Union[Querier, None],
+        get_emailpassword_config: Callable[[], EmailPasswordConfig],
     ):
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation(
-            emailpassword_querier
+            emailpassword_querier, get_emailpassword_config
         )
 
         self.ep_get_user_by_id = emailpassword_implementation.get_user_by_id
@@ -539,11 +549,13 @@ inheritance.</p></div>
         user_id: str,
         email: Union[None, str],
         password: Union[None, str],
+        apply_password_policy: Union[bool, None],
         user_context: Dict[str, Any],
     ) -&gt; Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
@@ -553,7 +565,7 @@ inheritance.</p></div>
                 &#34;Cannot update email or password of a user who signed up using third party login.&#34;
             )
         return await self.ep_update_email_or_password(
-            user_id, email, password, user_context
+            user_id, email, password, apply_password_policy, user_context
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -791,7 +803,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.implementation.RecipeImplementation.update_email_or_password"><code class="name flex">
-<span>async def <span class="ident">update_email_or_password</span></span>(<span>self, user_id: str, email: Union[None, str], password: Union[None, str], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError">UpdateEmailOrPasswordEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError">UpdateEmailOrPasswordUnknownUserIdError</a>]</span>
+<span>async def <span class="ident">update_email_or_password</span></span>(<span>self, user_id: str, email: Union[None, str], password: Union[None, str], apply_password_policy: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError">UpdateEmailOrPasswordEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError">UpdateEmailOrPasswordUnknownUserIdError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordPasswordPolicyViolationError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordPasswordPolicyViolationError">UpdateEmailOrPasswordPasswordPolicyViolationError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -804,11 +816,13 @@ inheritance.</p></div>
     user_id: str,
     email: Union[None, str],
     password: Union[None, str],
+    apply_password_policy: Union[bool, None],
     user_context: Dict[str, Any],
 ) -&gt; Union[
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordUnknownUserIdError,
+    UpdateEmailOrPasswordPasswordPolicyViolationError,
 ]:
     user = await self.get_user_by_id(user_id, user_context)
     if user is None:
@@ -818,7 +832,7 @@ inheritance.</p></div>
             &#34;Cannot update email or password of a user who signed up using third party login.&#34;
         )
     return await self.ep_update_email_or_password(
-        user_id, email, password, user_context
+        user_id, email, password, apply_password_policy, user_context
     )</code></pre>
 </details>
 </dd>
