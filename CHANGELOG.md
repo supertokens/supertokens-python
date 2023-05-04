@@ -10,8 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking changes
 
 - Added support for CDI version `2.21`
-<!-- FIXME -->
-- Dropped support for CDI version `2.8` - `2.18`
+- Dropped support for CDI version `2.8` - `2.20`
 - Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
 - `get_access_token_payload` will now return standard (`sub`, `iat`, `exp`) claims and some SuperTokens specific claims along the user defined ones in `get_access_token_payload`.
 - Some claim names are now prohibited in the root level of the access token payload:
@@ -84,13 +83,13 @@ if (accessTokenPayload.jwt === undefined) {
 
 ```python
 jwt = None
-access_token_payload = await session.get_access_token_payload_securely() # FIXME
-if accessTokenPayload.get('jwt') is None:
+access_token_payload = await session.get_access_token_payload()
+if access_token_payload.get('jwt') is None:
     jwt = await session.get_access_token()
 else:
     # This branch is only required if there are valid access tokens created before the update
     # It can be removed after the validity period ends
-    jwt = accessTokenPayload.jwt
+    jwt = access_token_payload['jwt']
 ```
 
 #### If you used to set an issuer in the session recipe `jwt` configuration
@@ -102,57 +101,50 @@ else:
 
 Before:
 
-```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+```python
+from supertokens_python import init
+from supertokens_python.recipe import session
 
-SuperTokens.init({
-    appInfo: {
-        apiDomain: "...",
-        appName: "...",
-        websiteDomain: "...",
-    },
-    recipeList: [
-        Session.init({
-            jwt: {
-                enable: true,
-                issuer: "...",
-            },
-        }),
-    ],
-});
+init(
+    app_info="...",
+    recipe_list=[
+        session.init(jwt=session.JwtConfig(enable=True, issuer="...")) # FIXME: Verify against old types
+    ]
+)
 ```
 
 After:
 
-```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+```python
+from supertokens_python import init
+from supertokens_python.recipe import session, openid
+from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIDRecipeInterface
 
-SuperTokens.init({
-    appInfo: {
-        apiDomain: "...",
-        appName: "...",
-        websiteDomain: "...",
-    },
-    recipeList: [
-        Session.init({
-            getTokenTransferMethod: () => "header",
-            override: {
-                openIdFeature: {
-                    functions: originalImplementation => ({
-                        ...originalImplementation,
-                        getOpenIdDiscoveryConfiguration: async (input) => ({
-                            issuer: "your issuer",
-                            jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
-                            status: "OK"
-                        }),
-                    })
-                }
-            }
-        });
-    ],
-});
+async def openid_functions_override(oi: OpenIDRecipeInterface):
+    oi_get_openid_discovery_config = oi.get_open_id_discovery_configuration
+    
+    async def get_openid_discovery_configuration():
+        config = await oi_get_openid_discovery_config() # FIXME: Use the object directly
+        config.issuer = "your issuer"
+        config.jwks_uri = "https://your.api.domain/auth/jwt/keys"
+        return config
+
+    oi.get_open_id_discovery_configuration = get_openid_discovery_configuration
+    return oi
+
+init(
+    app_info="...",
+    recipe_list=[
+        session.init(
+            get_token_transfer_method= lambda *_: "header",
+            override=session.InputOverrideConfig(
+                openid_feature=openid.InputOverrideConfig(
+                    functions=openid_functions_override
+                )
+            )
+        )
+    ]
+)
 ```
 
 #### If you used `session_data` (not `access_token_payload`)

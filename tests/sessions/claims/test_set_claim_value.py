@@ -86,7 +86,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     # Check after update:
     s = await get_session_information(s.get_handle())
     assert s is not None
-    payload = s.access_token_payload
+    payload = s.custom_claims_in_access_token_payload
     assert payload == {"st-true": {"t": timestamp, "v": False}}
 
 

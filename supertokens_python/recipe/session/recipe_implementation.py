@@ -219,15 +219,21 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         log_debug_message("getSession: Success!")
 
+        if access_token_obj.version >= 3:
+            if response.accessToken is not None:
+                payload = parse_jwt_without_signature_verification(
+                    response.accessToken.token
+                ).payload
+            else:
+                payload = access_token_obj.payload
+        else:
+            payload = response.session.userDataInJWT
+
         if response.accessToken is not None:
-            payload = parse_jwt_without_signature_verification(
-                response.accessToken.token
-            ).payload
             access_token_str = response.accessToken.token
             expiry_time = response.accessToken.expiry
             access_token_updated = True
         else:
-            payload = access_token_obj.payload
             access_token_str = access_token
             expiry_time = response.session.expiryTime
             access_token_updated = False
@@ -344,7 +350,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             return False
 
         new_access_token_payload = {
-            **session_info.access_token_payload,
+            **session_info.custom_claims_in_access_token_payload,
             **access_token_payload_update,
         }
         for k in access_token_payload_update.keys():
@@ -396,7 +402,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         return GetClaimValueOkResult(
             value=claim.get_value_from_payload(
-                session_info.access_token_payload, user_context
+                session_info.custom_claims_in_access_token_payload, user_context
             )
         )
 

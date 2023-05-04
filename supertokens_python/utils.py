@@ -17,7 +17,7 @@ from __future__ import annotations
 import asyncio
 import json
 import warnings
-from base64 import b64decode, b64encode
+from base64 import urlsafe_b64decode, urlsafe_b64encode
 from math import floor
 from re import fullmatch
 from time import time
@@ -166,14 +166,14 @@ def get_timestamp_ms() -> int:
 
 
 def utf_base64encode(s: str) -> str:
-    return b64encode(s.encode("utf-8")).decode("utf-8")
+    return urlsafe_b64encode(s.encode("utf-8")).decode("utf-8")
 
 
 def utf_base64decode(s: str) -> str:
     # Adding extra "==" based on
     # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
     # Otherwise it can raise "incorrect padding" error
-    return b64decode(s.encode("utf-8") + b"==").decode("utf-8")
+    return urlsafe_b64decode(s.encode("utf-8") + b"==").decode("utf-8")
 
 
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:

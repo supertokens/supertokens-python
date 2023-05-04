@@ -67,14 +67,16 @@ class SessionInformationResult:
         user_id: str,
         session_data_in_database: Dict[str, Any],
         expiry: int,
-        access_token_payload: Dict[str, Any],
+        custom_claims_in_access_token_payload: Dict[str, Any],
         time_created: int,
     ):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
         self.session_data_in_database: Dict[str, Any] = session_data_in_database
         self.expiry: int = expiry
-        self.access_token_payload: Dict[str, Any] = access_token_payload
+        self.custom_claims_in_access_token_payload: Dict[
+            str, Any
+        ] = custom_claims_in_access_token_payload
         self.time_created: int = time_created
 
 

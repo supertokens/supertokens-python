@@ -199,7 +199,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         info = await get_session_information(handle)
         assert info is not None
         assert info.user_id == "someUser"
-        assert info.access_token_payload["someKey"] == "someValue"
+        assert info.custom_claims_in_access_token_payload["someKey"] == "someValue"
 
         is_updated = await merge_into_access_token_payload(
             handle, {"someKey2": "someValue"}
@@ -214,7 +214,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         info = await get_session_information(handle)
         assert info is not None
         assert info.user_id == "someUser"
-        assert info.access_token_payload == {"someKey2": "someValue"}
+        assert info.custom_claims_in_access_token_payload == {"someKey2": "someValue"}
         assert info.session_data_in_database == {"foo": "bar"}
 
     # Regenerate access token with new access_token_payload
@@ -228,7 +228,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         # Confirm that update worked:
         info = await get_session_information(result.session.handle)
         assert info is not None
-        assert info.access_token_payload == {"bar": "baz"}
+        assert info.custom_claims_in_access_token_payload == {"bar": "baz"}
 
     # Try updating invalid handles:
     is_updated = await merge_into_access_token_payload("invalidHandle", {"foo": "bar"})

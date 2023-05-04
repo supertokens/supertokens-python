@@ -155,7 +155,7 @@ async def validate_claims_for_session_handle(
 
     claim_validation_res = await recipe_impl.validate_claims(
         session_info.user_id,
-        session_info.access_token_payload,
+        session_info.custom_claims_in_access_token_payload,
         claim_validators,
         user_context,
     )
