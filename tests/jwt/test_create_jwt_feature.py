@@ -102,7 +102,7 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
     result = await create_jwt({})
     assert isinstance(result, CreateJwtOkResult)
     jwt_value = result.jwt.split(".")[1]
-    decoded_jwt_value = utf_base64decode(jwt_value)
+    decoded_jwt_value = utf_base64decode(jwt_value, True)
 
     target_expiry_duration = 3153600000
     jwt_expiry = json.loads(decoded_jwt_value)["exp"]
@@ -132,7 +132,7 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
     result = await create_jwt({})
     assert isinstance(result, CreateJwtOkResult)
     jwt_value = result.jwt.split(".")[1]
-    decoded_jwt_value = utf_base64decode(jwt_value)
+    decoded_jwt_value = utf_base64decode(jwt_value, True)
 
     target_expiry_duration = 1000
     jwt_expiry = json.loads(decoded_jwt_value)["exp"]
@@ -163,7 +163,7 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
     result = await create_jwt({}, target_expiry_duration)
     assert isinstance(result, CreateJwtOkResult)
     jwt_value = result.jwt.split(".")[1]
-    decoded_jwt_value = utf_base64decode(jwt_value)
+    decoded_jwt_value = utf_base64decode(jwt_value, True)
 
     jwt_expiry = json.loads(decoded_jwt_value)["exp"]
 

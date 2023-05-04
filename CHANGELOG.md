@@ -82,8 +82,11 @@ if (accessTokenPayload.jwt === undefined) {
 3. On the backend if you accessed the JWT before by `session.get_access_token_payload()['jwt']` please update to:
 
 ```python
-jwt = None
+from supertokens_python.recipe.session.interfaces import SessionContainer
+
+session: SessionContainer = ...
 access_token_payload = await session.get_access_token_payload()
+
 if access_token_payload.get('jwt') is None:
     jwt = await session.get_access_token()
 else:
@@ -108,7 +111,7 @@ from supertokens_python.recipe import session
 init(
     app_info="...",
     recipe_list=[
-        session.init(jwt=session.JwtConfig(enable=True, issuer="...")) # FIXME: Verify against old types
+        session.init(jwt=session.JWTConfig(enable=True, issuer="..."))
     ]
 )
 ```
@@ -116,18 +119,18 @@ init(
 After:
 
 ```python
+from typing import Dict, Any
 from supertokens_python import init
 from supertokens_python.recipe import session, openid
 from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIDRecipeInterface
+from supertokens_python.recipe.openid.interfaces import GetOpenIdDiscoveryConfigurationResult
 
 async def openid_functions_override(oi: OpenIDRecipeInterface):
-    oi_get_openid_discovery_config = oi.get_open_id_discovery_configuration
-    
-    async def get_openid_discovery_configuration():
-        config = await oi_get_openid_discovery_config() # FIXME: Use the object directly
-        config.issuer = "your issuer"
-        config.jwks_uri = "https://your.api.domain/auth/jwt/keys"
-        return config
+    async def get_openid_discovery_configuration(_: Dict[str, Any]):
+        return GetOpenIdDiscoveryConfigurationResult(
+            issuer="your issuer",
+            jwks_uri="https://your.api.domain/auth/jwt/keys"
+        )
 
     oi.get_open_id_discovery_configuration = get_openid_discovery_configuration
     return oi
@@ -269,7 +272,7 @@ from supertokens_python.recipe import session
 
 async def override_session_functions():
     oi.get_session = oi.get_session
-    
+
     async def get_session(
         request: Any,
         access_token: str,
@@ -306,7 +309,7 @@ session.init(
         functions=override_session_functions,
     )
 )
-``` 
+```
 
 After:
 
@@ -317,7 +320,7 @@ from supertokens_python.recipe import session
 
 async def override_session_functions():
     oi.get_session = oi.get_session
-    
+
     async def get_session(
         access_token: str,
         anti_csrf_token: Optional[str],

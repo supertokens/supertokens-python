@@ -56,7 +56,9 @@ def build_front_token(
     if access_token_payload is None:
         access_token_payload = {}
     token_info = {"uid": user_id, "ate": at_expiry, "up": access_token_payload}
-    return utf_base64encode(dumps(token_info, separators=(",", ":"), sort_keys=True))
+    return utf_base64encode(
+        dumps(token_info, separators=(",", ":"), sort_keys=True), urlsafe=False
+    )
 
 
 def _set_front_token_in_headers(

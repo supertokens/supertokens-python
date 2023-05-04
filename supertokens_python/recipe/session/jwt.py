@@ -26,7 +26,8 @@ _allowed_headers = [
             {"alg": "RS256", "typ": "JWT", "version": "2"},
             separators=(",", ":"),
             sort_keys=True,
-        )
+        ),
+        urlsafe=False,
     )
 ]
 
@@ -64,7 +65,7 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     header, payload, signature = splitted_input
     # checking the header
     if header not in _allowed_headers:
-        parsed_header = loads(utf_base64decode(header))
+        parsed_header = loads(utf_base64decode(header, True))
         header_version = parsed_header.get("version")
 
         # We have to ensure version is a string, otherwise Number.parseInt can have unexpected results
@@ -93,7 +94,7 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
         header=header,
         # Ideally we would only parse this after the signature verification is done
         # We do this at the start, since we want to check if a token can be a supertokens access token or not.
-        payload=loads(utf_base64decode(payload)),
+        payload=loads(utf_base64decode(payload, True)),
         signature=signature,
         kid=kid,
     )

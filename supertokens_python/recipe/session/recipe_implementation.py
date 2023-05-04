@@ -200,7 +200,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             validate_access_token_structure(
                 access_token_obj.payload, access_token_obj.version
             )
-        except Exception:
+        except Exception as _:
             if session_required is False:
                 log_debug_message(
                     "getSession: Returning undefined because parsing failed and session_required is False"

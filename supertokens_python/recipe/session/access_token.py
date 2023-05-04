@@ -22,7 +22,7 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwks import JWKClient, JWKSRequestError
+from .jwks import JWKClient, JWKSRequestError, PyJWK
 from .jwt import ParsedJWTInfo
 
 
@@ -37,8 +37,7 @@ def sanitize_string(s: Any) -> Union[str, None]:
 
 
 def sanitize_number(n: Any) -> Union[Union[int, float], None]:
-    _type = type(n)
-    if _type == int or _type == float:  # pylint: disable=consider-using-in
+    if isinstance(n, (int, float)):
         return n
 
     return None
@@ -49,46 +48,44 @@ def get_info_from_access_token(
     jwk_clients: List[JWKClient],
     do_anti_csrf_check: bool,
 ):
-    # TODO: Add different tests to verify this works as expected
-    try:  # pylint: disable=too-many-nested-blocks
+    try:
         payload: Optional[Dict[str, Any]] = None
+        client: Optional[JWKClient] = None
+        keys: Optional[List[PyJWK]] = None
+
+        # Get the keys from the first available client
+        for c in jwk_clients:
+            try:
+                client = c
+                keys = c.get_latest_keys()
+                break
+            except JWKSRequestError:
+                continue
+
+        if keys is None or client is None:
+            raise PyJWKClientError("No key found")
 
         if jwt_info.version < 3:
             # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we'll use that payload
-            for client in jwk_clients:
+            for k in keys:
                 try:
-                    keys = client.get_latest_keys()
-
-                    for k in keys:
-                        try:
-                            payload = jwt.decode(jwt_info.raw_token_string, str(k.key), algorithms=["RS256"])  # type: ignore
-                            break
-                        except DecodeError:
-                            pass
-                except JWKSRequestError:
-                    continue
-
-                if payload is not None:
+                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
                     break
-
-            if payload is None:
-                raise PyJWKClientError("No key found")
+                except DecodeError:
+                    pass
 
         elif jwt_info.version >= 3:
-            for client in jwk_clients:
-                matching_key = client.get_matching_key_from_jwt(
-                    jwt_info.raw_token_string
-                )
-                payload = jwt.decode(  # type: ignore
-                    jwt_info.raw_token_string,
-                    matching_key.key,  # type: ignore
-                    algorithms=["RS256"],
-                    options={"verify_signature": True, "verify_exp": True},
-                )
-                break
+            matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_key.key,  # type: ignore
+                algorithms=["RS256"],
+                options={"verify_signature": True, "verify_exp": True},
+            )
 
-        assert payload is not None
+        if payload is None:
+            raise DecodeError("Could not decode the token")
 
         validate_access_token_structure(payload, jwt_info.version)
 
