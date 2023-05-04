@@ -16,13 +16,10 @@ from typing import Any, Dict, Optional
 
 from supertokens_python.utils import utf_base64decode, utf_base64encode
 
-"""
-why separators is used in dumps:
-- without it's use, output of dumps is: '{"alg": "RS256", "typ": "JWT", "version": "1"}'
-- with it's use, output of dumps is: '{"alg":"RS256","typ":"JWT","version":"1"}'
-
-we require the non-spaced version, else the base64 encoding string will end up different than required
-"""
+# why separators is used in dumps:
+# - without it's use, output of dumps is: '{"alg": "RS256", "typ": "JWT", "version": "1"}'
+# - with it's use, output of dumps is: '{"alg":"RS256","typ":"JWT","version":"1"}'
+# we require the non-spaced version, else the base64 encoding string will end up different than required
 _allowed_headers = [
     utf_base64encode(
         dumps(
