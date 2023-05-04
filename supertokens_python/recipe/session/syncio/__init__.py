@@ -60,10 +60,32 @@ def create_new_session(
     )
 
 
+def create_new_session_without_request_response(
+    user_id: str,
+    access_token_payload: Union[Dict[str, Any], None] = None,
+    session_data_in_database: Union[Dict[str, Any], None] = None,
+    disable_anti_csrf: bool = False,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        create_new_session_without_request_response as async_create_new_session_without_request_response,
+    )
+
+    return sync(
+        async_create_new_session_without_request_response(
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
+        )
+    )
+
+
 def get_session(
     request: Any,
-    anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    anti_csrf_check: Union[bool, None] = None,
     check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
         Callable[
@@ -80,6 +102,37 @@ def get_session(
     return sync(
         async_get_session(
             request,
+            session_required,
+            anti_csrf_check,
+            check_database,
+            override_global_claim_validators,
+            user_context,
+        )
+    )
+
+
+def get_session_without_request_response(
+    access_token: str,
+    anti_csrf_token: Optional[str] = None,
+    anti_csrf_check: Optional[bool] = None,
+    session_required: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Optional[SessionContainer]:
+    from supertokens_python.recipe.session.asyncio import (
+        get_session_without_request_response as async_get_session_without_request_response,
+    )
+
+    return sync(
+        async_get_session_without_request_response(
+            access_token,
+            anti_csrf_token,
             anti_csrf_check,
             session_required,
             check_database,
@@ -97,6 +150,26 @@ def refresh_session(
     )
 
     return sync(async_refresh_session(request, user_context))
+
+
+def refresh_session_without_request_response(
+    refresh_token: str,
+    disable_anti_csrf: bool = False,
+    anti_csrf_token: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> SessionContainer:
+    from supertokens_python.recipe.session.asyncio import (
+        refresh_session_without_request_response as async_refresh_session_without_request_response,
+    )
+
+    return sync(
+        async_refresh_session_without_request_response(
+            refresh_token,
+            disable_anti_csrf,
+            anti_csrf_token,
+            user_context,
+        )
+    )
 
 
 def revoke_session(
@@ -165,22 +238,6 @@ def update_session_data_in_database(
     )
 
 
-def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> bool:
-    from supertokens_python.recipe.session.asyncio import (
-        update_access_token_payload as async_update_access_token_payload,
-    )
-
-    return sync(
-        async_update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
-        )
-    )
-
-
 def merge_into_access_token_payload(
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
@@ -199,22 +256,27 @@ def merge_into_access_token_payload(
 
 def create_jwt(
     payload: Dict[str, Any],
-    validity_seconds: Union[None, int] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    validity_seconds: Optional[int] = None,
+    use_static_signing_key: Optional[bool] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import create_jwt as async_create_jwt
 
-    return sync(async_create_jwt(payload, validity_seconds, user_context))
+    return sync(
+        async_create_jwt(
+            payload, validity_seconds, use_static_signing_key, user_context
+        )
+    )
 
 
-def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSResult:
+def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResult:
     from supertokens_python.recipe.session.asyncio import get_jwks as async_get_jwks
 
     return sync(async_get_jwks(user_context))
 
 
 def get_open_id_discovery_configuration(
-    user_context: Union[None, Dict[str, Any]] = None
+    user_context: Optional[Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,

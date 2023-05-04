@@ -28,7 +28,6 @@ from .recipe import SessionRecipe
 
 InputErrorHandlers = utils.InputErrorHandlers
 InputOverrideConfig = utils.InputOverrideConfig
-JWTConfig = utils.JWTConfig
 SessionContainer = interfaces.SessionContainer
 exceptions = ex
 
@@ -48,8 +47,9 @@ def init(
     ] = None,
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
-    jwt: Union[JWTConfig, None] = None,
     invalid_claim_status_code: Union[int, None] = None,
+    use_dynamic_access_token_signing_key: Union[bool, None] = None,
+    expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
@@ -60,6 +60,7 @@ def init(
         get_token_transfer_method,
         error_handlers,
         override,
-        jwt,
         invalid_claim_status_code,
+        use_dynamic_access_token_signing_key,
+        expose_access_token_to_frontend_in_cookie_based_auth,
     )

@@ -11,48 +11,37 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
 from supertokens_python.recipe.session.interfaces import (
+    ClaimsValidationResult,
+    GetClaimValueOkResult,
+    JSONObject,
     RegenerateAccessTokenOkResult,
-    SessionContainer,
-    SessionInformationResult,
     SessionClaim,
     SessionClaimValidator,
+    SessionContainer,
     SessionDoesNotExistError,
-    ClaimsValidationResult,
-    JSONObject,
-    GetClaimValueOkResult,
-    GetSessionUnauthorizedErrorResult,
-    GetSessionTryRefreshTokenErrorResult,
-    GetSessionClaimValidationErrorResult,
-    GetSessionClaimValidationErrorResponseObject,
-    CreateNewSessionResult,
-    GetSessionOkResult,
-    RefreshSessionOkResult,
-    RefreshSessionUnauthorizedResult,
-    RefreshSessionTokenTheftErrorResult,
+    SessionInformationResult,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.recipe.session.session_request_functions import (
-    get_session_from_request,
-    create_new_session_in_request,
-    refresh_session_in_request,
-)
 from supertokens_python.types import MaybeAwaitable
-from supertokens_python.utils import FRAMEWORKS, resolve, deprecated_warn
-from ..exceptions import InvalidClaimsError
-from ..utils import get_required_claim_validators
+from supertokens_python.utils import FRAMEWORKS, resolve
+
 from ...jwt.interfaces import (
     CreateJwtOkResult,
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+from ..session_request_functions import (
+    create_new_session_in_request,
+    get_session_from_request,
+    refresh_session_in_request,
+)
+from ..utils import get_required_claim_validators
 
 _T = TypeVar("_T")
 
@@ -93,7 +82,7 @@ async def create_new_session_without_request_response(
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> CreateNewSessionResult:
+) -> SessionContainer:
     if user_context is None:
         user_context = {}
     if session_data_in_database is None:
@@ -166,7 +155,7 @@ async def validate_claims_for_session_handle(
 
     claim_validation_res = await recipe_impl.validate_claims(
         session_info.user_id,
-        session_info.access_token_payload,
+        session_info.custom_claims_in_access_token_payload,
         claim_validators,
         user_context,
     )
@@ -278,7 +267,7 @@ async def remove_claim(
 
 
 async def get_session(
-    request: BaseRequest,
+    request: Any,
     session_required: Optional[bool] = None,
     anti_csrf_check: Optional[bool] = None,
     check_database: Optional[bool] = None,
@@ -292,6 +281,9 @@ async def get_session(
 ) -> Union[SessionContainer, None]:
     if user_context is None:
         user_context = {}
+
+    if session_required is None:
+        session_required = True
 
     recipe_instance = SessionRecipe.get_instance()
     recipe_interface_impl = recipe_instance.recipe_implementation
@@ -313,6 +305,7 @@ async def get_session_without_request_response(
     access_token: str,
     anti_csrf_token: Optional[str] = None,
     anti_csrf_check: Optional[bool] = None,
+    session_required: Optional[bool] = None,
     check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
         Callable[
@@ -321,12 +314,7 @@ async def get_session_without_request_response(
         ]
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[
-    GetSessionOkResult,
-    GetSessionUnauthorizedErrorResult,
-    GetSessionTryRefreshTokenErrorResult,
-    GetSessionClaimValidationErrorResult,
-]:
+) -> Optional[SessionContainer]:
     """Tries to validate an access token and build a Session object from it.
 
     Notes about anti-csrf checking:
@@ -337,49 +325,44 @@ async def get_session_without_request_response(
     Args:
     - access_token: The access token extracted from the authorization header or cookies
     - anti_csrf_token: The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
-    - anti_csrf_check: If true, anti-csrf checking will be done. If false, it will be skipped. Defaults behaviour to check.
-    - check_database: If true, the session will be checked in the database. If false, it will be skipped. Defaults behaviour to skip.
+    - anti_csrf_check: If true, anti-csrf checking will be done. If false, it will be skipped. Default behaviour is to check.
+    - session_required: If true, throws an error if the session does not exist. Default is True.
+    - check_database: If true, the session will be checked in the database. If false, it will be skipped. Default behaviour is to skip.
     - override_global_claim_validators: Alter the
     - user_context: user context
 
-    Returned values:
-    - GetSessionOkResult: The session was successfully validated, including claim validation
-    - GetSessionClaimValidationErrorResult: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
-    - GetSessionTryRefreshTokenErrorResult: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
-    - You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
-    - GetSessionUnauthorizedErrorResult: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
+    Results:
+    - OK: The session was successfully validated, including claim validation
+    - CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
+    - TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
+        You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
+    - UNAUTHORISED: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
     """
     if user_context is None:
         user_context = {}
 
+    if session_required is None:
+        session_required = True
+
     recipe_interface_impl = SessionRecipe.get_instance().recipe_implementation
 
-    res = await recipe_interface_impl.get_session(
+    session = await recipe_interface_impl.get_session(
         access_token,
         anti_csrf_token,
         anti_csrf_check,
+        session_required,
         check_database,
         override_global_claim_validators,
         user_context,
     )
 
-    if isinstance(res, GetSessionOkResult):
+    if session is not None:
         claim_validators = await get_required_claim_validators(
-            res.session, override_global_claim_validators, user_context
+            session, override_global_claim_validators, user_context
         )
-        try:
-            await res.session.assert_claims(claim_validators, user_context)
-        except SuperTokensError as e:
-            if isinstance(e, InvalidClaimsError):
-                return GetSessionClaimValidationErrorResult(
-                    error=e,
-                    response=GetSessionClaimValidationErrorResponseObject(
-                        message="invalid claim", claim_validation_errors=e.payload
-                    ),
-                )
-            raise e
+        await session.assert_claims(claim_validators, user_context)
 
-    return res
+    return session
 
 
 async def refresh_session(
@@ -411,11 +394,7 @@ async def refresh_session_without_request_response(
     disable_anti_csrf: bool = False,
     anti_csrf_token: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[
-    RefreshSessionOkResult,
-    RefreshSessionUnauthorizedResult,
-    RefreshSessionTokenTheftErrorResult,
-]:
+) -> SessionContainer:
     if user_context is None:
         user_context = {}
 
@@ -486,23 +465,6 @@ async def update_session_data_in_database(
     )
 
 
-async def update_access_token_payload(
-    session_handle: str,
-    new_access_token_payload: Dict[str, Any],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> bool:
-    if user_context is None:
-        user_context = {}
-
-    deprecated_warn(
-        "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
-    )
-
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
-        session_handle, new_access_token_payload, user_context
-    )
-
-
 async def merge_into_access_token_payload(
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
@@ -518,20 +480,16 @@ async def merge_into_access_token_payload(
 
 async def create_jwt(
     payload: Dict[str, Any],
-    validity_seconds: Union[None, int] = None,
+    validity_seconds: Optional[int] = None,
+    use_static_signing_key: Optional[bool] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
-    if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.create_jwt(
-            payload, validity_seconds, user_context=user_context
-        )
-
-    raise Exception(
-        "create_jwt cannot be used without enabling the JWT feature. Please set 'enable: True' for jwt config when initialising the Session recipe"
+    return await openid_recipe.recipe_implementation.create_jwt(
+        payload, validity_seconds, use_static_signing_key, user_context
     )
 
 
@@ -539,12 +497,7 @@ async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSR
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
-    if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.get_jwks(user_context)
-
-    raise Exception(
-        "get_jwks cannot be used without enabling the JWT feature. Please set 'enable: True' for jwt config when initialising the Session recipe"
-    )
+    return await openid_recipe.recipe_implementation.get_jwks(user_context)
 
 
 async def get_open_id_discovery_configuration(
@@ -554,13 +507,10 @@ async def get_open_id_discovery_configuration(
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
-    if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
+    return (
+        await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
             user_context
         )
-
-    raise Exception(
-        "get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set 'enable: True' for jwt config when initialising the Session recipe"
     )
 
 

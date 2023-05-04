@@ -86,14 +86,17 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
 
             return response_
 
-        temp1 = param.create_jwt
+        oi_create_jwt = param.create_jwt
 
         async def create_jwt_(
             payload: Dict[str, Any],
             validity_seconds: Union[int, None],
+            use_static_signing_key: Union[bool, None],
             user_context: Dict[str, Any],
         ):
-            response_ = await temp1(payload, validity_seconds, user_context)
+            response_ = await oi_create_jwt(
+                payload, validity_seconds, use_static_signing_key, user_context
+            )
 
             if isinstance(response_, CreateJwtOkResult):
                 nonlocal created_jwt

@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
@@ -11,8 +11,7 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
-from tests.utils import setup_function, teardown_function
-from tests.utils import start_st, AsyncMock
+from tests.utils import AsyncMock, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -25,14 +24,23 @@ pytestmark = (
 async def test_should_merge_the_right_value(timestamp: int):
     recipe_implementation_mock = AsyncMock()
     session_config_mock = MagicMock()
+
+    result = MagicMock()
+    result.access_token = None
+    recipe_implementation_mock.regenerate_access_token.return_value = result  # type: ignore
+
     session = Session(
         recipe_implementation_mock,
         session_config_mock,
         "test_access_token",
+        "test_front_token",
+        None,  # refresh token
+        None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
-        {},
-        "cookie",
+        {},  # user_data_in_access_token
+        None,  # req_res_info
+        False,  # access_token_updated
     )
     with patch.object(
         Session,
@@ -51,13 +59,15 @@ async def test_should_overwrite_claim_value(timestamp: int):
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert payload == {"st-true": {"t": timestamp, "v": True}}
+    assert len(payload) == 8
+    assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await s.set_claim_value(TrueClaim, False)
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
-    assert payload == {"st-true": {"t": timestamp, "v": False}}
+    assert len(payload) == 8
+    assert payload["st-true"] == {"t": timestamp, "v": False}
 
 
 async def test_should_overwrite_claim_value_using_session_handle(timestamp: int):
@@ -68,16 +78,15 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert payload == {"st-true": {"t": timestamp, "v": True}}
+    assert len(payload) == 8
+    assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await set_claim_value(s.get_handle(), TrueClaim, False)
 
-    # Payload should be updated now:
-    # Note that the session var (s) still contains the old payload.
-    # We need to fetch the new one. so we will use get_session_information()
+    # Check after update:
     s = await get_session_information(s.get_handle())
     assert s is not None
-    payload = s.access_token_payload
+    payload = s.custom_claims_in_access_token_payload
     assert payload == {"st-true": {"t": timestamp, "v": False}}
 
 

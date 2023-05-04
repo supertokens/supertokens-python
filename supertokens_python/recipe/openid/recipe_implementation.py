@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, Optional
 
 from supertokens_python.querier import Querier
 
@@ -69,7 +69,8 @@ class RecipeImplementation(RecipeInterface):
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         issuer = (
@@ -78,7 +79,7 @@ class RecipeImplementation(RecipeInterface):
         )
         payload = {"iss": issuer, **payload}
         return await self.jwt_recipe_implementation.create_jwt(
-            payload, validity_seconds, user_context
+            payload, validity_seconds, use_static_signing_key, user_context
         )
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:

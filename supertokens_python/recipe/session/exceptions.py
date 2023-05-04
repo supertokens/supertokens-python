@@ -31,8 +31,17 @@ def raise_try_refresh_token_exception(ex: Union[str, Exception]) -> NoReturn:
     raise TryRefreshTokenError(ex) from None
 
 
-def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -> NoReturn:
-    raise UnauthorisedError(msg, clear_tokens) from None
+def raise_unauthorised_exception(
+    msg: str,
+    clear_tokens: bool = True,
+    response_mutators: Optional[List[ResponseMutator]] = None,
+) -> NoReturn:
+    if response_mutators is None:
+        response_mutators = []
+
+    err = UnauthorisedError(msg, clear_tokens)
+    err.response_mutators.extend(UnauthorisedError.response_mutators)
+    raise err
 
 
 class SuperTokensSessionError(SuperTokensError):

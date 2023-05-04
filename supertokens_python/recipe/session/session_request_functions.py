@@ -11,24 +11,36 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Dict, Any, Optional, Callable, List, Union
+from __future__ import annotations
 
-from supertokens_python import AppInfo
+from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING
+
 from supertokens_python.logger import log_debug_message
-from supertokens_python.recipe.session import SessionRecipe, SessionContainer
 from supertokens_python.recipe.session.access_token import (
     validate_access_token_structure,
 )
 from supertokens_python.recipe.session.constants import available_token_transfer_methods
 from supertokens_python.recipe.session.cookie_and_header import (
-    get_token,
-    get_anti_csrf_header,
     clear_session_mutator,
+    get_anti_csrf_header,
+    get_token,
     set_cookie_response_mutator,
 )
 from supertokens_python.recipe.session.exceptions import (
-    raise_unauthorised_exception,
     raise_try_refresh_token_exception,
+    raise_unauthorised_exception,
+)
+from supertokens_python.recipe.session.interfaces import (
+    RecipeInterface as SessionRecipeInterface,
+)
+from supertokens_python.recipe.session.interfaces import (
+    SessionClaimValidator,
+    SessionContainer,
+)
+from supertokens_python.recipe.session.exceptions import (
+    SuperTokensSessionError,
+    TokenTheftError,
+    UnauthorisedError,
 )
 from supertokens_python.recipe.session.jwt import (
     ParsedJWTInfo,
@@ -39,23 +51,19 @@ from supertokens_python.recipe.session.utils import (
     TokenTransferMethod,
     get_required_claim_validators,
 )
+from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
     FRAMEWORKS,
-    is_an_ip_address,
-    set_request_in_user_context_if_not_defined,
     get_rid_from_header,
+    is_an_ip_address,
     normalise_http_method,
+    set_request_in_user_context_if_not_defined,
 )
-from supertokens_python.recipe.session.interfaces import (
-    RecipeInterface as SessionRecipeInterface,
-    SessionClaimValidator,
-    GetSessionUnauthorizedErrorResult,
-    GetSessionTryRefreshTokenErrorResult,
-    RefreshSessionOkResult,
-    RefreshSessionTokenTheftErrorResult,
-    RefreshSessionUnauthorizedResult,
-)
+from supertokens_python import Supertokens
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.recipe import SessionRecipe
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
@@ -74,12 +82,12 @@ async def get_session_from_request(
         ]
     ] = None,
     user_context: Optional[Dict[str, Any]] = None,
-):
+) -> Optional[SessionContainer]:
     log_debug_message("getSession: Started")
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            Supertokens.get_instance().app_info.framework
         ].wrap_request(request)
 
     log_debug_message("getSession: Wrapping done")
@@ -105,7 +113,7 @@ async def get_session_from_request(
         if token_string is not None:
             try:
                 info = parse_jwt_without_signature_verification(token_string)
-                validate_access_token_structure(info.payload)
+                validate_access_token_structure(info.payload, info.version)
                 log_debug_message(
                     "getSession: got access token from %s", transfer_method
                 )
@@ -177,7 +185,7 @@ async def get_session_from_request(
 
     log_debug_message("getSession: Value of antiCsrfToken is: %s", do_anti_csrf_check)
 
-    result = await recipe_interface_impl.get_session(
+    session = await recipe_interface_impl.get_session(
         access_token=request_access_token.raw_token_string,
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
@@ -186,23 +194,16 @@ async def get_session_from_request(
         user_context=user_context,
     )
 
-    if isinstance(
-        result,
-        (GetSessionTryRefreshTokenErrorResult, GetSessionUnauthorizedErrorResult),
-    ):
-        raise result.error
-
-    session = result.session
     if session is not None:
         claim_validators = await get_required_claim_validators(
             session, override_global_claim_validators, user_context
         )
         await session.assert_claims(claim_validators, user_context)
 
-    await session.attach_to_request_response(
-        request,
-        request_transfer_method,
-    )
+        await session.attach_to_request_response(
+            request,
+            request_transfer_method,
+        )
 
     return session
 
@@ -216,12 +217,12 @@ async def create_new_session_in_request(
     config: SessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
-):
+) -> SessionContainer:
     log_debug_message("createNewSession: Started")
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            Supertokens.get_instance().app_info.framework
         ].wrap_request(request)
 
     log_debug_message("createNewSession: Wrapping done")
@@ -242,7 +243,7 @@ async def create_new_session_in_request(
     if output_transfer_method == "any":
         output_transfer_method = "header"
     log_debug_message(
-        "createNewSession: using transfer method " + output_transfer_method
+        "createNewSession: using transfer method %s", output_transfer_method
     )
 
     if (
@@ -267,14 +268,12 @@ async def create_new_session_in_request(
         )
 
     disable_anti_csrf = output_transfer_method == "header"
-    result = (
-        await SessionRecipe.get_instance().recipe_implementation.create_new_session(
-            user_id,
-            final_access_token_payload,
-            session_data_in_database,
-            disable_anti_csrf,
-            user_context=user_context,
-        )
+    session = await recipe_instance.recipe_implementation.create_new_session(
+        user_id,
+        final_access_token_payload,
+        session_data_in_database,
+        disable_anti_csrf,
+        user_context=user_context,
     )
 
     log_debug_message("createNewSession: Session created in core built")
@@ -284,17 +283,16 @@ async def create_new_session_in_request(
             transfer_method != output_transfer_method
             and get_token(request, "access", transfer_method) is not None
         ):
-            result.session.response_mutators.append(
+            session.response_mutators.append(
                 clear_session_mutator(config, transfer_method)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
 
-    if result.status == "OK":
-        await result.session.attach_to_request_response(request, output_transfer_method)
-        log_debug_message("createNewSession: Attached new tokens to res")
+    await session.attach_to_request_response(request, output_transfer_method)
+    log_debug_message("createNewSession: Attached new tokens to res")
 
-    return result.session
+    return session
 
 
 # In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
@@ -306,14 +304,14 @@ async def refresh_session_in_request(
     user_context: Dict[str, Any],
     config: SessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
-):
+) -> SessionContainer:
     log_debug_message("refreshSession: Started")
 
     response_mutators: List[Callable[[Any], None]] = []
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
-            SessionRecipe.get_instance().app_info.framework
+            Supertokens.get_instance().app_info.framework
         ].wrap_request(request)
 
     log_debug_message("refreshSession: Wrapping done")
@@ -325,7 +323,7 @@ async def refresh_session_in_request(
         refresh_tokens[transfer_method] = get_token(request, "refresh", transfer_method)
         if refresh_tokens[transfer_method] is not None:
             log_debug_message(
-                "refreshSession: got refresh token from " + transfer_method
+                "refreshSession: got refresh token from %s", transfer_method
             )
 
     allowed_transfer_method = config.get_token_transfer_method(
@@ -373,6 +371,7 @@ async def refresh_session_in_request(
         return raise_unauthorised_exception(
             "Refresh token not found. Are you sending the refresh token in the request?",
             clear_tokens=False,
+            response_mutators=response_mutators,
         )
 
     assert refresh_token is not None
@@ -392,15 +391,15 @@ async def refresh_session_in_request(
             )
         disable_anti_csrf = True
 
-    result = await recipe_interface_impl.refresh_session(
-        refresh_token, anti_csrf_token, disable_anti_csrf, user_context
-    )
-
-    if not isinstance(result, RefreshSessionOkResult):
-        if (
-            isinstance(result, RefreshSessionUnauthorizedResult)
-            and result.error.clear_tokens is True
-        ) or isinstance(result, RefreshSessionTokenTheftErrorResult):
+    session: Optional[SessionContainer] = None
+    try:
+        session = await recipe_interface_impl.refresh_session(
+            refresh_token, anti_csrf_token, disable_anti_csrf, user_context
+        )
+    except SuperTokensSessionError as e:
+        if isinstance(e, TokenTheftError) or (
+            isinstance(e, UnauthorisedError) and getattr(e, "clear_tokens") is True
+        ):
             # We clear the LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME here because we want to limit the scope of
             # this legacy/migration code so the token clearing functions in the error handlers do not.
             if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
@@ -417,14 +416,13 @@ async def refresh_session_in_request(
                     )
                 )
 
-        if result.status in ("TOKEN_THEFT_DETECTED", "UNAUTHORISED"):
-            raise result.error
+        e.response_mutators.extend(response_mutators)
+        raise e
 
     log_debug_message(
-        "refreshSession: Attaching refreshed session info as " + request_transfer_method
+        "refreshSession: Attaching refreshed session info as %s",
+        request_transfer_method,
     )
-
-    assert isinstance(result, RefreshSessionOkResult)
 
     # We clear the tokens in all token transfer methods we are not going to overwrite:
     for transfer_method in available_token_transfer_methods:
@@ -434,7 +432,7 @@ async def refresh_session_in_request(
         ):
             response_mutators.append(clear_session_mutator(config, transfer_method))
 
-    await result.session.attach_to_request_response(request, request_transfer_method)
+    await session.attach_to_request_response(request, request_transfer_method)
     log_debug_message("refreshSession: Success!")
 
     # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
@@ -452,5 +450,5 @@ async def refresh_session_in_request(
             )
         )
 
-    result.session.response_mutators.extend(response_mutators)
-    return result.session
+    session.response_mutators.extend(response_mutators)
+    return session
