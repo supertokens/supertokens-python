@@ -236,7 +236,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             self,
             self.config,
             access_token_str,
-            # FIXME: expiry time cannot be None
             build_front_token(response.session.userId, expiry_time, payload),
             None,  # refresh_token
             anti_csrf_token,
