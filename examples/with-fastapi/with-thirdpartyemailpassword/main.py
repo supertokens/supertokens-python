@@ -119,7 +119,7 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
             "sessionHandle": session_.get_handle(),
             "userId": session_.get_user_id(),
             "accessTokenPayload": session_.get_access_token_payload(),
-            # 'sessionData': await session_.get_session_data()
+            # "sessionData": await session_.get_session_data_from_database()
         }
     )
 

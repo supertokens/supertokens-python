@@ -36,10 +36,6 @@ from ...types import MaybeAwaitable
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
 from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .exceptions import ClaimValidationError
-from .with_jwt.constants import (
-    ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
-    JWT_RESERVED_KEY_USE_ERROR_MESSAGE,
-)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -54,8 +50,6 @@ if TYPE_CHECKING:
     from .recipe import SessionRecipe
 
 from supertokens_python.logger import log_debug_message
-
-HUNDRED_YEARS_IN_MS = 3153600000000
 
 
 def normalise_session_scope(session_scope: str) -> str:
@@ -319,27 +313,6 @@ class OverrideConfig:
         self.apis = apis
 
 
-class JWTConfig:
-    def __init__(
-        self,
-        enable: bool,
-        property_name_in_access_token_payload: Union[str, None] = None,
-        issuer: Union[str, None] = None,
-    ):
-        if property_name_in_access_token_payload is None:
-            property_name_in_access_token_payload = "jwt"
-        if (
-            property_name_in_access_token_payload
-            == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-        ):
-            raise Exception(JWT_RESERVED_KEY_USE_ERROR_MESSAGE)
-        self.enable = enable
-        self.property_name_in_access_token_payload = (
-            property_name_in_access_token_payload
-        )
-        self.issuer = issuer
-
-
 TokenType = Literal["access", "refresh"]
 TokenTransferMethod = Literal["cookie", "header"]
 
@@ -361,11 +334,16 @@ class SessionConfig:
         override: OverrideConfig,
         framework: str,
         mode: str,
-        jwt: JWTConfig,
         invalid_claim_status_code: int,
+        use_dynamic_access_token_signing_key: bool,
+        expose_access_token_to_frontend_in_cookie_based_auth: bool,
     ):
         self.session_expired_status_code = session_expired_status_code
         self.invalid_claim_status_code = invalid_claim_status_code
+        self.use_dynamic_access_token_signing_key = use_dynamic_access_token_signing_key
+        self.expose_access_token_to_frontend_in_cookie_based_auth = (
+            expose_access_token_to_frontend_in_cookie_based_auth
+        )
 
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
@@ -377,7 +355,6 @@ class SessionConfig:
         self.override = override
         self.framework = framework
         self.mode = mode
-        self.jwt = jwt
 
 
 def validate_and_normalise_user_input(
@@ -396,8 +373,9 @@ def validate_and_normalise_user_input(
     ] = None,
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
-    jwt: Union[JWTConfig, None] = None,
     invalid_claim_status_code: Union[int, None] = None,
+    use_dynamic_access_token_signing_key: Union[bool, None] = None,
+    expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
 ):
     if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
         raise ValueError(
@@ -409,9 +387,6 @@ def validate_and_normalise_user_input(
 
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
         raise ValueError("override must be an instance of InputOverrideConfig or None")
-
-    if jwt is not None and not isinstance(jwt, JWTConfig):  # type: ignore
-        raise ValueError("jwt must be an instance of JWTConfig or None")
 
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
@@ -464,8 +439,11 @@ def validate_and_normalise_user_input(
     if override is None:
         override = InputOverrideConfig()
 
-    if jwt is None:
-        jwt = JWTConfig(False)
+    if use_dynamic_access_token_signing_key is None:
+        use_dynamic_access_token_signing_key = True
+
+    if expose_access_token_to_frontend_in_cookie_based_auth is None:
+        expose_access_token_to_frontend_in_cookie_based_auth = False
 
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
@@ -479,8 +457,9 @@ def validate_and_normalise_user_input(
         OverrideConfig(override.functions, override.apis),
         app_info.framework,
         app_info.mode,
-        jwt,
         invalid_claim_status_code,
+        use_dynamic_access_token_signing_key,
+        expose_access_token_to_frontend_in_cookie_based_auth,
     )
 
 

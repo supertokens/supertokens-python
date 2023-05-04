@@ -11,20 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = [
-    "2.9",
-    "2.10",
-    "2.11",
-    "2.12",
-    "2.13",
-    "2.14",
-    "2.15",
-    "2.16",
-    "2.17",
-    "2.18",
-    "2.19",
-    "2.20",
-]
+from __future__ import annotations
+
+SUPPORTED_CDI_VERSIONS = ["2.21"]
 VERSION = "0.13.0"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
@@ -39,3 +28,4 @@ FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
 DASHBOARD_VERSION = "0.6"
+HUNDRED_YEARS_IN_MS = 3153600000000

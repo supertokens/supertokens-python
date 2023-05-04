@@ -19,16 +19,20 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
 from supertokens_python.framework.response import BaseResponse
 from typing_extensions import Literal
 
-from supertokens_python.utils import default_user_context
+from supertokens_python.utils import (
+    default_user_context,
+)
 
-from .api import handle_refresh_api, handle_signout_api
-from .cookie_and_header import get_cors_allowed_headers
+from .cookie_and_header import (
+    get_cors_allowed_headers,
+)
 from .exceptions import (
     SuperTokensSessionError,
     TokenTheftError,
     UnauthorisedError,
     InvalidClaimsError,
 )
+from ... import AppInfo
 from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
@@ -40,12 +44,8 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.session.with_jwt import (
-    get_recipe_implementation_with_jwt,
-)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
-from .api.implementation import APIImplementation
 from .constants import SESSION_REFRESH, SIGNOUT
 from .interfaces import (
     APIInterface,
@@ -58,11 +58,11 @@ from .interfaces import (
 from .recipe_implementation import (
     RecipeImplementation,
 )
+from .api import handle_refresh_api, handle_signout_api
 from .utils import (
     InputErrorHandlers,
     InputOverrideConfig,
     TokenTransferMethod,
-    JWTConfig,
     validate_and_normalise_user_input,
 )
 
@@ -91,11 +91,18 @@ class SessionRecipe(RecipeModule):
         ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        jwt: Union[JWTConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.openid_recipe: Union[None, OpenIdRecipe] = None
+        self.openid_recipe = OpenIdRecipe(
+            recipe_id,
+            app_info,
+            None,
+            None,
+            override.openid_feature if override is not None else None,
+        )
         self.config = validate_and_normalise_user_input(
             app_info,
             cookie_domain,
@@ -106,8 +113,9 @@ class SessionRecipe(RecipeModule):
             get_token_transfer_method,
             error_handlers,
             override,
-            jwt,
             invalid_claim_status_code,
+            use_dynamic_access_token_signing_key,
+            expose_access_token_to_frontend_in_cookie_based_auth,
         )
         log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
         if self.config.cookie_domain is not None:
@@ -130,35 +138,17 @@ class SessionRecipe(RecipeModule):
             "session init: session_expired_status_code: %s",
             str(self.config.session_expired_status_code),
         )
-
-        if self.config.jwt.enable:
-            openid_feature_override = None
-            if override is not None:
-                openid_feature_override = override.openid_feature
-            self.openid_recipe = OpenIdRecipe(
-                recipe_id,
-                app_info,
-                None,
-                self.config.jwt.issuer,
-                openid_feature_override,
-            )
-            recipe_implementation = RecipeImplementation(
-                Querier.get_instance(recipe_id), self.config, self.app_info
-            )
-            recipe_implementation = get_recipe_implementation_with_jwt(
-                recipe_implementation,
-                self.config,
-                self.openid_recipe.recipe_implementation,
-            )
-        else:
-            recipe_implementation = RecipeImplementation(
-                Querier.get_instance(recipe_id), self.config, self.app_info
-            )
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self.config, self.app_info
+        )
         self.recipe_implementation: RecipeInterface = (
             recipe_implementation
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)
         )
+
+        from .api.implementation import APIImplementation
+
         api_implementation = APIImplementation()
         self.api_implementation: APIInterface = (
             api_implementation
@@ -172,10 +162,7 @@ class SessionRecipe(RecipeModule):
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensSessionError)
-            or (
-                self.openid_recipe is not None
-                and self.openid_recipe.is_error_from_this_recipe_based_on_instance(err)
-            )
+            or self.openid_recipe.is_error_from_this_recipe_based_on_instance(err)
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
@@ -193,8 +180,7 @@ class SessionRecipe(RecipeModule):
                 self.api_implementation.disable_signout_post,
             ),
         ]
-        if self.openid_recipe is not None:
-            apis_handled = apis_handled + self.openid_recipe.get_apis_handled()
+        apis_handled.extend(self.openid_recipe.get_apis_handled())
 
         return apis_handled
 
@@ -228,11 +214,9 @@ class SessionRecipe(RecipeModule):
                     self.recipe_implementation,
                 ),
             )
-        if self.openid_recipe is not None:
-            return await self.openid_recipe.handle_api_request(
-                request_id, request, path, method, response
-            )
-        return None
+        return await self.openid_recipe.handle_api_request(
+            request_id, request, path, method, response
+        )
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -264,8 +248,7 @@ class SessionRecipe(RecipeModule):
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = get_cors_allowed_headers()
-        if self.openid_recipe is not None:
-            cors_headers = cors_headers + self.openid_recipe.get_all_cors_headers()
+        cors_headers.extend(self.openid_recipe.get_all_cors_headers())
 
         return cors_headers
 
@@ -287,8 +270,9 @@ class SessionRecipe(RecipeModule):
         ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        jwt: Union[JWTConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
+        use_dynamic_access_token_signing_key: Union[bool, None] = None,
+        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
@@ -303,8 +287,9 @@ class SessionRecipe(RecipeModule):
                     get_token_transfer_method,
                     error_handlers,
                     override,
-                    jwt,
                     invalid_claim_status_code,
+                    use_dynamic_access_token_signing_key,
+                    expose_access_token_to_frontend_in_cookie_based_auth,
                 )
                 return SessionRecipe.__instance
             raise_general_exception(

@@ -21,7 +21,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, cast, Optional
 from urllib.parse import unquote
 
 from fastapi.testclient import TestClient
@@ -384,7 +384,7 @@ def sign_in_request(app: TestClient, email: str, password: str):
 def email_verify_token_request(
     app: TestClient,
     accessToken: str,
-    antiCsrf: str,
+    antiCsrf: Optional[str],
     userId: str,
     use_server: bool = False,
 ):

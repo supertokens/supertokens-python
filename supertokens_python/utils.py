@@ -17,7 +17,7 @@ from __future__ import annotations
 import asyncio
 import json
 import warnings
-from base64 import b64decode, b64encode
+from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from math import floor
 from re import fullmatch
 from time import time
@@ -31,6 +31,7 @@ from typing import (
     List,
     TypeVar,
     Union,
+    Optional,
 )
 from urllib.parse import urlparse
 
@@ -164,11 +165,20 @@ def get_timestamp_ms() -> int:
     return int(time() * 1000)
 
 
-def utf_base64encode(s: str) -> str:
+def utf_base64encode(s: str, urlsafe: bool) -> str:
+    if urlsafe:
+        return urlsafe_b64encode(s.encode("utf-8")).decode("utf-8")
+
     return b64encode(s.encode("utf-8")).decode("utf-8")
 
 
-def utf_base64decode(s: str) -> str:
+def utf_base64decode(s: str, urlsafe: bool) -> str:
+    # Adding extra "==" based on
+    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+    # Otherwise it can raise "incorrect padding" error
+    if urlsafe:
+        return urlsafe_b64decode(s.encode("utf-8") + b"==").decode("utf-8")
+
     return b64decode(s.encode("utf-8")).decode("utf-8")
 
 
@@ -254,8 +264,23 @@ def humanize_time(ms: int) -> str:
     return time_str
 
 
+def set_request_in_user_context_if_not_defined(
+    user_context: Optional[Dict[str, Any]], request: BaseRequest
+) -> Dict[str, Any]:
+    if user_context is None:
+        user_context = {}
+
+    if "_default" not in user_context:
+        user_context["_default"] = {}
+
+    if isinstance(user_context["_default"], dict):
+        user_context["_default"]["request"] = request
+
+    return user_context
+
+
 def default_user_context(request: BaseRequest) -> Dict[str, Any]:
-    return {"_default": {"request": request}}
+    return set_request_in_user_context_if_not_defined({}, request)
 
 
 async def resolve(obj: MaybeAwaitable[_T]) -> _T:

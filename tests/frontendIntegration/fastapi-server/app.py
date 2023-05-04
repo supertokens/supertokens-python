@@ -38,7 +38,7 @@ from supertokens_python.recipe.session.asyncio import (
     SessionRecipe,
     create_new_session,
     revoke_all_sessions_for_user,
-    update_access_token_payload,
+    merge_into_access_token_payload,
 )
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
@@ -112,17 +112,21 @@ def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
     async def create_new_session_custom(
-        _request: BaseRequest,
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
-        session_data: Union[Dict[str, Any], None],
+        session_data_in_database: Union[Dict[str, Any], None],
+        disable_anti_csrf: Union[bool, None],
         user_context: Dict[str, Any],
-    ) -> SessionContainer:
+    ):
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
-            _request, user_id, access_token_payload, session_data, user_context
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
         )
 
     param.create_new_session = create_new_session_custom
@@ -140,7 +144,7 @@ def get_app_port():
 
 
 def config(
-    enable_anti_csrf: bool, enable_jwt: bool, jwt_property_name: Union[str, None]
+    enable_anti_csrf: bool, enable_jwt: bool, _jwt_property_name: Union[str, None]
 ):
     anti_csrf: Literal["VIA_TOKEN", "NONE"] = "NONE"
     if enable_anti_csrf:
@@ -161,7 +165,6 @@ def config(
                     override=session.InputOverrideConfig(
                         apis=apis_override_session, functions=functions_override_session
                     ),
-                    jwt=session.JWTConfig(enable_jwt, jwt_property_name),
                 )
             ],
             telemetry=False,
@@ -287,7 +290,7 @@ async def update_jwt(sess: SessionContainer = Depends(verify_session())):
 async def update_jwt_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await _session.update_access_token_payload(await request.json(), {})
+    await _session.merge_into_access_token_payload(await request.json(), {})
     Test.increment_get_session()
     return JSONResponse(
         content=_session.get_access_token_payload(),
@@ -299,7 +302,7 @@ async def update_jwt_post(
 async def update_jwt_with_handle_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await update_access_token_payload(_session.get_handle(), await request.json())
+    await merge_into_access_token_payload(_session.get_handle(), await request.json())
     return JSONResponse(
         content=_session.get_access_token_payload(),
         headers={"Cache-Control": "no-cache, private"},

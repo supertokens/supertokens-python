@@ -36,7 +36,7 @@ from supertokens_python.recipe.session.syncio import (
     create_new_session,
     get_session,
     revoke_all_sessions_for_user,
-    update_access_token_payload,
+    merge_into_access_token_payload,
 )
 from typing_extensions import Literal
 
@@ -88,7 +88,7 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     if value is not None and value.status_code != 200:
                         return value
                     session: SessionContainer = request.supertokens  # type: ignore
-                    session.sync_update_access_token_payload(
+                    session.sync_merge_into_access_token_payload(
                         json.loads(request.body), {}
                     )
                     Test.increment_get_session()
@@ -111,7 +111,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 if value is not None and value.status_code != 200:
                     return value
                 session: SessionContainer = request.supertokens  # type: ignore
-                update_access_token_payload(
+                merge_into_access_token_payload(
                     session.get_handle(), json.loads(request.body)
                 )
                 resp = JsonResponse(session.get_access_token_payload())
@@ -236,17 +236,21 @@ def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
     async def create_new_session_custom(
-        request: BaseRequest,
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
-        session_data: Union[Dict[str, Any], None],
+        session_data_in_database: Union[Dict[str, Any], None],
+        disable_anti_csrf: Union[bool, None],
         user_context: Dict[str, Any],
-    ) -> SessionContainer:
+    ):
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
-            request, user_id, access_token_payload, session_data, user_context
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
         )
 
     param.create_new_session = create_new_session_custom
@@ -286,7 +290,6 @@ def config(
                     override=session.InputOverrideConfig(
                         apis=apis_override_session, functions=functions_override_session
                     ),
-                    jwt=session.JWTConfig(enable_jwt, jwt_property_name),
                 )
             ],
             telemetry=False,

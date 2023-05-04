@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
@@ -31,3 +32,15 @@ REFRESH_TOKEN_HEADER_KEY = "st-refresh-token"
 ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
 
 available_token_transfer_methods: List[TokenTransferMethod] = ["cookie", "header"]
+
+JWKCacheMaxAgeInMs = 60 * 1000  # 1min
+JWKRequestCooldownInMs = 500  # 0.5s
+protected_props = [
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+]

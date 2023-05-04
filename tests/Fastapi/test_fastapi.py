@@ -620,6 +620,9 @@ async def test_should_clear_all_response_during_refresh_if_unauthorized(
     assert res.status_code == 401
     assert_info_clears_tokens(info, token_transfer_method)
 
+    assert info["sIdRefreshToken"]["value"] == ""
+    assert info["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+
 
 @mark.asyncio
 @mark.parametrize("token_transfer_method", ["cookie", "header"])
@@ -644,6 +647,42 @@ async def test_revoking_session_after_create_new_session_with_throwing_unauthori
 
     assert res.status_code == 401
     assert_info_clears_tokens(info, token_transfer_method)
+
+
+@mark.asyncio
+async def test_session_with_legacy_refresh_token_and_unauthorized_should_clear_legacy_token(
+    driver_config_client: TestClient,
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                )
+            ]
+        )
+    )  # type: ignore
+    start_st()
+
+    headers: Dict[str, Any] = {}
+    cookies: Dict[str, Any] = {}
+
+    cookies.update(
+        # Invalid refresh token so that core throws an unauthorized error
+        {"sRefreshToken": "non-existing-token", "sIdRefreshToken": "irrelevant-value"}
+    )
+
+    res = driver_config_client.post(
+        "/auth/session/refresh", headers=headers, cookies=cookies
+    )
+    info = extract_info(res)
+
+    assert res.status_code == 401
+    assert res.json() == {"message": "unauthorised"}
+    assert_info_clears_tokens(info, "cookie")
+
+    assert info["sIdRefreshToken"]["value"] == ""
+    assert info["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
 
 @mark.asyncio
