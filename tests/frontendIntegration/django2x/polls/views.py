@@ -38,7 +38,19 @@ from supertokens_python.recipe.session.syncio import (
     revoke_all_sessions_for_user,
     merge_into_access_token_payload,
 )
-from typing_extensions import Literal
+from supertokens_python.constants import VERSION
+from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.session.syncio import get_session_information
+
+protected_prop_name = {
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken"
+}
 
 file_path = "index.html"
 
@@ -87,12 +99,18 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     value: HttpResponse = f(request, *args, **kwargs)
                     if value is not None and value.status_code != 200:
                         return value
-                    session: SessionContainer = request.supertokens  # type: ignore
-                    session.sync_merge_into_access_token_payload(
-                        json.loads(request.body), {}
-                    )
+                    session_: SessionContainer = request.supertokens  # type: ignore
+
+                    clearing = {}
+                    for k in session_.get_access_token_payload():
+                        if k not in protected_prop_name:
+                            clearing[k] = None
+
+                    body = json.loads(request.body)
+                    session_.sync_merge_into_access_token_payload({**clearing, **body}, {})
+
                     Test.increment_get_session()
-                    resp = JsonResponse(session.get_access_token_payload())
+                    resp = JsonResponse(session_.get_access_token_payload())
                     resp["Cache-Control"] = "no-cache, private"
                     return resp
             return send_options_api_response()
@@ -110,11 +128,21 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 value: HttpResponse = f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                session: SessionContainer = request.supertokens  # type: ignore
+                session_: SessionContainer = request.supertokens  # type: ignore
+
+                info = get_session_information(session_.get_handle())
+                assert info is not None
+                clearing = {}
+                for k in info.custom_claims_in_access_token_payload:
+                    if k not in protected_prop_name:
+                        clearing[k] = None
+
+                body = json.loads(request.body)
                 merge_into_access_token_payload(
-                    session.get_handle(), json.loads(request.body)
+                    session_.get_handle(), {**clearing, **body}
                 )
-                resp = JsonResponse(session.get_access_token_payload())
+
+                resp = JsonResponse(session_.get_access_token_payload())
                 resp["Cache-Control"] = "no-cache, private"
                 return resp
             return send_options_api_response()
@@ -270,30 +298,56 @@ def get_app_port():
 def config(
     enable_anti_csrf: bool, enable_jwt: bool, jwt_property_name: Union[str, None]
 ):
-    anti_csrf: Literal["VIA_TOKEN", "NONE"] = "NONE"
-    if enable_anti_csrf:
-        anti_csrf = "VIA_TOKEN"
+    anti_csrf = "VIA_TOKEN" if enable_anti_csrf else "NONE"
+
     if enable_jwt:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:9000"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Python SDK",
-                api_domain="0.0.0.0:" + get_app_port(),
-                website_domain="http://localhost.org:8080",
-            ),
-            framework="django",
-            mode="wsgi",
-            recipe_list=[
-                session.init(
-                    error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
-                    anti_csrf=anti_csrf,
-                    override=session.InputOverrideConfig(
-                        apis=apis_override_session, functions=functions_override_session
-                    ),
-                )
-            ],
-            telemetry=False,
-        )
+        if is_version_gte(VERSION, "0.13.0"):
+            init(
+                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                app_info=InputAppInfo(
+                    app_name="SuperTokens Python SDK",
+                    api_domain="0.0.0.0:" + get_app_port(),
+                    website_domain="http://localhost.org:8080",
+                ),
+                framework="fastapi",
+                recipe_list=[
+                    session.init(
+                        error_handlers=InputErrorHandlers(
+                            on_unauthorised=unauthorised_f
+                        ),
+                        anti_csrf=anti_csrf,
+                        override=session.InputOverrideConfig(
+                            apis=apis_override_session,
+                            functions=functions_override_session,
+                        ),
+                        expose_access_token_to_frontend_in_cookie_based_auth=True,
+                    )
+                ],
+                telemetry=False,
+            )
+        else:
+            init(
+                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                app_info=InputAppInfo(
+                    app_name="SuperTokens Python SDK",
+                    api_domain="0.0.0.0:" + get_app_port(),
+                    website_domain="http://localhost.org:8080",
+                ),
+                framework="fastapi",
+                recipe_list=[
+                    session.init(
+                        error_handlers=InputErrorHandlers(
+                            on_unauthorised=unauthorised_f
+                        ),
+                        anti_csrf=anti_csrf,
+                        override=session.InputOverrideConfig(
+                            apis=apis_override_session,
+                            functions=functions_override_session,
+                        ),
+                    )
+                ],
+                telemetry=False,
+            )
     else:
         init(
             supertokens_config=SupertokensConfig("http://localhost:9000"),
@@ -302,8 +356,7 @@ def config(
                 api_domain="0.0.0.0:" + get_app_port(),
                 website_domain="http://localhost.org:8080",
             ),
-            framework="django",
-            mode="wsgi",
+            framework="fastapi",
             recipe_list=[
                 session.init(
                     error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),

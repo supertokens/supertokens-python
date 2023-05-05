@@ -44,6 +44,17 @@ from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.session.asyncio import get_session_information
+
+protected_prop_name = {
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken"
+}
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -318,7 +329,14 @@ async def update_jwt(sess: SessionContainer = Depends(verify_session())):
 async def update_jwt_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await _session.merge_into_access_token_payload(await request.json(), {})
+    clearing = {}
+    for k in _session.get_access_token_payload():
+        if k not in protected_prop_name:
+            clearing[k] = None
+
+    body = await request.json()
+    await _session.merge_into_access_token_payload({**clearing, **body}, {})
+
     Test.increment_get_session()
     return JSONResponse(
         content=_session.get_access_token_payload(),
@@ -330,7 +348,16 @@ async def update_jwt_post(
 async def update_jwt_with_handle_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await merge_into_access_token_payload(_session.get_handle(), await request.json())
+    info = await get_session_information(_session.get_handle())
+    assert info is not None
+    clearing = {}
+
+    for k in info.custom_claims_in_access_token_payload:
+        clearing[k] = None
+
+    body = await request.json()
+
+    await merge_into_access_token_payload(_session.get_handle(), {**clearing, **body})
     return JSONResponse(
         content=_session.get_access_token_payload(),
         headers={"Cache-Control": "no-cache, private"},
@@ -531,7 +558,11 @@ def check_rid(request: Request):
 def feature_flags(_: Request):
     global last_set_enable_jwt  # pylint: disable=global-variable-not-assigned
 
-    return JSONResponse({"sessionJwt": last_set_enable_jwt})
+    return JSONResponse({
+        "sessionJwt": last_set_enable_jwt,
+        "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+        "v3AccessToken": is_version_gte(VERSION, "0.13.0")
+    })
 
 
 @app.post("/reinitialiseBackendConfig")

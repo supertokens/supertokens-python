@@ -40,6 +40,17 @@ from supertokens_python.recipe.session.asyncio import merge_into_access_token_pa
 
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.session.syncio import get_session_information
+
+protected_prop_name = {
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken"
+}
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, "../templates/index.html")
@@ -92,12 +103,18 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     value: HttpResponse = await f(request, *args, **kwargs)
                     if value is not None and value.status_code != 200:
                         return value
-                    session: SessionContainer = request.supertokens  # type: ignore
-                    await session.merge_into_access_token_payload(
-                        json.loads(request.body), {}
-                    )
+                    session_: SessionContainer = request.supertokens  # type: ignore
+
+                    clearing = {}
+                    for k in session_.get_access_token_payload():
+                        if k not in protected_prop_name:
+                            clearing[k] = None
+
+                    body = json.loads(request.body)
+                    session_.sync_merge_into_access_token_payload({**clearing, **body}, {})
+
                     Test.increment_get_session()
-                    resp = JsonResponse(session.get_access_token_payload())
+                    resp = JsonResponse(session_.get_access_token_payload())
                     resp["Cache-Control"] = "no-cache, private"
                     return resp
             return send_options_api_response()
@@ -115,11 +132,21 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                session: SessionContainer = request.supertokens  # type: ignore
+                session_: SessionContainer = request.supertokens  # type: ignore
+                
+                info = get_session_information(session_.get_handle())
+                assert info is not None
+                clearing = {}
+                for k in info.custom_claims_in_access_token_payload:
+                    if k not in protected_prop_name:
+                        clearing[k] = None
+
+                body = json.loads(request.body)
                 await merge_into_access_token_payload(
-                    session.get_handle(), json.loads(request.body)
+                    session_.get_handle(), {**clearing, **body}
                 )
-                resp = JsonResponse(session.get_access_token_payload())
+
+                resp = JsonResponse(session_.get_access_token_payload())
                 resp["Cache-Control"] = "no-cache, private"
                 return resp
             return send_options_api_response()
@@ -493,7 +520,11 @@ def set_enable_jwt(request: HttpRequest):
 
 def feature_flags(request: HttpRequest):
     global last_set_enable_jwt
-    return JsonResponse({"sessionJwt": last_set_enable_jwt})
+    return JsonResponse({
+        "sessionJwt": last_set_enable_jwt,
+        "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+        "v3AccessToken": is_version_gte(VERSION, "0.13.0")
+    })
 
 
 async def reinitialize(request: HttpRequest):

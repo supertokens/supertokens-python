@@ -30,11 +30,23 @@ from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
 from supertokens_python.recipe.session.syncio import (
     create_new_session,
+    SessionContainer,
     merge_into_access_token_payload,
     revoke_all_sessions_for_user,
 )
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.session.syncio import get_session_information
+
+protected_prop_name = {
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken"
+}
 
 last_set_enable_anti_csrf = True
 last_set_enable_jwt = False
@@ -340,7 +352,13 @@ def update_jwt():
 # @supertokens_middleware()
 def update_jwt_post():
     _session = g.supertokens
-    _session.sync_merge_access_token_payload(request.get_json())
+    clearing = {}
+    for k in _session.get_access_token_payload():
+        if k not in protected_prop_name:
+            clearing[k] = None
+
+    body = request.get_json() or {}
+    _session.sync_merge_into_access_token_payload({**clearing, **body}, {})
     Test.increment_get_session()
     resp = make_response(_session.get_access_token_payload())
     resp.headers["Cache-Control"] = "no-cache, private"
@@ -350,8 +368,17 @@ def update_jwt_post():
 @app.route("/update-jwt-with-handle", methods=["POST"])  # type: ignore
 @verify_session()
 def update_jwt_with_handle_post():
-    _session = g.supertokens
-    merge_into_access_token_payload(_session.get_handle(), request.get_json())
+    _session: SessionContainer = g.supertokens # type: ignore
+    info = get_session_information(_session.get_handle())
+    assert info is not None
+    clearing = {}
+
+    for k in info.custom_claims_in_access_token_payload:
+        clearing[k] = None
+
+    body = request.get_json() or {}
+    merge_into_access_token_payload(_session.get_handle(), {**clearing, **body})
+
     resp = make_response(_session.get_access_token_payload())
     resp.headers["Cache-Control"] = "no-cache, private"
     return resp
@@ -541,7 +568,11 @@ def check_rid():
 def feature_flags():
     global last_set_enable_jwt  # pylint: disable=global-variable-not-assigned
 
-    return jsonify({"sessionJwt": last_set_enable_jwt})
+    return jsonify({
+        "sessionJwt": last_set_enable_jwt,
+        "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+        "v3AccessToken": is_version_gte(VERSION, "0.13.0")
+    })
 
 
 @app.route("/reinitialiseBackendConfig", methods=["POST"])  # type: ignore
