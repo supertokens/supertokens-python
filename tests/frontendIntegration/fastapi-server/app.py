@@ -53,7 +53,7 @@ protected_prop_name = {
     "sessionHandle",
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
-    "antiCsrfToken"
+    "antiCsrfToken",
 }
 
 index_file = open("templates/index.html", "r")
@@ -558,11 +558,13 @@ def check_rid(request: Request):
 def feature_flags(_: Request):
     global last_set_enable_jwt  # pylint: disable=global-variable-not-assigned
 
-    return JSONResponse({
-        "sessionJwt": last_set_enable_jwt,
-        "sessionClaims": is_version_gte(VERSION, "0.11.0"),
-        "v3AccessToken": is_version_gte(VERSION, "0.13.0")
-    })
+    return JSONResponse(
+        {
+            "sessionJwt": last_set_enable_jwt,
+            "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+            "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+        }
+    )
 
 
 @app.post("/reinitialiseBackendConfig")

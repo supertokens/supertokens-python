@@ -49,7 +49,7 @@ protected_prop_name = {
     "sessionHandle",
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
-    "antiCsrfToken"
+    "antiCsrfToken",
 }
 
 file_path = "index.html"
@@ -107,7 +107,9 @@ def custom_decorator_for_update_jwt():  # type: ignore
                             clearing[k] = None
 
                     body = json.loads(request.body)
-                    session_.sync_merge_into_access_token_payload({**clearing, **body}, {})
+                    session_.sync_merge_into_access_token_payload(
+                        {**clearing, **body}, {}
+                    )
 
                     Test.increment_get_session()
                     resp = JsonResponse(session_.get_access_token_payload())

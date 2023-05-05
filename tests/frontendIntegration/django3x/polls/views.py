@@ -49,7 +49,7 @@ protected_prop_name = {
     "sessionHandle",
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
-    "antiCsrfToken"
+    "antiCsrfToken",
 }
 
 module_dir = os.path.dirname(__file__)  # get current directory
@@ -111,7 +111,9 @@ def custom_decorator_for_update_jwt():  # type: ignore
                             clearing[k] = None
 
                     body = json.loads(request.body)
-                    session_.sync_merge_into_access_token_payload({**clearing, **body}, {})
+                    session_.sync_merge_into_access_token_payload(
+                        {**clearing, **body}, {}
+                    )
 
                     Test.increment_get_session()
                     resp = JsonResponse(session_.get_access_token_payload())
@@ -133,7 +135,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 if value is not None and value.status_code != 200:
                     return value
                 session_: SessionContainer = request.supertokens  # type: ignore
-                
+
                 info = get_session_information(session_.get_handle())
                 assert info is not None
                 clearing = {}
@@ -520,11 +522,13 @@ def set_enable_jwt(request: HttpRequest):
 
 def feature_flags(request: HttpRequest):
     global last_set_enable_jwt
-    return JsonResponse({
-        "sessionJwt": last_set_enable_jwt,
-        "sessionClaims": is_version_gte(VERSION, "0.11.0"),
-        "v3AccessToken": is_version_gte(VERSION, "0.13.0")
-    })
+    return JsonResponse(
+        {
+            "sessionJwt": last_set_enable_jwt,
+            "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+            "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+        }
+    )
 
 
 async def reinitialize(request: HttpRequest):

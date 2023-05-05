@@ -45,7 +45,7 @@ protected_prop_name = {
     "sessionHandle",
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
-    "antiCsrfToken"
+    "antiCsrfToken",
 }
 
 last_set_enable_anti_csrf = True
@@ -368,7 +368,7 @@ def update_jwt_post():
 @app.route("/update-jwt-with-handle", methods=["POST"])  # type: ignore
 @verify_session()
 def update_jwt_with_handle_post():
-    _session: SessionContainer = g.supertokens # type: ignore
+    _session: SessionContainer = g.supertokens  # type: ignore
     info = get_session_information(_session.get_handle())
     assert info is not None
     clearing = {}
@@ -568,11 +568,13 @@ def check_rid():
 def feature_flags():
     global last_set_enable_jwt  # pylint: disable=global-variable-not-assigned
 
-    return jsonify({
-        "sessionJwt": last_set_enable_jwt,
-        "sessionClaims": is_version_gte(VERSION, "0.11.0"),
-        "v3AccessToken": is_version_gte(VERSION, "0.13.0")
-    })
+    return jsonify(
+        {
+            "sessionJwt": last_set_enable_jwt,
+            "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+            "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+        }
+    )
 
 
 @app.route("/reinitialiseBackendConfig", methods=["POST"])  # type: ignore

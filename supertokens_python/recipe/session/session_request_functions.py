@@ -230,7 +230,10 @@ async def create_new_session_in_request(
 
     claims_added_by_other_recipes = recipe_instance.get_claims_added_by_other_recipes()
     app_info = recipe_instance.app_info
-    issuer = app_info.api_domain.get_as_string_dangerous() + app_info.api_base_path.get_as_string_dangerous()
+    issuer = (
+        app_info.api_domain.get_as_string_dangerous()
+        + app_info.api_base_path.get_as_string_dangerous()
+    )
 
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
