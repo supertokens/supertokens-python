@@ -638,3 +638,89 @@ async def test_token_cookie_expires(
 
     assert response.headers["anti-csrf"] != ""
     assert response.headers["front-token"] != ""
+
+
+from supertokens_python.recipe.session.asyncio import (
+    create_new_session_without_request_response,
+    get_session_without_request_response,
+    refresh_session_without_request_response,
+)
+
+
+async def test_that_verify_session_doesnt_always_call_core():
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ],
+    )
+    start_st()
+
+    # s = SessionRecipe.get_instance()
+    # if not isinstance(s.recipe_implementation, RecipeImplementation):
+    #     raise Exception("Should never come here")
+
+    # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
+
+    session1 = await create_new_session_without_request_response("user-id")
+
+    assert session1 is not None
+    assert session1.access_token != ""
+    assert session1.front_token != ""
+    assert session1.refresh_token is not None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        not in ProcessState.get_instance().history
+    )
+
+    session2 = await get_session_without_request_response(
+        session1.access_token, session1.anti_csrf_token
+    )
+
+    assert session2 is not None
+    assert session2.access_token != ""
+    assert session2.front_token != ""
+    assert session2.refresh_token is None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        not in ProcessState.get_instance().history
+    )
+
+    session3 = await refresh_session_without_request_response(
+        session1.refresh_token.token, False, session1.anti_csrf_token
+    )
+
+    assert session3 is not None
+    assert session3.access_token != ""
+    assert session3.front_token != ""
+    assert session3.refresh_token is not None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        not in ProcessState.get_instance().history
+    )
+
+    session4 = await get_session_without_request_response(
+        session3.access_token, session3.anti_csrf_token
+    )
+
+    assert session4 is not None
+    assert session4.access_token != ""
+    assert session4.front_token != ""
+    assert session4.refresh_token is None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        in ProcessState.get_instance().history
+    )  # Core got called this time

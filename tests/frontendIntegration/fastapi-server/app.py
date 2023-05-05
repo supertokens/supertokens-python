@@ -161,10 +161,13 @@ def config(
                 framework="fastapi",
                 recipe_list=[
                     session.init(
-                        error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
+                        error_handlers=InputErrorHandlers(
+                            on_unauthorised=unauthorised_f
+                        ),
                         anti_csrf=anti_csrf,
                         override=session.InputOverrideConfig(
-                            apis=apis_override_session, functions=functions_override_session
+                            apis=apis_override_session,
+                            functions=functions_override_session,
                         ),
                         expose_access_token_to_frontend_in_cookie_based_auth=True,
                     )
@@ -182,10 +185,13 @@ def config(
                 framework="fastapi",
                 recipe_list=[
                     session.init(
-                        error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
+                        error_handlers=InputErrorHandlers(
+                            on_unauthorised=unauthorised_f
+                        ),
                         anti_csrf=anti_csrf,
                         override=session.InputOverrideConfig(
-                            apis=apis_override_session, functions=functions_override_session
+                            apis=apis_override_session,
+                            functions=functions_override_session,
                         ),
                     )
                 ],
