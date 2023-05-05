@@ -298,7 +298,9 @@ async def get_session(
                 response["accessToken"]["token"],
                 response["accessToken"]["expiry"],
                 response["accessToken"]["createdTime"],
-            ),
+            )
+            if "accessToken" in response
+            else None,
         )
     if response["status"] == "UNAUTHORISED":
         log_debug_message("getSession: Returning UNAUTHORISED because of core response")
