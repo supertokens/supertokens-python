@@ -96,13 +96,6 @@ class SessionRecipe(RecipeModule):
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.openid_recipe = OpenIdRecipe(
-            recipe_id,
-            app_info,
-            None,
-            None,
-            override.openid_feature if override is not None else None,
-        )
         self.config = validate_and_normalise_user_input(
             app_info,
             cookie_domain,
@@ -116,6 +109,13 @@ class SessionRecipe(RecipeModule):
             invalid_claim_status_code,
             use_dynamic_access_token_signing_key,
             expose_access_token_to_frontend_in_cookie_based_auth,
+        )
+        self.openid_recipe = OpenIdRecipe(
+            recipe_id,
+            app_info,
+            None,
+            None,
+            override.openid_feature if override is not None else None,
         )
         log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
         if self.config.cookie_domain is not None:

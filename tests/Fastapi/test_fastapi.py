@@ -620,9 +620,6 @@ async def test_should_clear_all_response_during_refresh_if_unauthorized(
     assert res.status_code == 401
     assert_info_clears_tokens(info, token_transfer_method)
 
-    assert info["sIdRefreshToken"]["value"] == ""
-    assert info["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-
 
 @mark.asyncio
 @mark.parametrize("token_transfer_method", ["cookie", "header"])

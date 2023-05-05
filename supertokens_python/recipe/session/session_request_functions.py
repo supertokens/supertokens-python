@@ -264,7 +264,7 @@ async def create_new_session_in_request(
         # We can allow insecure cookie when both website & API domain are localhost or an IP
         # When either of them is a different domain, API domain needs to have https and a secure cookie to work
         raise Exception(
-            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don't set cookieSecure to false."
         )
 
     disable_anti_csrf = output_transfer_method == "header"

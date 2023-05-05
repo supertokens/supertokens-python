@@ -100,7 +100,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     access_token = parse_jwt_without_signature_verification(response.accessToken.token)
 
     await get_session(
-        s.recipe_implementation, access_token, response.antiCsrfToken, True, True
+        s.recipe_implementation, access_token, response.antiCsrfToken, True, False
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -111,7 +111,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         s.recipe_implementation,
         response.refreshToken.token,
         response.antiCsrfToken,
-        True,
+        False,
     )
 
     assert response2.session is not None
@@ -128,7 +128,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         access_token2,
         response2.antiCsrfToken,
         True,
-        True,
+        False,
     )
 
     assert (
@@ -150,7 +150,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         access_token3,
         response2.antiCsrfToken,
         True,
-        True,
+        False,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -202,7 +202,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         assert info.custom_claims_in_access_token_payload["someKey"] == "someValue"
 
         is_updated = await merge_into_access_token_payload(
-            handle, {"someKey2": "someValue"}
+            handle, {"someKey": None, "someKey2": "someValue"}
         )
         assert is_updated
 
