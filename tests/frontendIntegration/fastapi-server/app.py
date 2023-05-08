@@ -41,7 +41,13 @@ from supertokens_python.recipe.session.asyncio import (
     merge_into_access_token_payload,
 )
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
+from supertokens_python.recipe.session.interfaces import (
+    APIInterface,
+    SessionClaimValidator,
+    ClaimValidationResult,
+    JSONObject,
+    RecipeInterface,
+)
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.asyncio import get_session_information
@@ -362,6 +368,22 @@ async def update_jwt_with_handle_post(
         content=_session.get_access_token_payload(),
         headers={"Cache-Control": "no-cache, private"},
     )
+
+
+def gcv_for_session_claim_err(*_):  # type: ignore
+    class CustomValidator(SessionClaimValidator):
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return False
+
+        async def validate(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return ClaimValidationResult(False, {"message": "testReason"})
+
+    return [CustomValidator("test-claim-failing")]
+
+
+@app.post("/session-claims-error")
+def session_claim_error_api(_session: SessionContainer = Depends(verify_session(override_global_claim_validators=gcv_for_session_claim_err))):  # type: ignore
+    return JSONResponse({})
 
 
 @app.options("/testing")

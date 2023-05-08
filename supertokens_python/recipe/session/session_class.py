@@ -70,6 +70,10 @@ class Session(SessionContainer):
                     anti_csrf_response_mutator(self.anti_csrf_token)
                 )
 
+        request.set_session(
+            self
+        )  # Although this is called in recipe/session/framework/**/__init__.py. It's required in case of python because functions like create_new_session(req, "user-id") can be called in the framework view handler as well
+
     async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
         if user_context is None:
             user_context = {}
