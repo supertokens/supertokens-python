@@ -78,6 +78,9 @@ async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
     session_info = await get_session_information(s.get_handle())
     assert session_info is not None
     payload_after = session_info.custom_claims_in_access_token_payload
+    assert (
+        payload_after.pop("iss", None) is not None
+    )  # checks that iss is present & not None and then removes it
     assert payload_after == {}
 
 

@@ -59,14 +59,14 @@ async def test_should_overwrite_claim_value(timestamp: int):
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 8
+    assert len(payload) == 9
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await s.set_claim_value(TrueClaim, False)
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
-    assert len(payload) == 8
+    assert len(payload) == 9
     assert payload["st-true"] == {"t": timestamp, "v": False}
 
 
@@ -78,7 +78,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 8
+    assert len(payload) == 9
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await set_claim_value(s.get_handle(), TrueClaim, False)
@@ -87,6 +87,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     s = await get_session_information(s.get_handle())
     assert s is not None
     payload = s.custom_claims_in_access_token_payload
+    assert payload.pop("iss", None) is not None  # checks iss as well as removes it
     assert payload == {"st-true": {"t": timestamp, "v": False}}
 
 
