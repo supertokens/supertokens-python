@@ -386,6 +386,12 @@ def session_claim_error_api(_session: SessionContainer = Depends(verify_session(
     return JSONResponse({})
 
 
+@app.post("/403-without-body")
+def without_body_403():
+    # send 403 without body
+    return PlainTextResponse(content=None, status_code=403)
+
+
 @app.options("/testing")
 def testing_options():
     return send_options_api_response()
