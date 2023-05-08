@@ -40,7 +40,7 @@ from supertokens_python.recipe.session.asyncio import merge_into_access_token_pa
 
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.session.syncio import get_session_information
+from supertokens_python.recipe.session.asyncio import get_session_information
 
 protected_prop_name = {
     "sub",
@@ -111,7 +111,7 @@ def custom_decorator_for_update_jwt():  # type: ignore
                             clearing[k] = None
 
                     body = json.loads(request.body)
-                    session_.sync_merge_into_access_token_payload(
+                    await session_.merge_into_access_token_payload(
                         {**clearing, **body}, {}
                     )
 
@@ -136,7 +136,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                     return value
                 session_: SessionContainer = request.supertokens  # type: ignore
 
-                info = get_session_information(session_.get_handle())
+                info = await get_session_information(session_.get_handle())
                 assert info is not None
                 clearing = {}
                 for k in info.custom_claims_in_access_token_payload:
