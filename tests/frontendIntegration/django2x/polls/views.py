@@ -440,6 +440,11 @@ def update_jwt_with_handle(request: HttpRequest):
     return HttpResponse("")
 
 
+def without_body_403(request: HttpRequest):
+    if request.method == "POST":
+        return HttpResponse("", status=403)
+
+
 def testing(request: HttpRequest):
     if request.method in ["GET", "PUT", "POST", "DELETE"]:
         if "testing" in request.headers:

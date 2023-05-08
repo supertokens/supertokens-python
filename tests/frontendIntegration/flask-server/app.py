@@ -384,6 +384,12 @@ def update_jwt_with_handle_post():
     return resp
 
 
+@app.route("/403-without-body", methods=["POST"])  # type: ignore
+def without_body_403():
+    # send 403 without body
+    return "", 403
+
+
 @app.route("/testing", methods=["OPTIONS"])  # type: ignore
 def testing_options():
     return send_options_api_response()
