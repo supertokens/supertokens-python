@@ -70,8 +70,6 @@ class Session(SessionContainer):
                     anti_csrf_response_mutator(self.anti_csrf_token)
                 )
 
-        request.set_session(self)
-
     async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
         if user_context is None:
             user_context = {}

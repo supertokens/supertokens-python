@@ -194,7 +194,7 @@ async def get_session(
             if time_created <= time.time() - JWKCacheMaxAgeInMs:
                 raise e
         else:
-            # Since v3 (and above) tokens contain a kid we can trust the cache-refresh mechanism of the pyjwt library
+            # Since v3 (and above) tokens contain a kid we can trust the cache refresh mechanism built on top of the pyjwt lib
             # This means we do not need to call the core since the signature wouldn't pass verification anyway.
             raise e
 

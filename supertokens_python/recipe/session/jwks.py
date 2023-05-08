@@ -46,8 +46,8 @@ class JWKClient:
             with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
                 self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
-        except URLError as e:
-            raise JWKSRequestError(f'Failed to fetch data from the url, err: "{e}"')
+        except URLError:
+            raise JWKSRequestError("Failed to fetch jwk set from the configured uri")
 
     def is_cooling_down(self) -> bool:
         return (self.last_fetch_time > 0) and (
@@ -81,15 +81,17 @@ class JWKClient:
 
         try:
             return self.jwk_set[kid]  # type: ignore
-        except IndexError:
+        except KeyError:
             if not self.is_cooling_down():
                 # One more attempt to fetch the latest keys
                 # and then try to find the key again.
                 self.reload()
                 try:
                     return self.jwk_set[kid]  # type: ignore
-                except IndexError:
+                except KeyError:
                     pass
+        except Exception:
+            raise JWKSKeyNotFoundError("No key found for the given kid")
 
         raise JWKSKeyNotFoundError("No key found for the given kid")
 
