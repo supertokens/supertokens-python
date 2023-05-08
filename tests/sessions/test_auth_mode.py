@@ -342,6 +342,8 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
     assert response.status_code == 401
     assert response.json() == {"message": "try refresh token"}
 
+    print(info)
+
     assert (
         "sIdRefreshToken" not in info
     )  # Doesn't clear sIdRefreshToken from cookies in get_session (called by verify_session)
