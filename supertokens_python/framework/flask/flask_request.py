@@ -19,11 +19,10 @@ from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from flask.wrappers import Request
 
 
 class FlaskRequest(BaseRequest):
-    from flask.wrappers import Request
-
     def __init__(self, req: Request):
         super().__init__()
         self.request = req

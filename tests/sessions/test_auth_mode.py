@@ -326,7 +326,6 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
         app,
         "cookie",
         None,
-        cookies={"sIdRefreshToken": "IRRELEVANT-VALUE", "sAccessToken": EXAMPLE_JWT},
     )
 
     response = app.get(

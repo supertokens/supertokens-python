@@ -21,11 +21,10 @@ from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from django.http import HttpRequest
 
 
 class DjangoRequest(BaseRequest):
-    from django.http import HttpRequest
-
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request

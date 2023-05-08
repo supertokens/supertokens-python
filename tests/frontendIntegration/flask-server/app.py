@@ -192,7 +192,7 @@ def config(
                     api_domain="0.0.0.0:" + get_app_port(),
                     website_domain="http://localhost.org:8080",
                 ),
-                framework="fastapi",
+                framework="flask",
                 recipe_list=[
                     session.init(
                         error_handlers=InputErrorHandlers(
@@ -216,7 +216,7 @@ def config(
                     api_domain="0.0.0.0:" + get_app_port(),
                     website_domain="http://localhost.org:8080",
                 ),
-                framework="fastapi",
+                framework="flask",
                 recipe_list=[
                     session.init(
                         error_handlers=InputErrorHandlers(
@@ -239,7 +239,7 @@ def config(
                 api_domain="0.0.0.0:" + get_app_port(),
                 website_domain="http://localhost.org:8080",
             ),
-            framework="fastapi",
+            framework="flask",
             recipe_list=[
                 session.init(
                     error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
