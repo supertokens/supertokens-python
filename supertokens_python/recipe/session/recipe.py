@@ -221,7 +221,10 @@ class SessionRecipe(RecipeModule):
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
     ) -> BaseResponse:
-        if isinstance(err, SuperTokensSessionError):
+        if (
+            isinstance(err, SuperTokensSessionError)
+            and err.response_mutators is not None
+        ):
             for mutator in err.response_mutators:
                 mutator(response)
 
