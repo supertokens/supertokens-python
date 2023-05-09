@@ -99,11 +99,7 @@ def find_max_version(versions_1: List[str], versions_2: List[str]) -> Union[str,
     return max_v
 
 
-def is_version_gte(
-    version: str, minimum_version: str, must_be_minor: Optional[bool] = None
-) -> bool:
-    if must_be_minor is True:
-        assert len(minimum_version.split(".")) == 2
+def is_version_gte(version: str, minimum_version: str) -> bool:
     return _get_max_version(version, minimum_version) == version
 
 

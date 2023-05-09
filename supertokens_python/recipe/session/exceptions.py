@@ -29,7 +29,6 @@ def raise_try_refresh_token_exception(ex: Union[str, Exception]) -> NoReturn:
     if isinstance(ex, SuperTokensError):
         raise ex
 
-    assert isinstance(ex, str)
     raise TryRefreshTokenError(ex) from None
 
 
@@ -38,27 +37,18 @@ def raise_unauthorised_exception(
     clear_tokens: bool = True,
     response_mutators: Optional[List[ResponseMutator]] = None,
 ) -> NoReturn:
-    if response_mutators is None:
-        response_mutators = []
-
     err = UnauthorisedError(msg, clear_tokens)
-    err.extend_response_mutators(response_mutators)
+
+    if response_mutators is not None:
+        err.response_mutators.extend(response_mutators)
 
     raise err
 
 
 class SuperTokensSessionError(SuperTokensError):
-    def __init__(
-        self, msg: str, response_mutators: Optional[List[ResponseMutator]] = None
-    ):
-        super().__init__(msg)
-        self.response_mutators = response_mutators
-
-    def extend_response_mutators(self, response_mutators: List[ResponseMutator]):
-        if self.response_mutators is None:
-            self.response_mutators = []
-
-        self.response_mutators.extend(response_mutators)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.response_mutators: List[ResponseMutator] = []
 
 
 class TokenTheftError(SuperTokensSessionError):

@@ -422,7 +422,7 @@ async def refresh_session_in_request(
                     )
                 )
 
-        e.extend_response_mutators(response_mutators)
+        e.response_mutators.extend(response_mutators)
         raise e
 
     log_debug_message(

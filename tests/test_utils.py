@@ -60,22 +60,6 @@ def test_util_is_version_gte(version: str, min_minor_version: str, is_gte: bool)
     assert is_version_gte(version, min_minor_version) == is_gte
 
 
-@pytest.mark.parametrize(
-    "version,base_version",
-    [
-        ("1.12.0", "1.12.0"),
-        ("1.12.0", "1.12.0.1"),
-        ("1.12.0", "1.0.0"),
-        ("1.12.0", "1"),
-    ],
-)
-def test_utils_is_version_gte_raises_error_if_not_minimum_minor_version(
-    version: str, base_version: str
-):
-    with pytest.raises(AssertionError):
-        is_version_gte(version, base_version, must_be_minor=True)
-
-
 SECOND = 1000
 MINUTE = 60 * SECOND
 HOUR = 60 * MINUTE
