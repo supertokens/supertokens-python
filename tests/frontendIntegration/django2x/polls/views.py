@@ -31,7 +31,13 @@ from supertokens_python.recipe.session import (
     SessionRecipe,
 )
 from supertokens_python.recipe.session.framework.django.syncio import verify_session
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
+from supertokens_python.recipe.session.interfaces import (
+    APIInterface,
+    RecipeInterface,
+    ClaimValidationResult,
+    SessionClaimValidator,
+    JSONObject,
+)
 from supertokens_python.recipe.session.syncio import (
     create_new_session,
     get_session,
@@ -438,6 +444,22 @@ def update_jwt(request: HttpRequest):
 @verify_session()
 def update_jwt_with_handle(request: HttpRequest):
     return HttpResponse("")
+
+
+def gcv_for_session_claim_err(*_):  # type: ignore
+    class CustomValidator(SessionClaimValidator):
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return False
+
+        async def validate(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return ClaimValidationResult(False, {"message": "testReason"})
+
+    return [CustomValidator("test-claim-failing")]
+
+
+@verify_session(override_global_claim_validators=gcv_for_session_claim_err)  # type: ignore
+def session_claim_error_api(request: HttpRequest):
+    return JsonResponse({})
 
 
 def without_body_403(request: HttpRequest):

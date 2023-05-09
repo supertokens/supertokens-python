@@ -11,7 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
+from supertokens_python.recipe.session.interfaces import (
+    APIInterface,
+    RecipeInterface,
+    ClaimValidationResult,
+    JSONObject,
+    SessionClaimValidator,
+)
 from typing import Dict, Union, Any
 import json
 import os
@@ -442,6 +448,22 @@ async def update_jwt(request: HttpRequest):
 @verify_session()
 async def update_jwt_with_handle(request: HttpRequest):
     return HttpResponse("")
+
+
+def gcv_for_session_claim_err(*_):  # type: ignore
+    class CustomValidator(SessionClaimValidator):
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return False
+
+        async def validate(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return ClaimValidationResult(False, {"message": "testReason"})
+
+    return [CustomValidator("test-claim-failing")]
+
+
+@verify_session(override_global_claim_validators=gcv_for_session_claim_err)  # type: ignore
+async def session_claim_error_api(request: HttpRequest):
+    return JsonResponse({})
 
 
 async def without_body_403(request: HttpRequest):

@@ -27,7 +27,13 @@ from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputErrorHandlers, SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
+from supertokens_python.recipe.session.interfaces import (
+    APIInterface,
+    RecipeInterface,
+    JSONObject,
+    SessionClaimValidator,
+    ClaimValidationResult,
+)
 from supertokens_python.recipe.session.syncio import (
     create_new_session,
     SessionContainer,
@@ -382,6 +388,24 @@ def update_jwt_with_handle_post():
     resp = make_response(_session.get_access_token_payload())
     resp.headers["Cache-Control"] = "no-cache, private"
     return resp
+
+
+def gcv_for_session_claim_err(*_):  # type: ignore
+    class CustomValidator(SessionClaimValidator):
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return False
+
+        async def validate(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return ClaimValidationResult(False, {"message": "testReason"})
+
+    return [CustomValidator("test-claim-failing")]
+
+
+@app.route("/session-claims-error", methods=["POST"])  # type: ignore
+@verify_session(override_global_claim_validators=gcv_for_session_claim_err)  # type: ignore
+def session_claim_error_api():
+    # return empty json response
+    return jsonify({})
 
 
 @app.route("/403-without-body", methods=["POST"])  # type: ignore
