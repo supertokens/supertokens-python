@@ -49,11 +49,10 @@ from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from django.http import HttpRequest
 
 
 class DjangoRequest(BaseRequest):
-    from django.http import HttpRequest
-
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
@@ -123,8 +122,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DjangoRequest(BaseRequest):
-    from django.http import HttpRequest
-
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
@@ -177,13 +174,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest"><code class="name">var <span class="ident">HttpRequest</span></code></dt>
-<dd>
-<div class="desc"><p>A basic HTTP request.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.form_data"><code class="name flex">
@@ -355,7 +345,6 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.django.django_request.DjangoRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest">DjangoRequest</a></code></h4>
 <ul class="two-column">
-<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest">HttpRequest</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.form_data" href="#supertokens_python.framework.django.django_request.DjangoRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_cookie" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_header" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_header">get_header</a></code></li>

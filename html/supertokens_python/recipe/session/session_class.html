@@ -98,7 +98,9 @@ class Session(SessionContainer):
                     anti_csrf_response_mutator(self.anti_csrf_token)
                 )
 
-        request.set_session(self)
+        request.set_session(
+            self
+        )  # Although this is called in recipe/session/framework/**/__init__.py. It&#39;s required in case of python because functions like create_new_session(req, &#34;user-id&#34;) can be called in the framework view handler as well
 
     async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
         if user_context is None:
@@ -383,7 +385,9 @@ inheritance.</p></div>
                     anti_csrf_response_mutator(self.anti_csrf_token)
                 )
 
-        request.set_session(self)
+        request.set_session(
+            self
+        )  # Although this is called in recipe/session/framework/**/__init__.py. It&#39;s required in case of python because functions like create_new_session(req, &#34;user-id&#34;) can be called in the framework view handler as well
 
     async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
         if user_context is None:
@@ -701,7 +705,9 @@ inheritance.</p></div>
                 anti_csrf_response_mutator(self.anti_csrf_token)
             )
 
-    request.set_session(self)</code></pre>
+    request.set_session(
+        self
+    )  # Although this is called in recipe/session/framework/**/__init__.py. It&#39;s required in case of python because functions like create_new_session(req, &#34;user-id&#34;) can be called in the framework view handler as well</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.fetch_and_set_claim"><code class="name flex">

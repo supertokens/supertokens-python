@@ -47,11 +47,10 @@ from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from flask.wrappers import Request
 
 
 class FlaskRequest(BaseRequest):
-    from flask.wrappers import Request
-
     def __init__(self, req: Request):
         super().__init__()
         self.request = req
@@ -130,8 +129,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FlaskRequest(BaseRequest):
-    from flask.wrappers import Request
-
     def __init__(self, req: Request):
         super().__init__()
         self.request = req
@@ -193,22 +190,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.Request"><code class="name">var <span class="ident">Request</span></code></dt>
-<dd>
-<div class="desc"><p>The request object used by default in Flask.
-Remembers the
-matched endpoint and view arguments.</p>
-<p>It is what ends up as :class:<code>~flask.request</code>.
-If you want to replace
-the request object used you can subclass this and set
-:attr:<code>~flask.Flask.request_class</code> to your subclass.</p>
-<p>The request object is a :class:<code>~werkzeug.wrappers.Request</code> subclass and
-provides all of the attributes Werkzeug defines plus a few Flask
-specific ones.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.form_data"><code class="name flex">
@@ -387,7 +368,6 @@ specific ones.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest" href="#supertokens_python.framework.flask.flask_request.FlaskRequest">FlaskRequest</a></code></h4>
 <ul class="two-column">
-<li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.Request" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.Request">Request</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.form_data" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_header" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_header">get_header</a></code></li>

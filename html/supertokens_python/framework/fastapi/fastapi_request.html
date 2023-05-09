@@ -48,12 +48,10 @@ from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from fastapi import Request
 
 
 class FastApiRequest(BaseRequest):
-
-    from fastapi import Request
-
     def __init__(self, request: Request):
         super().__init__()
         self.request = request
@@ -124,9 +122,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FastApiRequest(BaseRequest):
-
-    from fastapi import Request
-
     def __init__(self, request: Request):
         super().__init__()
         self.request = request
@@ -180,14 +175,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request"><code class="name">var <span class="ident">Request</span></code></dt>
-<dd>
-<div class="desc"><p>A base class for incoming HTTP connections, that is used to provide
-any functionality that is common to both <code>Request</code> and <code>WebSocket</code>.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data"><code class="name flex">
@@ -360,7 +347,6 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <li>
 <h4><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest">FastApiRequest</a></code></h4>
 <ul class="two-column">
-<li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request">Request</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header">get_header</a></code></li>

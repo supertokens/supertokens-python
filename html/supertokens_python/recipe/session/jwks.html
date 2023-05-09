@@ -74,8 +74,8 @@ class JWKClient:
             with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
                 self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
-        except URLError as e:
-            raise JWKSRequestError(f&#39;Failed to fetch data from the url, err: &#34;{e}&#34;&#39;)
+        except URLError:
+            raise JWKSRequestError(&#34;Failed to fetch jwk set from the configured uri&#34;)
 
     def is_cooling_down(self) -&gt; bool:
         return (self.last_fetch_time &gt; 0) and (
@@ -109,15 +109,17 @@ class JWKClient:
 
         try:
             return self.jwk_set[kid]  # type: ignore
-        except IndexError:
+        except KeyError:
             if not self.is_cooling_down():
                 # One more attempt to fetch the latest keys
                 # and then try to find the key again.
                 self.reload()
                 try:
                     return self.jwk_set[kid]  # type: ignore
-                except IndexError:
+                except KeyError:
                     pass
+        except Exception:
+            raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
 
         raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
 
@@ -200,8 +202,8 @@ cooldown is active.</p></div>
             with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
                 self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
-        except URLError as e:
-            raise JWKSRequestError(f&#39;Failed to fetch data from the url, err: &#34;{e}&#34;&#39;)
+        except URLError:
+            raise JWKSRequestError(&#34;Failed to fetch jwk set from the configured uri&#34;)
 
     def is_cooling_down(self) -&gt; bool:
         return (self.last_fetch_time &gt; 0) and (
@@ -235,15 +237,17 @@ cooldown is active.</p></div>
 
         try:
             return self.jwk_set[kid]  # type: ignore
-        except IndexError:
+        except KeyError:
             if not self.is_cooling_down():
                 # One more attempt to fetch the latest keys
                 # and then try to find the key again.
                 self.reload()
                 try:
                     return self.jwk_set[kid]  # type: ignore
-                except IndexError:
+                except KeyError:
                     pass
+        except Exception:
+            raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
 
         raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)</code></pre>
 </details>
@@ -290,15 +294,17 @@ cooldown is active.</p></div>
 
     try:
         return self.jwk_set[kid]  # type: ignore
-    except IndexError:
+    except KeyError:
         if not self.is_cooling_down():
             # One more attempt to fetch the latest keys
             # and then try to find the key again.
             self.reload()
             try:
                 return self.jwk_set[kid]  # type: ignore
-            except IndexError:
+            except KeyError:
                 pass
+    except Exception:
+        raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
 
     raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)</code></pre>
 </details>
@@ -347,8 +353,8 @@ cooldown is active.</p></div>
         with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
             self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
             self.last_fetch_time = get_timestamp_ms()
-    except URLError as e:
-        raise JWKSRequestError(f&#39;Failed to fetch data from the url, err: &#34;{e}&#34;&#39;)</code></pre>
+    except URLError:
+        raise JWKSRequestError(&#34;Failed to fetch jwk set from the configured uri&#34;)</code></pre>
 </details>
 </dd>
 </dl>

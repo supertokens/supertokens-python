@@ -127,9 +127,8 @@ def find_max_version(versions_1: List[str], versions_2: List[str]) -&gt; Union[s
     return max_v
 
 
-def is_version_gte(version: str, minimum_minor_version: str) -&gt; bool:
-    assert len(minimum_minor_version.split(&#34;.&#34;)) == 2
-    return _get_max_version(version, minimum_minor_version) == version
+def is_version_gte(version: str, minimum_version: str) -&gt; bool:
+    return _get_max_version(version, minimum_version) == version
 
 
 def _get_max_version(v1: str, v2: str) -&gt; str:
@@ -636,7 +635,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.utils.is_version_gte"><code class="name flex">
-<span>def <span class="ident">is_version_gte</span></span>(<span>version: str, minimum_minor_version: str) ‑> bool</span>
+<span>def <span class="ident">is_version_gte</span></span>(<span>version: str, minimum_version: str) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -644,9 +643,8 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def is_version_gte(version: str, minimum_minor_version: str) -&gt; bool:
-    assert len(minimum_minor_version.split(&#34;.&#34;)) == 2
-    return _get_max_version(version, minimum_minor_version) == version</code></pre>
+<pre><code class="python">def is_version_gte(version: str, minimum_version: str) -&gt; bool:
+    return _get_max_version(version, minimum_version) == version</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.normalise_http_method"><code class="name flex">
