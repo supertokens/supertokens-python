@@ -229,7 +229,13 @@ async def create_new_session_in_request(
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
     claims_added_by_other_recipes = recipe_instance.get_claims_added_by_other_recipes()
-    final_access_token_payload = access_token_payload
+    app_info = recipe_instance.app_info
+    issuer = (
+        app_info.api_domain.get_as_string_dangerous()
+        + app_info.api_base_path.get_as_string_dangerous()
+    )
+
+    final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
         update = await claim.build(user_id, user_context)
@@ -264,7 +270,7 @@ async def create_new_session_in_request(
         # We can allow insecure cookie when both website & API domain are localhost or an IP
         # When either of them is a different domain, API domain needs to have https and a secure cookie to work
         raise Exception(
-            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don't set cookieSecure to false."
         )
 
     disable_anti_csrf = output_transfer_method == "header"

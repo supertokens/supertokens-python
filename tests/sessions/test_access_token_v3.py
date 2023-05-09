@@ -39,7 +39,7 @@ async def test_access_token_v3():
         recipe_implementation.JWK_clients,
         False,
     )
-    assert res["user-id"] == "user-id"
+    assert res["userId"] == "user-id"
 
 
 async def test_parsing_access_token_v2():

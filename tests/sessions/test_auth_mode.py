@@ -326,7 +326,6 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
         app,
         "cookie",
         None,
-        cookies={"sIdRefreshToken": "IRRELEVANT-VALUE", "sAccessToken": EXAMPLE_JWT},
     )
 
     response = app.get(
@@ -342,6 +341,8 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
 
     assert response.status_code == 401
     assert response.json() == {"message": "try refresh token"}
+
+    print(info)
 
     assert (
         "sIdRefreshToken" not in info

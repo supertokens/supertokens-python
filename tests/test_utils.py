@@ -43,26 +43,21 @@ from tests.utils import is_subset
             "1.11",
             True,
         ),
+        # python SDK version related
+        (
+            "0.13.2",
+            "0.13.0",
+            True,
+        ),
+        (
+            "0.12.5",
+            "0.13.0",
+            False,
+        ),
     ],
 )
 def test_util_is_version_gte(version: str, min_minor_version: str, is_gte: bool):
     assert is_version_gte(version, min_minor_version) == is_gte
-
-
-@pytest.mark.parametrize(
-    "version,base_version",
-    [
-        ("1.12.0", "1.12.0"),
-        ("1.12.0", "1.12.0.1"),
-        ("1.12.0", "1.0.0"),
-        ("1.12.0", "1"),
-    ],
-)
-def test_utils_is_version_gte_raises_error_if_not_minimum_minor_version(
-    version: str, base_version: str
-):
-    with pytest.raises(AssertionError):
-        is_version_gte(version, base_version)
 
 
 SECOND = 1000

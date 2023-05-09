@@ -20,12 +20,10 @@ from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from fastapi import Request
 
 
 class FastApiRequest(BaseRequest):
-
-    from fastapi import Request
-
     def __init__(self, request: Request):
         super().__init__()
         self.request = request

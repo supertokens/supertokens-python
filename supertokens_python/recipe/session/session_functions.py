@@ -194,7 +194,7 @@ async def get_session(
             if time_created <= time.time() - JWKCacheMaxAgeInMs:
                 raise e
         else:
-            # Since v3 (and above) tokens contain a kid we can trust the cache-refresh mechanism of the pyjwt library
+            # Since v3 (and above) tokens contain a kid we can trust the cache refresh mechanism built on top of the pyjwt lib
             # This means we do not need to call the core since the signature wouldn't pass verification anyway.
             raise e
 
@@ -281,13 +281,26 @@ async def get_session(
                 response["session"]["handle"],
                 response["session"]["userId"],
                 response["session"]["userDataInJWT"],
-                response["accessToken"]["expiry"],
+                (
+                    response.get("accessToken", {}).get(
+                        "expiry"
+                    )  # if we got a new accesstoken we take the expiry time from there
+                    or (
+                        access_token_info is not None
+                        and access_token_info.get("expiryTime")
+                    )  # if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
+                    or parsed_access_token.payload[
+                        "expiryTime"
+                    ]  # if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
+                ),  # This will throw error if others are none and 'expiryTime' key doesn't exist in the payload
             ),
             GetSessionAPIResponseAccessToken(
                 response["accessToken"]["token"],
                 response["accessToken"]["expiry"],
                 response["accessToken"]["createdTime"],
-            ),
+            )
+            if "accessToken" in response
+            else None,
         )
     if response["status"] == "UNAUTHORISED":
         log_debug_message("getSession: Returning UNAUTHORISED because of core response")

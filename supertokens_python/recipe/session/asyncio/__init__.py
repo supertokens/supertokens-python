@@ -93,7 +93,13 @@ async def create_new_session_without_request_response(
     claims_added_by_other_recipes = (
         SessionRecipe.get_instance().get_claims_added_by_other_recipes()
     )
-    final_access_token_payload = access_token_payload
+    app_info = SessionRecipe.get_instance().app_info
+    issuer = (
+        app_info.api_domain.get_as_string_dangerous()
+        + app_info.api_base_path.get_as_string_dangerous()
+    )
+
+    final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
         update = await claim.build(user_id, user_context)
