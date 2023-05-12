@@ -171,8 +171,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
     async def get_session(
         self,
-        access_token: str,
-        anti_csrf_token: Optional[str],
+        access_token: Optional[str] = None,
+        anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
@@ -193,6 +193,23 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             )
 
         log_debug_message("getSession: Started")
+
+        if access_token is None:
+            if session_required is False:
+                log_debug_message(
+                    "getSession: returning None because access_token is undefined and session_required is False"
+                )
+                # there is no session that exists here, and the user wants session verification to be optional. So we return None
+                return None
+
+            log_debug_message(
+                "getSession: UNAUTHORISED because accessToken in request is undefined"
+            )
+            # we do not clear the session here because of a race condition mentioned in https://github.com/supertokens/supertokens-node/issues/17
+            raise UnauthorisedError(
+                "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
+                clear_tokens=False,
+            )
 
         access_token_obj: Optional[ParsedJWTInfo] = None
         try:

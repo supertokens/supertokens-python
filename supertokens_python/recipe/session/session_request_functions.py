@@ -127,8 +127,8 @@ async def get_session_from_request(
     allowed_transfer_method = config.get_token_transfer_method(
         request, False, user_context
     )
-    request_transfer_method: TokenTransferMethod
-    request_access_token: Union[ParsedJWTInfo, None]
+    request_transfer_method: Optional[TokenTransferMethod] = None
+    request_access_token: Union[ParsedJWTInfo, None] = None
 
     if (allowed_transfer_method in ("any", "header")) and access_tokens.get(
         "header"
@@ -142,25 +142,6 @@ async def get_session_from_request(
         log_debug_message("getSession: using cookie transfer method")
         request_transfer_method = "cookie"
         request_access_token = access_tokens["cookie"]
-    else:
-        if session_optional:
-            log_debug_message(
-                "getSession: returning None because accessToken is undefined and sessionRequired is false"
-            )
-            # there is no session that exists here, and the user wants session verification
-            # to be optional. So we return None
-            return None
-
-        log_debug_message(
-            "getSession: UNAUTHORISED because access_token in request is None"
-        )
-        # we do not clear the session here because of a race condition mentioned in:
-        # https://github.com/supertokens/supertokens-node/issues/17
-        raise_unauthorised_exception(
-            "Session does not exist. Are you sending the session tokens in the "
-            "request with the appropriate token transfer method?",
-            clear_tokens=False,
-        )
 
     anti_csrf_token = get_anti_csrf_header(request)
     do_anti_csrf_check = anti_csrf_check
@@ -186,7 +167,9 @@ async def get_session_from_request(
     log_debug_message("getSession: Value of antiCsrfToken is: %s", do_anti_csrf_check)
 
     session = await recipe_interface_impl.get_session(
-        access_token=request_access_token.raw_token_string,
+        access_token=request_access_token.raw_token_string
+        if request_access_token is not None
+        else None,
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
         check_database=check_database,
@@ -200,9 +183,22 @@ async def get_session_from_request(
         )
         await session.assert_claims(claim_validators, user_context)
 
+        # request_transfer_method can only be None here if the user overriddes get_session
+        # to load the session by a custom method in that (very niche) case they also need to
+        # override how the session is attached to the response.
+        # In that scenario the transferMethod passed to attachToRequestResponse likely doesn't
+        # matter, still, we follow the general fallback logic
+
+        if request_transfer_method is not None:
+            final_transfer_method = request_transfer_method
+        elif allowed_transfer_method != "any":
+            final_transfer_method = allowed_transfer_method
+        else:
+            final_transfer_method = "header"
+
         await session.attach_to_request_response(
             request,
-            request_transfer_method,
+            final_transfer_method,
         )
 
     return session
