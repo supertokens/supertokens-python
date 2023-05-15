@@ -199,8 +199,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
     async def get_session(
         self,
-        access_token: str,
-        anti_csrf_token: Optional[str],
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
@@ -221,6 +221,23 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             )
 
         log_debug_message(&#34;getSession: Started&#34;)
+
+        if access_token is None:
+            if session_required is False:
+                log_debug_message(
+                    &#34;getSession: returning None because access_token is undefined and session_required is False&#34;
+                )
+                # there is no session that exists here, and the user wants session verification to be optional. So we return None
+                return None
+
+            log_debug_message(
+                &#34;getSession: UNAUTHORISED because accessToken in request is undefined&#34;
+            )
+            # we do not clear the session here because of a race condition mentioned in https://github.com/supertokens/supertokens-node/issues/17
+            raise UnauthorisedError(
+                &#34;Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?&#34;,
+                clear_tokens=False,
+            )
 
         access_token_obj: Optional[ParsedJWTInfo] = None
         try:
@@ -621,8 +638,8 @@ inheritance.</p></div>
 
     async def get_session(
         self,
-        access_token: str,
-        anti_csrf_token: Optional[str],
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
@@ -643,6 +660,23 @@ inheritance.</p></div>
             )
 
         log_debug_message(&#34;getSession: Started&#34;)
+
+        if access_token is None:
+            if session_required is False:
+                log_debug_message(
+                    &#34;getSession: returning None because access_token is undefined and session_required is False&#34;
+                )
+                # there is no session that exists here, and the user wants session verification to be optional. So we return None
+                return None
+
+            log_debug_message(
+                &#34;getSession: UNAUTHORISED because accessToken in request is undefined&#34;
+            )
+            # we do not clear the session here because of a race condition mentioned in https://github.com/supertokens/supertokens-node/issues/17
+            raise UnauthorisedError(
+                &#34;Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?&#34;,
+                clear_tokens=False,
+            )
 
         access_token_obj: Optional[ParsedJWTInfo] = None
         try:
@@ -1055,7 +1089,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, access_token: str, anti_csrf_token: Optional[str], anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[SessionContainer]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, access_token: Optional[str], anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[SessionContainer]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1065,8 +1099,8 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def get_session(
     self,
-    access_token: str,
-    anti_csrf_token: Optional[str],
+    access_token: Optional[str],
+    anti_csrf_token: Optional[str] = None,
     anti_csrf_check: Optional[bool] = None,
     session_required: Optional[bool] = None,
     check_database: Optional[bool] = None,
@@ -1087,6 +1121,23 @@ inheritance.</p></div>
         )
 
     log_debug_message(&#34;getSession: Started&#34;)
+
+    if access_token is None:
+        if session_required is False:
+            log_debug_message(
+                &#34;getSession: returning None because access_token is undefined and session_required is False&#34;
+            )
+            # there is no session that exists here, and the user wants session verification to be optional. So we return None
+            return None
+
+        log_debug_message(
+            &#34;getSession: UNAUTHORISED because accessToken in request is undefined&#34;
+        )
+        # we do not clear the session here because of a race condition mentioned in https://github.com/supertokens/supertokens-node/issues/17
+        raise UnauthorisedError(
+            &#34;Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?&#34;,
+            clear_tokens=False,
+        )
 
     access_token_obj: Optional[ParsedJWTInfo] = None
     try:
