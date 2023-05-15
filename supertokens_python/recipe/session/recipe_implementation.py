@@ -171,7 +171,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
     async def get_session(
         self,
-        access_token: Optional[str] = None,
+        access_token: Optional[str],
         anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
