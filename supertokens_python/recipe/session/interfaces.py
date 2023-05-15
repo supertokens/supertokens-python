@@ -156,8 +156,8 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     @abstractmethod
     async def get_session(
         self,
-        access_token: str,
-        anti_csrf_token: Optional[str],
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
