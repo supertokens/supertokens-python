@@ -69,7 +69,7 @@ class ListTotpDevicesOkResult:
 
 class RecipeInterface:
     @abstractmethod
-    def create_device(
+    async def create_device(
         self,
         user_id: str,
         device_name: str,
@@ -79,7 +79,7 @@ class RecipeInterface:
         pass
 
     @abstractmethod
-    def verify_code(
+    async def verify_code(
         self, user_id: str, code: int
     ) -> Union[
         VerifyCodeOkResult, InvalidTotpError, TotpNotEnabledError, LimitReachedError
@@ -87,7 +87,7 @@ class RecipeInterface:
         pass
 
     @abstractmethod
-    def verify_device(
+    async def verify_device(
         self, user_id: str, device_name: str, code: int
     ) -> Union[
         VerifyDeviceOkResult, InvalidTotpError, TotpNotEnabledError, UnknownDeviceError
@@ -95,7 +95,7 @@ class RecipeInterface:
         pass
 
     @abstractmethod
-    def update_device(
+    async def update_device(
         self, user_id: str, existing_device_name: str, new_device_name: str
     ) -> Union[
         UpdateDeviceOkResult,
@@ -106,13 +106,13 @@ class RecipeInterface:
         pass
 
     @abstractmethod
-    def remove_device(
+    async def remove_device(
         self, user_id: str, device_name: str
     ) -> Union[RemoveTotpDeviceOkResult, TotpNotEnabledError]:
         pass
 
     @abstractmethod
-    def list_devices(
+    async def list_devices(
         self, user_id: str
     ) -> Union[ListTotpDevicesOkResult, TotpNotEnabledError]:
         pass
@@ -217,13 +217,13 @@ class APIInterface:
         self.disable_list_devices_get = False
 
     @abstractmethod
-    def create_device_post(
+    async def create_device_post(
         self, user_id: str, device_name: str, skew: int, period: int
     ) -> Union[CreateDevicePostOkResponse, DeviceAlreadyExistsErrorResponse]:
         pass
 
     @abstractmethod
-    def verify_code_post(
+    async def verify_code_post(
         self, user_id: str, code: int
     ) -> Union[
         VerifyCodePostOkResponse,
@@ -234,7 +234,7 @@ class APIInterface:
         pass
 
     @abstractmethod
-    def verify_device_post(
+    async def verify_device_post(
         self, user_id: str, device_name: str, code: int
     ) -> Union[
         VerifyDeviceOkResponse,
@@ -245,7 +245,7 @@ class APIInterface:
         pass
 
     @abstractmethod
-    def update_device_put(
+    async def update_device_put(
         self, user_id: str, existing_device_name: str, new_device_name: str
     ) -> Union[
         UpdateDevicePutOkResponse,
@@ -256,13 +256,13 @@ class APIInterface:
         pass
 
     @abstractmethod
-    def remove_device_post(
+    async def remove_device_post(
         self, user_id: str, device_name: str
     ) -> Union[RemoveDevicePostOkResponse, TotpNotEnabledErrorResponse]:
         pass
 
     @abstractmethod
-    def list_devices_get(
+    async def list_devices_get(
         self, user_id: str
     ) -> Union[ListDevicesGetOkResponse, TotpNotEnabledErrorResponse]:
         pass
