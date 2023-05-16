@@ -16,6 +16,7 @@
 from typing import List, Any, Dict, Optional, Union
 from abc import abstractmethod
 from supertokens_python.types import APIResponse
+from urllib.parse import quote
 
 
 class DeviceAlreadyExistsError:
@@ -40,7 +41,7 @@ class UnknownDeviceError:
 
 class CreateDeviceOkResult:
     def __init__(self, user_identifier: str, issuer_name: str, secret: str):
-        self.qr = f"otpauth://totp/{uriencode(issuer_name)}:{uriencode(user_identifier)}?secret={secret}&issuer={uriencode(issuer_name)}"
+        self.qr = f"otpauth://totp/{quote(issuer_name)}:{quote(user_identifier)}?secret={secret}&issuer={quote(issuer_name)}"
 
 
 class VerifyCodeOkResult:
@@ -156,7 +157,7 @@ class CreateDevicePostOkResponse(APIResponse):
     status = "OK"
 
     def __init__(self, user_identifier: str, issuer_name: str, secret: str):
-        self.qr = f"otpauth://totp/{uriencode(issuer_name)}:{uriencode(user_identifier)}?secret={secret}&issuer={uriencode(issuer_name)}"
+        self.qr = f"otpauth://totp/{quote(issuer_name)}:{quote(user_identifier)}?secret={secret}&issuer={quote(issuer_name)}"
 
     def to_json(self):
         return {"status": self.status, "qr": self.qr}
