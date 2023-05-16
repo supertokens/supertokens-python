@@ -172,6 +172,7 @@ async def get_session_from_request(
         else None,
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
+        session_required=session_required,
         check_database=check_database,
         override_global_claim_validators=override_global_claim_validators,
         user_context=user_context,
