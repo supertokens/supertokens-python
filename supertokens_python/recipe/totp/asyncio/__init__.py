@@ -40,7 +40,7 @@ async def create_totp_device(
 
 
 async def verify_code(
-    user_id: str, code: str, user_context: Optional[Dict[str, Any]] = None
+    user_id: str, code: int, user_context: Optional[Dict[str, Any]] = None
 ) -> Union[
     VerifyDeviceOkResult, InvalidTotpError, TotpNotEnabledError, LimitReachedError
 ]:
