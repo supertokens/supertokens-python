@@ -184,8 +184,8 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     @abstractmethod
     async def get_session(
         self,
-        access_token: str,
-        anti_csrf_token: Optional[str],
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
@@ -1033,8 +1033,8 @@ inheritance.</p></div>
     @abstractmethod
     async def get_session(
         self,
-        access_token: str,
-        anti_csrf_token: Optional[str],
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
         check_database: Optional[bool] = None,
@@ -1284,7 +1284,7 @@ def get_global_claim_validators(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, access_token: str, anti_csrf_token: Optional[str], anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], MaybeAwaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, access_token: Optional[str], anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], MaybeAwaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1295,8 +1295,8 @@ def get_global_claim_validators(
 <pre><code class="python">@abstractmethod
 async def get_session(
     self,
-    access_token: str,
-    anti_csrf_token: Optional[str],
+    access_token: Optional[str],
+    anti_csrf_token: Optional[str] = None,
     anti_csrf_check: Optional[bool] = None,
     session_required: Optional[bool] = None,
     check_database: Optional[bool] = None,
