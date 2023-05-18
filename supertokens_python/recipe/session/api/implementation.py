@@ -62,6 +62,7 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        check_database: bool,
         override_global_claim_validators: Optional[
             Callable[
                 [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -90,6 +91,7 @@ class APIImplementation(APIInterface):
             api_options.recipe_implementation,
             session_required=session_required,
             anti_csrf_check=anti_csrf_check,
+            check_database=check_database,
             override_global_claim_validators=override_global_claim_validators,
             user_context=user_context,
         )

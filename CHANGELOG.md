@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.0] - 2023-05-18
+- Adds missing `check_database` boolean in `verify_session`
+
 ## [0.13.1] - 2023-05-15
 ### Changes
 -   Made the access token string optional in the overrideable `get_session` function

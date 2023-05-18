@@ -344,6 +344,7 @@ class SessionRecipe(RecipeModule):
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        check_database: bool,
         override_global_claim_validators: Optional[
             Callable[
                 [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -364,6 +365,7 @@ class SessionRecipe(RecipeModule):
             ),
             anti_csrf_check,
             session_required,
+            check_database,
             override_global_claim_validators,
             user_context=default_user_context(request),
         )

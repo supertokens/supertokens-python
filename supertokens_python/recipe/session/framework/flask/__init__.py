@@ -26,6 +26,7 @@ _T = TypeVar("_T", bound=Callable[..., Any])
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    check_database: bool = False,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -49,6 +50,7 @@ def verify_session(
                     baseRequest,
                     anti_csrf_check,
                     session_required,
+                    check_database,
                     override_global_claim_validators,
                     user_context,
                 )
