@@ -372,6 +372,7 @@ class SessionRecipe(RecipeModule):
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        check_database: bool,
         override_global_claim_validators: Optional[
             Callable[
                 [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -392,6 +393,7 @@ class SessionRecipe(RecipeModule):
             ),
             anti_csrf_check,
             session_required,
+            check_database,
             override_global_claim_validators,
             user_context=default_user_context(request),
         )</code></pre>
@@ -694,6 +696,7 @@ inheritance.</p></div>
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        check_database: bool,
         override_global_claim_validators: Optional[
             Callable[
                 [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -714,6 +717,7 @@ inheritance.</p></div>
             ),
             anti_csrf_check,
             session_required,
+            check_database,
             override_global_claim_validators,
             user_context=default_user_context(request),
         )</code></pre>
@@ -1036,7 +1040,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.verify_session"><code class="name flex">
-<span>async def <span class="ident">verify_session</span></span>(<span>self, request: BaseRequest, anti_csrf_check: Union[bool, None], session_required: bool, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]], user_context: Dict[str, Any])</span>
+<span>async def <span class="ident">verify_session</span></span>(<span>self, request: BaseRequest, anti_csrf_check: Union[bool, None], session_required: bool, check_database: bool, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1049,6 +1053,7 @@ def reset():
     request: BaseRequest,
     anti_csrf_check: Union[bool, None],
     session_required: bool,
+    check_database: bool,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -1069,6 +1074,7 @@ def reset():
         ),
         anti_csrf_check,
         session_required,
+        check_database,
         override_global_claim_validators,
         user_context=default_user_context(request),
     )</code></pre>
