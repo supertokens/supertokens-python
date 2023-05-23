@@ -17,8 +17,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
 
-from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.asyncio import get_request_from_user_context
+from supertokens_python import (
+    InputAppInfo,
+    SupertokensConfig,
+    get_request_from_user_context,
+    init,
+)
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import sign_up

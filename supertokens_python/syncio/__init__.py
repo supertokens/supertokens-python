@@ -11,11 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.framework.request import BaseRequest
 from supertokens_python.interfaces import (
     CreateUserIdMappingOkResult,
     DeleteUserIdMappingOkResult,
@@ -104,9 +103,3 @@ def update_or_delete_user_id_mapping_info(
             user_id, user_id_type, external_user_id_info
         )
     )
-
-
-def get_request_from_user_context(
-    user_context: Optional[Dict[str, Any]],
-) -> Optional[BaseRequest]:
-    return Supertokens.get_instance().get_request_from_user_context(user_context)
