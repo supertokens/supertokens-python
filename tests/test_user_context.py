@@ -323,6 +323,14 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
                 nonlocal signin_context_works
                 signin_context_works = True
 
+            orginal_request = req
+            user_context["_default"]["request"] = None
+
+            newReq = get_request_from_user_context(user_context)
+            assert newReq is None
+
+            user_context["_default"]["request"] = orginal_request
+
             return await og_sign_in(email, password, user_context)
 
         param.sign_in = sign_in
