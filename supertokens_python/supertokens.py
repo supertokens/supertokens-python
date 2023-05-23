@@ -552,3 +552,18 @@ class Supertokens:
                 )
                 return await recipe.handle_error(request, err, response)
         raise err
+
+    def get_request_from_user_context(  # pylint: disable=no-self-use
+        self,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> Optional[BaseRequest]:
+        if user_context is None:
+            return None
+
+        if "_default" not in user_context:
+            return None
+
+        if not isinstance(user_context["_default"], dict):
+            return None
+
+        return user_context.get("_default", {}).get("request")

@@ -12,8 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing import Any, Callable, Dict, List, Optional, Union
+
 from typing_extensions import Literal
-from typing import Callable, List, Union
+
+from supertokens_python.framework.request import BaseRequest
 
 from . import supertokens
 from .recipe_module import RecipeModule
@@ -39,3 +42,9 @@ def init(
 
 def get_all_cors_headers() -> List[str]:
     return supertokens.Supertokens.get_instance().get_all_cors_headers()
+
+
+def get_request_from_user_context(
+    user_context: Optional[Dict[str, Any]],
+) -> Optional[BaseRequest]:
+    return Supertokens.get_instance().get_request_from_user_context(user_context)
