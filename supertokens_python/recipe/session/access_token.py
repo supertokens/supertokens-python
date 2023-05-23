@@ -16,7 +16,6 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Union
 
 import jwt
-from jwt.exceptions import DecodeError, PyJWKClientError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
@@ -63,7 +62,7 @@ def get_info_from_access_token(
                 continue
 
         if keys is None or client is None:
-            raise PyJWKClientError("No key found")
+            raise jwt.exceptions.PyJWKClientError("No key found")
 
         if jwt_info.version < 3:
             # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
@@ -72,7 +71,7 @@ def get_info_from_access_token(
                 try:
                     payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
                     break
-                except DecodeError:
+                except jwt.exceptions.DecodeError:
                     pass
 
         elif jwt_info.version >= 3:
@@ -85,7 +84,7 @@ def get_info_from_access_token(
             )
 
         if payload is None:
-            raise DecodeError("Could not decode the token")
+            raise jwt.exceptions.DecodeError("Could not decode the token")
 
         validate_access_token_structure(payload, jwt_info.version)
 

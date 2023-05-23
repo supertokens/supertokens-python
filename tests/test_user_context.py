@@ -116,6 +116,7 @@ async def test_user_context(driver_config_client: TestClient):
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
+            anti_csrf: str,
             user_context: Dict[str, Any],
         ):
             if (
@@ -129,6 +130,7 @@ async def test_user_context(driver_config_client: TestClient):
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
+                anti_csrf,
                 user_context,
             )
             if (
@@ -223,6 +225,7 @@ async def test_default_context(driver_config_client: TestClient):
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
+            anti_csrf: str,
             user_context: Dict[str, Any],
         ):
             req = user_context.get("_default", {}).get("request")
@@ -235,6 +238,7 @@ async def test_default_context(driver_config_client: TestClient):
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
+                anti_csrf,
                 user_context,
             )
             return response

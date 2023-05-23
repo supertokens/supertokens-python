@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import types
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 from urllib.parse import urlparse
 
@@ -326,7 +327,7 @@ class SessionConfig:
         cookie_secure: bool,
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
-        anti_csrf: str,
+        anti_csrf: Callable[[BaseRequest, Any], Awaitable[str]],
         get_token_transfer_method: Callable[
             [BaseRequest, bool, Dict[str, Any]],
             Union[TokenTransferMethod, Literal["any"]],
@@ -363,7 +364,11 @@ def validate_and_normalise_user_input(
     cookie_secure: Union[bool, None] = None,
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
     session_expired_status_code: Union[int, None] = None,
-    anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    anti_csrf: Union[
+        Callable[[BaseRequest, Any], Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"]],
+        Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"],
+        None,
+    ] = None,
     get_token_transfer_method: Union[
         Callable[
             [BaseRequest, bool, Dict[str, Any]],
@@ -377,10 +382,6 @@ def validate_and_normalise_user_input(
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
 ):
-    if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
-        raise ValueError(
-            "anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None"
-        )
 
     if error_handlers is not None and not isinstance(error_handlers, ErrorHandlers):  # type: ignore
         raise ValueError("error_handlers must be an instance of ErrorHandlers or None")
@@ -427,8 +428,15 @@ def validate_and_normalise_user_input(
             f"({invalid_claim_status_code})"
         )
 
-    if anti_csrf is None:
-        anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
+    async def anti_csrf_func(req: BaseRequest, user_context: Any) -> str:
+        cookie_same_site_val = cookie_same_site
+        if anti_csrf is None:
+            return "VIA_CUSTOM_HEADER" if cookie_same_site_val == "none" else "NONE"
+        if isinstance(anti_csrf, types.FunctionType):
+            anti_csrf_val = await anti_csrf(req, user_context)
+        else:
+            anti_csrf_val = anti_csrf
+        return anti_csrf_val
 
     if get_token_transfer_method is None:
         get_token_transfer_method = get_token_transfer_method_default
@@ -452,7 +460,7 @@ def validate_and_normalise_user_input(
         cookie_secure,
         session_expired_status_code,
         error_handlers,
-        anti_csrf,
+        anti_csrf_func,
         get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,

@@ -96,16 +96,14 @@ async def create_new_session(
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
+    anti_csrf: str,
 ) -> CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
 
-    enable_anti_csrf = (
-        disable_anti_csrf is False
-        and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
-    )
+    enable_anti_csrf = disable_anti_csrf is False and anti_csrf == "VIA_TOKEN"
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session"),
         {
@@ -145,6 +143,7 @@ async def get_session(
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     always_check_core: bool,
+    anti_csrf: str,
 ) -> GetSessionAPIResponse:
     config = recipe_implementation.config
     access_token_info: Optional[Dict[str, Any]] = None
@@ -153,7 +152,7 @@ async def get_session(
         access_token_info = get_info_from_access_token(
             parsed_access_token,
             recipe_implementation.JWK_clients,
-            config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
+            anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
         )
 
     except Exception as e:
@@ -218,7 +217,7 @@ async def get_session(
     # anti-csrf check if accesstokenInfo is not undefined which means token verification was successful
 
     if do_anti_csrf_check:
-        if config.anti_csrf == "VIA_TOKEN":
+        if anti_csrf == "VIA_TOKEN":
             if access_token_info is not None:
                 if (
                     anti_csrf_token is None
@@ -237,7 +236,7 @@ async def get_session(
                         )
                         raise_try_refresh_token_exception("anti-csrf check failed")
 
-        elif config.anti_csrf == "VIA_CUSTOM_HEADER":
+        elif anti_csrf == "VIA_CUSTOM_HEADER":
             # The function should never be called by this (we check this outside the function as well)
             # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
             raise Exception(
@@ -265,7 +264,7 @@ async def get_session(
     data = {
         "accessToken": parsed_access_token.raw_token_string,
         "doAntiCsrfCheck": do_anti_csrf_check,
-        "enableAntiCsrf": config.anti_csrf == "VIA_TOKEN",
+        "enableAntiCsrf": anti_csrf == "VIA_TOKEN",
         "checkDatabase": always_check_core,
     }
     if anti_csrf_token is not None:
@@ -317,22 +316,17 @@ async def refresh_session(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
+    anti_csrf: str,
 ) -> CreateOrRefreshAPIResponse:
     data = {
         "refreshToken": refresh_token,
-        "enableAntiCsrf": (
-            not disable_anti_csrf
-            and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
-        ),
+        "enableAntiCsrf": (not disable_anti_csrf and anti_csrf == "VIA_TOKEN"),
     }
 
     if anti_csrf_token is not None:
         data["antiCsrfToken"] = anti_csrf_token
 
-    if (
-        recipe_implementation.config.anti_csrf == "VIA_CUSTOM_HEADER"
-        and not disable_anti_csrf
-    ):
+    if anti_csrf == "VIA_CUSTOM_HEADER" and not disable_anti_csrf:
         # The function should never be called by this (we check this outside the function as well)
         # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
         raise Exception(

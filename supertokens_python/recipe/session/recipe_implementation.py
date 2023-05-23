@@ -76,6 +76,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
+        anti_csrf: str,
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         log_debug_message("createNewSession: Started")
@@ -86,6 +87,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
+            anti_csrf,
         )
         log_debug_message("createNewSession: Finished")
 
@@ -172,6 +174,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def get_session(
         self,
         access_token: Optional[str],
+        anti_csrf: str,
         anti_csrf_token: Optional[str] = None,
         anti_csrf_check: Optional[bool] = None,
         session_required: Optional[bool] = None,
@@ -184,10 +187,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         ] = None,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Optional[SessionContainer]:
-        if (
-            anti_csrf_check is not False
-            and self.config.anti_csrf == "VIA_CUSTOM_HEADER"
-        ):
+        if anti_csrf_check is not False and anti_csrf == "VIA_CUSTOM_HEADER":
             raise Exception(
                 "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set anti_csrf_check to false"
             )
@@ -232,6 +232,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             anti_csrf_token,
             (anti_csrf_check is not False),
             (check_database is True),
+            anti_csrf,
         )
 
         log_debug_message("getSession: Success!")
@@ -276,12 +277,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         refresh_token: str,
         anti_csrf_token: Optional[str],
         disable_anti_csrf: bool,
+        anti_csrf: str,
         user_context: Dict[str, Any],
     ) -> SessionContainer:
-        if (
-            disable_anti_csrf is not True
-            and self.config.anti_csrf == "VIA_CUSTOM_HEADER"
-        ):
+        if disable_anti_csrf is not True and anti_csrf == "VIA_CUSTOM_HEADER":
             raise Exception(
                 "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
             )
@@ -289,10 +288,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         log_debug_message("refreshSession: Started")
 
         response = await session_functions.refresh_session(
-            self,
-            refresh_token,
-            anti_csrf_token,
-            disable_anti_csrf,
+            self, refresh_token, anti_csrf_token, disable_anti_csrf, anti_csrf
         )
 
         log_debug_message("refreshSession: Success!")

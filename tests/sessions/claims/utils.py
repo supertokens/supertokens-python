@@ -26,6 +26,7 @@ def session_functions_override_with_claim(
             access_token_payload: Union[None, Dict[str, Any]],
             session_data_in_database: Union[None, Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
+            anti_csrf: str,
             user_context: Dict[str, Any],
         ):
             payload_update = await claim.build(user_id, user_context)
@@ -42,6 +43,7 @@ def session_functions_override_with_claim(
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
+                anti_csrf,
                 user_context,
             )
 
