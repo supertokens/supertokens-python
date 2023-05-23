@@ -579,7 +579,22 @@ class Supertokens:
                     &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
                 )
                 return await recipe.handle_error(request, err, response)
-        raise err</code></pre>
+        raise err
+
+    def get_request_from_user_context(  # pylint: disable=no-self-use
+        self,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; Optional[BaseRequest]:
+        if user_context is None:
+            return None
+
+        if &#34;_default&#34; not in user_context:
+            return None
+
+        if not isinstance(user_context[&#34;_default&#34;], dict):
+            return None
+
+        return user_context.get(&#34;_default&#34;, {}).get(&#34;request&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -1150,7 +1165,22 @@ class Supertokens:
                     &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
                 )
                 return await recipe.handle_error(request, err, response)
-        raise err</code></pre>
+        raise err
+
+    def get_request_from_user_context(  # pylint: disable=no-self-use
+        self,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; Optional[BaseRequest]:
+        if user_context is None:
+            return None
+
+        if &#34;_default&#34; not in user_context:
+            return None
+
+        if not isinstance(user_context[&#34;_default&#34;], dict):
+            return None
+
+        return user_context.get(&#34;_default&#34;, {}).get(&#34;request&#34;)</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -1351,6 +1381,31 @@ def reset():
             headers_set.add(header)
 
     return list(headers_set)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.supertokens.Supertokens.get_request_from_user_context"><code class="name flex">
+<span>def <span class="ident">get_request_from_user_context</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[BaseRequest]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_request_from_user_context(  # pylint: disable=no-self-use
+    self,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Optional[BaseRequest]:
+    if user_context is None:
+        return None
+
+    if &#34;_default&#34; not in user_context:
+        return None
+
+    if not isinstance(user_context[&#34;_default&#34;], dict):
+        return None
+
+    return user_context.get(&#34;_default&#34;, {}).get(&#34;request&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_user_count"><code class="name flex">
@@ -1705,6 +1760,7 @@ def reset():
 <li><code><a title="supertokens_python.supertokens.Supertokens.delete_user_id_mapping" href="#supertokens_python.supertokens.Supertokens.delete_user_id_mapping">delete_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_all_cors_headers" href="#supertokens_python.supertokens.Supertokens.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_instance" href="#supertokens_python.supertokens.Supertokens.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.supertokens.Supertokens.get_request_from_user_context" href="#supertokens_python.supertokens.Supertokens.get_request_from_user_context">get_request_from_user_context</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_user_count" href="#supertokens_python.supertokens.Supertokens.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_user_id_mapping" href="#supertokens_python.supertokens.Supertokens.get_user_id_mapping">get_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_users" href="#supertokens_python.supertokens.Supertokens.get_users">get_users</a></code></li>

@@ -40,8 +40,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing import Any, Callable, Dict, List, Optional, Union
+
 from typing_extensions import Literal
-from typing import Callable, List, Union
+
+from supertokens_python.framework.request import BaseRequest
 
 from . import supertokens
 from .recipe_module import RecipeModule
@@ -66,7 +69,13 @@ def init(
 
 
 def get_all_cors_headers() -&gt; List[str]:
-    return supertokens.Supertokens.get_instance().get_all_cors_headers()</code></pre>
+    return supertokens.Supertokens.get_instance().get_all_cors_headers()
+
+
+def get_request_from_user_context(
+    user_context: Optional[Dict[str, Any]],
+) -&gt; Optional[BaseRequest]:
+    return Supertokens.get_instance().get_request_from_user_context(user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -168,6 +177,21 @@ def get_all_cors_headers() -&gt; List[str]:
     return supertokens.Supertokens.get_instance().get_all_cors_headers()</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.get_request_from_user_context"><code class="name flex">
+<span>def <span class="ident">get_request_from_user_context</span></span>(<span>user_context: Optional[Dict[str, Any]]) ‑> Optional[<a title="supertokens_python.framework.request.BaseRequest" href="framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_request_from_user_context(
+    user_context: Optional[Dict[str, Any]],
+) -&gt; Optional[BaseRequest]:
+    return Supertokens.get_instance().get_request_from_user_context(user_context)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.init"><code class="name flex">
 <span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="supertokens.html#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: Literal['fastapi', 'flask', 'django'], supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="supertokens.html#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>], <a title="supertokens_python.recipe_module.RecipeModule" href="recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a>]], mode: Optional[Literal['asgi', 'wsgi']] = None, telemetry: Optional[bool] = None)</span>
 </code></dt>
@@ -227,6 +251,7 @@ def get_all_cors_headers() -&gt; List[str]:
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.get_all_cors_headers" href="#supertokens_python.get_all_cors_headers">get_all_cors_headers</a></code></li>
+<li><code><a title="supertokens_python.get_request_from_user_context" href="#supertokens_python.get_request_from_user_context">get_request_from_user_context</a></code></li>
 <li><code><a title="supertokens_python.init" href="#supertokens_python.init">init</a></code></li>
 </ul>
 </li>
