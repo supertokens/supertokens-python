@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.1] - 2023-05-23
+
+### Changes
+
+-   Added a new `get_request_from_user_context` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
+
 ## [0.14.0] - 2023-05-18
 - Adds missing `check_database` boolean in `verify_session`
 
