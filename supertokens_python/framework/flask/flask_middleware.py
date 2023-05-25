@@ -65,7 +65,7 @@ class Middleware:
 
             response_ = FlaskResponse(response)
             if hasattr(g, "supertokens") and g.supertokens is not None:
-                manage_session_post_response(g.supertokens, response_)
+                sync(manage_session_post_response(g.supertokens, response_))
 
             return response_.response
 

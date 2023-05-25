@@ -45,7 +45,7 @@ def middleware(get_response: Any):
                 if hasattr(request, "supertokens") and isinstance(
                     request.supertokens, SessionContainer  # type: ignore
                 ):
-                    manage_session_post_response(
+                    await manage_session_post_response(
                         request.supertokens, result  # type: ignore
                     )
                 if isinstance(result, DjangoResponse):
@@ -79,7 +79,7 @@ def middleware(get_response: Any):
             if hasattr(request, "supertokens") and isinstance(
                 request.supertokens, SessionContainer  # type: ignore
             ):
-                manage_session_post_response(
+                async_to_sync(manage_session_post_response)(
                     request.supertokens, result  # type: ignore
                 )
             return result.response

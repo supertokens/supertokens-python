@@ -250,9 +250,11 @@ async def create_new_session_in_request(
         "createNewSession: using transfer method %s", output_transfer_method
     )
 
+    cookie_same_site = await config.cookie_same_site(request, user_context)
+
     if (
         output_transfer_method == "cookie"
-        and config.cookie_same_site == "none"
+        and cookie_same_site == "none"
         and not config.cookie_secure
         and not (
             (
@@ -290,7 +292,7 @@ async def create_new_session_in_request(
             and get_token(request, "access", transfer_method) is not None
         ):
             session.response_mutators.append(
-                clear_session_mutator(config, transfer_method)
+                clear_session_mutator(request, config, transfer_method)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
@@ -313,7 +315,7 @@ async def refresh_session_in_request(
 ) -> SessionContainer:
     log_debug_message("refreshSession: Started")
 
-    response_mutators: List[Callable[[Any], None]] = []
+    response_mutators: List[Callable[[Any], MaybeAwaitable[None]]] = []
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
@@ -363,6 +365,7 @@ async def refresh_session_in_request(
             )
             response_mutators.append(
                 set_cookie_response_mutator(
+                    request,
                     config,
                     LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
                     "",
@@ -414,6 +417,7 @@ async def refresh_session_in_request(
                 )
                 response_mutators.append(
                     set_cookie_response_mutator(
+                        request,
                         config,
                         LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
                         "",
@@ -436,7 +440,9 @@ async def refresh_session_in_request(
             transfer_method != request_transfer_method
             and refresh_tokens[transfer_method] is not None
         ):
-            response_mutators.append(clear_session_mutator(config, transfer_method))
+            response_mutators.append(
+                clear_session_mutator(request, config, transfer_method)
+            )
 
     await session.attach_to_request_response(request, request_transfer_method)
     log_debug_message("refreshSession: Success!")
@@ -448,6 +454,7 @@ async def refresh_session_in_request(
         )
         response_mutators.append(
             set_cookie_response_mutator(
+                request,
                 config,
                 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
                 "",
@@ -455,6 +462,5 @@ async def refresh_session_in_request(
                 "access_token_path",
             )
         )
-
     session.response_mutators.extend(response_mutators)
     return session

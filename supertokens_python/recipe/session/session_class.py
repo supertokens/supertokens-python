@@ -49,6 +49,7 @@ class Session(SessionContainer):
         if self.access_token_updated:
             self.response_mutators.append(
                 access_token_mutator(
+                    request,
                     self.access_token,
                     self.front_token,
                     self.config,
@@ -58,6 +59,7 @@ class Session(SessionContainer):
             if self.refresh_token is not None:
                 self.response_mutators.append(
                     token_response_mutator(
+                        request,
                         self.config,
                         "refresh",
                         self.refresh_token.token,
@@ -92,6 +94,7 @@ class Session(SessionContainer):
             transfer_method: TokenTransferMethod = self.req_res_info.transfer_method  # type: ignore
             self.response_mutators.append(
                 clear_session_response_mutator(
+                    self.req_res_info.request,
                     self.config,
                     transfer_method,
                 )
@@ -291,6 +294,7 @@ class Session(SessionContainer):
                 transfer_method: TokenTransferMethod = self.req_res_info.transfer_method  # type: ignore
                 self.response_mutators.append(
                     access_token_mutator(
+                        self.req_res_info.request,
                         self.access_token,
                         self.front_token,
                         self.config,
