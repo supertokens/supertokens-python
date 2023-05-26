@@ -408,7 +408,7 @@ def validate_and_normalise_user_input(
             )
 
     async def cookie_same_site_func(req: BaseRequest, user_context: Any) -> str:
-        origin = app_info.website_domain
+        origin = await app_info.origin(req, user_context)
         origin_string = origin.get_as_string_dangerous()
         origin_scheme = get_url_scheme(origin_string)
         top_level_origin = get_top_level_domain_for_same_site_resolution(origin_string)

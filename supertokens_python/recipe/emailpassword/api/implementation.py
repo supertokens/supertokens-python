@@ -91,8 +91,11 @@ class APIImplementation(APIInterface):
             return GeneratePasswordResetTokenPostOkResult()
 
         token = token_result.token
+        origin_val = await api_options.app_info.origin(
+            api_options.request, user_context
+        )
         password_reset_link = (
-            api_options.app_info.website_domain.get_as_string_dangerous()
+            origin_val.get_as_string_dangerous()
             + api_options.app_info.website_base_path.get_as_string_dangerous()
             + "/reset-password?token="
             + token

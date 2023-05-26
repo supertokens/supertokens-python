@@ -283,6 +283,7 @@ class PasswordlessRecipe(RecipeModule):
         email: Union[str, None],
         phone_number: Union[str, None],
         user_context: Dict[str, Any],
+        req: BaseRequest,
     ) -> str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
@@ -296,9 +297,9 @@ class PasswordlessRecipe(RecipeModule):
         )
 
         app_info = self.get_app_info()
-
+        origin = await app_info.origin(req, user_context)
         magic_link = (
-            app_info.website_domain.get_as_string_dangerous()
+            origin.get_as_string_dangerous()
             + app_info.website_base_path.get_as_string_dangerous()
             + "/verify"
             + "?rid="

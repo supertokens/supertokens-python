@@ -113,9 +113,11 @@ def validate_and_normalise_user_input(
     )
 
 
-def get_email_verify_link(app_info: AppInfo, token: str, recipe_id: str) -> str:
+async def get_email_verify_link(
+    app_info: AppInfo, token: str, recipe_id: str, origin: str
+) -> str:
     return (
-        app_info.website_domain.get_as_string_dangerous()
+        origin
         + app_info.website_base_path.get_as_string_dangerous()
         + "/verify-email"
         + "?token="

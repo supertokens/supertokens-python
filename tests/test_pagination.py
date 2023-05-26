@@ -39,7 +39,7 @@ async def test_get_users_pagination():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],

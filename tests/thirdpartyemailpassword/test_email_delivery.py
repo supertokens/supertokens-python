@@ -116,7 +116,7 @@ async def test_reset_password_default_backward_compatibility(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -168,7 +168,7 @@ async def test_reset_password_default_backward_compatibility_suppress_error(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -226,7 +226,7 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -277,7 +277,7 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -394,7 +394,7 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -441,7 +441,7 @@ async def test_reset_password_backward_compatibility_non_existent_user(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -481,7 +481,7 @@ async def test_email_verification_default_backward_compatibility(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -547,7 +547,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -620,7 +620,7 @@ async def test_email_verification_backward_compatibility(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -688,7 +688,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -820,7 +820,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -884,7 +884,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -949,7 +949,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",

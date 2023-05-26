@@ -22,6 +22,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
 from ..types import EmailTemplateVars, SMSTemplateVars, User
+from ....framework import BaseRequest
 
 
 async def get_user_by_id(
@@ -240,12 +241,13 @@ async def list_codes_by_pre_auth_session_id(
 async def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
+    req: BaseRequest,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
-        email=email, phone_number=phone_number, user_context=user_context
+        email=email, phone_number=phone_number, user_context=user_context, req=req
     )
 
 

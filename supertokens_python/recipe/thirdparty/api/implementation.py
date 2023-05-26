@@ -195,8 +195,9 @@ class APIImplementation(APIInterface):
         user_context: Dict[str, Any],
     ):
         app_info = api_options.app_info
+        origin = await app_info.origin(api_options.request, user_context)
         redirect_uri = (
-            app_info.website_domain.get_as_string_dangerous()
+            origin.get_as_string_dangerous()
             + app_info.website_base_path.get_as_string_dangerous()
             + "/callback/apple?state="
             + state

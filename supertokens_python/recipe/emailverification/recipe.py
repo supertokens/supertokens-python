@@ -439,9 +439,14 @@ class APIImplementation(APIInterface):
                 # and this session is still outdated - and the user has not
                 # called the get email verification API yet.
                 await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
-
-            email_verify_link = get_email_verify_link(
-                api_options.app_info, response.token, api_options.recipe_id
+            origin = await api_options.app_info.origin(
+                api_options.request, user_context
+            )
+            email_verify_link = await get_email_verify_link(
+                api_options.app_info,
+                response.token,
+                api_options.recipe_id,
+                origin.get_as_string_dangerous(),
             )
 
             log_debug_message("Sending email verification email to %s", email_info)

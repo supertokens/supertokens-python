@@ -20,7 +20,7 @@ st_config = {
     "app_info": InputAppInfo(
         app_name="SuperTokens Demo",
         api_domain="https://api.supertokens.io",
-        website_domain="supertokens.io",
+        origin="supertokens.io",
     ),
     "framework": "fastapi",
     "recipe_list": [

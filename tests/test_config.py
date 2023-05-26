@@ -260,7 +260,7 @@ async def test_same_site_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[session.init(cookie_same_site="lax")],
@@ -275,7 +275,7 @@ async def test_same_site_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[session.init(cookie_same_site="none")],
@@ -290,7 +290,7 @@ async def test_same_site_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[session.init(cookie_same_site="strict")],
@@ -307,7 +307,7 @@ async def test_same_site_values():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
-                website_domain="supertokens.io",
+                origin="supertokens.io",
             ),
             framework="fastapi",
             recipe_list=[session.init(cookie_same_site="random")],  # type: ignore
@@ -326,7 +326,7 @@ async def test_same_site_values():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
-                website_domain="supertokens.io",
+                origin="supertokens.io",
             ),
             framework="fastapi",
             recipe_list=[session.init(cookie_same_site=" ")],  # type: ignore
@@ -343,7 +343,7 @@ async def test_same_site_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -360,7 +360,7 @@ async def test_same_site_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://platform-services-uat.com",
-            website_domain="https://platform-ui-uat.com",
+            origin="https://platform-ui-uat.com",
         ),
         framework="fastapi",
         recipe_list=[
@@ -382,7 +382,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
             api_base_path="/",
         ),
         framework="fastapi",
@@ -400,7 +400,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -421,7 +421,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.com",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -442,7 +442,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.co.uk",
-            website_domain="supertokens.co.uk",
+            origin="supertokens.co.uk",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -463,7 +463,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="127.0.0.1:3000",
-            website_domain="127.0.0.1:9000",
+            origin="127.0.0.1:9000",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -484,7 +484,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="127.0.0.1:3000",
-            website_domain="127.0.0.1:9000",
+            origin="127.0.0.1:9000",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -503,7 +503,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="127.0.0.1:9000",
+            origin="127.0.0.1:9000",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -524,7 +524,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="127.0.0.1:3000",
-            website_domain="127.0.0.1:9000",
+            origin="127.0.0.1:9000",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -545,7 +545,7 @@ async def test_config_values():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://localhost",
-            website_domain="http://localhost:3000",
+            origin="http://localhost:3000",
             api_base_path="test/",
             website_base_path="test1/",
         ),
@@ -682,7 +682,7 @@ async def test_samesite_valid_config():
         ["http://localhost:3000", "https://supertokensapi.io"],
         ["http://127.0.0.1:3000", "https://supertokensapi.io"],
     ]
-    for (website_domain, api_domain) in domain_combinations:
+    for (origin, api_domain) in domain_combinations:
         reset()
         clean_st()
         setup_st()
@@ -691,7 +691,7 @@ async def test_samesite_valid_config():
             supertokens_config=SupertokensConfig("http://localhost:3567"),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
-                website_domain=website_domain,
+                origin=origin,
                 api_domain=api_domain,
             ),
             framework="fastapi",
@@ -708,7 +708,7 @@ async def test_samesite_invalid_config():
         ["http://supertokens.io", "http://127.0.0.1:8000"],
         ["http://supertokens.io", "http://supertokensapi.io"],
     ]
-    for (website_domain, api_domain) in domain_combinations:
+    for (origin, api_domain) in domain_combinations:
         reset()
         clean_st()
         setup_st()
@@ -717,7 +717,7 @@ async def test_samesite_invalid_config():
                 supertokens_config=SupertokensConfig("http://localhost:3567"),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Demo",
-                    website_domain=website_domain,
+                    origin=origin,
                     api_domain=api_domain,
                 ),
                 framework="fastapi",

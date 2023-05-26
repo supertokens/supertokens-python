@@ -138,7 +138,7 @@ def get_website_port():
     return "3031"
 
 
-def get_website_domain():
+def get_origin():
     return "http://localhost:" + get_website_port()
 
 
@@ -954,7 +954,7 @@ def custom_init(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="0.0.0.0:" + get_api_port(),
-            website_domain=get_website_domain(),
+            origin=get_origin(),
         ),
         framework="flask",
         recipe_list=recipe_list,
@@ -977,7 +977,7 @@ Middleware(app)
 CORS(
     app=app,
     supports_credentials=True,
-    origins=get_website_domain(),
+    origins=get_origin(),
     allow_headers=["Content-Type"] + get_all_cors_headers(),
 )
 

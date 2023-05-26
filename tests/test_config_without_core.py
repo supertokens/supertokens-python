@@ -6,7 +6,7 @@ from supertokens_python.recipe.session import SessionRecipe
 
 
 @mark.parametrize(
-    "api_domain,website_domain,cookie_same_site",
+    "api_domain,origin,cookie_same_site",
     [
         ("https://foo.com/", "https://bar.com/", "none"),  # Different URLs
         (
@@ -27,15 +27,13 @@ from supertokens_python.recipe.session import SessionRecipe
         ("http://example.com/", "http://example.com/", "lax"),  # HTTP same url
     ],
 )
-def test_same_site_cookie_values(
-    api_domain: str, website_domain: str, cookie_same_site: str
-):
+def test_same_site_cookie_values(api_domain: str, origin: str, cookie_same_site: str):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain=api_domain,
-            website_domain=website_domain,
+            origin=origin,
             api_base_path="/auth",
         ),
         framework="fastapi",

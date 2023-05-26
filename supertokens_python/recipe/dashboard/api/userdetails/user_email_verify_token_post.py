@@ -56,9 +56,12 @@ async def handle_email_verify_token_post(
         return UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse()
 
     assert isinstance(email_verification_token, CreateEmailVerificationTokenOkResult)
-
-    email_verify_link = get_email_verify_link(
-        api_options.app_info, email_verification_token.token, user_id
+    origin = await api_options.app_info.origin(api_options.request, {})
+    email_verify_link = await get_email_verify_link(
+        api_options.app_info,
+        email_verification_token.token,
+        user_id,
+        origin.get_as_string_dangerous(),
     )
 
     await send_email(
