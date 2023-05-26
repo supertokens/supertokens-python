@@ -461,6 +461,12 @@ def validate_and_normalise_user_input(
             f"({invalid_claim_status_code})"
         )
 
+    if not isinstance(anti_csrf, types.FunctionType):
+        if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
+            raise ValueError(
+                "anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None"
+            )
+
     async def anti_csrf_func(req: BaseRequest, user_context: Any) -> str:
         cookie_same_site = await cookie_same_site_func(req, user_context)
         if anti_csrf is None:
