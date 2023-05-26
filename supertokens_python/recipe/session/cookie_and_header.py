@@ -298,8 +298,8 @@ def token_response_mutator(
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
-    def mutator(response: BaseResponse):
-        _ = _set_token(
+    async def mutator(response: BaseResponse):
+        await _set_token(
             request,
             response,
             config,
@@ -324,17 +324,17 @@ def access_token_mutator(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        _ = _set_access_token_in_response(
+        await _set_access_token_in_response_async(
             request, response, access_token, front_token, config, transfer_method
         )
 
     return mutator
 
 
-async def _set_access_token_in_response(
+async def _set_access_token_in_response_async(
     req: BaseRequest,
     res: BaseResponse,
     access_token: str,

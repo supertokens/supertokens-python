@@ -61,7 +61,7 @@ def normalise_session_scope(session_scope: str) -> str:
         if scope.startswith("."):
             scope = scope[1:]
 
-        if (not scope.startswith("https://")) and (not scope.startswith("http://")):
+        if not scope.startswith("://"):
             scope = "http://" + scope
 
         try:
@@ -400,25 +400,35 @@ def validate_and_normalise_user_input(
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
     )
 
+    if isinstance(cookie_same_site, str):
+        normalised_same_site = normalise_same_site(cookie_same_site)
+        if normalised_same_site not in ["strict", "lax", "none"]:
+            raise Exception(
+                'cookie same site must be one of "strict", "lax", or "none"'
+            )
+
     async def cookie_same_site_func(req: BaseRequest, user_context: Any) -> str:
         origin = app_info.website_domain
         origin_string = origin.get_as_string_dangerous()
+        origin_scheme = get_url_scheme(origin_string)
+        top_level_origin = get_top_level_domain_for_same_site_resolution(origin_string)
+
         api_domain_scheme = get_url_scheme(
             app_info.api_domain.get_as_string_dangerous()
         )
-        origin_scheme = get_url_scheme(origin_string)
-        top_level_origin = get_top_level_domain_for_same_site_resolution(origin_string)
         top_level_api_domain = get_top_level_domain_for_same_site_resolution(
             app_info.api_domain.get_as_string_dangerous()
         )
+
         cookie_same_site_normalize = "none"
+
         if cookie_same_site is not None:
             if isinstance(cookie_same_site, types.FunctionType):
                 cookie_same_site_val = await cookie_same_site(req, user_context)
                 cookie_same_site_normalize = normalise_same_site(cookie_same_site_val)
             else:
                 cookie_same_site_normalize = normalise_same_site(str(cookie_same_site))
-        cookie_same_site_ret = "none"
+
         if (
             top_level_api_domain != top_level_origin
             or api_domain_scheme != origin_scheme
@@ -426,6 +436,7 @@ def validate_and_normalise_user_input(
             cookie_same_site_ret = "none"
         else:
             cookie_same_site_ret = "lax"
+
         if cookie_same_site is not None:
             return cookie_same_site_ret
         return cookie_same_site_normalize
@@ -451,9 +462,9 @@ def validate_and_normalise_user_input(
         )
 
     async def anti_csrf_func(req: BaseRequest, user_context: Any) -> str:
-        cookie_same_site_val = await cookie_same_site_func(req, user_context)
+        cookie_same_site = await cookie_same_site_func(req, user_context)
         if anti_csrf is None:
-            return "VIA_CUSTOM_HEADER" if cookie_same_site_val == "none" else "NONE"
+            return "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
         if isinstance(anti_csrf, types.FunctionType):
             anti_csrf_val = await anti_csrf(req, user_context)
         else:
