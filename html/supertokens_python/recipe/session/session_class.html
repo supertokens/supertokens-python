@@ -64,6 +64,7 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
+from supertokens_python.utils import log_debug_message
 
 _T = TypeVar(&#34;_T&#34;)
 
@@ -134,6 +135,9 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                &#34;getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         return session_info.session_data_in_database
@@ -149,6 +153,9 @@ class Session(SessionContainer):
             self.session_handle, new_session_data, user_context
         )
         if not updated:
+            log_debug_message(
+                &#34;updateSessionDataInDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
@@ -185,6 +192,9 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                &#34;getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         return session_info.time_created
@@ -196,6 +206,9 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                &#34;getExpiry: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         return session_info.expiry
@@ -298,6 +311,9 @@ class Session(SessionContainer):
         )
 
         if response is None:
+            log_debug_message(
+                &#34;mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         if response.access_token is not None:
@@ -421,6 +437,9 @@ inheritance.</p></div>
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                &#34;getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         return session_info.session_data_in_database
@@ -436,6 +455,9 @@ inheritance.</p></div>
             self.session_handle, new_session_data, user_context
         )
         if not updated:
+            log_debug_message(
+                &#34;updateSessionDataInDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
@@ -472,6 +494,9 @@ inheritance.</p></div>
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                &#34;getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         return session_info.time_created
@@ -483,6 +508,9 @@ inheritance.</p></div>
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                &#34;getExpiry: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         return session_info.expiry
@@ -585,6 +613,9 @@ inheritance.</p></div>
         )
 
         if response is None:
+            log_debug_message(
+                &#34;mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore&#34;
+            )
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
         if response.access_token is not None:
@@ -814,6 +845,9 @@ inheritance.</p></div>
         self.session_handle, user_context
     )
     if session_info is None:
+        log_debug_message(
+            &#34;getExpiry: Throwing UNAUTHORISED because session does not exist anymore&#34;
+        )
         raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     return session_info.expiry</code></pre>
@@ -850,6 +884,9 @@ inheritance.</p></div>
         self.session_handle, user_context
     )
     if session_info is None:
+        log_debug_message(
+            &#34;getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
+        )
         raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     return session_info.session_data_in_database</code></pre>
@@ -873,6 +910,9 @@ inheritance.</p></div>
         self.session_handle, user_context
     )
     if session_info is None:
+        log_debug_message(
+            &#34;getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore&#34;
+        )
         raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     return session_info.time_created</code></pre>
@@ -929,6 +969,9 @@ inheritance.</p></div>
     )
 
     if response is None:
+        log_debug_message(
+            &#34;mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore&#34;
+        )
         raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     if response.access_token is not None:
@@ -1060,6 +1103,9 @@ inheritance.</p></div>
         self.session_handle, new_session_data, user_context
     )
     if not updated:
+        log_debug_message(
+            &#34;updateSessionDataInDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
+        )
         raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)</code></pre>
 </details>
 </dd>

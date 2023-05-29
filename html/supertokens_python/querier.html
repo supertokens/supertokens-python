@@ -70,7 +70,7 @@ class Querier:
     __init_called = False
     __hosts: List[Host] = []
     __api_key: Union[None, str] = None
-    __api_version = None
+    api_version = None
     __last_tried_index: int = 0
     __hosts_alive_for_testing: Set[str] = set()
 
@@ -97,8 +97,8 @@ class Querier:
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
-        if Querier.__api_version is not None:
-            return Querier.__api_version
+        if Querier.api_version is not None:
+            return Querier.api_version
 
         ProcessState.get_instance().add_state(
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
@@ -124,8 +124,8 @@ class Querier:
                 &#34;to find the right versions&#34;
             )
 
-        Querier.__api_version = api_version
-        return Querier.__api_version
+        Querier.api_version = api_version
+        return Querier.api_version
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
@@ -141,7 +141,7 @@ class Querier:
             Querier.__init_called = True
             Querier.__hosts = hosts
             Querier.__api_key = api_key
-            Querier.__api_version = None
+            Querier.api_version = None
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
 
@@ -323,7 +323,7 @@ class Querier:
     __init_called = False
     __hosts: List[Host] = []
     __api_key: Union[None, str] = None
-    __api_version = None
+    api_version = None
     __last_tried_index: int = 0
     __hosts_alive_for_testing: Set[str] = set()
 
@@ -350,8 +350,8 @@ class Querier:
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
-        if Querier.__api_version is not None:
-            return Querier.__api_version
+        if Querier.api_version is not None:
+            return Querier.api_version
 
         ProcessState.get_instance().add_state(
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
@@ -377,8 +377,8 @@ class Querier:
                 &#34;to find the right versions&#34;
             )
 
-        Querier.__api_version = api_version
-        return Querier.__api_version
+        Querier.api_version = api_version
+        return Querier.api_version
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
@@ -394,7 +394,7 @@ class Querier:
             Querier.__init_called = True
             Querier.__hosts = hosts
             Querier.__api_key = api_key
-            Querier.__api_version = None
+            Querier.api_version = None
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
 
@@ -552,6 +552,13 @@ class Querier:
         except Exception as e:
             raise_general_exception(e)</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.querier.Querier.api_version"><code class="name">var <span class="ident">api_version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Static methods</h3>
 <dl>
 <dt id="supertokens_python.querier.Querier.get_hosts_alive_for_testing"><code class="name flex">
@@ -605,7 +612,7 @@ def init(hosts: List[Host], api_key: Union[str, None] = None):
         Querier.__init_called = True
         Querier.__hosts = hosts
         Querier.__api_key = api_key
-        Querier.__api_version = None
+        Querier.api_version = None
         Querier.__last_tried_index = 0
         Querier.__hosts_alive_for_testing = set()</code></pre>
 </details>
@@ -670,8 +677,8 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_api_version(self):
-    if Querier.__api_version is not None:
-        return Querier.__api_version
+    if Querier.api_version is not None:
+        return Querier.api_version
 
     ProcessState.get_instance().add_state(
         AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
@@ -697,8 +704,8 @@ def reset():
             &#34;to find the right versions&#34;
         )
 
-    Querier.__api_version = api_version
-    return Querier.__api_version</code></pre>
+    Querier.api_version = api_version
+    return Querier.api_version</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_delete_request"><code class="name flex">
@@ -834,6 +841,7 @@ def reset():
 <li>
 <h4><code><a title="supertokens_python.querier.Querier" href="#supertokens_python.querier.Querier">Querier</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.querier.Querier.api_version" href="#supertokens_python.querier.Querier.api_version">api_version</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.get_all_core_urls_for_path" href="#supertokens_python.querier.Querier.get_all_core_urls_for_path">get_all_core_urls_for_path</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.get_api_version" href="#supertokens_python.querier.Querier.get_api_version">get_api_version</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.get_hosts_alive_for_testing" href="#supertokens_python.querier.Querier.get_hosts_alive_for_testing">get_hosts_alive_for_testing</a></code></li>
