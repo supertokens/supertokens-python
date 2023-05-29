@@ -30,6 +30,7 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import FRAMEWORKS, resolve
+from supertokens_python.framework import BaseRequest
 
 from ...jwt.interfaces import (
     CreateJwtOkResult,
@@ -95,8 +96,13 @@ async def create_new_session_without_request_response(
         SessionRecipe.get_instance().get_claims_added_by_other_recipes()
     )
     app_info = SessionRecipe.get_instance().app_info
+    if app_info.initial_api_domain_type != "string":
+        raise Exception(
+            "To use this function, value of apiDomain should be typeof string"
+        )
+    api_domain = await app_info.api_domain({}, user_context)  # type: ignore
     issuer = (
-        app_info.api_domain.get_as_string_dangerous()
+        api_domain.get_as_string_dangerous()
         + app_info.api_base_path.get_as_string_dangerous()
     )
 
@@ -498,6 +504,7 @@ async def merge_into_access_token_payload(
 
 
 async def create_jwt(
+    req: BaseRequest,
     payload: Dict[str, Any],
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
@@ -508,7 +515,7 @@ async def create_jwt(
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     return await openid_recipe.recipe_implementation.create_jwt(
-        payload, validity_seconds, use_static_signing_key, user_context
+        req, payload, validity_seconds, use_static_signing_key, user_context
     )
 
 
@@ -520,7 +527,7 @@ async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSR
 
 
 async def get_open_id_discovery_configuration(
-    user_context: Union[None, Dict[str, Any]] = None
+    req: BaseRequest, user_context: Union[None, Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}
@@ -528,7 +535,7 @@ async def get_open_id_discovery_configuration(
 
     return (
         await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
-            user_context
+            req, user_context
         )
     )
 

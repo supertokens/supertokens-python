@@ -23,6 +23,8 @@ from starlette.requests import Request
 from starlette.testclient import TestClient
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
+from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.recipe.jwt.interfaces import (
@@ -53,7 +55,7 @@ async def driver_config_client():
     @app.post("/jwtcreate")
     async def jwt_create(request: Request):  # type: ignore
         payload = (await request.json())["payload"]
-        response = await create_jwt(payload, 1000)
+        response = await create_jwt(FastApiRequest(request), payload, 1000)
         return response
 
     return TestClient(app)
@@ -89,13 +91,14 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
         oi_create_jwt = param.create_jwt
 
         async def create_jwt_(
+            req: BaseRequest,
             payload: Dict[str, Any],
             validity_seconds: Union[int, None],
             use_static_signing_key: Union[bool, None],
             user_context: Dict[str, Any],
         ):
             response_ = await oi_create_jwt(
-                payload, validity_seconds, use_static_signing_key, user_context
+                req, payload, validity_seconds, use_static_signing_key, user_context
             )
 
             if isinstance(response_, CreateJwtOkResult):

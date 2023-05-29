@@ -51,6 +51,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def create_jwt(
         self,
+        req: BaseRequest,
         payload: Dict[str, Any],
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],

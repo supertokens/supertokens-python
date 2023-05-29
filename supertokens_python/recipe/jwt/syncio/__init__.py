@@ -20,9 +20,11 @@ from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+from supertokens_python.framework import BaseRequest
 
 
 def create_jwt(
+    req: BaseRequest,
     payload: Optional[Dict[str, Any]] = None,
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
@@ -30,7 +32,7 @@ def create_jwt(
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     return sync(
         asyncio.create_jwt(
-            payload, validity_seconds, use_static_signing_key, user_context
+            req, payload, validity_seconds, use_static_signing_key, user_context
         )
     )
 

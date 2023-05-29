@@ -17,6 +17,7 @@ from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
+from supertokens_python.framework import BaseRequest
 
 from ...jwt.interfaces import (
     CreateJwtOkResult,
@@ -26,6 +27,7 @@ from ...jwt.interfaces import (
 
 
 async def create_jwt(
+    req: BaseRequest,
     payload: Optional[Dict[str, Any]] = None,
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
@@ -37,7 +39,7 @@ async def create_jwt(
         payload = {}
 
     return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(
-        payload, validity_seconds, use_static_signing_key, user_context
+        req, payload, validity_seconds, use_static_signing_key, user_context
     )
 
 
@@ -50,10 +52,10 @@ async def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResu
 
 
 async def get_open_id_discovery_configuration(
-    user_context: Optional[Dict[str, Any]] = None
+    req: BaseRequest, user_context: Optional[Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}
     return await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
-        user_context
+        req, user_context
     )

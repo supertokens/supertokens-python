@@ -21,6 +21,7 @@ from supertokens_python.querier import Querier
 if TYPE_CHECKING:
     from .utils import JWTConfig
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.framework import BaseRequest
 
 from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtOkResult,
@@ -41,6 +42,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_jwt(
         self,
+        req: BaseRequest,
         payload: Dict[str, Any],
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
@@ -49,12 +51,14 @@ class RecipeImplementation(RecipeInterface):
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
+        api_domain = await self.app_info.api_domain(req, user_context)
+
         data = {
             "payload": payload,
             "validity": validity_seconds,
             "use_static_signing_key": use_static_signing_key is not False,
             "algorithm": "RS256",
-            "jwksDomain": self.app_info.api_domain.get_as_string_dangerous(),
+            "jwksDomain": api_domain.get_as_string_dangerous(),
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/jwt"), data

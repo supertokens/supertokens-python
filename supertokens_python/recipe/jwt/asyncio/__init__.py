@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, Union, Optional
+from supertokens_python.framework import BaseRequest
 
 from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtOkResult,
@@ -22,6 +23,7 @@ from supertokens_python.recipe.jwt.recipe import JWTRecipe
 
 
 async def create_jwt(
+    req: BaseRequest,
     payload: Optional[Dict[str, Any]] = None,
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
@@ -33,7 +35,7 @@ async def create_jwt(
         payload = {}
 
     return await JWTRecipe.get_instance().recipe_implementation.create_jwt(
-        payload, validity_seconds, use_static_signing_key, user_context
+        req, payload, validity_seconds, use_static_signing_key, user_context
     )
 
 

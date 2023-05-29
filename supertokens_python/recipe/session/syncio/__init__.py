@@ -36,6 +36,7 @@ from ..interfaces import (
     SessionDoesNotExistError,
     GetClaimValueOkResult,
 )
+from supertokens_python.framework import BaseRequest
 
 
 def create_new_session(
@@ -261,6 +262,7 @@ def merge_into_access_token_payload(
 
 
 def create_jwt(
+    req: BaseRequest,
     payload: Dict[str, Any],
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
@@ -270,7 +272,7 @@ def create_jwt(
 
     return sync(
         async_create_jwt(
-            payload, validity_seconds, use_static_signing_key, user_context
+            req, payload, validity_seconds, use_static_signing_key, user_context
         )
     )
 
@@ -282,13 +284,13 @@ def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResult:
 
 
 def get_open_id_discovery_configuration(
-    user_context: Optional[Dict[str, Any]] = None
+    req: BaseRequest, user_context: Optional[Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,
     )
 
-    return sync(async_get_open_id_discovery_configuration(user_context))
+    return sync(async_get_open_id_discovery_configuration(req, user_context))
 
 
 def regenerate_access_token(

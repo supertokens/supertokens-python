@@ -121,6 +121,7 @@ async def _set_cookie(
     elif path_type == "access_token_path":
         path = "/"
     http_only = True
+    secure = await secure(req, {})
     response.set_cookie(
         key=key,
         value=quote(value, encoding="utf-8"),

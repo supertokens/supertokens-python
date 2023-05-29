@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from .utils import OpenIdConfig
     from .interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.framework import BaseRequest
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
@@ -37,15 +38,16 @@ from .interfaces import (
 
 class RecipeImplementation(RecipeInterface):
     async def get_open_id_discovery_configuration(
-        self, user_context: Dict[str, Any]
+        self, req: BaseRequest, user_context: Dict[str, Any]
     ) -> GetOpenIdDiscoveryConfigurationResult:
+        issuer_domain = await self.config.issuer_domain(req, user_context)
         issuer = (
-            self.config.issuer_domain.get_as_string_dangerous()
+            issuer_domain.get_as_string_dangerous()
             + self.config.issuer_path.get_as_string_dangerous()
         )
 
         jwks_uri = (
-            self.config.issuer_domain.get_as_string_dangerous()
+            issuer_domain.get_as_string_dangerous()
             + self.config.issuer_path.append(
                 NormalisedURLPath(GET_JWKS_API)
             ).get_as_string_dangerous()
@@ -68,18 +70,20 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_jwt(
         self,
+        req: BaseRequest,
         payload: Dict[str, Any],
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+        issuer_domain = await self.config.issuer_domain(req, user_context)
         issuer = (
-            self.config.issuer_domain.get_as_string_dangerous()
+            issuer_domain.get_as_string_dangerous()
             + self.config.issuer_path.get_as_string_dangerous()
         )
         payload = {"iss": issuer, **payload}
         return await self.jwt_recipe_implementation.create_jwt(
-            payload, validity_seconds, use_static_signing_key, user_context
+            req, payload, validity_seconds, use_static_signing_key, user_context
         )
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:

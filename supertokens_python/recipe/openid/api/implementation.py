@@ -26,7 +26,7 @@ class APIImplementation(APIInterface):
     ) -> OpenIdDiscoveryConfigurationGetResponse:
         response = (
             await api_options.recipe_implementation.get_open_id_discovery_configuration(
-                user_context
+                api_options.request, user_context
             )
         )
         return OpenIdDiscoveryConfigurationGetResponse(

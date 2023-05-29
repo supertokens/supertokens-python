@@ -51,7 +51,6 @@ from .querier import Querier
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     get_rid_from_header,
-    get_top_level_domain_for_same_site_resolution,
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
@@ -105,7 +104,9 @@ class AppInfo:
     def __init__(
         self,
         app_name: str,
-        api_domain: str,
+        api_domain: Union[
+            str, Callable[[BaseRequest, Any], Union[Awaitable[str], str]]
+        ],
         origin: Union[str, Callable[[BaseRequest, Any], Union[Awaitable[str], str]]],
         framework: Literal["fastapi", "flask", "django"],
         api_gateway_path: str,
@@ -115,8 +116,20 @@ class AppInfo:
     ):
         self.app_name = app_name
         self.api_gateway_path = NormalisedURLPath(api_gateway_path)
-        self.api_domain = NormalisedURLDomain(api_domain)
         self.initial_origin_type = "string" if isinstance(origin, str) else "function"
+        self.initial_api_domain_type = (
+            "string" if isinstance(api_domain, str) else "function"
+        )
+
+        async def api_domain_func(
+            req: BaseRequest, user_context: Any
+        ) -> NormalisedURLDomain:
+            if isinstance(api_domain, types.FunctionType):
+                api_domain_string = await api_domain(req, user_context)
+                return NormalisedURLDomain(api_domain_string)
+            return NormalisedURLDomain(str(api_domain))
+
+        self.api_domain = api_domain_func
 
         async def origin_func(
             req: BaseRequest, user_context: Any
@@ -127,9 +140,6 @@ class AppInfo:
             return NormalisedURLDomain(str(origin))
 
         self.origin = origin_func
-        self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
-            self.api_domain.get_as_string_dangerous()
-        )
         self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )

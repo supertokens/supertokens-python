@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Any, Awaitable
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
     from supertokens_python import AppInfo
     from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
+    from supertokens_python.framework import BaseRequest
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -50,7 +51,7 @@ class OpenIdConfig:
     def __init__(
         self,
         override: OverrideConfig,
-        issuer_domain: NormalisedURLDomain,
+        issuer_domain: Callable[[BaseRequest, Any], Awaitable[NormalisedURLDomain]],
         issuer_path: NormalisedURLPath,
     ):
         self.override = override
@@ -63,11 +64,16 @@ def validate_and_normalise_user_input(
     issuer: Union[str, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ):
+    async def issuer_func(req: BaseRequest, user_context: Any) -> NormalisedURLDomain:
+        if issuer is None:
+            issuer_domain = await app_info.api_domain(req, user_context)
+        else:
+            issuer_domain = NormalisedURLDomain(issuer)
+        return issuer_domain
+
     if issuer is None:
-        issuer_domain = app_info.api_domain
         issuer_path = app_info.api_base_path
     else:
-        issuer_domain = NormalisedURLDomain(issuer)
         issuer_path = NormalisedURLPath(issuer)
 
     if not issuer_path.equals(app_info.api_base_path):
@@ -83,6 +89,6 @@ def validate_and_normalise_user_input(
 
     return OpenIdConfig(
         OverrideConfig(functions=override.functions, apis=override.apis),
-        issuer_domain,
+        issuer_func,
         issuer_path,
     )

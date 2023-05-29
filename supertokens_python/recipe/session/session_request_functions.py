@@ -229,8 +229,9 @@ async def create_new_session_in_request(
 
     claims_added_by_other_recipes = recipe_instance.get_claims_added_by_other_recipes()
     app_info = recipe_instance.app_info
+    api_domain = await app_info.api_domain(request, user_context)
     issuer = (
-        app_info.api_domain.get_as_string_dangerous()
+        api_domain.get_as_string_dangerous()
         + app_info.api_base_path.get_as_string_dangerous()
     )
 
@@ -256,14 +257,20 @@ async def create_new_session_in_request(
     origin_string = origin.get_as_string_dangerous()
     top_level_origin = get_top_level_domain_for_same_site_resolution(origin_string)
 
+    api_domain = await app_info.api_domain(request, user_context)
+    api_doamin_string = api_domain.get_as_string_dangerous()
+    top_level_api_domain = get_top_level_domain_for_same_site_resolution(
+        api_doamin_string
+    )
+
     if (
         output_transfer_method == "cookie"
         and cookie_same_site == "none"
         and not config.cookie_secure
         and not (
             (
-                app_info.top_level_api_domain == "localhost"
-                or is_an_ip_address(app_info.top_level_api_domain)
+                top_level_api_domain == "localhost"
+                or is_an_ip_address(top_level_api_domain)
             )
             and (top_level_origin == "localhost" or is_an_ip_address(top_level_origin))
         )

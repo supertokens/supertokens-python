@@ -144,7 +144,9 @@ class Apple(Provider):
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
         app_info = Supertokens.get_instance().app_info
-        redirect_uri = app_info.api_domain.get_as_string_dangerous()
+        # redirect_uri = app_info.api_domain.get_as_string_dangerous()
+        # TODO - iresh: Figure this out with rishbabh
+        redirect_uri = ""
         redirect_uri += app_info.api_base_path.get_as_string_dangerous()
         redirect_uri += APPLE_REDIRECT_HANDLER
         return redirect_uri
