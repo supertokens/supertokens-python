@@ -1,4 +1,4 @@
-from typing import Dict, Any, Union, Optional
+from typing import Dict, Any, Union
 
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.claims import (
@@ -25,8 +25,7 @@ def session_functions_override_with_claim(
             user_id: str,
             access_token_payload: Union[None, Dict[str, Any]],
             session_data_in_database: Union[None, Dict[str, Any]],
-            disable_anti_csrf: Optional[bool],
-            anti_csrf: str,
+            disable_anti_csrf: bool,
             user_context: Dict[str, Any],
         ):
             payload_update = await claim.build(user_id, user_context)
@@ -43,7 +42,6 @@ def session_functions_override_with_claim(
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
-                anti_csrf,
                 user_context,
             )
 

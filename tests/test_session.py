@@ -90,9 +90,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     if not isinstance(s.recipe_implementation, RecipeImplementation):
         raise Exception("Should never come here")
 
-    response = await create_new_session(
-        s.recipe_implementation, "", False, {}, {}, "VIA_TOKEN"
-    )
+    response = await create_new_session(s.recipe_implementation, "", False, {}, {})
     assert response.session is not None
     assert response.accessToken is not None
     assert response.refreshToken is not None
@@ -201,7 +199,6 @@ async def test_creating_many_sessions_for_one_user_and_looping():
             False,
             {"someKey": "someValue"},
             {},
-            "VIA_TOKEN",
         )
         access_tokens.append(new_session.accessToken.token)
 
@@ -288,9 +285,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
         raise Exception("Should never come here")
     user_id = "user_id"
 
-    response = await create_new_session(
-        s.recipe_implementation, user_id, False, {}, {}, "VIA_TOKEN"
-    )
+    response = await create_new_session(s.recipe_implementation, user_id, False, {}, {})
 
     session_handle = response.session.handle
 
@@ -687,7 +682,7 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    session1 = await create_new_session_without_request_response("user-id", "VIA_TOKEN")
+    session1 = await create_new_session_without_request_response("user-id")
 
     assert session1 is not None
     assert session1.access_token != ""

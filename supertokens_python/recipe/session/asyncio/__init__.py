@@ -78,7 +78,6 @@ async def create_new_session(
 
 async def create_new_session_without_request_response(
     user_id: str,
-    anti_csrf: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
@@ -111,7 +110,6 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
-        anti_csrf,
         user_context=user_context,
     )
 

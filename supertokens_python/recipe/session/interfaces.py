@@ -139,8 +139,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         user_id: str,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
-        disable_anti_csrf: Optional[bool],
-        anti_csrf: str,
+        disable_anti_csrf: bool,
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         pass
