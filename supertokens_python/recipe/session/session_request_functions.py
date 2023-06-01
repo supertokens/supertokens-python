@@ -152,6 +152,8 @@ async def get_session_from_request(
     if request_transfer_method == "header":
         do_anti_csrf_check = False
     anti_csrf = await config.anti_csrf(request, user_context)
+    if anti_csrf != "VIA_TOKEN":
+        do_anti_csrf_check = False
     if do_anti_csrf_check and anti_csrf == "VIA_CUSTOM_HEADER":
         if anti_csrf == "VIA_CUSTOM_HEADER":
             if get_rid_from_header(request) is None:
@@ -171,7 +173,6 @@ async def get_session_from_request(
         access_token=request_access_token.raw_token_string
         if request_access_token is not None
         else None,
-        anti_csrf=anti_csrf,
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
         session_required=session_required,
@@ -274,14 +275,13 @@ async def create_new_session_in_request(
             "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don't set cookieSecure to false."
         )
 
-    disable_anti_csrf = output_transfer_method == "header"
     anti_csrf = await config.anti_csrf(request, user_context)
+    disable_anti_csrf = output_transfer_method != "header" and anti_csrf != "VIA_TOKEN"
     session = await recipe_instance.recipe_implementation.create_new_session(
         user_id,
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
-        anti_csrf,
         user_context=user_context,
     )
 
@@ -404,7 +404,10 @@ async def refresh_session_in_request(
     session: Optional[SessionContainer] = None
     try:
         session = await recipe_interface_impl.refresh_session(
-            refresh_token, anti_csrf_token, disable_anti_csrf, anti_csrf, user_context
+            refresh_token,
+            anti_csrf_token,
+            (disable_anti_csrf and anti_csrf == "VIA_TOKEN"),
+            user_context,
         )
     except SuperTokensSessionError as e:
         if isinstance(e, TokenTheftError) or (
