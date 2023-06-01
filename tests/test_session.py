@@ -691,7 +691,8 @@ async def test_that_verify_session_doesnt_always_call_core():
     )
 
     session2 = await get_session_without_request_response(
-        session1.access_token, session1.anti_csrf_token, anti_csrf="VIA_TOKEN"
+        session1.access_token,
+        session1.anti_csrf_token,
     )
 
     assert session2 is not None
@@ -721,7 +722,7 @@ async def test_that_verify_session_doesnt_always_call_core():
     )
 
     session4 = await get_session_without_request_response(
-        session3.access_token, session3.anti_csrf_token, anti_csrf="VIA_TOKEN"
+        session3.access_token, session3.anti_csrf_token
     )
 
     assert session4 is not None
