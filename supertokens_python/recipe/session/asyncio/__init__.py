@@ -319,7 +319,6 @@ async def get_session_without_request_response(
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
-    anti_csrf: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Optional[SessionContainer]:
     """Tries to validate an access token and build a Session object from it.
@@ -353,14 +352,10 @@ async def get_session_without_request_response(
 
     recipe_interface_impl = SessionRecipe.get_instance().recipe_implementation
 
-    if anti_csrf is None:
-        # add logic to check original type of origin
-        raise Exception("Can not get value of antiCSRF")  # better
-
     session = await recipe_interface_impl.get_session(
         access_token,
         anti_csrf_token,
-        anti_csrf_check and anti_csrf != "VIA_TOKEN",
+        anti_csrf_check,
         session_required,
         check_database,
         override_global_claim_validators,

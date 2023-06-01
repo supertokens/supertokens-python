@@ -123,7 +123,6 @@ def get_session_without_request_response(
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
-    anti_csrf: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Optional[SessionContainer]:
     from supertokens_python.recipe.session.asyncio import (
@@ -138,7 +137,6 @@ def get_session_without_request_response(
             session_required,
             check_database,
             override_global_claim_validators,
-            anti_csrf,
             user_context,
         )
     )
