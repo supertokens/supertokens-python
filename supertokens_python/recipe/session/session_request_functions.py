@@ -170,7 +170,7 @@ async def get_session_from_request(
         access_token=request_access_token.raw_token_string
         if request_access_token is not None
         else None,
-        anti_csrf=anti_csrf,
+        is_anti_csrf_via_token=anti_csrf == "VIA_TOKEN",
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
         session_required=session_required,

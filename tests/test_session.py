@@ -104,7 +104,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response.antiCsrfToken,
         True,
         False,
-        "VIA_TOKEN",
+        True,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -134,7 +134,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response2.antiCsrfToken,
         True,
         False,
-        "VIA_TOKEN",
+        True,
     )
 
     assert (
@@ -157,7 +157,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response2.antiCsrfToken,
         True,
         False,
-        "VIA_TOKEN",
+        True,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY

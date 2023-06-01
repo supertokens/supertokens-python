@@ -140,7 +140,7 @@ async def get_session(
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     always_check_core: bool,
-    anti_csrf_mode: str,
+    is_anti_csrf_via_token: bool,
 ) -> GetSessionAPIResponse:
     config = recipe_implementation.config
     access_token_info: Optional[Dict[str, Any]] = None
@@ -149,7 +149,7 @@ async def get_session(
         access_token_info = get_info_from_access_token(
             parsed_access_token,
             recipe_implementation.JWK_clients,
-            anti_csrf_mode == "VIA_TOKEN" and do_anti_csrf_check,
+            is_anti_csrf_via_token and do_anti_csrf_check,
         )
 
     except Exception as e:
@@ -214,7 +214,7 @@ async def get_session(
     # anti-csrf check if accesstokenInfo is not undefined which means token verification was successful
 
     if do_anti_csrf_check:
-        if anti_csrf_mode == "VIA_TOKEN":
+        if is_anti_csrf_via_token:
             if access_token_info is not None:
                 if (
                     anti_csrf_token is None
@@ -233,7 +233,7 @@ async def get_session(
                         )
                         raise_try_refresh_token_exception("anti-csrf check failed")
 
-        elif anti_csrf_mode == "VIA_CUSTOM_HEADER":
+        else:
             # The function should never be called by this (we check this outside the function as well)
             # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
             raise Exception(
@@ -261,7 +261,7 @@ async def get_session(
     data = {
         "accessToken": parsed_access_token.raw_token_string,
         "doAntiCsrfCheck": do_anti_csrf_check,
-        "enableAntiCsrf": anti_csrf_mode == "VIA_TOKEN",
+        "enableAntiCsrf": is_anti_csrf_via_token,
         "checkDatabase": always_check_core,
     }
     if anti_csrf_token is not None:

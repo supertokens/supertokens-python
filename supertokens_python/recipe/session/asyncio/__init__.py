@@ -359,7 +359,7 @@ async def get_session_without_request_response(
 
     session = await recipe_interface_impl.get_session(
         access_token,
-        anti_csrf,
+        anti_csrf == "VIA_TOKEN",
         anti_csrf_token,
         anti_csrf_check,
         session_required,
