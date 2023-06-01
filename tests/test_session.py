@@ -104,7 +104,6 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response.antiCsrfToken,
         True,
         False,
-        True,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -116,7 +115,6 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response.refreshToken.token,
         response.antiCsrfToken,
         False,
-        "VIA_TOKEN",
     )
 
     assert response2.session is not None
@@ -134,7 +132,6 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response2.antiCsrfToken,
         True,
         False,
-        True,
     )
 
     assert (
@@ -157,7 +154,6 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response2.antiCsrfToken,
         True,
         False,
-        True,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -712,7 +708,6 @@ async def test_that_verify_session_doesnt_always_call_core():
         session1.refresh_token.token,
         False,
         session1.anti_csrf_token,
-        anti_csrf="VIA_TOKEN",
     )
 
     assert session3 is not None
