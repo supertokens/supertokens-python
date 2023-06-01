@@ -78,7 +78,6 @@ async def create_new_session(
 
 async def create_new_session_without_request_response(
     user_id: str,
-    anti_csrf: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
@@ -111,7 +110,6 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
-        anti_csrf,
         user_context=user_context,
     )
 
@@ -361,9 +359,8 @@ async def get_session_without_request_response(
 
     session = await recipe_interface_impl.get_session(
         access_token,
-        anti_csrf,
         anti_csrf_token,
-        anti_csrf_check,
+        anti_csrf_check and anti_csrf != "VIA_TOKEN",
         session_required,
         check_database,
         override_global_claim_validators,
@@ -407,18 +404,13 @@ async def refresh_session_without_request_response(
     refresh_token: str,
     disable_anti_csrf: bool = False,
     anti_csrf_token: Optional[str] = None,
-    anti_csrf: Union[str, None] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
         user_context = {}
 
-    if anti_csrf is None:
-        # add logic to check original type of origin
-        raise Exception("Can not get value of antiCSRF")  # better
-
     return await SessionRecipe.get_instance().recipe_implementation.refresh_session(
-        refresh_token, anti_csrf_token, disable_anti_csrf, anti_csrf, user_context
+        refresh_token, anti_csrf_token, disable_anti_csrf, user_context
     )
 
 

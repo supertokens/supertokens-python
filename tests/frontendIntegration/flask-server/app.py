@@ -156,8 +156,7 @@ def functions_override_session(param: RecipeInterface):
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
-        disable_anti_csrf: Union[bool, None],
-        anti_csrf: str,
+        disable_anti_csrf: bool,
         user_context: Dict[str, Any],
     ):
         if access_token_payload is None:
@@ -168,7 +167,6 @@ def functions_override_session(param: RecipeInterface):
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
-            anti_csrf,
             user_context,
         )
 

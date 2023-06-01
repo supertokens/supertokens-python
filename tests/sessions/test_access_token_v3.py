@@ -24,7 +24,7 @@ async def test_access_token_v3():
     start_st()
 
     access_token = (
-        await create_new_session_without_request_response("user-id", "VIA_TOKEN")
+        await create_new_session_without_request_response("user-id")
     ).get_access_token()
     s = await get_session_without_request_response(access_token)
     assert s is not None

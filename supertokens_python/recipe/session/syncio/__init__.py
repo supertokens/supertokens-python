@@ -62,7 +62,6 @@ def create_new_session(
 
 def create_new_session_without_request_response(
     user_id: str,
-    anti_csrf: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
@@ -75,7 +74,6 @@ def create_new_session_without_request_response(
     return sync(
         async_create_new_session_without_request_response(
             user_id,
-            anti_csrf,
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
@@ -160,7 +158,6 @@ def refresh_session_without_request_response(
     refresh_token: str,
     disable_anti_csrf: bool = False,
     anti_csrf_token: Optional[str] = None,
-    anti_csrf: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -172,7 +169,6 @@ def refresh_session_without_request_response(
             refresh_token,
             disable_anti_csrf,
             anti_csrf_token,
-            anti_csrf,
             user_context,
         )
     )
