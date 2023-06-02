@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### [Breaking change]
+
+- `anti_csrf` in Session now accepts a `func | string`
+- `anti_csrf_check` or `disable_anti_csrf`properties in session methods `without_request_response`, now need to account for `anti_csrf == "VIA_TOKEN"`
+
 ## [0.13.1] - 2023-05-15
 ### Changes
 -   Made the access token string optional in the overrideable `get_session` function
