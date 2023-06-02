@@ -80,7 +80,11 @@ class SessionRecipe(RecipeModule):
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
         session_expired_status_code: Union[int, None] = None,
         anti_csrf: Union[
-            Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None
+            Callable[
+                [BaseRequest, Any], Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"]
+            ],
+            Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"],
+            None,
         ] = None,
         get_token_transfer_method: Union[
             Callable[
@@ -262,7 +266,11 @@ class SessionRecipe(RecipeModule):
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
         session_expired_status_code: Union[int, None] = None,
         anti_csrf: Union[
-            Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None
+            Callable[
+                [BaseRequest, Any], Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"]
+            ],
+            Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"],
+            None,
         ] = None,
         get_token_transfer_method: Union[
             Callable[

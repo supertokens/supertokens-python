@@ -113,8 +113,8 @@ def get_session(
 
 def get_session_without_request_response(
     access_token: str,
+    anti_csrf_check: bool,
     anti_csrf_token: Optional[str] = None,
-    anti_csrf_check: Optional[bool] = None,
     session_required: Optional[bool] = None,
     check_database: Optional[bool] = None,
     override_global_claim_validators: Optional[
@@ -132,8 +132,8 @@ def get_session_without_request_response(
     return sync(
         async_get_session_without_request_response(
             access_token,
-            anti_csrf_token,
             anti_csrf_check,
+            anti_csrf_token,
             session_required,
             check_database,
             override_global_claim_validators,

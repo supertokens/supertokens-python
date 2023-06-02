@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### [Breaking change]
 
 - `anti_csrf` in Session now accepts a `func | string`
-- `anti_csrf_check` or `disable_anti_csrf`properties in session methods `without_request_response`, now need to account for `anti_csrf == "VIA_TOKEN"`
+- `disable_anti_csrf` is longer an optional boolean in the following functions,
+  - `create_new_session`
+  - `get_session_without_request_response`
+  - `get_session`
+  - `refresh_session_without_request_response`
 
 ## [0.13.1] - 2023-05-15
 ### Changes
