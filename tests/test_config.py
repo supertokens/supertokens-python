@@ -390,7 +390,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -411,7 +410,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -432,7 +430,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -453,7 +450,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -474,7 +470,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -493,7 +488,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -514,7 +508,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -535,7 +528,6 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()

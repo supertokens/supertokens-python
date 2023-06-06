@@ -231,13 +231,6 @@ async def get_session(
                     )
                     raise_try_refresh_token_exception("anti-csrf check failed")
 
-        else:
-            # The function should never be called by this (we check this outside the function as well)
-            # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
-            raise Exception(
-                "Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false"
-            )
-
     if (
         access_token_info is not None
         and not always_check_core
@@ -319,13 +312,6 @@ async def refresh_session(
 
     if anti_csrf_token is not None:
         data["antiCsrfToken"] = anti_csrf_token
-
-    if not disable_anti_csrf:
-        # The function should never be called by this (we check this outside the function as well)
-        # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
-        raise Exception(
-            "Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false"
-        )
 
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session/refresh"), data
