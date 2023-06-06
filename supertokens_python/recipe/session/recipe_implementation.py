@@ -16,9 +16,11 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
+from jwt import PyJWK
+
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import resolve
+from supertokens_python.utils import resolve, get_timestamp_ms
 
 from ...types import MaybeAwaitable
 from . import session_functions
@@ -46,10 +48,104 @@ from .utils import SessionConfig, validate_claims_in_payload
 if TYPE_CHECKING:
     from typing import List, Union
     from supertokens_python import AppInfo
-    from supertokens_python.querier import Querier
 
-from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 from .interfaces import SessionContainer
+from supertokens_python.querier import Querier
+
+
+class GetJWKSResult:
+    def __init__(self, keys: List[PyJWK], last_fetched: int):
+        self.keys = keys
+        self.last_fetched = last_fetched
+
+
+import time
+from typing_extensions import TypedDict
+import threading
+from os import environ
+
+
+class JWKSConfigType(TypedDict):
+    cache_max_age: int
+    refresh_rate_limit: int
+
+
+JWKSConfig: JWKSConfigType = {
+    "cache_max_age": 6000,
+    "refresh_rate_limit": 500,
+}
+
+jwks_cache: Optional[GetJWKSResult] = None
+mutex = threading.RLock()
+
+
+def get_jwks_cache():
+    return jwks_cache
+
+
+urls_attempted_for_jwks_fetch: List[str] = []
+
+
+def get_jwks_from_cache_if_present() -> Optional[GetJWKSResult]:
+    with mutex:  # does mutex.acquire() and mutex.release() automatically
+        if jwks_cache is not None:
+            # This means that we have valid JWKs for the given core path
+            # We check if we need to refresh before returning
+
+            # This means that the value in cache is not expired, in this case we return the cached value
+            # Note that this also means that the SDK will not try to query any other Core (if there are multiple)
+            # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
+            # from the cores again after the entry in the cache is expired
+            now = get_timestamp_ms()
+            if (now - jwks_cache.last_fetched) < JWKSConfig["cache_max_age"]:
+                if environ.get("SUPERTOKENS_ENV") == "testing":
+                    log_debug_message("Returning JWKS from cache")
+                return jwks_cache
+    return None
+
+
+def get_jwks() -> Optional[List[PyJWK]]:
+    global jwks_cache
+
+    core_paths = Querier.get_instance().get_all_core_urls_for_path(
+        "./.well-known/jwks.json"
+    )
+
+    if len(core_paths) == 0:
+        raise Exception(
+            "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
+        )
+
+    results_from_cache = get_jwks_from_cache_if_present()
+    if results_from_cache is not None:
+        return results_from_cache.keys
+
+    # last_error: Optional[Exception] = None
+
+    with mutex:  # automatically exists on unhandled errors
+        for path in core_paths:
+            if environ.get("SUPERTOKENS_ENV") == "testing":
+                log_debug_message("Attempting to fetch JWKS from path: %s", path)
+
+            # Fetch JWKS again if the kid in the header of the JWT does not match any in
+            jwks = None
+            try:
+                client = JWKClient(
+                    path, cooldown_duration=JWKSConfig["refresh_rate_limit"]
+                )  # TODO: Verify that this gets used as expected
+                jwks = client.get_latest_keys()
+            except Exception:
+                pass
+
+            if jwks is not None:
+                jwks_cache = GetJWKSResult(jwks, last_fetched=int(time.time() * 1000))
+                return jwks_cache.keys
+
+
+def get_combined_jwks() -> Optional[List[PyJWK]]:
+    if environ.get("SUPERTOKENS_ENV") == "testing":
+        log_debug_message("Called get_combined_jwks")
+    return get_jwks()
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
@@ -58,17 +154,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self.querier = querier
         self.config = config
         self.app_info = app_info
-
-        self.JWK_clients = [
-            JWKClient(
-                uri,
-                cooldown_duration=JWKRequestCooldownInMs,
-                cache_max_age=JWKCacheMaxAgeInMs,
-            )
-            for uri in self.querier.get_all_core_urls_for_path(
-                "./.well-known/jwks.json"
-            )
-        ]
 
     async def create_new_session(
         self,

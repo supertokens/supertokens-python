@@ -150,9 +150,14 @@ async def get_session(
     access_token_info: Optional[Dict[str, Any]] = None
 
     try:
+        from supertokens_python.recipe.session.recipe_implementation import (
+            get_combined_jwks,
+        )
+
+        combined_jwks = get_combined_jwks() or []
         access_token_info = get_info_from_access_token(
             parsed_access_token,
-            recipe_implementation.JWK_clients,
+            combined_jwks,
             config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
         )
 

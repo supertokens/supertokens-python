@@ -13,7 +13,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
-from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.session.recipe_implementation import get_combined_jwks
 from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
@@ -35,11 +35,11 @@ async def test_access_token_v3():
 
     parsed_info = parse_jwt_without_signature_verification(access_token)
 
-    recipe_implementation = SessionRecipe.get_instance().recipe_implementation
+    combined_jwks = get_combined_jwks() or []
 
     res = get_info_from_access_token(
         parsed_info,
-        recipe_implementation.JWK_clients,
+        combined_jwks,
         False,
     )
     assert res["userId"] == "user-id"

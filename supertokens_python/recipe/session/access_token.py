@@ -16,13 +16,13 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Union
 
 import jwt
-from jwt.exceptions import DecodeError, PyJWKClientError
+from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwks import JWKClient, JWKSRequestError, PyJWK
+from .jwks import PyJWK
 from .jwt import ParsedJWTInfo
 
 
@@ -45,44 +45,28 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
 
 def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    jwk_clients: List[JWKClient],
+    combined_jwks: List[PyJWK],
     do_anti_csrf_check: bool,
 ):
     try:
         payload: Optional[Dict[str, Any]] = None
-        client: Optional[JWKClient] = None
-        keys: Optional[List[PyJWK]] = None
-
-        # Get the keys from the first available client
-        for c in jwk_clients:
-            try:
-                client = c
-                keys = c.get_latest_keys()
-                break
-            except JWKSRequestError:
-                continue
-
-        if keys is None or client is None:
-            raise PyJWKClientError("No key found")
-
-        if jwt_info.version < 3:
-            # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
-            # If any of them work, we'll use that payload
-            for k in keys:
-                try:
-                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
-                    break
-                except DecodeError:
-                    pass
-
-        elif jwt_info.version >= 3:
-            matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
+        if jwt_info.version >= 3:
+            matching_key = [k for k in combined_jwks if k.key_id == jwt_info.kid][0]  # type: ignore
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
                 matching_key.key,  # type: ignore
                 algorithms=["RS256"],
                 options={"verify_signature": True, "verify_exp": True},
             )
+        else:
+            # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
+            # If any of them work, we'll use that payload
+            for k in combined_jwks:
+                try:
+                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
+                    break
+                except DecodeError:
+                    pass
 
         if payload is None:
             raise DecodeError("Could not decode the token")

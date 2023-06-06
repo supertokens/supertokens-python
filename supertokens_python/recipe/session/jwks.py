@@ -10,6 +10,8 @@ from supertokens_python.utils import get_timestamp_ms
 
 from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 
+from supertokens_python.logger import log_debug_message
+
 
 class JWKClient:
     def __init__(
@@ -43,6 +45,7 @@ class JWKClient:
 
     def reload(self):
         try:
+            log_debug_message("Fetching jwk set from the configured uri")
             with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
                 self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
