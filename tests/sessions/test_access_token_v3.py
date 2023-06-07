@@ -1,6 +1,9 @@
+from typing import Optional, Dict, Any
 import pytest
+from fastapi import Depends, FastAPI, Request
 
 from supertokens_python import init
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.access_token import get_info_from_access_token
 from supertokens_python.recipe.session.asyncio import (
@@ -50,3 +53,151 @@ async def test_parsing_access_token_v2():
     assert parsed_info.version == 2
     assert parsed_info.kid is None
     assert parsed_info.payload["userId"] == "6fb4ddce-8911-4058-92ac-c76057fdaae8"
+
+
+from fastapi.testclient import TestClient
+
+from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.querier import Querier, NormalisedURLPath
+from tests.utils import extract_info
+
+
+@pytest.fixture(scope="function")
+async def app():
+    fast = FastAPI()
+    fast.add_middleware(get_middleware())
+
+    @fast.post("/create")
+    async def _create(request: Request):  # type: ignore
+        body: Dict[str, Any] = {}
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+
+        session = await create_new_session(request, "userId", body, {})
+        return {"message": True, "sessionHandle": session.get_handle()}
+
+    @fast.get("/merge-into-payload")
+    async def _update_payload(session: SessionContainer = Depends(verify_session())):  # type: ignore
+        await session.merge_into_access_token_payload({"newKey": "test"})
+        return {"message": True}
+
+    @fast.get("/verify")
+    async def _verify(session: SessionContainer = Depends(verify_session())):  # type: ignore
+        return {
+            "message": True,
+            "sessionHandle": session.get_handle(),
+            "sessionExists": True,
+            "payload": session.get_access_token_payload(),
+        }
+
+    @fast.get("/verify-checkdb")
+    async def _verify_checkdb(session: SessionContainer = Depends(verify_session(check_database=True))):  # type: ignore
+        return {
+            "message": True,
+            "sessionHandle": session.get_handle(),
+            "sessionExists": True,
+            "payload": session.get_access_token_payload(),
+        }
+
+    @fast.get("/verify-optional")
+    async def _verify_optional(session: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
+        return {
+            "message": True,
+            "sessionHandle": session.get_handle() if session is not None else None,
+            "sessionExists": session is not None,
+        }
+
+    @fast.get("/revoke-session")
+    async def _revoke_session(session: SessionContainer = Depends(verify_session())):  # type: ignore
+        return {
+            "messsage": (await session.revoke_session()),
+            "sessionHandle": session.get_handle(),
+        }
+
+    return TestClient(fast)
+
+
+async def test_should_validate_v2_tokens_with_check_database_enabled(app: TestClient):
+    init(**get_st_init_args([session.init()]))  # type:ignore
+    start_st()
+
+    # This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+    # We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+    Querier.api_version = "2.8"
+    q = Querier.get_instance()
+    legacy_session_resp = await q.send_post_request(
+        NormalisedURLPath("/recipe/session"),
+        {
+            "userId": "test-user-id",
+            "enableAntiCsrf": False,
+            "userDataInJWT": {},
+            "userDataInDatabase": {},
+        },
+    )
+    Querier.api_version = None
+
+    legacy_token = legacy_session_resp["accessToken"]["token"]
+
+    revoke_session_res = app.get(
+        "/revoke-session", headers={"Authorization": "Bearer " + legacy_token}
+    )
+    assert revoke_session_res.status_code == 200
+
+    verify_check_db_res = app.get(
+        "/verify-checkdb", headers={"Authorization": "Bearer " + legacy_token}
+    )
+    assert verify_check_db_res.status_code == 401
+
+    assert verify_check_db_res.json() == {"message": "unauthorised"}
+
+    verify_res = app.get("/verify", headers={"Authorization": "Bearer " + legacy_token})
+    assert verify_res.status_code == 200
+
+    verify_res_json = verify_res.json()
+    assert verify_res_json.pop("payload") == {}
+    assert verify_res_json == {
+        "message": True,
+        "sessionExists": True,
+        "sessionHandle": legacy_session_resp["session"]["handle"],
+    }
+
+
+async def test_should_validate_v3_tokens_with_check_database_enabled(app: TestClient):
+    init(**get_st_init_args([session.init()]))  # type:ignore
+    start_st()
+
+    create_session_res = app.post("/create", data={})
+    info = extract_info(create_session_res)
+    assert info["accessTokenFromAny"] is not None
+    assert info["refreshTokenFromAny"] is not None
+    assert info["frontToken"] is not None
+
+    access_token = info["accessTokenFromAny"]
+
+    revoke_session_res = app.get(
+        "/revoke-session", headers={"Authorization": "Bearer " + access_token}
+    )
+    assert revoke_session_res.status_code == 200
+
+    verify_check_db_res = app.get(
+        "/verify-checkdb", headers={"Authorization": "Bearer " + access_token}
+    )
+    assert verify_check_db_res.status_code == 401
+
+    assert verify_check_db_res.json() == {"message": "unauthorised"}
+
+    verify_res = app.get("/verify", headers={"Authorization": "Bearer " + access_token})
+    assert verify_res.status_code == 200
+
+    verify_res_json = verify_res.json()
+
+    assert verify_res_json.pop("payload") != {}
+    assert verify_res_json == {
+        "message": True,
+        "sessionExists": True,
+        "sessionHandle": info["body"]["sessionHandle"],
+    }

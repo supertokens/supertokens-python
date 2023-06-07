@@ -127,7 +127,8 @@ def get_info_from_access_token(
         }
     except Exception as e:
         log_debug_message(
-            "getSession: Returning TRY_REFRESH_TOKEN because failed to decode access token"
+            "getInfoFromAccessToken: Returning TRY_REFRESH_TOKEN because access token validation failed - %s",
+            e,
         )
         raise_try_refresh_token_exception(e)
 
@@ -141,6 +142,10 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
             or not isinstance(payload.get("sessionHandle"), str)
             or not isinstance(payload.get("refreshTokenHash1"), str)
         ):
+            log_debug_message(
+                "validateAccessTokenStructure: Access token is using version >= 3"
+            )
+            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
             raise Exception(
                 "Access token does not contain all the information. Maybe the structure has changed?"
             )
@@ -151,6 +156,10 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
         or not isinstance(payload.get("expiryTime"), int)
         or not isinstance(payload.get("timeCreated"), int)
     ):
+        log_debug_message(
+            "validateAccessTokenStructure: Access token is using version < 3"
+        )
+        # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
         raise Exception(
             "Access token does not contain all the information. Maybe the structure has changed?"
         )

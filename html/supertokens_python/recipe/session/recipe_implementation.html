@@ -252,6 +252,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 )
                 return None
 
+            log_debug_message(
+                &#34;getSession: UNAUTHORISED because the accessToken couldn&#39;t be parsed or had an invalid structure&#34;
+            )
             raise UnauthorisedError(&#34;Token parsing failed&#34;, clear_tokens=False)
 
         response = await session_functions.get_session(
@@ -691,6 +694,9 @@ inheritance.</p></div>
                 )
                 return None
 
+            log_debug_message(
+                &#34;getSession: UNAUTHORISED because the accessToken couldn&#39;t be parsed or had an invalid structure&#34;
+            )
             raise UnauthorisedError(&#34;Token parsing failed&#34;, clear_tokens=False)
 
         response = await session_functions.get_session(
@@ -1152,6 +1158,9 @@ inheritance.</p></div>
             )
             return None
 
+        log_debug_message(
+            &#34;getSession: UNAUTHORISED because the accessToken couldn&#39;t be parsed or had an invalid structure&#34;
+        )
         raise UnauthorisedError(&#34;Token parsing failed&#34;, clear_tokens=False)
 
     response = await session_functions.get_session(

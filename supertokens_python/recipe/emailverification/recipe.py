@@ -355,6 +355,9 @@ class APIImplementation(APIInterface):
                 except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == "UNKNOWN_USER_ID":
+                        log_debug_message(
+                            "verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown"
+                        )
                         raise_unauthorised_exception("Unknown User ID provided")
                     else:
                         raise e
@@ -374,6 +377,9 @@ class APIImplementation(APIInterface):
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
             if str(e) == "UNKNOWN_USER_ID":
+                log_debug_message(
+                    "isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown"
+                )
                 raise_unauthorised_exception("Unknown User ID provided")
             else:
                 raise e
@@ -455,6 +461,9 @@ class APIImplementation(APIInterface):
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
+        log_debug_message(
+            "generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown"
+        )
         raise_unauthorised_exception("Unknown User ID provided")
 
 
