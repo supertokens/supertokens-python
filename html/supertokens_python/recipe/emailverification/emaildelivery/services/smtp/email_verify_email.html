@@ -38,6 +38,10 @@
         &lt;title&gt;*|MC:SUBJECT|*&lt;/title&gt;
 
         &lt;style type=&#34;text/css&#34;&gt;
+                body {
+                        max-width: 100vw;
+                        overflow: hidden;
+                }
                 p {
                         margin: 10px 0;
                         padding: 0;
@@ -786,6 +790,11 @@
                         }
 
                 }
+                @media only screen and (max-width: 480px) {
+                        #meant-for {
+                                padding: 20px;
+                        }
+                }
         &lt;/style&gt;
 &lt;/head&gt;
 
@@ -905,6 +914,7 @@
 
 
                                                                                                                         &lt;p
+                                                                                                                            id=&#34;meant-for&#34;
                                                                                                                                 style=&#34;font-family: &#39;Helvetica&#39;, sans-serif; font-size: 16px; line-height: 26px; font-weight:400; text-align: center; color: #808080&#34;&gt;
                                                                                                                                 This email is meant for &lt;a
                                                                                                                                         style=&#34;font-family: &#39;Helvetica&#39;, sans-serif; text-align: center; word-break: break-all; font-weight: 400; font-size: 16px; line-height: 26px; color: #808080 !important;&#34;
