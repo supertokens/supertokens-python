@@ -10,6 +10,10 @@ html_template = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+		body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
@@ -757,6 +761,11 @@ html_template = """
 				line-height: 150% !important;
 			}
 
+		}
+		@media only screen and (max-width: 480px) {
+			#meant-for {
+				padding: 20px;
+			}
 		}
 	</style>
 </head>
