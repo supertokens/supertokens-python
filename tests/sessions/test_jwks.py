@@ -466,7 +466,6 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     state = {
         "should_stop": False,
         "different_key_found_count": 0,
-        "not_return_from_cache_count": 0,
     }
 
     jwks = get_combined_jwks() or []
