@@ -124,8 +124,6 @@ def get_jwks() -> Optional[List[PyJWK]]:
     if results_from_cache is not None:
         return results_from_cache.keys
 
-    # last_error: Optional[Exception] = None
-
     with mutex:  # automatically exists on unhandled errors
         for path in core_paths:
             if environ.get("SUPERTOKENS_ENV") == "testing":
@@ -136,7 +134,7 @@ def get_jwks() -> Optional[List[PyJWK]]:
             try:
                 client = JWKClient(
                     path, cooldown_duration=JWKSConfig["refresh_rate_limit"]
-                )  # TODO: Verify that this gets used as expected
+                )  # TODO: Verify that cooldown_duration works as expected
                 jwks = client.get_latest_keys()
             except Exception as _:
                 pass

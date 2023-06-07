@@ -56,7 +56,6 @@ def get_log_occurence_count(
         records = caplog.records[last_processed_index + 1 :]
 
         for r in records:
-            # if "HTTP Request: POST http://localhost:3567/.well-known/jwks.json" in r.message:
             if msg in r.message:
                 count += 1
 
@@ -96,6 +95,15 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
 
 
 async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture):
+    """This test verifies that the cache used to store the pointer to the JWKS result is updated properly when the
+    cache expired and the keys need to be refetched.
+
+    - Init
+    - Call getJWKS to get the keys
+    - Wait for access token signing key to change
+    - Fetch the keys again
+    - Verify that the KIDs inside the pointer have changed
+    """
     caplog.set_level(logging.DEBUG)
     jwks_refresh_count = get_log_occurence_count(caplog)
 
@@ -256,6 +264,10 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 async def test_that_combined_jwks_throws_for_invalid_connection(
     caplog: LogCaptureFixture,
 ):
+    """This test ensures that calling get combines JWKS results in an error if the connection uri is invalid. Note that
+    in this test we specifically expect a timeout but that does not mean that this is the only error the function can
+    throw
+    """
     caplog.set_level(logging.DEBUG)
     jwk_refresh_count = get_log_occurence_count(caplog)
 
@@ -274,6 +286,13 @@ async def test_that_combined_jwks_throws_for_invalid_connection(
 async def test_that_combined_jwks_doesnot_throw_if_atleast_one_core_url_is_valid(
     caplog: LogCaptureFixture,
 ):
+    """
+    This test makes sure that when multiple core urls are provided, the get combined JWKS function does not throw an
+    error as long as one of the provided urls return a valid response
+    - Init with multiple core urls
+    - Call get combines jwks
+    - verify that there is a response and that there are no errors
+    """
     caplog.set_level(logging.DEBUG)
     jwk_refresh_count = get_log_occurence_count(caplog)
 
