@@ -4,7 +4,7 @@ import logging
 
 # import threading
 
-from typing import List
+from typing import List, Any
 
 from supertokens_python import init, SupertokensConfig
 from supertokens_python.recipe import session
@@ -22,22 +22,26 @@ from tests.utils import (
     get_st_init_args,
     setup_function,
     start_st,
-    teardown_function,
+    teardown_function as default_teardown_function,
     set_key_value_in_config,
     st_init_common_args,
 )
 
 from supertokens_python.recipe.session.recipe_implementation import (
-    get_jwks_cache,
+    reset_jwks_cache,
     JWKSConfig,
+    get_jwks_from_cache_if_present,
 )
 
 from _pytest.logging import LogCaptureFixture
 
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
-
 pytestmark = pytest.mark.asyncio
+_ = setup_function  # type:ignore
+
+
+def teardown_function(_: Any):
+    reset_jwks_cache()
+    default_teardown_function(_)
 
 
 def get_log_occurence_count(
@@ -217,7 +221,7 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 
     s = await create_new_session_without_request_response("userId", {}, {})
 
-    assert get_jwks_cache() is None
+    assert get_jwks_from_cache_if_present() is None
     assert next(jwks_refresh_count) == 0
 
     tokens = s.get_all_session_tokens_dangerously()
@@ -225,17 +229,24 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
 
-    assert get_jwks_cache() is not None
-    assert next(jwks_refresh_count) == 1
-
-    time.sleep(3)
+    assert get_jwks_from_cache_if_present() is not None
     assert next(jwks_refresh_count) == 1
 
     await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
-    assert get_jwks_cache() is not None
+    assert get_jwks_from_cache_if_present() is not None
+    assert next(jwks_refresh_count) == 1  # used cache value
+
+    time.sleep(3)  # Now it should expire and the next call should trigger a refresh
+    assert get_jwks_from_cache_if_present() is None
     assert next(jwks_refresh_count) == 1
+
+    await get_session_without_request_response(
+        tokens.get("accessToken"), tokens.get("antiCsrfToken")
+    )
+    assert get_jwks_from_cache_if_present() is not None
+    assert next(jwks_refresh_count) == 2
 
     JWKSConfig.update(original_jwks_config)
 
@@ -286,7 +297,7 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     caplog.set_level(logging.DEBUG)
     jwk_refresh_count = get_log_occurence_count(caplog)
     returned_from_cache_count = get_log_occurence_count(
-        caplog, "Returning combined JWKS from cache"
+        caplog, "Returning JWKS from cache"
     )
 
     original_jwks_config = JWKSConfig.copy()
@@ -296,33 +307,33 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     start_st()
 
     s = await create_new_session_without_request_response("userId", {}, {})
-    assert get_jwks_cache() is None
+    assert get_jwks_from_cache_if_present() is None
     assert next(jwk_refresh_count) == 0
     assert next(returned_from_cache_count) == 0
 
     tokens = s.get_all_session_tokens_dangerously()
-    await get_session_without_request_response(  # FIXME: Failing here
+    await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
 
     assert next(jwk_refresh_count) == 1
-    assert next(returned_from_cache_count) == 1  # FIXME
+    assert next(returned_from_cache_count) == 0
 
     await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
 
     assert next(jwk_refresh_count) == 1
-    assert next(returned_from_cache_count) == 2  # FIXME
+    assert next(returned_from_cache_count) == 1
 
-    time.sleep(3)
+    time.sleep(3)  # Now it should expire and the next call should trigger a refresh
 
     await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
 
     assert next(jwk_refresh_count) == 2
-    assert next(returned_from_cache_count) == 3  # FIXME
+    assert next(returned_from_cache_count) == 1
 
     JWKSConfig.update(original_jwks_config)
 
@@ -409,9 +420,7 @@ async def test_session_verification_of_jwt_based_on_session_payload(
     assert s_.get_user_id() == "userId"
 
 
-async def test_session_verification_of_jwt_based_on_session_payload_with_check_db(
-    _: LogCaptureFixture,
-):
+async def test_session_verification_of_jwt_based_on_session_payload_with_check_db():
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
 
@@ -432,9 +441,7 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     assert s_.get_user_id() == "userId"
 
 
-async def test_that_locking_for_jwks_cache_works(
-    # _: LogCaptureFixture
-):
+async def test_that_locking_for_jwks_cache_works():
     original_jwks_config = JWKSConfig.copy()
     JWKSConfig.update(
         {

@@ -59,7 +59,6 @@ class GetJWKSResult:
         self.last_fetched = last_fetched
 
 
-import time
 from typing_extensions import TypedDict
 import threading
 from os import environ
@@ -81,6 +80,11 @@ mutex = threading.RLock()
 
 def get_jwks_cache():
     return jwks_cache
+
+
+def reset_jwks_cache():
+    global jwks_cache
+    jwks_cache = None
 
 
 urls_attempted_for_jwks_fetch: List[str] = []
@@ -138,7 +142,7 @@ def get_jwks() -> Optional[List[PyJWK]]:
                 pass
 
             if jwks is not None:
-                jwks_cache = GetJWKSResult(jwks, last_fetched=int(time.time() * 1000))
+                jwks_cache = GetJWKSResult(jwks, last_fetched=get_timestamp_ms())
                 return jwks_cache.keys
 
 

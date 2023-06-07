@@ -94,7 +94,7 @@ def get_info_from_access_token(
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(expiry_time, (float, int))
 
         if expiry_time < get_timestamp_ms():
             raise Exception("Access token expired")
@@ -121,8 +121,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
     if version >= 3:
         if (
             not isinstance(payload.get("sub"), str)
-            or not isinstance(payload.get("exp"), int)
-            or not isinstance(payload.get("iat"), int)
+            or not isinstance(payload.get("exp"), (int, float))
+            or not isinstance(payload.get("iat"), (int, float))
             or not isinstance(payload.get("sessionHandle"), str)
             or not isinstance(payload.get("refreshTokenHash1"), str)
         ):
@@ -137,8 +137,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
         not isinstance(payload.get("sessionHandle"), str)
         or payload.get("userData") is None
         or not isinstance(payload.get("refreshTokenHash1"), str)
-        or not isinstance(payload.get("expiryTime"), int)
-        or not isinstance(payload.get("timeCreated"), int)
+        or not isinstance(payload.get("expiryTime"), (float, int))
+        or not isinstance(payload.get("timeCreated"), (float, int))
     ):
         log_debug_message(
             "validateAccessTokenStructure: Access token is using version < 3"
