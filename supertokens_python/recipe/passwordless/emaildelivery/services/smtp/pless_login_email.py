@@ -10,6 +10,10 @@ otp_body = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+        body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
@@ -916,6 +920,10 @@ magic_link_body = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+	    body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
@@ -1838,6 +1846,10 @@ otp_and_magic_link_body = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+	    body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
