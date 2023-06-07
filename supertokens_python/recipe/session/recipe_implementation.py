@@ -138,11 +138,12 @@ def get_jwks() -> Optional[List[PyJWK]]:
                     path, cooldown_duration=JWKSConfig["refresh_rate_limit"]
                 )  # TODO: Verify that this gets used as expected
                 jwks = client.get_latest_keys()
-            except Exception:
+            except Exception as _:
                 pass
 
             if jwks is not None:
                 jwks_cache = GetJWKSResult(jwks, last_fetched=get_timestamp_ms())
+                log_debug_message("Returning JWKS from fetch")
                 return jwks_cache.keys
 
 

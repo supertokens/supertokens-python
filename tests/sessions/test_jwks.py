@@ -2,9 +2,11 @@ import time
 import pytest
 import logging
 
-# import threading
+import threading
 
-from typing import List, Any
+from typing import List, Any, Callable
+
+from jwt import PyJWK
 
 from supertokens_python import init, SupertokensConfig
 from supertokens_python.recipe import session
@@ -441,7 +443,12 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     assert s_.get_user_id() == "userId"
 
 
-async def test_that_locking_for_jwks_cache_works():
+async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
+    caplog.set_level(logging.DEBUG)
+    not_returned_from_cache_count = get_log_occurence_count(
+        caplog, "Returning JWKS from fetch"
+    )
+
     original_jwks_config = JWKSConfig.copy()
     JWKSConfig.update(
         {
@@ -454,30 +461,55 @@ async def test_that_locking_for_jwks_cache_works():
         "access_token_dynamic_signing_key_update_interval", "0.0014"
     )  # ~5s
     init(**get_st_init_args(recipe_list=[session.init()]))
-    # TODO
+    start_st()
 
-    # different_key_found_count = 0
-    # not_return_from_cache_count = 0
-    # should_stop = False
+    state = {
+        "should_stop": False,
+        "different_key_found_count": 0,
+        "not_return_from_cache_count": 0,
+    }
 
-    # jwks = get_combined_jwks()
-    # keys = [k.key_id for k in jwks]
+    jwks = get_combined_jwks() or []
+    keys = [k.key_id for k in jwks]
 
-    # thread_count = 10
-    # wg = threading.Barrier(thread_count)
+    def stop_after_11s():
+        time.sleep(11)
+        state["should_stop"] = True
 
-    # def jwks_lock_test_routine(params):
-    #     pass  # TODO
+    stop_thread = threading.Thread(target=stop_after_11s)
+    stop_thread.start()
 
-    # threads = []
-    # for i in range(thread_count):
-    #     params = {}
-    #     t = threading.Thread(target=jwks_lock_test_routine, args=(params,))
-    #     threads.append(t)
-    #     t.start()
+    thread_count = 10
+    wg = threading.Barrier(thread_count)
 
-    # for t in threads:
-    #     t.join()
+    def jwks_lock_test_routine(i: int, callback: Callable[[List[PyJWK]], None]):
+        jwks = get_combined_jwks()
+
+        callback(jwks)
+        time.sleep(0.1)
+        if state["should_stop"]:
+            return
+        else:
+            jwks_lock_test_routine(i, callback)
+
+    def callback(jwks: List[PyJWK]):
+        nonlocal keys
+        current_keys = [k.key_id for k in jwks]
+        new_keys = [k for k in current_keys if k not in keys]
+        if len(new_keys) > 0:
+            state["different_key_found_count"] += 1
+            keys = current_keys
+
+    threads = []
+    for i in range(thread_count):
+        t = threading.Thread(target=jwks_lock_test_routine, args=(i, callback))
+        threads.append(t)
+        t.start()
+
+    stop_thread.join()
+
+    for t in threads:
+        t.join()
 
     # We need to test for both:
     # - The keys changing
@@ -490,7 +522,7 @@ async def test_that_locking_for_jwks_cache_works():
 
     # With the signing key interval as 5 seconds, and the test making requests for 11 seconds
     # You expect the keys to change twice
-    # assert next(different_key_found_count) == 2
+    assert state["different_key_found_count"] == 2
     # With cache lifetime being 2s, we expect the cache to be missed 5 times
-    # assert next(not_return_from_cache_count) == 5
+    assert next(not_returned_from_cache_count) == 1 + 5  # 1 original + 5 misses
     JWKSConfig.update(original_jwks_config)
