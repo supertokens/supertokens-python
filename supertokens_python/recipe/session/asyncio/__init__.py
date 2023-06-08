@@ -309,7 +309,7 @@ async def get_session(
 
 async def get_session_without_request_response(
     access_token: str,
-    anti_csrf_check: bool,
+    anti_csrf_check: Optional[bool] = None,
     anti_csrf_token: Optional[str] = None,
     session_required: Optional[bool] = None,
     check_database: Optional[bool] = None,
