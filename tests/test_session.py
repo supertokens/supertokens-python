@@ -13,7 +13,8 @@
 # under the License.
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List
+from typing_extensions import Literal
 from unittest.mock import MagicMock
 
 from fastapi import FastAPI
