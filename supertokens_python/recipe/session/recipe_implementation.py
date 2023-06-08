@@ -16,11 +16,9 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-from jwt import PyJWK
-
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import resolve, get_timestamp_ms
+from supertokens_python.utils import resolve
 
 from ...types import MaybeAwaitable
 from . import session_functions
@@ -53,12 +51,6 @@ from .interfaces import SessionContainer
 from supertokens_python.querier import Querier
 
 
-class GetJWKSResult:
-    def __init__(self, keys: List[PyJWK], last_fetched: int):
-        self.keys = keys
-        self.last_fetched = last_fetched
-
-
 from typing_extensions import TypedDict
 import threading
 from os import environ
@@ -74,25 +66,74 @@ JWKSConfig: JWKSConfigType = {
     "refresh_rate_limit": 500,
 }
 
-jwks_cache: Optional[GetJWKSResult] = None
-mutex = threading.RLock()
+
+class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count > 0 or self._reader_count > 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count > 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()
 
 
-def get_jwks_cache():
-    return jwks_cache
+class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)
+
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
 
 
+cached_jwk_client: Optional[JWKClient] = None
+mutex = RWMutex()
+
+# only for testing purposes
 def reset_jwks_cache():
-    global jwks_cache
-    jwks_cache = None
+    with RWLockContext(mutex, read=False):
+        global cached_jwk_client
+        cached_jwk_client = None
 
 
-urls_attempted_for_jwks_fetch: List[str] = []
-
-
-def get_jwks_from_cache_if_present() -> Optional[GetJWKSResult]:
-    with mutex:  # does mutex.acquire() and mutex.release() automatically
-        if jwks_cache is not None:
+def get_jwk_client_from_cache() -> Optional[JWKClient]:
+    with RWLockContext(mutex, read=True):
+        if cached_jwk_client is not None:
             # This means that we have valid JWKs for the given core path
             # We check if we need to refresh before returning
 
@@ -100,16 +141,19 @@ def get_jwks_from_cache_if_present() -> Optional[GetJWKSResult]:
             # Note that this also means that the SDK will not try to query any other Core (if there are multiple)
             # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
             # from the cores again after the entry in the cache is expired
-            now = get_timestamp_ms()
-            if (now - jwks_cache.last_fetched) < JWKSConfig["cache_max_age"]:
+            if cached_jwk_client.is_fresh():
                 if environ.get("SUPERTOKENS_ENV") == "testing":
                     log_debug_message("Returning JWKS from cache")
-                return jwks_cache
-    return None
+                return cached_jwk_client
+
+        return None
 
 
-def get_jwks() -> Optional[List[PyJWK]]:
-    global jwks_cache
+def find_jwk_client() -> JWKClient:
+    global cached_jwk_client
+
+    if environ.get("SUPERTOKENS_ENV") == "testing":
+        log_debug_message("Called find_jwk_client")
 
     core_paths = Querier.get_instance().get_all_core_urls_for_path(
         "./.well-known/jwks.json"
@@ -117,38 +161,34 @@ def get_jwks() -> Optional[List[PyJWK]]:
 
     if len(core_paths) == 0:
         raise Exception(
-            "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
+            "No SuperTokens core available to query. Please pass supertokens > connection_uri to the init function, or override all the functions of the recipe you are using."
         )
 
-    results_from_cache = get_jwks_from_cache_if_present()
-    if results_from_cache is not None:
-        return results_from_cache.keys
+    client_from_cache = get_jwk_client_from_cache()
+    if client_from_cache is not None:
+        return client_from_cache
 
-    with mutex:  # automatically exists on unhandled errors
+    last_error: Exception = Exception("No valid JWKS found")
+
+    with RWLockContext(mutex, read=False):
         for path in core_paths:
             if environ.get("SUPERTOKENS_ENV") == "testing":
                 log_debug_message("Attempting to fetch JWKS from path: %s", path)
 
-            # Fetch JWKS again if the kid in the header of the JWT does not match any in
-            jwks = None
+            client = JWKClient(
+                path, JWKSConfig["refresh_rate_limit"], JWKSConfig["cache_max_age"]
+            )
             try:
-                client = JWKClient(
-                    path, cooldown_duration=JWKSConfig["refresh_rate_limit"]
-                )  # TODO: Verify that cooldown_duration works as expected
-                jwks = client.get_latest_keys()
-            except Exception as _:
-                pass
+                client.fetch()
+            except Exception as e:
+                last_error = e
 
-            if jwks is not None:
-                jwks_cache = GetJWKSResult(jwks, last_fetched=get_timestamp_ms())
+            if client.cached_jwks is not None:  # we found a valid JWKS
+                cached_jwk_client = client
                 log_debug_message("Returning JWKS from fetch")
-                return jwks_cache.keys
+                return cached_jwk_client
 
-
-def get_combined_jwks() -> Optional[List[PyJWK]]:
-    if environ.get("SUPERTOKENS_ENV") == "testing":
-        log_debug_message("Called get_combined_jwks")
-    return get_jwks()
+    raise last_error
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods

@@ -6,8 +6,6 @@ import threading
 
 from typing import List, Any, Callable
 
-from jwt import PyJWK
-
 from supertokens_python import init, SupertokensConfig
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.interfaces import CreateJwtOkResult
@@ -15,9 +13,9 @@ from supertokens_python.recipe.session.asyncio import (
     create_new_session_without_request_response,
     get_session_without_request_response,
 )
+from supertokens_python.recipe.session.jwks import JWKClient
 from supertokens_python.recipe.session.recipe_implementation import (
-    get_combined_jwks,
-    get_jwks,
+    find_jwk_client,
 )
 from supertokens_python.utils import get_timestamp_ms
 from tests.utils import (
@@ -32,7 +30,7 @@ from tests.utils import (
 from supertokens_python.recipe.session.recipe_implementation import (
     reset_jwks_cache,
     JWKSConfig,
-    get_jwks_from_cache_if_present,
+    get_jwk_client_from_cache,
 )
 
 from _pytest.logging import LogCaptureFixture
@@ -118,8 +116,8 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
 
     assert next(jwks_refresh_count) == 0
 
-    jwks_before = get_jwks()
-    kids_before: List[str] = [k.key_id for k in jwks_before]  # type: ignore
+    jwks_before = find_jwk_client()
+    kids_before: List[str] = [k.key_id for k in jwks_before.get_latest_keys()]  # type: ignore
 
     assert next(jwks_refresh_count) == 1
 
@@ -127,8 +125,8 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
 
     assert next(jwks_refresh_count) == 1
 
-    jwks_after = get_jwks()
-    kids_after: List[str] = [k.key_id for k in jwks_after]  # type: ignore
+    jwks_after = find_jwk_client()
+    kids_after: List[str] = [k.key_id for k in jwks_after.get_latest_keys()]  # type: ignore
 
     assert next(jwks_refresh_count) == 2
 
@@ -231,7 +229,7 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 
     s = await create_new_session_without_request_response("userId", {}, {})
 
-    assert get_jwks_from_cache_if_present() is None
+    assert get_jwk_client_from_cache() is None
     assert next(jwks_refresh_count) == 0
 
     tokens = s.get_all_session_tokens_dangerously()
@@ -239,23 +237,23 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
 
-    assert get_jwks_from_cache_if_present() is not None
+    assert get_jwk_client_from_cache() is not None
     assert next(jwks_refresh_count) == 1
 
     await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
-    assert get_jwks_from_cache_if_present() is not None
+    assert get_jwk_client_from_cache() is not None
     assert next(jwks_refresh_count) == 1  # used cache value
 
     time.sleep(3)  # Now it should expire and the next call should trigger a refresh
-    assert get_jwks_from_cache_if_present() is None
+    assert get_jwk_client_from_cache() is None
     assert next(jwks_refresh_count) == 1
 
     await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
-    assert get_jwks_from_cache_if_present() is not None
+    assert get_jwk_client_from_cache() is not None
     assert next(jwks_refresh_count) == 2
 
     JWKSConfig.update(original_jwks_config)
@@ -277,10 +275,14 @@ async def test_that_combined_jwks_throws_for_invalid_connection(
     init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"), "recipe_list": [session.init()]})  # type: ignore
     start_st()
 
-    combined_jwks_res = get_combined_jwks()
+    try:
+        find_jwk_client()
+        assert False, "should not come here"
+    except Exception:
+        assert next(jwk_refresh_count) == 1
+        return
 
-    assert combined_jwks_res is None
-    assert next(jwk_refresh_count) == 1
+    assert False, "should not come here"
 
 
 async def test_that_combined_jwks_doesnot_throw_if_atleast_one_core_url_is_valid(
@@ -299,7 +301,7 @@ async def test_that_combined_jwks_doesnot_throw_if_atleast_one_core_url_is_valid
     init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("http://localhost:3567;example.com:3567;localhost:90"), "recipe_list": [session.init()]})  # type: ignore
     start_st()
 
-    combined_jwks_res = get_combined_jwks()
+    combined_jwks_res = find_jwk_client()
     assert combined_jwks_res is not None
     assert next(jwk_refresh_count) == 1
 
@@ -328,7 +330,7 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     start_st()
 
     s = await create_new_session_without_request_response("userId", {}, {})
-    assert get_jwks_from_cache_if_present() is None
+    assert get_jwk_client_from_cache() is None
     assert next(jwk_refresh_count) == 0
     assert next(returned_from_cache_count) == 0
 
@@ -371,9 +373,7 @@ async def test_that_sdk_tries_fetching_jwks_for_all_core_hosts(
     """
     caplog.set_level(logging.DEBUG)
     urls_attempted_count = get_log_occurence_count(caplog, "Attempting to fetch JWKS")
-    get_combined_jwks_count = get_log_occurence_count(
-        caplog, "Called get_combined_jwks"
-    )
+    get_combined_jwks_count = get_log_occurence_count(caplog, "Called find_jwk_client")
 
     init(**{**get_st_init_args(recipe_list=[session.init()]), "supertokens_config": SupertokensConfig("example.com;localhost:90;http://localhost:3567")})  # type: ignore
     start_st()
@@ -381,7 +381,7 @@ async def test_that_sdk_tries_fetching_jwks_for_all_core_hosts(
     assert next(urls_attempted_count) == 0
     assert next(get_combined_jwks_count) == 0
 
-    get_combined_jwks()
+    find_jwk_client()
 
     assert next(urls_attempted_count) == 3
     assert next(get_combined_jwks_count) == 1
@@ -399,7 +399,7 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
     urls_attempted_count = get_log_occurence_count(caplog, "Attempting to fetch JWKS")
 
     init(
-        **{
+        **{  # type: ignore
             **get_st_init_args(recipe_list=[session.init()]),
             "supertokens_config": SupertokensConfig(
                 "example.com;http://localhost:3567;localhost:90"
@@ -410,7 +410,7 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
 
     assert next(urls_attempted_count) == 0
 
-    get_combined_jwks()
+    find_jwk_client()
 
     assert next(urls_attempted_count) == 2
 
@@ -487,8 +487,8 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
         "different_key_found_count": 0,
     }
 
-    jwks = get_combined_jwks() or []
-    keys = [k.key_id for k in jwks]
+    jwks = find_jwk_client()
+    keys = [k.key_id for k in jwks.get_latest_keys()]  # type: ignore
 
     def stop_after_11s():
         time.sleep(11)
@@ -498,27 +498,24 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     stop_thread.start()
 
     thread_count = 10
-    wg = threading.Barrier(thread_count)
 
-    def jwks_lock_test_routine(i: int, callback: Callable[[List[PyJWK]], None]):
-        jwks = get_combined_jwks()
-
-        callback(jwks)
+    def jwks_lock_test_routine(i: int, callback: Callable[[JWKClient], None]):
+        client = find_jwk_client()
+        callback(client)
         time.sleep(0.1)
         if state["should_stop"]:
             return
-        else:
-            jwks_lock_test_routine(i, callback)
+        jwks_lock_test_routine(i, callback)
 
-    def callback(jwks: List[PyJWK]):
+    def callback(client: JWKClient):
         nonlocal keys
-        current_keys = [k.key_id for k in jwks]
+        current_keys: List[str] = [k.key_id for k in client.get_latest_keys()]  # type: ignore
         new_keys = [k for k in current_keys if k not in keys]
         if len(new_keys) > 0:
             state["different_key_found_count"] += 1
             keys = current_keys
 
-    threads = []
+    threads: List[threading.Thread] = []
     for i in range(thread_count):
         t = threading.Thread(target=jwks_lock_test_routine, args=(i, callback))
         threads.append(t)

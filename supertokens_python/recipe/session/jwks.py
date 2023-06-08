@@ -41,13 +41,13 @@ class JWKClient:
         self.cache_max_age = cache_max_age
         self.timeout_sec = 5
         self.last_fetch_time: int = 0
-        self.jwk_set: Optional[PyJWKSet] = None
+        self.cached_jwks: Optional[PyJWKSet] = None
 
-    def reload(self):
+    def fetch(self):
         try:
             log_debug_message("Fetching jwk set from the configured uri")
             with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
-                self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
+                self.cached_jwks = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
         except URLError:
             raise JWKSRequestError("Failed to fetch jwk set from the configured uri")
@@ -63,13 +63,13 @@ class JWKClient:
         )
 
     def get_latest_keys(self) -> List[PyJWK]:
-        if self.jwk_set is None or not self.is_fresh():
-            self.reload()
+        if self.cached_jwks is None or not self.is_fresh():
+            self.fetch()
 
-        if self.jwk_set is None:
+        if self.cached_jwks is None:
             raise JWKSRequestError("Failed to fetch the latest keys")
 
-        all_keys: List[PyJWK] = self.jwk_set.keys  # type: ignore
+        all_keys: List[PyJWK] = self.cached_jwks.keys  # type: ignore
 
         return all_keys
 
@@ -77,20 +77,20 @@ class JWKClient:
         header = decode_token(token, options={"verify_signature": False})["header"]
         kid: str = header["kid"]  # type: ignore
 
-        if self.jwk_set is None or not self.is_fresh():
-            self.reload()
+        if self.cached_jwks is None or not self.is_fresh():
+            self.fetch()
 
-        assert self.jwk_set is not None
+        assert self.cached_jwks is not None
 
         try:
-            return self.jwk_set[kid]  # type: ignore
+            return self.cached_jwks[kid]  # type: ignore
         except KeyError:
             if not self.is_cooling_down():
                 # One more attempt to fetch the latest keys
                 # and then try to find the key again.
-                self.reload()
+                self.fetch()
                 try:
-                    return self.jwk_set[kid]  # type: ignore
+                    return self.cached_jwks[kid]  # type: ignore
                 except KeyError:
                     pass
         except Exception:

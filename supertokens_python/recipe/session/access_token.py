@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import jwt
 from jwt.exceptions import DecodeError
@@ -22,7 +22,6 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwks import PyJWK
 from .jwt import ParsedJWTInfo
 
 
@@ -43,15 +42,20 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
     return None
 
 
+from supertokens_python.recipe.session.jwks import JWKClient
+
+
 def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    combined_jwks: List[PyJWK],
+    jwk_client: JWKClient,
     do_anti_csrf_check: bool,
 ):
     try:
         payload: Optional[Dict[str, Any]] = None
         if jwt_info.version >= 3:
-            matching_key = [k for k in combined_jwks if k.key_id == jwt_info.kid][0]  # type: ignore
+            matching_key = jwk_client.get_matching_key_from_jwt(
+                jwt_info.raw_token_string
+            )
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
                 matching_key.key,  # type: ignore
@@ -61,7 +65,7 @@ def get_info_from_access_token(
         else:
             # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we'll use that payload
-            for k in combined_jwks:
+            for k in jwk_client.get_latest_keys():
                 try:
                     payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
                     break
