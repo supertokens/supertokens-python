@@ -275,7 +275,7 @@ async def create_new_session_in_request(
         )
 
     anti_csrf = await config.anti_csrf(request, user_context)
-    disable_anti_csrf = output_transfer_method != "header" and anti_csrf != "VIA_TOKEN"
+    disable_anti_csrf = output_transfer_method == "header" and anti_csrf == "VIA_TOKEN"
     session = await recipe_instance.recipe_implementation.create_new_session(
         user_id,
         final_access_token_payload,

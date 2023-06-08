@@ -14,6 +14,7 @@
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
+from typing_extensions import Literal
 from unittest.mock import MagicMock
 
 from fastapi import FastAPI
@@ -23,6 +24,7 @@ from pytest import fixture, mark
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
+from supertokens_python.framework import BaseRequest
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
@@ -655,6 +657,11 @@ from supertokens_python.recipe.session.asyncio import (
 
 
 async def test_that_verify_session_doesnt_always_call_core():
+    def async_fun(
+        _: BaseRequest, __: Any
+    ) -> Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"]:
+        return "VIA_TOKEN"
+
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -665,7 +672,7 @@ async def test_that_verify_session_doesnt_always_call_core():
         framework="fastapi",
         recipe_list=[
             session.init(
-                anti_csrf="VIA_TOKEN",
+                anti_csrf=async_fun,
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             )
         ],
@@ -678,7 +685,9 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    session1 = await create_new_session_without_request_response("user-id")
+    session1 = await create_new_session_without_request_response(
+        "user-id", disable_anti_csrf=True
+    )
 
     assert session1 is not None
     assert session1.access_token != ""
@@ -692,6 +701,7 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     session2 = await get_session_without_request_response(
         session1.access_token,
+        False,
         session1.anti_csrf_token,
     )
 
@@ -707,7 +717,7 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     session3 = await refresh_session_without_request_response(
         session1.refresh_token.token,
-        False,
+        True,
         session1.anti_csrf_token,
     )
 
@@ -722,7 +732,9 @@ async def test_that_verify_session_doesnt_always_call_core():
     )
 
     session4 = await get_session_without_request_response(
-        session3.access_token, session3.anti_csrf_token
+        session3.access_token,
+        False,
+        session3.anti_csrf_token,
     )
 
     assert session4 is not None
