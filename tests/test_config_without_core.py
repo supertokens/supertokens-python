@@ -27,7 +27,8 @@ from supertokens_python.recipe.session import SessionRecipe
         ("http://example.com/", "http://example.com/", "lax"),  # HTTP same url
     ],
 )
-def test_same_site_cookie_values(
+@mark.asyncio
+async def test_same_site_cookie_values(
     api_domain: str, website_domain: str, cookie_same_site: str
 ):
     init(
@@ -47,6 +48,6 @@ def test_same_site_cookie_values(
     )
 
     s = SessionRecipe.get_instance()
-    assert s.config.cookie_same_site == cookie_same_site
+    assert (await s.config.cookie_same_site({}, {})) == cookie_same_site  # type: ignore
     s.reset()
     Supertokens.reset()

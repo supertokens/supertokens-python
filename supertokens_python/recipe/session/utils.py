@@ -438,8 +438,8 @@ def validate_and_normalise_user_input(
             cookie_same_site_ret = "lax"
 
         if cookie_same_site is not None:
-            return cookie_same_site_ret
-        return cookie_same_site_normalize
+            return cookie_same_site_normalize
+        return cookie_same_site_ret
 
     cookie_secure = (
         cookie_secure

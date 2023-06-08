@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changes
+- `anti_csrf` in Session now accepts a `func | string`
+- `cookie_same_site` in Session now accepts a `func | string`
+
 ### [Breaking change]
 
-- `anti_csrf` in Session now accepts a `func | string`
 - `disable_anti_csrf` is longer an optional boolean in the following functions,
   - `create_new_session`
   - `get_session_without_request_response`
