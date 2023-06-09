@@ -428,7 +428,7 @@ def validate_and_normalise_user_input(
         )
 
     if anti_csrf is None:
-        anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
+        anti_csrf = "VIA_CUSTOM_HEADER"
 
     if get_token_transfer_method is None:
         get_token_transfer_method = get_token_transfer_method_default
