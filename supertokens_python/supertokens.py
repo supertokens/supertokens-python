@@ -44,6 +44,7 @@ from .utils import (
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
+    resolve,
 )
 
 if TYPE_CHECKING:
@@ -133,10 +134,12 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+async def manage_session_post_response(
+    session: SessionContainer, response: BaseResponse
+):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
-        mutator(response=response)  # type: ignore
+        await resolve(mutator(response=response))  # type: ignore
 
 
 class Supertokens:

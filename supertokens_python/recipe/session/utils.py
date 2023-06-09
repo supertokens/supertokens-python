@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import types
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 from urllib.parse import urlparse
 
@@ -30,6 +31,7 @@ from supertokens_python.utils import (
     resolve,
     send_non_200_response,
     send_non_200_response_with_message,
+    get_top_level_domain_for_same_site_resolution,
 )
 
 from ...types import MaybeAwaitable
@@ -59,7 +61,7 @@ def normalise_session_scope(session_scope: str) -> str:
         if scope.startswith("."):
             scope = scope[1:]
 
-        if (not scope.startswith("https://")) and (not scope.startswith("http://")):
+        if not scope.startswith("://"):
             scope = "http://" + scope
 
         try:
@@ -133,7 +135,7 @@ class ErrorHandlers:
         response: BaseResponse,
     ) -> BaseResponse:
         log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
-        clear_session_from_all_token_transfer_methods(response, recipe)
+        await clear_session_from_all_token_transfer_methods(request, response, recipe)
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -154,7 +156,9 @@ class ErrorHandlers:
     ):
         if do_clear_cookies:
             log_debug_message("Clearing tokens because of UNAUTHORISED response")
-            clear_session_from_all_token_transfer_methods(response, recipe)
+            await clear_session_from_all_token_transfer_methods(
+                request, response, recipe
+            )
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
@@ -322,7 +326,9 @@ class SessionConfig:
         self,
         refresh_token_path: NormalisedURLPath,
         cookie_domain: Union[None, str],
-        cookie_same_site: Literal["lax", "strict", "none"],
+        cookie_same_site: Callable[
+            [BaseRequest, Any], Awaitable[Literal["lax", "none", "strict"]]
+        ],
         cookie_secure: bool,
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
@@ -361,7 +367,11 @@ def validate_and_normalise_user_input(
     app_info: AppInfo,
     cookie_domain: Union[str, None] = None,
     cookie_secure: Union[bool, None] = None,
-    cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+    cookie_same_site: Union[
+        Callable[[BaseRequest, Any], Literal["lax", "none", "strict"]],
+        Literal["lax", "none", "strict"],
+        None,
+    ] = None,
     session_expired_status_code: Union[int, None] = None,
     anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
     get_token_transfer_method: Union[
@@ -391,21 +401,42 @@ def validate_and_normalise_user_input(
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
     )
-    top_level_api_domain = app_info.top_level_api_domain
-    top_level_website_domain = app_info.top_level_website_domain
 
-    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
-    website_domain_scheme = get_url_scheme(
-        app_info.website_domain.get_as_string_dangerous()
-    )
-    if cookie_same_site is not None:
-        cookie_same_site = normalise_same_site(cookie_same_site)
-    elif (top_level_api_domain != top_level_website_domain) or (
-        api_domain_scheme != website_domain_scheme
-    ):
-        cookie_same_site = "none"
-    else:
-        cookie_same_site = "lax"
+    async def cookie_same_site_func(
+        req: BaseRequest, user_context: Any
+    ) -> Literal["lax", "none", "strict"]:
+        origin = app_info.website_domain
+        origin_string = origin.get_as_string_dangerous()
+        origin_scheme = get_url_scheme(origin_string)
+        top_level_origin = get_top_level_domain_for_same_site_resolution(origin_string)
+
+        api_domain_scheme = get_url_scheme(
+            app_info.api_domain.get_as_string_dangerous()
+        )
+        top_level_api_domain = get_top_level_domain_for_same_site_resolution(
+            app_info.api_domain.get_as_string_dangerous()
+        )
+
+        cookie_same_site_normalize = "none"
+
+        if cookie_same_site is not None:
+            if isinstance(cookie_same_site, types.FunctionType):
+                cookie_same_site_val = await cookie_same_site(req, user_context)
+                cookie_same_site_normalize = normalise_same_site(cookie_same_site_val)
+            else:
+                cookie_same_site_normalize = normalise_same_site(str(cookie_same_site))
+
+        if (
+            top_level_api_domain != top_level_origin
+            or api_domain_scheme != origin_scheme
+        ):
+            cookie_same_site_ret = "none"
+        else:
+            cookie_same_site_ret = "lax"
+
+        if cookie_same_site is not None:
+            return cookie_same_site_normalize
+        return cookie_same_site_ret
 
     cookie_secure = (
         cookie_secure
@@ -448,7 +479,7 @@ def validate_and_normalise_user_input(
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
-        cookie_same_site,
+        cookie_same_site_func,
         cookie_secure,
         session_expired_status_code,
         error_handlers,
