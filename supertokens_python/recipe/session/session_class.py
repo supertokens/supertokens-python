@@ -36,6 +36,7 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
+from ...logger import log_debug_message
 
 _T = TypeVar("_T")
 
@@ -124,6 +125,9 @@ class Session(SessionContainer):
             self.session_handle, new_session_data, user_context
         )
         if not updated:
+            log_debug_message(
+                "updateSessionDataInDatabase: Throwing UNAUTHORISED because session does not exist anymore"
+            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:

@@ -24,6 +24,7 @@ from typing import (
     Optional,
     TypeVar,
     Union,
+    Awaitable,
 )
 from typing_extensions import TypedDict
 
@@ -362,7 +363,7 @@ class APIInterface(ABC):
         pass
 
 
-ResponseMutator = Callable[[BaseResponse], MaybeAwaitable[None]]
+ResponseMutator = Callable[[BaseResponse], Awaitable[None]]
 
 
 class TokenInfo:

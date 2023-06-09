@@ -430,13 +430,13 @@ def validate_and_normalise_user_input(
             top_level_api_domain != top_level_origin
             or api_domain_scheme != origin_scheme
         ):
-            cookie_same_site_ret = "none"
+            result = "none"
         else:
-            cookie_same_site_ret = "lax"
+            result = "lax"
 
         if cookie_same_site is not None:
             return cookie_same_site_normalize
-        return cookie_same_site_ret
+        return result
 
     cookie_secure = (
         cookie_secure

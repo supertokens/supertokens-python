@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING, Awaitable
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.session.access_token import (
@@ -313,7 +313,7 @@ async def refresh_session_in_request(
 ) -> SessionContainer:
     log_debug_message("refreshSession: Started")
 
-    response_mutators: List[Callable[[Any], MaybeAwaitable[None]]] = []
+    response_mutators: List[Callable[[Any], Awaitable[None]]] = []
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[

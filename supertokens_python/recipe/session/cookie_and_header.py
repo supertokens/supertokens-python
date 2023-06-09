@@ -141,10 +141,12 @@ def set_cookie_response_mutator(
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        return _set_cookie(request, response, config, key, value, expires, path_type)
+        return await _set_cookie(
+            request, response, config, key, value, expires, path_type
+        )
 
     return mutator
 
@@ -155,7 +157,7 @@ def _attach_anti_csrf_header(response: BaseResponse, value: str):
 
 
 def anti_csrf_response_mutator(value: str):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
         return _attach_anti_csrf_header(response, value)
@@ -187,10 +189,10 @@ async def clear_session_from_all_token_transfer_methods(
 def clear_session_mutator(
     request: BaseRequest, config: SessionConfig, transfer_method: TokenTransferMethod
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        return _clear_session(request, response, config, transfer_method)
+        return await _clear_session(request, response, config, transfer_method)
 
     return mutator
 
@@ -220,10 +222,10 @@ def clear_session_response_mutator(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        return _clear_session(request, response, config, transfer_method)
+        return await _clear_session(request, response, config, transfer_method)
 
     return mutator
 
