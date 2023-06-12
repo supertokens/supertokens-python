@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.4] - 2023-06-12
+
+## Changes
+
+- Use request library instead of urllib to fetch JWKS keys ([#344](https://github.com/supertokens/supertokens-python/issues/344))
 
 ## [0.14.3] - 2023-06-7
 
