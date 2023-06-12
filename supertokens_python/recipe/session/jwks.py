@@ -1,12 +1,12 @@
 import json
-import urllib.request
+import requests
 from typing import List, Optional
-from urllib.error import URLError
 
 from jwt import PyJWK, PyJWKSet
 from jwt.api_jwt import decode_complete as decode_token  # type: ignore
 
 from supertokens_python.utils import get_timestamp_ms
+from supertokens_python.logger import log_debug_message
 
 from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 
@@ -43,10 +43,12 @@ class JWKClient:
 
     def reload(self):
         try:
-            with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
+            log_debug_message("Fetching jwk set from the configured uri")
+            with requests.get(self.uri, timeout=self.timeout_sec) as response:
+                response.raise_for_status()
                 self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
-        except URLError:
+        except requests.HTTPError:
             raise JWKSRequestError("Failed to fetch jwk set from the configured uri")
 
     def is_cooling_down(self) -> bool:
