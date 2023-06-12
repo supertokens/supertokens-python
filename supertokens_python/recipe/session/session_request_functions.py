@@ -59,6 +59,7 @@ from supertokens_python.utils import (
     is_an_ip_address,
     normalise_http_method,
     set_request_in_user_context_if_not_defined,
+    get_top_level_domain_for_same_site_resolution,
 )
 from supertokens_python import Supertokens
 
@@ -252,6 +253,11 @@ async def create_new_session_in_request(
 
     cookie_same_site = await config.cookie_same_site(request, user_context)
 
+    origin = await app_info.origin(request, user_context)
+    top_level_origin = get_top_level_domain_for_same_site_resolution(
+        origin.get_as_string_dangerous()
+    )
+
     if (
         output_transfer_method == "cookie"
         and cookie_same_site == "none"
@@ -261,10 +267,7 @@ async def create_new_session_in_request(
                 app_info.top_level_api_domain == "localhost"
                 or is_an_ip_address(app_info.top_level_api_domain)
             )
-            and (
-                app_info.top_level_website_domain == "localhost"
-                or is_an_ip_address(app_info.top_level_website_domain)
-            )
+            and (top_level_origin == "localhost" or is_an_ip_address(top_level_origin))
         )
     ):
         # We can allow insecure cookie when both website & API domain are localhost or an IP

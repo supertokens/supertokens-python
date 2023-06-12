@@ -158,7 +158,7 @@ async def test_login_refresh(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -226,7 +226,7 @@ async def test_login_logout(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -296,7 +296,7 @@ async def test_login_info(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -349,7 +349,7 @@ async def test_login_handle(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -402,7 +402,7 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -469,7 +469,7 @@ async def test_custom_response(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -500,7 +500,7 @@ async def test_optional_session(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -535,7 +535,7 @@ def test_fastapi_root_path(fastapi_root_path: str):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path=f"{fastapi_root_path}/auth",  # It's important to prepend the root path here
         ),
         framework="fastapi",
@@ -689,7 +689,7 @@ async def test_search_with_email_t(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",
@@ -735,7 +735,7 @@ async def test_search_with_email_multiple_email_entry(driver_config_client: Test
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",
@@ -781,7 +781,7 @@ async def test_search_with_email_iresh(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",
@@ -827,7 +827,7 @@ async def test_search_with_phone_plus_one(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",
@@ -876,7 +876,7 @@ async def test_search_with_phone_one_bracket(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",
@@ -925,7 +925,7 @@ async def test_search_with_provider_google(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",
@@ -992,7 +992,7 @@ async def test_search_with_provider_google_and_phone_1(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="flask",

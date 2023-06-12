@@ -51,7 +51,7 @@ async def test_update_email_or_password_with_default_validator(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -100,7 +100,7 @@ async def test_update_email_or_password_with_custom_validator(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",

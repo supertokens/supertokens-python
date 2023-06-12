@@ -43,7 +43,7 @@ async def test_that_sending_0_validity_throws_an_error():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init()],
@@ -66,7 +66,7 @@ async def test_that_sending_a_invalid_json_throws_an_error():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init()],
@@ -91,7 +91,7 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init()],
@@ -120,7 +120,7 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init(jwt_validity_seconds=1000)],
@@ -150,7 +150,7 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init(jwt_validity_seconds=1000)],

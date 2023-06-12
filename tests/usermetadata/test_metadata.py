@@ -50,7 +50,7 @@ async def test_that_usermetadata_recipe_works_as_expected():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[usermetadata.init()],
@@ -104,7 +104,7 @@ async def test_usermetadata_recipe_shallow_merge():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[usermetadata.init()],
@@ -178,7 +178,7 @@ async def test_recipe_override():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

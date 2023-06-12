@@ -194,10 +194,11 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ):
+        #  TODO ~ iresh: finalise with rishabh
         app_info = api_options.app_info
         redirect_uri = (
-            app_info.website_domain.get_as_string_dangerous()
-            + app_info.website_base_path.get_as_string_dangerous()
+            # app_info.website_domain.get_as_string_dangerous() +
+            app_info.website_base_path.get_as_string_dangerous()
             + "/callback/apple?state="
             + state
             + "&code="

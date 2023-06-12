@@ -113,7 +113,7 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init(override=jwt.OverrideConfig(functions=custom_functions))],
@@ -155,7 +155,7 @@ async def test_overriding_APIs(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init(override=jwt.OverrideConfig(apis=custom_api))],

@@ -40,7 +40,7 @@ async def test_remove_permissions_from_a_role():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -80,7 +80,7 @@ async def test_remove_permissions_from_unknown_role():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

@@ -40,7 +40,7 @@ async def test_get_users_that_have_role():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -82,7 +82,7 @@ async def test_get_users_for_unknown_role():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

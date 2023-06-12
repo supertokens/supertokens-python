@@ -153,7 +153,7 @@ async def test_user_context(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -252,7 +252,7 @@ async def test_default_context(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -370,7 +370,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

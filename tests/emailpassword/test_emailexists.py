@@ -101,7 +101,7 @@ async def test_good_input_email_exists(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -133,7 +133,7 @@ async def test_good_input_email_does_not_exists(driver_config_client: TestClient
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -163,7 +163,7 @@ async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -194,7 +194,7 @@ async def test_email_exists_a_syntactically_invalid_email(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -231,7 +231,7 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -266,7 +266,7 @@ async def test_bad_input_do_not_pass_email(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -299,7 +299,7 @@ async def test_passing_an_array_instead_of_a_string_in_the_email(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",

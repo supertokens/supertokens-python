@@ -40,7 +40,7 @@ async def test_add_new_role_to_user():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -81,7 +81,7 @@ async def test_add_duplicate_role_to_user():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -127,7 +127,7 @@ async def test_add_unknown_role_to_user():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union, Optional
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -283,6 +283,7 @@ class PasswordlessRecipe(RecipeModule):
         email: Union[str, None],
         phone_number: Union[str, None],
         user_context: Dict[str, Any],
+        origin_string: Optional[str] = None,
     ) -> str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
@@ -297,8 +298,20 @@ class PasswordlessRecipe(RecipeModule):
 
         app_info = self.get_app_info()
 
+        if origin_string is not None:
+            origin = origin_string
+        elif app_info.initial_origin_type == "string":
+            origin_func = await app_info.origin({}, user_context)  # type: ignore
+            origin = origin_func.get_as_string_dangerous()
+        else:
+            raise SuperTokensError(
+                Exception(
+                    "Please pass origin as a string to the function or pass origin as string in supertokens.init"
+                )
+            )
+
         magic_link = (
-            app_info.website_domain.get_as_string_dangerous()
+            origin
             + app_info.website_base_path.get_as_string_dangerous()
             + "/verify"
             + "?rid="

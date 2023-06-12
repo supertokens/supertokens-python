@@ -456,7 +456,7 @@ def get_core_api_version() -> str:
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -515,7 +515,7 @@ st_init_common_args = {
     "app_info": InputAppInfo(
         app_name="ST",
         api_domain="http://api.supertokens.io",
-        website_domain="http://supertokens.io",
+        origin="http://supertokens.io",
         api_base_path="/auth",
     ),
     "framework": "fastapi",

@@ -74,7 +74,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -171,7 +171,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -262,7 +262,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
@@ -318,7 +318,7 @@ async def test_should_use_override_functions_in_session_container_methods():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -653,7 +653,7 @@ async def test_that_verify_session_doesnt_always_call_core():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

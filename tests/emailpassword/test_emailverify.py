@@ -124,7 +124,7 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -166,7 +166,7 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -214,7 +214,7 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -245,7 +245,7 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -326,7 +326,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -383,7 +383,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -454,7 +454,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -525,7 +525,7 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -619,7 +619,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -699,7 +699,7 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -773,7 +773,7 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -833,7 +833,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -930,7 +930,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -999,7 +999,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -1043,7 +1043,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
