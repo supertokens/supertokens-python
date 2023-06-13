@@ -1,7 +1,6 @@
 import json
-import urllib.request
+import requests
 from typing import List, Optional
-from urllib.error import URLError
 
 from jwt import PyJWK, PyJWKSet
 from jwt.api_jwt import decode_complete as decode_token  # type: ignore
@@ -46,10 +45,11 @@ class JWKClient:
     def fetch(self):
         try:
             log_debug_message("Fetching jwk set from the configured uri")
-            with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
+            with requests.get(self.uri, timeout=self.timeout_sec) as response:
+                response.raise_for_status()
                 self.cached_jwks = PyJWKSet.from_dict(json.load(response))  # type: ignore
                 self.last_fetch_time = get_timestamp_ms()
-        except URLError:
+        except requests.HTTPError:
             raise JWKSRequestError("Failed to fetch jwk set from the configured uri")
 
     def is_cooling_down(self) -> bool:
