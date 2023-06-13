@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import resolve
+from supertokens_python.utils import resolve, RWMutex, RWLockContext
 
 from ...types import MaybeAwaitable
 from . import session_functions
@@ -52,7 +52,6 @@ from supertokens_python.querier import Querier
 
 
 from typing_extensions import TypedDict
-import threading
 from os import environ
 
 
@@ -65,61 +64,6 @@ JWKSConfig: JWKSConfigType = {
     "cache_max_age": 6000,
     "refresh_rate_limit": 500,
 }
-
-
-class RWMutex:
-    def __init__(self):
-        self._lock = threading.Lock()
-        self._readers = threading.Condition(self._lock)
-        self._writers = threading.Condition(self._lock)
-        self._reader_count = 0
-        self._writer_count = 0
-
-    def lock(self):
-        with self._lock:
-            while self._writer_count > 0 or self._reader_count > 0:
-                self._writers.wait()
-            self._writer_count += 1
-
-    def unlock(self):
-        with self._lock:
-            self._writer_count -= 1
-            self._readers.notify_all()
-            self._writers.notify_all()
-
-    def r_lock(self):
-        with self._lock:
-            while self._writer_count > 0:
-                self._readers.wait()
-            self._reader_count += 1
-
-    def r_unlock(self):
-        with self._lock:
-            self._reader_count -= 1
-            if self._reader_count == 0:
-                self._writers.notify_all()
-
-
-class RWLockContext:
-    def __init__(self, mutex: RWMutex, read: bool = True):
-        self.mutex = mutex
-        self.read = read
-
-    def __enter__(self):
-        if self.read:
-            self.mutex.r_lock()
-        else:
-            self.mutex.lock()
-
-    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
-        if exc_type is not None:
-            raise exc_type(exc_value).with_traceback(traceback)
-
-        if self.read:
-            self.mutex.r_unlock()
-        else:
-            self.mutex.unlock()
-
 
 cached_jwk_client: Optional[JWKClient] = None
 mutex = RWMutex()

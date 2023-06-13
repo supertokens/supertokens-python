@@ -42,6 +42,7 @@ class ParsedJWTInfo:
         payload: Dict[str, Any],
         signature: str,
         kid: Optional[str],
+        parsed_header: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.version = version
         self.raw_token_string = raw_token_string
@@ -50,11 +51,12 @@ class ParsedJWTInfo:
         self.payload = payload
         self.signature = signature
         self.kid = kid
+        self.parsed_header = parsed_header
 
 
 def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     splitted_input = jwt.split(".")
-    latest_access_token_version = 3
+    TOKEN_V3 = 3
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")
 
@@ -62,12 +64,13 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     # So we can assume these defaults:
     version = 2
     kid = None
+    parsed_header = None
     # V2 or older tokens didn't save the key id
     header, payload, signature = splitted_input
     # checking the header
     if header not in _allowed_headers:
         parsed_header = loads(utf_base64decode(header, True))
-        header_version = parsed_header.get("version", str(latest_access_token_version))
+        header_version = parsed_header.get("version", str(TOKEN_V3))
 
         try:
             version = int(header_version)
@@ -79,7 +82,7 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
         if (
             parsed_header["typ"] != "JWT"
             or not isinstance(version, int)
-            or version < latest_access_token_version
+            or version < TOKEN_V3
             or kid is None
         ):
             raise Exception("JWT header mismatch")
@@ -94,4 +97,5 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
         payload=loads(utf_base64decode(payload, True)),
         signature=signature,
         kid=kid,
+        parsed_header=parsed_header,
     )

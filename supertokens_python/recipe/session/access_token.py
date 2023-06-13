@@ -52,6 +52,12 @@ def get_info_from_access_token(
 ):
     try:
         payload: Optional[Dict[str, Any]] = None
+        decode_algo = (
+            jwt_info.parsed_header["alg"]
+            if jwt_info.parsed_header is not None
+            else "RS256"
+        )
+
         if jwt_info.version >= 3:
             matching_key = jwk_client.get_matching_key_from_jwt(
                 jwt_info.raw_token_string
@@ -59,7 +65,7 @@ def get_info_from_access_token(
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
                 matching_key.key,  # type: ignore
-                algorithms=["RS256"],
+                algorithms=[decode_algo],
                 options={"verify_signature": True, "verify_exp": True},
             )
         else:
@@ -67,7 +73,12 @@ def get_info_from_access_token(
             # If any of them work, we'll use that payload
             for k in jwk_client.get_latest_keys():
                 try:
-                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
+                    payload = jwt.decode(  # type: ignore
+                        jwt_info.raw_token_string,
+                        k.key,  # type: ignore
+                        algorithms=[decode_algo],
+                        options={"verify_signature": True, "verify_exp": True},
+                    )
                     break
                 except DecodeError:
                     pass

@@ -462,6 +462,43 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     assert s_.get_user_id() == "userId"
 
 
+async def test_session_verification_of_jwt_with_dynamic_signing_key():
+    init(
+        **get_st_init_args(
+            recipe_list=[session.init(use_dynamic_access_token_signing_key=False)]
+        )
+    )
+    start_st()
+
+    s = await create_new_session_without_request_response("userId", {}, {})
+
+    payload = s.get_access_token_payload()
+    del payload["iat"]
+    del payload["exp"]
+    payload["tId"] = "public"  # tenant id
+
+    now = get_timestamp_ms()
+    jwt_expiry = now + 10 * 1000  # expiry jwt after 10sec
+
+    jwt_with_dynamic_key = await create_jwt(
+        payload, jwt_expiry, use_static_signing_key=False
+    )
+    assert isinstance(jwt_with_dynamic_key, CreateJwtOkResult)
+    try:
+        await get_session_without_request_response(jwt_with_dynamic_key.jwt)
+        assert False
+    except Exception:
+        pass
+
+    jwt_with_static_key = await create_jwt(
+        payload, jwt_expiry, use_static_signing_key=True
+    )
+    assert isinstance(jwt_with_static_key, CreateJwtOkResult)
+    s_ = await get_session_without_request_response(jwt_with_static_key.jwt)
+    assert s_ is not None
+    assert s_.get_user_id() == "userId"
+
+
 async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     caplog.set_level(logging.DEBUG)
     not_returned_from_cache_count = get_log_occurence_count(

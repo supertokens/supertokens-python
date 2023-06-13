@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changes
+
+- Use `useStaticSigningKey` instead of `use_static_signing_key` in `create_jwt` function. This was a bug in the code.
+
 
 ## [0.14.3] - 2023-06-7
 

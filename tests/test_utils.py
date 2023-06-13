@@ -1,7 +1,11 @@
 from typing import Union, List, Any, Dict
 
 import pytest
+import threading
+
 from supertokens_python.utils import humanize_time, is_version_gte
+from supertokens_python.utils import RWMutex
+
 from tests.utils import is_subset
 
 
@@ -102,3 +106,62 @@ def test_is_subset(
         assert is_subset(d1, d2)
     else:
         assert not is_subset(d1, d2)
+
+
+class BankAccount:
+    def __init__(self):
+        self.balance = 0
+        self.mutex = RWMutex()
+
+    def deposit(self, amount: int):
+        self.mutex.lock()
+        self.balance += amount
+        self.mutex.unlock()
+
+    def withdraw(self, amount: int):
+        self.mutex.lock()
+        self.balance -= amount
+        self.mutex.unlock()
+
+    def get_balance(self):
+        self.mutex.r_lock()
+        balance = self.balance
+        self.mutex.r_unlock()
+        return balance
+
+
+def test_rw_mutex_writes():
+    account = BankAccount()
+    threads: List[threading.Thread] = []
+
+    # Create 10 deposit threads
+    for _ in range(10):
+        t = threading.Thread(target=account.deposit, args=(10,))
+        threads.append(t)
+
+    def balance_is_valid():
+        balance = account.get_balance()
+        assert balance % 5 == 0 and balance >= 0
+
+    # Create 15 balance checking threads
+    for _ in range(15):
+        t = threading.Thread(target=balance_is_valid)
+        threads.append(t)
+
+    # Create 10 withdraw threads
+    for _ in range(10):
+        t = threading.Thread(target=account.withdraw, args=(5,))
+        threads.append(t)
+
+    # Start all threads
+    for t in threads:
+        t.start()
+
+    # Wait for all threads to finish
+    for t in threads:
+        t.join()
+
+    # Check account balance
+    expected_balance = 10 * 10  # 10 threads depositing 10 each
+    expected_balance -= 10 * 5  # 10 threads withdrawing 5 each
+    assert account.get_balance() == expected_balance, "Incorrect account balance"

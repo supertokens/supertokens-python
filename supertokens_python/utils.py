@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import warnings
 from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from math import floor
@@ -305,3 +306,57 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
         )
 
     return parsed_url.domain + "." + parsed_url.suffix  # type: ignore
+
+
+class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count > 0 or self._reader_count > 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count > 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()
+
+
+class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)
+
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
