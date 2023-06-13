@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changes
+
+- Throw error when `verify_sesion` is used with a view that allows `OPTIONS` or `TRACE` requests
+- Allow `verify_session` decorator to be with `@app.before_request` in Flask without returning a response
+
 
 ## [0.14.3] - 2023-06-7
 
