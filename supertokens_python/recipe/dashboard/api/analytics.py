@@ -72,7 +72,7 @@ async def handle_analytics_post(
         # If either telemetry id API or user count fetch fails, no event should be sent
         return AnalyticsResponse()
 
-    apiDomain, origin_func, appName = (
+    apiDomain_func, origin_func, appName = (
         api_options.app_info.api_domain,
         api_options.app_info.origin,
         api_options.app_info.app_name,
@@ -80,9 +80,11 @@ async def handle_analytics_post(
 
     origin = await origin_func(api_options.request, {})
 
+    api_domain = await apiDomain_func(api_options.request, {})
+
     data = {
         "websiteDomain": origin.get_as_string_dangerous(),
-        "apiDomain": apiDomain.get_as_string_dangerous(),
+        "apiDomain": api_domain.get_as_string_dangerous(),
         "appName": appName,
         "sdk": "python",
         "sdkVersion": SDKVersion,

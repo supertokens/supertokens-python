@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Any, Awaitable, Optional
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
     from supertokens_python import AppInfo
     from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
+    from supertokens_python.framework import BaseRequest
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -50,12 +51,14 @@ class OpenIdConfig:
     def __init__(
         self,
         override: OverrideConfig,
-        issuer_domain: NormalisedURLDomain,
+        issuer_domain: Callable[[BaseRequest, Any], Awaitable[NormalisedURLDomain]],
         issuer_path: NormalisedURLPath,
+        is_issuer_domain_given: bool,
     ):
         self.override = override
         self.issuer_domain = issuer_domain
         self.issuer_path = issuer_path
+        self.is_issuer_domain_given = is_issuer_domain_given
 
 
 def validate_and_normalise_user_input(
@@ -63,11 +66,17 @@ def validate_and_normalise_user_input(
     issuer: Union[str, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ):
+    async def issuer_domain(req: BaseRequest, user_context: Any):
+        if issuer is None:
+            api_domain = await app_info.api_domain(req, user_context)
+            return api_domain
+        return NormalisedURLDomain(issuer)
+
+    is_issuer_domain_given = issuer is not None
+
     if issuer is None:
-        issuer_domain = app_info.api_domain
         issuer_path = app_info.api_base_path
     else:
-        issuer_domain = NormalisedURLDomain(issuer)
         issuer_path = NormalisedURLPath(issuer)
 
     if not issuer_path.equals(app_info.api_base_path):
@@ -85,4 +94,24 @@ def validate_and_normalise_user_input(
         OverrideConfig(functions=override.functions, apis=override.apis),
         issuer_domain,
         issuer_path,
+        is_issuer_domain_given,
+    )
+
+
+async def get_issuer_domain_or_throw_error(
+    issuer_domain: Optional[str],
+    config: OpenIdConfig,
+    app_info: AppInfo,
+    user_context: Any,
+) -> str:
+    if issuer_domain is not None:
+        return issuer_domain
+    if config.is_issuer_domain_given:
+        issuer_domain_resp = await config.issuer_domain(None, user_context)  # type: ignore
+        return issuer_domain_resp.get_as_string_dangerous()
+    if app_info.initial_api_domain_type == "string":
+        issuer_domain_resp = await config.issuer_domain(None, user_context)  # type: ignore
+        return issuer_domain_resp.get_as_string_dangerous()
+    raise Exception(
+        "Please pass issuer_domain as a string to the function or initiate issuer_domain with openid recipe or pass api_domain as string in supertokens.init"
     )

@@ -29,6 +29,8 @@ async def create_jwt(
     payload: Optional[Dict[str, Any]] = None,
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
+    issuer_domain: Optional[str] = None,
+    api_domain: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
@@ -37,7 +39,12 @@ async def create_jwt(
         payload = {}
 
     return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(
-        payload, validity_seconds, use_static_signing_key, user_context
+        payload,
+        validity_seconds,
+        use_static_signing_key,
+        issuer_domain,
+        api_domain,
+        user_context,
     )
 
 
@@ -50,10 +57,10 @@ async def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResu
 
 
 async def get_open_id_discovery_configuration(
-    user_context: Optional[Dict[str, Any]] = None
+    issuer_domain: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}
     return await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
-        user_context
+        issuer_domain, user_context
     )

@@ -24,9 +24,12 @@ class APIImplementation(APIInterface):
     async def open_id_discovery_configuration_get(
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -> OpenIdDiscoveryConfigurationGetResponse:
+        issuer_domain = await api_options.config.issuer_domain(
+            api_options.request, user_context
+        )
         response = (
             await api_options.recipe_implementation.get_open_id_discovery_configuration(
-                user_context
+                issuer_domain.get_as_string_dangerous(), user_context
             )
         )
         return OpenIdDiscoveryConfigurationGetResponse(

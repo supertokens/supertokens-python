@@ -69,7 +69,12 @@ class APIImplementation(APIInterface):
         for key, value in authorisation_url_info.params.items():
             params[key] = value if not callable(value) else value(api_options.request)
 
-        redirect_uri = provider.get_redirect_uri(user_context)
+        api_domain = await api_options.app_info.api_domain(
+            api_options.request, user_context
+        )
+        redirect_uri = provider.get_redirect_uri(
+            api_domain.get_as_string_dangerous(), user_context
+        )
         if redirect_uri is not None and not is_using_oauth_development_client_id(
             provider.get_client_id(user_context)
         ):
@@ -111,8 +116,12 @@ class APIImplementation(APIInterface):
         SignInUpPostNoEmailGivenByProviderResponse,
         GeneralErrorResponse,
     ]:
-
-        redirect_uri_from_provider = provider.get_redirect_uri(user_context)
+        api_domain = await api_options.app_info.api_domain(
+            api_options.request, user_context
+        )
+        redirect_uri_from_provider = provider.get_redirect_uri(
+            api_domain.get_as_string_dangerous(), user_context
+        )
         if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         elif redirect_uri_from_provider is not None:

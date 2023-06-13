@@ -29,6 +29,8 @@ from supertokens_python.recipe.jwt.interfaces import (
     RecipeInterface,
 )
 
+from .utils import get_api_domain_or_throw_error
+
 from .interfaces import JsonWebKey
 
 
@@ -44,17 +46,22 @@ class RecipeImplementation(RecipeInterface):
         payload: Dict[str, Any],
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
+        api_domain: Optional[str],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
+
+        api_domain = await get_api_domain_or_throw_error(
+            api_domain, self.app_info, user_context
+        )
 
         data = {
             "payload": payload,
             "validity": validity_seconds,
             "use_static_signing_key": use_static_signing_key is not False,
             "algorithm": "RS256",
-            "jwksDomain": self.app_info.api_domain.get_as_string_dangerous(),
+            "jwksDomain": api_domain,
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/jwt"), data
