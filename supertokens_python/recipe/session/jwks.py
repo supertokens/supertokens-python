@@ -136,6 +136,10 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
             if cached_jwks is not None:  # we found a valid JWKS
                 cached_keys = CachedKeys(cached_jwks)
                 log_debug_message("Returning JWKS from fetch")
-                return cached_keys.keys
+                matching_keys = find_matching_keys(get_cached_keys(), kid)
+                if matching_keys is not None:
+                    return matching_keys
+
+                raise Exception("No matching JWKS found")
 
     raise last_error

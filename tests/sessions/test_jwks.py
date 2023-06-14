@@ -2,6 +2,7 @@ import time
 import pytest
 import logging
 import threading
+import json
 import requests
 
 from typing import List, Any, Callable
@@ -29,6 +30,7 @@ from supertokens_python.recipe.session.jwks import (
     get_cached_keys,
     get_latest_keys,
 )
+from supertokens_python.utils import utf_base64encode
 
 from _pytest.logging import LogCaptureFixture
 
@@ -197,6 +199,26 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
     )
 
     assert next(well_known_count) == 2  # no change
+
+    # use an access token with an invalid kid that doesn't match even on refreshing
+    _, payload, signature = tokens["accessToken"].split(".")
+    new_header = utf_base64encode(
+        json.dumps(
+            {"kid": "d-1234567890123", "typ": "JWT", "version": "3", "alg": "RS256"}
+        ),
+        urlsafe=False,
+    )
+    new_token = ".".join([new_header, payload, signature])
+
+    with pytest.raises(Exception) as e:
+        await get_session_without_request_response(
+            new_token, tokens.get("antiCsrfToken")
+        )
+
+    assert str(e.value) == "No matching JWKS found"
+    assert (
+        next(well_known_count) == 3
+    )  # kid not found in cache, so should have refreshed
 
 
 async def test_that_invalid_connection_uri_doesnot_throw_during_init_for_jwks():

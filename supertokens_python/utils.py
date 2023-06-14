@@ -353,10 +353,10 @@ class RWLockContext:
             self.mutex.lock()
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
-        if exc_type is not None:
-            raise exc_type(exc_value).with_traceback(traceback)
-
         if self.read:
             self.mutex.r_unlock()
         else:
             self.mutex.unlock()
+
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)
