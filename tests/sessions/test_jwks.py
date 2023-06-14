@@ -68,7 +68,6 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
     caplog.set_level(logging.DEBUG)
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["refresh_rate_limit"] = 100
     JWKSConfig["cache_max_age"] = 2000
 
     well_known_count = get_log_occurence_count(caplog)
@@ -105,7 +104,6 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
     jwks_refresh_count = get_log_occurence_count(caplog)
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["refresh_rate_limit"] = 100
     JWKSConfig["cache_max_age"] = 2000
 
     init(**get_st_init_args(recipe_list=[session.init()]))
@@ -224,7 +222,6 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
     """
     caplog.set_level(logging.DEBUG)
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["refresh_rate_limit"] = 100
     JWKSConfig["cache_max_age"] = 2000
 
     jwks_refresh_count = get_log_occurence_count(caplog)
@@ -355,7 +352,6 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     )
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["refresh_rate_limit"] = 100
     JWKSConfig["cache_max_age"] = 2000
 
     init(**get_st_init_args(recipe_list=[session.init()]))
@@ -538,7 +534,6 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     )
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["refresh_rate_limit"] = 100
     JWKSConfig["cache_max_age"] = 2000
 
     set_key_value_in_config(

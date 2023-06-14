@@ -28,13 +28,11 @@ from supertokens_python.logger import log_debug_message
 
 class JWKSConfigType(TypedDict):
     cache_max_age: int
-    refresh_rate_limit: int
     request_timeout: int
 
 
 JWKSConfig: JWKSConfigType = {
     "cache_max_age": JWKCacheMaxAgeInMs,
-    "refresh_rate_limit": JWKRequestCooldownInMs,  # FIXME: Not used
     "request_timeout": 5000,  # 5s
 }
 
