@@ -42,12 +42,11 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
     return None
 
 
-from supertokens_python.recipe.session.jwks import JWKClient
+from supertokens_python.recipe.session.jwks import get_latest_keys
 
 
 def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    jwk_client: JWKClient,
     do_anti_csrf_check: bool,
 ):
     try:
@@ -59,19 +58,17 @@ def get_info_from_access_token(
         )
 
         if jwt_info.version >= 3:
-            matching_key = jwk_client.get_matching_key_from_jwt(
-                jwt_info.raw_token_string
-            )
+            matching_keys = get_latest_keys(jwt_info.kid)
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
-                matching_key.key,  # type: ignore
+                matching_keys[0].key,  # type: ignore
                 algorithms=[decode_algo],
                 options={"verify_signature": True, "verify_exp": True},
             )
         else:
             # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we'll use that payload
-            for k in jwk_client.get_latest_keys():
+            for k in get_latest_keys():
                 try:
                     payload = jwt.decode(  # type: ignore
                         jwt_info.raw_token_string,

@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import resolve, RWMutex, RWLockContext
+from supertokens_python.utils import resolve
 
 from ...types import MaybeAwaitable
 from . import session_functions
@@ -38,7 +38,6 @@ from .interfaces import (
     SessionInformationResult,
     SessionObj,
 )
-from .jwks import JWKClient
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
 from .utils import SessionConfig, validate_claims_in_payload
@@ -49,90 +48,6 @@ if TYPE_CHECKING:
 
 from .interfaces import SessionContainer
 from supertokens_python.querier import Querier
-
-
-from typing_extensions import TypedDict
-from os import environ
-
-
-class JWKSConfigType(TypedDict):
-    cache_max_age: int
-    refresh_rate_limit: int
-
-
-JWKSConfig: JWKSConfigType = {
-    "cache_max_age": 6000,
-    "refresh_rate_limit": 500,
-}
-
-cached_jwk_client: Optional[JWKClient] = None
-mutex = RWMutex()
-
-# only for testing purposes
-def reset_jwks_cache():
-    with RWLockContext(mutex, read=False):
-        global cached_jwk_client
-        cached_jwk_client = None
-
-
-def get_jwk_client_from_cache() -> Optional[JWKClient]:
-    with RWLockContext(mutex, read=True):
-        if cached_jwk_client is not None:
-            # This means that we have valid JWKs for the given core path
-            # We check if we need to refresh before returning
-
-            # This means that the value in cache is not expired, in this case we return the cached value
-            # Note that this also means that the SDK will not try to query any other Core (if there are multiple)
-            # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
-            # from the cores again after the entry in the cache is expired
-            if cached_jwk_client.is_fresh():
-                if environ.get("SUPERTOKENS_ENV") == "testing":
-                    log_debug_message("Returning JWKS from cache")
-                return cached_jwk_client
-
-        return None
-
-
-def find_jwk_client() -> JWKClient:
-    global cached_jwk_client
-
-    if environ.get("SUPERTOKENS_ENV") == "testing":
-        log_debug_message("Called find_jwk_client")
-
-    core_paths = Querier.get_instance().get_all_core_urls_for_path(
-        "./.well-known/jwks.json"
-    )
-
-    if len(core_paths) == 0:
-        raise Exception(
-            "No SuperTokens core available to query. Please pass supertokens > connection_uri to the init function, or override all the functions of the recipe you are using."
-        )
-
-    client_from_cache = get_jwk_client_from_cache()
-    if client_from_cache is not None:
-        return client_from_cache
-
-    last_error: Exception = Exception("No valid JWKS found")
-
-    with RWLockContext(mutex, read=False):
-        for path in core_paths:
-            if environ.get("SUPERTOKENS_ENV") == "testing":
-                log_debug_message("Attempting to fetch JWKS from path: %s", path)
-
-            client = JWKClient(
-                path, JWKSConfig["refresh_rate_limit"], JWKSConfig["cache_max_age"]
-            )
-            try:
-                client.fetch()
-            except Exception as e:
-                last_error = e
-
-            if client.cached_jwks is not None:  # we found a valid JWKS
-                cached_jwk_client = client
-                log_debug_message("Returning JWKS from fetch")
-                return cached_jwk_client
-
-    raise last_error
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
