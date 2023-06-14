@@ -35,7 +35,7 @@ class JWKSConfigType(TypedDict):
 JWKSConfig: JWKSConfigType = {
     "cache_max_age": JWKCacheMaxAgeInMs,
     "refresh_rate_limit": JWKRequestCooldownInMs,  # FIXME: Not used
-    "request_timeout": 5000, # 5s
+    "request_timeout": 5000,  # 5s
 }
 
 
@@ -46,9 +46,7 @@ class CachedKeys:
         self.last_refresh_time = get_timestamp_ms()
 
     def is_fresh(self):
-        return (
-            get_timestamp_ms() - self.last_refresh_time < JWKSConfig["cache_max_age"]
-        )
+        return get_timestamp_ms() - self.last_refresh_time < JWKSConfig["cache_max_age"]
 
 
 cached_keys: Optional[CachedKeys] = None
@@ -116,7 +114,9 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
             cached_jwks: Optional[List[PyJWK]] = None
             try:
                 log_debug_message("Fetching jwk set from the configured uri")
-                with requests.get(path, timeout=JWKSConfig['request_timeout']/1000) as response:  # 5 second timeout
+                with requests.get(
+                    path, timeout=JWKSConfig["request_timeout"] / 1000
+                ) as response:  # 5 second timeout
                     response.raise_for_status()
                     cached_jwks = PyJWKSet.from_dict(response.json()).keys  # type: ignore
             except Exception as e:
