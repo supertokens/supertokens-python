@@ -61,8 +61,9 @@ def verify_session(
                 baseRequest.set_session_as_none()
             else:
                 baseRequest.set_session(session)
-            response = make_response(f(*args, **kwargs))
-            return response
+
+            response = f(*args, **kwargs)
+            return make_response(response) if response is not None else None
 
         return cast(_T, wrapped_function)
 

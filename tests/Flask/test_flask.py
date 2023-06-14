@@ -683,3 +683,84 @@ async def test_search_with_provider_google_and_phone_one(driver_config_app: Any)
     assert response.status_code == 200
     data_json = json.loads(response.data)
     assert len(data_json["users"]) == 0
+
+from tests.utils import get_st_init_args
+
+@fixture(scope="function")
+def flask_app():
+    app = Flask(__name__)
+    Middleware(app)
+
+    app.testing = True
+
+    counter: Dict[str, int] = {}
+
+    @app.before_request # type: ignore
+    @verify_session(session_required=False)
+    def audit_request(): # type: ignore
+        nonlocal counter
+
+        user_id = None
+        s: SessionContainer = g.supertokens
+
+        if s:
+            user_id = s.get_user_id()
+            print(f"User {user_id} tried to accesss {request.path}")
+        else:
+            user_id = "unknown"
+            print(f"Unknown user tried to access {request.path}")
+
+        if request.path != "/stats":
+            counter[user_id] = counter.get(user_id, 0) + 1
+
+    @app.route("/stats") # type: ignore
+    def test_api(): # type: ignore
+        return jsonify(counter)
+
+    @app.route("/login")  # type: ignore
+    def login():  # type: ignore
+        user_id = "userId"
+        s = create_new_session(request, user_id, {}, {})
+        return jsonify({"user": s.get_user_id()})
+
+    @app.route("/ping") # type: ignore
+    def ping(): # type: ignore
+        return jsonify({"msg": "pong"})
+
+    @app.route("/options-api", methods=["OPTIONS", "GET"]) # type: ignore
+    @verify_session()
+    def options_api(): # type: ignore
+        return jsonify({"msg": "Shouldn't come here"})
+
+    return app
+
+def test_verify_session_with_before_request_with_no_response(flask_app: Any):
+    init(**{**get_st_init_args([session.init(get_token_transfer_method=lambda *_: "cookie")]), "framework": "flask"}) # type: ignore
+    start_st()
+
+    client = flask_app.test_client()
+
+    assert client.get("stats").json == {}
+
+    assert client.get("/ping").status_code == 200
+
+    assert client.get("stats").json == {"unknown": 1}
+
+    with pytest.raises(Exception) as e:
+        client.options("/options-api")
+
+    assert str(e.value) == "verify_session cannot be used with options method"
+
+    assert client.get("stats").json == {"unknown": 2}
+
+    assert client.get("/login").status_code == 200
+
+    assert client.get("/stats").json == {"unknown": 3}
+
+    assert client.get("/ping").status_code == 200
+
+    assert client.get("/stats").json == {"unknown": 3, "userId": 1}
+
+    assert client.get("/ping").status_code == 200
+
+    assert client.get("/stats").json == {"unknown": 3, "userId": 2}
