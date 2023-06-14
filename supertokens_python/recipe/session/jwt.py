@@ -56,7 +56,7 @@ class ParsedJWTInfo:
 
 def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     splitted_input = jwt.split(".")
-    TOKEN_V3 = 3
+    LATEST_TOKEN_VERSION = 3
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")
 
@@ -70,7 +70,7 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
     # checking the header
     if header not in _allowed_headers:
         parsed_header = loads(utf_base64decode(header, True))
-        header_version = parsed_header.get("version", str(TOKEN_V3))
+        header_version = parsed_header.get("version", str(LATEST_TOKEN_VERSION))
 
         try:
             version = int(header_version)
@@ -82,7 +82,7 @@ def parse_jwt_without_signature_verification(jwt: str) -> ParsedJWTInfo:
         if (
             parsed_header["typ"] != "JWT"
             or not isinstance(version, int)
-            or version < TOKEN_V3
+            or version < 3
             or kid is None
         ):
             raise Exception("JWT header mismatch")

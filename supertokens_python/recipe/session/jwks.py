@@ -33,7 +33,7 @@ class JWKSConfigType(TypedDict):
 
 JWKSConfig: JWKSConfigType = {
     "cache_max_age": JWKCacheMaxAgeInMs,
-    "request_timeout": 5000,  # 5s
+    "request_timeout": 10000,  # 10s
 }
 
 
@@ -56,22 +56,36 @@ def reset_jwks_cache():
         cached_keys = None
 
 
-def get_cached_keys() -> Optional[CachedKeys]:
-    with RWLockContext(mutex, read=True):
-        if cached_keys is not None:
-            # This means that we have valid JWKs for the given core path
-            # We check if we need to refresh before returning
+def get_cached_keys() -> Optional[List[PyJWK]]:
+    if cached_keys is not None:
+        # This means that we have valid JWKs for the given core path
+        # We check if we need to refresh before returning
 
-            # This means that the value in cache is not expired, in this case we return the cached value
-            # Note that this also means that the SDK will not try to query any other core (if there are multiple)
-            # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
-            # from the cores again after the entry in the cache is expired
-            if cached_keys.is_fresh():
-                if environ.get("SUPERTOKENS_ENV") == "testing":
-                    log_debug_message("Returning JWKS from cache")
-                return cached_keys
+        # This means that the value in cache is not expired, in this case we return the cached value
+        # Note that this also means that the SDK will not try to query any other core (if there are multiple)
+        # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
+        # from the cores again after the entry in the cache is expired
+        if cached_keys.is_fresh():
+            if environ.get("SUPERTOKENS_ENV") == "testing":
+                log_debug_message("Returning JWKS from cache")
+            return cached_keys.keys
 
-        return None
+    return None
+
+
+def find_matching_keys(
+    keys: Optional[List[PyJWK]], kid: Optional[str]
+) -> Optional[List[PyJWK]]:
+    if kid is None or keys is None:
+        # return all keys since the token does not have a kid
+        return keys
+
+    # kid has been provided so filter the keys
+    matching_keys = [key for key in keys if key.key_id == kid]  # type: ignore
+    if len(matching_keys) > 0:
+        return matching_keys
+
+    return None
 
 
 def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
@@ -80,15 +94,9 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
     if environ.get("SUPERTOKENS_ENV") == "testing":
         log_debug_message("Called find_jwk_client")
 
-    keys_from_cache = get_cached_keys()
-    if keys_from_cache is not None:
-        if kid is None:
-            # return all keys since the token does not have a kid
-            return keys_from_cache.keys
-
-        # kid has been provided so filter the keys
-        matching_keys = [key for key in keys_from_cache.keys if key.key_id == kid]  # type: ignore
-        if len(matching_keys) > 0:
+    with RWLockContext(mutex, read=True):
+        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        if matching_keys is not None:
             return matching_keys
         # otherwise unknown kid, will continue to reload the keys
 
@@ -104,6 +112,12 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
     last_error: Exception = Exception("No valid JWKS found")
 
     with RWLockContext(mutex, read=False):
+        # check again if the keys are in cache
+        # because another thread might have fetched the keys while this one was waiting for the lock
+        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        if matching_keys is not None:
+            return matching_keys
+
         for path in core_paths:
             if environ.get("SUPERTOKENS_ENV") == "testing":
                 log_debug_message("Attempting to fetch JWKS from path: %s", path)
