@@ -8,10 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Changes
+## [0.14.4] - 2023-06-14
+
+### Changes and fixes
 
 - Use `useStaticSigningKey` instead of `use_static_signing_key` in `create_jwt` function. This was a bug in the code.
 - Use request library instead of urllib to fetch JWKS keys ([#344](https://github.com/supertokens/supertokens-python/issues/344))
+- Throw error when `verify_sesion` is used with a view that allows `OPTIONS` or `TRACE` requests
+- Allow `verify_session` decorator to be with `@app.before_request` in Flask without returning a response
 
 
 ## [0.14.3] - 2023-06-7

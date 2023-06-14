@@ -73,6 +73,8 @@ class APIImplementation(APIInterface):
     ) -> Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
         if method in ("options", "trace"):
+            if session_required:
+                raise Exception(f"verify_session cannot be used with {method} method")
             return None
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
