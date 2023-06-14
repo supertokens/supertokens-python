@@ -52,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
         data = {
             "payload": payload,
             "validity": validity_seconds,
-            "use_static_signing_key": use_static_signing_key is not False,
+            "useStaticSigningKey": use_static_signing_key is not False,
             "algorithm": "RS256",
             "jwksDomain": self.app_info.api_domain.get_as_string_dangerous(),
         }

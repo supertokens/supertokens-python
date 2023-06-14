@@ -38,7 +38,6 @@ from .interfaces import (
     SessionInformationResult,
     SessionObj,
 )
-from .jwks import JWKClient
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
 from .utils import SessionConfig, validate_claims_in_payload
@@ -46,10 +45,9 @@ from .utils import SessionConfig, validate_claims_in_payload
 if TYPE_CHECKING:
     from typing import List, Union
     from supertokens_python import AppInfo
-    from supertokens_python.querier import Querier
 
-from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 from .interfaces import SessionContainer
+from supertokens_python.querier import Querier
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
@@ -58,17 +56,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self.querier = querier
         self.config = config
         self.app_info = app_info
-
-        self.JWK_clients = [
-            JWKClient(
-                uri,
-                cooldown_duration=JWKRequestCooldownInMs,
-                cache_max_age=JWKCacheMaxAgeInMs,
-            )
-            for uri in self.querier.get_all_core_urls_for_path(
-                "./.well-known/jwks.json"
-            )
-        ]
 
     async def create_new_session(
         self,

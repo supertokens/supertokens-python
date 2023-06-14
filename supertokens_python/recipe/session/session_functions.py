@@ -152,7 +152,6 @@ async def get_session(
     try:
         access_token_info = get_info_from_access_token(
             parsed_access_token,
-            recipe_implementation.JWK_clients,
             config.anti_csrf == "VIA_TOKEN" and do_anti_csrf_check,
         )
 

@@ -27,6 +27,9 @@ from supertokens_python.recipe.session.asyncio import create_new_session
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
+pytestmark = mark.asyncio
+
+
 def setup_function(_):
     reset()
     clean_st()
@@ -57,7 +60,6 @@ def apis_override_get_JWKS(param: APIInterface):
     return param
 
 
-@mark.asyncio
 async def test_that_default_getJWKS_api_does_not_work_when_disabled(
     driver_config_client: TestClient,
 ):
@@ -80,7 +82,6 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
     assert response.status_code == 404
 
 
-@mark.asyncio
 async def test_that_default_getJWKS_works_fine(driver_config_client: TestClient):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),

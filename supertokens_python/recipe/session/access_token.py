@@ -13,16 +13,15 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import jwt
-from jwt.exceptions import DecodeError, PyJWKClientError
+from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwks import JWKClient, JWKSRequestError, PyJWK
 from .jwt import ParsedJWTInfo
 
 
@@ -43,46 +42,43 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
     return None
 
 
+from supertokens_python.recipe.session.jwks import get_latest_keys
+
+
 def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    jwk_clients: List[JWKClient],
     do_anti_csrf_check: bool,
 ):
     try:
         payload: Optional[Dict[str, Any]] = None
-        client: Optional[JWKClient] = None
-        keys: Optional[List[PyJWK]] = None
+        decode_algo = (
+            jwt_info.parsed_header["alg"]
+            if jwt_info.parsed_header is not None
+            else "RS256"
+        )
 
-        # Get the keys from the first available client
-        for c in jwk_clients:
-            try:
-                client = c
-                keys = c.get_latest_keys()
-                break
-            except JWKSRequestError:
-                continue
-
-        if keys is None or client is None:
-            raise PyJWKClientError("No key found")
-
-        if jwt_info.version < 3:
+        if jwt_info.version >= 3:
+            matching_keys = get_latest_keys(jwt_info.kid)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_keys[0].key,  # type: ignore
+                algorithms=[decode_algo],
+                options={"verify_signature": True, "verify_exp": True},
+            )
+        else:
             # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we'll use that payload
-            for k in keys:
+            for k in get_latest_keys():
                 try:
-                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=["RS256"])  # type: ignore
+                    payload = jwt.decode(  # type: ignore
+                        jwt_info.raw_token_string,
+                        k.key,  # type: ignore
+                        algorithms=[decode_algo],
+                        options={"verify_signature": True, "verify_exp": True},
+                    )
                     break
                 except DecodeError:
                     pass
-
-        elif jwt_info.version >= 3:
-            matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
-            payload = jwt.decode(  # type: ignore
-                jwt_info.raw_token_string,
-                matching_key.key,  # type: ignore
-                algorithms=["RS256"],
-                options={"verify_signature": True, "verify_exp": True},
-            )
 
         if payload is None:
             raise DecodeError("Could not decode the token")
@@ -110,7 +106,7 @@ def get_info_from_access_token(
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(expiry_time, (float, int))
 
         if expiry_time < get_timestamp_ms():
             raise Exception("Access token expired")
@@ -137,8 +133,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
     if version >= 3:
         if (
             not isinstance(payload.get("sub"), str)
-            or not isinstance(payload.get("exp"), int)
-            or not isinstance(payload.get("iat"), int)
+            or not isinstance(payload.get("exp"), (int, float))
+            or not isinstance(payload.get("iat"), (int, float))
             or not isinstance(payload.get("sessionHandle"), str)
             or not isinstance(payload.get("refreshTokenHash1"), str)
         ):
@@ -153,8 +149,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
         not isinstance(payload.get("sessionHandle"), str)
         or payload.get("userData") is None
         or not isinstance(payload.get("refreshTokenHash1"), str)
-        or not isinstance(payload.get("expiryTime"), int)
-        or not isinstance(payload.get("timeCreated"), int)
+        or not isinstance(payload.get("expiryTime"), (float, int))
+        or not isinstance(payload.get("timeCreated"), (float, int))
     ):
         log_debug_message(
             "validateAccessTokenStructure: Access token is using version < 3"

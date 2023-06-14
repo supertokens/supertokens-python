@@ -36,7 +36,6 @@ from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
-    from .jwks import JWKClient
 
 from supertokens_python.framework import BaseResponse
 
@@ -128,8 +127,6 @@ class GetSessionTokensDangerouslyDict(TypedDict):
 
 
 class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
-    JWK_clients: List[JWKClient] = []
-
     def __init__(self):
         pass
 
