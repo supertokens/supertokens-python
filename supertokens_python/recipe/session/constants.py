@@ -34,7 +34,6 @@ ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
 available_token_transfer_methods: List[TokenTransferMethod] = ["cookie", "header"]
 
 JWKCacheMaxAgeInMs = 6 * 1000  # 6s
-JWKRequestCooldownInMs = 500  # 0.5s
 protected_props = [
     "sub",
     "iat",

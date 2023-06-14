@@ -112,22 +112,26 @@ class BankAccount:
     def __init__(self):
         self.balance = 0
         self.mutex = RWMutex()
+        self.deposit_count = 0
+        self.withdraw_count = 0
 
     def deposit(self, amount: int):
         self.mutex.lock()
         self.balance += amount
+        self.deposit_count += 1
         self.mutex.unlock()
 
     def withdraw(self, amount: int):
         self.mutex.lock()
         self.balance -= amount
+        self.withdraw_count += 1
         self.mutex.unlock()
 
-    def get_balance(self):
+    def get_stats(self):
         self.mutex.r_lock()
         balance = self.balance
         self.mutex.r_unlock()
-        return balance
+        return balance, (self.deposit_count, self.withdraw_count)
 
 
 def test_rw_mutex_writes():
@@ -140,8 +144,9 @@ def test_rw_mutex_writes():
         threads.append(t)
 
     def balance_is_valid():
-        balance = account.get_balance()
-        assert balance % 5 == 0 and balance >= 0
+        balance, (deposit_count, widthdraw_count) = account.get_stats()
+        expected_balance = 10 * deposit_count - 5 * widthdraw_count
+        assert balance == expected_balance
 
     # Create 15 balance checking threads
     for _ in range(15):
@@ -164,4 +169,5 @@ def test_rw_mutex_writes():
     # Check account balance
     expected_balance = 10 * 10  # 10 threads depositing 10 each
     expected_balance -= 10 * 5  # 10 threads withdrawing 5 each
-    assert account.get_balance() == expected_balance, "Incorrect account balance"
+    actual_balance, _ = account.get_stats()
+    assert actual_balance == expected_balance, "Incorrect account balance"

@@ -19,7 +19,7 @@ from typing_extensions import TypedDict
 
 from jwt import PyJWK, PyJWKSet
 
-from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
+from .constants import JWKCacheMaxAgeInMs
 
 from supertokens_python.utils import RWMutex, RWLockContext, get_timestamp_ms
 from supertokens_python.querier import Querier
@@ -38,8 +38,7 @@ JWKSConfig: JWKSConfigType = {
 
 
 class CachedKeys:
-    def __init__(self, path: str, keys: List[PyJWK]):
-        self.path = path
+    def __init__(self, keys: List[PyJWK]):
         self.keys = keys
         self.last_refresh_time = get_timestamp_ms()
 
@@ -121,9 +120,8 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
                 last_error = e
 
             if cached_jwks is not None:  # we found a valid JWKS
-                cached_keys = CachedKeys(path, cached_jwks)
+                cached_keys = CachedKeys(cached_jwks)
                 log_debug_message("Returning JWKS from fetch")
                 return cached_keys.keys
 
     raise last_error
-
