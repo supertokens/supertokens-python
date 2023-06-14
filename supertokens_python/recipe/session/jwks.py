@@ -127,6 +127,3 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
 
     raise last_error
 
-
-class JWKSRequestError(Exception):
-    pass
