@@ -36,7 +36,7 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
-from ...logger import log_debug_message
+from supertokens_python.utils import log_debug_message
 
 _T = TypeVar("_T")
 
