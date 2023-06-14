@@ -684,7 +684,9 @@ async def test_search_with_provider_google_and_phone_one(driver_config_app: Any)
     data_json = json.loads(response.data)
     assert len(data_json["users"]) == 0
 
+
 from tests.utils import get_st_init_args
+
 
 @fixture(scope="function")
 def flask_app():
@@ -695,9 +697,9 @@ def flask_app():
 
     counter: Dict[str, int] = {}
 
-    @app.before_request # type: ignore
+    @app.before_request  # type: ignore
     @verify_session(session_required=False)
-    def audit_request(): # type: ignore
+    def audit_request():  # type: ignore
         nonlocal counter
 
         user_id = None
@@ -713,8 +715,8 @@ def flask_app():
         if request.path != "/stats":
             counter[user_id] = counter.get(user_id, 0) + 1
 
-    @app.route("/stats") # type: ignore
-    def test_api(): # type: ignore
+    @app.route("/stats")  # type: ignore
+    def test_api():  # type: ignore
         return jsonify(counter)
 
     @app.route("/login")  # type: ignore
@@ -723,19 +725,20 @@ def flask_app():
         s = create_new_session(request, user_id, {}, {})
         return jsonify({"user": s.get_user_id()})
 
-    @app.route("/ping") # type: ignore
-    def ping(): # type: ignore
+    @app.route("/ping")  # type: ignore
+    def ping():  # type: ignore
         return jsonify({"msg": "pong"})
 
-    @app.route("/options-api", methods=["OPTIONS", "GET"]) # type: ignore
+    @app.route("/options-api", methods=["OPTIONS", "GET"])  # type: ignore
     @verify_session()
-    def options_api(): # type: ignore
+    def options_api():  # type: ignore
         return jsonify({"msg": "Shouldn't come here"})
 
     return app
 
+
 def test_verify_session_with_before_request_with_no_response(flask_app: Any):
-    init(**{**get_st_init_args([session.init(get_token_transfer_method=lambda *_: "cookie")]), "framework": "flask"}) # type: ignore
+    init(**{**get_st_init_args([session.init(get_token_transfer_method=lambda *_: "cookie")]), "framework": "flask"})  # type: ignore
     start_st()
 
     client = flask_app.test_client()
