@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
+- `website_domain` in Supertokens.init renamed to `origin`
+- `origin` accepts type str | func
 - The following function now require an additional argument called `origin_string`
   - passwordless recipe - `create_magic_link`
   - thirdpartypasswordless - `create_magic_link`
