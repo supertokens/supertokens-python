@@ -1,4 +1,4 @@
-
+ 
 # Changelog
 All notable changes to this project will be documented in this file.
 
@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
+
+## [0.14.4] - 2023-06-15
+
+### Breaking changes
+
+- The following function signatures have changed to account for an `origin_string`
+  - passwordless recipe - `create_magic_link`
+  - thirdpartypasswordless - `create_magic_link`
 
 
 ## [0.14.3] - 2023-06-7
