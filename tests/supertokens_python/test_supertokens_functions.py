@@ -45,7 +45,7 @@ async def test_supertokens_functions():
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",

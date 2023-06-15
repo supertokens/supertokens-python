@@ -77,7 +77,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",

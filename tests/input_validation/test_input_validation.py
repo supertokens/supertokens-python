@@ -41,7 +41,7 @@ async def test_init_validation_emailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -57,7 +57,7 @@ async def test_init_validation_emailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -78,7 +78,7 @@ async def test_init_validation_emailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -98,7 +98,7 @@ async def test_init_validation_emailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -121,7 +121,7 @@ async def test_init_validation_emailverification():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -138,7 +138,7 @@ async def test_init_validation_emailverification():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -161,7 +161,7 @@ async def test_init_validation_jwt():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -175,7 +175,7 @@ async def test_init_validation_jwt():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -192,7 +192,7 @@ async def test_init_validation_openid():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -233,7 +233,7 @@ async def test_init_validation_passwordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -257,7 +257,7 @@ async def test_init_validation_passwordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -276,7 +276,7 @@ async def test_init_validation_passwordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -317,7 +317,7 @@ async def test_init_validation_session():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -333,7 +333,7 @@ async def test_init_validation_session():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -349,7 +349,7 @@ async def test_init_validation_session():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -368,7 +368,7 @@ async def test_init_validation_thirdparty():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -386,7 +386,7 @@ async def test_init_validation_thirdparty():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -412,7 +412,7 @@ async def test_init_validation_thirdpartyemailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -428,7 +428,7 @@ async def test_init_validation_thirdpartyemailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -449,7 +449,7 @@ async def test_init_validation_thirdpartyemailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -469,7 +469,7 @@ async def test_init_validation_thirdpartyemailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -485,7 +485,7 @@ async def test_init_validation_thirdpartyemailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -501,7 +501,7 @@ async def test_init_validation_thirdpartyemailpassword():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -532,7 +532,7 @@ async def test_init_validation_thirdpartypasswordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -551,7 +551,7 @@ async def test_init_validation_thirdpartypasswordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -576,7 +576,7 @@ async def test_init_validation_thirdpartypasswordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -604,7 +604,7 @@ async def test_init_validation_thirdpartypasswordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -629,7 +629,7 @@ async def test_init_validation_thirdpartypasswordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -652,7 +652,7 @@ async def test_init_validation_thirdpartypasswordless():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",
@@ -678,7 +678,7 @@ async def test_init_validation_usermetadata():
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
+                origin="http://supertokens.io",
                 api_base_path="/auth",
             ),
             framework="fastapi",

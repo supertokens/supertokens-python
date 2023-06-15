@@ -201,7 +201,7 @@ async def check_for_general_error(
     return is_general_error
 
 
-def get_website_domain():
+def get_origin():
     return "http://localhost:" + get_website_port()
 
 
@@ -961,7 +961,7 @@ def custom_init(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="0.0.0.0:" + get_api_port(),
-            website_domain=get_website_domain(),
+            origin=get_origin(),
         ),
         framework="fastapi",
         recipe_list=recipe_list,
@@ -1125,7 +1125,7 @@ class CustomCORSMiddleware(CORSMiddleware):
 
 app = CustomCORSMiddleware(  # type: ignore
     app_=app,
-    allow_origins=[get_website_domain()],
+    allow_origins=[get_origin()],
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Content-Type"] + get_all_cors_headers(),

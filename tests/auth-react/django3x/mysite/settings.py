@@ -17,7 +17,7 @@ from typing import List
 from corsheaders.defaults import default_headers
 from supertokens_python import get_all_cors_headers
 
-from .utils import custom_init, get_website_domain
+from .utils import custom_init, get_origin
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,11 +34,11 @@ custom_init("PHONE", "USER_INPUT_CODE_AND_MAGIC_LINK")
 
 ALLOWED_HOSTS = ["localhost"]
 
-CORS_ORIGIN_WHITELIST = [get_website_domain()]
+CORS_ORIGIN_WHITELIST = [get_origin()]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [get_website_domain()]
-CORS_ALLOWED_ORIGIN_REGEXES = [get_website_domain()]
+CORS_ALLOWED_ORIGINS = [get_origin()]
+CORS_ALLOWED_ORIGIN_REGEXES = [get_origin()]
 
 CORS_ALLOW_METHODS = [
     "DELETE",

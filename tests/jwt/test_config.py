@@ -39,7 +39,7 @@ async def test_that_the_default_config_sets_values_correctly_for_JWT_recipe():
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init()],
@@ -57,7 +57,7 @@ async def test_that_the_config_sets_values_correctly_for_JWT_recipe_when_jwt_val
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[jwt.init(jwt_validity_seconds=24 * 60 * 60)],  # 24 hours

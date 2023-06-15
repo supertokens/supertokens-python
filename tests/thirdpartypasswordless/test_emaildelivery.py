@@ -126,7 +126,7 @@ async def test_email_verify_default_backward_compatibility(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -204,7 +204,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -279,7 +279,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -419,7 +419,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -537,7 +537,7 @@ async def test_email_verify_for_pless_user_no_callback():
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -589,7 +589,7 @@ async def test_pless_login_default_backward_compatibility(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -679,7 +679,7 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -749,7 +749,7 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -829,7 +829,7 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -978,7 +978,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
+            origin="http://supertokens.io",
             api_base_path="/auth",
         ),
         framework="fastapi",

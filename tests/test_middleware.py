@@ -49,7 +49,7 @@ async def test_rid_with_session_and_non_existent_api_in_session_recipe_gives_404
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -72,7 +72,7 @@ async def test_no_rid_with_existent_API_does_not_give_404(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -95,7 +95,7 @@ async def test_rid_as_anticsrf_with_existent_API_does_not_give_404(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[
@@ -120,7 +120,7 @@ async def test_random_rid_with_existent_API_does_gives_404(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
-            website_domain="supertokens.io",
+            origin="supertokens.io",
         ),
         framework="fastapi",
         recipe_list=[

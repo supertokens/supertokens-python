@@ -46,7 +46,7 @@ init(
     app_info=InputAppInfo(
         app_name="Supertokens",
         api_domain="http://localhost:" + get_api_port(),
-        website_domain=get_website_domain(),
+        origin=get_website_domain(),
     ),
     framework="flask",
     recipe_list=[

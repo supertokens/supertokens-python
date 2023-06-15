@@ -13,9 +13,19 @@
 # under the License.
 
 from __future__ import annotations
-
 from os import environ
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Union,
+    Awaitable,
+)
+from types import FunctionType
 
 from typing_extensions import Literal
 
@@ -76,7 +86,7 @@ class InputAppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
+        origin: Union[str, Callable[[BaseRequest, Any], Awaitable[str]]],
         api_gateway_path: str = "",
         api_base_path: str = "/auth",
         website_base_path: str = "/auth",
@@ -84,7 +94,7 @@ class InputAppInfo:
         self.app_name = app_name
         self.api_gateway_path = api_gateway_path
         self.api_domain = api_domain
-        self.website_domain = website_domain
+        self.origin = origin
         self.api_base_path = api_base_path
         self.website_base_path = website_base_path
 
@@ -94,7 +104,7 @@ class AppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
+        origin: Union[str, Callable[[BaseRequest, Any], Awaitable[str]]],
         framework: Literal["fastapi", "flask", "django"],
         api_gateway_path: str,
         api_base_path: str,
@@ -104,12 +114,17 @@ class AppInfo:
         self.app_name = app_name
         self.api_gateway_path = NormalisedURLPath(api_gateway_path)
         self.api_domain = NormalisedURLDomain(api_domain)
-        self.website_domain = NormalisedURLDomain(website_domain)
+        self.initial_origin_type = "string" if isinstance(origin, str) else "function"
+
+        async def origin_func(req: BaseRequest, user_context: Any):
+            if isinstance(origin, FunctionType):
+                origin_string = await origin(req, user_context)
+                return NormalisedURLDomain(origin_string)
+            return NormalisedURLDomain(str(origin))
+
+        self.origin = origin_func
         self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
             self.api_domain.get_as_string_dangerous()
-        )
-        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-            self.website_domain.get_as_string_dangerous()
         )
         self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
@@ -159,7 +174,7 @@ class Supertokens:
         self.app_info = AppInfo(
             app_info.app_name,
             app_info.api_domain,
-            app_info.website_domain,
+            app_info.origin,
             framework,
             app_info.api_gateway_path,
             app_info.api_base_path,

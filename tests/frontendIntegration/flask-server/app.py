@@ -196,7 +196,7 @@ def config(
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
                     api_domain="0.0.0.0:" + get_app_port(),
-                    website_domain="http://localhost.org:8080",
+                    origin="http://localhost.org:8080",
                 ),
                 framework="flask",
                 recipe_list=[
@@ -220,7 +220,7 @@ def config(
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
                     api_domain="0.0.0.0:" + get_app_port(),
-                    website_domain="http://localhost.org:8080",
+                    origin="http://localhost.org:8080",
                 ),
                 framework="flask",
                 recipe_list=[
@@ -243,7 +243,7 @@ def config(
             app_info=InputAppInfo(
                 app_name="SuperTokens Python SDK",
                 api_domain="0.0.0.0:" + get_app_port(),
-                website_domain="http://localhost.org:8080",
+                origin="http://localhost.org:8080",
             ),
             framework="flask",
             recipe_list=[

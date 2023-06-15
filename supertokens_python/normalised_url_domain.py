@@ -37,11 +37,7 @@ def normalise_domain_path_or_throw_error(
     input_str = input_str.strip().lower()
 
     try:
-        if (
-            (not input_str.startswith("http://"))
-            and (not input_str.startswith("https://"))
-            and (not input_str.startswith("supertokens://"))
-        ):
+        if "://" not in input_str:
             raise Exception("converting to proper URL")
         url_obj = urlparse(input_str)
 

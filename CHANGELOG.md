@@ -1,4 +1,4 @@
-
+ 
 # Changelog
 All notable changes to this project will be documented in this file.
 
@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Breaking changes
+
+- `website_domain` in Supertokens.init renamed to `origin`
+- `origin` accepts type str | func
+- The following function now require an additional argument called `origin_string`
+  - passwordless recipe - `create_magic_link`
+  - thirdpartypasswordless - `create_magic_link`
 ## Changes
 
 - `cookie_same_site` in recipe init now accepts a func or str
