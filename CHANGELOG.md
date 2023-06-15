@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## Changes
+
+- `cookie_same_site` in recipe init now accepts a func or str
 
 ## [0.14.3] - 2023-06-7
 

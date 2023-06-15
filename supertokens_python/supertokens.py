@@ -133,10 +133,12 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+async def manage_session_post_response(
+    session: SessionContainer, response: BaseResponse
+):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
-        mutator(response=response)  # type: ignore
+        await mutator(response=response)  # type: ignore
 
 
 class Supertokens:

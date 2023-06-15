@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING, Awaitable
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.session.access_token import (
@@ -96,9 +96,6 @@ async def get_session_from_request(
 
     # This token isn't handled by getToken to limit the scope of this legacy/migration code
     if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-        log_debug_message(
-            "getSession: Throwing TRY_REFRESH_TOKEN because the request is using a legacy session"
-        )
         # This could create a spike on refresh calls during the update of the backend SDK
         return raise_try_refresh_token_exception(
             "using legacy session, please call the refresh API"
@@ -153,7 +150,8 @@ async def get_session_from_request(
         do_anti_csrf_check = normalise_http_method(request.method()) != "get"
     if request_transfer_method == "header":
         do_anti_csrf_check = False
-
+    if config.anti_csrf != "VIA_TOKEN":
+        do_anti_csrf_check = False
     if do_anti_csrf_check and config.anti_csrf == "VIA_CUSTOM_HEADER":
         if config.anti_csrf == "VIA_CUSTOM_HEADER":
             if get_rid_from_header(request) is None:
@@ -252,9 +250,11 @@ async def create_new_session_in_request(
         "createNewSession: using transfer method %s", output_transfer_method
     )
 
+    cookie_same_site = await config.cookie_same_site(request, user_context)
+
     if (
         output_transfer_method == "cookie"
-        and config.cookie_same_site == "none"
+        and cookie_same_site == "none"
         and not config.cookie_secure
         and not (
             (
@@ -290,7 +290,7 @@ async def create_new_session_in_request(
             and get_token(request, "access", transfer_method) is not None
         ):
             session.response_mutators.append(
-                clear_session_mutator(config, transfer_method)
+                clear_session_mutator(request, config, transfer_method)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
@@ -313,7 +313,7 @@ async def refresh_session_in_request(
 ) -> SessionContainer:
     log_debug_message("refreshSession: Started")
 
-    response_mutators: List[Callable[[Any], None]] = []
+    response_mutators: List[Callable[[Any], Awaitable[None]]] = []
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
@@ -363,6 +363,7 @@ async def refresh_session_in_request(
             )
             response_mutators.append(
                 set_cookie_response_mutator(
+                    request,
                     config,
                     LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
                     "",
@@ -384,7 +385,6 @@ async def refresh_session_in_request(
 
     disable_anti_csrf = request_transfer_method == "header"
     anti_csrf_token = get_anti_csrf_header(request)
-
     if config.anti_csrf == "VIA_CUSTOM_HEADER" and not disable_anti_csrf:
         if get_rid_from_header(request) is None:
             log_debug_message(
@@ -400,7 +400,10 @@ async def refresh_session_in_request(
     session: Optional[SessionContainer] = None
     try:
         session = await recipe_interface_impl.refresh_session(
-            refresh_token, anti_csrf_token, disable_anti_csrf, user_context
+            refresh_token,
+            anti_csrf_token,
+            (disable_anti_csrf and config.anti_csrf == "VIA_TOKEN"),
+            user_context,
         )
     except SuperTokensSessionError as e:
         if isinstance(e, TokenTheftError) or (
@@ -414,6 +417,7 @@ async def refresh_session_in_request(
                 )
                 response_mutators.append(
                     set_cookie_response_mutator(
+                        request,
                         config,
                         LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
                         "",
@@ -436,7 +440,9 @@ async def refresh_session_in_request(
             transfer_method != request_transfer_method
             and refresh_tokens[transfer_method] is not None
         ):
-            response_mutators.append(clear_session_mutator(config, transfer_method))
+            response_mutators.append(
+                clear_session_mutator(request, config, transfer_method)
+            )
 
     await session.attach_to_request_response(request, request_transfer_method)
     log_debug_message("refreshSession: Success!")
@@ -448,6 +454,7 @@ async def refresh_session_in_request(
         )
         response_mutators.append(
             set_cookie_response_mutator(
+                request,
                 config,
                 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
                 "",
@@ -455,6 +462,5 @@ async def refresh_session_in_request(
                 "access_token_path",
             )
         )
-
     session.response_mutators.extend(response_mutators)
     return session

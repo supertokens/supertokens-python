@@ -103,7 +103,8 @@ def get_cookie(request: BaseRequest, key: str):
     return unquote(cookie_val)
 
 
-def _set_cookie(
+async def _set_cookie(
+    req: BaseRequest,
     response: BaseResponse,
     config: SessionConfig,
     key: str,
@@ -113,7 +114,7 @@ def _set_cookie(
 ):
     domain = config.cookie_domain
     secure = config.cookie_secure
-    same_site = config.cookie_same_site
+    same_site = await config.cookie_same_site(req, {})
     path = ""
     if path_type == "refresh_token_path":
         path = config.refresh_token_path.get_as_string_dangerous()
@@ -133,16 +134,19 @@ def _set_cookie(
 
 
 def set_cookie_response_mutator(
+    request: BaseRequest,
     config: SessionConfig,
     key: str,
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        return _set_cookie(response, config, key, value, expires, path_type)
+        return await _set_cookie(
+            request, response, config, key, value, expires, path_type
+        )
 
     return mutator
 
@@ -153,7 +157,7 @@ def _attach_anti_csrf_header(response: BaseResponse, value: str):
 
 
 def anti_csrf_response_mutator(value: str):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
         return _attach_anti_csrf_header(response, value)
@@ -169,8 +173,8 @@ def get_rid_header(request: BaseRequest):
     return get_header(request, RID_HEADER_KEY)
 
 
-def clear_session_from_all_token_transfer_methods(
-    response: BaseResponse, recipe: SessionRecipe
+async def clear_session_from_all_token_transfer_methods(
+    request: BaseRequest, response: BaseResponse, recipe: SessionRecipe
 ):
     # We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     # This is done to handle the following use-case:
@@ -179,19 +183,22 @@ def clear_session_from_all_token_transfer_methods(
     # We can't know which to clear since we can't reliably query or remove the set-cookie header added to the response (causes issues in some frameworks, i.e.: hapi)
     # The safe solution in this case is to overwrite all the response cookies/headers with an empty value, which is what we are doing here.
     for transfer_method in available_token_transfer_methods:
-        _clear_session(response, recipe.config, transfer_method)
+        await _clear_session(request, response, recipe.config, transfer_method)
 
 
-def clear_session_mutator(config: SessionConfig, transfer_method: TokenTransferMethod):
-    def mutator(
+def clear_session_mutator(
+    request: BaseRequest, config: SessionConfig, transfer_method: TokenTransferMethod
+):
+    async def mutator(
         response: BaseResponse,
     ):
-        return _clear_session(response, config, transfer_method)
+        return await _clear_session(request, response, config, transfer_method)
 
     return mutator
 
 
-def _clear_session(
+async def _clear_session(
+    request: BaseRequest,
     response: BaseResponse,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
@@ -199,7 +206,7 @@ def _clear_session(
     # If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        _set_token(response, config, token_type, "", 0, transfer_method)
+        await _set_token(request, response, config, token_type, "", 0, transfer_method)
 
     remove_header(
         response, ANTI_CSRF_HEADER_KEY
@@ -211,13 +218,14 @@ def _clear_session(
 
 
 def clear_session_response_mutator(
+    request: BaseRequest,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        return _clear_session(response, config, transfer_method)
+        return await _clear_session(request, response, config, transfer_method)
 
     return mutator
 
@@ -256,7 +264,8 @@ def get_token(
     raise Exception("Should never happen: Unknown transferMethod: " + transfer_method)
 
 
-def _set_token(
+async def _set_token(
+    request: BaseRequest,
     response: BaseResponse,
     config: SessionConfig,
     token_type: TokenType,
@@ -266,7 +275,8 @@ def _set_token(
 ):
     log_debug_message("Setting %s token as %s", token_type, transfer_method)
     if transfer_method == "cookie":
-        _set_cookie(
+        await _set_cookie(
+            request,
             response,
             config,
             get_cookie_name_from_token_type(token_type),
@@ -283,14 +293,16 @@ def _set_token(
 
 
 def token_response_mutator(
+    request: BaseRequest,
     config: SessionConfig,
     token_type: TokenType,
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
-    def mutator(response: BaseResponse):
-        _set_token(
+    async def mutator(response: BaseResponse):
+        await _set_token(
+            request,
             response,
             config,
             token_type,
@@ -308,22 +320,24 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
 
 
 def access_token_mutator(
+    request: BaseRequest,
     access_token: str,
     front_token: str,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
 ):
-    def mutator(
+    async def mutator(
         response: BaseResponse,
     ):
-        _set_access_token_in_response(
-            response, access_token, front_token, config, transfer_method
+        await _set_access_token_in_response_async(
+            request, response, access_token, front_token, config, transfer_method
         )
 
     return mutator
 
 
-def _set_access_token_in_response(
+async def _set_access_token_in_response_async(
+    req: BaseRequest,
     res: BaseResponse,
     access_token: str,
     front_token: str,
@@ -331,7 +345,8 @@ def _set_access_token_in_response(
     transfer_method: TokenTransferMethod,
 ):
     _set_front_token_in_headers(res, front_token)
-    _set_token(
+    await _set_token(
+        req,
         res,
         config,
         "access",
@@ -348,7 +363,8 @@ def _set_access_token_in_response(
         config.expose_access_token_to_frontend_in_cookie_based_auth
         and transfer_method == "cookie"
     ):
-        _set_token(
+        await _set_token(
+            req,
             res,
             config,
             "access",

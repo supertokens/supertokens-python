@@ -65,6 +65,7 @@ from .utils import (
     TokenTransferMethod,
     validate_and_normalise_user_input,
 )
+from supertokens_python.utils import resolve
 
 
 class SessionRecipe(RecipeModule):
@@ -77,7 +78,11 @@ class SessionRecipe(RecipeModule):
         app_info: AppInfo,
         cookie_domain: Union[str, None] = None,
         cookie_secure: Union[bool, None] = None,
-        cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+        cookie_same_site: Union[
+            Callable[[BaseRequest, Any], Literal["lax", "none", "strict"]],
+            Literal["lax", "none", "strict"],
+            None,
+        ] = None,
         session_expired_status_code: Union[int, None] = None,
         anti_csrf: Union[
             Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None
@@ -226,7 +231,7 @@ class SessionRecipe(RecipeModule):
             and err.response_mutators is not None
         ):
             for mutator in err.response_mutators:
-                mutator(response)
+                await resolve(mutator(response))
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")

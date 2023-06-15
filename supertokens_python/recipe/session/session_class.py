@@ -50,6 +50,7 @@ class Session(SessionContainer):
         if self.access_token_updated:
             self.response_mutators.append(
                 access_token_mutator(
+                    request,
                     self.access_token,
                     self.front_token,
                     self.config,
@@ -59,6 +60,7 @@ class Session(SessionContainer):
             if self.refresh_token is not None:
                 self.response_mutators.append(
                     token_response_mutator(
+                        request,
                         self.config,
                         "refresh",
                         self.refresh_token.token,
@@ -93,6 +95,7 @@ class Session(SessionContainer):
             transfer_method: TokenTransferMethod = self.req_res_info.transfer_method  # type: ignore
             self.response_mutators.append(
                 clear_session_response_mutator(
+                    self.req_res_info.request,
                     self.config,
                     transfer_method,
                 )
@@ -107,9 +110,6 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
-            log_debug_message(
-                "getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore"
-            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.session_data_in_database
@@ -164,9 +164,6 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
-            log_debug_message(
-                "getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore"
-            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.time_created
@@ -178,9 +175,6 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
-            log_debug_message(
-                "getExpiry: Throwing UNAUTHORISED because session does not exist anymore"
-            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.expiry
@@ -283,9 +277,6 @@ class Session(SessionContainer):
         )
 
         if response is None:
-            log_debug_message(
-                "mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore"
-            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         if response.access_token is not None:
@@ -307,6 +298,7 @@ class Session(SessionContainer):
                 transfer_method: TokenTransferMethod = self.req_res_info.transfer_method  # type: ignore
                 self.response_mutators.append(
                     access_token_mutator(
+                        self.req_res_info.request,
                         self.access_token,
                         self.front_token,
                         self.config,
