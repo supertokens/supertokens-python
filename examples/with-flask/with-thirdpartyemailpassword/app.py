@@ -37,7 +37,7 @@ def get_website_port():
     return "3000"
 
 
-def get_website():
+def get_website_domain():
     return "http://localhost:" + get_website_port()
 
 
@@ -46,7 +46,7 @@ init(
     app_info=InputAppInfo(
         app_name="Supertokens",
         api_domain="http://localhost:" + get_api_port(),
-        origin=get_website(),
+        origin=get_website_domain(),
     ),
     framework="flask",
     recipe_list=[
@@ -107,7 +107,7 @@ Middleware(app)
 CORS(
     app=app,
     supports_credentials=True,
-    origins=get_website(),
+    origins=get_website_domain(),
     allow_headers=["Content-Type"] + get_all_cors_headers(),
 )
 

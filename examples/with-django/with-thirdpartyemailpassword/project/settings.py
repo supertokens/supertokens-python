@@ -53,7 +53,7 @@ def get_website_port():
     return "3000"
 
 
-def get_website():
+def get_website_domain():
     return "http://localhost:" + get_website_port()
 
 
@@ -62,7 +62,7 @@ init(
     app_info=InputAppInfo(
         app_name="Supertokens",
         api_domain="http://localhost:" + get_api_port(),
-        origin=get_website(),
+        origin=get_website_domain(),
     ),
     framework="django",
     mode="wsgi",
@@ -119,9 +119,9 @@ init(
     telemetry=False,
 )
 
-CORS_ORIGIN_WHITELIST = [get_website()]
+CORS_ORIGIN_WHITELIST = [get_website_domain()]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [get_website()]
+CORS_ALLOWED_ORIGINS = [get_website_domain()]
 CORS_ALLOW_HEADERS: List[str] = (
     list(default_headers) + ["Content-Type"] + get_all_cors_headers()
 )

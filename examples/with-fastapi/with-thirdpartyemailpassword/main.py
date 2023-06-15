@@ -44,7 +44,7 @@ def get_website_port():
     return "3000"
 
 
-def get_website():
+def get_website_domain():
     return "http://localhost:" + get_website_port()
 
 
@@ -53,7 +53,7 @@ init(
     app_info=InputAppInfo(
         app_name="Supertokens",
         api_domain="http://localhost:" + get_api_port(),
-        origin=get_website(),
+        origin=get_website_domain(),
     ),
     framework="fastapi",
     recipe_list=[
@@ -131,7 +131,7 @@ def f_405(_, __: Exception):
 
 app = CORSMiddleware(  # type: ignore
     app=app,
-    allow_origins=[get_website()],
+    allow_origins=[get_website_domain()],
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Content-Type"] + get_all_cors_headers(),
