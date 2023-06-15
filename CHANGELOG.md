@@ -8,11 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.14.4] - 2023-06-15
-
 ### Breaking changes
 
-- The following function signatures have changed to account for an `origin_string`
+- The following function now require an additional argument called `origin_string`
   - passwordless recipe - `create_magic_link`
   - thirdpartypasswordless - `create_magic_link`
 
