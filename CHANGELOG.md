@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The following function now require an additional argument called `origin_string`
   - passwordless recipe - `create_magic_link`
   - thirdpartypasswordless - `create_magic_link`
+## Changes
 
+- `cookie_same_site` in recipe init now accepts a func or str
 
 ## [0.14.3] - 2023-06-7
 
