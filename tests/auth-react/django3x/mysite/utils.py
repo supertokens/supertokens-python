@@ -210,7 +210,9 @@ class CustomAuth0Provider(Provider):
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+    def get_redirect_uri(
+        self, api_domain: Optional[str], user_context: Dict[str, Any]
+    ) -> Union[None, str]:
         return None
 
     def get_client_id(self, user_context: Dict[str, Any]) -> str:

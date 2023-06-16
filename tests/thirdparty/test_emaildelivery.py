@@ -106,7 +106,9 @@ class CustomProvider(Provider):
     ) -> AccessTokenAPI:
         return AccessTokenAPI("https://example.com/oauth/token", {})
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+    def get_redirect_uri(
+        self, api_domain: str, user_context: Dict[str, Any]
+    ) -> Union[None, str]:
         return
 
     def get_client_id(self, user_context: Dict[str, Any]) -> str:

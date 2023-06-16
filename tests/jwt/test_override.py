@@ -92,10 +92,15 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
             payload: Dict[str, Any],
             validity_seconds: Union[int, None],
             use_static_signing_key: Union[bool, None],
+            api_domain: Union[str, None],
             user_context: Dict[str, Any],
         ):
             response_ = await oi_create_jwt(
-                payload, validity_seconds, use_static_signing_key, user_context
+                payload,
+                validity_seconds,
+                use_static_signing_key,
+                api_domain,
+                user_context,
             )
 
             if isinstance(response_, CreateJwtOkResult):

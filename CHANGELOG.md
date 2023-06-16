@@ -15,7 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The following function now require an additional argument called `origin_string`
   - passwordless recipe - `create_magic_link`
   - thirdpartypasswordless - `create_magic_link`
-## Changes
+- Function signature of following functions changed to require a api_domain and/or issuer_domain
+  - jwt recipe - `create_jwt`
+  - openId recipe - `create_jwt`
+  - openId recipe - `get_open_id_discovery_configuration`
+  - session recipe - `create_new_session_without_request_response`
+  - session recipe - `create_jwt`
+  - session recipe - `get_open_id_discovery_configuration`
+  - thirdparty/rovisers - `get_redirect_uri`
+
+
+### Changes
 
 - `cookie_same_site` in recipe init now accepts a func or str
 

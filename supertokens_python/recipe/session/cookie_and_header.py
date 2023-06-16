@@ -113,7 +113,7 @@ async def _set_cookie(
     path_type: Literal["refresh_token_path", "access_token_path"],
 ):
     domain = config.cookie_domain
-    secure = config.cookie_secure
+    secure = await config.cookie_secure(req, {})
     same_site = await config.cookie_same_site(req, {})
     path = ""
     if path_type == "refresh_token_path":

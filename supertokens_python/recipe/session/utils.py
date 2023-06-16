@@ -329,7 +329,7 @@ class SessionConfig:
         cookie_same_site: Callable[
             [BaseRequest, Any], Awaitable[Literal["lax", "none", "strict"]]
         ],
-        cookie_secure: bool,
+        cookie_secure: Callable[[BaseRequest, Any], Awaitable[bool]],
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
         anti_csrf: str,
@@ -410,11 +410,11 @@ def validate_and_normalise_user_input(
         origin_scheme = get_url_scheme(origin_string)
         top_level_origin = get_top_level_domain_for_same_site_resolution(origin_string)
 
-        api_domain_scheme = get_url_scheme(
-            app_info.api_domain.get_as_string_dangerous()
-        )
+        api_domain = await app_info.api_domain(req, user_context)
+        api_domain_string = api_domain.get_as_string_dangerous()
+        api_domain_scheme = get_url_scheme(api_domain_string)
         top_level_api_domain = get_top_level_domain_for_same_site_resolution(
-            app_info.api_domain.get_as_string_dangerous()
+            api_domain_string
         )
 
         cookie_same_site_normalize = "none"
@@ -438,11 +438,13 @@ def validate_and_normalise_user_input(
             return cookie_same_site_normalize
         return result
 
-    cookie_secure = (
-        cookie_secure
-        if cookie_secure is not None
-        else app_info.api_domain.get_as_string_dangerous().startswith("https")
-    )
+    async def cookie_secure_func(req: BaseRequest, user_context: Any):
+        api_domain = await app_info.api_domain(req, user_context)
+        return (
+            cookie_secure
+            if cookie_secure is not None
+            else api_domain.get_as_string_dangerous().startswith("https")
+        )
 
     session_expired_status_code = (
         session_expired_status_code if session_expired_status_code is not None else 401
@@ -480,7 +482,7 @@ def validate_and_normalise_user_input(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
         cookie_same_site_func,
-        cookie_secure,
+        cookie_secure_func,
         session_expired_status_code,
         error_handlers,
         anti_csrf,
@@ -548,3 +550,17 @@ async def validate_claims_in_payload(
             )
 
     return validation_errors
+
+
+async def get_api_domain_or_throw_error(
+    api_domain: Optional[str], app_info: AppInfo, user_context: Any
+) -> str:
+    if api_domain is None:
+        if app_info.initial_api_domain_type == "string":
+            api_domain_res = await app_info.api_domain({}, user_context)  # type:ignore
+            api_domain = api_domain_res.get_as_string_dangerous()
+            return api_domain
+        raise Exception(
+            "Please pass api_domain as a string to the function or pass api_domain as string in supertokens.init"
+        )
+    return api_domain

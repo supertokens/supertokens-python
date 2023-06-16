@@ -48,7 +48,9 @@ class Provider(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+    def get_redirect_uri(
+        self, api_domain: str, user_context: Dict[str, Any]
+    ) -> Union[None, str]:
         pass
 
     @abc.abstractmethod

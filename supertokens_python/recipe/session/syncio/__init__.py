@@ -65,6 +65,7 @@ def create_new_session_without_request_response(
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
+    api_domain: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -77,6 +78,7 @@ def create_new_session_without_request_response(
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
+            api_domain,
             user_context,
         )
     )
@@ -258,13 +260,20 @@ def create_jwt(
     payload: Dict[str, Any],
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
+    issuer_domain: Optional[str] = None,
+    api_domain: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import create_jwt as async_create_jwt
 
     return sync(
         async_create_jwt(
-            payload, validity_seconds, use_static_signing_key, user_context
+            payload,
+            validity_seconds,
+            use_static_signing_key,
+            api_domain,
+            issuer_domain,
+            user_context,
         )
     )
 
@@ -276,13 +285,13 @@ def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResult:
 
 
 def get_open_id_discovery_configuration(
-    user_context: Optional[Dict[str, Any]] = None
+    issuer_domain: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None
 ) -> GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,
     )
 
-    return sync(async_get_open_id_discovery_configuration(user_context))
+    return sync(async_get_open_id_discovery_configuration(issuer_domain, user_context))
 
 
 def regenerate_access_token(
