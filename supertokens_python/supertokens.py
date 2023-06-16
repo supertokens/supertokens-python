@@ -53,7 +53,6 @@ from .utils import (
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
-    resolve,
 )
 
 if TYPE_CHECKING:
@@ -163,7 +162,7 @@ async def manage_session_post_response(
 ):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
-        await resolve(mutator(response=response))  # type: ignore
+        await mutator(response=response)  # type: ignore
 
 
 class Supertokens:

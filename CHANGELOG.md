@@ -1,4 +1,4 @@
-
+ 
 # Changelog
 All notable changes to this project will be documented in this file.
 
@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## Breaking Changes
+### Breaking changes
 
+- `website_domain` in Supertokens.init renamed to `origin`
+- `origin` accepts type str | func
+- The following function now require an additional argument called `origin_string`
+  - passwordless recipe - `create_magic_link`
+  - thirdpartypasswordless - `create_magic_link`
 - Function signature of following functions changed to require a api_domain and/or issuer_domain
   - jwt recipe - `create_jwt`
   - openId recipe - `create_jwt`
@@ -18,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - session recipe - `create_jwt`
   - session recipe - `get_open_id_discovery_configuration`
   - thirdparty/rovisers - `get_redirect_uri`
+
+
+### Changes
+
+- `cookie_same_site` in recipe init now accepts a func or str
 
 ## [0.14.3] - 2023-06-7
 
