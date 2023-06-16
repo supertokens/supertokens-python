@@ -82,10 +82,13 @@ class Host:
 
 
 class InputAppInfo:
+    # There can be a case where the user has multiple independent (not the same top level domain) web apps that all query their own independent API servers but all API servers use a single server for auth.
+    #
+    # In this case they would need to use a different api domain depending on where the request originated from.
     def __init__(
         self,
         app_name: str,
-        api_domain: str,
+        api_domain: Union[str, Callable[[BaseRequest, Any], Awaitable[str]]],
         origin: Union[str, Callable[[BaseRequest, Any], Awaitable[str]]],
         api_gateway_path: str = "",
         api_base_path: str = "/auth",
