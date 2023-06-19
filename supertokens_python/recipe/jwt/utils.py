@@ -59,7 +59,7 @@ async def get_issuer_domain_or_throw_error(
 ) -> str:
     if issuer is None:
         if app_info.initial_api_domain_type == "string":
-            api_domain_res = await app_info.api_domain({}, user_context)  # type:ignore
+            api_domain_res = await app_info.api_domain(None, user_context)
             api_domain = api_domain_res.get_as_string_dangerous()
             return api_domain
         raise Exception(
