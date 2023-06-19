@@ -63,21 +63,21 @@ class OpenIdConfig:
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    issuer: Union[str, None] = None,
+    issuer_domain_and_path: Union[str, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ):
     async def issuer_domain(req: BaseRequest, user_context: Any):
-        if issuer is None:
+        if issuer_domain_and_path is None:
             api_domain = await app_info.api_domain(req, user_context)
             return api_domain
-        return NormalisedURLDomain(issuer)
+        return NormalisedURLDomain(issuer_domain_and_path)
 
-    is_issuer_domain_given = issuer is not None
+    is_issuer_domain_given = issuer_domain_and_path is not None
 
-    if issuer is None:
+    if issuer_domain_and_path is None:
         issuer_path = app_info.api_base_path
     else:
-        issuer_path = NormalisedURLPath(issuer)
+        issuer_path = NormalisedURLPath(issuer_domain_and_path)
 
     if not issuer_path.equals(app_info.api_base_path):
         raise Exception(
@@ -103,15 +103,15 @@ async def get_issuer_domain_or_throw_error(
     config: OpenIdConfig,
     app_info: AppInfo,
     user_context: Any,
-) -> str:
+) -> NormalisedURLDomain:
     if issuer_domain is not None:
-        return issuer_domain
+        return NormalisedURLDomain(issuer_domain)
     if config.is_issuer_domain_given:
         issuer_domain_resp = await config.issuer_domain(None, user_context)  # type: ignore
-        return issuer_domain_resp.get_as_string_dangerous()
+        return issuer_domain_resp
     if app_info.initial_api_domain_type == "string":
         issuer_domain_resp = await config.issuer_domain(None, user_context)  # type: ignore
-        return issuer_domain_resp.get_as_string_dangerous()
+        return issuer_domain_resp
     raise Exception(
         "Please pass issuer_domain as a string to the function or initiate issuer_domain with openid recipe or pass api_domain as string in supertokens.init"
     )

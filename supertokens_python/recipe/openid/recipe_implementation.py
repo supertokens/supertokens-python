@@ -41,18 +41,16 @@ class RecipeImplementation(RecipeInterface):
         self, issuer_domain: Optional[str], user_context: Dict[str, Any]
     ) -> GetOpenIdDiscoveryConfigurationResult:
 
-        issuer_domain = await get_issuer_domain_or_throw_error(
+        issuer_domain_normalised = await get_issuer_domain_or_throw_error(
             issuer_domain, self.config, self.app_info, user_context
         )
 
-        issuer = issuer_domain + self.config.issuer_path.get_as_string_dangerous()
-
-        jwks_uri = (
-            issuer_domain
-            + self.config.issuer_path.append(
-                NormalisedURLPath(GET_JWKS_API)
-            ).get_as_string_dangerous()
+        issuer = (
+            issuer_domain_normalised.get_as_string_dangerous()
+            + self.config.issuer_path.get_as_string_dangerous()
         )
+
+        jwks_uri = issuer + NormalisedURLPath(GET_JWKS_API).get_as_string_dangerous()
 
         return GetOpenIdDiscoveryConfigurationResult(issuer, jwks_uri)
 
@@ -75,16 +73,22 @@ class RecipeImplementation(RecipeInterface):
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
         issuer_domain: Optional[str],
-        api_domain: Optional[str],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
-        issuer_domain = await get_issuer_domain_or_throw_error(
+        issuer_domain_normalised = await get_issuer_domain_or_throw_error(
             issuer_domain, self.config, self.app_info, user_context
         )
-        issuer = issuer_domain + self.config.issuer_path.get_as_string_dangerous()
+        issuer = (
+            issuer_domain_normalised.get_as_string_dangerous()
+            + self.config.issuer_path.get_as_string_dangerous()
+        )
         payload = {"iss": issuer, **payload}
         return await self.jwt_recipe_implementation.create_jwt(
-            payload, validity_seconds, use_static_signing_key, api_domain, user_context
+            payload,
+            validity_seconds,
+            use_static_signing_key,
+            issuer_domain,
+            user_context,
         )
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:

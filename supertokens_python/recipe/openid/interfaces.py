@@ -42,7 +42,6 @@ class RecipeInterface(ABC):
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
         issuer_domain: Optional[str],
-        api_domain: Optional[str],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
