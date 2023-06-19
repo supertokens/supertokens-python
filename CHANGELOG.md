@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - session recipe - `create_jwt`
   - session recipe - `get_open_id_discovery_configuration`
   - thirdparty/rovisers - `get_redirect_uri`
+- Argument api_domain renamed to issuer in `create_jwt` functions across session, openId and JWT recipe
 
 
 ### Changes
