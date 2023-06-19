@@ -13,6 +13,7 @@
 # under the License.
 from __future__ import annotations
 
+import inspect
 import json
 import types
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
@@ -421,7 +422,10 @@ def validate_and_normalise_user_input(
 
         if cookie_same_site is not None:
             if isinstance(cookie_same_site, types.FunctionType):
-                cookie_same_site_val = await cookie_same_site(req, user_context)
+                if inspect.iscoroutinefunction(cookie_same_site):
+                    cookie_same_site_val = await cookie_same_site(req, user_context)
+                else:
+                    cookie_same_site_val = cookie_same_site(req, user_context)
                 cookie_same_site_normalize = normalise_same_site(cookie_same_site_val)
             else:
                 cookie_same_site_normalize = normalise_same_site(str(cookie_same_site))

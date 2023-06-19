@@ -13,6 +13,8 @@
 # under the License.
 
 from __future__ import annotations
+
+import inspect
 from os import environ
 from typing import (
     TYPE_CHECKING,
@@ -122,7 +124,10 @@ class AppInfo:
 
         async def api_domain_func(req: BaseRequest, user_context: Any):
             if isinstance(api_domain, FunctionType):
-                api_domain_string = await api_domain(req, user_context)
+                if inspect.iscoroutinefunction(api_domain):
+                    api_domain_string = await api_domain(req, user_context)
+                else:
+                    api_domain_string = api_domain(req, user_context)
                 return NormalisedURLDomain(api_domain_string)
             return NormalisedURLDomain(str(api_domain))
 
@@ -130,7 +135,10 @@ class AppInfo:
 
         async def origin_func(req: BaseRequest, user_context: Any):
             if isinstance(origin, FunctionType):
-                origin_string = await origin(req, user_context)
+                if inspect.iscoroutinefunction(origin):
+                    origin_string = await origin(req, user_context)
+                else:
+                    origin_string = origin(req, user_context)
                 return NormalisedURLDomain(origin_string)
             return NormalisedURLDomain(str(origin))
 
