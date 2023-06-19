@@ -122,8 +122,12 @@ class AppInfo:
             "string" if isinstance(api_domain, str) else "function"
         )
 
-        async def api_domain_func(req: BaseRequest, user_context: Any):
+        async def api_domain_func(req: Optional[BaseRequest], user_context: Any):
             if isinstance(api_domain, FunctionType):
+                if req is None:
+                    raise Exception(
+                        "Please pass api_domain/issuer as a string to the function or pass api_domain as string in supertokens.init"
+                    )
                 if inspect.iscoroutinefunction(api_domain):
                     api_domain_string = await api_domain(req, user_context)
                 else:
@@ -133,8 +137,14 @@ class AppInfo:
 
         self.api_domain = api_domain_func
 
-        async def origin_func(req: BaseRequest, user_context: Any):
+        async def origin_func(req: Optional[BaseRequest], user_context: Any):
             if isinstance(origin, FunctionType):
+                if req is None:
+
+                    if req is None:
+                        raise Exception(
+                            "Please pass origin as a string to the function or pass api_domain as string in supertokens.init"
+                        )
                 if inspect.iscoroutinefunction(origin):
                     origin_string = await origin(req, user_context)
                 else:

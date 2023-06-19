@@ -302,7 +302,7 @@ class PasswordlessRecipe(RecipeModule):
         if origin_string is not None:
             origin = NormalisedURLDomain(origin_string).get_as_string_dangerous()
         elif app_info.initial_origin_type == "string":
-            origin_func = await app_info.origin({}, user_context)  # type: ignore
+            origin_func = await app_info.origin(None, user_context)
             origin = origin_func.get_as_string_dangerous()
         else:
             raise SuperTokensError(
