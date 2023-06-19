@@ -92,14 +92,14 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
             payload: Dict[str, Any],
             validity_seconds: Union[int, None],
             use_static_signing_key: Union[bool, None],
-            api_domain_or_issuer_domain: Union[str, None],
+            issuer: Union[str, None],
             user_context: Dict[str, Any],
         ):
             response_ = await oi_create_jwt(
                 payload,
                 validity_seconds,
                 use_static_signing_key,
-                api_domain_or_issuer_domain,
+                issuer,
                 user_context,
             )
 
