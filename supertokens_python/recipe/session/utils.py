@@ -424,10 +424,14 @@ def validate_and_normalise_user_input(
             if isinstance(cookie_same_site, types.FunctionType):
                 if inspect.iscoroutinefunction(cookie_same_site):
                     cookie_same_site_val = await cookie_same_site(req, user_context)
-                    cookie_same_site_normalize = normalise_same_site(cookie_same_site_val)
+                    cookie_same_site_normalize = normalise_same_site(
+                        cookie_same_site_val
+                    )
                 else:
                     cookie_same_site_val = cookie_same_site(req, user_context)
-                    cookie_same_site_normalize = normalise_same_site(cookie_same_site_val)
+                    cookie_same_site_normalize = normalise_same_site(
+                        cookie_same_site_val
+                    )
             else:
                 cookie_same_site_normalize = normalise_same_site(str(cookie_same_site))
 
