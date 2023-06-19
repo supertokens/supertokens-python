@@ -54,14 +54,15 @@ def validate_and_normalise_user_input(
     return JWTConfig(override, jwt_validity_seconds)
 
 
-async def get_api_domain_or_throw_error(
-    api_domain: Optional[str], app_info: AppInfo, user_context: Any
-):
-    if api_domain is None:
+async def get_issuer_domain_or_throw_error(
+    issuer: Optional[str], app_info: AppInfo, user_context: Any
+) -> str:
+    if issuer is None:
         if app_info.initial_api_domain_type == "string":
             api_domain_res = await app_info.api_domain({}, user_context)  # type:ignore
             api_domain = api_domain_res.get_as_string_dangerous()
             return api_domain
         raise Exception(
-            "Please pass api_domain as a string to the function or pass api_domain as string in supertokens.init"
+            "Please pass issuer as a string to the function or pass api_domain as string in supertokens.init"
         )
+    return issuer

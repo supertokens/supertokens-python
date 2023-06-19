@@ -29,7 +29,7 @@ from supertokens_python.recipe.jwt.interfaces import (
     RecipeInterface,
 )
 
-from .utils import get_api_domain_or_throw_error
+from .utils import get_issuer_domain_or_throw_error
 
 from .interfaces import JsonWebKey
 
@@ -52,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
-        issuer = await get_api_domain_or_throw_error(
+        issuer = await get_issuer_domain_or_throw_error(
             issuer, self.app_info, user_context
         )
 

@@ -70,6 +70,7 @@ if TYPE_CHECKING:
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
@@ -282,8 +283,8 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        origin_string: Optional[str],
         user_context: Dict[str, Any],
-        origin_string: Optional[str] = None,
     ) -> str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
@@ -299,7 +300,7 @@ class PasswordlessRecipe(RecipeModule):
         app_info = self.get_app_info()
 
         if origin_string is not None:
-            origin = origin_string
+            origin = NormalisedURLDomain(origin_string).get_as_string_dangerous()
         elif app_info.initial_origin_type == "string":
             origin_func = await app_info.origin({}, user_context)  # type: ignore
             origin = origin_func.get_as_string_dangerous()

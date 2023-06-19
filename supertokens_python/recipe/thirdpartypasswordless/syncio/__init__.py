@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.passwordless.interfaces import (
@@ -226,11 +226,15 @@ def list_codes_by_pre_auth_session_id(
 def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
+    origin: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     return sync(
         asyncio.create_magic_link(
-            email=email, phone_number=phone_number, user_context=user_context
+            email=email,
+            phone_number=phone_number,
+            origin=origin,
+            user_context=user_context,
         )
     )
 

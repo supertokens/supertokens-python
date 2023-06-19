@@ -25,7 +25,7 @@ async def create_jwt(
     payload: Optional[Dict[str, Any]] = None,
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
-    api_domain: Optional[str] = None,
+    issuer: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
@@ -34,7 +34,7 @@ async def create_jwt(
         payload = {}
 
     return await JWTRecipe.get_instance().recipe_implementation.create_jwt(
-        payload, validity_seconds, use_static_signing_key, api_domain, user_context
+        payload, validity_seconds, use_static_signing_key, issuer, user_context
     )
 
 
