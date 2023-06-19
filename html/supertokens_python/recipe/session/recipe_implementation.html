@@ -66,7 +66,6 @@ from .interfaces import (
     SessionInformationResult,
     SessionObj,
 )
-from .jwks import JWKClient
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
 from .utils import SessionConfig, validate_claims_in_payload
@@ -74,10 +73,9 @@ from .utils import SessionConfig, validate_claims_in_payload
 if TYPE_CHECKING:
     from typing import List, Union
     from supertokens_python import AppInfo
-    from supertokens_python.querier import Querier
 
-from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
 from .interfaces import SessionContainer
+from supertokens_python.querier import Querier
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
@@ -86,17 +84,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self.querier = querier
         self.config = config
         self.app_info = app_info
-
-        self.JWK_clients = [
-            JWKClient(
-                uri,
-                cooldown_duration=JWKRequestCooldownInMs,
-                cache_max_age=JWKCacheMaxAgeInMs,
-            )
-            for uri in self.querier.get_all_core_urls_for_path(
-                &#34;./.well-known/jwks.json&#34;
-            )
-        ]
 
     async def create_new_session(
         self,
@@ -529,17 +516,6 @@ inheritance.</p></div>
         self.config = config
         self.app_info = app_info
 
-        self.JWK_clients = [
-            JWKClient(
-                uri,
-                cooldown_duration=JWKRequestCooldownInMs,
-                cache_max_age=JWKCacheMaxAgeInMs,
-            )
-            for uri in self.querier.get_all_core_urls_for_path(
-                &#34;./.well-known/jwks.json&#34;
-            )
-        ]
-
     async def create_new_session(
         self,
         user_id: str,
@@ -948,13 +924,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.JWK_clients"><code class="name">var <span class="ident">JWK_clients</span> : List[JWKClient]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session"><code class="name flex">
@@ -1561,7 +1530,6 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation">RecipeImplementation</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.JWK_clients" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.JWK_clients">JWK_clients</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session">create_new_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.fetch_and_set_claim" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.fetch_and_set_claim">fetch_and_set_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_all_session_handles_for_user" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_all_session_handles_for_user">get_all_session_handles_for_user</a></code></li>

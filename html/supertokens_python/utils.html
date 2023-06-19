@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import warnings
 from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from math import floor
@@ -332,7 +333,61 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
             &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
         )
 
-    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix  # type: ignore</code></pre>
+    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix  # type: ignore
+
+
+class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0 or self._reader_count &gt; 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()
+
+
+class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
+
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)</code></pre>
 </details>
 </section>
 <section>
@@ -806,6 +861,149 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.utils.RWLockContext"><code class="flex name class">
+<span>class <span class="ident">RWLockContext</span></span>
+<span>(</span><span>mutex: <a title="supertokens_python.utils.RWMutex" href="#supertokens_python.utils.RWMutex">RWMutex</a>, read: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
+
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.RWMutex"><code class="flex name class">
+<span>class <span class="ident">RWMutex</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0 or self._reader_count &gt; 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.utils.RWMutex.lock"><code class="name flex">
+<span>def <span class="ident">lock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lock(self):
+    with self._lock:
+        while self._writer_count &gt; 0 or self._reader_count &gt; 0:
+            self._writers.wait()
+        self._writer_count += 1</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.RWMutex.r_lock"><code class="name flex">
+<span>def <span class="ident">r_lock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def r_lock(self):
+    with self._lock:
+        while self._writer_count &gt; 0:
+            self._readers.wait()
+        self._reader_count += 1</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.RWMutex.r_unlock"><code class="name flex">
+<span>def <span class="ident">r_unlock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def r_unlock(self):
+    with self._lock:
+        self._reader_count -= 1
+        if self._reader_count == 0:
+            self._writers.notify_all()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.RWMutex.unlock"><code class="name flex">
+<span>def <span class="ident">unlock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unlock(self):
+    with self._lock:
+        self._writer_count -= 1
+        self._readers.notify_all()
+        self._writers.notify_all()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -847,6 +1045,22 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 <li><code><a title="supertokens_python.utils.set_request_in_user_context_if_not_defined" href="#supertokens_python.utils.set_request_in_user_context_if_not_defined">set_request_in_user_context_if_not_defined</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.utils.RWLockContext" href="#supertokens_python.utils.RWLockContext">RWLockContext</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.utils.RWMutex" href="#supertokens_python.utils.RWMutex">RWMutex</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.utils.RWMutex.lock" href="#supertokens_python.utils.RWMutex.lock">lock</a></code></li>
+<li><code><a title="supertokens_python.utils.RWMutex.r_lock" href="#supertokens_python.utils.RWMutex.r_lock">r_lock</a></code></li>
+<li><code><a title="supertokens_python.utils.RWMutex.r_unlock" href="#supertokens_python.utils.RWMutex.r_unlock">r_unlock</a></code></li>
+<li><code><a title="supertokens_python.utils.RWMutex.unlock" href="#supertokens_python.utils.RWMutex.unlock">unlock</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -41,16 +41,15 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import jwt
-from jwt.exceptions import DecodeError, PyJWKClientError
+from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwks import JWKClient, JWKSRequestError, PyJWK
 from .jwt import ParsedJWTInfo
 
 
@@ -71,46 +70,43 @@ def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
     return None
 
 
+from supertokens_python.recipe.session.jwks import get_latest_keys
+
+
 def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    jwk_clients: List[JWKClient],
     do_anti_csrf_check: bool,
 ):
     try:
         payload: Optional[Dict[str, Any]] = None
-        client: Optional[JWKClient] = None
-        keys: Optional[List[PyJWK]] = None
+        decode_algo = (
+            jwt_info.parsed_header[&#34;alg&#34;]
+            if jwt_info.parsed_header is not None
+            else &#34;RS256&#34;
+        )
 
-        # Get the keys from the first available client
-        for c in jwk_clients:
-            try:
-                client = c
-                keys = c.get_latest_keys()
-                break
-            except JWKSRequestError:
-                continue
-
-        if keys is None or client is None:
-            raise PyJWKClientError(&#34;No key found&#34;)
-
-        if jwt_info.version &lt; 3:
+        if jwt_info.version &gt;= 3:
+            matching_keys = get_latest_keys(jwt_info.kid)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_keys[0].key,  # type: ignore
+                algorithms=[decode_algo],
+                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+            )
+        else:
             # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we&#39;ll use that payload
-            for k in keys:
+            for k in get_latest_keys():
                 try:
-                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=[&#34;RS256&#34;])  # type: ignore
+                    payload = jwt.decode(  # type: ignore
+                        jwt_info.raw_token_string,
+                        k.key,  # type: ignore
+                        algorithms=[decode_algo],
+                        options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+                    )
                     break
                 except DecodeError:
                     pass
-
-        elif jwt_info.version &gt;= 3:
-            matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
-            payload = jwt.decode(  # type: ignore
-                jwt_info.raw_token_string,
-                matching_key.key,  # type: ignore
-                algorithms=[&#34;RS256&#34;],
-                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
-            )
 
         if payload is None:
             raise DecodeError(&#34;Could not decode the token&#34;)
@@ -138,7 +134,7 @@ def get_info_from_access_token(
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(expiry_time, (float, int))
 
         if expiry_time &lt; get_timestamp_ms():
             raise Exception(&#34;Access token expired&#34;)
@@ -165,8 +161,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
     if version &gt;= 3:
         if (
             not isinstance(payload.get(&#34;sub&#34;), str)
-            or not isinstance(payload.get(&#34;exp&#34;), int)
-            or not isinstance(payload.get(&#34;iat&#34;), int)
+            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
+            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
             or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
             or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
         ):
@@ -181,8 +177,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
         not isinstance(payload.get(&#34;sessionHandle&#34;), str)
         or payload.get(&#34;userData&#34;) is None
         or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        or not isinstance(payload.get(&#34;expiryTime&#34;), int)
-        or not isinstance(payload.get(&#34;timeCreated&#34;), int)
+        or not isinstance(payload.get(&#34;expiryTime&#34;), (float, int))
+        or not isinstance(payload.get(&#34;timeCreated&#34;), (float, int))
     ):
         log_debug_message(
             &#34;validateAccessTokenStructure: Access token is using version &lt; 3&#34;
@@ -201,7 +197,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.access_token.get_info_from_access_token"><code class="name flex">
-<span>def <span class="ident">get_info_from_access_token</span></span>(<span>jwt_info: ParsedJWTInfo, jwk_clients: List[JWKClient], do_anti_csrf_check: bool)</span>
+<span>def <span class="ident">get_info_from_access_token</span></span>(<span>jwt_info: ParsedJWTInfo, do_anti_csrf_check: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -211,44 +207,38 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 </summary>
 <pre><code class="python">def get_info_from_access_token(
     jwt_info: ParsedJWTInfo,
-    jwk_clients: List[JWKClient],
     do_anti_csrf_check: bool,
 ):
     try:
         payload: Optional[Dict[str, Any]] = None
-        client: Optional[JWKClient] = None
-        keys: Optional[List[PyJWK]] = None
+        decode_algo = (
+            jwt_info.parsed_header[&#34;alg&#34;]
+            if jwt_info.parsed_header is not None
+            else &#34;RS256&#34;
+        )
 
-        # Get the keys from the first available client
-        for c in jwk_clients:
-            try:
-                client = c
-                keys = c.get_latest_keys()
-                break
-            except JWKSRequestError:
-                continue
-
-        if keys is None or client is None:
-            raise PyJWKClientError(&#34;No key found&#34;)
-
-        if jwt_info.version &lt; 3:
+        if jwt_info.version &gt;= 3:
+            matching_keys = get_latest_keys(jwt_info.kid)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_keys[0].key,  # type: ignore
+                algorithms=[decode_algo],
+                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+            )
+        else:
             # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we&#39;ll use that payload
-            for k in keys:
+            for k in get_latest_keys():
                 try:
-                    payload = jwt.decode(jwt_info.raw_token_string, k.key, algorithms=[&#34;RS256&#34;])  # type: ignore
+                    payload = jwt.decode(  # type: ignore
+                        jwt_info.raw_token_string,
+                        k.key,  # type: ignore
+                        algorithms=[decode_algo],
+                        options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+                    )
                     break
                 except DecodeError:
                     pass
-
-        elif jwt_info.version &gt;= 3:
-            matching_key = client.get_matching_key_from_jwt(jwt_info.raw_token_string)
-            payload = jwt.decode(  # type: ignore
-                jwt_info.raw_token_string,
-                matching_key.key,  # type: ignore
-                algorithms=[&#34;RS256&#34;],
-                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
-            )
 
         if payload is None:
             raise DecodeError(&#34;Could not decode the token&#34;)
@@ -276,7 +266,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(expiry_time, (float, int))
 
         if expiry_time &lt; get_timestamp_ms():
             raise Exception(&#34;Access token expired&#34;)
@@ -347,8 +337,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
     if version &gt;= 3:
         if (
             not isinstance(payload.get(&#34;sub&#34;), str)
-            or not isinstance(payload.get(&#34;exp&#34;), int)
-            or not isinstance(payload.get(&#34;iat&#34;), int)
+            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
+            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
             or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
             or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
         ):
@@ -363,8 +353,8 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
         not isinstance(payload.get(&#34;sessionHandle&#34;), str)
         or payload.get(&#34;userData&#34;) is None
         or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        or not isinstance(payload.get(&#34;expiryTime&#34;), int)
-        or not isinstance(payload.get(&#34;timeCreated&#34;), int)
+        or not isinstance(payload.get(&#34;expiryTime&#34;), (float, int))
+        or not isinstance(payload.get(&#34;timeCreated&#34;), (float, int))
     ):
         log_debug_message(
             &#34;validateAccessTokenStructure: Access token is using version &lt; 3&#34;

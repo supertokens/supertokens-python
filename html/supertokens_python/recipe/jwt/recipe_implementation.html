@@ -80,7 +80,7 @@ class RecipeImplementation(RecipeInterface):
         data = {
             &#34;payload&#34;: payload,
             &#34;validity&#34;: validity_seconds,
-            &#34;use_static_signing_key&#34;: use_static_signing_key is not False,
+            &#34;useStaticSigningKey&#34;: use_static_signing_key is not False,
             &#34;algorithm&#34;: &#34;RS256&#34;,
             &#34;jwksDomain&#34;: self.app_info.api_domain.get_as_string_dangerous(),
         }
@@ -147,7 +147,7 @@ inheritance.</p></div>
         data = {
             &#34;payload&#34;: payload,
             &#34;validity&#34;: validity_seconds,
-            &#34;use_static_signing_key&#34;: use_static_signing_key is not False,
+            &#34;useStaticSigningKey&#34;: use_static_signing_key is not False,
             &#34;algorithm&#34;: &#34;RS256&#34;,
             &#34;jwksDomain&#34;: self.app_info.api_domain.get_as_string_dangerous(),
         }
@@ -202,7 +202,7 @@ inheritance.</p></div>
     data = {
         &#34;payload&#34;: payload,
         &#34;validity&#34;: validity_seconds,
-        &#34;use_static_signing_key&#34;: use_static_signing_key is not False,
+        &#34;useStaticSigningKey&#34;: use_static_signing_key is not False,
         &#34;algorithm&#34;: &#34;RS256&#34;,
         &#34;jwksDomain&#34;: self.app_info.api_domain.get_as_string_dangerous(),
     }

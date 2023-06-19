@@ -101,6 +101,8 @@ class APIImplementation(APIInterface):
     ) -&gt; Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
         if method in (&#34;options&#34;, &#34;trace&#34;):
+            if session_required:
+                raise Exception(f&#34;verify_session cannot be used with {method} method&#34;)
             return None
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
@@ -181,6 +183,8 @@ inheritance.</p></div>
     ) -&gt; Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
         if method in (&#34;options&#34;, &#34;trace&#34;):
+            if session_required:
+                raise Exception(f&#34;verify_session cannot be used with {method} method&#34;)
             return None
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
@@ -276,6 +280,8 @@ inheritance.</p></div>
 ) -&gt; Union[SessionContainer, None]:
     method = normalise_http_method(api_options.request.method())
     if method in (&#34;options&#34;, &#34;trace&#34;):
+        if session_required:
+            raise Exception(f&#34;verify_session cannot be used with {method} method&#34;)
         return None
     incoming_path = NormalisedURLPath(api_options.request.get_path())
     refresh_token_path = api_options.config.refresh_token_path

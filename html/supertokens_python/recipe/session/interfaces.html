@@ -64,7 +64,6 @@ from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
-    from .jwks import JWKClient
 
 from supertokens_python.framework import BaseResponse
 
@@ -156,8 +155,6 @@ class GetSessionTokensDangerouslyDict(TypedDict):
 
 
 class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
-    JWK_clients: List[JWKClient] = []
-
     def __init__(self):
         pass
 
@@ -1008,8 +1005,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
-    JWK_clients: List[JWKClient] = []
-
     def __init__(self):
         pass
 
@@ -1183,13 +1178,6 @@ inheritance.</p></div>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation" href="recipe_implementation.html#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation">RecipeImplementation</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.JWK_clients"><code class="name">var <span class="ident">JWK_clients</span> : List[JWKClient]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session"><code class="name flex">
@@ -2697,7 +2685,6 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.JWK_clients" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.JWK_clients">JWK_clients</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session">create_new_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.fetch_and_set_claim" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.fetch_and_set_claim">fetch_and_set_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_all_session_handles_for_user" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_all_session_handles_for_user">get_all_session_handles_for_user</a></code></li>

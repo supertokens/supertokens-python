@@ -26,110 +26,151 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import json
-import urllib.request
+<pre><code class="python"># Copyright (c) 2023, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import requests
+from os import environ
 from typing import List, Optional
-from urllib.error import URLError
+from typing_extensions import TypedDict
 
 from jwt import PyJWK, PyJWKSet
-from jwt.api_jwt import decode_complete as decode_token  # type: ignore
 
-from supertokens_python.utils import get_timestamp_ms
+from .constants import JWKCacheMaxAgeInMs
 
-from .constants import JWKCacheMaxAgeInMs, JWKRequestCooldownInMs
+from supertokens_python.utils import RWMutex, RWLockContext, get_timestamp_ms
+from supertokens_python.querier import Querier
+from supertokens_python.logger import log_debug_message
 
 
-class JWKClient:
-    def __init__(
-        self,
-        uri: str,
-        cooldown_duration: int = JWKRequestCooldownInMs,
-        cache_max_age: int = JWKCacheMaxAgeInMs,
-    ):
-        &#34;&#34;&#34;A client for retrieving JSON Web Key Sets (JWKS) from a given URI.
+class JWKSConfigType(TypedDict):
+    cache_max_age: int
+    request_timeout: int
 
-        Args:
-            uri (str): The URI of the JWKS.
-            cooldown_duration (int, optional): The cooldown duration in ms. Defaults to 500 seconds.
-            cache_max_age (int, optional): The cache max age in ms. Defaults to 5 minutes.
 
-        Note: The JSON Web Key Set is fetched when no key matches the selection
-        process but only as frequently as the `self.cooldown_duration` option
-        allows to prevent abuse. The `self.cache_max_age` option is used to
-        determine how long the JWKS is cached for.
+JWKSConfig: JWKSConfigType = {
+    &#34;cache_max_age&#34;: JWKCacheMaxAgeInMs,
+    &#34;request_timeout&#34;: 10000,  # 10s
+}
 
-        Whenever you make a call to `get_signing_key_from_jwt`, the JWKS
-        is fetched if it is older than `self.cache_max_age` ms unless
-        cooldown is active.
-        &#34;&#34;&#34;
-        self.uri = uri
-        self.cooldown_duration = cooldown_duration
-        self.cache_max_age = cache_max_age
-        self.timeout_sec = 5
-        self.last_fetch_time: int = 0
-        self.jwk_set: Optional[PyJWKSet] = None
 
-    def reload(self):
-        try:
-            with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
-                self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
-                self.last_fetch_time = get_timestamp_ms()
-        except URLError:
-            raise JWKSRequestError(&#34;Failed to fetch jwk set from the configured uri&#34;)
+class CachedKeys:
+    def __init__(self, keys: List[PyJWK]):
+        self.keys = keys
+        self.last_refresh_time = get_timestamp_ms()
 
-    def is_cooling_down(self) -&gt; bool:
-        return (self.last_fetch_time &gt; 0) and (
-            get_timestamp_ms() - self.last_fetch_time &lt; self.cooldown_duration
+    def is_fresh(self):
+        return get_timestamp_ms() - self.last_refresh_time &lt; JWKSConfig[&#34;cache_max_age&#34;]
+
+
+cached_keys: Optional[CachedKeys] = None
+mutex = RWMutex()
+
+# only for testing purposes
+def reset_jwks_cache():
+    with RWLockContext(mutex, read=False):
+        global cached_keys
+        cached_keys = None
+
+
+def get_cached_keys() -&gt; Optional[List[PyJWK]]:
+    if cached_keys is not None:
+        # This means that we have valid JWKs for the given core path
+        # We check if we need to refresh before returning
+
+        # This means that the value in cache is not expired, in this case we return the cached value
+        # Note that this also means that the SDK will not try to query any other core (if there are multiple)
+        # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
+        # from the cores again after the entry in the cache is expired
+        if cached_keys.is_fresh():
+            if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
+                log_debug_message(&#34;Returning JWKS from cache&#34;)
+            return cached_keys.keys
+
+    return None
+
+
+def find_matching_keys(
+    keys: Optional[List[PyJWK]], kid: Optional[str]
+) -&gt; Optional[List[PyJWK]]:
+    if kid is None or keys is None:
+        # return all keys since the token does not have a kid
+        return keys
+
+    # kid has been provided so filter the keys
+    matching_keys = [key for key in keys if key.key_id == kid]  # type: ignore
+    if len(matching_keys) &gt; 0:
+        return matching_keys
+
+    return None
+
+
+def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
+    global cached_keys
+
+    if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
+        log_debug_message(&#34;Called find_jwk_client&#34;)
+
+    with RWLockContext(mutex, read=True):
+        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        if matching_keys is not None:
+            return matching_keys
+        # otherwise unknown kid, will continue to reload the keys
+
+    core_paths = Querier.get_instance().get_all_core_urls_for_path(
+        &#34;./.well-known/jwks.json&#34;
+    )
+
+    if len(core_paths) == 0:
+        raise Exception(
+            &#34;No SuperTokens core available to query. Please pass supertokens &gt; connection_uri to the init function, or override all the functions of the recipe you are using.&#34;
         )
 
-    def is_fresh(self) -&gt; bool:
-        return (self.last_fetch_time &gt; 0) and (
-            get_timestamp_ms() - self.last_fetch_time &lt; self.cache_max_age
-        )
+    last_error: Exception = Exception(&#34;No valid JWKS found&#34;)
 
-    def get_latest_keys(self) -&gt; List[PyJWK]:
-        if self.jwk_set is None or not self.is_fresh():
-            self.reload()
+    with RWLockContext(mutex, read=False):
+        # check again if the keys are in cache
+        # because another thread might have fetched the keys while this one was waiting for the lock
+        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        if matching_keys is not None:
+            return matching_keys
 
-        if self.jwk_set is None:
-            raise JWKSRequestError(&#34;Failed to fetch the latest keys&#34;)
+        for path in core_paths:
+            if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
+                log_debug_message(&#34;Attempting to fetch JWKS from path: %s&#34;, path)
 
-        all_keys: List[PyJWK] = self.jwk_set.keys  # type: ignore
+            cached_jwks: Optional[List[PyJWK]] = None
+            try:
+                log_debug_message(&#34;Fetching jwk set from the configured uri&#34;)
+                with requests.get(
+                    path, timeout=JWKSConfig[&#34;request_timeout&#34;] / 1000
+                ) as response:  # 5 second timeout
+                    response.raise_for_status()
+                    cached_jwks = PyJWKSet.from_dict(response.json()).keys  # type: ignore
+            except Exception as e:
+                last_error = e
 
-        return all_keys
+            if cached_jwks is not None:  # we found a valid JWKS
+                cached_keys = CachedKeys(cached_jwks)
+                log_debug_message(&#34;Returning JWKS from fetch&#34;)
+                matching_keys = find_matching_keys(get_cached_keys(), kid)
+                if matching_keys is not None:
+                    return matching_keys
 
-    def get_matching_key_from_jwt(self, token: str) -&gt; PyJWK:
-        header = decode_token(token, options={&#34;verify_signature&#34;: False})[&#34;header&#34;]
-        kid: str = header[&#34;kid&#34;]  # type: ignore
+                raise Exception(&#34;No matching JWKS found&#34;)
 
-        if self.jwk_set is None or not self.is_fresh():
-            self.reload()
-
-        assert self.jwk_set is not None
-
-        try:
-            return self.jwk_set[kid]  # type: ignore
-        except KeyError:
-            if not self.is_cooling_down():
-                # One more attempt to fetch the latest keys
-                # and then try to find the key again.
-                self.reload()
-                try:
-                    return self.jwk_set[kid]  # type: ignore
-                except KeyError:
-                    pass
-        except Exception:
-            raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
-
-        raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
-
-
-class JWKSKeyNotFoundError(Exception):
-    pass
-
-
-class JWKSRequestError(Exception):
-    pass</code></pre>
+    raise last_error</code></pre>
 </details>
 </section>
 <section>
@@ -137,124 +178,166 @@ class JWKSRequestError(Exception):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.session.jwks.find_matching_keys"><code class="name flex">
+<span>def <span class="ident">find_matching_keys</span></span>(<span>keys: Optional[List[jwt.api_jwk.PyJWK]], kid: Optional[str]) ‑> Optional[List[jwt.api_jwk.PyJWK]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def find_matching_keys(
+    keys: Optional[List[PyJWK]], kid: Optional[str]
+) -&gt; Optional[List[PyJWK]]:
+    if kid is None or keys is None:
+        # return all keys since the token does not have a kid
+        return keys
+
+    # kid has been provided so filter the keys
+    matching_keys = [key for key in keys if key.key_id == kid]  # type: ignore
+    if len(matching_keys) &gt; 0:
+        return matching_keys
+
+    return None</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.jwks.get_cached_keys"><code class="name flex">
+<span>def <span class="ident">get_cached_keys</span></span>(<span>) ‑> Optional[List[jwt.api_jwk.PyJWK]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_cached_keys() -&gt; Optional[List[PyJWK]]:
+    if cached_keys is not None:
+        # This means that we have valid JWKs for the given core path
+        # We check if we need to refresh before returning
+
+        # This means that the value in cache is not expired, in this case we return the cached value
+        # Note that this also means that the SDK will not try to query any other core (if there are multiple)
+        # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
+        # from the cores again after the entry in the cache is expired
+        if cached_keys.is_fresh():
+            if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
+                log_debug_message(&#34;Returning JWKS from cache&#34;)
+            return cached_keys.keys
+
+    return None</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.jwks.get_latest_keys"><code class="name flex">
+<span>def <span class="ident">get_latest_keys</span></span>(<span>kid: Optional[str] = None) ‑> List[jwt.api_jwk.PyJWK]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
+    global cached_keys
+
+    if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
+        log_debug_message(&#34;Called find_jwk_client&#34;)
+
+    with RWLockContext(mutex, read=True):
+        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        if matching_keys is not None:
+            return matching_keys
+        # otherwise unknown kid, will continue to reload the keys
+
+    core_paths = Querier.get_instance().get_all_core_urls_for_path(
+        &#34;./.well-known/jwks.json&#34;
+    )
+
+    if len(core_paths) == 0:
+        raise Exception(
+            &#34;No SuperTokens core available to query. Please pass supertokens &gt; connection_uri to the init function, or override all the functions of the recipe you are using.&#34;
+        )
+
+    last_error: Exception = Exception(&#34;No valid JWKS found&#34;)
+
+    with RWLockContext(mutex, read=False):
+        # check again if the keys are in cache
+        # because another thread might have fetched the keys while this one was waiting for the lock
+        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        if matching_keys is not None:
+            return matching_keys
+
+        for path in core_paths:
+            if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
+                log_debug_message(&#34;Attempting to fetch JWKS from path: %s&#34;, path)
+
+            cached_jwks: Optional[List[PyJWK]] = None
+            try:
+                log_debug_message(&#34;Fetching jwk set from the configured uri&#34;)
+                with requests.get(
+                    path, timeout=JWKSConfig[&#34;request_timeout&#34;] / 1000
+                ) as response:  # 5 second timeout
+                    response.raise_for_status()
+                    cached_jwks = PyJWKSet.from_dict(response.json()).keys  # type: ignore
+            except Exception as e:
+                last_error = e
+
+            if cached_jwks is not None:  # we found a valid JWKS
+                cached_keys = CachedKeys(cached_jwks)
+                log_debug_message(&#34;Returning JWKS from fetch&#34;)
+                matching_keys = find_matching_keys(get_cached_keys(), kid)
+                if matching_keys is not None:
+                    return matching_keys
+
+                raise Exception(&#34;No matching JWKS found&#34;)
+
+    raise last_error</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.jwks.reset_jwks_cache"><code class="name flex">
+<span>def <span class="ident">reset_jwks_cache</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset_jwks_cache():
+    with RWLockContext(mutex, read=False):
+        global cached_keys
+        cached_keys = None</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.session.jwks.JWKClient"><code class="flex name class">
-<span>class <span class="ident">JWKClient</span></span>
-<span>(</span><span>uri: str, cooldown_duration: int = 500, cache_max_age: int = 60000)</span>
+<dt id="supertokens_python.recipe.session.jwks.CachedKeys"><code class="flex name class">
+<span>class <span class="ident">CachedKeys</span></span>
+<span>(</span><span>keys: List[jwt.api_jwk.PyJWK])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A client for retrieving JSON Web Key Sets (JWKS) from a given URI.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>uri</code></strong> :&ensp;<code>str</code></dt>
-<dd>The URI of the JWKS.</dd>
-<dt><strong><code>cooldown_duration</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The cooldown duration in ms. Defaults to 500 seconds.</dd>
-<dt><strong><code>cache_max_age</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The cache max age in ms. Defaults to 5 minutes.</dd>
-</dl>
-<p>Note: The JSON Web Key Set is fetched when no key matches the selection
-process but only as frequently as the <code>self.cooldown_duration</code> option
-allows to prevent abuse. The <code>self.cache_max_age</code> option is used to
-determine how long the JWKS is cached for.</p>
-<p>Whenever you make a call to <code>get_signing_key_from_jwt</code>, the JWKS
-is fetched if it is older than <code>self.cache_max_age</code> ms unless
-cooldown is active.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class JWKClient:
-    def __init__(
-        self,
-        uri: str,
-        cooldown_duration: int = JWKRequestCooldownInMs,
-        cache_max_age: int = JWKCacheMaxAgeInMs,
-    ):
-        &#34;&#34;&#34;A client for retrieving JSON Web Key Sets (JWKS) from a given URI.
+<pre><code class="python">class CachedKeys:
+    def __init__(self, keys: List[PyJWK]):
+        self.keys = keys
+        self.last_refresh_time = get_timestamp_ms()
 
-        Args:
-            uri (str): The URI of the JWKS.
-            cooldown_duration (int, optional): The cooldown duration in ms. Defaults to 500 seconds.
-            cache_max_age (int, optional): The cache max age in ms. Defaults to 5 minutes.
-
-        Note: The JSON Web Key Set is fetched when no key matches the selection
-        process but only as frequently as the `self.cooldown_duration` option
-        allows to prevent abuse. The `self.cache_max_age` option is used to
-        determine how long the JWKS is cached for.
-
-        Whenever you make a call to `get_signing_key_from_jwt`, the JWKS
-        is fetched if it is older than `self.cache_max_age` ms unless
-        cooldown is active.
-        &#34;&#34;&#34;
-        self.uri = uri
-        self.cooldown_duration = cooldown_duration
-        self.cache_max_age = cache_max_age
-        self.timeout_sec = 5
-        self.last_fetch_time: int = 0
-        self.jwk_set: Optional[PyJWKSet] = None
-
-    def reload(self):
-        try:
-            with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
-                self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
-                self.last_fetch_time = get_timestamp_ms()
-        except URLError:
-            raise JWKSRequestError(&#34;Failed to fetch jwk set from the configured uri&#34;)
-
-    def is_cooling_down(self) -&gt; bool:
-        return (self.last_fetch_time &gt; 0) and (
-            get_timestamp_ms() - self.last_fetch_time &lt; self.cooldown_duration
-        )
-
-    def is_fresh(self) -&gt; bool:
-        return (self.last_fetch_time &gt; 0) and (
-            get_timestamp_ms() - self.last_fetch_time &lt; self.cache_max_age
-        )
-
-    def get_latest_keys(self) -&gt; List[PyJWK]:
-        if self.jwk_set is None or not self.is_fresh():
-            self.reload()
-
-        if self.jwk_set is None:
-            raise JWKSRequestError(&#34;Failed to fetch the latest keys&#34;)
-
-        all_keys: List[PyJWK] = self.jwk_set.keys  # type: ignore
-
-        return all_keys
-
-    def get_matching_key_from_jwt(self, token: str) -&gt; PyJWK:
-        header = decode_token(token, options={&#34;verify_signature&#34;: False})[&#34;header&#34;]
-        kid: str = header[&#34;kid&#34;]  # type: ignore
-
-        if self.jwk_set is None or not self.is_fresh():
-            self.reload()
-
-        assert self.jwk_set is not None
-
-        try:
-            return self.jwk_set[kid]  # type: ignore
-        except KeyError:
-            if not self.is_cooling_down():
-                # One more attempt to fetch the latest keys
-                # and then try to find the key again.
-                self.reload()
-                try:
-                    return self.jwk_set[kid]  # type: ignore
-                except KeyError:
-                    pass
-        except Exception:
-            raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
-
-        raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)</code></pre>
+    def is_fresh(self):
+        return get_timestamp_ms() - self.last_refresh_time &lt; JWKSConfig[&#34;cache_max_age&#34;]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.session.jwks.JWKClient.get_latest_keys"><code class="name flex">
-<span>def <span class="ident">get_latest_keys</span></span>(<span>self) ‑> List[jwt.api_jwk.PyJWK]</span>
+<dt id="supertokens_python.recipe.session.jwks.CachedKeys.is_fresh"><code class="name flex">
+<span>def <span class="ident">is_fresh</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -262,140 +345,51 @@ cooldown is active.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_latest_keys(self) -&gt; List[PyJWK]:
-    if self.jwk_set is None or not self.is_fresh():
-        self.reload()
-
-    if self.jwk_set is None:
-        raise JWKSRequestError(&#34;Failed to fetch the latest keys&#34;)
-
-    all_keys: List[PyJWK] = self.jwk_set.keys  # type: ignore
-
-    return all_keys</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.jwks.JWKClient.get_matching_key_from_jwt"><code class="name flex">
-<span>def <span class="ident">get_matching_key_from_jwt</span></span>(<span>self, token: str) ‑> jwt.api_jwk.PyJWK</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_matching_key_from_jwt(self, token: str) -&gt; PyJWK:
-    header = decode_token(token, options={&#34;verify_signature&#34;: False})[&#34;header&#34;]
-    kid: str = header[&#34;kid&#34;]  # type: ignore
-
-    if self.jwk_set is None or not self.is_fresh():
-        self.reload()
-
-    assert self.jwk_set is not None
-
-    try:
-        return self.jwk_set[kid]  # type: ignore
-    except KeyError:
-        if not self.is_cooling_down():
-            # One more attempt to fetch the latest keys
-            # and then try to find the key again.
-            self.reload()
-            try:
-                return self.jwk_set[kid]  # type: ignore
-            except KeyError:
-                pass
-    except Exception:
-        raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)
-
-    raise JWKSKeyNotFoundError(&#34;No key found for the given kid&#34;)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.jwks.JWKClient.is_cooling_down"><code class="name flex">
-<span>def <span class="ident">is_cooling_down</span></span>(<span>self) ‑> bool</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_cooling_down(self) -&gt; bool:
-    return (self.last_fetch_time &gt; 0) and (
-        get_timestamp_ms() - self.last_fetch_time &lt; self.cooldown_duration
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.jwks.JWKClient.is_fresh"><code class="name flex">
-<span>def <span class="ident">is_fresh</span></span>(<span>self) ‑> bool</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_fresh(self) -&gt; bool:
-    return (self.last_fetch_time &gt; 0) and (
-        get_timestamp_ms() - self.last_fetch_time &lt; self.cache_max_age
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.jwks.JWKClient.reload"><code class="name flex">
-<span>def <span class="ident">reload</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def reload(self):
-    try:
-        with urllib.request.urlopen(self.uri, timeout=self.timeout_sec) as response:
-            self.jwk_set = PyJWKSet.from_dict(json.load(response))  # type: ignore
-            self.last_fetch_time = get_timestamp_ms()
-    except URLError:
-        raise JWKSRequestError(&#34;Failed to fetch jwk set from the configured uri&#34;)</code></pre>
+<pre><code class="python">def is_fresh(self):
+    return get_timestamp_ms() - self.last_refresh_time &lt; JWKSConfig[&#34;cache_max_age&#34;]</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.session.jwks.JWKSKeyNotFoundError"><code class="flex name class">
-<span>class <span class="ident">JWKSKeyNotFoundError</span></span>
+<dt id="supertokens_python.recipe.session.jwks.JWKSConfigType"><code class="flex name class">
+<span>class <span class="ident">JWKSConfigType</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<div class="desc"><p>dict() -&gt; new empty dictionary
+dict(mapping) -&gt; new dictionary initialized from a mapping object's
+(key, value) pairs
+dict(iterable) -&gt; new dictionary initialized as if via:
+d = {}
+for k, v in iterable:
+d[k] = v
+dict(**kwargs) -&gt; new dictionary initialized with the name=value pairs
+in the keyword argument list.
+For example:
+dict(one=1, two=2)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class JWKSKeyNotFoundError(Exception):
-    pass</code></pre>
+<pre><code class="python">class JWKSConfigType(TypedDict):
+    cache_max_age: int
+    request_timeout: int</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>builtins.Exception</li>
-<li>builtins.BaseException</li>
+<li>builtins.dict</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.jwks.JWKSConfigType.cache_max_age"><code class="name">var <span class="ident">cache_max_age</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.session.jwks.JWKSRequestError"><code class="flex name class">
-<span>class <span class="ident">JWKSRequestError</span></span>
-<span>(</span><span>*args, **kwargs)</span>
-</code></dt>
+<dt id="supertokens_python.recipe.session.jwks.JWKSConfigType.request_timeout"><code class="name">var <span class="ident">request_timeout</span> : int</code></dt>
 <dd>
-<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class JWKSRequestError(Exception):
-    pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.Exception</li>
-<li>builtins.BaseException</li>
-</ul>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -411,23 +405,28 @@ cooldown is active.</p></div>
 <li><code><a title="supertokens_python.recipe.session" href="index.html">supertokens_python.recipe.session</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.jwks.find_matching_keys" href="#supertokens_python.recipe.session.jwks.find_matching_keys">find_matching_keys</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwks.get_cached_keys" href="#supertokens_python.recipe.session.jwks.get_cached_keys">get_cached_keys</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwks.get_latest_keys" href="#supertokens_python.recipe.session.jwks.get_latest_keys">get_latest_keys</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwks.reset_jwks_cache" href="#supertokens_python.recipe.session.jwks.reset_jwks_cache">reset_jwks_cache</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.session.jwks.JWKClient" href="#supertokens_python.recipe.session.jwks.JWKClient">JWKClient</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.session.jwks.CachedKeys" href="#supertokens_python.recipe.session.jwks.CachedKeys">CachedKeys</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.jwks.JWKClient.get_latest_keys" href="#supertokens_python.recipe.session.jwks.JWKClient.get_latest_keys">get_latest_keys</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.jwks.JWKClient.get_matching_key_from_jwt" href="#supertokens_python.recipe.session.jwks.JWKClient.get_matching_key_from_jwt">get_matching_key_from_jwt</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.jwks.JWKClient.is_cooling_down" href="#supertokens_python.recipe.session.jwks.JWKClient.is_cooling_down">is_cooling_down</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.jwks.JWKClient.is_fresh" href="#supertokens_python.recipe.session.jwks.JWKClient.is_fresh">is_fresh</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.jwks.JWKClient.reload" href="#supertokens_python.recipe.session.jwks.JWKClient.reload">reload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwks.CachedKeys.is_fresh" href="#supertokens_python.recipe.session.jwks.CachedKeys.is_fresh">is_fresh</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.session.jwks.JWKSKeyNotFoundError" href="#supertokens_python.recipe.session.jwks.JWKSKeyNotFoundError">JWKSKeyNotFoundError</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.session.jwks.JWKSRequestError" href="#supertokens_python.recipe.session.jwks.JWKSRequestError">JWKSRequestError</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.session.jwks.JWKSConfigType" href="#supertokens_python.recipe.session.jwks.JWKSConfigType">JWKSConfigType</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.jwks.JWKSConfigType.cache_max_age" href="#supertokens_python.recipe.session.jwks.JWKSConfigType.cache_max_age">cache_max_age</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwks.JWKSConfigType.request_timeout" href="#supertokens_python.recipe.session.jwks.JWKSConfigType.request_timeout">request_timeout</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
