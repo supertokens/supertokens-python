@@ -46,14 +46,14 @@ class RecipeImplementation(RecipeInterface):
         payload: Dict[str, Any],
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
-        api_domain: Optional[str],
+        issuer: Optional[str],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
-        api_domain = await get_api_domain_or_throw_error(
-            api_domain, self.app_info, user_context
+        issuer = await get_api_domain_or_throw_error(
+            issuer, self.app_info, user_context
         )
 
         data = {
@@ -61,7 +61,7 @@ class RecipeImplementation(RecipeInterface):
             "validity": validity_seconds,
             "use_static_signing_key": use_static_signing_key is not False,
             "algorithm": "RS256",
-            "jwksDomain": api_domain,
+            "jwksDomain": issuer,
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/jwt"), data

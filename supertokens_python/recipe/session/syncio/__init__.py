@@ -261,7 +261,6 @@ def create_jwt(
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
     issuer_domain: Optional[str] = None,
-    api_domain: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import create_jwt as async_create_jwt
@@ -271,7 +270,6 @@ def create_jwt(
             payload,
             validity_seconds,
             use_static_signing_key,
-            api_domain,
             issuer_domain,
             user_context,
         )

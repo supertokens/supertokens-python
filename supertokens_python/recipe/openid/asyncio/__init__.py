@@ -30,7 +30,6 @@ async def create_jwt(
     validity_seconds: Optional[int] = None,
     use_static_signing_key: Optional[bool] = None,
     issuer_domain: Optional[str] = None,
-    api_domain: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
@@ -43,7 +42,6 @@ async def create_jwt(
         validity_seconds,
         use_static_signing_key,
         issuer_domain,
-        api_domain,
         user_context,
     )
 
