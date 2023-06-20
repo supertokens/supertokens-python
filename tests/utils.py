@@ -468,6 +468,7 @@ def get_core_api_version() -> str:
 
     api_version = asyncio.gather(get_api_version())
     core_version = loop.run_until_complete(api_version)[0]  # type: ignore # pylint: disable=unused-variable
+    teardown_function(_)
     return core_version
 
 

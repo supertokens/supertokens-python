@@ -66,8 +66,6 @@ def get_cached_keys() -> Optional[List[PyJWK]]:
         # if it has a valid cache entry from one of the core URLs. It will only attempt to fetch
         # from the cores again after the entry in the cache is expired
         if cached_keys.is_fresh():
-            if environ.get("SUPERTOKENS_ENV") == "testing":
-                log_debug_message("Returning JWKS from cache")
             return cached_keys.keys
 
     return None
@@ -97,6 +95,8 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
     with RWLockContext(mutex, read=True):
         matching_keys = find_matching_keys(get_cached_keys(), kid)
         if matching_keys is not None:
+            if environ.get("SUPERTOKENS_ENV") == "testing":
+                log_debug_message("Returning JWKS from cache")
             return matching_keys
         # otherwise unknown kid, will continue to reload the keys
 

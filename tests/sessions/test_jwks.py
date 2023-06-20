@@ -31,6 +31,7 @@ from supertokens_python.recipe.session.jwks import (
     get_latest_keys,
 )
 from supertokens_python.utils import utf_base64encode
+from tests.utils import min_api_version
 
 from _pytest.logging import LogCaptureFixture
 
@@ -491,6 +492,7 @@ async def test_session_verification_of_jwt_based_on_session_payload(
     assert s_.get_user_id() == "userId"
 
 
+@min_api_version("3.0")
 async def test_session_verification_of_jwt_based_on_session_payload_with_check_db():
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
@@ -500,7 +502,6 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     payload = s.get_access_token_payload()
     del payload["iat"]
     del payload["exp"]
-    payload["tId"] = "public"  # tenant id
 
     now = get_timestamp_ms()
     jwt_expiry = now + 10 * 1000  # expiry jwt after 10sec
