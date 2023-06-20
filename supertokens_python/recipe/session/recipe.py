@@ -65,7 +65,6 @@ from .utils import (
     TokenTransferMethod,
     validate_and_normalise_user_input,
 )
-from supertokens_python.utils import resolve
 
 
 class SessionRecipe(RecipeModule):
@@ -228,7 +227,7 @@ class SessionRecipe(RecipeModule):
             and err.response_mutators is not None
         ):
             for mutator in err.response_mutators:
-                await resolve(mutator(response))
+                await mutator(response)
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
