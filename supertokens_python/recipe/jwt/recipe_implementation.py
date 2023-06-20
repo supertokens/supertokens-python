@@ -46,14 +46,14 @@ class RecipeImplementation(RecipeInterface):
         payload: Dict[str, Any],
         validity_seconds: Optional[int],
         use_static_signing_key: Optional[bool],
-        issuer: Optional[str],
+        issuer_domain: Optional[str],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
         issuer = await get_issuer_domain_or_throw_error(
-            issuer, self.app_info, user_context
+            issuer_domain, self.app_info, user_context
         )
 
         data = {

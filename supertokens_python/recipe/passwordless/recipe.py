@@ -284,7 +284,7 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
-        origin_string: Optional[str],
+        origin: Optional[str],
         user_context: Dict[str, Any],
     ) -> str:
         user_input_code = None
@@ -302,8 +302,8 @@ class PasswordlessRecipe(RecipeModule):
 
         req = get_request_from_user_context(user_context)
 
-        if origin_string is not None:
-            origin = NormalisedURLDomain(origin_string).get_as_string_dangerous()
+        if origin is not None:
+            origin = NormalisedURLDomain(origin).get_as_string_dangerous()
         elif req is not None:
             origin_func = await app_info.origin(req, user_context)
             origin = origin_func.get_as_string_dangerous()

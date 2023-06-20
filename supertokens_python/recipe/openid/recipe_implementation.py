@@ -50,7 +50,12 @@ class RecipeImplementation(RecipeInterface):
             + self.config.issuer_path.get_as_string_dangerous()
         )
 
-        jwks_uri = issuer + NormalisedURLPath(GET_JWKS_API).get_as_string_dangerous()
+        jwks_uri = (
+            issuer_domain_normalised.get_as_string_dangerous()
+            + self.config.issuer_path.append(
+                NormalisedURLPath(GET_JWKS_API)
+            ).get_as_string_dangerous()
+        )
 
         return GetOpenIdDiscoveryConfigurationResult(issuer, jwks_uri)
 

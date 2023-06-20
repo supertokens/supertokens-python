@@ -129,9 +129,6 @@ class SessionRecipe(RecipeModule):
         else:
             log_debug_message("session init: cookie_domain: None")
         log_debug_message(
-            "session init: cookie_same_site: %s", self.config.cookie_same_site
-        )
-        log_debug_message(
             "session init: refresh_token_path: %s ",
             self.config.refresh_token_path.get_as_string_dangerous(),
         )

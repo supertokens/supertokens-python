@@ -243,7 +243,7 @@ async def create_magic_link(
     return await PasswordlessRecipe.get_instance().create_magic_link(
         email=email,
         phone_number=phone_number,
-        origin_string=origin,
+        origin=origin,
         user_context=user_context,
     )
 

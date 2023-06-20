@@ -65,7 +65,7 @@ def create_new_session_without_request_response(
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
-    api_domain: Optional[str] = None,
+    issuer_domain: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -78,7 +78,7 @@ def create_new_session_without_request_response(
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
-            api_domain,
+            issuer_domain,
             user_context,
         )
     )

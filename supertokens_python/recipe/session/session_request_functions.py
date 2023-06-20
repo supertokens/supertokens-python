@@ -154,8 +154,6 @@ async def get_session_from_request(
         do_anti_csrf_check = normalise_http_method(request.method()) != "get"
     if request_transfer_method == "header":
         do_anti_csrf_check = False
-    if config.anti_csrf != "VIA_TOKEN":
-        do_anti_csrf_check = False
     if do_anti_csrf_check and config.anti_csrf == "VIA_CUSTOM_HEADER":
         if config.anti_csrf == "VIA_CUSTOM_HEADER":
             if get_rid_from_header(request) is None:
@@ -417,7 +415,7 @@ async def refresh_session_in_request(
         session = await recipe_interface_impl.refresh_session(
             refresh_token,
             anti_csrf_token,
-            (disable_anti_csrf and config.anti_csrf == "VIA_TOKEN"),
+            disable_anti_csrf,
             user_context,
         )
     except SuperTokensSessionError as e:

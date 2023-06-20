@@ -81,7 +81,7 @@ async def create_new_session_without_request_response(
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
-    api_domain: Optional[str] = None,
+    issuer_domain: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -97,7 +97,7 @@ async def create_new_session_without_request_response(
     app_info = SessionRecipe.get_instance().app_info
 
     api_domain_resp = await get_api_domain_or_throw_error(
-        api_domain, app_info, user_context
+        issuer_domain, app_info, user_context
     )
 
     issuer = api_domain_resp + app_info.api_base_path.get_as_string_dangerous()

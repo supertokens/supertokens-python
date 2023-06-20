@@ -63,7 +63,7 @@ def normalise_session_scope(session_scope: str) -> str:
         if scope.startswith("."):
             scope = scope[1:]
 
-        if not scope.startswith("://"):
+        if (not scope.startswith("https://")) and (not scope.startswith("http://")):
             scope = "http://" + scope
 
         try:
@@ -431,17 +431,15 @@ def validate_and_normalise_user_input(
             else:
                 cookie_same_site_normalize = normalise_same_site(str(cookie_same_site))
 
-        if (
+        elif (
             top_level_api_domain != top_level_origin
             or api_domain_scheme != origin_scheme
         ):
-            result = "none"
+            cookie_same_site_normalize = "none"
         else:
-            result = "lax"
+            cookie_same_site_normalize = "lax"
 
-        if cookie_same_site is not None:
-            return cookie_same_site_normalize
-        return result
+        return cookie_same_site_normalize
 
     async def cookie_secure_func(req: BaseRequest, user_context: Dict[str, Any]):
         api_domain = await app_info.api_domain(req, user_context)
@@ -562,11 +560,8 @@ async def get_api_domain_or_throw_error(
 ) -> str:
     if api_domain is None:
         req = get_request_from_user_context(user_context)
-        if req is not None:
+        if req is not None or app_info.initial_api_domain_type == "string":
             api_domain_res = await app_info.api_domain(req, user_context)
-            return api_domain_res.get_as_string_dangerous()
-        if app_info.initial_api_domain_type == "string":
-            api_domain_res = await app_info.api_domain(None, user_context)
             return api_domain_res.get_as_string_dangerous()
         raise Exception(
             "Please pass api_domain as a string to the function or pass api_domain as string in supertokens.init"

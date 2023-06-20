@@ -248,7 +248,7 @@ async def create_magic_link(
     return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
         email=email,
         phone_number=phone_number,
-        origin_string=origin,
+        origin=origin,
         user_context=user_context,
     )
 
