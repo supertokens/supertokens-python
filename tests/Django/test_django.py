@@ -415,6 +415,7 @@ class SupertokensTest(TestCase):
         dict_response = json.loads(response.content)
         assert dict_response["s"] == "empty session"
 
+    # TODO ~iresh: will add later
     # async def test_thirdparty_parsing_works(self):
     #     init(
     #         supertokens_config=SupertokensConfig("http://localhost:3567"),

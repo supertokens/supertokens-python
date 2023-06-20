@@ -31,6 +31,7 @@ async def fastapi_client():
     return TestClient(app)
 
 
+# TODO ~iresh: will add later
 # async def test_thirdpary_parsing_works(fastapi_client: TestClient):
 #     st_init_args = {
 #         **st_init_common_args,
