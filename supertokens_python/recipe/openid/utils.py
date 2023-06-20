@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union, Any, Awaitable, Optional
+from typing import TYPE_CHECKING, Callable, Union, Any, Awaitable, Optional, Dict
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python import get_request_from_user_context
 
 
 class InputOverrideConfig:
@@ -51,7 +52,9 @@ class OpenIdConfig:
     def __init__(
         self,
         override: OverrideConfig,
-        issuer_domain: Callable[[BaseRequest, Any], Awaitable[NormalisedURLDomain]],
+        issuer_domain: Callable[
+            [Optional[BaseRequest], Any], Awaitable[NormalisedURLDomain]
+        ],
         issuer_path: NormalisedURLPath,
         is_issuer_domain_given: bool,
     ):
@@ -66,7 +69,7 @@ def validate_and_normalise_user_input(
     issuer_domain_and_path: Union[str, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ):
-    async def issuer_domain(req: BaseRequest, user_context: Any):
+    async def issuer_domain(req: Optional[BaseRequest], user_context: Dict[str, Any]):
         if issuer_domain_and_path is None:
             api_domain = await app_info.api_domain(req, user_context)
             return api_domain
@@ -102,15 +105,19 @@ async def get_issuer_domain_or_throw_error(
     issuer_domain: Optional[str],
     config: OpenIdConfig,
     app_info: AppInfo,
-    user_context: Any,
+    user_context: Dict[str, Any],
 ) -> NormalisedURLDomain:
     if issuer_domain is not None:
         return NormalisedURLDomain(issuer_domain)
     if config.is_issuer_domain_given:
-        issuer_domain_resp = await config.issuer_domain(None, user_context)  # type: ignore
+        issuer_domain_resp = await config.issuer_domain(None, user_context)
+        return issuer_domain_resp
+    req = get_request_from_user_context(user_context)
+    if req is not None:
+        issuer_domain_resp = await config.issuer_domain(req, user_context)
         return issuer_domain_resp
     if app_info.initial_api_domain_type == "string":
-        issuer_domain_resp = await config.issuer_domain(None, user_context)  # type: ignore
+        issuer_domain_resp = await config.issuer_domain(None, user_context)
         return issuer_domain_resp
     raise Exception(
         "Please pass issuer_domain as a string to the function or initiate issuer_domain with openid recipe or pass api_domain as string in supertokens.init"

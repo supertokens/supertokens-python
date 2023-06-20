@@ -53,6 +53,7 @@ if TYPE_CHECKING:
     from .recipe import SessionRecipe
 
 from supertokens_python.logger import log_debug_message
+from supertokens_python import get_request_from_user_context
 
 
 def normalise_session_scope(session_scope: str) -> str:
@@ -404,7 +405,7 @@ def validate_and_normalise_user_input(
     )
 
     async def cookie_same_site_func(
-        req: BaseRequest, user_context: Any
+        req: BaseRequest, user_context: Dict[str, Any]
     ) -> Literal["lax", "none", "strict"]:
         origin = await app_info.origin(req, user_context)
         origin_string = origin.get_as_string_dangerous()
@@ -442,7 +443,7 @@ def validate_and_normalise_user_input(
             return cookie_same_site_normalize
         return result
 
-    async def cookie_secure_func(req: BaseRequest, user_context: Any):
+    async def cookie_secure_func(req: BaseRequest, user_context: Dict[str, Any]):
         api_domain = await app_info.api_domain(req, user_context)
         return (
             cookie_secure
@@ -557,13 +558,16 @@ async def validate_claims_in_payload(
 
 
 async def get_api_domain_or_throw_error(
-    api_domain: Optional[str], app_info: AppInfo, user_context: Any
+    api_domain: Optional[str], app_info: AppInfo, user_context: Dict[str, Any]
 ) -> str:
     if api_domain is None:
+        req = get_request_from_user_context(user_context)
+        if req is not None:
+            api_domain_res = await app_info.api_domain(req, user_context)
+            return api_domain_res.get_as_string_dangerous()
         if app_info.initial_api_domain_type == "string":
-            api_domain_res = await app_info.api_domain({}, user_context)  # type:ignore
-            api_domain = api_domain_res.get_as_string_dangerous()
-            return api_domain
+            api_domain_res = await app_info.api_domain(None, user_context)
+            return api_domain_res.get_as_string_dangerous()
         raise Exception(
             "Please pass api_domain as a string to the function or pass api_domain as string in supertokens.init"
         )
