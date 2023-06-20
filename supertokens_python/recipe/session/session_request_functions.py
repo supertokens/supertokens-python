@@ -97,6 +97,9 @@ async def get_session_from_request(
 
     # This token isn't handled by getToken to limit the scope of this legacy/migration code
     if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+        log_debug_message(
+            "getSession: Throwing TRY_REFRESH_TOKEN because the request is using a legacy session"
+        )
         # This could create a spike on refresh calls during the update of the backend SDK
         return raise_try_refresh_token_exception(
             "using legacy session, please call the refresh API"
