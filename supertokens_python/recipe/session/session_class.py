@@ -110,6 +110,9 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                "getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore"
+            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.session_data_in_database
@@ -164,6 +167,9 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                "getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore"
+            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.time_created
@@ -175,6 +181,9 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
+            log_debug_message(
+                "getExpiry: Throwing UNAUTHORISED because session does not exist anymore"
+            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.expiry
@@ -277,6 +286,9 @@ class Session(SessionContainer):
         )
 
         if response is None:
+            log_debug_message(
+                "mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore"
+            )
             raise_unauthorised_exception("Session does not exist anymore.")
 
         if response.access_token is not None:
