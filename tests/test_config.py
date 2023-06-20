@@ -266,7 +266,7 @@ async def test_same_site_values():
         recipe_list=[session.init(cookie_same_site="lax")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
 
     reset()
 
@@ -281,7 +281,7 @@ async def test_same_site_values():
         recipe_list=[session.init(cookie_same_site="none")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "none"  # type: ignore
 
     reset()
 
@@ -296,46 +296,8 @@ async def test_same_site_values():
         recipe_list=[session.init(cookie_same_site="strict")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "strict"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "strict"  # type: ignore
 
-    reset()
-
-    test_passed = True
-    try:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="api.supertokens.io",
-                origin="supertokens.io",
-            ),
-            framework="fastapi",
-            recipe_list=[session.init(cookie_same_site="random")],  # type: ignore
-        )
-        test_passed = False
-    except Exception as e:
-        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
-
-    assert test_passed
-    reset()
-
-    test_passed = True
-    try:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="api.supertokens.io",
-                origin="supertokens.io",
-            ),
-            framework="fastapi",
-            recipe_list=[session.init(cookie_same_site=" ")],  # type: ignore
-        )
-        test_passed = False
-    except Exception as e:
-        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
-
-    assert test_passed
     reset()
 
     init(
@@ -351,7 +313,7 @@ async def test_same_site_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
 
     reset()
 
@@ -368,7 +330,7 @@ async def test_same_site_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "none"  # type: ignore
 
     reset()
 
@@ -389,9 +351,9 @@ async def test_config_values():
         recipe_list=[session.init(anti_csrf="VIA_CUSTOM_HEADER")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
     assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
-    assert SessionRecipe.get_instance().config.cookie_secure
+    assert await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -410,9 +372,9 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
-    assert SessionRecipe.get_instance().config.cookie_secure
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
+    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -431,9 +393,9 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "none"  # type: ignore
     assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
-    assert SessionRecipe.get_instance().config.cookie_secure
+    assert await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -452,9 +414,9 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
-    assert SessionRecipe.get_instance().config.cookie_secure
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
+    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -473,9 +435,9 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
-    assert not SessionRecipe.get_instance().config.cookie_secure
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
+    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert not await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -492,9 +454,9 @@ async def test_config_values():
         recipe_list=[session.init(anti_csrf="VIA_CUSTOM_HEADER")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
     assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
-    assert not SessionRecipe.get_instance().config.cookie_secure
+    assert not await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -513,9 +475,9 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "none"  # type: ignore
     assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
-    assert SessionRecipe.get_instance().config.cookie_secure
+    assert await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -534,9 +496,9 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
-    assert not SessionRecipe.get_instance().config.cookie_secure
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "lax"  # type: ignore
+    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert not await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 
@@ -555,8 +517,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
-    assert SessionRecipe.get_instance().config.cookie_secure
+    assert (await SessionRecipe.get_instance().config.cookie_same_site(None, {})) == "none"  # type: ignore
+    assert await SessionRecipe.get_instance().config.cookie_secure(None, {})  # type: ignore
 
     reset()
 

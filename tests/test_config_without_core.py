@@ -5,6 +5,7 @@ from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 
 
+@mark.asyncio
 @mark.parametrize(
     "api_domain,origin,cookie_same_site",
     [
@@ -27,7 +28,9 @@ from supertokens_python.recipe.session import SessionRecipe
         ("http://example.com/", "http://example.com/", "lax"),  # HTTP same url
     ],
 )
-def test_same_site_cookie_values(api_domain: str, origin: str, cookie_same_site: str):
+async def test_same_site_cookie_values(
+    api_domain: str, origin: str, cookie_same_site: str
+):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
@@ -45,6 +48,6 @@ def test_same_site_cookie_values(api_domain: str, origin: str, cookie_same_site:
     )
 
     s = SessionRecipe.get_instance()
-    assert s.config.cookie_same_site == cookie_same_site
+    assert (await s.config.cookie_same_site(None, {})) == cookie_same_site  # type: ignore
     s.reset()
     Supertokens.reset()
