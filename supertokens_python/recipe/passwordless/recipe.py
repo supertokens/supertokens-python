@@ -72,6 +72,7 @@ from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python import get_request_from_user_context
 
 
 class PasswordlessRecipe(RecipeModule):
@@ -299,8 +300,13 @@ class PasswordlessRecipe(RecipeModule):
 
         app_info = self.get_app_info()
 
+        req = get_request_from_user_context(user_context)
+
         if origin_string is not None:
             origin = NormalisedURLDomain(origin_string).get_as_string_dangerous()
+        elif req is not None:
+            origin_func = await app_info.origin(req, user_context)
+            origin = origin_func.get_as_string_dangerous()
         elif app_info.initial_origin_type == "string":
             origin_func = await app_info.origin(None, user_context)
             origin = origin_func.get_as_string_dangerous()
