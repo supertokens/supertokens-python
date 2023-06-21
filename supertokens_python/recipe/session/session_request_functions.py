@@ -201,8 +201,7 @@ async def get_session_from_request(
             final_transfer_method = "header"
 
         await session.attach_to_request_response(
-            request,
-            final_transfer_method,
+            request, final_transfer_method, user_context
         )
 
     return session
@@ -303,12 +302,14 @@ async def create_new_session_in_request(
             and get_token(request, "access", transfer_method) is not None
         ):
             session.response_mutators.append(
-                clear_session_mutator(request, config, transfer_method)
+                clear_session_mutator(request, config, transfer_method, user_context)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
 
-    await session.attach_to_request_response(request, output_transfer_method)
+    await session.attach_to_request_response(
+        request, output_transfer_method, user_context
+    )
     log_debug_message("createNewSession: Attached new tokens to res")
 
     return session
@@ -382,6 +383,7 @@ async def refresh_session_in_request(
                     "",
                     0,
                     "access_token_path",
+                    user_context,
                 )
             )
 
@@ -436,6 +438,7 @@ async def refresh_session_in_request(
                         "",
                         0,
                         "access_token_path",
+                        user_context,
                     )
                 )
 
@@ -454,10 +457,12 @@ async def refresh_session_in_request(
             and refresh_tokens[transfer_method] is not None
         ):
             response_mutators.append(
-                clear_session_mutator(request, config, transfer_method)
+                clear_session_mutator(request, config, transfer_method, user_context)
             )
 
-    await session.attach_to_request_response(request, request_transfer_method)
+    await session.attach_to_request_response(
+        request, request_transfer_method, user_context
+    )
     log_debug_message("refreshSession: Success!")
 
     # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
@@ -473,6 +478,7 @@ async def refresh_session_in_request(
                 "",
                 0,
                 "access_token_path",
+                user_context,
             )
         )
     session.response_mutators.extend(response_mutators)

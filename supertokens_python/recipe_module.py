@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Dict, Any
 
 from typing_extensions import Literal
 
@@ -76,7 +76,11 @@ class RecipeModule(abc.ABC):
 
     @abc.abstractmethod
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         pass
 

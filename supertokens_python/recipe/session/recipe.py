@@ -217,7 +217,11 @@ class SessionRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         if (
             isinstance(err, SuperTokensSessionError)
@@ -229,12 +233,12 @@ class SessionRecipe(RecipeModule):
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
             return await self.config.error_handlers.on_unauthorised(
-                self, err.clear_tokens, request, str(err), response
+                self, err.clear_tokens, request, str(err), response, user_context
             )
         if isinstance(err, TokenTheftError):
             log_debug_message("errorHandler: returning TOKEN_THEFT_DETECTED")
             return await self.config.error_handlers.on_token_theft_detected(
-                self, request, err.session_handle, err.user_id, response
+                self, request, err.session_handle, err.user_id, response, user_context
             )
         if isinstance(err, InvalidClaimsError):
             log_debug_message("errorHandler: returning INVALID_CLAIMS")

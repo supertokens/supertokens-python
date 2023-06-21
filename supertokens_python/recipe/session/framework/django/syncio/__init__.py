@@ -72,7 +72,7 @@ def verify_session(
                 response = DjangoResponse(JsonResponse({}))
                 result = sync(
                     Supertokens.get_instance().handle_supertokens_error(
-                        DjangoRequest(request), e, response
+                        DjangoRequest(request), e, response, user_context
                     )
                 )
                 if isinstance(result, DjangoResponse):

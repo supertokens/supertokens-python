@@ -111,10 +111,11 @@ async def _set_cookie(
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
+    user_context: Dict[str, Any],
 ):
     domain = config.cookie_domain
-    secure = await config.cookie_secure(req, {})
-    same_site = await config.cookie_same_site(req, {})
+    secure = await config.cookie_secure(req, user_context)
+    same_site = await config.cookie_same_site(req, user_context)
     path = ""
     if path_type == "refresh_token_path":
         path = config.refresh_token_path.get_as_string_dangerous()
@@ -140,12 +141,13 @@ def set_cookie_response_mutator(
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
+    user_context: Dict[str, Any],
 ):
     async def mutator(
         response: BaseResponse,
     ):
         return await _set_cookie(
-            request, response, config, key, value, expires, path_type
+            request, response, config, key, value, expires, path_type, user_context
         )
 
     return mutator
@@ -174,7 +176,10 @@ def get_rid_header(request: BaseRequest):
 
 
 async def clear_session_from_all_token_transfer_methods(
-    request: BaseRequest, response: BaseResponse, recipe: SessionRecipe
+    request: BaseRequest,
+    response: BaseResponse,
+    recipe: SessionRecipe,
+    user_context: Dict[str, Any],
 ):
     # We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     # This is done to handle the following use-case:
@@ -183,16 +188,23 @@ async def clear_session_from_all_token_transfer_methods(
     # We can't know which to clear since we can't reliably query or remove the set-cookie header added to the response (causes issues in some frameworks, i.e.: hapi)
     # The safe solution in this case is to overwrite all the response cookies/headers with an empty value, which is what we are doing here.
     for transfer_method in available_token_transfer_methods:
-        await _clear_session(request, response, recipe.config, transfer_method)
+        await _clear_session(
+            request, response, recipe.config, transfer_method, user_context
+        )
 
 
 def clear_session_mutator(
-    request: BaseRequest, config: SessionConfig, transfer_method: TokenTransferMethod
+    request: BaseRequest,
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     async def mutator(
         response: BaseResponse,
     ):
-        return await _clear_session(request, response, config, transfer_method)
+        return await _clear_session(
+            request, response, config, transfer_method, user_context
+        )
 
     return mutator
 
@@ -202,11 +214,14 @@ async def _clear_session(
     response: BaseResponse,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     # If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        await _set_token(request, response, config, token_type, "", 0, transfer_method)
+        await _set_token(
+            request, response, config, token_type, "", 0, transfer_method, user_context
+        )
 
     remove_header(
         response, ANTI_CSRF_HEADER_KEY
@@ -221,11 +236,14 @@ def clear_session_response_mutator(
     request: BaseRequest,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     async def mutator(
         response: BaseResponse,
     ):
-        return await _clear_session(request, response, config, transfer_method)
+        return await _clear_session(
+            request, response, config, transfer_method, user_context
+        )
 
     return mutator
 
@@ -272,6 +290,7 @@ async def _set_token(
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     log_debug_message("Setting %s token as %s", token_type, transfer_method)
     if transfer_method == "cookie":
@@ -283,6 +302,7 @@ async def _set_token(
             value,
             expires,
             "refresh_token_path" if token_type == "refresh" else "access_token_path",
+            user_context,
         )
     elif transfer_method == "header":
         set_token_in_header(
@@ -299,6 +319,7 @@ def token_response_mutator(
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     async def mutator(response: BaseResponse):
         await _set_token(
@@ -309,6 +330,7 @@ def token_response_mutator(
             value,
             expires,
             transfer_method,
+            user_context,
         )
 
     return mutator
@@ -325,12 +347,19 @@ def access_token_mutator(
     front_token: str,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     async def mutator(
         response: BaseResponse,
     ):
         await _set_access_token_in_response_async(
-            request, response, access_token, front_token, config, transfer_method
+            request,
+            response,
+            access_token,
+            front_token,
+            config,
+            transfer_method,
+            user_context,
         )
 
     return mutator
@@ -343,6 +372,7 @@ async def _set_access_token_in_response_async(
     front_token: str,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     _set_front_token_in_headers(res, front_token)
     await _set_token(
@@ -357,6 +387,7 @@ async def _set_access_token_in_response_async(
         # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
         get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
         transfer_method,
+        user_context,
     )
 
     if (
@@ -371,4 +402,5 @@ async def _set_access_token_in_response_async(
             access_token,
             get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
             "header",
+            user_context,
         )

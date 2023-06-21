@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
@@ -199,7 +199,11 @@ class DashboardRecipe(RecipeModule):
         return None
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         raise err
 

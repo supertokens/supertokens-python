@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, Union
+from typing import List, Union, Dict, Any
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -74,7 +74,11 @@ class UserMetadataRecipe(RecipeModule):
         raise Exception("Should never come here")
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         raise err
 

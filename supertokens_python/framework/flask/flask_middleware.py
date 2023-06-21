@@ -83,12 +83,14 @@ class Middleware:
 
             from flask.wrappers import Response
 
+            user_context = {}
+
             st = Supertokens.get_instance()
             response = Response(json.dumps({}), mimetype="application/json", status=200)
 
             result: BaseResponse = sync(
                 st.handle_supertokens_error(
-                    FlaskRequest(request), error, FlaskResponse(response)
+                    FlaskRequest(request), error, FlaskResponse(response), user_context
                 )
             )
             if isinstance(result, FlaskResponse):

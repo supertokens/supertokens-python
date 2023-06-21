@@ -571,7 +571,11 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(
-        self, request: BaseRequest, err: Exception, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: Exception,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         log_debug_message("errorHandler: Started")
         log_debug_message(
@@ -594,7 +598,7 @@ class Supertokens:
                 log_debug_message(
                     "errorHandler: Matched with recipeID: %s", recipe.get_recipe_id()
                 )
-                return await recipe.handle_error(request, err, response)
+                return await recipe.handle_error(request, err, response, user_context)
         raise err
 
     def get_request_from_user_context(  # pylint: disable=no-self-use
