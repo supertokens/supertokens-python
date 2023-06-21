@@ -16,11 +16,13 @@ from __future__ import annotations
 from re import sub
 from time import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
-
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from httpx import AsyncClient
 from jwt import decode, encode
+
+# You must have cryptography library installed for these imports to work:
 from jwt.algorithms import RSAAlgorithm
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+
 from supertokens_python.recipe.thirdparty.api.implementation import (
     get_actual_client_id_from_development_client_id,
 )

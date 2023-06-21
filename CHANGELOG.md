@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.5] - 2023-06-21
+
+### Changes and fixes
+
+- Remove constraints on `cryptograpy` dependency version and let `pyjwt` library handle it
+
 ## [0.14.4] - 2023-06-14
 
 ### Changes and fixes
