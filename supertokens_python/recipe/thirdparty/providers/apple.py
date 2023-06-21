@@ -17,8 +17,6 @@ from re import sub
 from time import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
 
-# cryptography lib is a dependency of PyJWT so no need to install/pin it
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from httpx import AsyncClient
 from jwt import decode, encode
 from jwt.algorithms import RSAAlgorithm
@@ -37,6 +35,8 @@ from supertokens_python.supertokens import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
+    # cryptography lib is a dependency of PyJWT so no need to install/pin it
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
 
 class Apple(Provider):
