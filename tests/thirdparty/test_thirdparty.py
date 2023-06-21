@@ -116,9 +116,8 @@ async def test_apple_provider_can_fetch_keys():
         apple = Apple(
             "client-id", "client-key-id", "client-private-key", "client-team-id"
         )
-        keys = (
-            await apple._fetch_apple_public_keys()  # pylint: disable=protected-access
-        )
+        # pylint: disable=protected-access
+        keys = await apple._fetch_apple_public_keys()  # type: ignore
 
         assert mocked_route.call_count == 1
         assert len(keys) == 3
