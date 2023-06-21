@@ -106,7 +106,6 @@ setup(
         "asgiref>=3.4.1,<4",
         "typing_extensions>=4.1.1,<5.0.0",
         "Deprecated==1.2.13",
-        "cryptography>=35.0,<37.0",
         "phonenumbers==8.12.48",
         "twilio==7.9.1",
         "aiosmtplib==1.1.6",

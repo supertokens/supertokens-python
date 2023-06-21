@@ -17,6 +17,7 @@ from re import sub
 from time import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
 
+# cryptography lib is a dependency of PyJWT so no need to install/pin it
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from httpx import AsyncClient
 from jwt import decode, encode
