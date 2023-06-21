@@ -27,7 +27,7 @@ from supertokens_python.recipe.jwt.constants import GET_JWKS_API
 from supertokens_python.recipe.jwt.interfaces import (
     RecipeInterface as JWTRecipeInterface,
 )
-from .utils import get_issuer_domain_or_throw_error
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
 
 from .interfaces import (
     GetJWKSResult,
@@ -41,9 +41,12 @@ class RecipeImplementation(RecipeInterface):
         self, issuer_domain: Optional[str], user_context: Dict[str, Any]
     ) -> GetOpenIdDiscoveryConfigurationResult:
 
-        issuer_domain_normalised = await get_issuer_domain_or_throw_error(
-            issuer_domain, self.config, self.app_info, user_context
-        )
+        if issuer_domain is not None:
+            issuer_domain_normalised = NormalisedURLDomain(issuer_domain)
+        else:
+            issuer_domain_normalised = await self.config.issuer_domain(
+                None, user_context
+            )
 
         issuer = (
             issuer_domain_normalised.get_as_string_dangerous()
@@ -80,9 +83,12 @@ class RecipeImplementation(RecipeInterface):
         issuer_domain: Optional[str],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
-        issuer_domain_normalised = await get_issuer_domain_or_throw_error(
-            issuer_domain, self.config, self.app_info, user_context
-        )
+        if issuer_domain is not None:
+            issuer_domain_normalised = NormalisedURLDomain(issuer_domain)
+        else:
+            issuer_domain_normalised = await self.config.issuer_domain(
+                None, user_context
+            )
         issuer = (
             issuer_domain_normalised.get_as_string_dangerous()
             + self.config.issuer_path.get_as_string_dangerous()

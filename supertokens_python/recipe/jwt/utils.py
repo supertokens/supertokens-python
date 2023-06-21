@@ -13,14 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union, Optional, Any, Dict
+from typing import TYPE_CHECKING, Callable, Union
 
 if TYPE_CHECKING:
     from .interfaces import APIInterface, RecipeInterface
-    from supertokens_python import AppInfo
-
-from supertokens_python import get_request_from_user_context
-from supertokens_python.normalised_url_domain import NormalisedURLDomain
 
 
 class OverrideConfig:
@@ -55,20 +51,3 @@ def validate_and_normalise_user_input(
         jwt_validity_seconds = 3153600000
 
     return JWTConfig(override, jwt_validity_seconds)
-
-
-async def get_issuer_domain_or_throw_error(
-    issuer: Optional[str], app_info: AppInfo, user_context: Dict[str, Any]
-) -> str:
-    if issuer is None:
-        req = get_request_from_user_context(user_context)
-        if req is not None:
-            api_domain = await app_info.api_domain(req, user_context)
-            return api_domain.get_as_string_dangerous()
-        if app_info.initial_api_domain_type == "string":
-            api_domain = await app_info.api_domain(None, user_context)
-            return api_domain.get_as_string_dangerous()
-        raise Exception(
-            "Please pass issuer as a string to the function or pass api_domain as string in supertokens.init"
-        )
-    return NormalisedURLDomain(issuer).get_as_string_dangerous()

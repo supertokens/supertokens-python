@@ -65,6 +65,7 @@ from supertokens_python import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.recipe import SessionRecipe
+    from supertokens_python.framework.response import BaseResponse
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
@@ -302,7 +303,7 @@ async def create_new_session_in_request(
             and get_token(request, "access", transfer_method) is not None
         ):
             session.response_mutators.append(
-                clear_session_mutator(request, config, transfer_method, user_context)
+                clear_session_mutator(request, config, transfer_method)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
@@ -327,7 +328,9 @@ async def refresh_session_in_request(
 ) -> SessionContainer:
     log_debug_message("refreshSession: Started")
 
-    response_mutators: List[Callable[[Any], Awaitable[None]]] = []
+    response_mutators: List[
+        Callable[[BaseResponse, Dict[str, Any]], Awaitable[None]]
+    ] = []
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
@@ -383,7 +386,6 @@ async def refresh_session_in_request(
                     "",
                     0,
                     "access_token_path",
-                    user_context,
                 )
             )
 
@@ -438,7 +440,6 @@ async def refresh_session_in_request(
                         "",
                         0,
                         "access_token_path",
-                        user_context,
                     )
                 )
 
@@ -457,7 +458,7 @@ async def refresh_session_in_request(
             and refresh_tokens[transfer_method] is not None
         ):
             response_mutators.append(
-                clear_session_mutator(request, config, transfer_method, user_context)
+                clear_session_mutator(request, config, transfer_method)
             )
 
     await session.attach_to_request_response(
@@ -478,7 +479,6 @@ async def refresh_session_in_request(
                 "",
                 0,
                 "access_token_path",
-                user_context,
             )
         )
     session.response_mutators.extend(response_mutators)

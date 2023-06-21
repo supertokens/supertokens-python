@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework import BaseResponse
+from supertokens_python.utils import default_user_context
 
 if TYPE_CHECKING:
     from flask import Flask
@@ -61,11 +62,16 @@ class Middleware:
 
         @app.after_request
         def _(response: Response):
-            from flask import g
+            from flask import g, request
 
+            request_ = FlaskRequest(request)
             response_ = FlaskResponse(response)
+
+            user_context = default_user_context(request_)
             if hasattr(g, "supertokens") and g.supertokens is not None:
-                sync(manage_session_post_response(g.supertokens, response_))
+                sync(
+                    manage_session_post_response(g.supertokens, response_, user_context)
+                )
 
             return response_.response
 
@@ -83,10 +89,10 @@ class Middleware:
 
             from flask.wrappers import Response
 
-            user_context = {}
-
             st = Supertokens.get_instance()
             response = Response(json.dumps({}), mimetype="application/json", status=200)
+
+            user_context = default_user_context(FlaskRequest(request))
 
             result: BaseResponse = sync(
                 st.handle_supertokens_error(

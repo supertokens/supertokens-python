@@ -17,6 +17,7 @@ import asyncio
 from typing import Any, Union
 
 from asgiref.sync import async_to_sync
+from supertokens_python.utils import default_user_context
 
 
 def middleware(get_response: Any):
@@ -36,7 +37,7 @@ def middleware(get_response: Any):
             custom_request = DjangoRequest(request)
             from django.http import HttpResponse
 
-            user_context = {}
+            user_context = default_user_context(custom_request)
 
             response = DjangoResponse(HttpResponse())
             try:
@@ -48,7 +49,7 @@ def middleware(get_response: Any):
                     request.supertokens, SessionContainer  # type: ignore
                 ):
                     await manage_session_post_response(
-                        request.supertokens, result  # type: ignore
+                        request.supertokens, result, user_context  # type: ignore
                     )
                 if isinstance(result, DjangoResponse):
                     return result.response
@@ -69,7 +70,7 @@ def middleware(get_response: Any):
         custom_request = DjangoRequest(request)
         from django.http import HttpResponse
 
-        user_context = {}
+        user_context = default_user_context(custom_request)
 
         response = DjangoResponse(HttpResponse())
         try:
@@ -85,7 +86,7 @@ def middleware(get_response: Any):
             ):
                 async_to_sync(
                     manage_session_post_response(
-                        request.supertokens, result  # type: ignore
+                        request.supertokens, result, user_context  # type: ignore
                     )
                 )
             return result.response

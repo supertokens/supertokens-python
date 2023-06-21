@@ -176,11 +176,11 @@ class AppInfo:
 
 
 async def manage_session_post_response(
-    session: SessionContainer, response: BaseResponse
+    session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]
 ):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
-        await mutator(response=response)  # type: ignore
+        await mutator(response=response, user_context=user_context)  # type: ignore
 
 
 class Supertokens:

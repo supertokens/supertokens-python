@@ -363,7 +363,7 @@ class APIInterface(ABC):
         pass
 
 
-ResponseMutator = Callable[[BaseResponse], Awaitable[None]]
+ResponseMutator = Callable[[BaseResponse, Dict[str, Any]], Awaitable[None]]
 
 
 class TokenInfo:

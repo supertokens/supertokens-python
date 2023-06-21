@@ -58,7 +58,6 @@ class Session(SessionContainer):
                     self.front_token,
                     self.config,
                     transfer_method,
-                    user_context,
                 )
             )
             if self.refresh_token is not None:
@@ -70,7 +69,6 @@ class Session(SessionContainer):
                         self.refresh_token.token,
                         self.refresh_token.expiry,
                         transfer_method,
-                        user_context,
                     )
                 )
             if self.anti_csrf_token is not None:
@@ -103,7 +101,6 @@ class Session(SessionContainer):
                     self.req_res_info.request,
                     self.config,
                     transfer_method,
-                    user_context,
                 )
             )
 
@@ -321,7 +318,6 @@ class Session(SessionContainer):
                         self.front_token,
                         self.config,
                         transfer_method,
-                        user_context,
                     )
                 )
         else:

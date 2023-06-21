@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.querier import Querier
 
 if TYPE_CHECKING:
@@ -28,8 +29,6 @@ from supertokens_python.recipe.jwt.interfaces import (
     GetJWKSResult,
     RecipeInterface,
 )
-
-from .utils import get_issuer_domain_or_throw_error
 
 from .interfaces import JsonWebKey
 
@@ -52,9 +51,10 @@ class RecipeImplementation(RecipeInterface):
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
-        issuer = await get_issuer_domain_or_throw_error(
-            issuer_domain, self.app_info, user_context
-        )
+        if issuer_domain is not None:
+            issuer = NormalisedURLDomain(issuer_domain)
+        else:
+            issuer = await self.app_info.api_domain(None, user_context)
 
         data = {
             "payload": payload,

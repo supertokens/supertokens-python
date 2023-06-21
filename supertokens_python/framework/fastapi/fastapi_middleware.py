@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.framework import BaseResponse
+from supertokens_python.utils import default_user_context
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request
@@ -43,11 +44,10 @@ def get_middleware():
             st = Supertokens.get_instance()
             from fastapi.responses import Response
 
-            user_context = {}
-
             try:
                 custom_request = FastApiRequest(request)
                 response = FastApiResponse(Response())
+                user_context = default_user_context(custom_request)
                 result: Union[BaseResponse, None] = await st.middleware(
                     custom_request, response
                 )
@@ -59,12 +59,14 @@ def get_middleware():
                     request.state.supertokens, SessionContainer
                 ):
                     await manage_session_post_response(
-                        request.state.supertokens, result
+                        request.state.supertokens, result, user_context
                     )
                 if isinstance(result, FastApiResponse):
                     return result.response
             except SuperTokensError as e:
+                custom_request = FastApiRequest(request)
                 response = FastApiResponse(Response())
+                user_context = default_user_context(custom_request)
                 result: Union[BaseResponse, None] = await st.handle_supertokens_error(
                     FastApiRequest(request), e, response, user_context
                 )

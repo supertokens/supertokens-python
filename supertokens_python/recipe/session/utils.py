@@ -146,7 +146,11 @@ class ErrorHandlers:
         )
 
     async def on_try_refresh_token(
-        self, request: BaseRequest, message: str, response: BaseResponse
+        self,
+        request: BaseRequest,
+        message: str,
+        response: BaseResponse,
+        _user_context: Dict[str, Any],
     ):
         result = await resolve(self.__on_try_refresh_token(request, message, response))
         return result
@@ -173,6 +177,7 @@ class ErrorHandlers:
         request: BaseRequest,
         claim_validation_errors: List[ClaimValidationError],
         response: BaseResponse,
+        _user_context: Dict[str, Any],
     ):
         _ = recipe
         result = await resolve(

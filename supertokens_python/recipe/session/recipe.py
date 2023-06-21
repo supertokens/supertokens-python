@@ -228,7 +228,7 @@ class SessionRecipe(RecipeModule):
             and err.response_mutators is not None
         ):
             for mutator in err.response_mutators:
-                await mutator(response)
+                await mutator(response, user_context)
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
@@ -243,12 +243,12 @@ class SessionRecipe(RecipeModule):
         if isinstance(err, InvalidClaimsError):
             log_debug_message("errorHandler: returning INVALID_CLAIMS")
             return await self.config.error_handlers.on_invalid_claim(
-                self, request, err.payload, response
+                self, request, err.payload, response, user_context
             )
 
         log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
         return await self.config.error_handlers.on_try_refresh_token(
-            request, str(err), response
+            request, str(err), response, user_context
         )
 
     def get_all_cors_headers(self) -> List[str]:

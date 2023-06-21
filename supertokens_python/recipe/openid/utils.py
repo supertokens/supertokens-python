@@ -69,11 +69,14 @@ def validate_and_normalise_user_input(
     issuer_domain_and_path: Union[str, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ):
-    async def issuer_domain(req: Optional[BaseRequest], user_context: Dict[str, Any]):
+    async def issuer_domain(
+        req: Optional[BaseRequest], user_context: Dict[str, Any]
+    ) -> NormalisedURLDomain:
+        req = req if req is not None else get_request_from_user_context(user_context)
         if issuer_domain_and_path is None:
             api_domain = await app_info.api_domain(req, user_context)
             return api_domain
-        return NormalisedURLDomain(issuer_domain_and_path)
+        return NormalisedURLDomain(issuer_domain_and_path)  # input was given
 
     is_issuer_domain_given = issuer_domain_and_path is not None
 
@@ -98,27 +101,4 @@ def validate_and_normalise_user_input(
         issuer_domain,
         issuer_path,
         is_issuer_domain_given,
-    )
-
-
-async def get_issuer_domain_or_throw_error(
-    issuer_domain: Optional[str],
-    config: OpenIdConfig,
-    app_info: AppInfo,
-    user_context: Dict[str, Any],
-) -> NormalisedURLDomain:
-    if issuer_domain is not None:
-        return NormalisedURLDomain(issuer_domain)
-    if config.is_issuer_domain_given:
-        issuer_domain_resp = await config.issuer_domain(None, user_context)
-        return issuer_domain_resp
-    req = get_request_from_user_context(user_context)
-    if req is not None:
-        issuer_domain_resp = await config.issuer_domain(req, user_context)
-        return issuer_domain_resp
-    if app_info.initial_api_domain_type == "string":
-        issuer_domain_resp = await config.issuer_domain(None, user_context)
-        return issuer_domain_resp
-    raise Exception(
-        "Please pass issuer_domain as a string to the function or initiate issuer_domain with openid recipe or pass api_domain as string in supertokens.init"
     )

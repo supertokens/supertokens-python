@@ -141,11 +141,8 @@ def set_cookie_response_mutator(
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
-    user_context: Dict[str, Any],
 ):
-    async def mutator(
-        response: BaseResponse,
-    ):
+    async def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return await _set_cookie(
             request, response, config, key, value, expires, path_type, user_context
         )
@@ -159,9 +156,7 @@ def _attach_anti_csrf_header(response: BaseResponse, value: str):
 
 
 def anti_csrf_response_mutator(value: str):
-    async def mutator(
-        response: BaseResponse,
-    ):
+    async def mutator(response: BaseResponse, _user_context: Dict[str, Any]):
         return _attach_anti_csrf_header(response, value)
 
     return mutator
@@ -197,11 +192,8 @@ def clear_session_mutator(
     request: BaseRequest,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
-    user_context: Dict[str, Any],
 ):
-    async def mutator(
-        response: BaseResponse,
-    ):
+    async def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return await _clear_session(
             request, response, config, transfer_method, user_context
         )
@@ -236,11 +228,8 @@ def clear_session_response_mutator(
     request: BaseRequest,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
-    user_context: Dict[str, Any],
 ):
-    async def mutator(
-        response: BaseResponse,
-    ):
+    async def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return await _clear_session(
             request, response, config, transfer_method, user_context
         )
@@ -319,9 +308,8 @@ def token_response_mutator(
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
-    user_context: Dict[str, Any],
 ):
-    async def mutator(response: BaseResponse):
+    async def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         await _set_token(
             request,
             response,
@@ -347,11 +335,8 @@ def access_token_mutator(
     front_token: str,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
-    user_context: Dict[str, Any],
 ):
-    async def mutator(
-        response: BaseResponse,
-    ):
+    async def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         await _set_access_token_in_response_async(
             request,
             response,
