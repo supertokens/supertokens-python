@@ -16,7 +16,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.framework import BaseResponse
-from supertokens_python.utils import default_user_context
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request
@@ -24,6 +23,7 @@ if TYPE_CHECKING:
 
 def get_middleware():
     from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+    from supertokens_python.utils import default_user_context
 
     class Middleware(BaseHTTPMiddleware):
         def __init__(self, app: FastAPI):

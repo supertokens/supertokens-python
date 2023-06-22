@@ -156,17 +156,16 @@ async def get_session_from_request(
     if request_transfer_method == "header":
         do_anti_csrf_check = False
     if do_anti_csrf_check and config.anti_csrf == "VIA_CUSTOM_HEADER":
-        if config.anti_csrf == "VIA_CUSTOM_HEADER":
-            if get_rid_from_header(request) is None:
-                log_debug_message(
-                    "getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed"
-                )
-                raise_try_refresh_token_exception(
-                    "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API"
-                )
+        if get_rid_from_header(request) is None:
+            log_debug_message(
+                "getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed"
+            )
+            raise_try_refresh_token_exception(
+                "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API"
+            )
 
-            log_debug_message("getSession: VIA_CUSTOM_HEADER anti-csrf check passed")
-            do_anti_csrf_check = False
+        log_debug_message("getSession: VIA_CUSTOM_HEADER anti-csrf check passed")
+        do_anti_csrf_check = False
 
     log_debug_message("getSession: Value of antiCsrfToken is: %s", do_anti_csrf_check)
 

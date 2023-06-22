@@ -61,7 +61,7 @@ class RecipeImplementation(RecipeInterface):
             "validity": validity_seconds,
             "use_static_signing_key": use_static_signing_key is not False,
             "algorithm": "RS256",
-            "jwksDomain": issuer,
+            "jwksDomain": issuer.get_as_string_dangerous(),
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/jwt"), data

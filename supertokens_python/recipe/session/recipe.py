@@ -19,10 +19,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
 from supertokens_python.framework.response import BaseResponse
 from typing_extensions import Literal
 
-from supertokens_python.utils import (
-    default_user_context,
-)
-
 from .cookie_and_header import (
     get_cors_allowed_headers,
 )
@@ -358,7 +354,6 @@ class SessionRecipe(RecipeModule):
         ],
         user_context: Dict[str, Any],
     ):
-        _ = user_context
 
         return await self.api_implementation.verify_session(
             APIOptions(
@@ -372,5 +367,5 @@ class SessionRecipe(RecipeModule):
             session_required,
             check_database,
             override_global_claim_validators,
-            user_context=default_user_context(request),
+            user_context=user_context,
         )

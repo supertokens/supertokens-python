@@ -17,7 +17,6 @@ import asyncio
 from typing import Any, Union
 
 from asgiref.sync import async_to_sync
-from supertokens_python.utils import default_user_context
 
 
 def middleware(get_response: Any):
@@ -27,6 +26,7 @@ def middleware(get_response: Any):
     from supertokens_python.framework.django.django_response import DjangoResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import manage_session_post_response
+    from supertokens_python.utils import default_user_context
 
     from django.http import HttpRequest
 
