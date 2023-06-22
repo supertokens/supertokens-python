@@ -118,6 +118,7 @@ class ThirdPartyRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         api_options = APIOptions(
             request,
@@ -130,13 +131,17 @@ class ThirdPartyRecipe(RecipeModule):
         )
 
         if request_id == SIGNINUP:
-            return await handle_sign_in_up_api(self.api_implementation, api_options)
+            return await handle_sign_in_up_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == AUTHORISATIONURL:
             return await handle_authorisation_url_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
         if request_id == APPLE_REDIRECT_HANDLER:
-            return await handle_apple_redirect_api(self.api_implementation, api_options)
+            return await handle_apple_redirect_api(
+                self.api_implementation, api_options, user_context
+            )
 
         return None
 

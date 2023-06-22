@@ -174,6 +174,7 @@ class EmailPasswordRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         api_options = APIOptions(
             request,
@@ -185,17 +186,25 @@ class EmailPasswordRecipe(RecipeModule):
             self.email_delivery,
         )
         if request_id == SIGNUP:
-            return await handle_sign_up_api(self.api_implementation, api_options)
+            return await handle_sign_up_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == SIGNIN:
-            return await handle_sign_in_api(self.api_implementation, api_options)
+            return await handle_sign_in_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == SIGNUP_EMAIL_EXISTS:
-            return await handle_email_exists_api(self.api_implementation, api_options)
+            return await handle_email_exists_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
         if request_id == USER_PASSWORD_RESET:
-            return await handle_password_reset_api(self.api_implementation, api_options)
+            return await handle_password_reset_api(
+                self.api_implementation, api_options, user_context
+            )
 
         return None
 

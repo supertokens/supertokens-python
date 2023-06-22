@@ -19,7 +19,7 @@ from ...interfaces import (
 
 
 async def handle_user_email_verify_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> UserEmailVerifyPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")

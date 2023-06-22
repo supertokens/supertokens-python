@@ -497,7 +497,7 @@ class Supertokens:
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def middleware(  # pylint: disable=no-self-use
-        self, request: BaseRequest, response: BaseResponse
+        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
     ) -> Union[BaseResponse, None]:
         log_debug_message("middleware: Started")
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
@@ -561,7 +561,7 @@ class Supertokens:
                 "middleware: Request being handled by recipe. ID is: %s", request_id
             )
             api_resp = await matched_recipe.handle_api_request(
-                request_id, request, path, method, response
+                request_id, request, path, method, response, user_context
             )
             if api_resp is None:
                 log_debug_message("middleware: Not handled because API returned None")

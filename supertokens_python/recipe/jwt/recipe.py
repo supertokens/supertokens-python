@@ -84,6 +84,7 @@ class JWTRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -94,7 +95,7 @@ class JWTRecipe(RecipeModule):
         )
 
         if request_id == GET_JWKS_API:
-            return await jwks_get(self.api_implementation, options)
+            return await jwks_get(self.api_implementation, options, user_context)
 
         return None
 

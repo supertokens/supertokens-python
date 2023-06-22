@@ -241,7 +241,7 @@ async def update_phone_for_recipe_id(
 
 
 async def handle_user_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> Union[
     UserPutAPIOkResponse,
     UserPutAPIInvalidEmailErrorResponse,

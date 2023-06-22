@@ -93,6 +93,7 @@ class OpenIdRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -104,10 +105,10 @@ class OpenIdRecipe(RecipeModule):
 
         if request_id == GET_DISCOVERY_CONFIG_URL:
             return await open_id_discovery_configuration_get(
-                self.api_implementation, options
+                self.api_implementation, options, user_context
             )
         return await self.jwt_recipe.handle_api_request(
-            request_id, request, path, method, response
+            request_id, request, path, method, response, user_context
         )
 
     async def handle_error(

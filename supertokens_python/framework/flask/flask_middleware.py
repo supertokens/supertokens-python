@@ -52,7 +52,11 @@ class Middleware:
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
 
-            result: Union[BaseResponse, None] = sync(st.middleware(request_, response_))
+            user_context = default_user_context(request_)
+
+            result: Union[BaseResponse, None] = sync(
+                st.middleware(request_, response_, user_context)
+            )
 
             if result is not None:
                 if isinstance(result, FlaskResponse):

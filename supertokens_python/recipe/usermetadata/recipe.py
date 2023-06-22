@@ -70,6 +70,7 @@ class UserMetadataRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         raise Exception("Should never come here")
 

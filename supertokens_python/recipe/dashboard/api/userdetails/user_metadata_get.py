@@ -7,11 +7,11 @@ from ...interfaces import (
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
-from typing import Union
+from typing import Union, Dict, Any
 
 
 async def handle_metadata_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> Union[UserMetadataGetAPIOkResponse, FeatureNotEnabledError]:
     user_id = api_options.request.get_query_param("userId")
 

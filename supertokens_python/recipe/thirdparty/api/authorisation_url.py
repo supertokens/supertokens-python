@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Dict, Any
 
 from supertokens_python.recipe.thirdparty.utils import find_right_provider
 
@@ -22,11 +22,13 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.provider import Provider
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
 async def handle_authorisation_url_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_authorisation_url_get:
         return None
@@ -44,7 +46,6 @@ async def handle_authorisation_url_api(
             + third_party_id
             + " seems to be missing from the backend configs."
         )
-    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.authorisation_url_get(
         provider, api_options, user_context

@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.session.asyncio import (
@@ -16,7 +16,7 @@ from ...interfaces import (
 
 
 async def handle_sessions_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> UserSessionsGetAPIResponse:
     user_id = api_options.request.get_query_param("userId")
 

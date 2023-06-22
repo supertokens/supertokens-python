@@ -13,16 +13,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions
 
-from supertokens_python.utils import default_user_context
-
 
 async def handle_apple_redirect_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_apple_redirect_handler_post:
         return None
@@ -30,7 +30,6 @@ async def handle_apple_redirect_api(
 
     code = body["code"] if "code" in body else ""
     state = body["state"] if "state" in body else ""
-    user_context = default_user_context(api_options.request)
 
     # this will redirect the user...
     await api_implementation.apple_redirect_handler_post(

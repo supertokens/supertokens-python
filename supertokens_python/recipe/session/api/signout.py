@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from supertokens_python.recipe.session.session_request_functions import (
     get_session_from_request,
@@ -25,17 +25,19 @@ if TYPE_CHECKING:
         APIOptions,
     )
 
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
-async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_signout_api(
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if (
         api_implementation.disable_signout_post
         or api_implementation.signout_post is None
     ):
         return None
-
-    user_context = default_user_context(api_options.request)
 
     session = await get_session_from_request(
         api_options.request,

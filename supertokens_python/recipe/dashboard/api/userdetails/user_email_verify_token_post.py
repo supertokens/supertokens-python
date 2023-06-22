@@ -28,7 +28,7 @@ from ...interfaces import (
 
 
 async def handle_email_verify_token_post(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
 ) -> Union[
     UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
@@ -57,7 +57,9 @@ async def handle_email_verify_token_post(
 
     assert isinstance(email_verification_token, CreateEmailVerificationTokenOkResult)
 
-    origin = await api_options.app_info.origin(api_options.request, user_context={})
+    origin = await api_options.app_info.origin(
+        api_options.request, user_context=user_context
+    )
 
     email_verify_link = get_email_verify_link(
         api_options.app_info,
@@ -70,7 +72,7 @@ async def handle_email_verify_token_post(
         VerificationEmailTemplateVars(
             user=VerificationEmailTemplateVarsUser(user_id, email_response.email),
             email_verify_link=email_verify_link,
-            user_context={},
+            user_context=user_context,
         )
     )
 

@@ -12,15 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 from ..interfaces import JWKSGetResponse
+from typing import Dict, Any
 
 
-async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
+async def jwks_get(
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if api_implementation.disable_jwks_get:
         return None
-    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.jwks_get(api_options, user_context)
 

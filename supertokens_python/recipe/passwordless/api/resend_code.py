@@ -13,10 +13,15 @@
 # under the License.
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
+from typing import Dict, Any
 
 
-async def resend_code(api_implementation: APIInterface, api_options: APIOptions):
+async def resend_code(
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if api_implementation.disable_resend_code_post:
         return None
     body = await api_options.request.json()
@@ -32,7 +37,6 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
 
     pre_auth_session_id = body["preAuthSessionId"]
     device_id = body["deviceId"]
-    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.resend_code_post(
         device_id, pre_auth_session_id, api_options, user_context

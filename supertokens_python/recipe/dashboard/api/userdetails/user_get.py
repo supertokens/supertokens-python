@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict, Any
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
@@ -16,7 +16,7 @@ from ...utils import is_recipe_initialised, is_valid_recipe_id
 
 
 async def handle_user_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> Union[
     UserGetAPINoUserFoundError,
     UserGetAPIOkResponse,

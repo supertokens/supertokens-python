@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
@@ -22,18 +22,19 @@ if TYPE_CHECKING:
     )
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import send_200_response, default_user_context
+from supertokens_python.utils import send_200_response
 
 
 async def handle_email_exists_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_email_exists_get:
         return None
     email = api_options.request.get_query_param("email")
     if email is None:
         raise_bad_input_exception("Please provide the email as a GET param")
-    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.email_exists_get(
         email, api_options, user_context

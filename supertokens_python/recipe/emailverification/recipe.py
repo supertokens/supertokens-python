@@ -169,6 +169,7 @@ class EmailVerificationRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         api_options = APIOptions(
             request,
@@ -181,11 +182,10 @@ class EmailVerificationRecipe(RecipeModule):
         )
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
         return await handle_email_verify_api(
-            self.api_implementation,
-            api_options,
+            self.api_implementation, api_options, user_context
         )
 
     async def handle_error(

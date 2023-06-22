@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from supertokens_python.recipe.thirdparty.utils import find_right_provider
 
@@ -21,11 +21,13 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
 async def handle_sign_in_up_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_sign_in_up_post:
         return None
@@ -74,7 +76,6 @@ async def handle_sign_in_up_api(
             + third_party_id
             + " seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend."
         )
-    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.sign_in_up_post(
         provider,

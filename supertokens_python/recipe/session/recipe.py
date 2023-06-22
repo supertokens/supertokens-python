@@ -189,6 +189,7 @@ class SessionRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         if request_id == SESSION_REFRESH:
             return await handle_refresh_api(
@@ -200,6 +201,7 @@ class SessionRecipe(RecipeModule):
                     self.config,
                     self.recipe_implementation,
                 ),
+                user_context,
             )
         if request_id == SIGNOUT:
             return await handle_signout_api(
@@ -211,9 +213,10 @@ class SessionRecipe(RecipeModule):
                     self.config,
                     self.recipe_implementation,
                 ),
+                user_context,
             )
         return await self.openid_recipe.handle_api_request(
-            request_id, request, path, method, response
+            request_id, request, path, method, response, user_context
         )
 
     async def handle_error(

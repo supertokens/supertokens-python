@@ -71,6 +71,7 @@ class RecipeModule(abc.ABC):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         pass
 

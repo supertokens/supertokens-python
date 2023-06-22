@@ -130,6 +130,7 @@ class DashboardRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Optional[BaseResponse]:
         api_options = APIOptions(
             request,
@@ -141,17 +142,21 @@ class DashboardRecipe(RecipeModule):
         )
         # For these APIs we dont need API key validation
         if request_id == DASHBOARD_API:
-            return await handle_dashboard_api(self.api_implementation, api_options)
+            return await handle_dashboard_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == VALIDATE_KEY_API:
-            return await handle_validate_key_api(self.api_implementation, api_options)
+            return await handle_validate_key_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == EMAIL_PASSWORD_SIGN_IN:
             return await handle_emailpassword_signin_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
-            Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]
+            Callable[[APIInterface, APIOptions, Dict[str, Any]], Awaitable[APIResponse]]
         ] = None
         if request_id == USERS_LIST_GET_API:
             api_function = handle_users_get_api
@@ -193,7 +198,7 @@ class DashboardRecipe(RecipeModule):
 
         if api_function is not None:
             return await api_key_protector(
-                self.api_implementation, api_options, api_function
+                self.api_implementation, api_options, api_function, user_context
             )
 
         return None

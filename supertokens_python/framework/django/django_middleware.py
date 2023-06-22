@@ -41,7 +41,7 @@ def middleware(get_response: Any):
 
             response = DjangoResponse(HttpResponse())
             try:
-                result = await st.middleware(custom_request, response)
+                result = await st.middleware(custom_request, response, user_context)
                 if result is None:
                     result = await get_response(request)
                     result = DjangoResponse(result)

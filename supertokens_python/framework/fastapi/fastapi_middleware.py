@@ -49,7 +49,7 @@ def get_middleware():
                 response = FastApiResponse(Response())
                 user_context = default_user_context(custom_request)
                 result: Union[BaseResponse, None] = await st.middleware(
-                    custom_request, response
+                    custom_request, response, user_context
                 )
                 if result is None:
                     response = await call_next(request)

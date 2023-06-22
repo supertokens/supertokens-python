@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, List
+from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
 
 from supertokens_python.supertokens import Supertokens
 
@@ -34,7 +34,9 @@ from supertokens_python.exceptions import GeneralError, raise_bad_input_exceptio
 
 
 async def handle_users_get_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -> APIResponse:
     _ = api_implementation
 

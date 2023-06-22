@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -30,7 +30,9 @@ from ..utils import validate_api_key
 
 
 async def handle_validate_key_api(
-    _api_implementation: APIInterface, api_options: APIOptions
+    _api_implementation: APIInterface,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ):
 
     is_valid_key = validate_api_key(api_options.request, api_options.config)
