@@ -391,9 +391,7 @@ def email_verify_token_request(
     if use_server:
         environ["SUPERTOKENS_ENV"] = "production"
     try:
-        headers = {
-            "Content-Type": "application/json",
-        }
+        headers = {"Content-Type": "application/json", "rid": "emailverification"}
         if antiCsrf:
             headers["anti-csrf"] = antiCsrf
 

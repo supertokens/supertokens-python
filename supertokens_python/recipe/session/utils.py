@@ -472,6 +472,16 @@ def validate_and_normalise_user_input(
             f"({invalid_claim_status_code})"
         )
 
+    # We can keep the anti csrf mode in the session.init as a string only, and by default, if it’s not given, then we treat it as VIA_CUSTOM_HEADER.
+    #
+    # If it is given (which is a string value), then we can just use that. I don’t think there is any issue with this cause:
+    # if the user sets via_token, and even if it’s not needed for certain api domains, it will not cause any harm.
+    #
+    # If the user gives via_custom_header as a string, it will only result in our getSession function checking
+    # if the custom header exists or not - which it should anyway all the time regardless of api domain.
+    #
+    # We don’t see a use case where users will want to use none for certain api domains and via_custom_headers for some other api domain.
+    # So if someone is giving NONE, then we assume they really want NO anti csrf checks happening on our sdk for any api domain.
     if anti_csrf is None:
         anti_csrf = "VIA_CUSTOM_HEADER"
 
