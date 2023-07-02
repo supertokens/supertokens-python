@@ -91,7 +91,7 @@ class Querier:
 
         if api_version is None:
             raise_general_exception(
-                "The running SuperTokens core version is not compatible with this FastAPI "
+                "The running SuperTokens core version is not compatible with this python "
                 "SDK. Please visit https://supertokens.io/docs/community/compatibility-table "
                 "to find the right versions"
             )
