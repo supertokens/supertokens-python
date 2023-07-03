@@ -116,12 +116,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### If you used the jwt feature of the session recipe
 
 1. Add `expose_access_token_to_frontend_in_cookie_based_auth=true` to the Session recipe config on the backend if you need to access the JWT on the frontend.
-2. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
+2. Choose a prop from the following list. We'll use `sub` in the code below, but you can replace it with another from the list if you used it in a custom access token payload.
+    - `sub`
+    - `iat`
+    - `exp`
+    - `sessionHandle`
+3. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
 
 ```tsx
 let jwt = null;
 const accessTokenPayload = await Session.getAccessTokenPayloadSecurely();
-if (accessTokenPayload.jwt === undefined) {
+if (accessTokenPayload.sub !== undefined) {
     jwt = await Session.getAccessToken();
 } else {
     // This branch is only required if there are valid access tokens created before the update
@@ -130,15 +135,15 @@ if (accessTokenPayload.jwt === undefined) {
 }
 ```
 
-3. On the backend if you accessed the JWT before by `session.get_access_token_payload()['jwt']` please update to:
+4. On the backend if you accessed the JWT before by `session.get_access_token_payload()['jwt']` please update to:
 
 ```python
 from supertokens_python.recipe.session.interfaces import SessionContainer
 
-session: SessionContainer = ...
+session: SessionContainer = ... 
 access_token_payload = await session.get_access_token_payload()
 
-if access_token_payload.get('jwt') is None:
+if access_token_payload.get('sub') is not None:
     jwt = await session.get_access_token()
 else:
     # This branch is only required if there are valid access tokens created before the update
