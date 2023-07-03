@@ -221,9 +221,8 @@ async def fastapi_client():
     ):
         return {"handle": s.get_handle()}
 
-
     @app.post("/verify")
-    async def _verify(s: SessionContainer = Depends(verify_session())): # type: ignore
+    async def _verify(s: SessionContainer = Depends(verify_session())):  # type: ignore
         return {"handle": s.get_handle()}
 
     return TestClient(app)
@@ -551,8 +550,10 @@ async def client_without_middleware():
     return TestClient(app)
 
 
-async def test_that_verify_session_return_401_if_not_access_token_is_sent_and_middleware_is_not_added(client_without_middleware: TestClient, fastapi_client: TestClient):
-    init(**{ **st_init_common_args, "recipe_list": [session.init(get_token_transfer_method=lambda *_: "cookie")]}) # type: ignore
+async def test_that_verify_session_return_401_if_not_access_token_is_sent_and_middleware_is_not_added(
+    client_without_middleware: TestClient, fastapi_client: TestClient
+):
+    init(**{**st_init_common_args, "recipe_list": [session.init(get_token_transfer_method=lambda *_: "cookie")]})  # type: ignore
     start_st()
 
     res = fastapi_client.post("/verify")
