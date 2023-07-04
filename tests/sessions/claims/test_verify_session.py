@@ -14,7 +14,11 @@ from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     ClaimValidationError,
 )
-from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session.framework.fastapi import (
+    verify_session,
+    st_exception_handler,
+)
+from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.recipe.session.interfaces import (
     RecipeInterface,
     SessionClaimValidator,
@@ -541,16 +545,17 @@ async def test_should_allow_with_custom_claim_returning_true(
 @fixture(scope="function")
 async def client_without_middleware():
     app = FastAPI()
-    app.add_middleware(get_middleware())
 
     @app.post("/verify")
     async def _verify(s: Session = Depends(verify_session())):  # type: ignore
         return {"handle": s.get_handle()}
 
+    app.add_exception_handler(SuperTokensError, st_exception_handler)  # type: ignore
+
     return TestClient(app)
 
 
-async def test_that_verify_session_return_401_if_not_access_token_is_sent_and_middleware_is_not_added(
+async def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
     client_without_middleware: TestClient, fastapi_client: TestClient
 ):
     init(**{**st_init_common_args, "recipe_list": [session.init(get_token_transfer_method=lambda *_: "cookie")]})  # type: ignore
@@ -558,6 +563,7 @@ async def test_that_verify_session_return_401_if_not_access_token_is_sent_and_mi
 
     res = fastapi_client.post("/verify")
     assert res.status_code == 401
+    assert res.json() == {"message": "unauthorised"}
 
     create_session(fastapi_client)
     res = fastapi_client.post("/verify")
@@ -565,3 +571,4 @@ async def test_that_verify_session_return_401_if_not_access_token_is_sent_and_mi
 
     res = client_without_middleware.post("/verify")
     assert res.status_code == 401
+    assert res.json() == {"message": "unauthorised"}
