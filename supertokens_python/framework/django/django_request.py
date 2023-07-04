@@ -14,18 +14,17 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from django.http import HttpRequest
 
 
 class DjangoRequest(BaseRequest):
-    from django.http import HttpRequest
-
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
@@ -34,6 +33,9 @@ class DjangoRequest(BaseRequest):
         self, key: str, default: Union[str, None] = None
     ) -> Union[str, None]:
         return self.request.GET.get(key, default)
+
+    def get_query_params(self) -> Dict[str, Any]:
+        return self.request.GET.dict()
 
     async def json(self) -> Union[Any, None]:
         try:

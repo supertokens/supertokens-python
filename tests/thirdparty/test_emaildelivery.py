@@ -21,6 +21,7 @@ from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -169,8 +170,8 @@ async def test_email_verify_default_backward_compatibility(
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response["accessToken"]["token"],
-            response.get("antiCsrf", ""),
+            response.accessToken.token,
+            response.antiCsrfToken,
             user_id,
             True,
         )
@@ -241,8 +242,8 @@ async def test_email_verify_default_backward_compatibility_supress_error(
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response["accessToken"]["token"],
-            response.get("antiCsrf", ""),
+            response.accessToken.token,
+            response.antiCsrfToken,
             user_id,
             True,
         )
@@ -306,8 +307,8 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
 
     resp = email_verify_token_request(
         driver_config_client,
-        response["accessToken"]["token"],
-        response.get("antiCsrf", ""),
+        response.accessToken.token,
+        response.antiCsrfToken,
         user_id,
         True,
     )
@@ -395,8 +396,8 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response["accessToken"]["token"],
-            response.get("antiCsrf", ""),
+            response.accessToken.token,
+            response.antiCsrfToken,
             user_id,
             True,
         )
@@ -521,8 +522,8 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
 
     resp = email_verify_token_request(
         driver_config_client,
-        response["accessToken"]["token"],
-        response.get("antiCsrf", ""),
+        response.accessToken.token,
+        response.antiCsrfToken,
         user_id,
         True,
     )

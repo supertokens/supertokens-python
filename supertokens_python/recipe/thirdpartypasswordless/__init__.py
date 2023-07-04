@@ -20,7 +20,7 @@ from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.thirdparty import provider
 from typing_extensions import Literal
 
-from .. import passwordless
+from .. import passwordless, thirdparty
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
@@ -32,6 +32,14 @@ InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 ContactConfig = passwordless.ContactConfig
 PhoneOrEmailInput = passwordless.PhoneOrEmailInput
+Apple = thirdparty.Apple
+Discord = thirdparty.Discord
+Facebook = thirdparty.Facebook
+Github = thirdparty.Github
+Google = thirdparty.Google
+GoogleWorkspaces = thirdparty.GoogleWorkspaces
+Bitbucket = thirdparty.Bitbucket
+GitLab = thirdparty.GitLab
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig

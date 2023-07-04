@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
+
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -14,9 +15,10 @@ from supertokens_python import (
 )
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import (
+    dashboard,
+    emailverification,
     session,
     thirdpartyemailpassword,
-    emailverification,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
@@ -55,7 +57,8 @@ init(
     ),
     framework="fastapi",
     recipe_list=[
-        session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        session.init(),
+        dashboard.init(),
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
@@ -116,7 +119,7 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
             "sessionHandle": session_.get_handle(),
             "userId": session_.get_user_id(),
             "accessTokenPayload": session_.get_access_token_payload(),
-            # 'sessionData': await session_.get_session_data()
+            # "sessionData": await session_.get_session_data_from_database()
         }
     )
 

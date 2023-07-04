@@ -42,22 +42,14 @@
 
 from __future__ import annotations
 
+from os import environ
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
-from .constants import (
-    FDI_KEY_HEADER,
-    RID_KEY_HEADER,
-    TELEMETRY,
-    TELEMETRY_SUPERTOKENS_API_URL,
-    TELEMETRY_SUPERTOKENS_API_VERSION,
-    USER_COUNT,
-    USER_DELETE,
-    USERS,
-)
+from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, USER_DELETE, USERS
 from .exceptions import SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
@@ -75,12 +67,11 @@ from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
-    execute_async,
     get_rid_from_header,
+    get_top_level_domain_for_same_site_resolution,
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
-    get_top_level_domain_for_same_site_resolution,
 )
 
 if TYPE_CHECKING:
@@ -90,9 +81,6 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
 
 import json
-from os import environ
-
-from httpx import AsyncClient
 
 from .exceptions import BadInputError, GeneralError, raise_general_exception
 
@@ -230,55 +218,11 @@ class Supertokens:
             map(lambda func: func(self.app_info), recipe_list)
         )
 
-        if telemetry is None:
-            # If telemetry is not provided, enable it by default for production environment
-            telemetry = (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
-                environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
-            )
-
-        if telemetry:
-            try:
-                execute_async(self.app_info.mode, self.send_telemetry)
-            except Exception:
-                pass  # Do not stop app startup if telemetry fails
-
-    async def send_telemetry(self):
-        # If telemetry is enabled manually and the app is running in testing mode,
-        # do not send the telemetry
-        skip_telemetry = (&#34;SUPERTOKENS_ENV&#34; in environ) and (
-            environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
+        self.telemetry = (
+            telemetry
+            if telemetry is not None
+            else (environ.get(&#34;TEST_MODE&#34;) != &#34;testing&#34;)
         )
-        if skip_telemetry:
-            self._telemetry_status = &#34;SKIPPED&#34;
-            return
-
-        try:
-            querier = Querier.get_instance(None)
-            response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
-            telemetry_id = None
-            if (
-                &#34;exists&#34; in response
-                and response[&#34;exists&#34;]
-                and &#34;telemetryId&#34; in response
-            ):
-                telemetry_id = response[&#34;telemetryId&#34;]
-            data = {
-                &#34;appName&#34;: self.app_info.app_name,
-                &#34;websiteDomain&#34;: self.app_info.website_domain.get_as_string_dangerous(),
-                &#34;sdk&#34;: &#34;python&#34;,
-            }
-            if telemetry_id is not None:
-                data = {**data, &#34;telemetryId&#34;: telemetry_id}
-            async with AsyncClient() as client:
-                await client.post(  # type: ignore
-                    url=TELEMETRY_SUPERTOKENS_API_URL,
-                    json=data,
-                    headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
-                )
-
-            self._telemetry_status = &#34;SUCCESS&#34;
-        except Exception:
-            self._telemetry_status = &#34;EXCEPTION&#34;
 
     @staticmethod
     def init(
@@ -356,6 +300,7 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
+        query: Union[Dict[str, str], None] = None,
     ) -&gt; UsersResponse:
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -368,6 +313,9 @@ class Supertokens:
         if include_recipe_ids is not None:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
             params = {&#34;includeRecipeIds&#34;: include_recipe_ids_str, **params}
+
+        if query is not None:
+            params = {**params, **query}
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None
@@ -631,7 +579,22 @@ class Supertokens:
                     &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
                 )
                 return await recipe.handle_error(request, err, response)
-        raise err</code></pre>
+        raise err
+
+    def get_request_from_user_context(  # pylint: disable=no-self-use
+        self,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; Optional[BaseRequest]:
+        if user_context is None:
+            return None
+
+        if &#34;_default&#34; not in user_context:
+            return None
+
+        if not isinstance(user_context[&#34;_default&#34;], dict):
+            return None
+
+        return user_context.get(&#34;_default&#34;, {}).get(&#34;request&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -841,55 +804,11 @@ class Supertokens:
             map(lambda func: func(self.app_info), recipe_list)
         )
 
-        if telemetry is None:
-            # If telemetry is not provided, enable it by default for production environment
-            telemetry = (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
-                environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
-            )
-
-        if telemetry:
-            try:
-                execute_async(self.app_info.mode, self.send_telemetry)
-            except Exception:
-                pass  # Do not stop app startup if telemetry fails
-
-    async def send_telemetry(self):
-        # If telemetry is enabled manually and the app is running in testing mode,
-        # do not send the telemetry
-        skip_telemetry = (&#34;SUPERTOKENS_ENV&#34; in environ) and (
-            environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
+        self.telemetry = (
+            telemetry
+            if telemetry is not None
+            else (environ.get(&#34;TEST_MODE&#34;) != &#34;testing&#34;)
         )
-        if skip_telemetry:
-            self._telemetry_status = &#34;SKIPPED&#34;
-            return
-
-        try:
-            querier = Querier.get_instance(None)
-            response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
-            telemetry_id = None
-            if (
-                &#34;exists&#34; in response
-                and response[&#34;exists&#34;]
-                and &#34;telemetryId&#34; in response
-            ):
-                telemetry_id = response[&#34;telemetryId&#34;]
-            data = {
-                &#34;appName&#34;: self.app_info.app_name,
-                &#34;websiteDomain&#34;: self.app_info.website_domain.get_as_string_dangerous(),
-                &#34;sdk&#34;: &#34;python&#34;,
-            }
-            if telemetry_id is not None:
-                data = {**data, &#34;telemetryId&#34;: telemetry_id}
-            async with AsyncClient() as client:
-                await client.post(  # type: ignore
-                    url=TELEMETRY_SUPERTOKENS_API_URL,
-                    json=data,
-                    headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
-                )
-
-            self._telemetry_status = &#34;SUCCESS&#34;
-        except Exception:
-            self._telemetry_status = &#34;EXCEPTION&#34;
 
     @staticmethod
     def init(
@@ -967,6 +886,7 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
+        query: Union[Dict[str, str], None] = None,
     ) -&gt; UsersResponse:
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -979,6 +899,9 @@ class Supertokens:
         if include_recipe_ids is not None:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
             params = {&#34;includeRecipeIds&#34;: include_recipe_ids_str, **params}
+
+        if query is not None:
+            params = {**params, **query}
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None
@@ -1242,7 +1165,22 @@ class Supertokens:
                     &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
                 )
                 return await recipe.handle_error(request, err, response)
-        raise err</code></pre>
+        raise err
+
+    def get_request_from_user_context(  # pylint: disable=no-self-use
+        self,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; Optional[BaseRequest]:
+        if user_context is None:
+            return None
+
+        if &#34;_default&#34; not in user_context:
+            return None
+
+        if not isinstance(user_context[&#34;_default&#34;], dict):
+            return None
+
+        return user_context.get(&#34;_default&#34;, {}).get(&#34;request&#34;)</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -1445,6 +1383,31 @@ def reset():
     return list(headers_set)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.supertokens.Supertokens.get_request_from_user_context"><code class="name flex">
+<span>def <span class="ident">get_request_from_user_context</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[BaseRequest]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_request_from_user_context(  # pylint: disable=no-self-use
+    self,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Optional[BaseRequest]:
+    if user_context is None:
+        return None
+
+    if &#34;_default&#34; not in user_context:
+        return None
+
+    if not isinstance(user_context[&#34;_default&#34;], dict):
+        return None
+
+    return user_context.get(&#34;_default&#34;, {}).get(&#34;request&#34;)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_user_count"><code class="name flex">
 <span>async def <span class="ident">get_user_count</span></span>(<span>self, include_recipe_ids: Union[None, List[str]]) ‑> int</span>
 </code></dt>
@@ -1512,7 +1475,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_users"><code class="name flex">
-<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None], pagination_token: Union[str, None], include_recipe_ids: Union[None, List[str]]) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None], pagination_token: Union[str, None], include_recipe_ids: Union[None, List[str]], query: Union[Dict[str, str], None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1526,6 +1489,7 @@ def reset():
     limit: Union[int, None],
     pagination_token: Union[str, None],
     include_recipe_ids: Union[None, List[str]],
+    query: Union[Dict[str, str], None] = None,
 ) -&gt; UsersResponse:
     querier = Querier.get_instance(None)
     params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -1538,6 +1502,9 @@ def reset():
     if include_recipe_ids is not None:
         include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
         params = {&#34;includeRecipeIds&#34;: include_recipe_ids_str, **params}
+
+    if query is not None:
+        params = {**params, **query}
 
     response = await querier.send_get_request(NormalisedURLPath(USERS), params)
     next_pagination_token = None
@@ -1694,54 +1661,6 @@ def reset():
     return None</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.supertokens.Supertokens.send_telemetry"><code class="name flex">
-<span>async def <span class="ident">send_telemetry</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def send_telemetry(self):
-    # If telemetry is enabled manually and the app is running in testing mode,
-    # do not send the telemetry
-    skip_telemetry = (&#34;SUPERTOKENS_ENV&#34; in environ) and (
-        environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
-    )
-    if skip_telemetry:
-        self._telemetry_status = &#34;SKIPPED&#34;
-        return
-
-    try:
-        querier = Querier.get_instance(None)
-        response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
-        telemetry_id = None
-        if (
-            &#34;exists&#34; in response
-            and response[&#34;exists&#34;]
-            and &#34;telemetryId&#34; in response
-        ):
-            telemetry_id = response[&#34;telemetryId&#34;]
-        data = {
-            &#34;appName&#34;: self.app_info.app_name,
-            &#34;websiteDomain&#34;: self.app_info.website_domain.get_as_string_dangerous(),
-            &#34;sdk&#34;: &#34;python&#34;,
-        }
-        if telemetry_id is not None:
-            data = {**data, &#34;telemetryId&#34;: telemetry_id}
-        async with AsyncClient() as client:
-            await client.post(  # type: ignore
-                url=TELEMETRY_SUPERTOKENS_API_URL,
-                json=data,
-                headers={&#34;api-version&#34;: TELEMETRY_SUPERTOKENS_API_VERSION},
-            )
-
-        self._telemetry_status = &#34;SUCCESS&#34;
-    except Exception:
-        self._telemetry_status = &#34;EXCEPTION&#34;</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.supertokens.Supertokens.update_or_delete_user_id_mapping_info"><code class="name flex">
 <span>async def <span class="ident">update_or_delete_user_id_mapping_info</span></span>(<span>self, user_id: str, user_id_type: Optional[UserIDTypes] = None, external_user_id_info: Optional[str] = None) ‑> Union[<a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="interfaces.html#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
 </code></dt>
@@ -1841,6 +1760,7 @@ def reset():
 <li><code><a title="supertokens_python.supertokens.Supertokens.delete_user_id_mapping" href="#supertokens_python.supertokens.Supertokens.delete_user_id_mapping">delete_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_all_cors_headers" href="#supertokens_python.supertokens.Supertokens.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_instance" href="#supertokens_python.supertokens.Supertokens.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.supertokens.Supertokens.get_request_from_user_context" href="#supertokens_python.supertokens.Supertokens.get_request_from_user_context">get_request_from_user_context</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_user_count" href="#supertokens_python.supertokens.Supertokens.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_user_id_mapping" href="#supertokens_python.supertokens.Supertokens.get_user_id_mapping">get_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_users" href="#supertokens_python.supertokens.Supertokens.get_users">get_users</a></code></li>
@@ -1848,7 +1768,6 @@ def reset():
 <li><code><a title="supertokens_python.supertokens.Supertokens.init" href="#supertokens_python.supertokens.Supertokens.init">init</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.middleware" href="#supertokens_python.supertokens.Supertokens.middleware">middleware</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.reset" href="#supertokens_python.supertokens.Supertokens.reset">reset</a></code></li>
-<li><code><a title="supertokens_python.supertokens.Supertokens.send_telemetry" href="#supertokens_python.supertokens.Supertokens.send_telemetry">send_telemetry</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.update_or_delete_user_id_mapping_info" href="#supertokens_python.supertokens.Supertokens.update_or_delete_user_id_mapping_info">update_or_delete_user_id_mapping_info</a></code></li>
 </ul>
 </li>

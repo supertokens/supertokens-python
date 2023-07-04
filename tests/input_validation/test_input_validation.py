@@ -379,20 +379,6 @@ async def test_init_validation_session():
         ex.value
     )
 
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[session.init(jwt="jwt")],  # type: ignore
-        )
-    assert "jwt must be an instance of JWTConfig or None" == str(ex.value)
-
 
 @pytest.mark.asyncio
 async def test_init_validation_thirdparty():

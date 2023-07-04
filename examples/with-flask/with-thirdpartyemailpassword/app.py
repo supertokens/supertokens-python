@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, abort, g, jsonify
 from flask_cors import CORS
+
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -11,9 +12,10 @@ from supertokens_python import (
 )
 from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import (
+    dashboard,
+    emailverification,
     session,
     thirdpartyemailpassword,
-    emailverification,
 )
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
@@ -48,7 +50,8 @@ init(
     ),
     framework="flask",
     recipe_list=[
-        session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        session.init(),
+        dashboard.init(),
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
@@ -118,6 +121,7 @@ def get_session_info():
             "sessionHandle": session_.get_handle(),
             "userId": session_.get_user_id(),
             "accessTokenPayload": session_.get_access_token_payload(),
+            # "sessionData": session_.sync_get_session_data_from_database()
         }
     )
 

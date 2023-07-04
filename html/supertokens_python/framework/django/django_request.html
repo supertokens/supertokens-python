@@ -42,18 +42,17 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from django.http import HttpRequest
 
 
 class DjangoRequest(BaseRequest):
-    from django.http import HttpRequest
-
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
@@ -62,6 +61,9 @@ class DjangoRequest(BaseRequest):
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
         return self.request.GET.get(key, default)
+
+    def get_query_params(self) -&gt; Dict[str, Any]:
+        return self.request.GET.dict()
 
     async def json(self) -&gt; Union[Any, None]:
         try:
@@ -120,8 +122,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DjangoRequest(BaseRequest):
-    from django.http import HttpRequest
-
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
@@ -130,6 +130,9 @@ inheritance.</p></div>
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
         return self.request.GET.get(key, default)
+
+    def get_query_params(self) -&gt; Dict[str, Any]:
+        return self.request.GET.dict()
 
     async def json(self) -&gt; Union[Any, None]:
         try:
@@ -171,13 +174,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest"><code class="name">var <span class="ident">HttpRequest</span></code></dt>
-<dd>
-<div class="desc"><p>A basic HTTP request.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.form_data"><code class="name flex">
@@ -247,6 +243,19 @@ inheritance.</p></div>
     self, key: str, default: Union[str, None] = None
 ) -&gt; Union[str, None]:
     return self.request.GET.get(key, default)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_query_params"><code class="name flex">
+<span>def <span class="ident">get_query_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_query_params(self) -&gt; Dict[str, Any]:
+    return self.request.GET.dict()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_session"><code class="name flex">
@@ -336,12 +345,12 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.django.django_request.DjangoRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest">DjangoRequest</a></code></h4>
 <ul class="two-column">
-<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest">HttpRequest</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.form_data" href="#supertokens_python.framework.django.django_request.DjangoRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_cookie" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_header" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_path" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_query_param" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_query_param">get_query_param</a></code></li>
+<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_query_params" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_query_params">get_query_params</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_session" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.json" href="#supertokens_python.framework.django.django_request.DjangoRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.method" href="#supertokens_python.framework.django.django_request.DjangoRequest.method">method</a></code></li>

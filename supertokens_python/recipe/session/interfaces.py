@@ -25,6 +25,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
@@ -64,17 +65,29 @@ class SessionInformationResult:
         self,
         session_handle: str,
         user_id: str,
-        session_data: Dict[str, Any],
+        session_data_in_database: Dict[str, Any],
         expiry: int,
-        access_token_payload: Dict[str, Any],
+        custom_claims_in_access_token_payload: Dict[str, Any],
         time_created: int,
     ):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
-        self.session_data: Dict[str, Any] = session_data
+        self.session_data_in_database: Dict[str, Any] = session_data_in_database
         self.expiry: int = expiry
-        self.access_token_payload: Dict[str, Any] = access_token_payload
+        self.custom_claims_in_access_token_payload: Dict[
+            str, Any
+        ] = custom_claims_in_access_token_payload
         self.time_created: int = time_created
+
+
+class ReqResInfo:
+    def __init__(
+        self,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
+    ):
+        self.request = request
+        self.transfer_method = transfer_method
 
 
 _T = TypeVar("_T")
@@ -105,6 +118,14 @@ class ClaimsValidationResult:
         self.access_token_payload_update = access_token_payload_update
 
 
+class GetSessionTokensDangerouslyDict(TypedDict):
+    accessToken: str
+    accessAndFrontTokenUpdated: bool
+    refreshToken: Optional[str]
+    frontToken: str
+    antiCsrfToken: Optional[str]
+
+
 class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
@@ -112,10 +133,10 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     @abstractmethod
     async def create_new_session(
         self,
-        request: BaseRequest,
         user_id: str,
-        access_token_payload: Union[None, Dict[str, Any]],
-        session_data: Union[None, Dict[str, Any]],
+        access_token_payload: Optional[Dict[str, Any]],
+        session_data_in_database: Optional[Dict[str, Any]],
+        disable_anti_csrf: Optional[bool],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         pass
@@ -132,11 +153,19 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     @abstractmethod
     async def get_session(
         self,
-        request: BaseRequest,
-        anti_csrf_check: Union[bool, None],
-        session_required: bool,
-        user_context: Dict[str, Any],
-    ) -> Union[SessionContainer, None]:
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
+        anti_csrf_check: Optional[bool] = None,
+        session_required: Optional[bool] = None,
+        check_database: Optional[bool] = None,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> Optional[SessionContainer]:
         pass
 
     @abstractmethod
@@ -161,7 +190,11 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def refresh_session(
-        self, request: BaseRequest, user_context: Dict[str, Any]
+        self,
+        refresh_token: str,
+        anti_csrf_token: Optional[str],
+        disable_anti_csrf: bool,
+        user_context: Dict[str, Any],
     ) -> SessionContainer:
         pass
 
@@ -196,7 +229,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         session_handle: str,
         new_session_data: Dict[str, Any],
@@ -205,29 +238,12 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def update_access_token_payload(
-        self,
-        session_handle: str,
-        new_access_token_payload: Dict[str, Any],
-        user_context: Dict[str, Any],
-    ) -> bool:
-        """DEPRECATED: Use merge_into_access_token_payload instead"""
-
-    @abstractmethod
     async def merge_into_access_token_payload(
         self,
         session_handle: str,
         access_token_payload_update: JSONObject,
         user_context: Dict[str, Any],
     ) -> bool:
-        pass
-
-    @abstractmethod
-    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        pass
-
-    @abstractmethod
-    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
         pass
 
     @abstractmethod
@@ -331,6 +347,7 @@ class APIInterface(ABC):
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        check_database: bool,
         override_global_claim_validators: Optional[
             Callable[
                 [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -345,24 +362,39 @@ class APIInterface(ABC):
 ResponseMutator = Callable[[BaseResponse], None]
 
 
+class TokenInfo:
+    def __init__(self, token: str, expiry: int, created_time: int):
+        self.token = token
+        self.expiry = expiry
+        self.created_time = created_time
+
+
 class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
         config: SessionConfig,
         access_token: str,
+        front_token: str,
+        refresh_token: Optional[TokenInfo],
+        anti_csrf_token: Optional[str],
         session_handle: str,
         user_id: str,
-        access_token_payload: Dict[str, Any],
-        transfer_method: TokenTransferMethod,
+        user_data_in_access_token: Optional[Dict[str, Any]],
+        req_res_info: Optional[ReqResInfo],
+        access_token_updated: bool,
     ):
         self.recipe_implementation = recipe_implementation
         self.config = config
         self.access_token = access_token
+        self.front_token = front_token
+        self.refresh_token = refresh_token
+        self.anti_csrf_token = anti_csrf_token
         self.session_handle = session_handle
-        self.access_token_payload = access_token_payload
         self.user_id = user_id
-        self.transfer_method: TokenTransferMethod = transfer_method
+        self.user_data_in_access_token = user_data_in_access_token
+        self.req_res_info: Optional[ReqResInfo] = req_res_info
+        self.access_token_updated = access_token_updated
 
         self.response_mutators: List[ResponseMutator] = []
 
@@ -373,13 +405,13 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def get_session_data(
+    async def get_session_data_from_database(
         self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         pass
 
     @abstractmethod
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         new_session_data: Dict[str, Any],
         user_context: Optional[Dict[str, Any]] = None,
@@ -387,12 +419,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
-    async def update_access_token_payload(
-        self,
-        new_access_token_payload: Dict[str, Any],
-        user_context: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """DEPRECATED: Use merge_into_access_token_payload instead"""
+    async def attach_to_request_response(
+        self, request: BaseRequest, transfer_method: TokenTransferMethod
+    ):
+        pass
 
     @abstractmethod
     async def merge_into_access_token_payload(
@@ -414,6 +444,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     def get_handle(self, user_context: Optional[Dict[str, Any]] = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_all_session_tokens_dangerously(self) -> GetSessionTokensDangerouslyDict:
         pass
 
     @abstractmethod
@@ -475,10 +509,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     ) -> None:
         return sync(self.revoke_session(user_context=user_context))
 
-    def sync_get_session_data(
+    def sync_get_session_data_from_database(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -> Dict[str, Any]:
-        return sync(self.get_session_data(user_context))
+        return sync(self.get_session_data_from_database(user_context))
 
     def sync_get_time_created(
         self, user_context: Optional[Dict[str, Any]] = None
@@ -496,21 +530,14 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
             )
         )
 
-    def sync_update_access_token_payload(
-        self,
-        new_access_token_payload: Dict[str, Any],
-        user_context: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        return sync(
-            self.update_access_token_payload(new_access_token_payload, user_context)
-        )
-
-    def sync_update_session_data(
+    def sync_update_session_data_in_database(
         self,
         new_session_data: Dict[str, Any],
         user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
-        return sync(self.update_session_data(new_session_data, user_context))
+        return sync(
+            self.update_session_data_in_database(new_session_data, user_context)
+        )
 
     # Session claims sync functions:
     def sync_assert_claims(
@@ -542,6 +569,11 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         return sync(self.remove_claim(claim, user_context))
+
+    def sync_attach_to_request_response(
+        self, request: BaseRequest, token_transfer: TokenTransferMethod
+    ) -> None:
+        return sync(self.attach_to_request_response(request, token_transfer))
 
     # This is there so that we can do session["..."] to access some of the members of this class
     def __getitem__(self, item: str):

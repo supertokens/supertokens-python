@@ -41,13 +41,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
+
+import jwt
+from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwt import ParsedJWTInfo, verify_jwt
+from .jwt import ParsedJWTInfo
 
 
 def sanitize_string(s: Any) -&gt; Union[str, None]:
@@ -61,37 +64,77 @@ def sanitize_string(s: Any) -&gt; Union[str, None]:
 
 
 def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
-    _type = type(n)
-    if _type == int or _type == float:  # pylint: disable=consider-using-in
+    if isinstance(n, (int, float)):
         return n
 
     return None
 
 
+from supertokens_python.recipe.session.jwks import get_latest_keys
+
+
 def get_info_from_access_token(
-    jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool
+    jwt_info: ParsedJWTInfo,
+    do_anti_csrf_check: bool,
 ):
     try:
-        verify_jwt(jwt_info, jwt_signing_public_key)
-        payload = jwt_info.payload
+        payload: Optional[Dict[str, Any]] = None
+        decode_algo = (
+            jwt_info.parsed_header[&#34;alg&#34;]
+            if jwt_info.parsed_header is not None
+            else &#34;RS256&#34;
+        )
 
-        validate_access_token_structure(payload)
+        if jwt_info.version &gt;= 3:
+            matching_keys = get_latest_keys(jwt_info.kid)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_keys[0].key,  # type: ignore
+                algorithms=[decode_algo],
+                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+            )
+        else:
+            # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
+            # If any of them work, we&#39;ll use that payload
+            for k in get_latest_keys():
+                try:
+                    payload = jwt.decode(  # type: ignore
+                        jwt_info.raw_token_string,
+                        k.key,  # type: ignore
+                        algorithms=[decode_algo],
+                        options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+                    )
+                    break
+                except DecodeError:
+                    pass
+
+        if payload is None:
+            raise DecodeError(&#34;Could not decode the token&#34;)
+
+        validate_access_token_structure(payload, jwt_info.version)
+
+        if jwt_info.version == 2:
+            user_id = sanitize_string(payload.get(&#34;userId&#34;))
+            expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
+            time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
+            user_data = payload.get(&#34;userData&#34;)
+        else:
+            user_id = sanitize_string(payload.get(&#34;sub&#34;))
+            expiry_time = sanitize_number(payload.get(&#34;exp&#34;, 0) * 1000)
+            time_created = sanitize_number(payload.get(&#34;iat&#34;, 0) * 1000)
+            user_data = payload
 
         session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
-        user_id = sanitize_string(payload.get(&#34;userId&#34;))
         refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
         parent_refresh_token_hash_1 = sanitize_string(
             payload.get(&#34;parentRefreshTokenHash1&#34;)
         )
-        user_data = payload.get(&#34;userData&#34;)
         anti_csrf_token = sanitize_string(payload.get(&#34;antiCsrfToken&#34;))
-        expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
-        time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
 
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(expiry_time, (float, int))
 
         if expiry_time &lt; get_timestamp_ms():
             raise Exception(&#34;Access token expired&#34;)
@@ -108,19 +151,39 @@ def get_info_from_access_token(
         }
     except Exception as e:
         log_debug_message(
-            &#34;getSession: Returning TRY_REFRESH_TOKEN because failed to decode access token&#34;
+            &#34;getInfoFromAccessToken: Returning TRY_REFRESH_TOKEN because access token validation failed - %s&#34;,
+            e,
         )
         raise_try_refresh_token_exception(e)
 
 
-def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
-    if (
+def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt; None:
+    if version &gt;= 3:
+        if (
+            not isinstance(payload.get(&#34;sub&#34;), str)
+            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
+            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
+            or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
+            or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
+        ):
+            log_debug_message(
+                &#34;validateAccessTokenStructure: Access token is using version &gt;= 3&#34;
+            )
+            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            raise Exception(
+                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
+            )
+    elif (
         not isinstance(payload.get(&#34;sessionHandle&#34;), str)
         or payload.get(&#34;userData&#34;) is None
         or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        or not isinstance(payload.get(&#34;expiryTime&#34;), int)
-        or not isinstance(payload.get(&#34;timeCreated&#34;), int)
+        or not isinstance(payload.get(&#34;expiryTime&#34;), (float, int))
+        or not isinstance(payload.get(&#34;timeCreated&#34;), (float, int))
     ):
+        log_debug_message(
+            &#34;validateAccessTokenStructure: Access token is using version &lt; 3&#34;
+        )
+        # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
         raise Exception(
             &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
         )</code></pre>
@@ -134,7 +197,7 @@ def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.access_token.get_info_from_access_token"><code class="name flex">
-<span>def <span class="ident">get_info_from_access_token</span></span>(<span>jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool)</span>
+<span>def <span class="ident">get_info_from_access_token</span></span>(<span>jwt_info: ParsedJWTInfo, do_anti_csrf_check: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -143,29 +206,67 @@ def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_info_from_access_token(
-    jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool
+    jwt_info: ParsedJWTInfo,
+    do_anti_csrf_check: bool,
 ):
     try:
-        verify_jwt(jwt_info, jwt_signing_public_key)
-        payload = jwt_info.payload
+        payload: Optional[Dict[str, Any]] = None
+        decode_algo = (
+            jwt_info.parsed_header[&#34;alg&#34;]
+            if jwt_info.parsed_header is not None
+            else &#34;RS256&#34;
+        )
 
-        validate_access_token_structure(payload)
+        if jwt_info.version &gt;= 3:
+            matching_keys = get_latest_keys(jwt_info.kid)
+            payload = jwt.decode(  # type: ignore
+                jwt_info.raw_token_string,
+                matching_keys[0].key,  # type: ignore
+                algorithms=[decode_algo],
+                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+            )
+        else:
+            # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
+            # If any of them work, we&#39;ll use that payload
+            for k in get_latest_keys():
+                try:
+                    payload = jwt.decode(  # type: ignore
+                        jwt_info.raw_token_string,
+                        k.key,  # type: ignore
+                        algorithms=[decode_algo],
+                        options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
+                    )
+                    break
+                except DecodeError:
+                    pass
+
+        if payload is None:
+            raise DecodeError(&#34;Could not decode the token&#34;)
+
+        validate_access_token_structure(payload, jwt_info.version)
+
+        if jwt_info.version == 2:
+            user_id = sanitize_string(payload.get(&#34;userId&#34;))
+            expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
+            time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
+            user_data = payload.get(&#34;userData&#34;)
+        else:
+            user_id = sanitize_string(payload.get(&#34;sub&#34;))
+            expiry_time = sanitize_number(payload.get(&#34;exp&#34;, 0) * 1000)
+            time_created = sanitize_number(payload.get(&#34;iat&#34;, 0) * 1000)
+            user_data = payload
 
         session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
-        user_id = sanitize_string(payload.get(&#34;userId&#34;))
         refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
         parent_refresh_token_hash_1 = sanitize_string(
             payload.get(&#34;parentRefreshTokenHash1&#34;)
         )
-        user_data = payload.get(&#34;userData&#34;)
         anti_csrf_token = sanitize_string(payload.get(&#34;antiCsrfToken&#34;))
-        expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
-        time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
 
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
 
-        assert isinstance(expiry_time, int)
+        assert isinstance(expiry_time, (float, int))
 
         if expiry_time &lt; get_timestamp_ms():
             raise Exception(&#34;Access token expired&#34;)
@@ -182,7 +283,8 @@ def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
         }
     except Exception as e:
         log_debug_message(
-            &#34;getSession: Returning TRY_REFRESH_TOKEN because failed to decode access token&#34;
+            &#34;getInfoFromAccessToken: Returning TRY_REFRESH_TOKEN because access token validation failed - %s&#34;,
+            e,
         )
         raise_try_refresh_token_exception(e)</code></pre>
 </details>
@@ -197,8 +299,7 @@ def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
-    _type = type(n)
-    if _type == int or _type == float:  # pylint: disable=consider-using-in
+    if isinstance(n, (int, float)):
         return n
 
     return None</code></pre>
@@ -224,7 +325,7 @@ def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.validate_access_token_structure"><code class="name flex">
-<span>def <span class="ident">validate_access_token_structure</span></span>(<span>payload: Dict[str, Any]) ‑> None</span>
+<span>def <span class="ident">validate_access_token_structure</span></span>(<span>payload: Dict[str, Any], version: int) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -232,14 +333,33 @@ def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_access_token_structure(payload: Dict[str, Any]) -&gt; None:
-    if (
+<pre><code class="python">def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt; None:
+    if version &gt;= 3:
+        if (
+            not isinstance(payload.get(&#34;sub&#34;), str)
+            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
+            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
+            or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
+            or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
+        ):
+            log_debug_message(
+                &#34;validateAccessTokenStructure: Access token is using version &gt;= 3&#34;
+            )
+            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            raise Exception(
+                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
+            )
+    elif (
         not isinstance(payload.get(&#34;sessionHandle&#34;), str)
         or payload.get(&#34;userData&#34;) is None
         or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        or not isinstance(payload.get(&#34;expiryTime&#34;), int)
-        or not isinstance(payload.get(&#34;timeCreated&#34;), int)
+        or not isinstance(payload.get(&#34;expiryTime&#34;), (float, int))
+        or not isinstance(payload.get(&#34;timeCreated&#34;), (float, int))
     ):
+        log_debug_message(
+            &#34;validateAccessTokenStructure: Access token is using version &lt; 3&#34;
+        )
+        # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
         raise Exception(
             &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
         )</code></pre>

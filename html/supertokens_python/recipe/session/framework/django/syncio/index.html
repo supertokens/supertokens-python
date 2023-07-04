@@ -57,6 +57,7 @@ _T = TypeVar(&#34;_T&#34;, bound=Callable[..., Any])
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    check_database: bool = False,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -83,6 +84,7 @@ def verify_session(
                         baseRequest,
                         anti_csrf_check,
                         session_required,
+                        check_database,
                         override_global_claim_validators,
                         user_context,
                     )
@@ -118,7 +120,7 @@ def verify_session(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.framework.django.syncio.verify_session"><code class="name flex">
-<span>def <span class="ident">verify_session</span></span>(<span>anti_csrf_check: Optional[bool] = None, session_required: bool = True, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Callable[[~_T], ~_T]</span>
+<span>def <span class="ident">verify_session</span></span>(<span>anti_csrf_check: Optional[bool] = None, session_required: bool = True, check_database: bool = False, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Callable[[~_T], ~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -129,6 +131,7 @@ def verify_session(
 <pre><code class="python">def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    check_database: bool = False,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
@@ -155,6 +158,7 @@ def verify_session(
                         baseRequest,
                         anti_csrf_check,
                         session_required,
+                        check_database,
                         override_global_claim_validators,
                         user_context,
                     )

@@ -1,7 +1,11 @@
 from typing import Union, List, Any, Dict
 
 import pytest
+import threading
+
 from supertokens_python.utils import humanize_time, is_version_gte
+from supertokens_python.utils import RWMutex
+
 from tests.utils import is_subset
 
 
@@ -43,26 +47,21 @@ from tests.utils import is_subset
             "1.11",
             True,
         ),
+        # python SDK version related
+        (
+            "0.13.2",
+            "0.13.0",
+            True,
+        ),
+        (
+            "0.12.5",
+            "0.13.0",
+            False,
+        ),
     ],
 )
 def test_util_is_version_gte(version: str, min_minor_version: str, is_gte: bool):
     assert is_version_gte(version, min_minor_version) == is_gte
-
-
-@pytest.mark.parametrize(
-    "version,base_version",
-    [
-        ("1.12.0", "1.12.0"),
-        ("1.12.0", "1.12.0.1"),
-        ("1.12.0", "1.0.0"),
-        ("1.12.0", "1"),
-    ],
-)
-def test_utils_is_version_gte_raises_error_if_not_minimum_minor_version(
-    version: str, base_version: str
-):
-    with pytest.raises(AssertionError):
-        is_version_gte(version, base_version)
 
 
 SECOND = 1000
@@ -107,3 +106,68 @@ def test_is_subset(
         assert is_subset(d1, d2)
     else:
         assert not is_subset(d1, d2)
+
+
+class BankAccount:
+    def __init__(self):
+        self.balance = 0
+        self.mutex = RWMutex()
+        self.deposit_count = 0
+        self.withdraw_count = 0
+
+    def deposit(self, amount: int):
+        self.mutex.lock()
+        self.balance += amount
+        self.deposit_count += 1
+        self.mutex.unlock()
+
+    def withdraw(self, amount: int):
+        self.mutex.lock()
+        self.balance -= amount
+        self.withdraw_count += 1
+        self.mutex.unlock()
+
+    def get_stats(self):
+        self.mutex.r_lock()
+        balance = self.balance
+        self.mutex.r_unlock()
+        return balance, (self.deposit_count, self.withdraw_count)
+
+
+def test_rw_mutex_writes():
+    account = BankAccount()
+    threads: List[threading.Thread] = []
+
+    # Create 10 deposit threads
+    for _ in range(10):
+        t = threading.Thread(target=account.deposit, args=(10,))
+        threads.append(t)
+
+    def balance_is_valid():
+        balance, (deposit_count, widthdraw_count) = account.get_stats()
+        expected_balance = 10 * deposit_count - 5 * widthdraw_count
+        assert balance == expected_balance
+
+    # Create 15 balance checking threads
+    for _ in range(15):
+        t = threading.Thread(target=balance_is_valid)
+        threads.append(t)
+
+    # Create 10 withdraw threads
+    for _ in range(10):
+        t = threading.Thread(target=account.withdraw, args=(5,))
+        threads.append(t)
+
+    # Start all threads
+    for t in threads:
+        t.start()
+
+    # Wait for all threads to finish
+    for t in threads:
+        t.join()
+
+    # Check account balance
+    expected_balance = 10 * 10  # 10 threads depositing 10 each
+    expected_balance -= 10 * 5  # 10 threads withdrawing 5 each
+    actual_balance, _ = account.get_stats()
+    assert actual_balance == expected_balance, "Incorrect account balance"

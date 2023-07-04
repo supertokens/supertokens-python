@@ -32,6 +32,10 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
+    def get_query_params(self) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
     async def json(self) -> Union[Any, None]:
         pass
 

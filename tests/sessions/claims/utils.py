@@ -1,8 +1,6 @@
 from typing import Dict, Any, Union, Optional
 
-from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import JWTConfig
 from supertokens_python.recipe.session.claims import (
     BooleanClaim,
     SessionClaim,
@@ -24,10 +22,10 @@ def session_functions_override_with_claim(
         oi_create_new_session = oi.create_new_session
 
         async def new_create_new_session(
-            request: BaseRequest,
             user_id: str,
             access_token_payload: Union[None, Dict[str, Any]],
-            session_data: Union[None, Dict[str, Any]],
+            session_data_in_database: Union[None, Dict[str, Any]],
+            disable_anti_csrf: Optional[bool],
             user_context: Dict[str, Any],
         ):
             payload_update = await claim.build(user_id, user_context)
@@ -40,7 +38,11 @@ def session_functions_override_with_claim(
             }
 
             return await oi_create_new_session(
-                request, user_id, access_token_payload, session_data, user_context
+                user_id,
+                access_token_payload,
+                session_data_in_database,
+                disable_anti_csrf,
+                user_context,
             )
 
         oi.create_new_session = new_create_new_session
@@ -49,9 +51,7 @@ def session_functions_override_with_claim(
     return session_function_override
 
 
-def get_st_init_args(
-    claim: SessionClaim[Any] = TrueClaim, jwt: Optional[JWTConfig] = None
-):
+def get_st_init_args(claim: SessionClaim[Any] = TrueClaim):
     return {
         **st_init_common_args,
         "recipe_list": [
@@ -59,7 +59,6 @@ def get_st_init_args(
                 override=session.InputOverrideConfig(
                     functions=session_functions_override_with_claim(claim),
                 ),
-                jwt=jwt,
             ),
         ],
     }

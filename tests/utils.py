@@ -12,20 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import asyncio
+import json
 from datetime import datetime, timezone
-from urllib.parse import unquote
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
+from pathlib import Path
 from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, cast, Optional
+from urllib.parse import unquote
 
+from fastapi.testclient import TestClient
 from requests.models import Response
 from yaml import FullLoader, dump, load
 
-from fastapi.testclient import TestClient
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard import DashboardRecipe
@@ -384,7 +386,7 @@ def sign_in_request(app: TestClient, email: str, password: str):
 def email_verify_token_request(
     app: TestClient,
     accessToken: str,
-    antiCsrf: str,
+    antiCsrf: Optional[str],
     userId: str,
     use_server: bool = False,
 ):
@@ -468,6 +470,7 @@ def get_core_api_version() -> str:
 
     api_version = asyncio.gather(get_api_version())
     core_version = loop.run_until_complete(api_version)[0]  # type: ignore # pylint: disable=unused-variable
+    teardown_function(None)
     return core_version
 
 
@@ -478,7 +481,6 @@ def min_api_version(min_version: str) -> Any:
     """
     Skips the test if the local ST core doesn't satisfy
     version requirements for the tests.
-
     Fetches the core version only once throughout the testing session.
     """
 
@@ -494,7 +496,6 @@ def min_api_version(min_version: str) -> Any:
 
 # Import AsyncMock
 import sys
-
 from unittest.mock import MagicMock
 
 if sys.version_info >= (3, 8):
@@ -531,7 +532,6 @@ def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
 
 def is_subset(dict1: Any, dict2: Any) -> bool:
     """Check if dict2 is subset of dict1 in a nested manner
-
     Iteratively compares list items with recursion if key's value is a list
     """
     if isinstance(dict1, list):
@@ -554,3 +554,38 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
         return False
 
     return dict1 == dict2
+
+
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
+from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
+from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
+
+
+async def create_users(
+    emailpassword: bool = False, passwordless: bool = False, thirdparty: bool = False
+):
+    with open(
+        Path(__file__).parent / "./users.json",
+        "r",
+    ) as json_data:
+        users = json.loads(json_data.read())["users"]
+    for user in users:
+        if user["recipe"] == "emailpassword" and emailpassword:
+            await sign_up(user["email"], user["password"])
+        elif user["recipe"] == "passwordless" and passwordless:
+            if user.get("email"):
+                coderesponse = await create_code(user["email"])
+                await consume_code(
+                    coderesponse.pre_auth_session_id,
+                    coderesponse.user_input_code,
+                    coderesponse.device_id,
+                )
+            else:
+                coderesponse = await create_code(None, user["phone"])
+                await consume_code(
+                    coderesponse.pre_auth_session_id,
+                    coderesponse.user_input_code,
+                    coderesponse.device_id,
+                )
+        elif user["recipe"] == "thirdparty" and thirdparty:
+            await sign_in_up(user["provider"], user["userId"], user["email"])

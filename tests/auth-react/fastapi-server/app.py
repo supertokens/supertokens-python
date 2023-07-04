@@ -25,6 +25,8 @@ from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
+from typing_extensions import Literal
+
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -131,7 +133,6 @@ from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
 )
 from supertokens_python.types import GeneralErrorResponse
-from typing_extensions import Literal
 
 load_dotenv()
 
@@ -1024,7 +1025,7 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
             "sessionHandle": session_.get_handle(),
             "userId": session_.get_user_id(),
             "accessTokenPayload": session_.get_access_token_payload(),
-            "sessionData": await session_.get_session_data(),
+            "sessionDataFromDatabase": await session_.get_session_data_from_database(),
         }
     )
 

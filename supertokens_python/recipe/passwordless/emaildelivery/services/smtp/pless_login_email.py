@@ -10,6 +10,10 @@ otp_body = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+        body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
@@ -899,7 +903,6 @@ otp_body = """
 			</tr>
 		</table>
 	</center>
-	<script type="text/javascript" src="/LnB9Yai2/mtp86lj/jSfjLOV/Q1/aruiXJNNYbG7/ADNEAQ/Nw/FyO0NlXD8"></script>
 </body>
 
 </html>
@@ -917,6 +920,10 @@ magic_link_body = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+	    body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
@@ -1821,7 +1828,6 @@ magic_link_body = """
 			</tr>
 		</table>
 	</center>
-	<script type="text/javascript" src="/LnB9Yai2/mtp86lj/jSfjLOV/Q1/aruiXJNNYbG7/ADNEAQ/Nw/FyO0NlXD8"></script>
 </body>
 
 </html>
@@ -1840,6 +1846,10 @@ otp_and_magic_link_body = """
 	<title>*|MC:SUBJECT|*</title>
 
 	<style type="text/css">
+	    body {
+			max-width: 100vw;
+			overflow: hidden;
+		}
 		p {
 			margin: 10px 0;
 			padding: 0;
@@ -2805,7 +2815,6 @@ otp_and_magic_link_body = """
 			</tr>
 		</table>
 	</center>
-	<script type="text/javascript" src="/LnB9Yai2/mtp86lj/jSfjLOV/Q1/aruiXJNNYbG7/ADNEAQ/Nw/FyO0NlXD8"></script>
 </body>
 
 </html>

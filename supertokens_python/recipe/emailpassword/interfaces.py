@@ -78,6 +78,13 @@ class UpdateEmailOrPasswordUnknownUserIdError:
     pass
 
 
+class UpdateEmailOrPasswordPasswordPolicyViolationError:
+    failure_reason: str
+
+    def __init__(self, failure_reason: str):
+        self.failure_reason = failure_reason
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -126,11 +133,13 @@ class RecipeInterface(ABC):
         user_id: str,
         email: Union[str, None],
         password: Union[str, None],
+        apply_password_policy: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         pass
 

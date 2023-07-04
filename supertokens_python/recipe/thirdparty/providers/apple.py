@@ -13,18 +13,15 @@
 # under the License.
 from __future__ import annotations
 
-from re import sub
 from typing import Any, Dict, Optional
-from jwt import encode  # type: ignore
+from re import sub
 from time import time
 
-from ..provider import (
-    Provider,
-    ProviderConfigForClientType,
-    ProviderInput,
-)
+from jwt import encode
+
 from .custom import GenericProvider, NewProvider
 from .utils import get_actual_client_id_from_development_client_id
+from ..provider import Provider, ProviderConfigForClientType, ProviderInput
 
 
 class AppleImpl(GenericProvider):
@@ -41,7 +38,9 @@ class AppleImpl(GenericProvider):
 
         return config
 
-    async def _get_client_secret(self, config: ProviderConfigForClientType) -> str:
+    async def _get_client_secret(  # pylint: disable=no-self-use
+        self, config: ProviderConfigForClientType
+    ) -> str:
         if (
             config.additional_config is None
             or config.additional_config.get("keyId") is None
@@ -52,7 +51,7 @@ class AppleImpl(GenericProvider):
                 "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
             )
 
-        payload = {
+        payload: Dict[str, Any] = {
             "iss": config.additional_config.get("teamId"),
             "iat": time(),
             "exp": time() + (86400 * 180),  # 6 months
@@ -68,7 +67,7 @@ class AppleImpl(GenericProvider):
         )  # type: ignore
 
 
-def Apple(input: ProviderInput) -> Provider:
+def Apple(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Apple"
 

@@ -19,7 +19,7 @@ from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConf
 from supertokens_python.recipe.thirdparty import provider
 from supertokens_python.recipe.thirdpartyemailpassword.types import EmailTemplateVars
 
-from .. import emailpassword
+from .. import emailpassword, thirdparty
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
@@ -33,6 +33,14 @@ ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
 ProviderConfigForClientType = provider.ProviderConfigForClientType
+Apple = thirdparty.Apple
+Discord = thirdparty.Discord
+Facebook = thirdparty.Facebook
+Github = thirdparty.Github
+Google = thirdparty.Google
+GoogleWorkspaces = thirdparty.GoogleWorkspaces
+Bitbucket = thirdparty.Bitbucket
+GitLab = thirdparty.GitLab
 SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:

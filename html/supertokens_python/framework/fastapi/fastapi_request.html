@@ -41,19 +41,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from fastapi import Request
 
 
 class FastApiRequest(BaseRequest):
-
-    from fastapi import Request
-
     def __init__(self, request: Request):
         super().__init__()
         self.request = request
@@ -62,6 +60,9 @@ class FastApiRequest(BaseRequest):
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
         return self.request.query_params.get(key, default)
+
+    def get_query_params(self) -&gt; Dict[str, Any]:
+        return dict(self.request.query_params.items())  # type: ignore
 
     async def json(self) -&gt; Union[Any, None]:
         try:
@@ -73,6 +74,8 @@ class FastApiRequest(BaseRequest):
         return self.request.method
 
     def get_cookie(self, key: str) -&gt; Union[str, None]:
+        # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
+        # It also takes care of escaping the quotes while fetching the value
         return self.request.cookies.get(key)
 
     def get_header(self, key: str) -&gt; Union[str, None]:
@@ -119,9 +122,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FastApiRequest(BaseRequest):
-
-    from fastapi import Request
-
     def __init__(self, request: Request):
         super().__init__()
         self.request = request
@@ -130,6 +130,9 @@ inheritance.</p></div>
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
         return self.request.query_params.get(key, default)
+
+    def get_query_params(self) -&gt; Dict[str, Any]:
+        return dict(self.request.query_params.items())  # type: ignore
 
     async def json(self) -&gt; Union[Any, None]:
         try:
@@ -141,6 +144,8 @@ inheritance.</p></div>
         return self.request.method
 
     def get_cookie(self, key: str) -&gt; Union[str, None]:
+        # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
+        # It also takes care of escaping the quotes while fetching the value
         return self.request.cookies.get(key)
 
     def get_header(self, key: str) -&gt; Union[str, None]:
@@ -170,14 +175,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request"><code class="name">var <span class="ident">Request</span></code></dt>
-<dd>
-<div class="desc"><p>A base class for incoming HTTP connections, that is used to provide
-any functionality that is common to both <code>Request</code> and <code>WebSocket</code>.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data"><code class="name flex">
@@ -203,6 +200,8 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_cookie(self, key: str) -&gt; Union[str, None]:
+    # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
+    # It also takes care of escaping the quotes while fetching the value
     return self.request.cookies.get(key)</code></pre>
 </details>
 </dd>
@@ -249,6 +248,19 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
     self, key: str, default: Union[str, None] = None
 ) -&gt; Union[str, None]:
     return self.request.query_params.get(key, default)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_params"><code class="name flex">
+<span>def <span class="ident">get_query_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_query_params(self) -&gt; Dict[str, Any]:
+    return dict(self.request.query_params.items())  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_session"><code class="name flex">
@@ -335,12 +347,12 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <li>
 <h4><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest">FastApiRequest</a></code></h4>
 <ul class="two-column">
-<li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request">Request</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_path" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param">get_query_param</a></code></li>
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_params" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_params">get_query_params</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_session" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.json" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.method" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.method">method</a></code></li>

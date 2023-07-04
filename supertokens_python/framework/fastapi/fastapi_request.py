@@ -13,19 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from fastapi import Request
 
 
 class FastApiRequest(BaseRequest):
-
-    from fastapi import Request
-
     def __init__(self, request: Request):
         super().__init__()
         self.request = request
@@ -34,6 +32,9 @@ class FastApiRequest(BaseRequest):
         self, key: str, default: Union[str, None] = None
     ) -> Union[str, None]:
         return self.request.query_params.get(key, default)
+
+    def get_query_params(self) -> Dict[str, Any]:
+        return dict(self.request.query_params.items())  # type: ignore
 
     async def json(self) -> Union[Any, None]:
         try:
@@ -45,6 +46,8 @@ class FastApiRequest(BaseRequest):
         return self.request.method
 
     def get_cookie(self, key: str) -> Union[str, None]:
+        # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
+        # It also takes care of escaping the quotes while fetching the value
         return self.request.cookies.get(key)
 
     def get_header(self, key: str) -> Union[str, None]:

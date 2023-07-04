@@ -93,7 +93,10 @@ class JWTRecipe(RecipeModule):
             self.recipe_implementation,
         )
 
-        return await jwks_get(self.api_implementation, options)
+        if request_id == GET_JWKS_API:
+            return await jwks_get(self.api_implementation, options)
+
+        return None
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import MagicMock
 
@@ -28,9 +29,6 @@ from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
     create_new_session as async_create_new_session,
 )
-from supertokens_python.recipe.session.jwt import (
-    parse_jwt_without_signature_verification,
-)
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
@@ -40,10 +38,13 @@ from supertokens_python.recipe.session.asyncio import (
     revoke_session as asyncio_revoke_session,
 )
 from supertokens_python.recipe.session.asyncio import (
-    update_access_token_payload,
-    update_session_data,
+    merge_into_access_token_payload,
+    update_session_data_in_database,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.recipe.session.jwt import (
+    parse_jwt_without_signature_verification,
+)
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.session.session_functions import (
     create_new_session,
@@ -76,7 +77,12 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ],
     )
     start_st()
 
@@ -86,23 +92,15 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    assert response["session"] is not None
-    assert response["accessToken"] is not None
-    assert response["refreshToken"] is not None
-    assert response["idRefreshToken"] is not None
-    assert response["antiCsrfToken"] is not None
-    assert len(response.keys()) == 5
+    assert response.session is not None
+    assert response.accessToken is not None
+    assert response.refreshToken is not None
+    assert response.antiCsrfToken is not None
 
-    access_token = parse_jwt_without_signature_verification(
-        response["accessToken"]["token"]
-    )
+    access_token = parse_jwt_without_signature_verification(response.accessToken.token)
 
     await get_session(
-        s.recipe_implementation,
-        access_token,
-        response["antiCsrfToken"],
-        True,
-        response["idRefreshToken"]["token"],
+        s.recipe_implementation, access_token, response.antiCsrfToken, True, False
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -111,29 +109,26 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     response2 = await refresh_session(
         s.recipe_implementation,
-        response["refreshToken"]["token"],
-        response["antiCsrfToken"],
-        True,
-        "cookie",
+        response.refreshToken.token,
+        response.antiCsrfToken,
+        False,
     )
 
-    assert response2["session"] is not None
-    assert response2["accessToken"] is not None
-    assert response2["refreshToken"] is not None
-    assert response2["idRefreshToken"] is not None
-    assert response2["antiCsrfToken"] is not None
-    assert len(response.keys()) == 5
+    assert response2.session is not None
+    assert response2.accessToken is not None
+    assert response2.refreshToken is not None
+    assert response2.antiCsrfToken is not None
 
     access_token2 = parse_jwt_without_signature_verification(
-        response2["accessToken"]["token"]
+        response2.accessToken.token
     )
 
     response3 = await get_session(
         s.recipe_implementation,
         access_token2,
-        response2["antiCsrfToken"],
+        response2.antiCsrfToken,
         True,
-        response["idRefreshToken"]["token"],
+        False,
     )
 
     assert (
@@ -141,35 +136,31 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         in ProcessState.get_instance().history
     )
 
-    assert response3["session"] is not None
-    assert response3["accessToken"] is not None
-    assert len(response3.keys()) == 2
+    assert response3.session is not None
+    assert response3.accessToken is not None
 
     ProcessState.get_instance().reset()
 
     access_token3 = parse_jwt_without_signature_verification(
-        response3["accessToken"]["token"]
+        response3.accessToken.token
     )
 
     response4 = await get_session(
         s.recipe_implementation,
         access_token3,
-        response2["antiCsrfToken"],
+        response2.antiCsrfToken,
         True,
-        response["idRefreshToken"]["token"],
+        False,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
         not in ProcessState.get_instance().history
     )
 
-    assert response4["session"] is not None
-    assert "accessToken" not in response4
-    assert len(response4.keys()) == 1
+    assert response4.session is not None
+    assert response4.accessToken is None
 
-    response5 = await revoke_session(
-        s.recipe_implementation, response4["session"]["handle"]
-    )
+    response5 = await revoke_session(s.recipe_implementation, response4.session.handle)
 
     assert response5 is True
 
@@ -198,7 +189,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         new_session = await create_new_session(
             s.recipe_implementation, "someUser", False, {"someKey": "someValue"}, {}
         )
-        access_tokens.append(new_session["accessToken"]["token"])
+        access_tokens.append(new_session.accessToken.token)
 
     session_handles = await get_all_session_handles_for_user("someUser")
 
@@ -208,14 +199,14 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         info = await get_session_information(handle)
         assert info is not None
         assert info.user_id == "someUser"
-        assert info.access_token_payload["someKey"] == "someValue"
+        assert info.custom_claims_in_access_token_payload["someKey"] == "someValue"
 
-        is_updated = await update_access_token_payload(
-            handle, {"someKey2": "someValue"}
+        is_updated = await merge_into_access_token_payload(
+            handle, {"someKey": None, "someKey2": "someValue"}
         )
         assert is_updated
 
-        is_updated = await update_session_data(handle, {"foo": "bar"})
+        is_updated = await update_session_data_in_database(handle, {"foo": "bar"})
         assert is_updated
 
     # Confirm that update funcs worked:
@@ -223,8 +214,8 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         info = await get_session_information(handle)
         assert info is not None
         assert info.user_id == "someUser"
-        assert info.access_token_payload == {"someKey2": "someValue"}
-        assert info.session_data == {"foo": "bar"}
+        assert info.custom_claims_in_access_token_payload == {"someKey2": "someValue"}
+        assert info.session_data_in_database == {"foo": "bar"}
 
     # Regenerate access token with new access_token_payload
     for i, token in enumerate(access_tokens):
@@ -237,12 +228,12 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         # Confirm that update worked:
         info = await get_session_information(result.session.handle)
         assert info is not None
-        assert info.access_token_payload == {"bar": "baz"}
+        assert info.custom_claims_in_access_token_payload == {"bar": "baz"}
 
     # Try updating invalid handles:
-    is_updated = await update_access_token_payload("invalidHandle", {"foo": "bar"})
+    is_updated = await merge_into_access_token_payload("invalidHandle", {"foo": "bar"})
     assert is_updated is False
-    is_updated = await update_session_data("invalidHandle", {"foo": "bar"})
+    is_updated = await update_session_data_in_database("invalidHandle", {"foo": "bar"})
     assert is_updated is False
 
 
@@ -285,7 +276,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
 
     response = await create_new_session(s.recipe_implementation, user_id, False, {}, {})
 
-    session_handle = response["session"]["handle"]
+    session_handle = response.session.handle
 
     revoked = await asyncio_revoke_session(session_handle)
     assert revoked
@@ -293,9 +284,9 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
     signout_response = driver_config_client.post(
         url="/auth/signout",
         cookies={
-            "sAccessToken": response["accessToken"]["token"],
+            "sAccessToken": response.accessToken.token,
         },
-        headers={"anti-csrf": response.get("antiCsrfToken", "")},
+        headers={"anti-csrf": response.antiCsrfToken or ""},
     )
 
     assert signout_response.json() == {"status": "OK"}
@@ -315,7 +306,7 @@ async def test_should_use_override_functions_in_session_container_methods():
         ):
             info = await oi_get_session_information(session_handle, user_context)
             assert info is not None
-            info.session_data["foo"] = "bar"
+            info.session_data_in_database["foo"] = "bar"
             return info
 
         oi.get_session_information = get_session_information
@@ -348,7 +339,7 @@ async def test_should_use_override_functions_in_session_container_methods():
     mock_response = MagicMock()
 
     my_session = await async_create_new_session(mock_response, "test_id")
-    data = await my_session.get_session_data()
+    data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
 
@@ -356,10 +347,10 @@ async def test_should_use_override_functions_in_session_container_methods():
 from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
 from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
 from tests.utils import (
-    extract_all_cookies,
-    get_st_init_args,
-    extract_info,
     assert_info_clears_tokens,
+    extract_all_cookies,
+    extract_info,
+    get_st_init_args,
 )
 
 
@@ -578,3 +569,158 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
 
     assert cookies["sAccessToken"]["value"] != ""
     assert cookies["sRefreshToken"]["value"] != ""
+
+
+async def test_token_cookie_expires(
+    driver_config_client: TestClient,
+):
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    for c in response.cookies:
+        if c.name == "sAccessToken":  # 100 years (set by the SDK)
+            # some time must have elasped since the cookie was set. So less than current time
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=365.25 * 100)
+                < datetime.now()
+            )
+        if c.name == "sRefreshToken":  # 100 days (set by the core)
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=100)
+                < datetime.now()
+            )
+
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+        },
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 200
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    for c in response.cookies:
+        if c.name == "sAccessToken":  # 100 years (set by the SDK)
+            # some time must have elasped since the cookie was set. So less than current time
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=365.25 * 100)
+                < datetime.now()
+            )
+        if c.name == "sRefreshToken":  # 100 days (set by the core)
+            assert (
+                datetime.fromtimestamp(c.expires or 0) - timedelta(days=100)
+                < datetime.now()
+            )
+
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
+
+
+from supertokens_python.recipe.session.asyncio import (
+    create_new_session_without_request_response,
+    get_session_without_request_response,
+    refresh_session_without_request_response,
+)
+
+
+async def test_that_verify_session_doesnt_always_call_core():
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ],
+    )
+    start_st()
+
+    # s = SessionRecipe.get_instance()
+    # if not isinstance(s.recipe_implementation, RecipeImplementation):
+    #     raise Exception("Should never come here")
+
+    # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
+
+    session1 = await create_new_session_without_request_response("user-id")
+
+    assert session1 is not None
+    assert session1.access_token != ""
+    assert session1.front_token != ""
+    assert session1.refresh_token is not None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        not in ProcessState.get_instance().history
+    )
+
+    session2 = await get_session_without_request_response(
+        session1.access_token, session1.anti_csrf_token
+    )
+
+    assert session2 is not None
+    assert session2.access_token != ""
+    assert session2.front_token != ""
+    assert session2.refresh_token is None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        not in ProcessState.get_instance().history
+    )
+
+    session3 = await refresh_session_without_request_response(
+        session1.refresh_token.token, False, session1.anti_csrf_token
+    )
+
+    assert session3 is not None
+    assert session3.access_token != ""
+    assert session3.front_token != ""
+    assert session3.refresh_token is not None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        not in ProcessState.get_instance().history
+    )
+
+    session4 = await get_session_without_request_response(
+        session3.access_token, session3.anti_csrf_token
+    )
+
+    assert session4 is not None
+    assert session4.access_token != ""
+    assert session4.front_token != ""
+    assert session4.refresh_token is None
+
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        in ProcessState.get_instance().history
+    )  # Core got called this time

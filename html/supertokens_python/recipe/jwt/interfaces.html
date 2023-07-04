@@ -40,7 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.types import APIResponse, GeneralErrorResponse
@@ -80,7 +80,8 @@ class RecipeInterface(ABC):
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
@@ -107,8 +108,6 @@ class APIOptions:
 
 
 class JWKSGetResponse(APIResponse):
-    status: str = &#34;OK&#34;
-
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
@@ -126,7 +125,7 @@ class JWKSGetResponse(APIResponse):
                 }
             )
 
-        return {&#34;status&#34;: self.status, &#34;keys&#34;: keys}
+        return {&#34;keys&#34;: keys}
 
 
 class APIInterface:
@@ -273,8 +272,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class JWKSGetResponse(APIResponse):
-    status: str = &#34;OK&#34;
-
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
@@ -292,20 +289,13 @@ inheritance.</p></div>
                 }
             )
 
-        return {&#34;status&#34;: self.status, &#34;keys&#34;: keys}</code></pre>
+        return {&#34;keys&#34;: keys}</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.to_json"><code class="name flex">
@@ -331,7 +321,7 @@ inheritance.</p></div>
             }
         )
 
-    return {&#34;status&#34;: self.status, &#34;keys&#34;: keys}</code></pre>
+    return {&#34;keys&#34;: keys}</code></pre>
 </details>
 </dd>
 </dl>
@@ -374,7 +364,8 @@ inheritance.</p></div>
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
@@ -394,7 +385,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.interfaces.RecipeInterface.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[int], use_static_signing_key: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -406,7 +397,8 @@ inheritance.</p></div>
 async def create_jwt(
     self,
     payload: Dict[str, Any],
-    validity_seconds: Union[int, None],
+    validity_seconds: Optional[int],
+    use_static_signing_key: Optional[bool],
     user_context: Dict[str, Any],
 ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     pass</code></pre>
@@ -465,7 +457,6 @@ async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
 <li>
 <h4><code><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.status" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.status">status</a></code></li>
 <li><code><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.to_json" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.to_json">to_json</a></code></li>
 </ul>
 </li>
