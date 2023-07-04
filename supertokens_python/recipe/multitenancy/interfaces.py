@@ -175,7 +175,9 @@ class APIOptions:
 
 
 class ThirdPartyProvider:
-    def __init__(self, id: str, name: Optional[str]):
+    def __init__(
+        self, id: str, name: Optional[str]
+    ):  # pylint: disable=redefined-builtin
         self.id = id
         self.name = name
 

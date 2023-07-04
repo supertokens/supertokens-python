@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from httpx import AsyncClient
 
@@ -17,15 +17,22 @@ def is_using_oauth_development_client_id(client_id: str):
     return client_id.startswith(DEV_KEY_IDENTIFIER) or client_id in DEV_OAUTH_CLIENT_IDS
 
 
-def get_actual_client_id_from_development_client_id(client_id: str):
+def get_actual_client_id_from_development_client_id(client_id: str) -> str:
     if client_id.startswith(DEV_KEY_IDENTIFIER):
         return client_id.split(DEV_KEY_IDENTIFIER, 1)[1]
     return client_id
 
 
 async def do_get_request(
-    url: str, query_params: Dict[str, str] = {}, headers: Dict[str, str] = {}
+    url: str,
+    query_params: Optional[Dict[str, str]] = None,
+    headers: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
+    if query_params is None:
+        query_params = {}
+    if headers is None:
+        headers = {}
+
     # TODO logging
 
     async with AsyncClient() as client:
@@ -35,9 +42,13 @@ async def do_get_request(
 
 
 async def do_post_request(
-    url: str, body_params: Dict[str, str] = {}, headers: Dict[str, str] = {}
+    url: str,
+    body_params: Optional[Dict[str, str]] = None,
+    headers: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
-    if not headers:
+    if body_params is None:
+        body_params = {}
+    if headers is None:
         headers = {}
 
     headers["content-type"] = "application/x-www-form-urlencoded"

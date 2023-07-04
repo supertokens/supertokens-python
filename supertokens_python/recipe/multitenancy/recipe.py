@@ -255,7 +255,7 @@ class APIImplementation(APIInterface):
 
 class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
+        async def fetch_value(_user_id: str, user_context: Dict[str, Any]) -> List[str]:
             recipe = MultitenancyRecipe.get_instance()
             tenant_id = (
                 None  # TODO fetch value will be passed with tenant_id as well later

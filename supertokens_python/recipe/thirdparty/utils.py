@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Union, Optional
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
@@ -27,7 +27,10 @@ from jwt import PyJWKClient, decode  # type: ignore
 
 
 class SignInAndUpFeature:
-    def __init__(self, providers: List[ProviderInput] = []):
+    def __init__(self, providers: Optional[List[ProviderInput]] = None):
+        if providers is None:
+            providers = []
+
         third_party_id_set: Set[str] = set()
 
         for provider in providers:

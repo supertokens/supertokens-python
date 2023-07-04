@@ -61,7 +61,7 @@ class GithubImpl(GenericProvider):
         return result
 
 
-def Github(input: ProviderInput) -> Provider:
+def Github(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Github"
 

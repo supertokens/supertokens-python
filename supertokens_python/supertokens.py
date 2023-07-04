@@ -46,7 +46,7 @@ from .utils import (
     send_non_200_response_with_message,
 )
 
-from . import always_initialised_recipes
+from .always_initialised_recipes import DEFAULT_MULTITENANCY_RECIPE
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
@@ -198,13 +198,8 @@ class Supertokens:
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
-        if (
-            not multitenancy_found[0]
-            and always_initialised_recipes.DEFAULT_MULTITENANCY_RECIPE is not None
-        ):
-            self.recipe_modules.append(
-                always_initialised_recipes.DEFAULT_MULTITENANCY_RECIPE(self.app_info)
-            )
+        if callable(DEFAULT_MULTITENANCY_RECIPE) and not multitenancy_found[0]:
+            self.recipe_modules.append(DEFAULT_MULTITENANCY_RECIPE(self.app_info))
 
         self.telemetry = (
             telemetry

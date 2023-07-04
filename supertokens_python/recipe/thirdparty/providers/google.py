@@ -42,7 +42,7 @@ class GoogleImpl(GenericProvider):
 
 
 def Google(
-    input: ProviderInput,
+    input: ProviderInput,  # pylint: disable=redefined-builtin
     base_class: Callable[[ProviderConfig], GoogleImpl] = GoogleImpl,
 ) -> Provider:
     if input.config.name is None:
