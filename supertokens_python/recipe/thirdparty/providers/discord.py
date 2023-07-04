@@ -40,7 +40,7 @@ class DiscordImpl(GenericProvider):
         return config
 
 
-def Discord(input: ProviderInput) -> Provider:
+def Discord(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Discord"
 

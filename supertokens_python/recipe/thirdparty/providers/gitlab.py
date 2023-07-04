@@ -43,7 +43,7 @@ class GitLab(Provider):
         gitlab_base_url: str = "https://gitlab.com",
         is_default: bool = False,
     ):
-        super().__init__("gitlab", is_default)
+        super().__init__("gitlab") # FIXME: Where should is_default go?
         default_scopes = ["read_user"]
         if scope is None:
             scope = default_scopes
@@ -59,7 +59,7 @@ class GitLab(Provider):
             self.authorisation_redirect_params = authorisation_redirect
 
     async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+        self, auth_code_response: Dict[str, Any], _user_context: Dict[str, Any]
     ) -> UserInfo:
         access_token: str = auth_code_response["access_token"]
         headers = {"Authorization": f"Bearer {access_token}"}
@@ -74,7 +74,7 @@ class GitLab(Provider):
             return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
     def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
+        self, _user_context: Dict[str, Any]
     ) -> AuthorisationRedirectAPI:
         params = {
             "scope": " ".join(self.scopes),
@@ -88,7 +88,7 @@ class GitLab(Provider):
         self,
         redirect_uri: str,
         auth_code_from_request: str,
-        user_context: Dict[str, Any],
+        _user_context: Dict[str, Any],
     ) -> AccessTokenAPI:
         params = {
             "client_id": self.client_id,
@@ -99,8 +99,10 @@ class GitLab(Provider):
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+    def get_redirect_uri(  # pylint: disable=no-self-use
+        self, _user_context: Dict[str, Any]
+    ) -> Union[None, str]:
         return None
 
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
+    def get_client_id(self, _user_context: Dict[str, Any]) -> str:
         return self.client_id

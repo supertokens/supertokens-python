@@ -12,7 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Any, Callable, Union
+from typing import Callable, Optional, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from supertokens_python.recipe_module import RecipeModule
+    from supertokens_python import AppInfo
 
-DEFAULT_MULTITENANCY_RECIPE: Union[Callable[[Any], Any], None] = None
+DEFAULT_MULTITENANCY_RECIPE: Optional[Callable[[AppInfo], RecipeModule]] = None

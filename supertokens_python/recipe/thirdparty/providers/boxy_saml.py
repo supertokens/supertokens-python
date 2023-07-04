@@ -49,7 +49,7 @@ class BoxySAMLImpl(GenericProvider):
         return config
 
 
-def BoxySAML(input: ProviderInput) -> Provider:
+def BoxySAML(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Boxy SAML"
 

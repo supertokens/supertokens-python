@@ -53,7 +53,7 @@ class FacebookImpl(GenericProvider):
         return await super().get_user_info(oauth_tokens, user_context)
 
 
-def Facebook(input: ProviderInput) -> Provider:
+def Facebook(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Facebook"
 

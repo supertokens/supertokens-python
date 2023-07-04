@@ -41,43 +41,43 @@ class RedirectUriInfo:
 
 
 class Provider:
-    def __init__(self, id: str):
+    def __init__(self, id: str):  # pylint: disable=redefined-builtin
         self.id = id
         self.config = ProviderConfigForClientType("temp")
 
-    async def get_config_for_client_type(
+    async def get_config_for_client_type(  # pylint: disable=no-self-use
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClientType:
         _ = client_type
         __ = user_context
-        raise NotImplementedError
+        raise NotImplementedError()
 
-    async def get_authorisation_redirect_url(
+    async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
         self,
         redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
     ) -> AuthorisationRedirect:
         _ = redirect_uri_on_provider_dashboard
         __ = user_context
-        raise NotImplementedError
+        raise NotImplementedError()
 
-    async def exchange_auth_code_for_oauth_tokens(
+    async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
         self,
         redirect_uri_info: RedirectUriInfo,
         user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         _ = redirect_uri_info
         __ = user_context
-        raise NotImplementedError
+        raise NotImplementedError()
 
-    async def get_user_info(
+    async def get_user_info(  # pylint: disable=no-self-use
         self,
         oauth_tokens: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> UserInfo:
         _ = oauth_tokens
         __ = user_context
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class ProviderClientConfig:

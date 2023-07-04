@@ -50,7 +50,7 @@ class OktaImpl(GenericProvider):
         return config
 
 
-def Okta(input: ProviderInput) -> Provider:
+def Okta(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Okta"
 
