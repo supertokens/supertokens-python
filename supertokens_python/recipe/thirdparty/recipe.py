@@ -126,6 +126,7 @@ class ThirdPartyRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         api_options = APIOptions(
             request,

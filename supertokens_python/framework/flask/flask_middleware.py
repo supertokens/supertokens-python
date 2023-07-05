@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework import BaseResponse
+from supertokens_python.utils import default_user_context
 
 if TYPE_CHECKING:
     from flask import Flask
@@ -50,8 +51,11 @@ class Middleware:
 
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
+            user_context = default_user_context(request_)
 
-            result: Union[BaseResponse, None] = sync(st.middleware(request_, response_))
+            result: Union[BaseResponse, None] = sync(
+                st.middleware(request_, response_, user_context)
+            )
 
             if result is not None:
                 if isinstance(result, FlaskResponse):

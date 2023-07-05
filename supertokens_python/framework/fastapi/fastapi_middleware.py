@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.framework import BaseResponse
+from supertokens_python.utils import default_user_context
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request
@@ -46,8 +47,9 @@ def get_middleware():
             try:
                 custom_request = FastApiRequest(request)
                 response = FastApiResponse(Response())
+                user_context = default_user_context(custom_request)
                 result: Union[BaseResponse, None] = await st.middleware(
-                    custom_request, response
+                    custom_request, response, user_context
                 )
                 if result is None:
                     response = await call_next(request)

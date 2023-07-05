@@ -190,6 +190,7 @@ class PasswordlessRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,

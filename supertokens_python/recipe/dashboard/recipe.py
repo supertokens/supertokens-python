@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 from os import environ
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule, ApiIdWithTenantId
@@ -133,6 +133,7 @@ class DashboardRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Optional[BaseResponse]:
         api_options = APIOptions(
             request,
@@ -247,7 +248,7 @@ class DashboardRecipe(RecipeModule):
         DashboardRecipe.__instance = None
 
     def return_api_id_if_can_handle_request(
-        self, path: NormalisedURLPath, method: str
+        self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
     ) -> Union[ApiIdWithTenantId, None]:
         dashboard_bundle_path = self.app_info.api_base_path.append(
             NormalisedURLPath(DASHBOARD_API)

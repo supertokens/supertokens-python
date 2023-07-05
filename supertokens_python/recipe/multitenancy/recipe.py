@@ -127,6 +127,7 @@ class MultitenancyRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         api_options = APIOptions(
             request,

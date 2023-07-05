@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Union, Optional, Any, Dict
 
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt import JWTRecipe
@@ -94,6 +94,7 @@ class OpenIdRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -108,7 +109,7 @@ class OpenIdRecipe(RecipeModule):
                 self.api_implementation, options
             )
         return await self.jwt_recipe.handle_api_request(
-            request_id, tenant_id, request, path, method, response
+            request_id, tenant_id, request, path, method, response, user_context
         )
 
     async def handle_error(

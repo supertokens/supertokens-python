@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import abc
 import re
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Union, Optional, Dict, Any
 
 from typing_extensions import Literal
 
@@ -49,8 +49,10 @@ class RecipeModule(abc.ABC):
         return self.app_info
 
     def return_api_id_if_can_handle_request(
-        self, path: NormalisedURLPath, method: str
+        self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
     ) -> Union[ApiIdWithTenantId, None]:
+        _ = user_context
+
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
         apis_handled = self.get_apis_handled()
@@ -102,6 +104,7 @@ class RecipeModule(abc.ABC):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         pass
 
