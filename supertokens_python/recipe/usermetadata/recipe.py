@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, Union
+from typing import List, Union, Optional
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -66,6 +66,7 @@ class UserMetadataRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,

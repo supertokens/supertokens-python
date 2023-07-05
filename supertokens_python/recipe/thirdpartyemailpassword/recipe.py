@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Optional
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -210,6 +210,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -220,7 +221,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             is not None
         ):
             return await self.email_password_recipe.handle_api_request(
-                request_id, request, path, method, response
+                request_id, tenant_id, request, path, method, response
             )
         if (
             self.third_party_recipe is not None
@@ -230,7 +231,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             is not None
         ):
             return await self.third_party_recipe.handle_api_request(
-                request_id, request, path, method, response
+                request_id, tenant_id, request, path, method, response
             )
         return None
 

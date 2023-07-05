@@ -187,6 +187,7 @@ class SessionRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -215,7 +216,7 @@ class SessionRecipe(RecipeModule):
                 ),
             )
         return await self.openid_recipe.handle_api_request(
-            request_id, request, path, method, response
+            request_id, tenant_id, request, path, method, response
         )
 
     async def handle_error(

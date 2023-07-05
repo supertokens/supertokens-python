@@ -558,7 +558,7 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
 
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
-from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 
 
 async def create_users(
@@ -588,4 +588,4 @@ async def create_users(
                     coderesponse.device_id,
                 )
         elif user["recipe"] == "thirdparty" and thirdparty:
-            await sign_in_up(user["provider"], user["userId"], user["email"])
+            await manually_create_or_update_user(user["provider"], user["userId"], user["email"])

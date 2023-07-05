@@ -13,11 +13,12 @@
 # under the License.
 from __future__ import annotations
 
+import re
 from os import environ
 from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python.recipe_module import APIHandled, RecipeModule, ApiIdWithTenantId
 
 from .api import (
     api_key_protector,
@@ -45,6 +46,7 @@ from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
 from .interfaces import APIInterface, APIOptions
 from .recipe_implementation import RecipeImplementation
+from ..multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -126,6 +128,7 @@ class DashboardRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -250,10 +253,42 @@ class DashboardRecipe(RecipeModule):
             NormalisedURLPath(DASHBOARD_API)
         )
 
-        if is_api_path(path, self.app_info):
-            return get_api_if_matched(path, method)
+        base_path_str = self.app_info.api_base_path.get_as_string_dangerous()
+        path_str = path.get_as_string_dangerous()
+        regex = rf"^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$"
+
+        match = re.match(regex, path_str)
+        tenant_id: str = DEFAULT_TENANT_ID
+        remaining_path: Optional[NormalisedURLPath] = None
+
+        if match is not None:
+            # TODO: Do something better than assert here
+            assert match.group(1) is not None
+            assert match.group(2) is not None
+
+            tenant_id = match.group(1)
+            remaining_path = NormalisedURLPath(match.group(2))
+
+        if is_api_path(path, self.app_info.api_base_path) or (
+            remaining_path is not None
+            and is_api_path(
+                path,
+                self.app_info.api_base_path.append(NormalisedURLPath(f"/{tenant_id}")),
+            )
+        ):
+            # check remainingPath first as path that contains tenantId might match as well
+            # since getApiIdIfMatched uses endsWith to match
+            if remaining_path is not None:
+                id_ = get_api_if_matched(remaining_path, method)
+                if id_ is not None:
+                    return ApiIdWithTenantId(id_, tenant_id)
+
+            id_ = get_api_if_matched(path, method)
+            if id_ is not None:
+                return ApiIdWithTenantId(id_, DEFAULT_TENANT_ID)
 
         if path.startswith(dashboard_bundle_path):
-            return DASHBOARD_API
+            return ApiIdWithTenantId(DASHBOARD_API, DEFAULT_TENANT_ID)
 
+        # tenantId is not supported for bundlePath, so not matching for it
         return None

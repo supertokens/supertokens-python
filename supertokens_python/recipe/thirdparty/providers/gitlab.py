@@ -41,9 +41,9 @@ class GitLab(Provider):
             None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
         ] = None,
         gitlab_base_url: str = "https://gitlab.com",
-        is_default: bool = False,
+        _is_default: bool = False,
     ):
-        super().__init__("gitlab") # FIXME: Where should is_default go?
+        super().__init__("gitlab")  # FIXME: Where should is_default go?
         default_scopes = ["read_user"]
         if scope is None:
             scope = default_scopes

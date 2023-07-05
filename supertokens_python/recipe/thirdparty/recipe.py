@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -121,6 +121,7 @@ class ThirdPartyRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,

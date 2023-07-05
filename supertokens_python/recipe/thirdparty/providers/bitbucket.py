@@ -38,9 +38,9 @@ class Bitbucket(Provider):
         authorisation_redirect: Union[
             None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
         ] = None,
-        is_default: bool = False,
+        _is_default: bool = False,
     ):
-        super().__init__("bitbucket") # FIXME: Where should is_default go?
+        super().__init__("bitbucket")  # FIXME: Where should is_default go?
         self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = ["account", "email"] if scope is None else list(set(scope))

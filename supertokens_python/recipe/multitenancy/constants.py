@@ -12,4 +12,4 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 LOGIN_METHODS = "/loginmethods"
-DEFAULT_TENANT_ID = "defaultTenantId"
+DEFAULT_TENANT_ID = "public"

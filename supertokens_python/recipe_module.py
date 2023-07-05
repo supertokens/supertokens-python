@@ -15,7 +15,8 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Union
+import re
+from typing import TYPE_CHECKING, List, Union, Optional
 
 from typing_extensions import Literal
 
@@ -24,9 +25,15 @@ from .framework.response import BaseResponse
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from .supertokens import AppInfo
-    from .normalised_url_path import NormalisedURLPath
+
 
 from .exceptions import SuperTokensError
+from .normalised_url_path import NormalisedURLPath
+
+class ApiIdWithTenantId:
+    def __init__(self, api_id: str, tenant_id: Optional[str]):
+        self.api_id = api_id
+        self.tenant_id = tenant_id
 
 
 class RecipeModule(abc.ABC):
@@ -42,17 +49,39 @@ class RecipeModule(abc.ABC):
 
     def return_api_id_if_can_handle_request(
         self, path: NormalisedURLPath, method: str
-    ) -> Union[str, None]:
+    ) -> Union[ApiIdWithTenantId, None]:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         apis_handled = self.get_apis_handled()
+
+        base_path_str = self.app_info.api_base_path.get_as_string_dangerous()
+        path_str = path.get_as_string_dangerous()
+        regex = rf"^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$"
+
+        match = re.match(regex, path_str)
+        tenant_id: str = DEFAULT_TENANT_ID
+        remaining_path: Optional[NormalisedURLPath] = None
+
+        if match is not None:
+            # TODO: Do something better than assert here
+            # assert match.group(1) is not None
+            # assert match.group(2) is not None
+
+            tenant_id = match.group(1)
+            remaining_path = NormalisedURLPath(match.group(2))
+
         for current_api in apis_handled:
-            if (
-                not current_api.disabled
-                and current_api.method == method
-                and self.app_info.api_base_path.append(
+            if not current_api.disabled and current_api.method == method:
+                if self.app_info.api_base_path.append(
                     current_api.path_without_api_base_path
-                ).equals(path)
-            ):
-                return current_api.request_id
+                ).equals(path):
+                    return ApiIdWithTenantId(current_api.request_id, DEFAULT_TENANT_ID)
+
+                if remaining_path is not None and self.app_info.api_base_path.append(
+                    current_api.path_without_api_base_path
+                ).equals(self.app_info.api_base_path.append(remaining_path)):
+                    return ApiIdWithTenantId(current_api.request_id, tenant_id)
+
         return None
 
     @abc.abstractmethod
@@ -67,6 +96,7 @@ class RecipeModule(abc.ABC):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
