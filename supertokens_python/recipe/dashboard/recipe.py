@@ -248,7 +248,7 @@ class DashboardRecipe(RecipeModule):
 
     def return_api_id_if_can_handle_request(
         self, path: NormalisedURLPath, method: str
-    ) -> Union[str, None]:
+    ) -> Union[ApiIdWithTenantId, None]:
         dashboard_bundle_path = self.app_info.api_base_path.append(
             NormalisedURLPath(DASHBOARD_API)
         )

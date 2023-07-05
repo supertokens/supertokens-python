@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 from .exceptions import SuperTokensError
 from .normalised_url_path import NormalisedURLPath
 
+
 class ApiIdWithTenantId:
     def __init__(self, api_id: str, tenant_id: Optional[str]):
         self.api_id = api_id

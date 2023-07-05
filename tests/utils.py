@@ -588,4 +588,6 @@ async def create_users(
                     coderesponse.device_id,
                 )
         elif user["recipe"] == "thirdparty" and thirdparty:
-            await manually_create_or_update_user(user["provider"], user["userId"], user["email"])
+            await manually_create_or_update_user(
+                user["provider"], user["userId"], user["email"]
+            )

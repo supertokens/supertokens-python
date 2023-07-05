@@ -41,10 +41,12 @@ async def client():
 
 
 async def test_emailpassword_router(client: TestClient):
-    args = get_st_init_args([
-        session.init(get_token_transfer_method=lambda *_: "cookie"),
-        emailpassword.init()
-    ])
+    args = get_st_init_args(
+        [
+            session.init(get_token_transfer_method=lambda *_: "cookie"),
+            emailpassword.init(),
+        ]
+    )
     init(**args)
     start_st()
 
@@ -52,15 +54,15 @@ async def test_emailpassword_router(client: TestClient):
         "/auth/public/signup",
         headers={"Content-Type": "application/json"},
         json={
-          "formFields": [
-              {"id": "password", "value": "password1"},
-              {"id": "email", "value": "test1@example.com"},
-          ]
+            "formFields": [
+                {"id": "password", "value": "password1"},
+                {"id": "email", "value": "test1@example.com"},
+            ]
         },
     )
 
     assert res.status_code == 200
-    assert res.json()['status'] == "OK"
+    assert res.json()["status"] == "OK"
 
     res = client.post(
         "/auth/signup",
@@ -74,14 +76,17 @@ async def test_emailpassword_router(client: TestClient):
     )
 
     assert res.status_code == 200
-    assert res.json()['status'] == "OK"
+    assert res.json()["status"] == "OK"
+
 
 async def test_dashboard_apis_router(client: TestClient):
-    args = get_st_init_args([
-        session.init(get_token_transfer_method=lambda *_: "cookie"),
-        emailpassword.init(),
-        dashboard.init(),
-    ])
+    args = get_st_init_args(
+        [
+            session.init(get_token_transfer_method=lambda *_: "cookie"),
+            emailpassword.init(),
+            dashboard.init(),
+        ]
+    )
     init(**args)
     start_st()
 
@@ -96,8 +101,8 @@ async def test_dashboard_apis_router(client: TestClient):
         },
     )
 
-    assert res.status_code == 200 # FIXME: failing test
-    assert res.json()['status'] == "OK"
+    assert res.status_code == 200  # FIXME: failing test
+    assert res.json()["status"] == "OK"
 
     res = client.post(
         "/auth/dashboard/api/signin",
@@ -111,4 +116,4 @@ async def test_dashboard_apis_router(client: TestClient):
     )
 
     assert res.status_code == 200  # FIXME: failing test
-    assert res.json()['status'] == "OK"
+    assert res.json()["status"] == "OK"
