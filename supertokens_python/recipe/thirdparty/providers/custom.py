@@ -300,7 +300,9 @@ class GenericProvider(Provider):
             access_token_params["code_verifier"] = redirect_uri_info.pkce_code_verifier
 
         if self.config.token_endpoint_body_params is not None:
-            access_token_params = merge_into_dict(self.config.token_endpoint_body_params, access_token_params)
+            access_token_params = merge_into_dict(
+                self.config.token_endpoint_body_params, access_token_params
+            )
 
         # Transformation needed for dev keys BEGIN
         if is_using_oauth_development_client_id(self.config.client_id):
@@ -343,10 +345,14 @@ class GenericProvider(Provider):
 
             if self.config.user_info_endpoint is not None:
                 if self.config.user_info_endpoint_headers is not None:
-                    headers = merge_into_dict(self.config.user_info_endpoint_headers, headers)
+                    headers = merge_into_dict(
+                        self.config.user_info_endpoint_headers, headers
+                    )
 
                 if self.config.user_info_endpoint_query_params is not None:
-                    query_params = merge_into_dict(self.config.user_info_endpoint_query_params, query_params)
+                    query_params = merge_into_dict(
+                        self.config.user_info_endpoint_query_params, query_params
+                    )
 
                 raw_user_info_from_provider.from_user_info_api = await do_get_request(
                     self.config.user_info_endpoint, query_params, headers

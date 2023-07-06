@@ -41,7 +41,9 @@ class AppleImpl(GenericProvider):
 
         return config
 
-    async def _get_client_secret(self, config: ProviderConfigForClientType) -> str:
+    async def _get_client_secret(  # pylint: disable=no-self-use
+        self, config: ProviderConfigForClientType
+    ) -> str:
         if (
             config.additional_config is None
             or config.additional_config.get("keyId") is None
@@ -68,7 +70,7 @@ class AppleImpl(GenericProvider):
         )  # type: ignore
 
 
-def Apple(input: ProviderInput) -> Provider:
+def Apple(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Apple"
 

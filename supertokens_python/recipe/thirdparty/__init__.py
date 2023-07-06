@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Callable, Optional, Union
 
 
 from . import exceptions as ex
-from . import utils, provider, providers
+from . import utils, provider
 from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig

@@ -72,46 +72,88 @@ init(
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
-                Google(
-                    is_default=True,
-                    client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+                thirdpartyemailpassword.ProviderInput(
+                    config=thirdpartyemailpassword.ProviderConfig(
+                        third_party_id="google",
+                        clients=[
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["GOOGLE_CLIENT_ID"],
+                                client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+                            ),
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["GOOGLE_CLIENT_ID_MOBILE"],
+                                client_secret=os.environ["GOOGLE_CLIENT_SECRET_MOBILE"],
+                            ),
+                        ],
+                    ),
                 ),
-                Google(
-                    client_id=os.environ.get("GOOGLE_CLIENT_ID_MOBILE"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET_MOBILE"),  # type: ignore
+                thirdpartyemailpassword.ProviderInput(
+                    config=thirdpartyemailpassword.ProviderConfig(
+                        third_party_id="github",
+                        clients=[
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["GITHUB_CLIENT_ID"],
+                                client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+                            ),
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["GITHUB_CLIENT_ID_MOBILE"],
+                                client_secret=os.environ["GITHUB_CLIENT_SECRET_MOBILE"],
+                            ),
+                        ],
+                    )
                 ),
-                Github(
-                    is_default=True,
-                    client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+                # FIXME: Properly migrate apple provider
+                # Apple(
+                #     is_default=True,
+                #     client_id=os.environ.get("APPLE_CLIENT_ID"),  # type: ignore
+                #     client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
+                #     client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
+                #     client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
+                # ),
+                # Apple(
+                #     client_id=os.environ.get("APPLE_CLIENT_ID_MOBILE"),  # type: ignore
+                #     client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
+                #     client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
+                #     client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
+                # ),
+                thirdpartyemailpassword.ProviderInput(
+                    config=thirdpartyemailpassword.ProviderConfig(
+                        third_party_id="apple",
+                        clients=[
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["APPLE_CLIENT_ID"],
+                                client_secret=os.environ["TODO"],  # TODO
+                            ),
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["APPLE_CLIENT_ID_MOBILE"],
+                                client_secret=os.environ["TODO"],  # TODO
+                            ),
+                        ],
+                    )
                 ),
-                Github(
-                    client_id=os.environ.get("GITHUB_CLIENT_ID_MOBILE"),  # type: ignore
-                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET_MOBILE"),  # type: ignore
+                thirdpartyemailpassword.ProviderInput(
+                    config=thirdpartyemailpassword.ProviderConfig(
+                        third_party_id="googleworkspaces",
+                        clients=[
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["GOOGLE_WORKSPACES_CLIENT_ID"],
+                                client_secret=os.environ[
+                                    "GOOGLE_WORKSPACES_CLIENT_SECRET"
+                                ],
+                            ),
+                        ],
+                    )
                 ),
-                Apple(
-                    is_default=True,
-                    client_id=os.environ.get("APPLE_CLIENT_ID"),  # type: ignore
-                    client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
-                    client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
-                    client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
-                ),
-                Apple(
-                    client_id=os.environ.get("APPLE_CLIENT_ID_MOBILE"),  # type: ignore
-                    client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
-                    client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
-                    client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
-                ),
-                GoogleWorkspaces(
-                    is_default=True,
-                    client_id=os.environ.get("GOOGLE_WORKSPACES_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_WORKSPACES_CLIENT_SECRET"),  # type: ignore
-                ),
-                Discord(
-                    is_default=True,
-                    client_id=os.environ.get("DISCORD_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("DISCORD_CLIENT_SECRET"),  # type: ignore
+                thirdpartyemailpassword.ProviderInput(
+                    config=thirdpartyemailpassword.ProviderConfig(
+                        third_party_id="discord",
+                        clients=[
+                            thirdpartyemailpassword.ProviderClientConfig(
+                                client_id=os.environ["DISCORD_CLIENT_ID"],
+                                client_secret=os.environ["DISCORD_CLIENT_SECRET"],
+                            ),
+                        ],
+                    )
                 ),
             ]
         ),
