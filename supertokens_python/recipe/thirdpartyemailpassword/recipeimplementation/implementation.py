@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Callable
 
 import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import GetProviderOkResult
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -54,7 +55,6 @@ from .email_password_recipe_implementation import (
 from .third_party_recipe_implementation import (
     RecipeImplementation as DerivedThirdPartyImplementation,
 )
-from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 
 class RecipeImplementation(RecipeInterface):
@@ -63,6 +63,7 @@ class RecipeImplementation(RecipeInterface):
         emailpassword_querier: Querier,
         thirdparty_querier: Querier,
         providers: List[ProviderInput],
+        get_emailpassword_config: Callable[[], EmailPasswordConfig],
     ):
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation(
