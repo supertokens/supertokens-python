@@ -43,12 +43,21 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[
-                        thirdparty.Apple(
-                            client_id="4398792-io.supertokens.example.service",
-                            client_key_id="7M48Y4RYDL",
-                            client_team_id="YWQCXGJRJL",
-                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                        )
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="apple",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="4398792-io.supertokens.example.service",
+                                        additional_config={
+                                            "keyId": "7M48Y4RYDL",
+                                            "teamId": "YWQCXGJRJL",
+                                            "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        },
+                                    ),
+                                ],
+                            )
+                        ),
                     ]
                 )
             ),
@@ -113,8 +122,26 @@ async def test_apple_provider_can_fetch_keys():
             side_effect=api_side_effect
         )
 
+        # apple = Apple(
+        #     "client-id", "client-key-id", "client-private-key", "client-team-id"
+        # )
+        # FIXME: Migrate this test properly
         apple = Apple(
-            "client-id", "client-key-id", "client-private-key", "client-team-id"
+            thirdparty.ProviderInput(
+                config=thirdparty.ProviderConfig(
+                    third_party_id="apple",
+                    clients=[
+                        thirdparty.ProviderClientConfig(
+                            client_id="client-id",
+                            additional_config={
+                                "keyId": "client-key-id",
+                                "privateKey": "client-private-key",
+                                "teamId": "client-team-id",
+                            },
+                        )
+                    ],
+                )
+            )
         )
         # pylint: disable=protected-access
         keys = await apple._fetch_apple_public_keys()  # type: ignore

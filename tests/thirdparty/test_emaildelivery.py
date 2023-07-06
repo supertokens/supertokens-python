@@ -46,9 +46,6 @@ from supertokens_python.recipe.session.recipe_implementation import (
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
-    SMTPService,
-)
 from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
 )
@@ -91,7 +88,7 @@ def CustomProvider(provider_id: str) -> thirdparty.ProviderInput:
     def custom_provider_override(original_implementation: Provider) -> Provider:
         async def get_user_info(
             oauth_tokens: Dict[str, Any],
-            user_context: Dict[str, Any],
+            _user_context: Dict[str, Any],
         ) -> UserInfo:
             return UserInfo(
                 third_party_user_id=oauth_tokens["id"],

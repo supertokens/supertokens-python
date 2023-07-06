@@ -61,9 +61,6 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
-from supertokens_python.recipe.emailverification.asyncio import (
-    create_email_verification_token,
-)
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     passwordlessSigninup,
     thirdparty_manually_create_or_update_user,
