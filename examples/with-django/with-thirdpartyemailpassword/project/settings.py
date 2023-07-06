@@ -29,13 +29,6 @@ from supertokens_python.recipe import (
     session,
     thirdpartyemailpassword,
 )
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    Apple,
-    Discord,
-    Github,
-    Google,
-    GoogleWorkspaces,
-)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -112,7 +105,7 @@ init(
                                     "keyId": os.environ["APPLE_KEY_ID"],
                                     "teamId": os.environ["APPLE_TEAM_ID"],
                                     "privateKey": os.environ["APPLE_PRIVATE_KEY"],
-                                }
+                                },
                             ),
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["APPLE_CLIENT_ID_MOBILE"],
@@ -120,7 +113,7 @@ init(
                                     "keyId": os.environ["APPLE_KEY_ID"],
                                     "teamId": os.environ["APPLE_TEAM_ID"],
                                     "privateKey": os.environ["APPLE_PRIVATE_KEY"],
-                                }
+                                },
                             ),
                         ],
                     )
