@@ -32,24 +32,6 @@ InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 ContactConfig = passwordless.ContactConfig
 PhoneOrEmailInput = passwordless.PhoneOrEmailInput
-<<<<<<< HEAD
-||||||| 37d58eb3
-Apple = thirdparty.Apple
-Discord = thirdparty.Discord
-Facebook = thirdparty.Facebook
-Github = thirdparty.Github
-Google = thirdparty.Google
-GoogleWorkspaces = thirdparty.GoogleWorkspaces
-=======
-Apple = thirdparty.Apple
-Discord = thirdparty.Discord
-Facebook = thirdparty.Facebook
-Github = thirdparty.Github
-Google = thirdparty.Google
-GoogleWorkspaces = thirdparty.GoogleWorkspaces
-Bitbucket = thirdparty.Bitbucket
-GitLab = thirdparty.GitLab
->>>>>>> 0.14
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig

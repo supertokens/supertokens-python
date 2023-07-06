@@ -13,13 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-<<<<<<< HEAD
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-||||||| 37d58eb3
-from typing import TYPE_CHECKING, Any, Dict, List, Union
-=======
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable
->>>>>>> 0.14
 
 import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import GetProviderOkResult
@@ -65,19 +59,10 @@ from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
-<<<<<<< HEAD
         self,
         emailpassword_querier: Querier,
         thirdparty_querier: Querier,
         providers: List[ProviderInput],
-||||||| 37d58eb3
-        self, emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None]
-=======
-        self,
-        emailpassword_querier: Querier,
-        thirdparty_querier: Union[Querier, None],
-        get_emailpassword_config: Callable[[], EmailPasswordConfig],
->>>>>>> 0.14
     ):
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation(
