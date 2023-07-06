@@ -110,12 +110,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(EmailPasswordRecipe.recipe_id),
             Querier.get_instance(ThirdPartyRecipe.recipe_id),
-<<<<<<< HEAD
             self.config.providers,
-||||||| 37d58eb3
-=======
-            get_emailpassword_config,
->>>>>>> 0.14
         )
         self.recipe_implementation: RecipeInterface = (
             recipe_implementation

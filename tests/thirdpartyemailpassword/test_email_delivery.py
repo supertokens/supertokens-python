@@ -51,15 +51,7 @@ from supertokens_python.recipe.session.recipe_implementation import (
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
-<<<<<<< HEAD
     InputResetPasswordUsingTokenFeature,
-||||||| 37d58eb3
-    InputResetPasswordUsingTokenFeature,
-    Github,
-=======
-    Github,
-    InputResetPasswordUsingTokenFeature,
->>>>>>> 0.14
 )
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
     thirdparty_manually_create_or_update_user,
