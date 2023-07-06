@@ -71,7 +71,7 @@ def call_api(
     auth_mode: str,
     auth_mode_header: Optional[str] = None,
 ):
-    access_token = info.get("accessToken") or info.get("accessTokenFromHeader")
+    access_token = info.get("accessTokenFromAny")
 
     headers = {}
     cookies = {}
@@ -262,10 +262,10 @@ async def test_should_follow_get_token_transfer_method(
         ("cookie", False, False, True, "validatecookie"),
     ],
 )
-def test_verify_session_parametrized(
+def test_verify_session_parametrized(  # from behaviour table
     app: TestClient,
-    transfer_method: TokenTransferMethod,
-    session_required: bool,
+    transfer_method: TokenTransferMethod,  # transfer method for session recipe config
+    session_required: bool,  # if session is required for verify session
     auth_header: bool,
     auth_cookie: bool,
     result: Optional[str],
@@ -301,7 +301,6 @@ def test_verify_session_parametrized(
         "/verify" if session_required else "/verify-optional",
         401 if result == "UNAUTHORISED" else 200,
         auth_mode,
-        # FIXME: missing auth_mode_header?
     )
     assert res.status_code == (401 if result == "UNAUTHORISED" else 200)
 
@@ -327,7 +326,6 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
         app,
         "cookie",
         None,
-        cookies={"sIdRefreshToken": "IRRELEVANT-VALUE", "sAccessToken": EXAMPLE_JWT},
     )
 
     response = app.get(
@@ -339,8 +337,16 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
         headers={"anti-csrf": res["antiCsrf"]},
     )
 
+    info = extract_info(response)
+
     assert response.status_code == 401
     assert response.json() == {"message": "try refresh token"}
+
+    print(info)
+
+    assert (
+        "sIdRefreshToken" not in info
+    )  # Doesn't clear sIdRefreshToken from cookies in get_session (called by verify_session)
 
 
 # # SKIPPING:
@@ -398,7 +404,7 @@ async def test_should_update_acccess_token_payload(
         ("cookie", True, True, "validatecookie", "cookies", "headers"),
     ],
 )
-async def test_xx(  # test_refresh_session_parametrized
+async def test_refresh_session_parametrized(
     app: TestClient,
     transfer_method: TokenTransferMethod,
     auth_header: bool,

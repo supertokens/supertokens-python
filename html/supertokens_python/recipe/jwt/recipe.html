@@ -121,7 +121,10 @@ class JWTRecipe(RecipeModule):
             self.recipe_implementation,
         )
 
-        return await jwks_get(self.api_implementation, options)
+        if request_id == GET_JWKS_API:
+            return await jwks_get(self.api_implementation, options)
+
+        return None
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -246,7 +249,10 @@ inheritance.</p></div>
             self.recipe_implementation,
         )
 
-        return await jwks_get(self.api_implementation, options)
+        if request_id == GET_JWKS_API:
+            return await jwks_get(self.api_implementation, options)
+
+        return None
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -434,7 +440,10 @@ def reset():
         self.recipe_implementation,
     )
 
-    return await jwks_get(self.api_implementation, options)</code></pre>
+    if request_id == GET_JWKS_API:
+        return await jwks_get(self.api_implementation, options)
+
+    return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.jwt.recipe.JWTRecipe.handle_error"><code class="name flex">

@@ -29,10 +29,28 @@ InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
 InputSignUpFeature = emailpassword.InputSignUpFeature
+<<<<<<< HEAD
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
 ProviderConfigForClientType = provider.ProviderConfigForClientType
+||||||| 37d58eb3
+Apple = thirdparty.Apple
+Discord = thirdparty.Discord
+Facebook = thirdparty.Facebook
+Github = thirdparty.Github
+Google = thirdparty.Google
+GoogleWorkspaces = thirdparty.GoogleWorkspaces
+=======
+Apple = thirdparty.Apple
+Discord = thirdparty.Discord
+Facebook = thirdparty.Facebook
+Github = thirdparty.Github
+Google = thirdparty.Google
+GoogleWorkspaces = thirdparty.GoogleWorkspaces
+Bitbucket = thirdparty.Bitbucket
+GitLab = thirdparty.GitLab
+>>>>>>> 0.14
 SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:

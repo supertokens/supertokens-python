@@ -13,18 +13,20 @@
 # under the License.
 
 import json
+from urllib.parse import urlencode
 from datetime import datetime
 from inspect import isawaitable
 from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
 from supertokens_python.framework.django.django_response import (
     DjangoResponse as SuperTokensDjangoWrapper,
 )
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import emailpassword, session, thirdparty
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
@@ -33,7 +35,27 @@ from supertokens_python.recipe.session.asyncio import (
     refresh_session,
 )
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
-from tests.utils import clean_st, reset, setup_st, start_st
+
+import pytest
+from tests.utils import clean_st, reset, setup_st, start_st, create_users
+from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
+from supertokens_python.framework import BaseRequest
+from supertokens_python.querier import Querier
+from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.passwordless import PasswordlessRecipe, ContactConfig
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
+
+
+def override_dashboard_functions(original_implementation: RecipeInterface):
+    async def should_allow_access(
+        request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
+    ):
+        auth_header = request.get_header("authorization")
+        return auth_header == "Bearer testapikey"
+
+    original_implementation.should_allow_access = should_allow_access  # type: ignore
+    return original_implementation
 
 
 def get_cookies(response: HttpResponse) -> Dict[str, Any]:
@@ -116,7 +138,7 @@ class SupertokensTest(TestCase):
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _, __, ___: "cookie",
                     cookie_domain="supertokens.io",
-                )
+                ),
             ],
         )
 
@@ -318,7 +340,6 @@ class SupertokensTest(TestCase):
 
     async def test_custom_response(self):
         def override_email_password_apis(original_implementation: APIInterface):
-
             original_func = original_implementation.email_exists_get
 
             async def email_exists_get(
@@ -392,6 +413,466 @@ class SupertokensTest(TestCase):
         assert response.status_code == 200
         dict_response = json.loads(response.content)
         assert dict_response["s"] == "empty session"
+
+    async def test_thirdparty_parsing_works(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="django",
+            mode="asgi",
+            recipe_list=[
+                thirdparty.init(
+                    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                        providers=[
+                            thirdparty.Apple(
+                                client_id="4398792-io.supertokens.example.service",
+                                client_key_id="7M48Y4RYDL",
+                                client_team_id="YWQCXGJRJL",
+                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                            )
+                        ]
+                    )
+                ),
+            ],
+        )
+
+        start_st()
+
+        data = {
+            "state": "afc596274293e1587315c",
+            "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
+        }
+
+        request = self.factory.post(
+            "/auth/callback/apple",
+            urlencode(data).encode(),
+            content_type="application/x-www-form-urlencoded",
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.content,
+            b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>',
+        )
+
+    @pytest.mark.asyncio
+    async def test_search_with_multiple_emails(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+                emailpassword.init(),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(emailpassword=True)
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users",
+            data={"limit": "10", "email": "iresh;john"},
+            **headers,
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        self.assertEqual(response.status_code, 200)
+        data_json = json.loads(response.content)
+        self.assertEqual(len(data_json["users"]), 1)
+
+    @pytest.mark.asyncio
+    async def test_search_with_email_t(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+                emailpassword.init(),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(emailpassword=True)
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users", data={"limit": "10", "email": "t"}, **headers
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        self.assertEqual(response.status_code, 200)
+        data_json = json.loads(response.content)
+        self.assertEqual(len(data_json["users"]), 5)
+
+    @pytest.mark.asyncio
+    async def test_search_with_email_iresh(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+                emailpassword.init(),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(emailpassword=True)
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users",
+            data={"limit": "10", "email": "iresh"},
+            **headers,
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        self.assertEqual(response.status_code, 200)
+        data_json = json.loads(response.content)
+        self.assertEqual(len(data_json["users"]), 0)
+
+    @pytest.mark.asyncio
+    async def test_search_with_phone_plus_one(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+                PasswordlessRecipe.init(
+                    contact_config=ContactConfig(contact_method="EMAIL"),
+                    flow_type="USER_INPUT_CODE",
+                ),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(
+            passwordless=True,
+        )
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users", data={"limit": "10", "phone": "+1"}, **headers
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        self.assertEqual(response.status_code, 200)
+        data_json = json.loads(response.content)
+        self.assertEqual(len(data_json["users"]), 3)
+
+    @pytest.mark.asyncio
+    async def test_search_with_phone_one_bracket(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+                PasswordlessRecipe.init(
+                    contact_config=ContactConfig(contact_method="EMAIL"),
+                    flow_type="USER_INPUT_CODE",
+                ),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(passwordless=True)
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users",
+            data={"limit": "10", "phone": "1("},
+            **headers,
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        data_json = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data_json["users"]), 0)
+
+    @pytest.mark.asyncio
+    async def test_search_with_provider_google(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                thirdparty.init(
+                    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                        providers=[
+                            thirdparty.Apple(
+                                client_id="4398792-io.supertokens.example.service",
+                                client_key_id="7M48Y4RYDL",
+                                client_team_id="YWQCXGJRJL",
+                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                            ),
+                            thirdparty.Google(
+                                client_id="467101b197249757c71f",
+                                client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                            ),
+                            thirdparty.Github(
+                                client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                client_secret="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",
+                            ),
+                        ]
+                    )
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(emailpassword=False, passwordless=False, thirdparty=True)
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users",
+            data={"limit": "10", "provider": "google"},
+            **headers,
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        self.assertEqual(response.status_code, 200)
+        data_json = json.loads(response.content)
+        self.assertEqual(len(data_json["users"]), 3)
+
+    @pytest.mark.asyncio
+    async def test_search_with_provider_google_and_phone_one(self):
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth",
+            ),
+            framework="flask",
+            recipe_list=[
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                ),
+                thirdparty.init(
+                    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                        providers=[
+                            thirdparty.Apple(
+                                client_id="4398792-io.supertokens.example.service",
+                                client_key_id="7M48Y4RYDL",
+                                client_team_id="YWQCXGJRJL",
+                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                            ),
+                            thirdparty.Google(
+                                client_id="467101b197249757c71f",
+                                client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                            ),
+                            thirdparty.Github(
+                                client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                client_secret="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",
+                            ),
+                        ]
+                    )
+                ),
+                DashboardRecipe.init(
+                    api_key="testapikey",
+                    override=InputOverrideConfig(
+                        functions=override_dashboard_functions
+                    ),
+                ),
+                PasswordlessRecipe.init(
+                    contact_config=ContactConfig(contact_method="EMAIL"),
+                    flow_type="USER_INPUT_CODE",
+                ),
+            ],
+        )
+
+        start_st()
+        querier = Querier.get_instance(DashboardRecipe.recipe_id)
+        cdi_version = await querier.get_api_version()
+        if not cdi_version:
+            pytest.skip()
+        if not is_version_gte(cdi_version, "2.20"):
+            pytest.skip()
+        await create_users(emailpassword=False, passwordless=True, thirdparty=True)
+        headers = {
+            "content_type": "application/json",
+            "HTTP_AUTHORIZATION": "Bearer testapikey",
+        }
+        request = self.factory.get(
+            "/auth/dashboard/api/users",
+            data={"limit": "10", "provider": "google", "phone": "1"},
+            **headers,
+        )
+        temp = middleware(custom_response_view)(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+        self.assertEqual(response.status_code, 200)
+        data_json = json.loads(response.content)
+        self.assertEqual(len(data_json["users"]), 0)
 
 
 def test_remove_header_works():

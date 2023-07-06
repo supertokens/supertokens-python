@@ -15,12 +15,13 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.framework import BaseRequest
-from .interfaces import (
-    RecipeInterface,
-)
 from supertokens_python.constants import DASHBOARD_VERSION
-from .utils import DashboardConfig
+from supertokens_python.framework import BaseRequest
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+
+from .interfaces import RecipeInterface
+from .utils import DashboardConfig, validate_api_key
 
 
 class RecipeImplementation(RecipeInterface):
@@ -33,12 +34,21 @@ class RecipeImplementation(RecipeInterface):
         config: DashboardConfig,
         user_context: Dict[str, Any],
     ) -> bool:
-        api_key_header_value = request.get_header("authorization")
+        if config.auth_mode == "email-password":
+            auth_header_value = request.get_header("authorization")
 
-        # We receive the api key as `Bearer API_KEY`, this retrieves just the key
-        api_key = api_key_header_value.split(" ")[1] if api_key_header_value else None
+            if not auth_header_value:
+                return False
 
-        if api_key is None:
-            return False
-
-        return api_key == config.api_key
+            auth_header_value = auth_header_value.split()[1]
+            session_verification_response = (
+                await Querier.get_instance().send_post_request(
+                    NormalisedURLPath("/recipe/dashboard/session/verify"),
+                    {"sessionId": auth_header_value},
+                )
+            )
+            return (
+                "status" in session_verification_response
+                and session_verification_response["status"] == "OK"
+            )
+        return validate_api_key(request, config)

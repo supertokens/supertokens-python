@@ -10,12 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 import os
-
-from dotenv import load_dotenv
+from pathlib import Path
 from typing import List
+
 from corsheaders.defaults import default_headers
+from dotenv import load_dotenv
+
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -23,9 +24,10 @@ from supertokens_python import (
     init,
 )
 from supertokens_python.recipe import (
+    dashboard,
+    emailverification,
     session,
     thirdpartyemailpassword,
-    emailverification,
 )
 from supertokens_python.recipe.thirdpartyemailpassword import (
     Apple,
@@ -65,7 +67,8 @@ init(
     framework="django",
     mode="wsgi",
     recipe_list=[
-        session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        session.init(),
+        dashboard.init(),
         emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[

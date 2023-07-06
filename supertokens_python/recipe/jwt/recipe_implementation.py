@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -42,7 +42,8 @@ class RecipeImplementation(RecipeInterface):
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
@@ -51,6 +52,7 @@ class RecipeImplementation(RecipeInterface):
         data = {
             "payload": payload,
             "validity": validity_seconds,
+            "useStaticSigningKey": use_static_signing_key is not False,
             "algorithm": "RS256",
             "jwksDomain": self.app_info.api_domain.get_as_string_dangerous(),
         }
@@ -64,7 +66,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/jwt/jwks"), {}
+            NormalisedURLPath("/.well-known/jwks.json"), {}
         )
 
         keys: List[JsonWebKey] = []

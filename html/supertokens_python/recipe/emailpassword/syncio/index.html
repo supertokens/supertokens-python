@@ -51,11 +51,16 @@ def update_email_or_password(
     user_id: str,
     email: Union[str, None] = None,
     password: Union[str, None] = None,
+    apply_password_policy: Union[bool, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 
-    return sync(update_email_or_password(user_id, email, password, user_context))
+    return sync(
+        update_email_or_password(
+            user_id, email, password, apply_password_policy, user_context
+        )
+    )
 
 
 def get_user_by_id(
@@ -249,7 +254,7 @@ def send_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.update_email_or_password"><code class="name flex">
-<span>def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, apply_password_policy: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -261,11 +266,16 @@ def send_email(
     user_id: str,
     email: Union[str, None] = None,
     password: Union[str, None] = None,
+    apply_password_policy: Union[bool, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 
-    return sync(update_email_or_password(user_id, email, password, user_context))</code></pre>
+    return sync(
+        update_email_or_password(
+            user_id, email, password, apply_password_policy, user_context
+        )
+    )</code></pre>
 </details>
 </dd>
 </dl>

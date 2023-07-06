@@ -42,7 +42,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Callable
+from typing import Callable, Optional, Union
 
 from supertokens_python import AppInfo, RecipeModule
 from supertokens_python.recipe.dashboard.utils import InputOverrideConfig
@@ -51,7 +51,7 @@ from .recipe import DashboardRecipe
 
 
 def init(
-    api_key: str,
+    api_key: Union[str, None] = None,
     override: Optional[InputOverrideConfig] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return DashboardRecipe.init(
@@ -99,7 +99,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>api_key: str, override: Optional[InputOverrideConfig] = None) ‑> Callable[[<a title="supertokens_python.supertokens.AppInfo" href="../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>], <a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a>]</span>
+<span>def <span class="ident">init</span></span>(<span>api_key: Union[str, None] = None, override: Optional[InputOverrideConfig] = None) ‑> Callable[[<a title="supertokens_python.supertokens.AppInfo" href="../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>], <a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -108,7 +108,7 @@ def init(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def init(
-    api_key: str,
+    api_key: Union[str, None] = None,
     override: Optional[InputOverrideConfig] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return DashboardRecipe.init(

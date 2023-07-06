@@ -43,8 +43,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from supertokens_python.recipe.session.session_request_functions import (
+    get_session_from_request,
+)
+
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
+    from supertokens_python.recipe.session.interfaces import (
+        APIInterface,
+        APIOptions,
+    )
 
 from supertokens_python.utils import default_user_context, send_200_response
 
@@ -55,12 +62,15 @@ async def handle_signout_api(api_implementation: APIInterface, api_options: APIO
         or api_implementation.signout_post is None
     ):
         return None
+
     user_context = default_user_context(api_options.request)
 
-    session = await api_options.recipe_implementation.get_session(
-        request=api_options.request,
-        anti_csrf_check=None,
+    session = await get_session_from_request(
+        api_options.request,
+        api_options.config,
+        api_options.recipe_implementation,
         session_required=False,
+        override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
 
@@ -92,12 +102,15 @@ async def handle_signout_api(api_implementation: APIInterface, api_options: APIO
         or api_implementation.signout_post is None
     ):
         return None
+
     user_context = default_user_context(api_options.request)
 
-    session = await api_options.recipe_implementation.get_session(
-        request=api_options.request,
-        anti_csrf_check=None,
+    session = await get_session_from_request(
+        api_options.request,
+        api_options.config,
+        api_options.recipe_implementation,
         session_required=False,
+        override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
 

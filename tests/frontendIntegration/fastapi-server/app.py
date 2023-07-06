@@ -38,11 +38,29 @@ from supertokens_python.recipe.session.asyncio import (
     SessionRecipe,
     create_new_session,
     revoke_all_sessions_for_user,
-    update_access_token_payload,
+    merge_into_access_token_payload,
 )
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
-from typing_extensions import Literal
+from supertokens_python.recipe.session.interfaces import (
+    APIInterface,
+    SessionClaimValidator,
+    ClaimValidationResult,
+    JSONObject,
+    RecipeInterface,
+)
+from supertokens_python.constants import VERSION
+from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.session.asyncio import get_session_information
+
+protected_prop_name = {
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+}
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -112,17 +130,21 @@ def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
     async def create_new_session_custom(
-        _request: BaseRequest,
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
-        session_data: Union[Dict[str, Any], None],
+        session_data_in_database: Union[Dict[str, Any], None],
+        disable_anti_csrf: Union[bool, None],
         user_context: Dict[str, Any],
-    ) -> SessionContainer:
+    ):
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
-            _request, user_id, access_token_payload, session_data, user_context
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            user_context,
         )
 
     param.create_new_session = create_new_session_custom
@@ -140,32 +162,58 @@ def get_app_port():
 
 
 def config(
-    enable_anti_csrf: bool, enable_jwt: bool, jwt_property_name: Union[str, None]
+    enable_anti_csrf: bool, enable_jwt: bool, _jwt_property_name: Union[str, None]
 ):
-    anti_csrf: Literal["VIA_TOKEN", "NONE"] = "NONE"
-    if enable_anti_csrf:
-        anti_csrf = "VIA_TOKEN"
+    anti_csrf = "VIA_TOKEN" if enable_anti_csrf else "NONE"
+
     if enable_jwt:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:9000"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Python SDK",
-                api_domain="0.0.0.0:" + get_app_port(),
-                website_domain="http://localhost.org:8080",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                session.init(
-                    error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
-                    anti_csrf=anti_csrf,
-                    override=session.InputOverrideConfig(
-                        apis=apis_override_session, functions=functions_override_session
-                    ),
-                    jwt=session.JWTConfig(enable_jwt, jwt_property_name),
-                )
-            ],
-            telemetry=False,
-        )
+        if is_version_gte(VERSION, "0.13.0"):
+            init(
+                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                app_info=InputAppInfo(
+                    app_name="SuperTokens Python SDK",
+                    api_domain="0.0.0.0:" + get_app_port(),
+                    website_domain="http://localhost.org:8080",
+                ),
+                framework="fastapi",
+                recipe_list=[
+                    session.init(
+                        error_handlers=InputErrorHandlers(
+                            on_unauthorised=unauthorised_f
+                        ),
+                        anti_csrf=anti_csrf,
+                        override=session.InputOverrideConfig(
+                            apis=apis_override_session,
+                            functions=functions_override_session,
+                        ),
+                        expose_access_token_to_frontend_in_cookie_based_auth=True,
+                    )
+                ],
+                telemetry=False,
+            )
+        else:
+            init(
+                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                app_info=InputAppInfo(
+                    app_name="SuperTokens Python SDK",
+                    api_domain="0.0.0.0:" + get_app_port(),
+                    website_domain="http://localhost.org:8080",
+                ),
+                framework="fastapi",
+                recipe_list=[
+                    session.init(
+                        error_handlers=InputErrorHandlers(
+                            on_unauthorised=unauthorised_f
+                        ),
+                        anti_csrf=anti_csrf,
+                        override=session.InputOverrideConfig(
+                            apis=apis_override_session,
+                            functions=functions_override_session,
+                        ),
+                    )
+                ],
+                telemetry=False,
+            )
     else:
         init(
             supertokens_config=SupertokensConfig("http://localhost:9000"),
@@ -287,7 +335,14 @@ async def update_jwt(sess: SessionContainer = Depends(verify_session())):
 async def update_jwt_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await _session.update_access_token_payload(await request.json(), {})
+    clearing = {}
+    for k in _session.get_access_token_payload():
+        if k not in protected_prop_name:
+            clearing[k] = None
+
+    body = await request.json()
+    await _session.merge_into_access_token_payload({**clearing, **body}, {})
+
     Test.increment_get_session()
     return JSONResponse(
         content=_session.get_access_token_payload(),
@@ -299,11 +354,42 @@ async def update_jwt_post(
 async def update_jwt_with_handle_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await update_access_token_payload(_session.get_handle(), await request.json())
+    info = await get_session_information(_session.get_handle())
+    assert info is not None
+    clearing = {}
+
+    for k in info.custom_claims_in_access_token_payload:
+        clearing[k] = None
+
+    body = await request.json()
+
+    await merge_into_access_token_payload(_session.get_handle(), {**clearing, **body})
     return JSONResponse(
         content=_session.get_access_token_payload(),
         headers={"Cache-Control": "no-cache, private"},
     )
+
+
+def gcv_for_session_claim_err(*_):  # type: ignore
+    class CustomValidator(SessionClaimValidator):
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return False
+
+        async def validate(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return ClaimValidationResult(False, {"message": "testReason"})
+
+    return [CustomValidator("test-claim-failing")]
+
+
+@app.post("/session-claims-error")
+def session_claim_error_api(_session: SessionContainer = Depends(verify_session(override_global_claim_validators=gcv_for_session_claim_err))):  # type: ignore
+    return JSONResponse({})
+
+
+@app.post("/403-without-body")
+def without_body_403():
+    # send 403 without body
+    return PlainTextResponse(content=None, status_code=403)
 
 
 @app.options("/testing")
@@ -500,7 +586,13 @@ def check_rid(request: Request):
 def feature_flags(_: Request):
     global last_set_enable_jwt  # pylint: disable=global-variable-not-assigned
 
-    return JSONResponse({"sessionJwt": last_set_enable_jwt})
+    return JSONResponse(
+        {
+            "sessionJwt": last_set_enable_jwt,
+            "sessionClaims": is_version_gte(VERSION, "0.11.0"),
+            "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+        }
+    )
 
 
 @app.post("/reinitialiseBackendConfig")

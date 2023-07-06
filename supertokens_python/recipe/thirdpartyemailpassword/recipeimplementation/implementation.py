@@ -13,7 +13,13 @@
 # under the License.
 from __future__ import annotations
 
+<<<<<<< HEAD
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+||||||| 37d58eb3
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+=======
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable
+>>>>>>> 0.14
 
 import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import GetProviderOkResult
@@ -45,6 +51,7 @@ from ..interfaces import (
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdError,
+    UpdateEmailOrPasswordPasswordPolicyViolationError,
 )
 from ..types import User
 from .email_password_recipe_implementation import (
@@ -53,18 +60,28 @@ from .email_password_recipe_implementation import (
 from .third_party_recipe_implementation import (
     RecipeImplementation as DerivedThirdPartyImplementation,
 )
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
+<<<<<<< HEAD
         self,
         emailpassword_querier: Querier,
         thirdparty_querier: Querier,
         providers: List[ProviderInput],
+||||||| 37d58eb3
+        self, emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None]
+=======
+        self,
+        emailpassword_querier: Querier,
+        thirdparty_querier: Union[Querier, None],
+        get_emailpassword_config: Callable[[], EmailPasswordConfig],
+>>>>>>> 0.14
     ):
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation(
-            emailpassword_querier
+            emailpassword_querier, get_emailpassword_config
         )
 
         self.ep_get_user_by_id = emailpassword_implementation.get_user_by_id
@@ -318,11 +335,13 @@ class RecipeImplementation(RecipeInterface):
         user_id: str,
         email: Union[None, str],
         password: Union[None, str],
+        apply_password_policy: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
@@ -332,5 +351,5 @@ class RecipeImplementation(RecipeInterface):
                 "Cannot update email or password of a user who signed up using third party login."
             )
         return await self.ep_update_email_or_password(
-            user_id, email, password, user_context
+            user_id, email, password, apply_password_policy, user_context
         )

@@ -68,7 +68,7 @@ if mode == "asgi":
                 "sessionHandle": session_.get_handle(),
                 "userId": session_.get_user_id(),
                 "jwtPayload": session_.get_access_token_payload(),
-                "sessionData": await session_.get_session_data(),
+                "sessionDataFromDatabase": await session_.get_session_data_from_database(),
             }
         )
 
@@ -111,7 +111,7 @@ else:
                 "sessionHandle": session_.get_handle(),
                 "userId": session_.get_user_id(),
                 "accessTokenPayload": session_.get_access_token_payload(),
-                "sessionData": session_.sync_get_session_data(),
+                "sessionDataFromDatabase": session_.sync_get_session_data_from_database(),
             }
         )
 

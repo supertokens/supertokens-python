@@ -11,9 +11,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY = "_jwtPName"
-JWT_RESERVED_KEY_USE_ERROR_MESSAGE = (
-    ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-    + "is a reserved property name, please use a different key name for the jwt"
-)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
+
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+from supertokens_python.recipe.dashboard.interfaces import SearchTagsOK
+
+
+async def handle_get_tags(_: APIInterface, __: APIOptions) -> SearchTagsOK:
+    response = await Querier.get_instance().send_get_request(
+        NormalisedURLPath("/user/search/tags")
+    )
+    return SearchTagsOK(tags=response["tags"])

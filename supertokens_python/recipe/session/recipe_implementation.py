@@ -14,43 +14,19 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-from supertokens_python.framework import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.process_state import AllowedProcessStates, ProcessState
-from supertokens_python.utils import (
-    execute_async,
-    get_timestamp_ms,
-    is_an_ip_address,
-    normalise_http_method,
-    resolve,
-)
+from supertokens_python.utils import resolve
 
 from ...types import MaybeAwaitable
 from . import session_functions
 from .access_token import validate_access_token_structure
-from .cookie_and_header import (
-    get_anti_csrf_header,
-    get_rid_header,
-    get_token,
-    token_response_mutator,
-    front_token_response_mutator,
-    anti_csrf_response_mutator,
-    set_cookie_response_mutator,
-    clear_session_response_mutator,
-)
-from .exceptions import (
-    TokenTheftError,
-    UnauthorisedError,
-    raise_try_refresh_token_exception,
-    raise_unauthorised_exception,
-)
+from .cookie_and_header import build_front_token
+from .exceptions import UnauthorisedError
 from .interfaces import (
     AccessTokenObj,
-    ResponseMutator,
     ClaimsValidationResult,
     GetClaimValueOkResult,
     JSONObject,
@@ -64,39 +40,14 @@ from .interfaces import (
 )
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
-from .utils import SessionConfig, TokenTransferMethod, validate_claims_in_payload
+from .utils import SessionConfig, validate_claims_in_payload
 
 if TYPE_CHECKING:
     from typing import List, Union
     from supertokens_python import AppInfo
-    from supertokens_python.querier import Querier
 
-
-from .constants import available_token_transfer_methods
 from .interfaces import SessionContainer
-
-
-class HandshakeInfo:
-    def __init__(self, info: Dict[str, Any]):
-        self.access_token_blacklisting_enabled = info["accessTokenBlacklistingEnabled"]
-        self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
-        self.anti_csrf = info["antiCsrf"]
-        self.access_token_validity = info["accessTokenValidity"]
-        self.refresh_token_validity = info["refreshTokenValidity"]
-
-    def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
-        self.raw_jwt_signing_public_key_list = updated_list
-
-    def get_jwt_signing_public_key_list(self) -> List[Dict[str, Any]]:
-        time_now = get_timestamp_ms()
-        return [
-            key
-            for key in self.raw_jwt_signing_public_key_list
-            if key["expiryTime"] > time_now
-        ]
-
-
-LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
+from supertokens_python.querier import Querier
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
@@ -105,173 +56,46 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self.querier = querier
         self.config = config
         self.app_info = app_info
-        self.handshake_info: Union[HandshakeInfo, None] = None
-
-        async def call_get_handshake_info():
-            try:
-                await self.get_handshake_info()
-            except Exception:
-                pass
-
-        try:
-            execute_async(config.mode, call_get_handshake_info)
-        except Exception:
-            pass
-
-    async def get_handshake_info(self, force_refetch: bool = False) -> HandshakeInfo:
-        if (
-            self.handshake_info is None
-            or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0
-            or force_refetch
-        ):
-            ProcessState.get_instance().add_state(
-                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
-            )
-            response = await self.querier.send_post_request(
-                NormalisedURLPath("/recipe/handshake"), {}
-            )
-            self.handshake_info = HandshakeInfo(
-                {**response, "antiCsrf": self.config.anti_csrf}
-            )
-
-            self.update_jwt_signing_public_key_info(
-                response["jwtSigningPublicKeyList"],
-                response["jwtSigningPublicKey"],
-                response["jwtSigningPublicKeyExpiryTime"],
-            )
-
-        return self.handshake_info
-
-    def update_jwt_signing_public_key_info(
-        self,
-        key_list: Union[List[Dict[str, Any]], None],
-        public_key: str,
-        expiry_time: int,
-    ):
-        if key_list is None:
-            key_list = [
-                {
-                    "publicKey": public_key,
-                    "expiryTime": expiry_time,
-                    "createdAt": get_timestamp_ms(),
-                }
-            ]
-
-        if self.handshake_info is not None:
-            self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(
         self,
-        request: BaseRequest,
         user_id: str,
-        access_token_payload: Union[None, Dict[str, Any]],
-        session_data: Union[None, Dict[str, Any]],
+        access_token_payload: Optional[Dict[str, Any]],
+        session_data_in_database: Optional[Dict[str, Any]],
+        disable_anti_csrf: Optional[bool],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         log_debug_message("createNewSession: Started")
-        output_transfer_method = self.config.get_token_transfer_method(
-            request, True, user_context
-        )
-        if output_transfer_method == "any":
-            output_transfer_method = "header"
-
-        log_debug_message(
-            "createNewSession: using transfer method %s", output_transfer_method
-        )
-
-        if (
-            (output_transfer_method == "cookie")
-            and self.config.cookie_same_site == "none"
-            and not self.config.cookie_secure
-            and not (
-                (
-                    self.app_info.top_level_api_domain == "localhost"
-                    or is_an_ip_address(self.app_info.top_level_api_domain)
-                )
-                and (
-                    self.app_info.top_level_website_domain == "localhost"
-                    or is_an_ip_address(self.app_info.top_level_website_domain)
-                )
-            )
-        ):
-            # We can allow insecure cookie when both website & API domain are localhost or an IP
-            # When either of them is a different domain, API domain needs to have https and a secure cookie to work
-            raise Exception(
-                "Since your API and website domain are different, for sessions to work, please use "
-                "https on your apiDomain and don't set cookieSecure to false."
-            )
-
-        disable_anti_csrf = output_transfer_method == "header"
 
         result = await session_functions.create_new_session(
             self,
             user_id,
-            disable_anti_csrf,
+            disable_anti_csrf is True,
             access_token_payload,
-            session_data,
+            session_data_in_database,
         )
+        log_debug_message("createNewSession: Finished")
 
-        response_mutators: List[ResponseMutator] = []
-
-        for transfer_method in available_token_transfer_methods:
-            request_access_token = get_token(request, "access", transfer_method)
-
-            if (
-                transfer_method != output_transfer_method
-                and request_access_token is not None
-            ):
-                response_mutators.append(
-                    clear_session_response_mutator(
-                        self.config,
-                        transfer_method,
-                    )
-                )
+        payload = parse_jwt_without_signature_verification(
+            result.accessToken.token
+        ).payload
 
         new_session = Session(
             self,
             self.config,
-            result["accessToken"]["token"],
-            result["session"]["handle"],
-            result["session"]["userId"],
-            result["session"]["userDataInJWT"],
-            output_transfer_method,
+            result.accessToken.token,
+            build_front_token(
+                result.session.userId, result.accessToken.expiry, payload
+            ),
+            result.refreshToken,
+            result.antiCsrfToken,
+            result.session.handle,
+            result.session.userId,
+            payload,
+            None,
+            True,
         )
 
-        new_access_token_info: Dict[str, Any] = result["accessToken"]
-        new_refresh_token_info: Dict[str, Any] = result["refreshToken"]
-        anti_csrf_token: Optional[str] = result.get("antiCsrfToken")
-
-        response_mutators.append(
-            front_token_response_mutator(
-                new_session.user_id,
-                new_access_token_info["expiry"],
-                new_session.access_token_payload,
-            )
-        )
-        response_mutators.append(
-            token_response_mutator(
-                self.config,
-                "access",
-                new_access_token_info["token"],
-                int(datetime.now().timestamp()) + 3153600000000,
-                new_session.transfer_method,
-            )
-        )
-        response_mutators.append(
-            token_response_mutator(
-                self.config,
-                "refresh",
-                new_refresh_token_info["token"],
-                new_refresh_token_info["expiry"],
-                new_session.transfer_method,
-            )
-        )
-        if anti_csrf_token is not None:
-            response_mutators.append(anti_csrf_response_mutator(anti_csrf_token))
-
-        new_session.response_mutators.extend(response_mutators)
-
-        request.set_session(new_session)
         return new_session
 
     async def validate_claims(
@@ -332,327 +156,160 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         return ClaimsValidationResult(invalid_claims)
 
-    # In all cases if sIdRefreshToken token exists (so it's a legacy session) we return TRY_REFRESH_TOKEN. The refresh
-    # endpoint will clear this cookie and try to upgrade the session.
-    # Check https://supertokens.com/docs/contribute/decisions/session/0007 for further details and a table of expected
-    # behaviours
     async def get_session(
         self,
-        request: BaseRequest,
-        anti_csrf_check: Union[bool, None],
-        session_required: bool,
-        user_context: Dict[str, Any],
+        access_token: Optional[str],
+        anti_csrf_token: Optional[str] = None,
+        anti_csrf_check: Optional[bool] = None,
+        session_required: Optional[bool] = None,
+        check_database: Optional[bool] = None,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> Optional[SessionContainer]:
-        log_debug_message("getSession: Started")
-
-        # This token isn't handled by getToken to limit the scope of this legacy/migration code
-        if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-            # This could create a spike on refresh calls during the update of the backend SDK
-            return raise_try_refresh_token_exception(
-                "using legacy session, please call the refresh API"
+        if (
+            anti_csrf_check is not False
+            and self.config.anti_csrf == "VIA_CUSTOM_HEADER"
+        ):
+            raise Exception(
+                "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set anti_csrf_check to false"
             )
 
-        session_optional = not session_required
-        log_debug_message("getSession: optional validation: %s", session_optional)
+        log_debug_message("getSession: Started")
 
-        access_tokens: Dict[TokenTransferMethod, ParsedJWTInfo] = {}
-
-        # We check all token transfer methods for available access tokens
-        for transfer_method in available_token_transfer_methods:
-            token_string = get_token(request, "access", transfer_method)
-
-            if token_string is not None:
-                try:
-                    info = parse_jwt_without_signature_verification(token_string)
-                    validate_access_token_structure(info.payload)
-                    log_debug_message(
-                        "getSession: got access token from %s", transfer_method
-                    )
-                    access_tokens[transfer_method] = info
-                except Exception:
-                    log_debug_message(
-                        "getSession: ignoring token in %s, because it doesn't match our access token structure",
-                        transfer_method,
-                    )
-
-        allowed_transfer_method = self.config.get_token_transfer_method(
-            request, False, user_context
-        )
-        request_transfer_method: TokenTransferMethod
-        request_access_token: Union[ParsedJWTInfo, None]
-
-        if (allowed_transfer_method in ("any", "header")) and access_tokens.get(
-            "header"
-        ) is not None:
-            log_debug_message("getSession: using header transfer method")
-            request_transfer_method = "header"
-            request_access_token = access_tokens["header"]
-        elif (allowed_transfer_method in ("any", "cookie")) and access_tokens.get(
-            "cookie"
-        ) is not None:
-            log_debug_message("getSession: using cookie transfer method")
-            request_transfer_method = "cookie"
-            request_access_token = access_tokens["cookie"]
-        else:
-            if session_optional:
+        if access_token is None:
+            if session_required is False:
                 log_debug_message(
-                    "getSession: returning None because accessToken is undefined and sessionRequired is false"
+                    "getSession: returning None because access_token is undefined and session_required is False"
                 )
-                # there is no session that exists here, and the user wants session verification
-                # to be optional. So we return None
+                # there is no session that exists here, and the user wants session verification to be optional. So we return None
                 return None
 
             log_debug_message(
-                "getSession: UNAUTHORISED because access_token in request is None"
+                "getSession: UNAUTHORISED because accessToken in request is undefined"
             )
-            # we do not clear the session here because of a race condition mentioned in:
-            # https://github.com/supertokens/supertokens-node/issues/17
-            raise_unauthorised_exception(
-                "Session does not exist. Are you sending the session tokens in the "
-                "request with the appropriate token transfer method?",
+            # we do not clear the session here because of a race condition mentioned in https://github.com/supertokens/supertokens-node/issues/17
+            raise UnauthorisedError(
+                "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
                 clear_tokens=False,
             )
 
-        anti_csrf_token = get_anti_csrf_header(request)
-        do_anti_csrf_check = anti_csrf_check
+        access_token_obj: Optional[ParsedJWTInfo] = None
+        try:
+            access_token_obj = parse_jwt_without_signature_verification(access_token)
+            validate_access_token_structure(
+                access_token_obj.payload, access_token_obj.version
+            )
+        except Exception as _:
+            if session_required is False:
+                log_debug_message(
+                    "getSession: Returning undefined because parsing failed and session_required is False"
+                )
+                return None
 
-        if do_anti_csrf_check is None:
-            do_anti_csrf_check = normalise_http_method(request.method()) != "get"
-        if request_transfer_method == "header":
-            do_anti_csrf_check = False
-        log_debug_message(
-            "getSession: Value of doAntiCsrfCheck is: %s", do_anti_csrf_check
-        )
+            log_debug_message(
+                "getSession: UNAUTHORISED because the accessToken couldn't be parsed or had an invalid structure"
+            )
+            raise UnauthorisedError("Token parsing failed", clear_tokens=False)
 
-        result = await session_functions.get_session(
+        response = await session_functions.get_session(
             self,
-            request_access_token,
+            access_token_obj,
             anti_csrf_token,
-            do_anti_csrf_check,
-            get_rid_header(request) is not None,
+            (anti_csrf_check is not False),
+            (check_database is True),
         )
 
-        # Default is to respond with the access token obtained from the request
-        access_token_string = request_access_token.raw_token_string
+        log_debug_message("getSession: Success!")
+
+        if access_token_obj.version >= 3:
+            if response.accessToken is not None:
+                payload = parse_jwt_without_signature_verification(
+                    response.accessToken.token
+                ).payload
+            else:
+                payload = access_token_obj.payload
+        else:
+            payload = response.session.userDataInJWT
+
+        if response.accessToken is not None:
+            access_token_str = response.accessToken.token
+            expiry_time = response.accessToken.expiry
+            access_token_updated = True
+        else:
+            access_token_str = access_token
+            expiry_time = response.session.expiryTime
+            access_token_updated = False
 
         session = Session(
             self,
             self.config,
-            access_token_string,
-            result["session"]["handle"],
-            result["session"]["userId"],
-            result["session"]["userDataInJWT"],
-            request_transfer_method,
+            access_token_str,
+            build_front_token(response.session.userId, expiry_time, payload),
+            None,  # refresh_token
+            anti_csrf_token,
+            response.session.handle,
+            response.session.userId,
+            payload,
+            None,
+            access_token_updated,
         )
 
-        if "accessToken" in result:
-            session.access_token = result["accessToken"]["token"]
-            new_access_token_info = result["accessToken"]
-
-            session.response_mutators.append(
-                front_token_response_mutator(
-                    session.user_id,
-                    new_access_token_info["expiry"],
-                    session.access_token_payload,
-                )
-            )
-            session.response_mutators.append(
-                token_response_mutator(
-                    self.config,
-                    "access",
-                    session.access_token,
-                    int(datetime.now().timestamp()) + 3153600000000,
-                    session.transfer_method,
-                )
-            )
-
-        log_debug_message("getSession: Success!")
-        request.set_session(session)
         return session
 
-    # In all cases: if sIdRefreshToken token exists (it's a legacy session) we clear it
-    # Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and
-    # a table of expected behaviours
     async def refresh_session(
-        self, request: BaseRequest, user_context: Dict[str, Any]
+        self,
+        refresh_token: str,
+        anti_csrf_token: Optional[str],
+        disable_anti_csrf: bool,
+        user_context: Dict[str, Any],
     ) -> SessionContainer:
+        if (
+            disable_anti_csrf is not True
+            and self.config.anti_csrf == "VIA_CUSTOM_HEADER"
+        ):
+            raise Exception(
+                "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
+            )
+
         log_debug_message("refreshSession: Started")
 
-        response_mutators: List[Callable[[Any], None]] = []
-        refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
-
-        # We check all token transfer methods for available refresh tokens
-        # We do this so that we can later clear all we are not overwriting
-        for transfer_method in available_token_transfer_methods:
-            refresh_token = get_token(
-                request,
-                "refresh",
-                transfer_method,
-            )
-            if refresh_token is not None:
-                log_debug_message(
-                    "refreshSession: got refresh token from %s", transfer_method
-                )
-
-            refresh_tokens[transfer_method] = refresh_token
-
-        allowed_transfer_method = self.config.get_token_transfer_method(
-            request, False, user_context
-        )
-        log_debug_message(
-            "refreshSession: getTokenTransferMethod returned: %s",
-            allowed_transfer_method,
+        response = await session_functions.refresh_session(
+            self,
+            refresh_token,
+            anti_csrf_token,
+            disable_anti_csrf,
         )
 
-        request_transfer_method: TokenTransferMethod
-        refresh_token: Optional[str]
+        log_debug_message("refreshSession: Success!")
 
-        if (allowed_transfer_method in ("any", "header")) and (
-            refresh_tokens.get("header")
-        ):
-            log_debug_message("refreshSession: using header transfer method")
-            request_transfer_method = "header"
-            refresh_token = refresh_tokens["header"]
-        elif (allowed_transfer_method in ("any", "cookie")) and (
-            refresh_tokens.get("cookie")
-        ):
-            log_debug_message("refreshSession: using cookie transfer method")
-            request_transfer_method = "cookie"
-            refresh_token = refresh_tokens["cookie"]
-        else:
-            # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
-            if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-                log_debug_message(
-                    "refreshSession: cleared legacy id refresh token because refresh token was not found"
-                )
-                response_mutators.append(
-                    set_cookie_response_mutator(
-                        self.config,
-                        LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                        "",
-                        0,
-                        "access_token_path",
-                    )
-                )
+        payload = parse_jwt_without_signature_verification(
+            response.accessToken.token,
+        ).payload
 
-            log_debug_message(
-                "refreshSession: UNAUTHORISED because refresh_token in request is None"
-            )
-            return raise_unauthorised_exception(
-                "Refresh token not found. Are you sending the refresh token in the request?",
-                clear_tokens=False,
-            )
+        session = Session(
+            self,
+            self.config,
+            response.accessToken.token,
+            build_front_token(
+                response.session.userId,
+                response.accessToken.expiry,
+                payload,
+            ),
+            response.refreshToken,
+            response.antiCsrfToken,
+            response.session.handle,
+            response.session.userId,
+            user_data_in_access_token=payload,
+            req_res_info=None,
+            access_token_updated=True,
+        )
 
-        assert refresh_token is not None
-
-        try:
-            anti_csrf_token = get_anti_csrf_header(request)
-            result = await session_functions.refresh_session(
-                self,
-                refresh_token,
-                anti_csrf_token,
-                get_rid_header(request) is not None,
-                request_transfer_method,
-            )
-            log_debug_message(
-                "refreshSession: Attaching refresh session info as %s",
-                request_transfer_method,
-            )
-
-            for transfer_method in available_token_transfer_methods:
-                if (
-                    transfer_method != request_transfer_method
-                    and refresh_tokens.get(transfer_method) is not None
-                ):
-                    response_mutators.append(
-                        clear_session_response_mutator(self.config, transfer_method)
-                    )
-
-            if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-                log_debug_message(
-                    "refreshSession: cleared legacy id refresh token after successful refresh"
-                )
-                response_mutators.append(
-                    set_cookie_response_mutator(
-                        self.config,
-                        LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                        "",
-                        0,
-                        "access_token_path",
-                    )
-                )
-
-            session = Session(
-                self,
-                self.config,
-                result["accessToken"]["token"],
-                result["session"]["handle"],
-                result["session"]["userId"],
-                result["session"]["userDataInJWT"],
-                request_transfer_method,
-            )
-            new_access_token_info = result["accessToken"]
-            new_refresh_token_info = result["refreshToken"]
-            new_anti_csrf_token = result.get("antiCsrfToken")
-
-            if new_access_token_info is not None:
-                response_mutators.append(
-                    front_token_response_mutator(
-                        session.user_id,
-                        new_access_token_info["expiry"],
-                        session.access_token_payload,
-                    )
-                )
-                response_mutators.append(
-                    token_response_mutator(
-                        self.config,
-                        "access",
-                        new_access_token_info["token"],
-                        int(datetime.now().timestamp()) + 3153600000000,
-                        session.transfer_method,
-                    )
-                )
-            if new_refresh_token_info is not None:
-                response_mutators.append(
-                    token_response_mutator(
-                        self.config,
-                        "refresh",
-                        new_refresh_token_info["token"],
-                        new_refresh_token_info["expiry"],
-                        session.transfer_method,
-                    )
-                )
-
-            anti_csrf_token = new_anti_csrf_token
-            if anti_csrf_token is not None:
-                response_mutators.append(anti_csrf_response_mutator(anti_csrf_token))
-
-            session.response_mutators.extend(response_mutators)
-
-            log_debug_message("refreshSession: Success!")
-            request.set_session(session)
-            return session
-        except (TokenTheftError, UnauthorisedError) as e:
-            if (
-                isinstance(e, UnauthorisedError) and e.clear_tokens is True
-            ) or isinstance(e, TokenTheftError):
-                # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
-                if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-                    log_debug_message(
-                        "refreshSession: cleared legacy id refresh token because refresh token was not found"
-                    )
-                    response_mutators.append(
-                        set_cookie_response_mutator(
-                            self.config,
-                            LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                            "",
-                            0,
-                            "access_token_path",
-                        )
-                    )
-                    e.response_mutators.extend(response_mutators)
-
-            raise e
+        return session
 
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]
@@ -679,32 +336,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     ) -> Union[SessionInformationResult, None]:
         return await session_functions.get_session_information(self, session_handle)
 
-    async def update_session_data(
+    async def update_session_data_in_database(
         self,
         session_handle: str,
         new_session_data: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        return await session_functions.update_session_data(
+        return await session_functions.update_session_data_in_database(
             self, session_handle, new_session_data
         )
-
-    async def update_access_token_payload(
-        self,
-        session_handle: str,
-        new_access_token_payload: Dict[str, Any],
-        user_context: Dict[str, Any],
-    ) -> bool:
-
-        return await session_functions.update_access_token_payload(
-            self, session_handle, new_access_token_payload
-        )
-
-    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        return (await self.get_handshake_info()).access_token_validity
-
-    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
-        return (await self.get_handshake_info()).refresh_token_validity
 
     async def merge_into_access_token_payload(
         self,
@@ -717,15 +357,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             return False
 
         new_access_token_payload = {
-            **session_info.access_token_payload,
+            **session_info.custom_claims_in_access_token_payload,
             **access_token_payload_update,
         }
         for k in access_token_payload_update.keys():
             if new_access_token_payload[k] is None:
                 del new_access_token_payload[k]
 
-        return await self.update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
+        return await session_functions.update_access_token_payload(
+            self, session_handle, new_access_token_payload
         )
 
     async def fetch_and_set_claim(
@@ -769,7 +409,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         return GetClaimValueOkResult(
             value=claim.get_value_from_payload(
-                session_info.access_token_payload, user_context
+                session_info.custom_claims_in_access_token_payload, user_context
             )
         )
 

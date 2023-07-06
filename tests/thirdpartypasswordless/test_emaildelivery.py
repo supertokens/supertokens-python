@@ -21,6 +21,7 @@ from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -33,13 +34,23 @@ from supertokens_python.ingredients.emaildelivery.types import (
 )
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import (
+    emailverification,
     passwordless,
     session,
     thirdpartypasswordless,
-    emailverification,
+)
+from supertokens_python.recipe.emailverification.asyncio import (
+    create_email_verification_token,
+)
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
+    SMTPService as EVSMTPService,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenOkResult,
+)
+from supertokens_python.recipe.emailverification.types import User as EVUser
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
 )
 from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
 from supertokens_python.recipe.passwordless.types import (
@@ -50,9 +61,18 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
+<<<<<<< HEAD
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
 )
+||||||| 37d58eb3
+from supertokens_python.recipe.emailverification.asyncio import (
+    create_email_verification_token,
+)
+from supertokens_python.recipe.thirdparty.providers import Github
+=======
+from supertokens_python.recipe.thirdparty.providers import Github
+>>>>>>> 0.14
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     passwordlessSigninup,
     thirdparty_manually_create_or_update_user,
@@ -60,19 +80,10 @@ from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import (
     SMTPService,
 )
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
-    SMTPService as EVSMTPService,
-)
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
     ThirdPartyManuallyCreateOrUpdateUserOkResult,
 )
-from supertokens_python.recipe.thirdpartypasswordless.types import (
-    EmailTemplateVars,
-)
-from supertokens_python.recipe.emailverification.types import (
-    User as EVUser,
-    VerificationEmailTemplateVars,
-)
+from supertokens_python.recipe.thirdpartypasswordless.types import EmailTemplateVars
 from supertokens_python.utils import is_version_gte
 from tests.utils import (
     clean_st,
@@ -181,8 +192,8 @@ async def test_email_verify_default_backward_compatibility(
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response["accessToken"]["token"],
-            response.get("antiCsrf", ""),
+            response.accessToken.token,
+            response.antiCsrfToken,
             user_id,
             True,
         )
@@ -256,8 +267,8 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
 
     resp = email_verify_token_request(
         driver_config_client,
-        response["accessToken"]["token"],
-        response.get("antiCsrf", ""),
+        response.accessToken.token,
+        response.antiCsrfToken,
         user_id,
         True,
     )
@@ -356,8 +367,8 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response["accessToken"]["token"],
-            response.get("antiCsrf", ""),
+            response.accessToken.token,
+            response.antiCsrfToken,
             user_id,
             True,
         )
@@ -493,8 +504,8 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
 
     resp = email_verify_token_request(
         driver_config_client,
-        response["accessToken"]["token"],
-        response.get("antiCsrf", ""),
+        response.accessToken.token,
+        response.antiCsrfToken,
         user_id,
         True,
     )

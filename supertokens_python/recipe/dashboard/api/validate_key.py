@@ -22,25 +22,19 @@ if TYPE_CHECKING:
     )
 
 from supertokens_python.utils import (
-    default_user_context,
     send_200_response,
     send_non_200_response_with_message,
 )
 
+from ..utils import validate_api_key
+
 
 async def handle_validate_key_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    _api_implementation: APIInterface, api_options: APIOptions
 ):
-    _ = api_implementation
 
-    should_allow_accesss = await api_options.recipe_implementation.should_allow_access(
-        api_options.request,
-        api_options.config,
-        default_user_context(api_options.request),
-    )
-    if should_allow_accesss is False:
-        return send_non_200_response_with_message(
-            "Unauthorized access", 401, api_options.response
-        )
+    is_valid_key = validate_api_key(api_options.request, api_options.config)
 
-    return send_200_response({"status": "OK"}, api_options.response)
+    if is_valid_key:
+        return send_200_response({"status": "OK"}, api_options.response)
+    return send_non_200_response_with_message("Unauthorised", 401, api_options.response)

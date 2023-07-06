@@ -23,6 +23,8 @@ async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
     user_context = default_user_context(api_options.request)
 
     result = await api_implementation.jwks_get(api_options, user_context)
+
     if isinstance(result, JWKSGetResponse):
         api_options.response.set_header("Access-Control-Allow-Origin", "*")
+
     return send_200_response(result.to_json(), api_options.response)

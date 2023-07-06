@@ -23,9 +23,27 @@ from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
 SignInAndUpFeature = utils.SignInAndUpFeature
+<<<<<<< HEAD
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
+||||||| 37d58eb3
+Apple = providers.Apple
+Discord = providers.Discord
+Facebook = providers.Facebook
+Github = providers.Github
+Google = providers.Google
+GoogleWorkspaces = providers.GoogleWorkspaces
+=======
+Apple = providers.Apple
+Discord = providers.Discord
+Facebook = providers.Facebook
+Github = providers.Github
+Google = providers.Google
+GoogleWorkspaces = providers.GoogleWorkspaces
+Bitbucket = providers.Bitbucket
+GitLab = providers.GitLab
+>>>>>>> 0.14
 exceptions = ex
 
 if TYPE_CHECKING:

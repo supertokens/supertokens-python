@@ -40,7 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.jwt.interfaces import (
@@ -67,7 +67,8 @@ class RecipeInterface(ABC):
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
@@ -283,7 +284,8 @@ inheritance.</p></div>
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
@@ -309,7 +311,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.interfaces.RecipeInterface.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[int], use_static_signing_key: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -321,7 +323,8 @@ inheritance.</p></div>
 async def create_jwt(
     self,
     payload: Dict[str, Any],
-    validity_seconds: Union[int, None],
+    validity_seconds: Optional[int],
+    use_static_signing_key: Optional[bool],
     user_context: Dict[str, Any],
 ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     pass</code></pre>

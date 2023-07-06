@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.types import APIResponse, GeneralErrorResponse
@@ -52,7 +52,8 @@ class RecipeInterface(ABC):
     async def create_jwt(
         self,
         payload: Dict[str, Any],
-        validity_seconds: Union[int, None],
+        validity_seconds: Optional[int],
+        use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
@@ -79,8 +80,6 @@ class APIOptions:
 
 
 class JWKSGetResponse(APIResponse):
-    status: str = "OK"
-
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
@@ -98,7 +97,7 @@ class JWKSGetResponse(APIResponse):
                 }
             )
 
-        return {"status": self.status, "keys": keys}
+        return {"keys": keys}
 
 
 class APIInterface:

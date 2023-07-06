@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.recipe.session.with_jwt.utills API documentation</title>
+<title>supertokens_python.recipe.dashboard.api.search.getTags API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe.session.with_jwt.utills</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.dashboard.api.search.getTags</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,71 +39,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from typing import Any, Dict
-from supertokens_python.recipe.jwt.interfaces import CreateJwtResultUnsupportedAlgorithm
+from typing import TYPE_CHECKING
 
-from supertokens_python.recipe.openid.interfaces import RecipeInterface
+if TYPE_CHECKING:
+    from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 
-from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+from supertokens_python.recipe.dashboard.interfaces import SearchTagsOK
 
 
-async def add_jwt_to_access_token_payload(
-    access_token_payload: Dict[str, Any],
-    jwt_expiry: int,
-    user_id: str,
-    jwt_property_name: str,
-    openid_recipe_implementation: RecipeInterface,
-    user_context: Dict[str, Any],
-):
-    if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY in access_token_payload:
-        # If jwtPropertyName is not undefined it means that the JWT was added
-        # to the access token payload already
-        existing_jwt_property_name = access_token_payload[
-            ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-        ]
-
-        # Delete the old JWT and the old property name
-        if existing_jwt_property_name in access_token_payload:
-            del access_token_payload[existing_jwt_property_name]
-        del access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
-
-    # Create the JWT
-    jwt_response = await openid_recipe_implementation.create_jwt(
-        {
-            # We add our claims before the user provided ones so that if they use the same claims
-            # then the final payload will use the values they provide
-            &#34;sub&#34;: user_id,
-            **access_token_payload,
-        },
-        jwt_expiry,
-        user_context,
+async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
+    response = await Querier.get_instance().send_get_request(
+        NormalisedURLPath(&#34;/user/search/tags&#34;)
     )
-
-    if isinstance(jwt_response, CreateJwtResultUnsupportedAlgorithm):
-        # Should never come here
-        raise Exception(&#34;JWT Signing algorithm not supported&#34;)
-
-    # Add the jwt and the property name to the access token payload
-    # We add the JWT after the user defined keys because we want to make sure that it never
-    # gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
-    # for the JWT should be considered a dev error
-    #
-    # ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY indicates a reserved key used to determine the property name
-    # with which the JWT is set, used to retrieve the JWT from the access token payload during refresh and
-    # updateAccessTokenPayload
-    #
-    # Note: If the user has multiple overrides each with a unique propertyNameInAccessTokenPayload, the logic for
-    # checking the existing JWT when refreshing the session or updating the access token payload will not work.
-    # This is because even though the jwt itself would be created with unique property names, the _jwtPName value
-    # would always be overwritten by the override that runs last and when retrieving the jwt using that key name
-    # it cannot be guaranteed that the right JWT is returned. This case is considered to be a rare requirement
-    # and we assume that users will not need multiple JWT representations of
-    # their access token payload.
-    access_token_payload[jwt_property_name] = jwt_response.jwt
-    access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] = jwt_property_name
-
-    return access_token_payload</code></pre>
+    return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>
 </section>
 <section>
@@ -113,8 +65,8 @@ async def add_jwt_to_access_token_payload(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.session.with_jwt.utills.add_jwt_to_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">add_jwt_to_access_token_payload</span></span>(<span>access_token_payload: Dict[str, Any], jwt_expiry: int, user_id: str, jwt_property_name: str, openid_recipe_implementation: <a title="supertokens_python.recipe.openid.interfaces.RecipeInterface" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.RecipeInterface">RecipeInterface</a>, user_context: Dict[str, Any])</span>
+<dt id="supertokens_python.recipe.dashboard.api.search.getTags.handle_get_tags"><code class="name flex">
+<span>async def <span class="ident">handle_get_tags</span></span>(<span>_: APIInterface, __: APIOptions) ‑> SearchTagsOK</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -122,62 +74,11 @@ async def add_jwt_to_access_token_payload(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def add_jwt_to_access_token_payload(
-    access_token_payload: Dict[str, Any],
-    jwt_expiry: int,
-    user_id: str,
-    jwt_property_name: str,
-    openid_recipe_implementation: RecipeInterface,
-    user_context: Dict[str, Any],
-):
-    if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY in access_token_payload:
-        # If jwtPropertyName is not undefined it means that the JWT was added
-        # to the access token payload already
-        existing_jwt_property_name = access_token_payload[
-            ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-        ]
-
-        # Delete the old JWT and the old property name
-        if existing_jwt_property_name in access_token_payload:
-            del access_token_payload[existing_jwt_property_name]
-        del access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
-
-    # Create the JWT
-    jwt_response = await openid_recipe_implementation.create_jwt(
-        {
-            # We add our claims before the user provided ones so that if they use the same claims
-            # then the final payload will use the values they provide
-            &#34;sub&#34;: user_id,
-            **access_token_payload,
-        },
-        jwt_expiry,
-        user_context,
+<pre><code class="python">async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
+    response = await Querier.get_instance().send_get_request(
+        NormalisedURLPath(&#34;/user/search/tags&#34;)
     )
-
-    if isinstance(jwt_response, CreateJwtResultUnsupportedAlgorithm):
-        # Should never come here
-        raise Exception(&#34;JWT Signing algorithm not supported&#34;)
-
-    # Add the jwt and the property name to the access token payload
-    # We add the JWT after the user defined keys because we want to make sure that it never
-    # gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
-    # for the JWT should be considered a dev error
-    #
-    # ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY indicates a reserved key used to determine the property name
-    # with which the JWT is set, used to retrieve the JWT from the access token payload during refresh and
-    # updateAccessTokenPayload
-    #
-    # Note: If the user has multiple overrides each with a unique propertyNameInAccessTokenPayload, the logic for
-    # checking the existing JWT when refreshing the session or updating the access token payload will not work.
-    # This is because even though the jwt itself would be created with unique property names, the _jwtPName value
-    # would always be overwritten by the override that runs last and when retrieving the jwt using that key name
-    # it cannot be guaranteed that the right JWT is returned. This case is considered to be a rare requirement
-    # and we assume that users will not need multiple JWT representations of
-    # their access token payload.
-    access_token_payload[jwt_property_name] = jwt_response.jwt
-    access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] = jwt_property_name
-
-    return access_token_payload</code></pre>
+    return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>
 </dd>
 </dl>
@@ -193,12 +94,12 @@ async def add_jwt_to_access_token_payload(
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python.recipe.session.with_jwt" href="index.html">supertokens_python.recipe.session.with_jwt</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.search" href="index.html">supertokens_python.recipe.dashboard.api.search</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.with_jwt.utills.add_jwt_to_access_token_payload" href="#supertokens_python.recipe.session.with_jwt.utills.add_jwt_to_access_token_payload">add_jwt_to_access_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.search.getTags.handle_get_tags" href="#supertokens_python.recipe.dashboard.api.search.getTags.handle_get_tags">handle_get_tags</a></code></li>
 </ul>
 </li>
 </ul>

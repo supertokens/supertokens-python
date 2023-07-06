@@ -66,6 +66,7 @@ from supertokens_python.recipe.thirdparty.utils import SignInAndUpFeature
 
 from ..emailpassword.interfaces import APIInterface as EmailPasswordAPIInterface
 from ..emailpassword.interfaces import RecipeInterface as EmailPasswordRecipeInterface
+from ..emailpassword.utils import EmailPasswordConfig
 from ..thirdparty.interfaces import APIInterface as ThirdPartyAPIInterface
 from ..thirdparty.interfaces import RecipeInterface as ThirdPartyRecipeInterface
 from .exceptions import SupertokensThirdPartyEmailPasswordError
@@ -103,10 +104,18 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             email_delivery,
         )
 
+        def get_emailpassword_config() -> EmailPasswordConfig:
+            return self.email_password_recipe.config
+
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(EmailPasswordRecipe.recipe_id),
             Querier.get_instance(ThirdPartyRecipe.recipe_id),
+<<<<<<< HEAD
             self.config.providers,
+||||||| 37d58eb3
+=======
+            get_emailpassword_config,
+>>>>>>> 0.14
         )
         self.recipe_implementation: RecipeInterface = (
             recipe_implementation

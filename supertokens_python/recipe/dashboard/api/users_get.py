@@ -55,6 +55,7 @@ async def handle_users_get_api(
         time_joined_order=time_joined_order,  # type: ignore
         pagination_token=pagination_token,
         include_recipe_ids=None,
+        query=api_options.request.get_query_params(),
     )
 
     # user metadata bulk fetch with batches:

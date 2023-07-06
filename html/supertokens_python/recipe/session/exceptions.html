@@ -56,15 +56,27 @@ def raise_token_theft_exception(user_id: str, session_handle: str) -&gt; NoRetur
 def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
     if isinstance(ex, SuperTokensError):
         raise ex
+
     raise TryRefreshTokenError(ex) from None
 
 
-def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -&gt; NoReturn:
-    raise UnauthorisedError(msg, clear_tokens) from None
+def raise_unauthorised_exception(
+    msg: str,
+    clear_tokens: bool = True,
+    response_mutators: Optional[List[ResponseMutator]] = None,
+) -&gt; NoReturn:
+    err = UnauthorisedError(msg, clear_tokens)
+
+    if response_mutators is not None:
+        err.response_mutators.extend(response_mutators)
+
+    raise err
 
 
 class SuperTokensSessionError(SuperTokensError):
-    response_mutators: List[ResponseMutator] = []
+    def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
+        super().__init__(*args, **kwargs)
+        self.response_mutators: List[ResponseMutator] = []
 
 
 class TokenTheftError(SuperTokensSessionError):
@@ -152,11 +164,12 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <pre><code class="python">def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
     if isinstance(ex, SuperTokensError):
         raise ex
+
     raise TryRefreshTokenError(ex) from None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_unauthorised_exception"><code class="name flex">
-<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True) ‑> NoReturn</span>
+<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True, response_mutators: Optional[List[ResponseMutator]] = None) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,8 +177,17 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -&gt; NoReturn:
-    raise UnauthorisedError(msg, clear_tokens) from None</code></pre>
+<pre><code class="python">def raise_unauthorised_exception(
+    msg: str,
+    clear_tokens: bool = True,
+    response_mutators: Optional[List[ResponseMutator]] = None,
+) -&gt; NoReturn:
+    err = UnauthorisedError(msg, clear_tokens)
+
+    if response_mutators is not None:
+        err.response_mutators.extend(response_mutators)
+
+    raise err</code></pre>
 </details>
 </dd>
 </dl>
@@ -238,17 +260,10 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.exceptions.InvalidClaimsError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.SuperTokensSessionError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensSessionError</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>*args: Any, **kwargs: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
@@ -257,7 +272,9 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SuperTokensSessionError(SuperTokensError):
-    response_mutators: List[ResponseMutator] = []</code></pre>
+    def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
+        super().__init__(*args, **kwargs)
+        self.response_mutators: List[ResponseMutator] = []</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -272,13 +289,6 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li><a title="supertokens_python.recipe.session.exceptions.TryRefreshTokenError" href="#supertokens_python.recipe.session.exceptions.TryRefreshTokenError">TryRefreshTokenError</a></li>
 <li><a title="supertokens_python.recipe.session.exceptions.UnauthorisedError" href="#supertokens_python.recipe.session.exceptions.UnauthorisedError">UnauthorisedError</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.exceptions.SuperTokensSessionError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.TokenTheftError"><code class="flex name class">
 <span>class <span class="ident">TokenTheftError</span></span>
@@ -303,17 +313,10 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.exceptions.TokenTheftError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.TryRefreshTokenError"><code class="flex name class">
 <span>class <span class="ident">TryRefreshTokenError</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>*args: Any, **kwargs: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
@@ -331,13 +334,6 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.exceptions.TryRefreshTokenError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.UnauthorisedError"><code class="flex name class">
 <span>class <span class="ident">UnauthorisedError</span></span>
@@ -361,13 +357,6 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.exceptions.UnauthorisedError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </dd>
 </dl>
 </section>
@@ -401,33 +390,18 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.InvalidClaimsError" href="#supertokens_python.recipe.session.exceptions.InvalidClaimsError">InvalidClaimsError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.session.exceptions.InvalidClaimsError.response_mutators" href="#supertokens_python.recipe.session.exceptions.InvalidClaimsError.response_mutators">response_mutators</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.SuperTokensSessionError" href="#supertokens_python.recipe.session.exceptions.SuperTokensSessionError">SuperTokensSessionError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.session.exceptions.SuperTokensSessionError.response_mutators" href="#supertokens_python.recipe.session.exceptions.SuperTokensSessionError.response_mutators">response_mutators</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.TokenTheftError" href="#supertokens_python.recipe.session.exceptions.TokenTheftError">TokenTheftError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.session.exceptions.TokenTheftError.response_mutators" href="#supertokens_python.recipe.session.exceptions.TokenTheftError.response_mutators">response_mutators</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.TryRefreshTokenError" href="#supertokens_python.recipe.session.exceptions.TryRefreshTokenError">TryRefreshTokenError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.session.exceptions.TryRefreshTokenError.response_mutators" href="#supertokens_python.recipe.session.exceptions.TryRefreshTokenError.response_mutators">response_mutators</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.UnauthorisedError" href="#supertokens_python.recipe.session.exceptions.UnauthorisedError">UnauthorisedError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.session.exceptions.UnauthorisedError.response_mutators" href="#supertokens_python.recipe.session.exceptions.UnauthorisedError.response_mutators">response_mutators</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

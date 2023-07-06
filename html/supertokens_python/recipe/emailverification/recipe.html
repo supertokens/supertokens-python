@@ -383,6 +383,9 @@ class APIImplementation(APIInterface):
                 except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == &#34;UNKNOWN_USER_ID&#34;:
+                        log_debug_message(
+                            &#34;verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
+                        )
                         raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
                     else:
                         raise e
@@ -402,6 +405,9 @@ class APIImplementation(APIInterface):
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
             if str(e) == &#34;UNKNOWN_USER_ID&#34;:
+                log_debug_message(
+                    &#34;isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown&#34;
+                )
                 raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
             else:
                 raise e
@@ -483,6 +489,9 @@ class APIImplementation(APIInterface):
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
+        log_debug_message(
+            &#34;generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
+        )
         raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
 
 
@@ -568,6 +577,9 @@ inheritance.</p></div>
                 except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == &#34;UNKNOWN_USER_ID&#34;:
+                        log_debug_message(
+                            &#34;verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
+                        )
                         raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
                     else:
                         raise e
@@ -587,6 +599,9 @@ inheritance.</p></div>
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
             if str(e) == &#34;UNKNOWN_USER_ID&#34;:
+                log_debug_message(
+                    &#34;isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown&#34;
+                )
                 raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
             else:
                 raise e
@@ -668,6 +683,9 @@ inheritance.</p></div>
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
+        log_debug_message(
+            &#34;generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
+        )
         raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -706,6 +724,9 @@ inheritance.</p></div>
             except Exception as e:
                 # This should never happen since we have just set the status above
                 if str(e) == &#34;UNKNOWN_USER_ID&#34;:
+                    log_debug_message(
+                        &#34;verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
+                    )
                     raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
                 else:
                     raise e
@@ -789,6 +810,9 @@ inheritance.</p></div>
         )
         return GenerateEmailVerifyTokenPostOkResult()
 
+    log_debug_message(
+        &#34;generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
+    )
     raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)</code></pre>
 </details>
 </dd>
@@ -813,6 +837,9 @@ inheritance.</p></div>
         await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
     except Exception as e:
         if str(e) == &#34;UNKNOWN_USER_ID&#34;:
+            log_debug_message(
+                &#34;isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown&#34;
+            )
             raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
         else:
             raise e

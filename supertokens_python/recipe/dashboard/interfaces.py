@@ -19,21 +19,22 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
 from supertokens_python.types import User
 
-from ...supertokens import AppInfo
 from ...types import APIResponse
-from .utils import DashboardConfig, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+
+    from ...supertokens import AppInfo
+    from .utils import DashboardConfig, UserWithMetadata
 
 
 class SessionInfo:
     def __init__(self, info: SessionInformationResult) -> None:
         self.session_handle = info.session_handle
         self.user_id = info.user_id
-        self.session_data = info.session_data
+        self.session_data_in_database = info.session_data_in_database
         self.expiry = info.expiry
-        self.access_token_payload = info.access_token_payload
+        self.access_token_payload = info.custom_claims_in_access_token_payload
         self.time_created = info.time_created
 
 
@@ -164,7 +165,7 @@ class UserSessionsGetAPIResponse(APIResponse):
             {
                 "accessTokenPayload": s.access_token_payload,
                 "expiry": s.expiry,
-                "sessionData": s.session_data,
+                "sessionDataInDatabase": s.session_data_in_database,
                 "status": "OK",
                 "timeCreated": s.time_created,
                 "userId": s.user_id,
@@ -285,3 +286,28 @@ class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status, "error": self.error}
+
+
+class SignOutOK(APIResponse):
+    status: str = "OK"
+
+    def to_json(self):
+        return {"status": self.status}
+
+
+class SearchTagsOK(APIResponse):
+    status: str = "OK"
+    tags: List[str]
+
+    def __init__(self, tags: List[str]) -> None:
+        self.tags = tags
+
+    def to_json(self):
+        return {"status": self.status, "tags": self.tags}
+
+
+class AnalyticsResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}

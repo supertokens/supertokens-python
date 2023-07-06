@@ -16,8 +16,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import warnings
-from base64 import b64decode, b64encode
+from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from math import floor
 from re import fullmatch
 from time import time
@@ -31,6 +32,7 @@ from typing import (
     List,
     TypeVar,
     Union,
+    Optional,
 )
 from urllib.parse import urlparse
 
@@ -98,9 +100,8 @@ def find_max_version(versions_1: List[str], versions_2: List[str]) -> Union[str,
     return max_v
 
 
-def is_version_gte(version: str, minimum_minor_version: str) -> bool:
-    assert len(minimum_minor_version.split(".")) == 2
-    return _get_max_version(version, minimum_minor_version) == version
+def is_version_gte(version: str, minimum_version: str) -> bool:
+    return _get_max_version(version, minimum_version) == version
 
 
 def _get_max_version(v1: str, v2: str) -> str:
@@ -164,11 +165,20 @@ def get_timestamp_ms() -> int:
     return int(time() * 1000)
 
 
-def utf_base64encode(s: str) -> str:
+def utf_base64encode(s: str, urlsafe: bool) -> str:
+    if urlsafe:
+        return urlsafe_b64encode(s.encode("utf-8")).decode("utf-8")
+
     return b64encode(s.encode("utf-8")).decode("utf-8")
 
 
-def utf_base64decode(s: str) -> str:
+def utf_base64decode(s: str, urlsafe: bool) -> str:
+    # Adding extra "==" based on
+    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+    # Otherwise it can raise "incorrect padding" error
+    if urlsafe:
+        return urlsafe_b64decode(s.encode("utf-8") + b"==").decode("utf-8")
+
     return b64decode(s.encode("utf-8")).decode("utf-8")
 
 
@@ -254,8 +264,23 @@ def humanize_time(ms: int) -> str:
     return time_str
 
 
+def set_request_in_user_context_if_not_defined(
+    user_context: Optional[Dict[str, Any]], request: BaseRequest
+) -> Dict[str, Any]:
+    if user_context is None:
+        user_context = {}
+
+    if "_default" not in user_context:
+        user_context["_default"] = {}
+
+    if isinstance(user_context["_default"], dict):
+        user_context["_default"]["request"] = request
+
+    return user_context
+
+
 def default_user_context(request: BaseRequest) -> Dict[str, Any]:
-    return {"_default": {"request": request}}
+    return set_request_in_user_context_if_not_defined({}, request)
 
 
 async def resolve(obj: MaybeAwaitable[_T]) -> _T:
@@ -281,3 +306,57 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
         )
 
     return parsed_url.domain + "." + parsed_url.suffix  # type: ignore
+
+
+class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count > 0 or self._reader_count > 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count > 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()
+
+
+class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
+
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)

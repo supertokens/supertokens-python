@@ -28,6 +28,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdError,
+    UpdateEmailOrPasswordPasswordPolicyViolationError,
 )
 from supertokens_python.recipe.emailpassword.types import User
 
@@ -39,7 +40,10 @@ from ..interfaces import (
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
+    def __init__(
+        self,
+        recipe_implementation: ThirdPartyEmailPasswordRecipeInterface,
+    ):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
@@ -113,12 +117,14 @@ class RecipeImplementation(RecipeInterface):
         user_id: str,
         email: Union[str, None],
         password: Union[str, None],
+        apply_password_policy: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
         UpdateEmailOrPasswordEmailAlreadyExistsError,
         UpdateEmailOrPasswordUnknownUserIdError,
+        UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         return await self.recipe_implementation.update_email_or_password(
-            user_id, email, password, user_context
+            user_id, email, password, apply_password_policy, user_context
         )
