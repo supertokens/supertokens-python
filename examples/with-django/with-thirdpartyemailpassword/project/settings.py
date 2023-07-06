@@ -102,31 +102,25 @@ init(
                         ],
                     )
                 ),
-                # FIXME: Properly migrate apple provider
-                # Apple(
-                #     is_default=True,
-                #     client_id=os.environ.get("APPLE_CLIENT_ID"),  # type: ignore
-                #     client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
-                #     client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
-                #     client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
-                # ),
-                # Apple(
-                #     client_id=os.environ.get("APPLE_CLIENT_ID_MOBILE"),  # type: ignore
-                #     client_key_id=os.environ.get("APPLE_KEY_ID"),  # type: ignore
-                #     client_team_id=os.environ.get("APPLE_TEAM_ID"),  # type: ignore
-                #     client_private_key=os.environ.get("APPLE_PRIVATE_KEY"),  # type: ignore
-                # ),
                 thirdpartyemailpassword.ProviderInput(
                     config=thirdpartyemailpassword.ProviderConfig(
                         third_party_id="apple",
                         clients=[
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["APPLE_CLIENT_ID"],
-                                client_secret=os.environ["TODO"],  # TODO
+                                additional_config={
+                                    "keyId": os.environ["APPLE_KEY_ID"],
+                                    "teamId": os.environ["APPLE_TEAM_ID"],
+                                    "privateKey": os.environ["APPLE_PRIVATE_KEY"],
+                                }
                             ),
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["APPLE_CLIENT_ID_MOBILE"],
-                                client_secret=os.environ["TODO"],  # TODO
+                                additional_config={
+                                    "keyId": os.environ["APPLE_KEY_ID"],
+                                    "teamId": os.environ["APPLE_TEAM_ID"],
+                                    "privateKey": os.environ["APPLE_PRIVATE_KEY"],
+                                }
                             ),
                         ],
                     )
