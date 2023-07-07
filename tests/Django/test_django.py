@@ -38,7 +38,14 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
 
 import pytest
-from tests.utils import clean_st, reset, setup_st, start_st, create_users, get_st_init_args
+from tests.utils import (
+    clean_st,
+    reset,
+    setup_st,
+    start_st,
+    create_users,
+    get_st_init_args,
+)
 from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
 from supertokens_python.framework import BaseRequest
@@ -115,7 +122,8 @@ async def optional_session(request: HttpRequest):
 @verify_session()
 async def verify_view(request: HttpRequest):
     session: SessionContainer = request.supertokens  # type: ignore
-    return JsonResponse({"handle": session.get_handle()}) # type: ignore
+    return JsonResponse({"handle": session.get_handle()})  # type: ignore
+
 
 class SupertokensTest(TestCase):
     def setUp(self):
@@ -880,21 +888,23 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 0)
 
-    async def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(self):
-        args = get_st_init_args([session.init(get_token_transfer_method=lambda *_: "header")]) # type: ignore
+    async def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
+        self,
+    ):
+        args = get_st_init_args([session.init(get_token_transfer_method=lambda *_: "header")])  # type: ignore
         args.update({"framework": "django"})
-        init(**args) # type: ignore
+        init(**args)  # type: ignore
         start_st()
 
         # Try with middleware
         request = self.factory.get("/verify")
-        response = await middleware(verify_view)(request)
+        response: HttpResponse = await middleware(verify_view)(request) # type: ignore
         assert response.status_code == 401
         assert json.loads(response.content) == {"message": "unauthorised"}
 
         # Try without middleware
         request = self.factory.get("/verify")
-        response = await verify_view(request)
+        response: HttpResponse = await verify_view(request) # type: ignore
         assert response.status_code == 401
         assert json.loads(response.content) == {"message": "unauthorised"}
 
@@ -905,13 +915,13 @@ class SupertokensTest(TestCase):
 
         # Now try with middleware:
         request = self.factory.get("/verify", {}, **headers)
-        response = await middleware(verify_view)(request)
+        response: JsonResponse = await middleware(verify_view)(request)  # type: ignore
         assert response.status_code == 200
         assert list(json.loads(response.content)) == ["handle"]
 
         # Now try without middleware:
         request = self.factory.get("/verify", **headers)
-        response = await verify_view(request)
+        response: JsonResponse = await verify_view(request)  # type: ignore
         assert response.status_code == 200
         assert list(json.loads(response.content)) == ["handle"]
 
