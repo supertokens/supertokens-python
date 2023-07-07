@@ -1,5 +1,4 @@
 import respx
-import httpx
 
 from pytest import fixture, mark
 from fastapi import FastAPI

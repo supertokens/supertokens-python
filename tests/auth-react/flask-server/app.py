@@ -97,12 +97,6 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
-    UserInfo,
-    UserInfoEmail,
-)
 from supertokens_python.recipe.thirdpartyemailpassword import (
     ThirdPartyEmailPasswordRecipe,
 )
