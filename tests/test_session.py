@@ -741,13 +741,11 @@ async def test_that_verify_session_doesnt_always_call_core():
 async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access_token_is_provided(
     driver_config_client: TestClient,
 ):
-    args = get_st_init_args([session.init(anti_csrf="VIA_CUSTOM_HEADER", get_token_transfer_method=lambda *_: "cookie")]) # type: ignore
+    args = get_st_init_args([session.init(anti_csrf="VIA_CUSTOM_HEADER", get_token_transfer_method=lambda *_: "cookie")])  # type: ignore
     init(**args)  # type: ignore
     start_st()
 
-    response = driver_config_client.post(
-        "/create"
-    )
+    response = driver_config_client.post("/create")
     assert response.status_code == 200
 
     # With access token:
@@ -757,7 +755,8 @@ async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access
     assert response.json() == {"message": "try refresh token"}
 
     # with RID:
-    response = driver_config_client.post("/sessioninfo-optional",
+    response = driver_config_client.post(
+        "/sessioninfo-optional",
         headers={
             "rid": "session",
         },
