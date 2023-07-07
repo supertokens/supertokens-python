@@ -898,13 +898,13 @@ class SupertokensTest(TestCase):
 
         # Try with middleware
         request = self.factory.get("/verify")
-        response: HttpResponse = await middleware(verify_view)(request) # type: ignore
+        response: HttpResponse = await middleware(verify_view)(request)  # type: ignore
         assert response.status_code == 401
         assert json.loads(response.content) == {"message": "unauthorised"}
 
         # Try without middleware
         request = self.factory.get("/verify")
-        response: HttpResponse = await verify_view(request) # type: ignore
+        response: HttpResponse = await verify_view(request)  # type: ignore
         assert response.status_code == 401
         assert json.loads(response.content) == {"message": "unauthorised"}
 
