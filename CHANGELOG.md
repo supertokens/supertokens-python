@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 
+## Fixes
+
+- Anti csrf check should happen only when access token is passed while session is optional
+
 ## [0.14.6] - 2023-06-22
 
 ### Changes and fixes
