@@ -13,11 +13,12 @@
 # under the License.
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.requests import Request
+from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
 
@@ -41,7 +42,10 @@ from supertokens_python.recipe.session.asyncio import (
     merge_into_access_token_payload,
     update_session_data_in_database,
 )
-from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.recipe.session.interfaces import (
+    RecipeInterface,
+    SessionContainer,
+)
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
@@ -52,6 +56,7 @@ from supertokens_python.recipe.session.session_functions import (
     refresh_session,
     revoke_session,
 )
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 from tests.utils import clean_st, reset, setup_st, start_st
 
 pytestmark = mark.asyncio
@@ -250,6 +255,13 @@ async def driver_config_client():
     async def create_api(request: Request):  # type: ignore
         await async_create_new_session(request, "test-user", {}, {})
         return ""
+
+    @app.post("/sessioninfo-optional")
+    async def _session_info(s: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
+        if s is not None:
+            return JSONResponse({"session": s.get_handle(), "user_id": s.get_user_id()})
+        else:
+            return JSONResponse({"message": "no session"})
 
     return TestClient(app)
 
@@ -707,7 +719,7 @@ async def test_that_verify_session_doesnt_always_call_core():
     assert session3.refresh_token is not None
 
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFYG
         not in ProcessState.get_instance().history
     )
 
@@ -724,3 +736,49 @@ async def test_that_verify_session_doesnt_always_call_core():
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
         in ProcessState.get_instance().history
     )  # Core got called this time
+
+
+async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access_token_is_provided(
+    driver_config_client: TestClient,
+):
+    args = get_st_init_args([session.init(anti_csrf="VIA_CUSTOM_HEADER", get_token_transfer_method=lambda *_: "cookie")])  # type: ignore
+    init(**args)  # type: ignore
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+
+    # With access token:
+    # without RID:
+    response = driver_config_client.post("/sessioninfo-optional")
+    assert response.status_code == 401
+    assert response.json() == {"message": "try refresh token"}
+
+    # with RID:
+    response = driver_config_client.post(
+        "/sessioninfo-optional",
+        headers={
+            "rid": "session",
+        },
+    )
+    assert response.status_code == 200
+    assert list(response.json()) == ["session", "user_id"]
+
+    # Clear access tokens:
+    driver_config_client.cookies.clear()
+
+    # Without access tokens:
+    # without RID:
+    response = driver_config_client.post("/sessioninfo-optional")
+    assert response.status_code == 200
+    assert response.json() == {"message": "no session"}
+
+    # with RID:
+    response = driver_config_client.post(
+        "/sessioninfo-optional",
+        headers={
+            "rid": "session",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json() == {"message": "no session"}
