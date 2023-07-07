@@ -16,7 +16,7 @@ from supertokens_python.recipe.session.exceptions import (
 )
 from supertokens_python.recipe.session.framework.fastapi import (
     verify_session,
-    st_exception_handler,
+    session_exception_handler,
 )
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.recipe.session.interfaces import (
@@ -550,7 +550,7 @@ async def client_without_middleware():
     async def _verify(s: Session = Depends(verify_session())):  # type: ignore
         return {"handle": s.get_handle()}
 
-    app.add_exception_handler(SuperTokensError, st_exception_handler)  # type: ignore
+    app.add_exception_handler(SuperTokensError, session_exception_handler)  # type: ignore
 
     return TestClient(app)
 

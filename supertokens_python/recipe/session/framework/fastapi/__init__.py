@@ -64,7 +64,7 @@ def verify_session(
     return func
 
 
-async def st_exception_handler(request: Request, exc: SuperTokensError) -> JSONResponse:
+async def session_exception_handler(request: Request, exc: SuperTokensError) -> JSONResponse:
     """FastAPI exceptional handler for errors raised by Supertokens SDK when not using middleware
 
     Usage: `app.add_exception_handler(SuperTokensError, st_exception_handler)`
