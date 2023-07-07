@@ -26,6 +26,7 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.syncio import (
     create_new_session,
+    create_new_session_without_request_response,
     get_session,
     refresh_session,
     revoke_session,
@@ -734,6 +735,11 @@ def flask_app():
     def options_api():  # type: ignore
         return jsonify({"msg": "Shouldn't come here"})
 
+    @app.get("/verify")  # type: ignore
+    @verify_session()
+    def verify_api():  # type: ignore
+        return {"handle": g.supertokens.get_handle()}
+
     return app
 
 
@@ -767,3 +773,48 @@ def test_verify_session_with_before_request_with_no_response(flask_app: Any):
     assert client.get("/ping").status_code == 200
 
     assert client.get("/stats").json == {"unknown": 3, "userId": 2}
+
+
+@fixture(scope="function")
+def flask_app_without_middleware():
+    app = Flask(__name__)
+
+    app.testing = True
+
+    @app.get("/verify")  # type: ignore
+    @verify_session()
+    def verify_api():  # type: ignore
+        return {"handle": g.supertokens.get_handle()}
+
+    return app
+
+
+def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
+    flask_app: Any, flask_app_without_middleware: Any
+):
+    init(**{**get_st_init_args([session.init(get_token_transfer_method=lambda *_: "header")]), "framework": "flask"})  # type: ignore
+    start_st()
+
+    client = flask_app.test_client()
+    client_without_middleware = flask_app_without_middleware.test_client()
+
+    res = client.get("/verify")
+    assert res.status_code == 401
+    assert res.json == {"message": "unauthorised"}
+
+    s = create_new_session_without_request_response("userId", {}, {})
+    res = client.get(
+        "/verify", headers={"Authorization": "Bearer " + s.get_access_token()}
+    )
+    assert res.status_code == 200
+    assert list(res.json) == ["handle"]
+
+    # Client without middleware
+    res = client_without_middleware.get("/verify")
+    assert res.status_code == 401
+    assert res.json == {"message": "unauthorised"}
+
+    res = client_without_middleware.get(
+        "/verify", headers={"Authorization": "Bearer " + s.get_access_token()}
+    )
+    assert res.status_code == 200

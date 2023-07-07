@@ -14,9 +14,12 @@
 from functools import wraps
 from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
 
+from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
+from supertokens_python.framework.flask.flask_response import FlaskResponse
 from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.types import MaybeAwaitable
 
@@ -43,27 +46,39 @@ def verify_session(
         def wrapped_function(*args: Any, **kwargs: Any):
             from flask import make_response, request
 
-            baseRequest = FlaskRequest(request)
-            recipe = SessionRecipe.get_instance()
-            session = sync(
-                recipe.verify_session(
-                    baseRequest,
-                    anti_csrf_check,
-                    session_required,
-                    check_database,
-                    override_global_claim_validators,
-                    user_context,
-                )
-            )
-            if session is None:
-                if session_required:
-                    raise Exception("Should never come here")
-                baseRequest.set_session_as_none()
-            else:
-                baseRequest.set_session(session)
+            base_req = FlaskRequest(request)
 
-            response = f(*args, **kwargs)
-            return make_response(response) if response is not None else None
+            try:
+                recipe = SessionRecipe.get_instance()
+                session = sync(
+                    recipe.verify_session(
+                        base_req,
+                        anti_csrf_check,
+                        session_required,
+                        check_database,
+                        override_global_claim_validators,
+                        user_context,
+                    )
+                )
+                if session is None:
+                    if session_required:
+                        raise Exception("Should never come here")
+                    base_req.set_session_as_none()
+                else:
+                    base_req.set_session(session)
+
+                response = f(*args, **kwargs)
+                return make_response(response) if response is not None else None
+            except SuperTokensError as e:
+                response = FlaskResponse(make_response())
+                result = sync(
+                    Supertokens.get_instance().handle_supertokens_error(
+                        base_req, e, response
+                    )
+                )
+                if isinstance(result, FlaskResponse):
+                    return result.response
+                raise Exception("Should never come here")
 
         return cast(_T, wrapped_function)
 
