@@ -236,52 +236,9 @@ form_fields = [
 ]
 
 
-# Migrate CustomAuth0Provider
-# class CustomAuth0Provider(Provider):
-#     def __init__(self, client_id: str, client_secret: str, domain: str):
-#         super().__init__("auth0", False)
-#         self.domain = domain
-#         self.client_id = client_id
-#         self.client_secret = client_secret
-#         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
-#         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
-
-#     async def get_profile_info(
-#         self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-#     ) -> UserInfo:
-#         # we do not query auth0 here cause it reaches their rate limit.
-#         return UserInfo("test-user-id-1", UserInfoEmail("auth0email@example.com", True))
-
-#     def get_authorisation_redirect_api_info(
-#         self, user_context: Dict[str, Any]
-#     ) -> AuthorisationRedirectAPI:
-#         params: Dict[str, Any] = {
-#             "scope": "openid profile",
-#             "response_type": "code",
-#             "client_id": self.client_id,
-#         }
-#         return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
-
-#     def get_access_token_api_info(
-#         self,
-#         redirect_uri: str,
-#         auth_code_from_request: str,
-#         user_context: Dict[str, Any],
-#     ) -> AccessTokenAPI:
-#         params = {
-#             "client_id": self.client_id,
-#             "client_secret": self.client_secret,
-#             "grant_type": "authorization_code",
-#             "code": auth_code_from_request,
-#             "redirect_uri": redirect_uri,
-#         }
-#         return AccessTokenAPI(self.access_token_api_url, params)
-
-#     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-#         return None
-
-#     def get_client_id(self, user_context: Dict[str, Any]) -> str:
-#         return self.client_id
+def auth0_provider_override(provider: Provider) -> Provider:
+    # TODO: Finish when Node SDK is ready
+    return provider
 
 
 def custom_init(
@@ -348,12 +305,19 @@ def custom_init(
                 ],
             )
         ),
-        # FIXME: Migrate this:
-        # CustomAuth0Provider(
-        #     client_id=os.environ.get("AUTH0_CLIENT_ID"),  # type: ignore
-        #     domain=os.environ.get("AUTH0_DOMAIN"),  # type: ignore
-        #     client_secret=os.environ.get("AUTH0_CLIENT_SECRET"),  # type: ignore
-        # ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="auth0",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["AUTH0_CLIENT_ID"],
+                        client_secret=os.environ["AUTH0_CLIENT_SECRET"],
+                        additional_config={"domain": os.environ["AUTH0_DOMAIN"]},
+                    )
+                ],
+            ),
+            override=auth0_provider_override,
+        ),
     ]
 
     def override_email_verification_apis(
