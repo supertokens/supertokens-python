@@ -260,8 +260,7 @@ async def driver_config_client():
     async def _session_info(s: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
         if s is not None:
             return JSONResponse({"session": s.get_handle(), "user_id": s.get_user_id()})
-        else:
-            return JSONResponse({"message": "no session"})
+        return JSONResponse({"message": "no session"})
 
     return TestClient(app)
 
