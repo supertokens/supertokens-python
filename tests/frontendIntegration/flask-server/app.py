@@ -335,6 +335,7 @@ def get_info():
     resp.headers["Cache-Control"] = "no-cache, private"
     return resp
 
+
 @app.route("/check-rid-no-session", methods=["GET"])  # type: ignore
 def check_rid_no_session():
     rid = request.headers.get("rid")
