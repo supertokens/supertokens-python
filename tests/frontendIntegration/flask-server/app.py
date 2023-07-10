@@ -336,6 +336,12 @@ def get_info():
     return resp
 
 
+@app.route("/check-rid-no-session", methods=["GET"])  # type: ignore
+def check_rid_no_session():
+    rid = request.headers.get("rid")
+    return "fail" if rid is None or not rid.startswith("anti-csrf") else "success"
+
+
 @app.route("/update-jwt", methods=["OPTIONS"])  # type: ignore
 def update_options():
     return send_options_api_response()
