@@ -199,7 +199,10 @@ class Supertokens:
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
         if callable(DEFAULT_MULTITENANCY_RECIPE) and not multitenancy_found[0]:
-            self.recipe_modules.append(DEFAULT_MULTITENANCY_RECIPE(self.app_info))
+            recipe = DEFAULT_MULTITENANCY_RECIPE(  # pylint: disable=not-callable
+                self.app_info
+            )
+            self.recipe_modules.append(recipe)
 
         self.telemetry = (
             telemetry
