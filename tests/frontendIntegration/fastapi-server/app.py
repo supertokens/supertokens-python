@@ -316,6 +316,11 @@ async def get_info(r_session: SessionContainer = Depends(verify_session())):
         content=r_session.get_user_id(), headers={"Cache-Control": "no-cache, private"}
     )
 
+@app.get("/check-rid-no-session")
+def check_rid_no_session_api(request: Request):
+    rid = request.headers.get("rid")
+    return PlainTextResponse("fail" if rid is None else "success")
+
 
 @app.options("/update-jwt")
 def update_options():
