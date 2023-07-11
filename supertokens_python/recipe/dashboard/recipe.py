@@ -256,18 +256,27 @@ class DashboardRecipe(RecipeModule):
         base_path_str = self.app_info.api_base_path.get_as_string_dangerous()
         path_str = path.get_as_string_dangerous()
         regex = rf"^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$"
+        # some examples against for above regex:
+        # books => match = None
+        # public/books => match = None
+        # /books => match.group(1) = None, match.group(2) = /dashboard
+        # /public/books => match.group(1) = 'public', match.group(2) = '/books'
+        # /public/book/1 => match.group(1) = 'public', match.group(2) = '/book/1'
 
         match = re.match(regex, path_str)
+        match_group_1 = match.group(1) if match is not None else None
+        match_group_2 = match.group(2) if match is not None else None
+
         tenant_id: str = DEFAULT_TENANT_ID
         remaining_path: Optional[NormalisedURLPath] = None
 
-        if match is not None:
-            # TODO: Do something better than assert here
-            assert match.group(1) is not None
-            assert match.group(2) is not None
-
-            tenant_id = match.group(1)
-            remaining_path = NormalisedURLPath(match.group(2))
+        if (
+            match is not None
+            and isinstance(match_group_1, str)
+            and isinstance(match_group_2, str)
+        ):
+            tenant_id = match_group_1
+            remaining_path = NormalisedURLPath(match_group_2)
 
         if is_api_path(path, self.app_info.api_base_path) or (
             remaining_path is not None
