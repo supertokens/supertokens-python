@@ -193,8 +193,10 @@ def __get_list_of_process_ids() -> List[str]:
     return process_ids
 
 
-def reset():
-    __stop_st()
+def reset(stop_core: bool = True):
+    if stop_core:
+        __stop_st()
+
     ProcessState.get_instance().reset()
     Supertokens.reset()
     SessionRecipe.reset()

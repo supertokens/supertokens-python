@@ -781,3 +781,25 @@ async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access
     )
     assert response.status_code == 200
     assert response.json() == {"message": "no session"}
+
+
+async def test_expose_access_token_to_frontend_in_cookie_based_auth(
+    driver_config_client: TestClient,
+):
+    args = get_st_init_args([session.init(expose_access_token_to_frontend_in_cookie_based_auth=True, get_token_transfer_method=lambda *_: "cookie")])  # type: ignore
+    init(**args)  # type: ignore
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+    assert len(response.headers["st-access-token"]) > 0
+
+    reset(stop_core=False)
+
+    args = get_st_init_args([session.init(expose_access_token_to_frontend_in_cookie_based_auth=False, get_token_transfer_method=lambda *_: "cookie")])  # type: ignore
+    init(**args)  # type: ignore
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+    assert "st-access-token" not in response.headers
