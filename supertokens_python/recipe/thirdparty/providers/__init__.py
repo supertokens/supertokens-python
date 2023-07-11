@@ -11,23 +11,3 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from .apple import Apple
-from .discord import Discord
-from .facebook import Facebook
-from .github import Github
-from .google import Google
-from .google_workspaces import GoogleWorkspaces
-from .bitbucket import Bitbucket
-from .gitlab import Gitlab
-
-__all__ = [
-    "Apple",
-    "Discord",
-    "Facebook",
-    "Github",
-    "Google",
-    "GoogleWorkspaces",
-    "Bitbucket",
-    "Gitlab",
-]
