@@ -631,7 +631,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.testclient import TestClient
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.session.asyncio import create_new_session, get_session
+from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.session import SessionContainer
 
 
@@ -647,7 +647,7 @@ async def client():
         return {"jwt": s.get_access_token()}
 
     @app.get("/sessioninfo")
-    async def session_info(s: SessionContainer = Depends(verify_session())):
+    async def info(s: SessionContainer = Depends(verify_session())):  # type: ignore
         user_id = s.get_user_id()
         return {"user_id": user_id}
 
