@@ -40,7 +40,9 @@ class GoogleWorkspacesImpl(GoogleImpl):
         return config
 
 
-def GoogleWorkspaces(input: ProviderInput) -> Provider:
+def GoogleWorkspaces(
+    input: ProviderInput,  # pylint: disable=redefined-builtin
+) -> Provider:
     if input.config.name is None:
         input.config.name = "Google Workspaces"
 
@@ -49,7 +51,7 @@ def GoogleWorkspaces(input: ProviderInput) -> Provider:
         async def default_validate_id_token_payload(
             id_token_payload: Dict[str, Any],
             config: ProviderConfigForClientType,
-            user_context: Dict[str, Any],
+            _user_context: Dict[str, Any],
         ):
             if (config.additional_config or {}).get("hd", "*") != "*":
                 if (config.additional_config or {}).get("hd") != id_token_payload.get(

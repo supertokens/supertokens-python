@@ -160,6 +160,18 @@ async def verify_id_token_from_jwks_endpoint_and_get_payload(
     raise err
 
 
+def merge_into_dict(src: Dict[str, Any], dest: Dict[str, Any]) -> Dict[str, Any]:
+    res = dest.copy()
+    for k, v in src.items():
+        if v is None:
+            if k in res:
+                del res[k]
+        else:
+            res[k] = v
+
+    return res
+
+
 class GenericProvider(Provider):
     def __init__(self, config: ProviderConfig):
         super().__init__(config.third_party_id)
@@ -288,12 +300,9 @@ class GenericProvider(Provider):
             access_token_params["code_verifier"] = redirect_uri_info.pkce_code_verifier
 
         if self.config.token_endpoint_body_params is not None:
-            for k, v in self.config.token_endpoint_body_params:
-                if v is None:
-                    if k in access_token_params:
-                        del access_token_params[k]
-                else:
-                    access_token_params[k] = v
+            access_token_params = merge_into_dict(
+                self.config.token_endpoint_body_params, access_token_params
+            )
 
         # Transformation needed for dev keys BEGIN
         if is_using_oauth_development_client_id(self.config.client_id):
@@ -336,20 +345,14 @@ class GenericProvider(Provider):
 
             if self.config.user_info_endpoint is not None:
                 if self.config.user_info_endpoint_headers is not None:
-                    for k, v in self.config.user_info_endpoint_headers.items():
-                        if v is None:
-                            if k in headers:
-                                del headers[k]
-                        else:
-                            headers[k] = v
+                    headers = merge_into_dict(
+                        self.config.user_info_endpoint_headers, headers
+                    )
 
                 if self.config.user_info_endpoint_query_params is not None:
-                    for k, v in self.config.user_info_endpoint_query_params.items():
-                        if v is None:
-                            if k in query_params:
-                                del query_params[k]
-                        else:
-                            query_params[k] = v
+                    query_params = merge_into_dict(
+                        self.config.user_info_endpoint_query_params, query_params
+                    )
 
                 raw_user_info_from_provider.from_user_info_api = await do_get_request(
                     self.config.user_info_endpoint, query_params, headers
@@ -367,7 +370,7 @@ class GenericProvider(Provider):
 
 
 def NewProvider(
-    input: ProviderInput,
+    input: ProviderInput,  # pylint: disable=redefined-builtin
     base_class: Callable[[ProviderConfig], Provider] = GenericProvider,
 ) -> Provider:
     provider_instance = base_class(input.config)

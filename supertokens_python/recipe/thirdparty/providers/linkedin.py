@@ -86,7 +86,7 @@ class LinkedinImpl(GenericProvider):
         )
 
 
-def Linkedin(input: ProviderInput) -> Provider:
+def Linkedin(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Linkedin"
 

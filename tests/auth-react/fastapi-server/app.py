@@ -95,22 +95,13 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.recipe.session.interfaces import APIOptions as SAPIOptions
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.thirdparty import (
-    Facebook,
-    Github,
-    Google,
     ThirdPartyRecipe,
 )
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
-from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
-    UserInfo,
-    UserInfoEmail,
-)
+from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdpartyemailpassword import (
     ThirdPartyEmailPasswordRecipe,
 )
@@ -239,51 +230,9 @@ form_fields = [
 ]
 
 
-class CustomAuth0Provider(Provider):
-    def __init__(self, client_id: str, client_secret: str, domain: str):
-        super().__init__("auth0", False)
-        self.domain = domain
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
-        self.access_token_api_url = "https://" + self.domain + "/oauth/token"
-
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-    ) -> UserInfo:
-        # we do not query auth0 here cause it reaches their rate limit.
-        return UserInfo("test-user-id-1", UserInfoEmail("auth0email@example.com", True))
-
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -> AuthorisationRedirectAPI:
-        params: Dict[str, Any] = {
-            "scope": "openid profile",
-            "response_type": "code",
-            "client_id": self.client_id,
-        }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
-
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -> AccessTokenAPI:
-        params = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "grant_type": "authorization_code",
-            "code": auth_code_from_request,
-            "redirect_uri": redirect_uri,
-        }
-        return AccessTokenAPI(self.access_token_api_url, params)
-
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-        return None
-
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
-        return self.client_id
+def auth0_provider_override(provider: Provider) -> Provider:
+    # TODO: Finish when Node SDK is ready
+    return provider
 
 
 def custom_init(
@@ -305,23 +254,63 @@ def custom_init(
     DashboardRecipe.reset()
     Supertokens.reset()
 
-    providers_list: List[Provider] = [
-        Google(
-            client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-            client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+    providers_list: List[thirdpartypasswordless.ProviderInput] = [
+        thirdpartyemailpassword.ProviderInput(
+            config=thirdpartyemailpassword.ProviderConfig(
+                third_party_id="google",
+                clients=[
+                    thirdpartyemailpassword.ProviderClientConfig(
+                        client_id=os.environ["GOOGLE_CLIENT_ID"],
+                        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+                    ),
+                ],
+            ),
         ),
-        Facebook(
-            client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
-            client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
+        thirdpartyemailpassword.ProviderInput(
+            config=thirdpartyemailpassword.ProviderConfig(
+                third_party_id="facebook",
+                clients=[
+                    thirdpartyemailpassword.ProviderClientConfig(
+                        client_id=os.environ["FACEBOOK_CLIENT_ID"],
+                        client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
+                    ),
+                ],
+            ),
         ),
-        Github(
-            client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-            client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+        thirdpartyemailpassword.ProviderInput(
+            config=thirdpartyemailpassword.ProviderConfig(
+                third_party_id="github",
+                clients=[
+                    thirdpartyemailpassword.ProviderClientConfig(
+                        client_id=os.environ["GITHUB_CLIENT_ID"],
+                        client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+                    ),
+                ],
+            )
         ),
-        CustomAuth0Provider(
-            client_id=os.environ.get("AUTH0_CLIENT_ID"),  # type: ignore
-            domain=os.environ.get("AUTH0_DOMAIN"),  # type: ignore
-            client_secret=os.environ.get("AUTH0_CLIENT_SECRET"),  # type: ignore
+        thirdpartyemailpassword.ProviderInput(
+            config=thirdpartyemailpassword.ProviderConfig(
+                third_party_id="custom",
+                clients=[
+                    thirdpartyemailpassword.ProviderClientConfig(
+                        client_id=os.environ["DISCORD_CLIENT_ID"],
+                        client_secret=os.environ["DISCORD_CLIENT_SECRET"],
+                    ),
+                ],
+            )
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="auth0",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["AUTH0_CLIENT_ID"],
+                        client_secret=os.environ["AUTH0_CLIENT_SECRET"],
+                        additional_config={"domain": os.environ["AUTH0_DOMAIN"]},
+                    )
+                ],
+            ),
+            override=auth0_provider_override,
         ),
     ]
 
@@ -469,10 +458,8 @@ def custom_init(
 
         async def sign_in_up_post(
             provider: Provider,
-            code: str,
-            redirect_uri: str,
-            client_id: Union[str, None],
-            auth_code_response: Union[Dict[str, Any], None],
+            redirect_uri_info: Union[RedirectUriInfo, None],
+            oauth_tokens: Union[Dict[str, Any], None],
             api_options: TPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -483,16 +470,17 @@ def custom_init(
                 return GeneralErrorResponse("general error from API sign in up")
             return await original_sign_in_up_post(
                 provider,
-                code,
-                redirect_uri,
-                client_id,
-                auth_code_response,
+                redirect_uri_info,
+                oauth_tokens,
                 api_options,
                 user_context,
             )
 
         async def authorisation_url_get(
-            provider: Provider, api_options: TPAPIOptions, user_context: Dict[str, Any]
+            provider: Provider,
+            redirect_uri_on_provider_dashboard: str,
+            api_options: TPAPIOptions,
+            user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
                 "query", api_options.request
@@ -502,7 +490,7 @@ def custom_init(
                     "general error from API authorisation url get"
                 )
             return await original_authorisation_url_get(
-                provider, api_options, user_context
+                provider, redirect_uri_on_provider_dashboard, api_options, user_context
             )
 
         original_implementation.sign_in_up_post = sign_in_up_post
@@ -603,10 +591,8 @@ def custom_init(
 
         async def thirdparty_sign_in_up_post(
             provider: Provider,
-            code: str,
-            redirect_uri: str,
-            client_id: Union[str, None],
-            auth_code_response: Union[Dict[str, Any], None],
+            redirect_uri_info: Union[RedirectUriInfo, None],
+            oauth_tokens: Union[Dict[str, Any], None],
             api_options: TPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -617,16 +603,17 @@ def custom_init(
                 return GeneralErrorResponse("general error from API sign in up")
             return await original_thirdparty_sign_in_up_post(
                 provider,
-                code,
-                redirect_uri,
-                client_id,
-                auth_code_response,
+                redirect_uri_info,
+                oauth_tokens,
                 api_options,
                 user_context,
             )
 
         async def authorisation_url_get(
-            provider: Provider, api_options: TPAPIOptions, user_context: Dict[str, Any]
+            provider: Provider,
+            redirect_uri_on_provider_dashboard: str,
+            api_options: TPAPIOptions,
+            user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
                 "query", api_options.request
@@ -636,7 +623,7 @@ def custom_init(
                     "general error from API authorisation url get"
                 )
             return await original_authorisation_url_get(
-                provider, api_options, user_context
+                provider, redirect_uri_on_provider_dashboard, api_options, user_context
             )
 
         original_implementation.emailpassword_email_exists_get = (
@@ -797,10 +784,8 @@ def custom_init(
 
         async def thirdparty_sign_in_up_post(
             provider: Provider,
-            code: str,
-            redirect_uri: str,
-            client_id: Union[str, None],
-            auth_code_response: Union[Dict[str, Any], None],
+            redirect_uri_info: Union[RedirectUriInfo, None],
+            oauth_tokens: Union[Dict[str, Any], None],
             api_options: TPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -811,16 +796,17 @@ def custom_init(
                 return GeneralErrorResponse("general error from API sign in up")
             return await original_thirdparty_sign_in_up_post(
                 provider,
-                code,
-                redirect_uri,
-                client_id,
-                auth_code_response,
+                redirect_uri_info,
+                oauth_tokens,
                 api_options,
                 user_context,
             )
 
         async def authorisation_url_get(
-            provider: Provider, api_options: TPAPIOptions, user_context: Dict[str, Any]
+            provider: Provider,
+            redirect_uri_on_provider_dashboard: str,
+            api_options: TPAPIOptions,
+            user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
                 "query", api_options.request
@@ -830,7 +816,7 @@ def custom_init(
                     "general error from API authorisation url get"
                 )
             return await original_authorisation_url_get(
-                provider, api_options, user_context
+                provider, redirect_uri_on_provider_dashboard, api_options, user_context
             )
 
         original_implementation.consume_code_post = consume_code_post

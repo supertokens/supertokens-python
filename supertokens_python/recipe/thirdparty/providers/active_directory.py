@@ -48,7 +48,9 @@ class ActiveDirectoryImpl(GenericProvider):
         return config
 
 
-def ActiveDirectory(input: ProviderInput) -> Provider:
+def ActiveDirectory(
+    input: ProviderInput,  # pylint: disable=redefined-builtin
+) -> Provider:
     if input.config.name is None:
         input.config.name = "Active Directory"
 
