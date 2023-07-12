@@ -33,10 +33,12 @@ class TenantConfig:
         email_password_enabled: Union[bool, None] = None,
         passwordless_enabled: Union[bool, None] = None,
         third_party_enabled: Union[bool, None] = None,
+        core_config: Union[Dict[str, Any], None] = None,
     ):
         self.email_password_enabled = email_password_enabled
         self.passwordless_enabled = passwordless_enabled
         self.third_party_enabled = third_party_enabled
+        self.core_config = core_config
 
 
 class CreateOrUpdateTenantOkResult:
@@ -45,8 +47,8 @@ class CreateOrUpdateTenantOkResult:
 
 
 class DeleteTenantOkResult:
-    def __init__(self, tenant_existed: bool):
-        self.tenant_existed = tenant_existed
+    def __init__(self, did_exist: bool):
+        self.did_exist = did_exist
 
 
 class EmailPasswordConfig:
@@ -65,16 +67,18 @@ class ThirdPartyConfig:
         self.providers = providers
 
 
-class TenantConfigOkResult:
+class GetTenantOkResult:
     def __init__(
         self,
         email_password: EmailPasswordConfig,
         passwordless: PasswordlessConfig,
         third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
     ):
         self.email_password = email_password
         self.passwordless = passwordless
         self.third_party = third_party
+        self.core_config = core_config
 
 
 class ListAllTenantsOkResult:
@@ -95,6 +99,21 @@ class DeleteThirdPartyConfigOkResult:
 class ListThirdPartyConfigsForThirdPartyIdOkResult:
     def __init__(self, providers: List[ProviderConfig]):
         self.providers = providers
+
+
+class AssociateUserToTenantOkResult:
+    def __init__(self, was_already_associated: bool):
+        self.was_already_associated = was_already_associated
+
+
+class AssociateUserToTenantErrorResult:
+    def __init__(self, status: str):
+        self.status = status  # FIXME: Create seperate errors for each kind
+
+
+class DisassociateUserFromTenantOkResult:
+    def __init__(self, was_associated: bool):
+        self.was_associated = was_associated
 
 
 class RecipeInterface(ABC):
@@ -123,9 +142,9 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_tenant_config(
+    async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
-    ) -> TenantConfigOkResult:
+    ) -> GetTenantOkResult:
         pass
 
     @abstractmethod
@@ -134,9 +153,14 @@ class RecipeInterface(ABC):
     ) -> ListAllTenantsOkResult:
         pass
 
+    # third party provider management
     @abstractmethod
     async def create_or_update_third_party_config(
-        self, config: ProviderConfig, user_context: Dict[str, Any]
+        self,
+        tenant_id: Optional[str],
+        config: ProviderConfig,
+        skip_validation: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> CreateOrUpdateThirdPartyConfigOkResult:
         pass
 
@@ -149,10 +173,30 @@ class RecipeInterface(ABC):
     ) -> DeleteThirdPartyConfigOkResult:
         pass
 
+    # TODO: Should this be removed?
     @abstractmethod
     async def list_third_party_configs_for_third_party_id(
         self, third_party_id: str, user_context: Dict[str, Any]
     ) -> ListThirdPartyConfigsForThirdPartyIdOkResult:
+        pass
+
+    # user tenant association
+    @abstractmethod
+    async def associate_user_to_tenant(
+        self,
+        tenant_id: Optional[str],
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[AssociateUserToTenantOkResult, AssociateUserToTenantErrorResult]:
+        pass
+
+    @abstractmethod
+    async def dissociate_user_from_tenant(
+        self,
+        tenant_id: Optional[str],
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -> DisassociateUserFromTenantOkResult:
         pass
 
 

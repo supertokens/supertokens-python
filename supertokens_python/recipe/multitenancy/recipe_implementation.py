@@ -13,7 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Dict, Any
+from typing import TYPE_CHECKING, Optional, Dict, Any, Union
+from supertokens_python.recipe.multitenancy.interfaces import (
+    AssociateUserToTenantErrorResult,
+    AssociateUserToTenantOkResult,
+    DisassociateUserFromTenantOkResult,
+)
 from supertokens_python.recipe.thirdparty.provider import ProviderConfig
 
 from .interfaces import (
@@ -23,7 +28,7 @@ from .interfaces import (
     TenantConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
-    TenantConfigOkResult,
+    GetTenantOkResult,
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
@@ -35,6 +40,9 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
     from .utils import MultitenancyConfig
+
+from supertokens_python.querier import NormalisedURLPath
+from .constants import DEFAULT_TENANT_ID
 
 
 class RecipeImplementation(RecipeInterface):
@@ -61,13 +69,25 @@ class RecipeImplementation(RecipeInterface):
     ) -> DeleteTenantOkResult:
         raise NotImplementedError
 
-    async def get_tenant_config(
+    async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
-    ) -> TenantConfigOkResult:
-        return TenantConfigOkResult(
+    ) -> GetTenantOkResult:
+        _ = self.querier.send_get_request(
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
+            ),
+            {},
+        )
+
+        # FIXME: Fill values from the response
+        # if "status" in response and response["status"] == "OK":
+        #     pass
+
+        return GetTenantOkResult(
             email_password=EmailPasswordConfig(enabled=True),
             passwordless=PasswordlessConfig(enabled=True),
             third_party=ThirdPartyConfig(enabled=True, providers=[]),
+            core_config={},
         )
 
     async def list_all_tenants(
@@ -76,7 +96,11 @@ class RecipeImplementation(RecipeInterface):
         raise NotImplementedError
 
     async def create_or_update_third_party_config(
-        self, config: ProviderConfig, user_context: Dict[str, Any]
+        self,
+        tenant_id: Optional[str],
+        config: ProviderConfig,
+        skip_validation: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> CreateOrUpdateThirdPartyConfigOkResult:
         raise NotImplementedError
 
@@ -91,4 +115,14 @@ class RecipeImplementation(RecipeInterface):
     async def list_third_party_configs_for_third_party_id(
         self, third_party_id: str, user_context: Dict[str, Any]
     ) -> ListThirdPartyConfigsForThirdPartyIdOkResult:
+        raise NotImplementedError
+
+    async def associate_user_to_tenant(
+        self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+    ) -> Union[AssociateUserToTenantOkResult, AssociateUserToTenantErrorResult]:
+        raise NotImplementedError
+
+    async def dissociate_user_from_tenant(
+        self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+    ) -> DisassociateUserFromTenantOkResult:
         raise NotImplementedError

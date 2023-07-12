@@ -12,69 +12,108 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.recipe.emailverification.types import EmailTemplateVars
+from ..interfaces import TenantConfig, ProviderConfig
 
 
-def create_email_verification_token(
-    user_id: str,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        create_email_verification_token,
-    )
-
-    return sync(create_email_verification_token(user_id, email, user_context))
-
-
-def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        verify_email_using_token,
-    )
-
-    return sync(verify_email_using_token(token, user_context))
-
-
-def is_email_verified(
-    user_id: str,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
-
-    return sync(is_email_verified(user_id, email, user_context))
-
-
-def revoke_email_verification_tokens(
-    user_id: str,
-    email: Optional[str] = None,
+def create_or_update_tenant(
+    tenant_id: Optional[str],
+    config: TenantConfig,
     user_context: Optional[Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        revoke_email_verification_tokens,
+    if user_context is None:
+        user_context = {}
+
+    from supertokens_python.recipe.multitenancy.asyncio import create_or_update_tenant
+
+    return sync(create_or_update_tenant(tenant_id, config, user_context))
+
+
+def delete_tenant(tenant_id: str, user_context: Optional[Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+
+    from supertokens_python.recipe.multitenancy.asyncio import delete_tenant
+
+    return sync(delete_tenant(tenant_id, user_context))
+
+
+def get_tenant(tenant_id: Optional[str], user_context: Optional[Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+
+    from supertokens_python.recipe.multitenancy.asyncio import get_tenant
+
+    return sync(get_tenant(tenant_id, user_context))
+
+
+def list_all_tenants(user_context: Optional[Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+
+    from supertokens_python.recipe.multitenancy.asyncio import list_all_tenants
+
+    return sync(list_all_tenants(user_context))
+
+
+def create_or_update_third_party_config(
+    tenant_id: Optional[str],
+    config: ProviderConfig,
+    skip_validation: Optional[bool],
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    from supertokens_python.recipe.multitenancy.asyncio import (
+        create_or_update_third_party_config,
     )
 
-    return sync(revoke_email_verification_tokens(user_id, email, user_context))
+    return sync(
+        create_or_update_third_party_config(
+            tenant_id, config, skip_validation, user_context
+        )
+    )
 
 
-def unverify_email(
+def delete_third_party_config(
+    tenant_id: Optional[str],
+    third_party_id: str,
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    from supertokens_python.recipe.multitenancy.asyncio import delete_third_party_config
+
+    return sync(delete_third_party_config(tenant_id, third_party_id, user_context))
+
+
+def associate_user_to_tenant(
+    tenant_id: Optional[str],
     user_id: str,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.emailverification.asyncio import unverify_email
+    if user_context is None:
+        user_context = {}
 
-    return sync(unverify_email(user_id, email, user_context))
+    from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_tenant
+
+    return sync(associate_user_to_tenant(tenant_id, user_id, user_context))
 
 
-def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+def dissociate_user_from_tenant(
+    tenant_id: Optional[str],
+    user_id: str,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.emailverification.asyncio import send_email
+    if user_context is None:
+        user_context = {}
 
-    return sync(send_email(input_, user_context))
+    from supertokens_python.recipe.multitenancy.asyncio import (
+        dissociate_user_from_tenant,
+    )
+
+    return sync(dissociate_user_from_tenant(tenant_id, user_id, user_context))

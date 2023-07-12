@@ -218,7 +218,7 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
-        tenant_config = await api_options.recipe_implementation.get_tenant_config(
+        tenant_config = await api_options.recipe_implementation.get_tenant(
             tenant_id, user_context
         )
 

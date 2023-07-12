@@ -181,7 +181,7 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ):
         mt_recipe = MultitenancyRecipe.get_instance()
-        tenant_config = await mt_recipe.recipe_implementation.get_tenant_config(
+        tenant_config = await mt_recipe.recipe_implementation.get_tenant(
             tenant_id=tenant_id,
             user_context=user_context,
         )

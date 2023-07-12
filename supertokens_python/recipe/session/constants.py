@@ -42,4 +42,5 @@ protected_props = [
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
     "antiCsrfToken",
+    "tId",
 ]
