@@ -22,6 +22,7 @@ from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderConfigForClientType, ProviderInput
 from .utils import get_actual_client_id_from_development_client_id
 
+
 class AppleImpl(GenericProvider):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
