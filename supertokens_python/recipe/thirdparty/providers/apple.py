@@ -18,12 +18,8 @@ from typing import Any, Dict, Optional
 from jwt import encode  # type: ignore
 from time import time
 
-from ..provider import (
-    Provider,
-    ProviderConfigForClientType,
-    ProviderInput,
-)
 from .custom import GenericProvider, NewProvider
+from ..provider import Provider, ProviderConfigForClientType, ProviderInput
 from .utils import get_actual_client_id_from_development_client_id
 
 
@@ -54,7 +50,7 @@ class AppleImpl(GenericProvider):
                 "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
             )
 
-        payload = {
+        payload: Dict[str, Any] = {
             "iss": config.additional_config.get("teamId"),
             "iat": time(),
             "exp": time() + (86400 * 180),  # 6 months

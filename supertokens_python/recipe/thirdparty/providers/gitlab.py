@@ -19,11 +19,9 @@ from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderInput
 
 
-# TODO Implement when it's done in Node PR
 class GitlabImpl(GenericProvider):
     pass
 
 
-# TODO Implement when it's done in Node PR
 def Gitlab(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     return NewProvider(input, GitlabImpl)

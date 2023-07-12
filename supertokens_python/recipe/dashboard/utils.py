@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
-    from ...supertokens import AppInfo
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -195,10 +194,8 @@ def validate_and_normalise_user_input(
     )
 
 
-def is_api_path(path: NormalisedURLPath, app_info: AppInfo) -> bool:
-    dashboard_recipe_base_path = app_info.api_base_path.append(
-        NormalisedURLPath(DASHBOARD_API)
-    )
+def is_api_path(path: NormalisedURLPath, base_path: NormalisedURLPath) -> bool:
+    dashboard_recipe_base_path = base_path.append(NormalisedURLPath(DASHBOARD_API))
 
     if not path.startswith(dashboard_recipe_base_path):
         return False

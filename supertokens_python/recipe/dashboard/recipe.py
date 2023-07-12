@@ -13,11 +13,12 @@
 # under the License.
 from __future__ import annotations
 
+import re
 from os import environ
 from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python.recipe_module import APIHandled, RecipeModule, ApiIdWithTenantId
 
 from .api import (
     api_key_protector,
@@ -45,6 +46,7 @@ from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
 from .interfaces import APIInterface, APIOptions
 from .recipe_implementation import RecipeImplementation
+from ..multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -126,6 +128,7 @@ class DashboardRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -245,15 +248,56 @@ class DashboardRecipe(RecipeModule):
 
     def return_api_id_if_can_handle_request(
         self, path: NormalisedURLPath, method: str
-    ) -> Union[str, None]:
+    ) -> Union[ApiIdWithTenantId, None]:
         dashboard_bundle_path = self.app_info.api_base_path.append(
             NormalisedURLPath(DASHBOARD_API)
         )
 
-        if is_api_path(path, self.app_info):
-            return get_api_if_matched(path, method)
+        base_path_str = self.app_info.api_base_path.get_as_string_dangerous()
+        path_str = path.get_as_string_dangerous()
+        regex = rf"^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$"
+        # some examples against for above regex:
+        # books => match = None
+        # public/books => match = None
+        # /books => match.group(1) = None, match.group(2) = /dashboard
+        # /public/books => match.group(1) = 'public', match.group(2) = '/books'
+        # /public/book/1 => match.group(1) = 'public', match.group(2) = '/book/1'
+
+        match = re.match(regex, path_str)
+        match_group_1 = match.group(1) if match is not None else None
+        match_group_2 = match.group(2) if match is not None else None
+
+        tenant_id: str = DEFAULT_TENANT_ID
+        remaining_path: Optional[NormalisedURLPath] = None
+
+        if (
+            match is not None
+            and isinstance(match_group_1, str)
+            and isinstance(match_group_2, str)
+        ):
+            tenant_id = match_group_1
+            remaining_path = NormalisedURLPath(match_group_2)
+
+        if is_api_path(path, self.app_info.api_base_path) or (
+            remaining_path is not None
+            and is_api_path(
+                path,
+                self.app_info.api_base_path.append(NormalisedURLPath(f"/{tenant_id}")),
+            )
+        ):
+            # check remainingPath first as path that contains tenantId might match as well
+            # since getApiIdIfMatched uses endsWith to match
+            if remaining_path is not None:
+                id_ = get_api_if_matched(remaining_path, method)
+                if id_ is not None:
+                    return ApiIdWithTenantId(id_, tenant_id)
+
+            id_ = get_api_if_matched(path, method)
+            if id_ is not None:
+                return ApiIdWithTenantId(id_, DEFAULT_TENANT_ID)
 
         if path.startswith(dashboard_bundle_path):
-            return DASHBOARD_API
+            return ApiIdWithTenantId(DASHBOARD_API, DEFAULT_TENANT_ID)
 
+        # tenantId is not supported for bundlePath, so not matching for it
         return None

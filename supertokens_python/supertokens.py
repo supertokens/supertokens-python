@@ -489,7 +489,7 @@ class Supertokens:
             # see
             # https://github.com/supertokens/supertokens-python/issues/54
             request_rid = None
-        request_id = None
+        api_and_tenant_id = None
         matched_recipe = None
         if request_rid is not None:
             for recipe in Supertokens.get_instance().recipe_modules:
@@ -501,7 +501,7 @@ class Supertokens:
                     matched_recipe = recipe
                     break
             if matched_recipe is not None:
-                request_id = matched_recipe.return_api_id_if_can_handle_request(
+                api_and_tenant_id = matched_recipe.return_api_id_if_can_handle_request(
                     path, method
                 )
         else:
@@ -510,8 +510,10 @@ class Supertokens:
                     "middleware: Checking recipe ID for match: %s",
                     recipe.get_recipe_id(),
                 )
-                request_id = recipe.return_api_id_if_can_handle_request(path, method)
-                if request_id is not None:
+                api_and_tenant_id = recipe.return_api_id_if_can_handle_request(
+                    path, method
+                )
+                if api_and_tenant_id is not None:
                     matched_recipe = recipe
                     break
         if matched_recipe is not None:
@@ -520,18 +522,25 @@ class Supertokens:
             )
         else:
             log_debug_message("middleware: Not handling because no recipe matched")
-        if matched_recipe is not None and request_id is None:
+
+        if matched_recipe is not None and api_and_tenant_id is None:
             log_debug_message(
                 "middleware: Not handling because recipe doesn't handle request path or method. Request path: %s, request method: %s",
                 path.get_as_string_dangerous(),
                 method,
             )
-        if request_id is not None and matched_recipe is not None:
+        if api_and_tenant_id is not None and matched_recipe is not None:
             log_debug_message(
-                "middleware: Request being handled by recipe. ID is: %s", request_id
+                "middleware: Request being handled by recipe. ID is: %s",
+                api_and_tenant_id.api_id,
             )
             api_resp = await matched_recipe.handle_api_request(
-                request_id, request, path, method, response
+                api_and_tenant_id.api_id,
+                api_and_tenant_id.tenant_id,
+                request,
+                path,
+                method,
+                response,
             )
             if api_resp is None:
                 log_debug_message("middleware: Not handled because API returned None")
