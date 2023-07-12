@@ -38,5 +38,4 @@ def Bitbucket(input: ProviderInput) -> Provider:  # pylint: disable=redefined-bu
     if input.config.user_info_endpoint is None:
         input.config.user_info_endpoint = "https://api.bitbucket.org/2.0/user"
 
-
     return NewProvider(input, BitbucketImpl)
