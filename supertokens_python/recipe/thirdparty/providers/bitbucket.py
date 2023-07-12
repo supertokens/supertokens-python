@@ -19,12 +19,10 @@ from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderInput
 
 
-# TODO Implement when it's done in Node PR
 class BitbucketImpl(GenericProvider):
     pass
 
 
-# TODO Finish when it's done in Node PR
 def Bitbucket(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Bitbucket"
