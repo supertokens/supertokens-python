@@ -13,16 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
 from re import sub
+from typing import Any, Dict, Optional
+from jwt import encode  # type: ignore
 from time import time
 
-from jwt import encode
-
 from .custom import GenericProvider, NewProvider
-from .utils import get_actual_client_id_from_development_client_id
 from ..provider import Provider, ProviderConfigForClientType, ProviderInput
-
+from .utils import get_actual_client_id_from_development_client_id
 
 class AppleImpl(GenericProvider):
     async def get_config_for_client_type(

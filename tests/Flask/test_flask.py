@@ -130,21 +130,44 @@ def driver_config_app():
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[
-                        thirdparty.Apple(
-                            client_id="4398792-io.supertokens.example.service",
-                            client_key_id="7M48Y4RYDL",
-                            client_team_id="YWQCXGJRJL",
-                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="apple",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="4398792-io.supertokens.example.service",
+                                        additional_config={
+                                            "keyId": "7M48Y4RYDL",
+                                            "teamId": "YWQCXGJRJL",
+                                            "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        },
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Google(
-                            client_id="467101b197249757c71f",
-                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="google",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="467101b197249757c71f",
+                                        client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Github(
-                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                            client_secret="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",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="github",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                        client_secret="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",
+                                    ),
+                                ],
+                            )
                         ),
-                    ]
+                    ],
                 )
             ),
             DashboardRecipe.init(
