@@ -105,6 +105,9 @@ class MultitenancyRecipe(RecipeModule):
         )
 
         self.static_third_party_providers: List[ProviderInput] = []
+        self.get_allowed_domains_for_tenant_id = (
+            self.config.get_allowed_domains_for_tenant_id
+        )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, (TenantDoesNotExistError, RecipeDisabledForTenantError))

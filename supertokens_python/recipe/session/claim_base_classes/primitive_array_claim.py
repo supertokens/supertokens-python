@@ -267,7 +267,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,
