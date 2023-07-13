@@ -28,7 +28,7 @@ def session_functions_override_with_claim(
             disable_anti_csrf: Optional[bool],
             user_context: Dict[str, Any],
         ):
-            payload_update = await claim.build(user_id, user_context)
+            payload_update = await claim.build(user_id, DEFAULT_TENANT_ID, user_context)
             if access_token_payload is None:
                 access_token_payload = {}
             access_token_payload = {
