@@ -384,7 +384,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             return False
 
         access_token_payload_update = await claim.build(
-            session_info.user_id, user_context
+            session_info.user_id, tenant_id, user_context
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context

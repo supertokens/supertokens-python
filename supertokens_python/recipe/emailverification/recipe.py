@@ -312,7 +312,9 @@ class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
+        async def fetch_value(
+            user_id: str, _tenant_id: str, user_context: Dict[str, Any]
+        ) -> bool:
             recipe = EmailVerificationRecipe.get_instance()
             email_info = await recipe.get_email_for_user_id(user_id, user_context)
 
