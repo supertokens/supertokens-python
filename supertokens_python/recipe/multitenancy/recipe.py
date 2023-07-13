@@ -226,7 +226,7 @@ class APIImplementation(APIInterface):
         provider_configs_from_core = tenant_config.third_party.providers
 
         merged_providers = merge_providers_from_core_and_static(
-            tenant_id, provider_configs_from_core, provider_inputs_from_static
+            provider_configs_from_core, provider_inputs_from_static
         )
 
         final_provider_list: List[ThirdPartyProvider] = []

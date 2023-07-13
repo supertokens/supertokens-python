@@ -61,7 +61,7 @@ def list_all_tenants(user_context: Optional[Dict[str, Any]] = None):
 def create_or_update_third_party_config(
     tenant_id: Optional[str],
     config: ProviderConfig,
-    skip_validation: Optional[bool],
+    skip_validation: Optional[bool] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:

@@ -173,13 +173,6 @@ class RecipeInterface(ABC):
     ) -> DeleteThirdPartyConfigOkResult:
         pass
 
-    # TODO: Should this be removed?
-    @abstractmethod
-    async def list_third_party_configs_for_third_party_id(
-        self, third_party_id: str, user_context: Dict[str, Any]
-    ) -> ListThirdPartyConfigsForThirdPartyIdOkResult:
-        pass
-
     # user tenant association
     @abstractmethod
     async def associate_user_to_tenant(
