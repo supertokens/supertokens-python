@@ -187,7 +187,6 @@ class RecipeImplementation(RecipeInterface):
         )
 
         merged_providers = merge_providers_from_core_and_static(
-            tenant_id=tenant_id,
             provider_configs_from_core=tenant_config.third_party.providers,
             provider_inputs_from_static=self.providers,
         )
