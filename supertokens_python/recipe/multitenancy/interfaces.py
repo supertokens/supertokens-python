@@ -294,6 +294,6 @@ class APIInterface(ABC):
 
 
 TypeGetAllowedDomainsForTenantId = Callable[
-    [Union[str, None], Dict[str, Any]],
+    [str, Dict[str, Any]],
     Awaitable[List[str]],
 ]
