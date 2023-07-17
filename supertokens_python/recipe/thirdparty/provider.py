@@ -252,8 +252,8 @@ class ProviderConfig:
             "thirdPartyId": self.third_party_id,
             "name": self.name,
             "clients": [c.to_json() for c in self.clients]
-            if isinstance(self.clients, list)
-            else None,
+            if self.clients is not None
+            else [],
             "authorizationEndpoint": self.authorization_endpoint,
             "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
             "tokenEndpoint": self.token_endpoint,

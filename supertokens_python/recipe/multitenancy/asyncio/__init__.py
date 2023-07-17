@@ -23,10 +23,10 @@ from ..interfaces import (
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
     AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdErrorResult,
-    AssociateUserToTenantEmailAlreadyExistsErrorResult,
-    AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
-    AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+    AssociateUserToTenantUnknownUserIdError,
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     DisassociateUserFromTenantOkResult,
 )
 from ..recipe import MultitenancyRecipe
@@ -117,10 +117,10 @@ async def associate_user_to_tenant(
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdErrorResult,
-    AssociateUserToTenantEmailAlreadyExistsErrorResult,
-    AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
-    AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+    AssociateUserToTenantUnknownUserIdError,
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
 ]:
     if user_context is None:
         user_context = {}

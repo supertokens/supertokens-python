@@ -129,19 +129,19 @@ class AssociateUserToTenantOkResult:
         self.was_already_associated = was_already_associated
 
 
-class AssociateUserToTenantUnknownUserIdErrorResult:
+class AssociateUserToTenantUnknownUserIdError:
     status = "UNKNOWN_USER_ID_ERROR"
 
 
-class AssociateUserToTenantEmailAlreadyExistsErrorResult:
+class AssociateUserToTenantEmailAlreadyExistsError:
     status = "EMAIL_ALREADY_EXISTS_ERROR"
 
 
-class AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult:
+class AssociateUserToTenantPhoneNumberAlreadyExistsError:
     status = "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
 
 
-class AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult:
+class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
     status = "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
 
 
@@ -218,10 +218,10 @@ class RecipeInterface(ABC):
         user_context: Dict[str, Any],
     ) -> Union[
         AssociateUserToTenantOkResult,
-        AssociateUserToTenantUnknownUserIdErrorResult,
-        AssociateUserToTenantEmailAlreadyExistsErrorResult,
-        AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
-        AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+        AssociateUserToTenantUnknownUserIdError,
+        AssociateUserToTenantEmailAlreadyExistsError,
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
         pass
 
