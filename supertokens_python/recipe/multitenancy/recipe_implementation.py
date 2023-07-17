@@ -13,32 +13,34 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Dict, Any, Union
+from typing import TYPE_CHECKING, Optional, Dict, Any, Union, List
 from supertokens_python.recipe.multitenancy.interfaces import (
-    AssociateUserToTenantErrorResult,
     AssociateUserToTenantOkResult,
+    AssociateUserToTenantUnknownUserIdErrorResult,
+    AssociateUserToTenantEmailAlreadyExistsErrorResult,
+    AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
     DisassociateUserFromTenantOkResult,
 )
-from supertokens_python.recipe.thirdparty.provider import ProviderConfig
 
 from .interfaces import (
-    EmailPasswordConfig,
-    PasswordlessConfig,
     RecipeInterface,
     TenantConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
+    TenantConfigResponse,
     GetTenantOkResult,
+    EmailPasswordConfig,
+    PasswordlessConfig,
+    ThirdPartyConfig,
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
-    ListThirdPartyConfigsForThirdPartyIdOkResult,
-    ThirdPartyConfig,
 )
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-
+    from supertokens_python.recipe.thirdparty.provider import ProviderConfig
     from .utils import MultitenancyConfig
 
 from supertokens_python.querier import NormalisedURLPath
@@ -54,7 +56,7 @@ class RecipeImplementation(RecipeInterface):
     async def get_tenant_id(
         self, tenant_id_from_frontend: Optional[str], user_context: Dict[str, Any]
     ) -> Optional[str]:
-        pass
+        return tenant_id_from_frontend
 
     async def create_or_update_tenant(
         self,
@@ -62,38 +64,197 @@ class RecipeImplementation(RecipeInterface):
         config: TenantConfig,
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
-        raise NotImplementedError
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/multitenancy/tenant"),
+            {
+                "tenantId": tenant_id,
+                **config.to_json(),
+            },
+        )
+        return CreateOrUpdateTenantOkResult(
+            created_new=response["createdNew"],
+        )
 
     async def delete_tenant(
         self, tenant_id: str, user_context: Dict[str, Any]
     ) -> DeleteTenantOkResult:
-        raise NotImplementedError
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/multitenancy/tenant/remove"),
+            {"tenantId": tenant_id},
+        )
+        return DeleteTenantOkResult(
+            did_exist=response["didExist"],
+        )
 
     async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
     ) -> GetTenantOkResult:
-        _ = self.querier.send_get_request(
+        from supertokens_python.recipe.thirdparty.provider import (
+            ProviderConfig,
+            UserInfoMap,
+            UserFields,
+            ProviderClientConfig,
+        )
+
+        res = await self.querier.send_get_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
             ),
-            {},
         )
 
-        # FIXME: Fill values from the response
-        # if "status" in response and response["status"] == "OK":
-        #     pass
+        providers: List[ProviderConfig] = []
+        for p in res["thirdParty"]["providers"]:
+            user_info_map: Optional[UserInfoMap] = None
+            if "userInfoMap" in p:
+                map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
+                map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
+                user_info_map = UserInfoMap(
+                    UserFields(
+                        map_from_payload.get("userId"),
+                        map_from_payload.get("email"),
+                        map_from_payload.get("emailVerified"),
+                    ),
+                    UserFields(
+                        map_from_api.get("userId"),
+                        map_from_api.get("email"),
+                        map_from_api.get("emailVerified"),
+                    ),
+                )
+
+            providers.append(
+                ProviderConfig(
+                    third_party_id=p["thirdPartyId"],
+                    name=p["name"],
+                    clients=[
+                        ProviderClientConfig(
+                            client_id=c["clientId"],
+                            client_secret=c.get("clientSecret"),
+                            client_type=c.get("clientType"),
+                            scope=c.get("scope"),
+                            force_pkce=c.get("forcePkce"),
+                            additional_config=c.get("additionalConfig"),
+                        )
+                        for c in p["clients"]
+                    ],
+                    authorization_endpoint=p.get("authorizationEndpoint"),
+                    authorization_endpoint_query_params=p.get(
+                        "authorizationEndpointQueryParams"
+                    ),
+                    token_endpoint=p.get("tokenEndpoint"),
+                    token_endpoint_body_params=p.get("tokenEndpointBodyParams"),
+                    user_info_endpoint=p.get("userInfoEndpoint"),
+                    user_info_endpoint_query_params=p.get(
+                        "userInfoEndpointQueryParams"
+                    ),
+                    user_info_endpoint_headers=p.get("userInfoEndpointHeaders"),
+                    jwks_uri=p.get("jwksUri"),
+                    oidc_discovery_endpoint=p.get("oidcDiscoveryEndpoint"),
+                    user_info_map=user_info_map,
+                    require_email=p.get("requireEmail"),
+                    validate_id_token_payload=None,
+                    generate_fake_email=None,
+                )
+            )
 
         return GetTenantOkResult(
-            email_password=EmailPasswordConfig(enabled=True),
-            passwordless=PasswordlessConfig(enabled=True),
-            third_party=ThirdPartyConfig(enabled=True, providers=[]),
-            core_config={},
+            emailpassword=EmailPasswordConfig(res["emailPassword"]["enabled"]),
+            passwordless=PasswordlessConfig(res["passwordless"]["enabled"]),
+            third_party=ThirdPartyConfig(
+                res["thirdParty"]["enabled"],
+                providers,
+            ),
+            core_config=res["coreConfig"],
         )
 
     async def list_all_tenants(
         self, user_context: Dict[str, Any]
     ) -> ListAllTenantsOkResult:
-        raise NotImplementedError
+        from supertokens_python.recipe.thirdparty.provider import (
+            ProviderConfig,
+            ProviderClientConfig,
+            UserFields,
+            UserInfoMap,
+        )
+
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/multitenancy/tenant/list"),
+            {},
+        )
+
+        tenant_configs: List[TenantConfigResponse] = []
+
+        for tenant in response["tenants"]:
+            providers: List[ProviderConfig] = []
+            for p in tenant["thirdParty"]["providers"]:
+                user_info_map: Optional[UserInfoMap] = None
+                if "userInfoMap" in p:
+                    map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
+                    map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
+                    user_info_map = UserInfoMap(
+                        UserFields(
+                            map_from_payload.get("userId"),
+                            map_from_payload.get("email"),
+                            map_from_payload.get("emailVerified"),
+                        ),
+                        UserFields(
+                            map_from_api.get("userId"),
+                            map_from_api.get("email"),
+                            map_from_api.get("emailVerified"),
+                        ),
+                    )
+
+                providers.append(
+                    ProviderConfig(
+                        third_party_id=p["thirdPartyId"],
+                        name=p["name"],
+                        clients=[
+                            ProviderClientConfig(
+                                client_id=c["clientId"],
+                                client_secret=c["clientSecret"],
+                                client_type=c["clientType"],
+                                scope=c["scope"],
+                                force_pkce=c["forcePkce"],
+                                additional_config=c["additionalConfig"],
+                            )
+                            for c in p["clients"]
+                        ],
+                        authorization_endpoint=p["authorizationEndpoint"],
+                        authorization_endpoint_query_params=p[
+                            "authorizationEndpointQueryParams"
+                        ],
+                        token_endpoint=p["tokenEndpoint"],
+                        token_endpoint_body_params=p["tokenEndpointBodyParams"],
+                        user_info_endpoint=p["userInfoEndpoint"],
+                        user_info_endpoint_query_params=p[
+                            "userInfoEndpointQueryParams"
+                        ],
+                        user_info_endpoint_headers=p["userInfoEndpointHeaders"],
+                        jwks_uri=p["jwksUri"],
+                        oidc_discovery_endpoint=p["oidcDiscoveryEndpoint"],
+                        user_info_map=user_info_map,
+                        require_email=p["requireEmail"],
+                        validate_id_token_payload=p["validateIdTokenPayload"],
+                        generate_fake_email=p["generateFakeEmail"],
+                    )
+                )
+
+            tenant_configs.append(
+                TenantConfigResponse(
+                    emailpassword=EmailPasswordConfig(
+                        tenant["emailPassword"]["enabled"]
+                    ),
+                    passwordless=PasswordlessConfig(tenant["passwordless"]["enabled"]),
+                    third_party=ThirdPartyConfig(
+                        tenant["thirdParty"]["enabled"],
+                        providers,
+                    ),
+                    core_config=tenant["coreConfig"],
+                )
+            )
+
+        return ListAllTenantsOkResult(
+            tenants=tenant_configs,
+        )
 
     async def create_or_update_third_party_config(
         self,
@@ -102,7 +263,19 @@ class RecipeImplementation(RecipeInterface):
         skip_validation: Optional[bool],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateThirdPartyConfigOkResult:
-        raise NotImplementedError
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty"
+            ),
+            {
+                "config": config.to_json(),
+                "skipValidation": skip_validation is True,
+            },
+        )
+
+        return CreateOrUpdateThirdPartyConfigOkResult(
+            created_new=response["createdNew"],
+        )
 
     async def delete_third_party_config(
         self,
@@ -110,19 +283,53 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         user_context: Dict[str, Any],
     ) -> DeleteThirdPartyConfigOkResult:
-        raise NotImplementedError
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty/remove"
+            ),
+            {
+                "thirdPartyId": third_party_id,
+            },
+        )
 
-    async def list_third_party_configs_for_third_party_id(
-        self, third_party_id: str, user_context: Dict[str, Any]
-    ) -> ListThirdPartyConfigsForThirdPartyIdOkResult:
-        raise NotImplementedError
+        return DeleteThirdPartyConfigOkResult(
+            did_config_exist=response["didConfigExist"],
+        )
 
     async def associate_user_to_tenant(
         self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[AssociateUserToTenantOkResult, AssociateUserToTenantErrorResult]:
-        raise NotImplementedError
+    ) -> Union[
+        AssociateUserToTenantOkResult,
+        AssociateUserToTenantUnknownUserIdErrorResult,
+        AssociateUserToTenantEmailAlreadyExistsErrorResult,
+        AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+    ]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"
+            ),
+            {
+                "userId": user_id,
+            },
+        )
+
+        return AssociateUserToTenantOkResult(
+            was_already_associated=response["wasAlreadyAssociated"],
+        )
 
     async def dissociate_user_from_tenant(
         self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
     ) -> DisassociateUserFromTenantOkResult:
-        raise NotImplementedError
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove"
+            ),
+            {
+                "userId": user_id,
+            },
+        )
+
+        return DisassociateUserFromTenantOkResult(
+            was_associated=response["wasAssociated"],
+        )

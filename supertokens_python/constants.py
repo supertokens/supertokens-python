@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-SUPPORTED_CDI_VERSIONS = ["2.21"]
+SUPPORTED_CDI_VERSIONS = ["3.0"]
 VERSION = "0.14.7"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"

@@ -18,7 +18,13 @@ from starlette.testclient import TestClient
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, multitenancy, session
-from tests.utils import setup_function, teardown_function, get_st_init_args, start_st
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    get_st_init_args,
+    start_st,
+    setup_multitenancy_feature,
+)
 
 _ = setup_function
 _ = teardown_function
@@ -56,6 +62,7 @@ async def test_tenant_crud():
     args = get_st_init_args([multitenancy.init()])
     init(**args)
     start_st()
+    setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
     await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
@@ -65,19 +72,19 @@ async def test_tenant_crud():
     assert len(tenants.tenants) == 4
 
     t1_config = await get_tenant("t1")
-    assert t1_config.email_password.enabled is True
+    assert t1_config.emailpassword.enabled is True
     assert t1_config.passwordless.enabled is False
     assert t1_config.third_party.enabled is False
     assert t1_config.core_config == {}
 
     t2_config = await get_tenant("t2")
-    assert t2_config.email_password.enabled is False
+    assert t2_config.emailpassword.enabled is False
     assert t2_config.passwordless.enabled is True
     assert t2_config.third_party.enabled is False
     assert t2_config.core_config == {}
 
     t3_config = await get_tenant("t3")
-    assert t3_config.email_password.enabled is False
+    assert t3_config.emailpassword.enabled is False
     assert t3_config.passwordless.enabled is False
     assert t3_config.third_party.enabled is True
     assert t3_config.core_config == {}
@@ -85,7 +92,7 @@ async def test_tenant_crud():
     # update tenant1 to add passwordless:
     await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
     t1_config = await get_tenant("t1")
-    assert t1_config.email_password.enabled is True
+    assert t1_config.emailpassword.enabled is True
     assert t1_config.passwordless.enabled is True
     assert t1_config.third_party.enabled is False
     assert t1_config.core_config == {}
@@ -93,7 +100,7 @@ async def test_tenant_crud():
     # update tenant1 to add thirdparty:
     await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
     t1_config = await get_tenant("t1")
-    assert t1_config.email_password.enabled is True
+    assert t1_config.emailpassword.enabled is True
     assert t1_config.passwordless.enabled is True
     assert t1_config.third_party.enabled is True
     assert t1_config.core_config == {}
@@ -101,14 +108,14 @@ async def test_tenant_crud():
     # delete tenant2:
     await delete_tenant("t2")
     tenants = await list_all_tenants()
-    assert len(tenants.tenants) == 2
-    assert "t2" not in tenants.tenants
+    assert len(tenants.tenants) == 3
 
 
 async def test_tenant_thirdparty_config():
     args = get_st_init_args([multitenancy.init()])
     init(**args)
     start_st()
+    setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
     await create_or_update_third_party_config(
@@ -126,7 +133,7 @@ async def test_tenant_thirdparty_config():
     assert tenant_config.third_party.providers[0].third_party_id == "google"
     assert tenant_config.third_party.providers[0].clients is not None
     assert len(tenant_config.third_party.providers[0].clients) == 1
-    assert tenant_config.third_party.providers[0].clients[0] == "abcd"
+    assert tenant_config.third_party.providers[0].clients[0].client_id == "abcd"
 
     # update thirdparty config
     await create_or_update_third_party_config(
@@ -144,7 +151,7 @@ async def test_tenant_thirdparty_config():
     assert tenant_config.third_party.providers[0].name == "Custom name"
     assert tenant_config.third_party.providers[0].clients is not None
     assert len(tenant_config.third_party.providers[0].clients) == 1
-    assert tenant_config.third_party.providers[0].clients[0] == "efgh"
+    assert tenant_config.third_party.providers[0].clients[0].client_id == "efgh"
 
     # delete thirdparty config
     await delete_third_party_config("t1", "google")
@@ -157,6 +164,7 @@ async def test_user_association_and_disassociation_with_tenants():
     args = get_st_init_args([session.init(), emailpassword.init(), multitenancy.init()])
     init(**args)
     start_st()
+    setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
     await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))

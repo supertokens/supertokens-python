@@ -152,6 +152,19 @@ def start_st(host: str = "localhost", port: str = "3567"):
         raise Exception("could not start ST process")
 
 
+def setup_multitenancy_feature(host: str = "localhost", port: str = "3567"):
+    OPAQUE_KEY_WITH_MULTITENANCY_FEATURE = "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu"
+
+    import requests
+
+    requests.put(
+        f"http://{host}:{port}/ee/license",
+        json={
+            "licenseKey": OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+        },
+    )
+
+
 def setup_st():
     try:
         run("cd " + INSTALLATION_PATH + " && cp temp/licenseKey ./licenseKey")
