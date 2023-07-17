@@ -73,7 +73,7 @@ class APIImplementation(APIInterface):
 
         return LoginMethodsGetOkResult(
             email_password=LoginMethodEmailPassword(
-                tenant_config_res.email_password.enabled
+                tenant_config_res.emailpassword.enabled
             ),
             passwordless=LoginMethodPasswordless(
                 tenant_config_res.passwordless.enabled

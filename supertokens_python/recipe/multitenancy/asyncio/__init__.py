@@ -10,11 +10,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
+from __future__ import annotations
+
+from typing import Any, Dict, Union, Optional, TYPE_CHECKING
 
 from ..interfaces import (
     TenantConfig,
-    ProviderConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
     GetTenantOkResult,
@@ -22,10 +23,16 @@ from ..interfaces import (
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
     AssociateUserToTenantOkResult,
-    AssociateUserToTenantErrorResult,
+    AssociateUserToTenantUnknownUserIdErrorResult,
+    AssociateUserToTenantEmailAlreadyExistsErrorResult,
+    AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
     DisassociateUserFromTenantOkResult,
 )
 from ..recipe import MultitenancyRecipe
+
+if TYPE_CHECKING:
+    from ..interfaces import ProviderConfig
 
 
 async def create_or_update_tenant(
@@ -108,7 +115,13 @@ async def associate_user_to_tenant(
     tenant_id: Optional[str],
     user_id: str,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[AssociateUserToTenantOkResult, AssociateUserToTenantErrorResult]:
+) -> Union[
+    AssociateUserToTenantOkResult,
+    AssociateUserToTenantUnknownUserIdErrorResult,
+    AssociateUserToTenantEmailAlreadyExistsErrorResult,
+    AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+]:
     if user_context is None:
         user_context = {}
 

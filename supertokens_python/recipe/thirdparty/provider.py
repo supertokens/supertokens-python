@@ -97,6 +97,18 @@ class ProviderClientConfig:
         self.force_pkce = force_pkce
         self.additional_config = additional_config
 
+    def to_json(self) -> Dict[str, Any]:
+        res = {
+            "clientId": self.client_id,
+            "clientSecret": self.client_secret,
+            "clientType": self.client_type,
+            "scope": self.scope,
+            "forcePkce": self.force_pkce,
+            "additionalConfig": self.additional_config,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
+
 
 class ProviderConfigForClientType:
     def __init__(
@@ -129,7 +141,6 @@ class ProviderConfigForClientType:
                 Awaitable[None],
             ]
         ] = None,
-        tenant_id: Optional[str] = None,
     ):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -151,7 +162,6 @@ class ProviderConfigForClientType:
         self.require_email = require_email
         self.validate_id_token_payload = validate_id_token_payload
         self.generate_fake_email = generate_fake_email
-        self.tenant_id = tenant_id
 
 
 class UserFields:
@@ -165,6 +175,13 @@ class UserFields:
         self.email = email
         self.email_verified = email_verified
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "userId": self.user_id,
+            "email": self.email,
+            "emailVerified": self.email_verified,
+        }
+
 
 class UserInfoMap:
     def __init__(
@@ -174,6 +191,12 @@ class UserInfoMap:
     ):
         self.from_id_token_payload = from_id_token_payload
         self.from_user_info_api = from_user_info_api
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "fromIdTokenPayload": self.from_id_token_payload.to_json(),
+            "fromUserInfoAPI": self.from_user_info_api.to_json(),
+        }
 
 
 class ProviderConfig:
@@ -204,7 +227,6 @@ class ProviderConfig:
         generate_fake_email: Optional[
             Callable[[str, Dict[str, Any]], Awaitable[str]]
         ] = None,
-        tenant_id: Optional[str] = None,
     ):
         self.third_party_id = third_party_id
         self.name = name
@@ -222,7 +244,32 @@ class ProviderConfig:
         self.require_email = require_email
         self.validate_id_token_payload = validate_id_token_payload
         self.generate_fake_email = generate_fake_email
-        self.tenant_id = tenant_id
+
+    def to_json(self) -> Dict[str, Any]:
+        res = {
+            "thirdPartyId": self.third_party_id,
+            "name": self.name,
+            "clients": [c.to_json() for c in self.clients]
+            if isinstance(self.clients, list)
+            else None,
+            # "authorizationEndpoint": self.authorization_endpoint,
+            # "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
+            # "tokenEndpoint": self.token_endpoint,
+            # "tokenEndpointBodyParams": self.token_endpoint_body_params,
+            # "userInfoEndpoint": self.user_info_endpoint,
+            # "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
+            # "userInfoEndpointHeaders": self.user_info_endpoint_headers,
+            # "jwksUri": self.jwks_uri,
+            # "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
+            # "userInfoMap": self.user_info_map.to_json()
+            # if self.user_info_map is not None
+            # else None,
+            # "requireEmail": self.require_email,
+            # "validateIdTokenPayload": self.validate_id_token_payload,  # FIXME: This is a function, not a json
+            # "generateFakeEmail": self.generate_fake_email,  # FIXME: This is a function, not a json
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
 
 
 class ProviderInput:

@@ -39,7 +39,8 @@ class NormalisedURLPath:
         return self.__value == other.get_as_string_dangerous()
 
     def is_a_recipe_path(self) -> bool:
-        return self.__value == "/recipe" or self.__value.startswith("/recipe/")
+        parts = self.__value.split("/")
+        return parts[1] == "recipe" or parts[2] == "recipe"
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:

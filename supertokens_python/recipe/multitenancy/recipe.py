@@ -44,11 +44,6 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.types import GeneralErrorResponse
 
-from supertokens_python.recipe.thirdparty.providers.config_utils import (
-    find_and_create_provider_instance,
-    merge_providers_from_core_and_static,
-)
-from supertokens_python.recipe.thirdparty.exceptions import ClientTypeNotFoundError
 
 from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
@@ -218,6 +213,14 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+        from supertokens_python.recipe.thirdparty.providers.config_utils import (
+            find_and_create_provider_instance,
+            merge_providers_from_core_and_static,
+        )
+        from supertokens_python.recipe.thirdparty.exceptions import (
+            ClientTypeNotFoundError,
+        )
+
         tenant_config = await api_options.recipe_implementation.get_tenant(
             tenant_id, user_context
         )
@@ -246,7 +249,7 @@ class APIImplementation(APIInterface):
             )
 
         return LoginMethodsGetOkResult(
-            LoginMethodEmailPassword(tenant_config.email_password.enabled),
+            LoginMethodEmailPassword(tenant_config.emailpassword.enabled),
             LoginMethodPasswordless(tenant_config.passwordless.enabled),
             LoginMethodThirdParty(
                 tenant_config.third_party.enabled, final_provider_list
