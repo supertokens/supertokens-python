@@ -40,7 +40,7 @@ from .interfaces import (
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-    from supertokens_python.recipe.thirdparty.interfaces import ProviderConfig
+    from supertokens_python.recipe.thirdparty.provider import ProviderConfig
     from .utils import MultitenancyConfig
 
 from supertokens_python.querier import NormalisedURLPath
@@ -91,6 +91,8 @@ class RecipeImplementation(RecipeInterface):
     ) -> GetTenantOkResult:
         from supertokens_python.recipe.thirdparty.provider import (
             ProviderConfig,
+            UserInfoMap,
+            UserFields,
             ProviderClientConfig,
         )
 
@@ -102,6 +104,23 @@ class RecipeImplementation(RecipeInterface):
 
         providers: List[ProviderConfig] = []
         for p in res["thirdParty"]["providers"]:
+            user_info_map: Optional[UserInfoMap] = None
+            if "userInfoMap" in p:
+                map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
+                map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
+                user_info_map = UserInfoMap(
+                    UserFields(
+                        map_from_payload.get("userId"),
+                        map_from_payload.get("email"),
+                        map_from_payload.get("emailVerified"),
+                    ),
+                    UserFields(
+                        map_from_api.get("userId"),
+                        map_from_api.get("email"),
+                        map_from_api.get("emailVerified"),
+                    ),
+                )
+
             providers.append(
                 ProviderConfig(
                     third_party_id=p["thirdPartyId"],
@@ -124,18 +143,18 @@ class RecipeImplementation(RecipeInterface):
                     token_endpoint=p.get("tokenEndpoint"),
                     token_endpoint_body_params=p.get("tokenEndpointBodyParams"),
                     user_info_endpoint=p.get("userInfoEndpoint"),
-                    user_info_endpoint_query_params=p.get("userInfoEndpointQueryParams"),
+                    user_info_endpoint_query_params=p.get(
+                        "userInfoEndpointQueryParams"
+                    ),
                     user_info_endpoint_headers=p.get("userInfoEndpointHeaders"),
                     jwks_uri=p.get("jwksUri"),
                     oidc_discovery_endpoint=p.get("oidcDiscoveryEndpoint"),
-                    user_info_map=p.get("userInfoMap"),
+                    user_info_map=user_info_map,
                     require_email=p.get("requireEmail"),
-                    validate_id_token_payload=p.get("validateIdTokenPayload"),
-                    generate_fake_email=p.get("generateFakeEmail"),
+                    validate_id_token_payload=None,
+                    generate_fake_email=None,
                 )
             )
-
-        # /t1/recipe/multitenancy/tenant
 
         return GetTenantOkResult(
             emailpassword=EmailPasswordConfig(res["emailPassword"]["enabled"]),
@@ -153,6 +172,8 @@ class RecipeImplementation(RecipeInterface):
         from supertokens_python.recipe.thirdparty.provider import (
             ProviderConfig,
             ProviderClientConfig,
+            UserFields,
+            UserInfoMap,
         )
 
         response = await self.querier.send_get_request(
@@ -165,6 +186,23 @@ class RecipeImplementation(RecipeInterface):
         for tenant in response["tenants"]:
             providers: List[ProviderConfig] = []
             for p in tenant["thirdParty"]["providers"]:
+                user_info_map: Optional[UserInfoMap] = None
+                if "userInfoMap" in p:
+                    map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
+                    map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
+                    user_info_map = UserInfoMap(
+                        UserFields(
+                            map_from_payload.get("userId"),
+                            map_from_payload.get("email"),
+                            map_from_payload.get("emailVerified"),
+                        ),
+                        UserFields(
+                            map_from_api.get("userId"),
+                            map_from_api.get("email"),
+                            map_from_api.get("emailVerified"),
+                        ),
+                    )
+
                 providers.append(
                     ProviderConfig(
                         third_party_id=p["thirdPartyId"],
@@ -193,7 +231,7 @@ class RecipeImplementation(RecipeInterface):
                         user_info_endpoint_headers=p["userInfoEndpointHeaders"],
                         jwks_uri=p["jwksUri"],
                         oidc_discovery_endpoint=p["oidcDiscoveryEndpoint"],
-                        user_info_map=p["userInfoMap"],
+                        user_info_map=user_info_map,
                         require_email=p["requireEmail"],
                         validate_id_token_payload=p["validateIdTokenPayload"],
                         generate_fake_email=p["generateFakeEmail"],
