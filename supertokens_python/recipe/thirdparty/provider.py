@@ -176,11 +176,13 @@ class UserFields:
         self.email_verified = email_verified
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        res = {
             "userId": self.user_id,
             "email": self.email,
             "emailVerified": self.email_verified,
         }
+
+        return {k: v for k, v in res.items() if v is not None}
 
 
 class UserInfoMap:
@@ -252,21 +254,19 @@ class ProviderConfig:
             "clients": [c.to_json() for c in self.clients]
             if isinstance(self.clients, list)
             else None,
-            # "authorizationEndpoint": self.authorization_endpoint,
-            # "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
-            # "tokenEndpoint": self.token_endpoint,
-            # "tokenEndpointBodyParams": self.token_endpoint_body_params,
-            # "userInfoEndpoint": self.user_info_endpoint,
-            # "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
-            # "userInfoEndpointHeaders": self.user_info_endpoint_headers,
-            # "jwksUri": self.jwks_uri,
-            # "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
-            # "userInfoMap": self.user_info_map.to_json()
-            # if self.user_info_map is not None
-            # else None,
-            # "requireEmail": self.require_email,
-            # "validateIdTokenPayload": self.validate_id_token_payload,  # FIXME: This is a function, not a json
-            # "generateFakeEmail": self.generate_fake_email,  # FIXME: This is a function, not a json
+            "authorizationEndpoint": self.authorization_endpoint,
+            "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
+            "tokenEndpoint": self.token_endpoint,
+            "tokenEndpointBodyParams": self.token_endpoint_body_params,
+            "userInfoEndpoint": self.user_info_endpoint,
+            "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
+            "userInfoEndpointHeaders": self.user_info_endpoint_headers,
+            "jwksUri": self.jwks_uri,
+            "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
+            "userInfoMap": self.user_info_map.to_json()
+            if self.user_info_map is not None
+            else None,
+            "requireEmail": self.require_email,
         }
 
         return {k: v for k, v in res.items() if v is not None}
