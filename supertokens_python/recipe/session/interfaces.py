@@ -69,6 +69,7 @@ class SessionInformationResult:
         expiry: int,
         custom_claims_in_access_token_payload: Dict[str, Any],
         time_created: int,
+        tenant_id: str,
     ):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
@@ -78,6 +79,7 @@ class SessionInformationResult:
             str, Any
         ] = custom_claims_in_access_token_payload
         self.time_created: int = time_created
+        self.tenant_id: str = tenant_id
 
 
 class ReqResInfo:
@@ -133,6 +135,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     @abstractmethod
     async def create_new_session(
         self,
+        tenant_id: str,
         user_id: str,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
@@ -383,6 +386,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         user_data_in_access_token: Optional[Dict[str, Any]],
         req_res_info: Optional[ReqResInfo],
         access_token_updated: bool,
+        tenant_id: str,
     ):
         self.recipe_implementation = recipe_implementation
         self.config = config
@@ -395,6 +399,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.user_data_in_access_token = user_data_in_access_token
         self.req_res_info: Optional[ReqResInfo] = req_res_info
         self.access_token_updated = access_token_updated
+        self.tenant_id = tenant_id
 
         self.response_mutators: List[ResponseMutator] = []
 

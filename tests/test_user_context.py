@@ -117,6 +117,7 @@ async def test_user_context(driver_config_client: TestClient):
         og_create_new_session = param.create_new_session
 
         async def create_new_session(
+            tenant_id: str,
             user_id: str,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
@@ -130,6 +131,7 @@ async def test_user_context(driver_config_client: TestClient):
             ):
                 user_context["preCreateNewSession"] = True
             response = await og_create_new_session(
+                tenant_id,
                 user_id,
                 access_token_payload,
                 session_data_in_database,
@@ -224,6 +226,7 @@ async def test_default_context(driver_config_client: TestClient):
         og_create_new_session = param.create_new_session
 
         async def create_new_session(
+            tenant_id: str,
             user_id: str,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
@@ -236,6 +239,7 @@ async def test_default_context(driver_config_client: TestClient):
                 create_new_session_context_works = True
 
             response = await og_create_new_session(
+                tenant_id,
                 user_id,
                 access_token_payload,
                 session_data_in_database,
@@ -340,6 +344,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         og_create_new_session = param.create_new_session
 
         async def create_new_session(
+            tenant_id: str,
             user_id: str,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
@@ -354,6 +359,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
                 create_new_session_context_works = True
 
             response = await og_create_new_session(
+                tenant_id,
                 user_id,
                 access_token_payload,
                 session_data_in_database,

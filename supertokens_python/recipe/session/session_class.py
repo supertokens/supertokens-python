@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, TypeVar, Union
+from typing import Any, Dict, List, TypeVar, Union, Optional
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
@@ -133,6 +133,9 @@ class Session(SessionContainer):
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.user_id
 
+    def get_tenant_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
+        return self.tenant_id
+
     def get_access_token_payload(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -> Dict[str, Any]:
@@ -220,7 +223,9 @@ class Session(SessionContainer):
         if user_context is None:
             user_context = {}
 
-        update = await claim.build(self.get_user_id(), tenant_id, user_context)
+        update = await claim.build(
+            self.get_user_id(), self.get_tenant_id(), user_context
+        )
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def set_claim_value(

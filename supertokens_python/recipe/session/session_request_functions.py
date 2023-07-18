@@ -210,6 +210,7 @@ async def get_session_from_request(
 
 async def create_new_session_in_request(
     request: Any,
+    tenant_id: str,
     user_context: Dict[str, Any],
     recipe_instance: SessionRecipe,
     access_token_payload: Dict[str, Any],
@@ -275,6 +276,7 @@ async def create_new_session_in_request(
 
     disable_anti_csrf = output_transfer_method == "header"
     session = await recipe_instance.recipe_implementation.create_new_session(
+        tenant_id,
         user_id,
         final_access_token_payload,
         session_data_in_database,

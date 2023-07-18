@@ -48,6 +48,7 @@ _T = TypeVar("_T")
 
 async def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -66,6 +67,7 @@ async def create_new_session(
 
     return await create_new_session_in_request(
         request,
+        tenant_id,
         user_context,
         recipe_instance,
         access_token_payload,
@@ -77,6 +79,7 @@ async def create_new_session(
 
 
 async def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -106,6 +109,7 @@ async def create_new_session_without_request_response(
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
+        tenant_id,
         user_id,
         final_access_token_payload,
         session_data_in_database,

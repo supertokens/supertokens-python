@@ -289,6 +289,7 @@ class APIImplementation(APIInterface):
 
         session = await create_new_session(
             api_options.request,
+            user.tenant_id,
             user.user_id,
             {},
             {},

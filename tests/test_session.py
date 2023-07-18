@@ -248,7 +248,7 @@ async def driver_config_client():
 
     @app.post("/create")
     async def create_api(request: Request):  # type: ignore
-        await async_create_new_session(request, "test-user", {}, {})
+        await async_create_new_session(request, "public", "test-user", {}, {})
         return ""
 
     return TestClient(app)
@@ -338,7 +338,7 @@ async def test_should_use_override_functions_in_session_container_methods():
 
     mock_response = MagicMock()
 
-    my_session = await async_create_new_session(mock_response, "test_id")
+    my_session = await async_create_new_session(mock_response, "public", "test_id")
     data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
@@ -671,7 +671,7 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    session1 = await create_new_session_without_request_response("user-id")
+    session1 = await create_new_session_without_request_response("public", "user-id")
 
     assert session1 is not None
     assert session1.access_token != ""

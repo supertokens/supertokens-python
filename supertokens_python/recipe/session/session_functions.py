@@ -66,11 +66,13 @@ class GetSessionAPIResponseSession:
         userId: str,
         userDataInJWT: Dict[str, Any],
         expiryTime: int,
+        tenantId: str,
     ) -> None:
         self.handle = handle
         self.userId = userId
         self.userDataInJWT = userDataInJWT
         self.expiryTime = expiryTime
+        self.tenantId = tenantId
 
 
 class GetSessionAPIResponseAccessToken:
@@ -254,6 +256,7 @@ async def get_session(
                 access_token_info["userId"],
                 access_token_info["userData"],
                 access_token_info["expiryTime"],
+                access_token_info["tenantId"],
             )
         )
 
@@ -292,6 +295,7 @@ async def get_session(
                         "expiryTime"
                     ]  # if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
                 ),  # This will throw error if others are none and 'expiryTime' key doesn't exist in the payload
+                response["session"]["tenantId"],
             ),
             GetSessionAPIResponseAccessToken(
                 response["accessToken"]["token"],
@@ -455,5 +459,6 @@ async def get_session_information(
             response["expiry"],
             response["userDataInJWT"],
             response["timeCreated"],
+            response["tenantId"],
         )
     return None
