@@ -181,13 +181,12 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ):
         mt_recipe = MultitenancyRecipe.get_instance()
-        tenant_config = await mt_recipe.recipe_implementation.get_tenant_config(
+        tenant_config = await mt_recipe.recipe_implementation.get_tenant(
             tenant_id=tenant_id,
             user_context=user_context,
         )
 
         merged_providers = merge_providers_from_core_and_static(
-            tenant_id=tenant_id,
             provider_configs_from_core=tenant_config.third_party.providers,
             provider_inputs_from_static=self.providers,
         )
