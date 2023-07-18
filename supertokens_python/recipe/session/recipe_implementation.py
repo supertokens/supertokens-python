@@ -315,6 +315,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
+            tenant_id=payload["tId"],
         )
 
         return session

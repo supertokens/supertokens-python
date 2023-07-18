@@ -170,7 +170,7 @@ class APIImplementation(APIInterface):
         user = result.user
         session = await create_new_session(
             api_options.request,
-            user.tenant_id,
+            "pass-tenant-id",  # TODO: change this to tenant_id
             user.user_id,
             access_token_payload={},
             session_data_in_database={},
@@ -210,7 +210,7 @@ class APIImplementation(APIInterface):
         user = result.user
         session = await create_new_session(
             api_options.request,
-            user.tenant_id,
+            "pass-tenant-id",  # TODO: change this to tenant_id
             user.user_id,
             access_token_payload={},
             session_data_in_database={},

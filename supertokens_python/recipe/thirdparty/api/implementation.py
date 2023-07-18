@@ -126,7 +126,7 @@ class APIImplementation(APIInterface):
         user = signinup_response.user
         session = await create_new_session(
             api_options.request,
-            user.tenant_id,
+            "pass-tenant-id",  # TODO: change this to tenant_id
             user.user_id,
             user_context=user_context,
         )
