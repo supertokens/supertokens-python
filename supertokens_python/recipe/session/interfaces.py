@@ -442,6 +442,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         pass
 
     @abstractmethod
+    def get_tenant_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
+        pass
+
+    @abstractmethod
     def get_access_token_payload(
         self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
