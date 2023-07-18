@@ -103,7 +103,7 @@ class ProviderClientConfig:
             "clientSecret": self.client_secret,
             "clientType": self.client_type,
             "scope": self.scope,
-            "forcePkce": self.force_pkce,
+            "forcePKCE": self.force_pkce,
             "additionalConfig": self.additional_config,
         }
 
@@ -261,7 +261,7 @@ class ProviderConfig:
             "userInfoEndpoint": self.user_info_endpoint,
             "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
             "userInfoEndpointHeaders": self.user_info_endpoint_headers,
-            "jwksUri": self.jwks_uri,
+            "jwksURI": self.jwks_uri,
             "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
             "userInfoMap": self.user_info_map.to_json()
             if self.user_info_map is not None

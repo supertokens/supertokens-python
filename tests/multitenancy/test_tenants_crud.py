@@ -14,6 +14,7 @@
 from fastapi import FastAPI
 from pytest import mark, fixture
 from starlette.testclient import TestClient
+from typing import Any, Dict
 
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
@@ -47,6 +48,8 @@ from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderConfig,
     ProviderClientConfig,
+    UserInfoMap,
+    UserFields,
 )
 
 
@@ -130,10 +133,22 @@ async def test_tenant_thirdparty_config():
     tenant_config = await get_tenant("t1")
 
     assert len(tenant_config.third_party.providers) == 1
-    assert tenant_config.third_party.providers[0].third_party_id == "google"
-    assert tenant_config.third_party.providers[0].clients is not None
-    assert len(tenant_config.third_party.providers[0].clients) == 1
-    assert tenant_config.third_party.providers[0].clients[0].client_id == "abcd"
+    provider = tenant_config.third_party.providers[0]
+    assert provider.third_party_id == "google"
+    assert provider.clients is not None
+    assert len(provider.clients) == 1
+    assert provider.clients[0].client_id == "abcd"
+    assert provider.clients[0].client_secret is None
+    assert provider.clients[0].force_pkce is False
+    assert provider.require_email is True
+
+    async def validate_id_token_payload(
+        _: Dict[str, Any], __: Any, ___: Dict[str, Any]
+    ):
+        return
+
+    async def generate_fake_email(_: str, __: Dict[str, Any]):
+        return "fake@example.com"
 
     # update thirdparty config
     await create_or_update_third_party_config(
@@ -141,17 +156,77 @@ async def test_tenant_thirdparty_config():
         ProviderConfig(
             third_party_id="google",
             name="Custom name",
-            clients=[ProviderClientConfig(client_id="efgh")],
+            clients=[
+                ProviderClientConfig(
+                    client_id="efgh",
+                    client_secret="ijkl",
+                    scope=["m", "n"],
+                    force_pkce=True,
+                    additional_config={"o": "p"},
+                )
+            ],
+            authorization_endpoint="http://localhost:8080/auth",
+            authorization_endpoint_query_params={"a": "b"},
+            token_endpoint="http://localhost:8080/token",
+            token_endpoint_body_params={"c": "d"},
+            user_info_endpoint="http://localhost:8080/userinfo",
+            user_info_endpoint_query_params={"e": "f"},
+            user_info_endpoint_headers={"g": "h"},
+            jwks_uri="http://localhost:8080/.well-known/jwks.json",
+            oidc_discovery_endpoint="http://localhost:8080/.well-known/openid-configuration",
+            user_info_map=UserInfoMap(
+                from_id_token_payload=UserFields(
+                    user_id="userid",
+                    email="email",
+                    email_verified="is_verified",
+                ),
+                from_user_info_api=UserFields(),
+            ),
+            require_email=False,
+            validate_id_token_payload=validate_id_token_payload,
+            generate_fake_email=generate_fake_email,
         ),
     )
 
     tenant_config = await get_tenant("t1")
     assert len(tenant_config.third_party.providers) == 1
-    assert tenant_config.third_party.providers[0].third_party_id == "google"
-    assert tenant_config.third_party.providers[0].name == "Custom name"
-    assert tenant_config.third_party.providers[0].clients is not None
-    assert len(tenant_config.third_party.providers[0].clients) == 1
-    assert tenant_config.third_party.providers[0].clients[0].client_id == "efgh"
+    provider = tenant_config.third_party.providers[0]
+    assert provider.third_party_id == "google"
+    assert provider.name == "Custom name"
+    assert provider.clients is not None
+    assert len(provider.clients) == 1
+    assert provider.clients[0].client_id == "efgh"
+    assert provider.clients[0].client_secret == "ijkl"
+    assert provider.clients[0].scope == ["m", "n"]
+    assert provider.clients[0].force_pkce is True
+    assert provider.clients[0].additional_config == {"o": "p"}
+
+    assert provider.name == "Custom name"
+    assert provider.authorization_endpoint == "http://localhost:8080/auth"
+    assert provider.authorization_endpoint_query_params == {"a": "b"}
+    assert provider.token_endpoint == "http://localhost:8080/token"
+    assert provider.token_endpoint_body_params == {"c": "d"}
+    assert provider.user_info_endpoint == "http://localhost:8080/userinfo"
+    assert provider.user_info_endpoint_query_params == {"e": "f"}
+    assert provider.user_info_endpoint_headers == {"g": "h"}
+    assert provider.jwks_uri == "http://localhost:8080/.well-known/jwks.json"
+    assert (
+        provider.oidc_discovery_endpoint
+        == "http://localhost:8080/.well-known/openid-configuration"
+    )
+
+    assert provider.user_info_map is not None
+    assert provider.user_info_map.from_id_token_payload.user_id == "userid"
+    assert provider.user_info_map.from_id_token_payload.email == "email"
+    assert provider.user_info_map.from_id_token_payload.email_verified == "is_verified"
+    assert provider.user_info_map.from_user_info_api is not None
+    assert provider.user_info_map.from_user_info_api.user_id is None
+    assert provider.user_info_map.from_user_info_api.email is None
+    assert provider.user_info_map.from_user_info_api.email_verified is None
+
+    assert provider.require_email is False
+    assert provider.validate_id_token_payload is None
+    assert provider.generate_fake_email is None
 
     # delete thirdparty config
     await delete_third_party_config("t1", "google")

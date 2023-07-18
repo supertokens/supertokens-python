@@ -52,6 +52,7 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
         UserInfoMap,
         UserFields,
         ProviderClientConfig,
+        ProviderConfig,
     )
 
     providers: List[ProviderConfig] = []
@@ -76,33 +77,33 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
         providers.append(
             ProviderConfig(
                 third_party_id=p["thirdPartyId"],
-                name=p["name"],
+                name=p.get("name"),
                 clients=[
                     ProviderClientConfig(
                         client_id=c["clientId"],
-                        client_secret=c["clientSecret"],
-                        client_type=c["clientType"],
-                        scope=c["scope"],
-                        force_pkce=c["forcePkce"],
-                        additional_config=c["additionalConfig"],
+                        client_secret=c.get("clientSecret"),
+                        client_type=c.get("clientType"),
+                        scope=c.get("scope"),
+                        force_pkce=c.get("forcePKCE", False),
+                        additional_config=c.get("additionalConfig"),
                     )
                     for c in p["clients"]
                 ],
-                authorization_endpoint=p["authorizationEndpoint"],
-                authorization_endpoint_query_params=p[
+                authorization_endpoint=p.get("authorizationEndpoint"),
+                authorization_endpoint_query_params=p.get(
                     "authorizationEndpointQueryParams"
-                ],
-                token_endpoint=p["tokenEndpoint"],
-                token_endpoint_body_params=p["tokenEndpointBodyParams"],
-                user_info_endpoint=p["userInfoEndpoint"],
-                user_info_endpoint_query_params=p["userInfoEndpointQueryParams"],
-                user_info_endpoint_headers=p["userInfoEndpointHeaders"],
-                jwks_uri=p["jwksUri"],
-                oidc_discovery_endpoint=p["oidcDiscoveryEndpoint"],
+                ),
+                token_endpoint=p.get("tokenEndpoint"),
+                token_endpoint_body_params=p.get("tokenEndpointBodyParams"),
+                user_info_endpoint=p.get("userInfoEndpoint"),
+                user_info_endpoint_query_params=p.get("userInfoEndpointQueryParams"),
+                user_info_endpoint_headers=p.get("userInfoEndpointHeaders"),
+                jwks_uri=p.get("jwksURI"),
+                oidc_discovery_endpoint=p.get("oidcDiscoveryEndpoint"),
                 user_info_map=user_info_map,
-                require_email=p["requireEmail"],
-                validate_id_token_payload=p["validateIdTokenPayload"],
-                generate_fake_email=p["generateFakeEmail"],
+                require_email=p.get("requireEmail", True),
+                validate_id_token_payload=None,
+                generate_fake_email=None,
             )
         )
 
