@@ -36,14 +36,14 @@ class User:
         user_id: str,
         email: str,
         time_joined: int,
+        tenant_ids: List[str],
         third_party_info: ThirdPartyInfo,
-        tenant_id: Union[str, None],
     ):
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
+        self.tenant_ids = tenant_ids
         self.third_party_info: ThirdPartyInfo = third_party_info
-        self.tenant_id = tenant_id
 
 
 class UserInfoEmail:

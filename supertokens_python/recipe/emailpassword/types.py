@@ -21,10 +21,13 @@ from supertokens_python.ingredients.emaildelivery.types import (
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id: str = user_id
-        self.email: str = email
-        self.time_joined: int = time_joined
+    def __init__(
+        self, user_id: str, email: str, time_joined: int, tenant_ids: List[str]
+    ):
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
 
 
 class UsersResponse:

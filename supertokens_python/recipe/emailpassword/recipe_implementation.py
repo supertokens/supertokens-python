@@ -62,6 +62,7 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
             )
         return None
 
@@ -77,6 +78,7 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
             )
         return None
 
@@ -120,6 +122,7 @@ class RecipeImplementation(RecipeInterface):
                     response["user"]["id"],
                     response["user"]["email"],
                     response["user"]["timeJoined"],
+                    response["user"]["tenantIds"],
                 )
             )
         return SignInWrongCredentialsError()
@@ -137,6 +140,7 @@ class RecipeImplementation(RecipeInterface):
                     response["user"]["id"],
                     response["user"]["email"],
                     response["user"]["timeJoined"],
+                    response["user"]["tenantIds"],
                 )
             )
         return SignUpEmailAlreadyExistsError()

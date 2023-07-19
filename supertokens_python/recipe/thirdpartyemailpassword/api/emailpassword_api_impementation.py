@@ -75,7 +75,10 @@ def get_interface_impl(
             if isinstance(result, EmailPasswordSignInPostOkResult):
                 return SignInPostOkResult(
                     User(
-                        result.user.user_id, result.user.email, result.user.time_joined
+                        result.user.user_id,
+                        result.user.email,
+                        result.user.time_joined,
+                        result.user.tenant_ids,
                     ),
                     result.session,
                 )
@@ -98,7 +101,10 @@ def get_interface_impl(
             if isinstance(result, EmailPasswordSignUpPostOkResult):
                 return SignUpPostOkResult(
                     User(
-                        result.user.user_id, result.user.email, result.user.time_joined
+                        result.user.user_id,
+                        result.user.email,
+                        result.user.time_joined,
+                        result.user.tenant_ids,
                     ),
                     result.session,
                 )

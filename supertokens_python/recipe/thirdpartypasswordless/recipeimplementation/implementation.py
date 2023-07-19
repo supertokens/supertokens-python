@@ -171,10 +171,10 @@ class RecipeImplementation(RecipeInterface):
             return User(
                 user_id=pless_user.user_id,
                 email=pless_user.email,
+                phone_number=pless_user.phone_number,
+                tenant_ids=pless_user.tenant_ids,
                 time_joined=pless_user.time_joined,
                 third_party_info=None,
-                phone_number=pless_user.phone_number,
-                tenant_id=None,
             )
 
         if self.tp_get_user_by_id is None:
@@ -189,7 +189,7 @@ class RecipeImplementation(RecipeInterface):
             time_joined=tp_user.time_joined,
             third_party_info=tp_user.third_party_info,
             phone_number=None,
-            tenant_id=tp_user.tenant_id,
+            tenant_ids=tp_user.tenant_ids,
         )
 
     async def get_users_by_email(
@@ -203,10 +203,10 @@ class RecipeImplementation(RecipeInterface):
                 User(
                     user_id=pless_user.user_id,
                     email=pless_user.email,
+                    phone_number=pless_user.phone_number,
+                    tenant_ids=pless_user.tenant_ids,
                     time_joined=pless_user.time_joined,
                     third_party_info=None,
-                    phone_number=pless_user.phone_number,
-                    tenant_id=None,
                 )
             )
 
@@ -220,10 +220,10 @@ class RecipeImplementation(RecipeInterface):
                 User(
                     user_id=tp_user.user_id,
                     email=tp_user.email,
+                    phone_number=None,
+                    tenant_ids=tp_user.tenant_ids,
                     time_joined=tp_user.time_joined,
                     third_party_info=tp_user.third_party_info,
-                    phone_number=None,
-                    tenant_id=tp_user.tenant_id,
                 )
             )
 
@@ -247,10 +247,10 @@ class RecipeImplementation(RecipeInterface):
         return User(
             user_id=tp_user.user_id,
             email=tp_user.email,
+            phone_number=None,
+            tenant_ids=tp_user.tenant_ids,
             time_joined=tp_user.time_joined,
             third_party_info=tp_user.third_party_info,
-            phone_number=None,
-            tenant_id=tp_user.tenant_id,
         )
 
     async def thirdparty_sign_in_up(
@@ -309,10 +309,10 @@ class RecipeImplementation(RecipeInterface):
             return User(
                 user_id=pless_user.user_id,
                 email=pless_user.email,
+                phone_number=pless_user.phone_number,
+                tenant_ids=pless_user.tenant_ids,
                 time_joined=pless_user.time_joined,
                 third_party_info=None,
-                phone_number=pless_user.phone_number,
-                tenant_id=None,
             )
 
         return None
@@ -365,8 +365,8 @@ class RecipeImplementation(RecipeInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.phone_number,
-                    None,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
             )

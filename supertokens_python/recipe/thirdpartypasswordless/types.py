@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import TypeVar, Union
+from typing import TypeVar, Union, List
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
@@ -34,16 +34,16 @@ class User:
         user_id: str,
         email: Union[str, None],
         phone_number: Union[str, None],
-        third_party_info: Union[ThirdPartyInfo, None],
         time_joined: int,
-        tenant_id: Union[str, None],
+        tenant_ids: List[str],
+        third_party_info: Union[ThirdPartyInfo, None],
     ):
-        self.user_id: str = user_id
-        self.email: Union[str, None] = email
-        self.phone_number: Union[str, None] = phone_number
-        self.time_joined: int = time_joined
-        self.third_party_info: Union[ThirdPartyInfo, None] = third_party_info
-        self.tenant_id = tenant_id
+        self.user_id = user_id
+        self.email = email
+        self.phone_number = phone_number
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+        self.third_party_info = third_party_info
 
 
 _T = TypeVar("_T")

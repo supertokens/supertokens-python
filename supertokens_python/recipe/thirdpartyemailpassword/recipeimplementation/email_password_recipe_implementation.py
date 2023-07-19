@@ -56,7 +56,10 @@ class RecipeImplementation(RecipeInterface):
             return None
 
         return User(
-            user_id=user.user_id, email=user.email, time_joined=user.time_joined
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
         )
 
     async def get_user_by_email(
@@ -67,7 +70,10 @@ class RecipeImplementation(RecipeInterface):
         for user in users:
             if user.third_party_info is None:
                 return User(
-                    user_id=user.user_id, email=user.email, time_joined=user.time_joined
+                    user_id=user.user_id,
+                    email=user.email,
+                    time_joined=user.time_joined,
+                    tenant_ids=user.tenant_ids,
                 )
 
         return None
@@ -96,7 +102,12 @@ class RecipeImplementation(RecipeInterface):
         )
         if isinstance(result, EmailPasswordSignInOkResult):
             return SignInOkResult(
-                User(result.user.user_id, result.user.email, result.user.time_joined)
+                User(
+                    result.user.user_id,
+                    result.user.email,
+                    result.user.time_joined,
+                    result.user.tenant_ids,
+                )
             )
         return result
 
@@ -108,7 +119,12 @@ class RecipeImplementation(RecipeInterface):
         )
         if isinstance(result, EmailPasswordSignUpOkResult):
             return SignUpOkResult(
-                User(result.user.user_id, result.user.email, result.user.time_joined)
+                User(
+                    result.user.user_id,
+                    result.user.email,
+                    result.user.time_joined,
+                    result.user.tenant_ids,
+                )
             )
         return result
 

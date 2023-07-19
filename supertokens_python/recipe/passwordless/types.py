@@ -32,11 +32,13 @@ class User:
         email: Union[str, None],
         phone_number: Union[str, None],
         time_joined: int,
+        tenant_ids: List[str],
     ):
-        self.user_id: str = user_id
-        self.email: Union[str, None] = email
-        self.phone_number: Union[str, None] = phone_number
-        self.time_joined: int = time_joined
+        self.user_id = user_id
+        self.email = email
+        self.phone_number = phone_number
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
 
 
 class DeviceCode:

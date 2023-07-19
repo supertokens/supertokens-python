@@ -131,6 +131,7 @@ class RecipeImplementation(RecipeInterface):
                 user_id=ep_user.user_id,
                 email=ep_user.email,
                 time_joined=ep_user.time_joined,
+                tenant_ids=ep_user.tenant_ids,
                 third_party_info=None,
             )
 
@@ -144,6 +145,7 @@ class RecipeImplementation(RecipeInterface):
             user_id=tp_user.user_id,
             email=tp_user.email,
             time_joined=tp_user.time_joined,
+            tenant_ids=tp_user.tenant_ids,
             third_party_info=tp_user.third_party_info,
         )
 
@@ -158,6 +160,7 @@ class RecipeImplementation(RecipeInterface):
                 User(
                     user_id=ep_user.user_id,
                     email=ep_user.email,
+                    tenant_ids=ep_user.tenant_ids,
                     time_joined=ep_user.time_joined,
                     third_party_info=None,
                 )
@@ -173,6 +176,7 @@ class RecipeImplementation(RecipeInterface):
                 User(
                     user_id=tp_user.user_id,
                     email=tp_user.email,
+                    tenant_ids=tp_user.tenant_ids,
                     time_joined=tp_user.time_joined,
                     third_party_info=tp_user.third_party_info,
                 )
@@ -199,6 +203,7 @@ class RecipeImplementation(RecipeInterface):
             user_id=tp_user.user_id,
             email=tp_user.email,
             time_joined=tp_user.time_joined,
+            tenant_ids=tp_user.tenant_ids,
             third_party_info=tp_user.third_party_info,
         )
 
@@ -226,6 +231,7 @@ class RecipeImplementation(RecipeInterface):
                 result.user.user_id,
                 result.user.email,
                 result.user.time_joined,
+                result.user.tenant_ids,
                 result.user.third_party_info,
             ),
             result.created_new_user,
@@ -253,6 +259,7 @@ class RecipeImplementation(RecipeInterface):
                 result.user.user_id,
                 result.user.email,
                 result.user.time_joined,
+                result.user.tenant_ids,
                 result.user.third_party_info,
             ),
             result.created_new_user,
@@ -282,6 +289,7 @@ class RecipeImplementation(RecipeInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 )
             )
@@ -297,6 +305,7 @@ class RecipeImplementation(RecipeInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 )
             )
