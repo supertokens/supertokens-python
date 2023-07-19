@@ -103,6 +103,8 @@ class APIImplementation(APIInterface):
             + token
             + "&rid="
             + api_options.recipe_id
+            + "&tenantId="
+            + tenant_id
         )
 
         log_debug_message("Sending password reset email to %s", email)
