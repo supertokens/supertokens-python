@@ -102,7 +102,8 @@ async def create_new_session_without_request_response(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        # TODO: Pass tenant id
+        update = await claim.build(user_id, "pass-tenant-id", user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(

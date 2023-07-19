@@ -238,7 +238,8 @@ async def create_new_session_in_request(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        # TODO: Pass tenant id
+        update = await claim.build(user_id, "pass-tenant-id", user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     log_debug_message("createNewSession: Access token payload built")

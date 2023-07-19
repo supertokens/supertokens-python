@@ -220,7 +220,8 @@ class Session(SessionContainer):
         if user_context is None:
             user_context = {}
 
-        update = await claim.build(self.get_user_id(), user_context)
+        # TODO: Pass tenant id
+        update = await claim.build(self.get_user_id(), "pass-tenant-id", user_context)
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def set_claim_value(
