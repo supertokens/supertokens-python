@@ -40,11 +40,11 @@ class RecipeImplementation(RecipeInterface):
         self.querier = querier
 
     async def add_role_to_user(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self, tenant_id: str, user_id: str, role: str, user_context: Dict[str, Any]
     ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {"userId": user_id, "role": role}
         response = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/user/role"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user/role"), params
         )
         if response.get("status") == "OK":
             return AddRoleToUserOkResult(
@@ -53,11 +53,11 @@ class RecipeImplementation(RecipeInterface):
         return UnknownRoleError()
 
     async def remove_user_role(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self, tenant_id: str, user_id: str, role: str, user_context: Dict[str, Any]
     ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {"userId": user_id, "role": role}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/role/remove"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user/role/remove"), params
         )
         if response["status"] == "OK":
             return RemoveUserRoleOkResult(
@@ -66,20 +66,20 @@ class RecipeImplementation(RecipeInterface):
         return UnknownRoleError()
 
     async def get_roles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: str, user_id: str, user_context: Dict[str, Any]
     ) -> GetRolesForUserOkResult:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user/roles"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user/roles"), params
         )
         return GetRolesForUserOkResult(roles=response["roles"])
 
     async def get_users_that_have_role(
-        self, role: str, user_context: Dict[str, Any]
+        self, tenant_id: str, role: str, user_context: Dict[str, Any]
     ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {"role": role}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/role/users"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/role/users"), params
         )
         if response.get("status") == "OK":
             return GetUsersThatHaveRoleOkResult(users=response["users"])

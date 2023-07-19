@@ -17,44 +17,50 @@ from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 
 
 async def add_role_to_user(
-    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
-        user_id, role, user_context
+        tenant_id, user_id, role, user_context
     )
 
 
 async def remove_user_role(
-    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
-        user_id, role, user_context
+        tenant_id, user_id, role, user_context
     )
 
 
 async def get_roles_for_user(
-    user_id: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str, user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -> GetRolesForUserOkResult:
     if user_context is None:
         user_context = {}
     return (
         await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
-            user_id, user_context
+            tenant_id, user_id, user_context
         )
     )
 
 
 async def get_users_that_have_role(
-    role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
-        role, user_context
+        tenant_id, role, user_context
     )
 
 
