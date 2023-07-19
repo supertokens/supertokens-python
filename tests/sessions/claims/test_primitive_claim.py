@@ -23,21 +23,21 @@ def teardown_function(_):
 async def test_primitive_claim(timestamp: int):
     claim = PrimitiveClaim("key", sync_fetch_value)
     ctx = {}
-    res = await claim.build("user_id", ctx)
+    res = await claim.build("user_id", "public", ctx)
     assert res == {"key": {"t": timestamp, "v": val}}
 
 
 async def test_primitive_claim_without_async_fetch_value(timestamp: int):
     claim = PrimitiveClaim("key", async_fetch_value)
     ctx = {}
-    res = await claim.build("user_id", ctx)
+    res = await claim.build("user_id", "public", ctx)
     assert res == {"key": {"t": timestamp, "v": val}}
 
 
 async def test_primitive_claim_matching__add_to_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     ctx = {}
-    res = await claim.build("user_id", ctx)
+    res = await claim.build("user_id", "public", ctx)
     assert res == claim.add_to_payload_({}, val, {})
 
 
