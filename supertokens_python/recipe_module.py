@@ -32,7 +32,7 @@ from .normalised_url_path import NormalisedURLPath
 
 
 class ApiIdWithTenantId:
-    def __init__(self, api_id: str, tenant_id: Optional[str]):
+    def __init__(self, api_id: str, tenant_id: str):
         self.api_id = api_id
         self.tenant_id = tenant_id
 
@@ -100,7 +100,7 @@ class RecipeModule(abc.ABC):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,

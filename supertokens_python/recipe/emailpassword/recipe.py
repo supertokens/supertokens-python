@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -170,7 +170,7 @@ class EmailPasswordRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -186,17 +186,25 @@ class EmailPasswordRecipe(RecipeModule):
             self.email_delivery,
         )
         if request_id == SIGNUP:
-            return await handle_sign_up_api(self.api_implementation, api_options)
+            return await handle_sign_up_api(
+                tenant_id, self.api_implementation, api_options
+            )
         if request_id == SIGNIN:
-            return await handle_sign_in_api(self.api_implementation, api_options)
+            return await handle_sign_in_api(
+                tenant_id, self.api_implementation, api_options
+            )
         if request_id == SIGNUP_EMAIL_EXISTS:
-            return await handle_email_exists_api(self.api_implementation, api_options)
+            return await handle_email_exists_api(
+                tenant_id, self.api_implementation, api_options
+            )
         if request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(
-                self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options
             )
         if request_id == USER_PASSWORD_RESET:
-            return await handle_password_reset_api(self.api_implementation, api_options)
+            return await handle_password_reset_api(
+                tenant_id, self.api_implementation, api_options
+            )
 
         return None
 

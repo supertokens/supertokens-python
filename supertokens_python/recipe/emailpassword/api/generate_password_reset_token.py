@@ -28,7 +28,7 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_generate_password_reset_token_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    tenant_id: str, api_implementation: APIInterface, api_options: APIOptions
 ):
     if api_implementation.disable_generate_password_reset_token_post:
         return None
@@ -43,6 +43,6 @@ async def handle_generate_password_reset_token_api(
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.generate_password_reset_token_post(
-        form_fields, api_options, user_context
+        tenant_id, form_fields, api_options, user_context
     )
     return send_200_response(response.to_json(), api_options.response)

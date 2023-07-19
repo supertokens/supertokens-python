@@ -33,7 +33,9 @@ from supertokens_python.utils import default_user_context, send_200_response
 from .utils import validate_form_fields_or_throw_error
 
 
-async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_sign_up_api(
+    tenant_id: str, api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_sign_up_post:
         return None
     body = await api_options.request.json()
@@ -46,7 +48,7 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.sign_up_post(
-        form_fields, api_options, user_context
+        tenant_id, form_fields, api_options, user_context
     )
 
     if isinstance(response, SignUpPostOkResult):

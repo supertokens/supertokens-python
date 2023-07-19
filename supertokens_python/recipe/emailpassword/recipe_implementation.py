@@ -67,11 +67,11 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, tenant_id: str, email: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         params = {"email": email}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user"), params
         )
         if "status" in response and response["status"] == "OK":
             return User(
@@ -83,24 +83,28 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def create_reset_password_token(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: str, user_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         data = {"userId": user_id}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/password/reset/token"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/password/reset/token"), data
         )
         if "status" in response and response["status"] == "OK":
             return CreateResetPasswordOkResult(response["token"])
         return CreateResetPasswordWrongUserIdError()
 
     async def reset_password_using_token(
-        self, token: str, new_password: str, user_context: Dict[str, Any]
+        self,
+        tenant_id: str,
+        token: str,
+        new_password: str,
+        user_context: Dict[str, Any],
     ) -> Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         data = {"method": "token", "token": token, "newPassword": new_password}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/password/reset"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/password/reset"), data
         )
         if "status" not in response or response["status"] != "OK":
             return ResetPasswordUsingTokenInvalidTokenError()
@@ -110,11 +114,11 @@ class RecipeImplementation(RecipeInterface):
         return ResetPasswordUsingTokenOkResult(user_id)
 
     async def sign_in(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
     ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         data = {"password": password, "email": email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/signin"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signin"), data
         )
         if "status" in response and response["status"] == "OK":
             return SignInOkResult(
@@ -128,11 +132,11 @@ class RecipeImplementation(RecipeInterface):
         return SignInWrongCredentialsError()
 
     async def sign_up(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
     ) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         data = {"password": password, "email": email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/signup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signup"), data
         )
         if "status" in response and response["status"] == "OK":
             return SignUpOkResult(

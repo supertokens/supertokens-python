@@ -63,9 +63,11 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, tenant_id: str, email: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
-        users = await self.recipe_implementation.get_users_by_email(email, user_context)
+        users = await self.recipe_implementation.get_users_by_email(
+            tenant_id, email, user_context
+        )
 
         for user in users:
             if user.third_party_info is None:
@@ -79,26 +81,30 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def create_reset_password_token(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: str, user_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         return await self.recipe_implementation.create_reset_password_token(
-            user_id, user_context
+            tenant_id, user_id, user_context
         )
 
     async def reset_password_using_token(
-        self, token: str, new_password: str, user_context: Dict[str, Any]
+        self,
+        tenant_id: str,
+        token: str,
+        new_password: str,
+        user_context: Dict[str, Any],
     ) -> Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         return await self.recipe_implementation.reset_password_using_token(
-            token, new_password, user_context
+            tenant_id, token, new_password, user_context
         )
 
     async def sign_in(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
     ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         result = await self.recipe_implementation.emailpassword_sign_in(
-            email, password, user_context
+            tenant_id, email, password, user_context
         )
         if isinstance(result, EmailPasswordSignInOkResult):
             return SignInOkResult(
@@ -112,10 +118,10 @@ class RecipeImplementation(RecipeInterface):
         return result
 
     async def sign_up(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
     ) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         result = await self.recipe_implementation.emailpassword_sign_up(
-            email, password, user_context
+            tenant_id, email, password, user_context
         )
         if isinstance(result, EmailPasswordSignUpOkResult):
             return SignUpOkResult(

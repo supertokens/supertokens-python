@@ -26,7 +26,7 @@ from supertokens_python.utils import send_200_response, default_user_context
 
 
 async def handle_email_exists_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    tenant_id: str, api_implementation: APIInterface, api_options: APIOptions
 ):
     if api_implementation.disable_email_exists_get:
         return None
@@ -36,6 +36,6 @@ async def handle_email_exists_api(
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.email_exists_get(
-        email, api_options, user_context
+        tenant_id, email, api_options, user_context
     )
     return send_200_response(response.to_json(), api_options.response)
