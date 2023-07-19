@@ -210,7 +210,6 @@ async def get_session_from_request(
 
 async def create_new_session_in_request(
     request: Any,
-    tenant_id: str,
     user_context: Dict[str, Any],
     recipe_instance: SessionRecipe,
     access_token_payload: Dict[str, Any],
@@ -239,7 +238,7 @@ async def create_new_session_in_request(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, tenant_id, user_context)
+        update = await claim.build(user_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     log_debug_message("createNewSession: Access token payload built")
@@ -276,7 +275,6 @@ async def create_new_session_in_request(
 
     disable_anti_csrf = output_transfer_method == "header"
     session = await recipe_instance.recipe_implementation.create_new_session(
-        tenant_id,
         user_id,
         final_access_token_payload,
         session_data_in_database,

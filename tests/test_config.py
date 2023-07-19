@@ -728,7 +728,7 @@ async def test_samesite_invalid_config():
                     )
                 ],
             )
-            await create_new_session(MagicMock(), "public", "userId", {}, {})
+            await create_new_session(MagicMock(), "userId", {}, {})
         except Exception as e:
             assert (
                 str(e)

@@ -7,7 +7,6 @@ from supertokens_python.recipe.session.claims import (
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 from tests.utils import st_init_common_args
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __: True)  # type: ignore
 NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __: None)  # type: ignore
@@ -23,14 +22,13 @@ def session_functions_override_with_claim(
         oi_create_new_session = oi.create_new_session
 
         async def new_create_new_session(
-            tenant_id: str,
             user_id: str,
             access_token_payload: Union[None, Dict[str, Any]],
             session_data_in_database: Union[None, Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
             user_context: Dict[str, Any],
         ):
-            payload_update = await claim.build(user_id, DEFAULT_TENANT_ID, user_context)
+            payload_update = await claim.build(user_id, user_context)
             if access_token_payload is None:
                 access_token_payload = {}
             access_token_payload = {
@@ -40,7 +38,6 @@ def session_functions_override_with_claim(
             }
 
             return await oi_create_new_session(
-                tenant_id,
                 user_id,
                 access_token_payload,
                 session_data_in_database,

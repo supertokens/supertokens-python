@@ -130,7 +130,6 @@ def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
     async def create_new_session_custom(
-        tenant_id: str,
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
@@ -141,7 +140,6 @@ def functions_override_session(param: RecipeInterface):
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
-            tenant_id,
             user_id,
             access_token_payload,
             session_data_in_database,
@@ -265,7 +263,7 @@ def login_options():
 @app.post("/login")
 async def login(request: Request):
     user_id = (await request.json())["userId"]
-    _session = await create_new_session(request, "public", user_id)
+    _session = await create_new_session(request, user_id)
     return PlainTextResponse(content=_session.get_user_id())
 
 

@@ -6,7 +6,6 @@ from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.access_token import get_info_from_access_token
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.asyncio import (
     create_new_session_without_request_response,
     get_session_without_request_response,
@@ -27,7 +26,7 @@ async def test_access_token_v3():
     start_st()
 
     access_token = (
-        await create_new_session_without_request_response(DEFAULT_TENANT_ID, "user-id")
+        await create_new_session_without_request_response("user-id")
     ).get_access_token()
     s = await get_session_without_request_response(access_token)
     assert s is not None
@@ -74,7 +73,7 @@ async def app():
         except Exception:
             pass
 
-        session = await create_new_session(request, "public", "userId", body, {})
+        session = await create_new_session(request, "userId", body, {})
         return {"message": True, "sessionHandle": session.get_handle()}
 
     @fast.get("/merge-into-payload")

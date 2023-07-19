@@ -40,7 +40,6 @@ from ..interfaces import (
 
 def create_new_session(
     request: Any,
-    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -53,7 +52,6 @@ def create_new_session(
     return sync(
         async_create_new_session(
             request,
-            tenant_id,
             user_id,
             access_token_payload,
             session_data_in_database,
@@ -63,7 +61,6 @@ def create_new_session(
 
 
 def create_new_session_without_request_response(
-    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -76,7 +73,6 @@ def create_new_session_without_request_response(
 
     return sync(
         async_create_new_session_without_request_response(
-            tenant_id,
             user_id,
             access_token_payload,
             session_data_in_database,

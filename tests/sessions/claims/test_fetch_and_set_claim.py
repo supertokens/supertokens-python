@@ -5,7 +5,6 @@ from pytest import mark
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
 from tests.utils import AsyncMock, MagicMock
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 pytestmark = (
     mark.asyncio
@@ -32,7 +31,6 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         {},  # user_data_in_access_token
         None,
         False,  # access_token_updated
-        DEFAULT_TENANT_ID,
     )
 
     with patch.object(
@@ -64,7 +62,6 @@ async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
-        DEFAULT_TENANT_ID,
     )
     with patch.object(
         Session,
