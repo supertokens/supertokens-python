@@ -262,7 +262,7 @@ class APIImplementation(APIInterface):
 
 class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
-        default_max_age_in_sec = 60 * 60 * 24 * 7
+        default_max_age_in_sec = 60 * 60
 
         async def fetch_value(
             _: str, tenant_id: str, user_context: Dict[str, Any]
