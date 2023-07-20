@@ -108,7 +108,7 @@ async def test_should_call_validate_with_the_same_payload_object():
         def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
             return False
 
-    dummy_claim = PrimitiveClaim("st-claim", lambda _, __: "Hello world")
+    dummy_claim = PrimitiveClaim("st-claim", lambda _, __, ___: "Hello world")
 
     dummy_claim_validator = DummyClaimValidator(dummy_claim)
 

@@ -143,7 +143,6 @@ def merge_config(
 
 
 def merge_providers_from_core_and_static(
-    tenant_id: Optional[str],
     provider_configs_from_core: List[ProviderConfig],
     provider_inputs_from_static: List[ProviderInput],
 ) -> List[ProviderInput]:
@@ -151,7 +150,6 @@ def merge_providers_from_core_and_static(
 
     if len(provider_configs_from_core) == 0:
         for config in provider_inputs_from_static:
-            config.config.tenant_id = tenant_id
             merged_providers.append(config)
     else:
         for provider_config_from_core in provider_configs_from_core:

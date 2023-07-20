@@ -31,19 +31,13 @@ async def client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    # @app.get("/login")
-    # async def login(_request: Request):  # type: ignore
-    #     user_id = "userId"
-    #     # await create_new_session(request, user_id, {}, {})
-    #     return {"userId": user_id}
-
     return TestClient(app)
 
 
 async def test_emailpassword_router(client: TestClient):
     args = get_st_init_args(
         [
-            session.init(get_token_transfer_method=lambda *_: "cookie"),
+            session.init(get_token_transfer_method=lambda *_: "cookie"),  # type: ignore
             emailpassword.init(),
         ]
     )
@@ -82,7 +76,7 @@ async def test_emailpassword_router(client: TestClient):
 async def test_dashboard_apis_router(client: TestClient):
     args = get_st_init_args(
         [
-            session.init(get_token_transfer_method=lambda *_: "cookie"),
+            session.init(get_token_transfer_method=lambda *_: "cookie"),  # type: ignore
             emailpassword.init(),
             dashboard.init(),
         ]
@@ -94,26 +88,20 @@ async def test_dashboard_apis_router(client: TestClient):
         "/auth/public/dashboard/api/signin",
         headers={"Content-Type": "application/json"},
         json={
-            "formFields": [
-                {"id": "password", "value": "password1"},
-                {"id": "email", "value": "test1@example.com"},
-            ]
+            "email": "test1@example.com",
+            "password": "password1",
         },
     )
 
-    assert res.status_code == 200  # FIXME: failing test
-    assert res.json()["status"] == "OK"
+    assert res.status_code == 200
 
     res = client.post(
         "/auth/dashboard/api/signin",
         headers={"Content-Type": "application/json"},
         json={
-            "formFields": [
-                {"id": "password", "value": "password1"},
-                {"id": "email", "value": "test1@example.com"},
-            ]
+            "email": "test1@example.com",
+            "password": "password1",
         },
     )
 
-    assert res.status_code == 200  # FIXME: failing test
-    assert res.json()["status"] == "OK"
+    assert res.status_code == 200

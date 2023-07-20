@@ -44,11 +44,6 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.types import GeneralErrorResponse
 
-from supertokens_python.recipe.thirdparty.providers.config_utils import (
-    find_and_create_provider_instance,
-    merge_providers_from_core_and_static,
-)
-from supertokens_python.recipe.thirdparty.exceptions import ClientTypeNotFoundError
 
 from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
@@ -105,6 +100,9 @@ class MultitenancyRecipe(RecipeModule):
         )
 
         self.static_third_party_providers: List[ProviderInput] = []
+        self.get_allowed_domains_for_tenant_id = (
+            self.config.get_allowed_domains_for_tenant_id
+        )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, (TenantDoesNotExistError, RecipeDisabledForTenantError))
@@ -219,7 +217,15 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
-        tenant_config = await api_options.recipe_implementation.get_tenant_config(
+        from supertokens_python.recipe.thirdparty.providers.config_utils import (
+            find_and_create_provider_instance,
+            merge_providers_from_core_and_static,
+        )
+        from supertokens_python.recipe.thirdparty.exceptions import (
+            ClientTypeNotFoundError,
+        )
+
+        tenant_config = await api_options.recipe_implementation.get_tenant(
             tenant_id, user_context
         )
 
@@ -227,7 +233,7 @@ class APIImplementation(APIInterface):
         provider_configs_from_core = tenant_config.third_party.providers
 
         merged_providers = merge_providers_from_core_and_static(
-            tenant_id, provider_configs_from_core, provider_inputs_from_static
+            provider_configs_from_core, provider_inputs_from_static
         )
 
         final_provider_list: List[ThirdPartyProvider] = []
@@ -247,7 +253,7 @@ class APIImplementation(APIInterface):
             )
 
         return LoginMethodsGetOkResult(
-            LoginMethodEmailPassword(tenant_config.email_password.enabled),
+            LoginMethodEmailPassword(tenant_config.emailpassword.enabled),
             LoginMethodPasswordless(tenant_config.passwordless.enabled),
             LoginMethodThirdParty(
                 tenant_config.third_party.enabled, final_provider_list
@@ -257,41 +263,43 @@ class APIImplementation(APIInterface):
 
 class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
-        async def fetch_value(_user_id: str, user_context: Dict[str, Any]) -> List[str]:
+        default_max_age_in_sec = 60 * 60
+
+        async def fetch_value(
+            _: str, tenant_id: str, user_context: Dict[str, Any]
+        ) -> Optional[List[str]]:
             recipe = MultitenancyRecipe.get_instance()
-            tenant_id = (
-                None  # TODO fetch value will be passed with tenant_id as well later
-            )
 
-            if recipe.config.get_allowed_domains_for_tenant_id is None:
-                return (
-                    []
-                )  # User did not provide a function to get allowed domains, but is using a validator. So we don't allow any domains by default
+            if recipe.get_allowed_domains_for_tenant_id is None:
+                # User did not provide a function to get allowed domains, but is using a validator. So we don't allow any domains by default
+                return None
 
-            domains_res = await recipe.config.get_allowed_domains_for_tenant_id(
+            return await recipe.get_allowed_domains_for_tenant_id(
                 tenant_id, user_context
             )
-            return domains_res
 
-        super().__init__(
-            key="st-tenant-domains",
-            fetch_value=fetch_value,
-            default_max_age_in_sec=3600,
-        )
+        super().__init__("st-t-dmns", fetch_value, default_max_age_in_sec)
 
     def get_value_from_payload(
-        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Union[List[str], None]:
-        if self.key not in payload:
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -> Optional[List[str]]:
+        _ = user_context
+
+        res = payload.get(self.key, {}).get("v")
+        if res is None:
             return []
-        return super().get_value_from_payload(payload, user_context)
+        return res
 
     def get_last_refetch_time(
-        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Union[int, None]:
-        if self.key not in payload:
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -> Optional[int]:
+        _ = user_context
+
+        res = payload.get(self.key, {}).get("t")
+        if res is None:
             return get_timestamp_ms()
-        return super().get_last_refetch_time(payload, user_context)
+
+        return res
 
 
 AllowedDomainsClaim = AllowedDomainsClaimClass()

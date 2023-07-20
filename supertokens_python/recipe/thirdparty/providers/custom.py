@@ -54,7 +54,6 @@ def get_provider_config_for_client(
         require_email=config.require_email,
         generate_fake_email=config.generate_fake_email,
         name=config.name,
-        tenant_id=config.tenant_id,
     )
 
 

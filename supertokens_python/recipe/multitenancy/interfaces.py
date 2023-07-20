@@ -33,20 +33,38 @@ class TenantConfig:
         email_password_enabled: Union[bool, None] = None,
         passwordless_enabled: Union[bool, None] = None,
         third_party_enabled: Union[bool, None] = None,
+        core_config: Union[Dict[str, Any], None] = None,
     ):
         self.email_password_enabled = email_password_enabled
         self.passwordless_enabled = passwordless_enabled
         self.third_party_enabled = third_party_enabled
+        self.core_config = core_config
+
+    def to_json(self) -> Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        if self.email_password_enabled is not None:
+            res["emailPasswordEnabled"] = self.email_password_enabled
+        if self.passwordless_enabled is not None:
+            res["passwordlessEnabled"] = self.passwordless_enabled
+        if self.third_party_enabled is not None:
+            res["thirdPartyEnabled"] = self.third_party_enabled
+        if self.core_config is not None:
+            res["coreConfig"] = self.core_config
+        return res
 
 
 class CreateOrUpdateTenantOkResult:
+    status = "OK"
+
     def __init__(self, created_new: bool):
         self.created_new = created_new
 
 
 class DeleteTenantOkResult:
-    def __init__(self, tenant_existed: bool):
-        self.tenant_existed = tenant_existed
+    status = "OK"
+
+    def __init__(self, did_exist: bool):
+        self.did_exist = did_exist
 
 
 class EmailPasswordConfig:
@@ -65,36 +83,73 @@ class ThirdPartyConfig:
         self.providers = providers
 
 
-class TenantConfigOkResult:
+class TenantConfigResponse:
     def __init__(
         self,
-        email_password: EmailPasswordConfig,
+        emailpassword: EmailPasswordConfig,
         passwordless: PasswordlessConfig,
         third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
     ):
-        self.email_password = email_password
+        self.emailpassword = emailpassword
         self.passwordless = passwordless
         self.third_party = third_party
+        self.core_config = core_config
+
+
+class GetTenantOkResult(TenantConfigResponse):
+    status = "OK"
 
 
 class ListAllTenantsOkResult:
-    def __init__(self, tenants: List[str]):
+    status = "OK"
+
+    def __init__(self, tenants: List[TenantConfigResponse]):
         self.tenants = tenants
 
 
 class CreateOrUpdateThirdPartyConfigOkResult:
+    status = "OK"
+
     def __init__(self, created_new: bool):
         self.created_new = created_new
 
 
 class DeleteThirdPartyConfigOkResult:
+    status = "OK"
+
     def __init__(self, did_config_exist: bool):
         self.did_config_exist = did_config_exist
 
 
-class ListThirdPartyConfigsForThirdPartyIdOkResult:
-    def __init__(self, providers: List[ProviderConfig]):
-        self.providers = providers
+class AssociateUserToTenantOkResult:
+    status = "OK"
+
+    def __init__(self, was_already_associated: bool):
+        self.was_already_associated = was_already_associated
+
+
+class AssociateUserToTenantUnknownUserIdError:
+    status = "UNKNOWN_USER_ID_ERROR"
+
+
+class AssociateUserToTenantEmailAlreadyExistsError:
+    status = "EMAIL_ALREADY_EXISTS_ERROR"
+
+
+class AssociateUserToTenantPhoneNumberAlreadyExistsError:
+    status = "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+
+
+class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
+    status = "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
+
+
+class DisassociateUserFromTenantOkResult:
+    status = "OK"
+
+    def __init__(self, was_associated: bool):
+        self.was_associated = was_associated
 
 
 class RecipeInterface(ABC):
@@ -123,9 +178,9 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_tenant_config(
+    async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
-    ) -> TenantConfigOkResult:
+    ) -> GetTenantOkResult:
         pass
 
     @abstractmethod
@@ -134,9 +189,14 @@ class RecipeInterface(ABC):
     ) -> ListAllTenantsOkResult:
         pass
 
+    # third party provider management
     @abstractmethod
     async def create_or_update_third_party_config(
-        self, config: ProviderConfig, user_context: Dict[str, Any]
+        self,
+        tenant_id: Optional[str],
+        config: ProviderConfig,
+        skip_validation: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> CreateOrUpdateThirdPartyConfigOkResult:
         pass
 
@@ -149,10 +209,29 @@ class RecipeInterface(ABC):
     ) -> DeleteThirdPartyConfigOkResult:
         pass
 
+    # user tenant association
     @abstractmethod
-    async def list_third_party_configs_for_third_party_id(
-        self, third_party_id: str, user_context: Dict[str, Any]
-    ) -> ListThirdPartyConfigsForThirdPartyIdOkResult:
+    async def associate_user_to_tenant(
+        self,
+        tenant_id: Optional[str],
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[
+        AssociateUserToTenantOkResult,
+        AssociateUserToTenantUnknownUserIdError,
+        AssociateUserToTenantEmailAlreadyExistsError,
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    ]:
+        pass
+
+    @abstractmethod
+    async def dissociate_user_from_tenant(
+        self,
+        tenant_id: Optional[str],
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -> DisassociateUserFromTenantOkResult:
         pass
 
 
@@ -257,6 +336,5 @@ class APIInterface(ABC):
 
 
 TypeGetAllowedDomainsForTenantId = Callable[
-    [Union[str, None], Dict[str, Any]],
-    Awaitable[List[str]],
+    [Optional[str], Dict[str, Any]], Awaitable[Optional[List[str]]]
 ]

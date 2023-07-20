@@ -19,6 +19,7 @@ import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import GetProviderOkResult
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -54,7 +55,6 @@ from .email_password_recipe_implementation import (
 from .third_party_recipe_implementation import (
     RecipeImplementation as DerivedThirdPartyImplementation,
 )
-from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 
 class RecipeImplementation(RecipeInterface):

@@ -146,7 +146,9 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
         key = "st-perm"
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
+        async def fetch_value(
+            user_id: str, _tenant_id: str, user_context: Dict[str, Any]
+        ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
 
             user_roles = await recipe.recipe_implementation.get_roles_for_user(
@@ -179,7 +181,9 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
         key = "st-role"
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
+        async def fetch_value(
+            user_id: str, _tenant_id: str, user_context: Dict[str, Any]
+        ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
             res = await recipe.recipe_implementation.get_roles_for_user(
                 user_id, user_context

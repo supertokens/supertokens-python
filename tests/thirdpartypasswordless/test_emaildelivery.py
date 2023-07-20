@@ -39,9 +39,6 @@ from supertokens_python.recipe import (
     session,
     thirdpartypasswordless,
 )
-from supertokens_python.recipe.emailverification.asyncio import (
-    create_email_verification_token,
-)
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
     SMTPService as EVSMTPService,
 )
@@ -64,7 +61,6 @@ from supertokens_python.recipe.session.session_functions import create_new_sessi
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
 )
-from supertokens_python.recipe.thirdparty.providers import Github
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     passwordlessSigninup,
     thirdparty_manually_create_or_update_user,

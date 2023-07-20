@@ -10,131 +10,138 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
+from __future__ import annotations
 
-from supertokens_python.recipe.emailverification.interfaces import (
-    GetEmailForUserIdOkResult,
-    EmailDoesNotExistError,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-    UnverifyEmailOkResult,
-    CreateEmailVerificationTokenOkResult,
-    RevokeEmailVerificationTokensOkResult,
+from typing import Any, Dict, Union, Optional, TYPE_CHECKING
+
+from ..interfaces import (
+    TenantConfig,
+    CreateOrUpdateTenantOkResult,
+    DeleteTenantOkResult,
+    GetTenantOkResult,
+    ListAllTenantsOkResult,
+    CreateOrUpdateThirdPartyConfigOkResult,
+    DeleteThirdPartyConfigOkResult,
+    AssociateUserToTenantOkResult,
+    AssociateUserToTenantUnknownUserIdError,
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    DisassociateUserFromTenantOkResult,
 )
-from supertokens_python.recipe.emailverification.types import EmailTemplateVars
-from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
+from ..recipe import MultitenancyRecipe
+
+if TYPE_CHECKING:
+    from ..interfaces import ProviderConfig
 
 
-async def create_email_verification_token(
+async def create_or_update_tenant(
+    tenant_id: Optional[str],
+    config: TenantConfig,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> CreateOrUpdateTenantOkResult:
+    if user_context is None:
+        user_context = {}
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.create_or_update_tenant(
+        tenant_id, config, user_context
+    )
+
+
+async def delete_tenant(
+    tenant_id: str, user_context: Optional[Dict[str, Any]] = None
+) -> DeleteTenantOkResult:
+    if user_context is None:
+        user_context = {}
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.delete_tenant(tenant_id, user_context)
+
+
+async def get_tenant(
+    tenant_id: Optional[str], user_context: Optional[Dict[str, Any]] = None
+) -> GetTenantOkResult:
+    if user_context is None:
+        user_context = {}
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.get_tenant(tenant_id, user_context)
+
+
+async def list_all_tenants(
+    user_context: Optional[Dict[str, Any]] = None
+) -> ListAllTenantsOkResult:
+    if user_context is None:
+        user_context = {}
+
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.list_all_tenants(user_context)
+
+
+async def create_or_update_third_party_config(
+    tenant_id: Optional[str],
+    config: ProviderConfig,
+    skip_validation: Optional[bool] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> CreateOrUpdateThirdPartyConfigOkResult:
+    if user_context is None:
+        user_context = {}
+
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.create_or_update_third_party_config(
+        tenant_id, config, skip_validation, user_context
+    )
+
+
+async def delete_third_party_config(
+    tenant_id: Optional[str],
+    third_party_id: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> DeleteThirdPartyConfigOkResult:
+    if user_context is None:
+        user_context = {}
+
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.delete_third_party_config(
+        tenant_id, third_party_id, user_context
+    )
+
+
+async def associate_user_to_tenant(
+    tenant_id: Optional[str],
     user_id: str,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
-    CreateEmailVerificationTokenOkResult,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    AssociateUserToTenantOkResult,
+    AssociateUserToTenantUnknownUserIdError,
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
 ]:
     if user_context is None:
         user_context = {}
-    recipe = EmailVerificationRecipe.get_instance()
-    if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
-        if isinstance(email_info, GetEmailForUserIdOkResult):
-            email = email_info.email
-        elif isinstance(email_info, EmailDoesNotExistError):
-            return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
-        else:
-            raise Exception("Unknown User ID provided without email")
 
-    return await recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, user_context
+    recipe = MultitenancyRecipe.get_instance()
+
+    return await recipe.recipe_implementation.associate_user_to_tenant(
+        tenant_id, user_id, user_context
     )
 
 
-async def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.verify_email_using_token(
-        token, user_context
-    )
-
-
-async def is_email_verified(
+async def dissociate_user_from_tenant(
+    tenant_id: Optional[str],
     user_id: str,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    recipe = EmailVerificationRecipe.get_instance()
-    if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
-        if isinstance(email_info, GetEmailForUserIdOkResult):
-            email = email_info.email
-        elif isinstance(email_info, EmailDoesNotExistError):
-            return True
-        else:
-            raise Exception("Unknown User ID provided without email")
-
-    return await recipe.recipe_implementation.is_email_verified(
-        user_id, email, user_context
-    )
-
-
-async def revoke_email_verification_tokens(
-    user_id: str,
-    email: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> RevokeEmailVerificationTokensOkResult:
+) -> DisassociateUserFromTenantOkResult:
     if user_context is None:
         user_context = {}
 
-    recipe = EmailVerificationRecipe.get_instance()
-    if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
-        if isinstance(email_info, GetEmailForUserIdOkResult):
-            email = email_info.email
-        elif isinstance(email_info, EmailDoesNotExistError):
-            return RevokeEmailVerificationTokensOkResult()
-        else:
-            raise Exception("Unknown User ID provided without email")
+    recipe = MultitenancyRecipe.get_instance()
 
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, user_context
-    )
-
-
-async def unverify_email(
-    user_id: str,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    recipe = EmailVerificationRecipe.get_instance()
-    if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
-        if isinstance(email_info, GetEmailForUserIdOkResult):
-            email = email_info.email
-        elif isinstance(email_info, EmailDoesNotExistError):
-            # Here we are returning OK since that's how it used to work, but a later call
-            # to is_verified will still return true
-            return UnverifyEmailOkResult
-        else:
-            raise Exception("Unknown User ID provided without email")
-
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.unverify_email(
-        user_id, email, user_context
-    )
-
-
-async def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    return await EmailVerificationRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, user_context
+    return await recipe.recipe_implementation.dissociate_user_from_tenant(
+        tenant_id, user_id, user_context
     )

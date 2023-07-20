@@ -62,16 +62,19 @@ class RecipeModule(abc.ABC):
         regex = rf"^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$"
 
         match = re.match(regex, path_str)
+        match_group_1 = match.group(1) if match is not None else None
+        match_group_2 = match.group(2) if match is not None else None
+
         tenant_id: str = DEFAULT_TENANT_ID
         remaining_path: Optional[NormalisedURLPath] = None
 
-        if match is not None:
-            # TODO: Do something better than assert here
-            # assert match.group(1) is not None
-            # assert match.group(2) is not None
-
-            tenant_id = match.group(1)
-            remaining_path = NormalisedURLPath(match.group(2))
+        if (
+            match is not None
+            and isinstance(match_group_1, str)
+            and isinstance(match_group_2, str)
+        ):
+            tenant_id = match_group_1
+            remaining_path = NormalisedURLPath(match_group_2)
 
         for current_api in apis_handled:
             if not current_api.disabled and current_api.method == method:

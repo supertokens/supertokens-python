@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Callable, Optional, Union
 
 
 from . import exceptions as ex
-from . import utils, provider, providers
+from . import utils, provider
 from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
@@ -26,14 +26,6 @@ SignInAndUpFeature = utils.SignInAndUpFeature
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
-Apple = providers.Apple
-Discord = providers.Discord
-Facebook = providers.Facebook
-Github = providers.Github
-Google = providers.Google
-GoogleWorkspaces = providers.GoogleWorkspaces
-Bitbucket = providers.Bitbucket
-GitLab = providers.GitLab
 exceptions = ex
 
 if TYPE_CHECKING:

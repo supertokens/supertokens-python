@@ -48,6 +48,7 @@ if TYPE_CHECKING:
 
 from .interfaces import SessionContainer
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
@@ -120,7 +121,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     "update_claims_in_payload_if_needed refetching for %s", validator.id
                 )
                 value = await resolve(
-                    validator.claim.fetch_value(user_id, user_context)
+                    validator.claim.fetch_value(
+                        user_id,
+                        access_token_payload.get("tId", DEFAULT_TENANT_ID),
+                        user_context,
+                    )
                 )
                 log_debug_message(
                     "update_claims_in_payload_if_needed %s refetch result %s",
@@ -378,8 +383,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         if session_info is None:
             return False
 
+        # TODO: Pass tenant id
         access_token_payload_update = await claim.build(
-            session_info.user_id, user_context
+            session_info.user_id, "pass-tenant-id", user_context
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context
