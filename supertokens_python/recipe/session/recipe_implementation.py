@@ -60,7 +60,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
     async def create_new_session(
         self,
-        tenant_id: str,
         user_id: str,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
@@ -96,7 +95,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             payload,
             None,
             True,
-            tenant_id,
         )
 
         return new_session
@@ -264,7 +262,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             payload,
             None,
             access_token_updated,
-            response.session.tenantId,
         )
 
         return session
@@ -315,7 +312,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
-            tenant_id=payload["tId"],
         )
 
         return session
@@ -387,8 +383,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         if session_info is None:
             return False
 
+        # TODO: Pass tenant id
         access_token_payload_update = await claim.build(
-            session_info.user_id, session_info.tenant_id, user_context
+            session_info.user_id, "pass-tenant-id", user_context
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context

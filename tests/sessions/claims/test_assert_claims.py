@@ -7,7 +7,6 @@ from supertokens_python.recipe import session
 
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     JSONObject,
@@ -52,7 +51,6 @@ async def test_should_not_throw_for_empty_array():
         {},  # user_data_in_access_token
         None,
         False,  # access_token_updated
-        DEFAULT_TENANT_ID,
     )
     with patch.object(
         Session,
@@ -90,7 +88,6 @@ async def test_should_call_validate_with_the_same_payload_object():
         payload,  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
-        DEFAULT_TENANT_ID,
     )
 
     class DummyClaimValidator(SessionClaimValidator):

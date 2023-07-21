@@ -91,7 +91,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, user_id, {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -135,12 +135,12 @@ async def driver_config_client():
 
     @app.post("/create")
     async def _create(request: Request):  # type: ignore
-        await create_new_session(request, "public", "userId", {}, {})
+        await create_new_session(request, "userId", {}, {})
         return ""
 
     @app.post("/create-throw")
     async def _create_throw(request: Request):  # type: ignore
-        await create_new_session(request, "public", "userId", {}, {})
+        await create_new_session(request, "userId", {}, {})
         raise UnauthorisedError("unauthorised")
 
     return TestClient(app)

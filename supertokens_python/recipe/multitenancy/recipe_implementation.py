@@ -16,10 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Dict, Any, Union, List
 from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdErrorResult,
-    AssociateUserToTenantEmailAlreadyExistsErrorResult,
-    AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
-    AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+    AssociateUserToTenantUnknownUserIdError,
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     DisassociateUserFromTenantOkResult,
 )
 
@@ -45,6 +45,77 @@ if TYPE_CHECKING:
 
 from supertokens_python.querier import NormalisedURLPath
 from .constants import DEFAULT_TENANT_ID
+
+
+def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
+    from supertokens_python.recipe.thirdparty.provider import (
+        UserInfoMap,
+        UserFields,
+        ProviderClientConfig,
+        ProviderConfig,
+    )
+
+    providers: List[ProviderConfig] = []
+    for p in tenant["thirdParty"]["providers"]:
+        user_info_map: Optional[UserInfoMap] = None
+        if "userInfoMap" in p:
+            map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
+            map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
+            user_info_map = UserInfoMap(
+                UserFields(
+                    map_from_payload.get("userId"),
+                    map_from_payload.get("email"),
+                    map_from_payload.get("emailVerified"),
+                ),
+                UserFields(
+                    map_from_api.get("userId"),
+                    map_from_api.get("email"),
+                    map_from_api.get("emailVerified"),
+                ),
+            )
+
+        providers.append(
+            ProviderConfig(
+                third_party_id=p["thirdPartyId"],
+                name=p.get("name"),
+                clients=[
+                    ProviderClientConfig(
+                        client_id=c["clientId"],
+                        client_secret=c.get("clientSecret"),
+                        client_type=c.get("clientType"),
+                        scope=c.get("scope"),
+                        force_pkce=c.get("forcePKCE", False),
+                        additional_config=c.get("additionalConfig"),
+                    )
+                    for c in p["clients"]
+                ],
+                authorization_endpoint=p.get("authorizationEndpoint"),
+                authorization_endpoint_query_params=p.get(
+                    "authorizationEndpointQueryParams"
+                ),
+                token_endpoint=p.get("tokenEndpoint"),
+                token_endpoint_body_params=p.get("tokenEndpointBodyParams"),
+                user_info_endpoint=p.get("userInfoEndpoint"),
+                user_info_endpoint_query_params=p.get("userInfoEndpointQueryParams"),
+                user_info_endpoint_headers=p.get("userInfoEndpointHeaders"),
+                jwks_uri=p.get("jwksURI"),
+                oidc_discovery_endpoint=p.get("oidcDiscoveryEndpoint"),
+                user_info_map=user_info_map,
+                require_email=p.get("requireEmail", True),
+                validate_id_token_payload=None,
+                generate_fake_email=None,
+            )
+        )
+
+    return TenantConfigResponse(
+        emailpassword=EmailPasswordConfig(tenant["emailPassword"]["enabled"]),
+        passwordless=PasswordlessConfig(tenant["passwordless"]["enabled"]),
+        third_party=ThirdPartyConfig(
+            tenant["thirdParty"]["enabled"],
+            providers,
+        ),
+        core_config=tenant["coreConfig"],
+    )
 
 
 class RecipeImplementation(RecipeInterface):
@@ -89,93 +160,24 @@ class RecipeImplementation(RecipeInterface):
     async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
     ) -> GetTenantOkResult:
-        from supertokens_python.recipe.thirdparty.provider import (
-            ProviderConfig,
-            UserInfoMap,
-            UserFields,
-            ProviderClientConfig,
-        )
-
         res = await self.querier.send_get_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
             ),
         )
 
-        providers: List[ProviderConfig] = []
-        for p in res["thirdParty"]["providers"]:
-            user_info_map: Optional[UserInfoMap] = None
-            if "userInfoMap" in p:
-                map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
-                map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
-                user_info_map = UserInfoMap(
-                    UserFields(
-                        map_from_payload.get("userId"),
-                        map_from_payload.get("email"),
-                        map_from_payload.get("emailVerified"),
-                    ),
-                    UserFields(
-                        map_from_api.get("userId"),
-                        map_from_api.get("email"),
-                        map_from_api.get("emailVerified"),
-                    ),
-                )
-
-            providers.append(
-                ProviderConfig(
-                    third_party_id=p["thirdPartyId"],
-                    name=p["name"],
-                    clients=[
-                        ProviderClientConfig(
-                            client_id=c["clientId"],
-                            client_secret=c.get("clientSecret"),
-                            client_type=c.get("clientType"),
-                            scope=c.get("scope"),
-                            force_pkce=c.get("forcePkce"),
-                            additional_config=c.get("additionalConfig"),
-                        )
-                        for c in p["clients"]
-                    ],
-                    authorization_endpoint=p.get("authorizationEndpoint"),
-                    authorization_endpoint_query_params=p.get(
-                        "authorizationEndpointQueryParams"
-                    ),
-                    token_endpoint=p.get("tokenEndpoint"),
-                    token_endpoint_body_params=p.get("tokenEndpointBodyParams"),
-                    user_info_endpoint=p.get("userInfoEndpoint"),
-                    user_info_endpoint_query_params=p.get(
-                        "userInfoEndpointQueryParams"
-                    ),
-                    user_info_endpoint_headers=p.get("userInfoEndpointHeaders"),
-                    jwks_uri=p.get("jwksUri"),
-                    oidc_discovery_endpoint=p.get("oidcDiscoveryEndpoint"),
-                    user_info_map=user_info_map,
-                    require_email=p.get("requireEmail"),
-                    validate_id_token_payload=None,
-                    generate_fake_email=None,
-                )
-            )
+        tenant_config = parse_tenant_config(res)
 
         return GetTenantOkResult(
-            emailpassword=EmailPasswordConfig(res["emailPassword"]["enabled"]),
-            passwordless=PasswordlessConfig(res["passwordless"]["enabled"]),
-            third_party=ThirdPartyConfig(
-                res["thirdParty"]["enabled"],
-                providers,
-            ),
-            core_config=res["coreConfig"],
+            emailpassword=tenant_config.emailpassword,
+            passwordless=tenant_config.passwordless,
+            third_party=tenant_config.third_party,
+            core_config=tenant_config.core_config,
         )
 
     async def list_all_tenants(
         self, user_context: Dict[str, Any]
     ) -> ListAllTenantsOkResult:
-        from supertokens_python.recipe.thirdparty.provider import (
-            ProviderConfig,
-            ProviderClientConfig,
-            UserFields,
-            UserInfoMap,
-        )
-
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/multitenancy/tenant/list"),
             {},
@@ -184,73 +186,7 @@ class RecipeImplementation(RecipeInterface):
         tenant_configs: List[TenantConfigResponse] = []
 
         for tenant in response["tenants"]:
-            providers: List[ProviderConfig] = []
-            for p in tenant["thirdParty"]["providers"]:
-                user_info_map: Optional[UserInfoMap] = None
-                if "userInfoMap" in p:
-                    map_from_payload = p["userInfoMap"].get("fromIdTokenPayload", {})
-                    map_from_api = p["userInfoMap"].get("fromUserInfoAPI", {})
-                    user_info_map = UserInfoMap(
-                        UserFields(
-                            map_from_payload.get("userId"),
-                            map_from_payload.get("email"),
-                            map_from_payload.get("emailVerified"),
-                        ),
-                        UserFields(
-                            map_from_api.get("userId"),
-                            map_from_api.get("email"),
-                            map_from_api.get("emailVerified"),
-                        ),
-                    )
-
-                providers.append(
-                    ProviderConfig(
-                        third_party_id=p["thirdPartyId"],
-                        name=p["name"],
-                        clients=[
-                            ProviderClientConfig(
-                                client_id=c["clientId"],
-                                client_secret=c["clientSecret"],
-                                client_type=c["clientType"],
-                                scope=c["scope"],
-                                force_pkce=c["forcePkce"],
-                                additional_config=c["additionalConfig"],
-                            )
-                            for c in p["clients"]
-                        ],
-                        authorization_endpoint=p["authorizationEndpoint"],
-                        authorization_endpoint_query_params=p[
-                            "authorizationEndpointQueryParams"
-                        ],
-                        token_endpoint=p["tokenEndpoint"],
-                        token_endpoint_body_params=p["tokenEndpointBodyParams"],
-                        user_info_endpoint=p["userInfoEndpoint"],
-                        user_info_endpoint_query_params=p[
-                            "userInfoEndpointQueryParams"
-                        ],
-                        user_info_endpoint_headers=p["userInfoEndpointHeaders"],
-                        jwks_uri=p["jwksUri"],
-                        oidc_discovery_endpoint=p["oidcDiscoveryEndpoint"],
-                        user_info_map=user_info_map,
-                        require_email=p["requireEmail"],
-                        validate_id_token_payload=p["validateIdTokenPayload"],
-                        generate_fake_email=p["generateFakeEmail"],
-                    )
-                )
-
-            tenant_configs.append(
-                TenantConfigResponse(
-                    emailpassword=EmailPasswordConfig(
-                        tenant["emailPassword"]["enabled"]
-                    ),
-                    passwordless=PasswordlessConfig(tenant["passwordless"]["enabled"]),
-                    third_party=ThirdPartyConfig(
-                        tenant["thirdParty"]["enabled"],
-                        providers,
-                    ),
-                    core_config=tenant["coreConfig"],
-                )
-            )
+            tenant_configs.append(parse_tenant_config(tenant))
 
         return ListAllTenantsOkResult(
             tenants=tenant_configs,
@@ -300,12 +236,12 @@ class RecipeImplementation(RecipeInterface):
         self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
     ) -> Union[
         AssociateUserToTenantOkResult,
-        AssociateUserToTenantUnknownUserIdErrorResult,
-        AssociateUserToTenantEmailAlreadyExistsErrorResult,
-        AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
-        AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+        AssociateUserToTenantUnknownUserIdError,
+        AssociateUserToTenantEmailAlreadyExistsError,
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
-        response = await self.querier.send_post_request(
+        response: Dict[str, Any] = await self.querier.send_post_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"
             ),
@@ -314,9 +250,26 @@ class RecipeImplementation(RecipeInterface):
             },
         )
 
-        return AssociateUserToTenantOkResult(
-            was_already_associated=response["wasAlreadyAssociated"],
-        )
+        if response["status"] == "OK":
+            return AssociateUserToTenantOkResult(
+                was_already_associated=response["wasAlreadyAssociated"],
+            )
+        if response["status"] == AssociateUserToTenantUnknownUserIdError.status:
+            return AssociateUserToTenantUnknownUserIdError()
+        if response["status"] == AssociateUserToTenantEmailAlreadyExistsError.status:
+            return AssociateUserToTenantEmailAlreadyExistsError()
+        if (
+            response["status"]
+            == AssociateUserToTenantPhoneNumberAlreadyExistsError.status
+        ):
+            return AssociateUserToTenantPhoneNumberAlreadyExistsError()
+        if (
+            response["status"]
+            == AssociateUserToTenantThirdPartyUserAlreadyExistsError.status
+        ):
+            return AssociateUserToTenantThirdPartyUserAlreadyExistsError()
+
+        raise Exception("Should never come here")
 
     async def dissociate_user_from_tenant(
         self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
