@@ -203,14 +203,16 @@ class PasswordlessRecipe(RecipeModule):
             self.sms_delivery,
         )
         if request_id == CONSUME_CODE_API:
-            return await consume_code(self.api_implementation, options)
+            return await consume_code(self.api_implementation, options, user_context)
         if request_id == CREATE_CODE_API:
-            return await create_code(self.api_implementation, options)
+            return await create_code(self.api_implementation, options, user_context)
         if request_id == DOES_EMAIL_EXIST_API:
-            return await email_exists(self.api_implementation, options)
+            return await email_exists(self.api_implementation, options, user_context)
         if request_id == DOES_PHONE_NUMBER_EXIST_API:
-            return await phone_number_exists(self.api_implementation, options)
-        return await resend_code(self.api_implementation, options)
+            return await phone_number_exists(
+                self.api_implementation, options, user_context
+            )
+        return await resend_code(self.api_implementation, options, user_context)
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse

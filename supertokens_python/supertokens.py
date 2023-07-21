@@ -501,8 +501,10 @@ class Supertokens:
                     matched_recipe = recipe
                     break
             if matched_recipe is not None:
-                api_and_tenant_id = matched_recipe.return_api_id_if_can_handle_request(
-                    path, method, user_context
+                api_and_tenant_id = (
+                    await matched_recipe.return_api_id_if_can_handle_request(
+                        path, method, user_context
+                    )
                 )
         else:
             for recipe in Supertokens.get_instance().recipe_modules:
@@ -510,7 +512,7 @@ class Supertokens:
                     "middleware: Checking recipe ID for match: %s",
                     recipe.get_recipe_id(),
                 )
-                api_and_tenant_id = recipe.return_api_id_if_can_handle_request(
+                api_and_tenant_id = await recipe.return_api_id_if_can_handle_request(
                     path, method, user_context
                 )
                 if api_and_tenant_id is not None:

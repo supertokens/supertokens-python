@@ -218,7 +218,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         user_context: Dict[str, Any],
     ):
         if (
-            self.email_password_recipe.return_api_id_if_can_handle_request(
+            await self.email_password_recipe.return_api_id_if_can_handle_request(
                 path, method, user_context
             )
             is not None
@@ -228,7 +228,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             )
         if (
             self.third_party_recipe is not None
-            and self.third_party_recipe.return_api_id_if_can_handle_request(
+            and await self.third_party_recipe.return_api_id_if_can_handle_request(
                 path, method, user_context
             )
             is not None

@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 from .exceptions import SuperTokensError
 from .normalised_url_path import NormalisedURLPath
 
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
 
 class ApiIdWithTenantId:
     def __init__(self, api_id: str, tenant_id: Optional[str]):
@@ -48,11 +50,9 @@ class RecipeModule(abc.ABC):
     def get_app_info(self):
         return self.app_info
 
-    def return_api_id_if_can_handle_request(
+    async def return_api_id_if_can_handle_request(
         self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
     ) -> Union[ApiIdWithTenantId, None]:
-        _ = user_context
-
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
         apis_handled = self.get_apis_handled()
@@ -76,17 +76,29 @@ class RecipeModule(abc.ABC):
             tenant_id = match_group_1
             remaining_path = NormalisedURLPath(match_group_2)
 
+        mt_recipe = MultitenancyRecipe.get_instance()
+
         for current_api in apis_handled:
             if not current_api.disabled and current_api.method == method:
                 if self.app_info.api_base_path.append(
                     current_api.path_without_api_base_path
                 ).equals(path):
-                    return ApiIdWithTenantId(current_api.request_id, DEFAULT_TENANT_ID)
+                    final_tenant_id = (
+                        await mt_recipe.recipe_implementation.get_tenant_id(
+                            DEFAULT_TENANT_ID, user_context
+                        )
+                    )
+                    return ApiIdWithTenantId(current_api.request_id, final_tenant_id)
 
                 if remaining_path is not None and self.app_info.api_base_path.append(
                     current_api.path_without_api_base_path
                 ).equals(self.app_info.api_base_path.append(remaining_path)):
-                    return ApiIdWithTenantId(current_api.request_id, tenant_id)
+                    final_tenant_id = (
+                        await mt_recipe.recipe_implementation.get_tenant_id(
+                            tenant_id or DEFAULT_TENANT_ID, user_context
+                        )
+                    )
+                    return ApiIdWithTenantId(current_api.request_id, final_tenant_id)
 
         return None
 

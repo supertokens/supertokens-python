@@ -232,7 +232,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         user_context: Dict[str, Any],
     ):
         if (
-            self.passwordless_recipe.return_api_id_if_can_handle_request(
+            await self.passwordless_recipe.return_api_id_if_can_handle_request(
                 path, method, user_context
             )
             is not None
@@ -242,7 +242,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             )
         if (
             self.third_party_recipe is not None
-            and self.third_party_recipe.return_api_id_if_can_handle_request(
+            and await self.third_party_recipe.return_api_id_if_can_handle_request(
                 path, method, user_context
             )
             is not None

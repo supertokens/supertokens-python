@@ -397,7 +397,9 @@ def is_recipe_initialised(recipeId: str) -> bool:
     return isRecipeInitialised
 
 
-def validate_api_key(req: BaseRequest, config: DashboardConfig) -> bool:
+def validate_api_key(
+    req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
+) -> bool:
     api_key_header_value = req.get_header("authorization")
     if not api_key_header_value:
         return False

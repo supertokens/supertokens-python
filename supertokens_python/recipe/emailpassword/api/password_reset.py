@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
@@ -22,13 +22,15 @@ if TYPE_CHECKING:
     )
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_password_reset_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_generate_password_reset_token_post:
         return None
@@ -47,7 +49,6 @@ async def handle_password_reset_api(
         raise_bad_input_exception("The password reset token must be a string")
 
     token = body["token"]
-    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.password_reset_post(
         form_fields, token, api_options, user_context

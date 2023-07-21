@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
 from .constants import (
     DASHBOARD_ANALYTICS_API,
@@ -145,17 +146,21 @@ class DashboardRecipe(RecipeModule):
         )
         # For these APIs we dont need API key validation
         if request_id == DASHBOARD_API:
-            return await handle_dashboard_api(self.api_implementation, api_options)
+            return await handle_dashboard_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == VALIDATE_KEY_API:
-            return await handle_validate_key_api(self.api_implementation, api_options)
+            return await handle_validate_key_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == EMAIL_PASSWORD_SIGN_IN:
             return await handle_emailpassword_signin_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
-            Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]
+            Callable[[APIInterface, APIOptions, Dict[str, Any]], Awaitable[APIResponse]]
         ] = None
         if request_id == USERS_LIST_GET_API:
             api_function = handle_users_get_api
@@ -197,7 +202,7 @@ class DashboardRecipe(RecipeModule):
 
         if api_function is not None:
             return await api_key_protector(
-                self.api_implementation, api_options, api_function
+                self.api_implementation, api_options, api_function, user_context
             )
 
         return None
@@ -247,7 +252,7 @@ class DashboardRecipe(RecipeModule):
             raise_general_exception("calling testing function in non testing env")
         DashboardRecipe.__instance = None
 
-    def return_api_id_if_can_handle_request(
+    async def return_api_id_if_can_handle_request(
         self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
     ) -> Union[ApiIdWithTenantId, None]:
         dashboard_bundle_path = self.app_info.api_base_path.append(
@@ -279,6 +284,8 @@ class DashboardRecipe(RecipeModule):
             tenant_id = match_group_1
             remaining_path = NormalisedURLPath(match_group_2)
 
+        mt_recipe = MultitenancyRecipe.get_instance()
+
         if is_api_path(path, self.app_info.api_base_path) or (
             remaining_path is not None
             and is_api_path(
@@ -291,11 +298,20 @@ class DashboardRecipe(RecipeModule):
             if remaining_path is not None:
                 id_ = get_api_if_matched(remaining_path, method)
                 if id_ is not None:
-                    return ApiIdWithTenantId(id_, tenant_id)
+                    final_tenant_id = (
+                        await mt_recipe.recipe_implementation.get_tenant_id(
+                            DEFAULT_TENANT_ID if tenant_id is None else tenant_id,
+                            user_context,
+                        )
+                    )
+                    return ApiIdWithTenantId(id_, final_tenant_id)
 
             id_ = get_api_if_matched(path, method)
             if id_ is not None:
-                return ApiIdWithTenantId(id_, DEFAULT_TENANT_ID)
+                final_tenant_id = await mt_recipe.recipe_implementation.get_tenant_id(
+                    DEFAULT_TENANT_ID, user_context
+                )
+                return ApiIdWithTenantId(id_, final_tenant_id)
 
         if path.startswith(dashboard_bundle_path):
             return ApiIdWithTenantId(DASHBOARD_API, DEFAULT_TENANT_ID)

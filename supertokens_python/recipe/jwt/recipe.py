@@ -96,7 +96,7 @@ class JWTRecipe(RecipeModule):
         )
 
         if request_id == GET_JWKS_API:
-            return await jwks_get(self.api_implementation, options)
+            return await jwks_get(self.api_implementation, options, user_context)
 
         return None
 

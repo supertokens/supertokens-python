@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
@@ -24,7 +24,9 @@ from supertokens_python.querier import Querier
 from supertokens_python.utils import send_200_response
 
 
-async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptions):
+async def handle_emailpassword_signin_api(
+    _: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
+):
     body = await api_options.request.json()
     if body is None:
         raise_bad_input_exception("Please send body")
