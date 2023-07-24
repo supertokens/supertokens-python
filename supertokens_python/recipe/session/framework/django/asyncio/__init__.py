@@ -50,7 +50,9 @@ def verify_session(
 
             try:
                 baseRequest = DjangoRequest(request)
-                user_context = set_request_in_user_context_if_not_defined(user_context, baseRequest)
+                user_context = set_request_in_user_context_if_not_defined(
+                    user_context, baseRequest
+                )
 
                 recipe = SessionRecipe.get_instance()
                 session = await recipe.verify_session(
