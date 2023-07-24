@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework import BaseResponse
-from supertokens_python.utils import default_user_context
 
 if TYPE_CHECKING:
     from flask import Flask
@@ -35,6 +34,7 @@ class Middleware:
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python.supertokens import manage_session_post_response
+        from supertokens_python.utils import default_user_context
 
         from flask.wrappers import Response
 

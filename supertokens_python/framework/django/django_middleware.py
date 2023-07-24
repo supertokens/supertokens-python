@@ -18,8 +18,6 @@ from typing import Any, Union
 
 from asgiref.sync import async_to_sync
 
-from supertokens_python.utils import default_user_context
-
 
 def middleware(get_response: Any):
     from supertokens_python import Supertokens
@@ -30,6 +28,7 @@ def middleware(get_response: Any):
     from supertokens_python.supertokens import manage_session_post_response
 
     from django.http import HttpRequest
+    from supertokens_python.utils import default_user_context
 
     if asyncio.iscoroutinefunction(get_response):
 

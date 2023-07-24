@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, List, Optional
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -400,3 +401,17 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
             create_new_session_context_works,
         ]
     )
+
+
+
+
+async def test_default_user_context_func_calls():
+    # Tests run in the root directory of the repo
+    root_dir = Path("supertokens_python")
+    file_occurences: List[str] = []
+    for path in root_dir.rglob("*.py"):
+        with open(path) as f:
+            file_occurences.extend([str(path)] * f.read().count("user_context = set_request_in_user_context_if_not_defined("))
+            file_occurences.extend([str(path)] * f.read().count("user_context = default_user_context("))
+
+    assert len(file_occurences) == 7

@@ -18,7 +18,7 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.session import SessionRecipe, SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
-from supertokens_python.utils import default_user_context
+from supertokens_python.utils import set_request_in_user_context_if_not_defined
 from supertokens_python.types import MaybeAwaitable
 
 _T = TypeVar("_T", bound=Callable[..., Any])
@@ -45,8 +45,7 @@ def verify_session(
             from flask import make_response, request
 
             baseRequest = FlaskRequest(request)
-            if user_context is None:
-                user_context = default_user_context(baseRequest)
+            user_context = set_request_in_user_context_if_not_defined(user_context, baseRequest)
 
             recipe = SessionRecipe.get_instance()
             session = sync(

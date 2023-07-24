@@ -18,7 +18,7 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
 
 from ...interfaces import SessionContainer, SessionClaimValidator
-from supertokens_python.utils import default_user_context
+from supertokens_python.utils import set_request_in_user_context_if_not_defined
 
 
 def verify_session(
@@ -39,8 +39,7 @@ def verify_session(
     async def func(request: Request) -> Union[SessionContainer, None]:
         nonlocal user_context
         baseRequest = FastApiRequest(request)
-        if user_context is None:
-            user_context = default_user_context(baseRequest)
+        user_context = set_request_in_user_context_if_not_defined(user_context, baseRequest)
 
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(
