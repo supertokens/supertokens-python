@@ -8,11 +8,11 @@ from ...interfaces import (
     FeatureNotEnabledError,
 )
 
-from typing import Union
+from typing import Union, Dict, Any
 
 
 async def handle_user_email_verify_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
 ) -> Union[UserEmailVerifyGetAPIResponse, FeatureNotEnabledError]:
     req = api_options.request
     user_id = req.get_query_param("userId")
@@ -25,5 +25,5 @@ async def handle_user_email_verify_get(
     except Exception:
         return FeatureNotEnabledError()
 
-    is_verified = await is_email_verified(user_id)
+    is_verified = await is_email_verified(user_id, user_context=user_context)
     return UserEmailVerifyGetAPIResponse(is_verified)

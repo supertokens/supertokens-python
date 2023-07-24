@@ -628,7 +628,10 @@ class SessionClaim(ABC, Generic[_T]):
         """Gets the value of the claim stored in the payload"""
 
     async def build(
-        self, user_id: str, tenant_id: str, user_context: Optional[Dict[str, Any]] = None
+        self,
+        user_id: str,
+        tenant_id: str,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> JSONObject:
         if user_context is None:
             user_context = {}

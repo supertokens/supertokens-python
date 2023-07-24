@@ -34,6 +34,7 @@ class Middleware:
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python.supertokens import manage_session_post_response
+        from supertokens_python.utils import default_user_context
 
         from flask.wrappers import Response
 
@@ -50,8 +51,11 @@ class Middleware:
 
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
+            user_context = default_user_context(request_)
 
-            result: Union[BaseResponse, None] = sync(st.middleware(request_, response_))
+            result: Union[BaseResponse, None] = sync(
+                st.middleware(request_, response_, user_context)
+            )
 
             if result is not None:
                 if isinstance(result, FlaskResponse):

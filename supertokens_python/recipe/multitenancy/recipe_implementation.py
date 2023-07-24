@@ -125,8 +125,8 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
 
     async def get_tenant_id(
-        self, tenant_id_from_frontend: Optional[str], user_context: Dict[str, Any]
-    ) -> Optional[str]:
+        self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
+    ) -> str:
         return tenant_id_from_frontend
 
     async def create_or_update_tenant(

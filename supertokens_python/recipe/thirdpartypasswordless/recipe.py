@@ -229,23 +229,26 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if (
-            self.passwordless_recipe.return_api_id_if_can_handle_request(path, method)
+            await self.passwordless_recipe.return_api_id_if_can_handle_request(
+                path, method, user_context
+            )
             is not None
         ):
             return await self.passwordless_recipe.handle_api_request(
-                request_id, tenant_id, request, path, method, response
+                request_id, tenant_id, request, path, method, response, user_context
             )
         if (
             self.third_party_recipe is not None
-            and self.third_party_recipe.return_api_id_if_can_handle_request(
-                path, method
+            and await self.third_party_recipe.return_api_id_if_can_handle_request(
+                path, method, user_context
             )
             is not None
         ):
             return await self.third_party_recipe.handle_api_request(
-                request_id, tenant_id, request, path, method, response
+                request_id, tenant_id, request, path, method, response, user_context
             )
         return None
 

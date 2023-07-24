@@ -158,8 +158,8 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_tenant_id(
-        self, tenant_id_from_frontend: Optional[str], user_context: Dict[str, Any]
-    ) -> Optional[str]:
+        self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
+    ) -> str:
         pass
 
     @abstractmethod

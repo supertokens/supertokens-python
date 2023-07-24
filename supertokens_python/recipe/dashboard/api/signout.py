@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
@@ -26,7 +26,7 @@ from ..interfaces import SignOutOK
 
 
 async def handle_emailpassword_signout_api(
-    _: APIInterface, api_options: APIOptions
+    _: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> SignOutOK:
     if api_options.config.auth_mode == "api-key":
         return SignOutOK()

@@ -18,6 +18,7 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.session import SessionRecipe, SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.utils import set_request_in_user_context_if_not_defined
 from supertokens_python.types import MaybeAwaitable
 
 _T = TypeVar("_T", bound=Callable[..., Any])
@@ -35,15 +36,19 @@ def verify_session(
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Callable[[_T], _T]:
-    if user_context is None:
-        user_context = {}
+    _ = user_context
 
     def session_verify(f: _T) -> _T:
         @wraps(f)
         def wrapped_function(*args: Any, **kwargs: Any):
+            nonlocal user_context
             from flask import make_response, request
 
             baseRequest = FlaskRequest(request)
+            user_context = set_request_in_user_context_if_not_defined(
+                user_context, baseRequest
+            )
+
             recipe = SessionRecipe.get_instance()
             session = sync(
                 recipe.verify_session(

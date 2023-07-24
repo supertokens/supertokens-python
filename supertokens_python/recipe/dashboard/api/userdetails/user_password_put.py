@@ -37,7 +37,7 @@ from ...interfaces import (
 
 
 async def handle_user_password_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
 ) -> Union[UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -72,13 +72,13 @@ async def handle_user_password_put(
     async def reset_password(
         form_fields: List[NormalisedFormField],
         create_reset_password_token: Callable[
-            [str],
+            [str, Dict[str, Any]],
             Awaitable[
                 Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]
             ],
         ],
         reset_password_using_token: Callable[
-            [str, str],
+            [str, str, Dict[str, Any]],
             Awaitable[
                 Union[
                     ResetPasswordUsingTokenOkResult,
@@ -100,15 +100,15 @@ async def handle_user_password_put(
                 password_validation_error
             )
 
-        password_reset_token = await create_reset_password_token(user_id)  # type: ignore # FIXME
+        password_reset_token = await create_reset_password_token(user_id, user_context)
 
         if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
             # Techincally it can but its an edge case so we assume that it wont
-            # UNKNOWN_USER_ID_ERROR FIXME
+            # UNKNOWN_USER_ID_ERROR
             raise Exception("Should never come here")
 
         password_reset_response = await reset_password_using_token(
-            password_reset_token.token, new_password
+            password_reset_token.token, new_password, user_context
         )
 
         if isinstance(

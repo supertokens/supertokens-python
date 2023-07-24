@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.recipe.dashboard.interfaces import UserCountGetAPIResponse
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 async def handle_users_count_get_api(
-    _: APIInterface, _api_options: APIOptions
+    _: APIInterface, _api_options: APIOptions, _user_context: Dict[str, Any]
 ) -> UserCountGetAPIResponse:
     count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
     return UserCountGetAPIResponse(count=count)

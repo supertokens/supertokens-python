@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 def get_middleware():
     from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+    from supertokens_python.utils import default_user_context
 
     class Middleware(BaseHTTPMiddleware):
         def __init__(self, app: FastAPI):
@@ -46,8 +47,9 @@ def get_middleware():
             try:
                 custom_request = FastApiRequest(request)
                 response = FastApiResponse(Response())
+                user_context = default_user_context(custom_request)
                 result: Union[BaseResponse, None] = await st.middleware(
-                    custom_request, response
+                    custom_request, response, user_context
                 )
                 if result is None:
                     response = await call_next(request)
