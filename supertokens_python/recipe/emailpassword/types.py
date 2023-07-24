@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -28,6 +29,15 @@ class User:
         self.email = email
         self.time_joined = time_joined
         self.tenant_ids = tenant_ids
+
+    def __eq__(self, other: 'User'):
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )
 
 
 class UsersResponse:
