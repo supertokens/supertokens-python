@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Union, Optional, Dict, Any
 
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt.api.implementation import APIImplementation
@@ -85,6 +85,7 @@ class JWTRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -95,7 +96,7 @@ class JWTRecipe(RecipeModule):
         )
 
         if request_id == GET_JWKS_API:
-            return await jwks_get(self.api_implementation, options)
+            return await jwks_get(self.api_implementation, options, user_context)
 
         return None
 

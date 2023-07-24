@@ -125,6 +125,7 @@ class MultitenancyRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         api_options = APIOptions(
             request,
@@ -137,6 +138,7 @@ class MultitenancyRecipe(RecipeModule):
         return await handle_login_methods_api(
             self.api_implementation,
             api_options,
+            user_context,
         )
 
     async def handle_error(

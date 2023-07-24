@@ -11,12 +11,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Dict
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
-async def consume_code(api_implementation: APIInterface, api_options: APIOptions):
+async def consume_code(
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if api_implementation.disable_consume_code_post:
         return None
 
@@ -49,7 +54,6 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
         )
 
     pre_auth_session_id = body["preAuthSessionId"]
-    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.consume_code_post(
         pre_auth_session_id,

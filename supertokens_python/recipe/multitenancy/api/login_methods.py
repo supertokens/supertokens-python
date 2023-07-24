@@ -12,28 +12,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-
+from typing import Any, Dict
 
 from supertokens_python.recipe.multitenancy.interfaces import (
     APIInterface,
     APIOptions,
 )
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
 async def handle_login_methods_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_login_methods_get:
         return None
 
     tenant_id = api_options.request.get_query_param("tenantId")
     client_type = api_options.request.get_query_param("clientType")
-
-    user_context = default_user_context(api_options.request)
-
-    mt_recipe = api_options.recipe_implementation
-    tenant_id = await mt_recipe.get_tenant_id(tenant_id, user_context)
 
     result = await api_implementation.login_methods_get(
         tenant_id, client_type, api_options, user_context

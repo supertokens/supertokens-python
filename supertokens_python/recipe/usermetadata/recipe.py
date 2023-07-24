@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict, Any
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -71,6 +71,7 @@ class UserMetadataRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         raise Exception("Should never come here")
 

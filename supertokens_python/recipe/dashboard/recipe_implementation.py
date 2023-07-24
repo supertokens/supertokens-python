@@ -51,4 +51,4 @@ class RecipeImplementation(RecipeInterface):
                 "status" in session_verification_response
                 and session_verification_response["status"] == "OK"
             )
-        return validate_api_key(request, config)
+        return validate_api_key(request, config, user_context)

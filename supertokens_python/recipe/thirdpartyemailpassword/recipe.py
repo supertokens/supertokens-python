@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Dict, Any
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -215,23 +215,26 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if (
-            self.email_password_recipe.return_api_id_if_can_handle_request(path, method)
+            await self.email_password_recipe.return_api_id_if_can_handle_request(
+                path, method, user_context
+            )
             is not None
         ):
             return await self.email_password_recipe.handle_api_request(
-                request_id, tenant_id, request, path, method, response
+                request_id, tenant_id, request, path, method, response, user_context
             )
         if (
             self.third_party_recipe is not None
-            and self.third_party_recipe.return_api_id_if_can_handle_request(
-                path, method
+            and await self.third_party_recipe.return_api_id_if_can_handle_request(
+                path, method, user_context
             )
             is not None
         ):
             return await self.third_party_recipe.handle_api_request(
-                request_id, tenant_id, request, path, method, response
+                request_id, tenant_id, request, path, method, response, user_context
             )
         return None
 

@@ -28,7 +28,7 @@ from ...interfaces import (
 
 
 async def handle_email_verify_token_post(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
 ) -> Union[
     UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
@@ -42,13 +42,15 @@ async def handle_email_verify_token_post(
         )
 
     email_response = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
-        user_id, {}
+        user_id, user_context
     )
 
     if not isinstance(email_response, GetEmailForUserIdOkResult):
         raise Exception("Should not come here")
 
-    email_verification_token = await create_email_verification_token(user_id)
+    email_verification_token = await create_email_verification_token(
+        user_id, user_context=user_context
+    )
 
     if isinstance(
         email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError

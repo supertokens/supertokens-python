@@ -21,6 +21,7 @@ from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.recipe.session import SessionRecipe, SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.utils import set_request_in_user_context_if_not_defined
 from supertokens_python.types import MaybeAwaitable
 
 _T = TypeVar("_T", bound=Callable[..., Any])
@@ -38,18 +39,22 @@ def verify_session(
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Callable[[_T], _T]:
-    if user_context is None:
-        user_context = {}
+    _ = user_context
 
     def session_verify(f: _T) -> _T:
         from django.http import HttpRequest
 
         @wraps(f)
         def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
+            nonlocal user_context
             from django.http import JsonResponse
 
             try:
                 baseRequest = DjangoRequest(request)
+                user_context = set_request_in_user_context_if_not_defined(
+                    user_context, baseRequest
+                )
+
                 recipe = SessionRecipe.get_instance()
                 session = sync(
                     recipe.verify_session(

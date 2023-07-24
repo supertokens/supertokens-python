@@ -1,5 +1,6 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.userroles.interfaces import (
     AddRoleToUserOkResult,
     CreateNewRoleOrAddPermissionsOkResult,
@@ -17,7 +18,7 @@ from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 
 
 async def add_role_to_user(
-    tenant_id: str,
+    tenant_id: Optional[str],
     user_id: str,
     role: str,
     user_context: Union[Dict[str, Any], None] = None,
@@ -25,12 +26,12 @@ async def add_role_to_user(
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
-        tenant_id, user_id, role, user_context
+        user_id, role, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def remove_user_role(
-    tenant_id: str,
+    tenant_id: Optional[str],
     user_id: str,
     role: str,
     user_context: Union[Dict[str, Any], None] = None,
@@ -38,29 +39,33 @@ async def remove_user_role(
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
-        tenant_id, user_id, role, user_context
+        user_id, role, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def get_roles_for_user(
-    tenant_id: str, user_id: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: Optional[str],
+    user_id: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> GetRolesForUserOkResult:
     if user_context is None:
         user_context = {}
     return (
         await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
-            tenant_id, user_id, user_context
+            user_id, tenant_id or DEFAULT_TENANT_ID, user_context
         )
     )
 
 
 async def get_users_that_have_role(
-    tenant_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: Optional[str],
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
-        tenant_id, role, user_context
+        role, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 

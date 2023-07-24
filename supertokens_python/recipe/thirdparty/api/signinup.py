@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.multitenancy.exceptions import (
     RecipeDisabledForTenantError,
@@ -25,11 +25,13 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
 async def handle_sign_in_up_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_sign_in_up_post:
         return None
@@ -59,8 +61,6 @@ async def handle_sign_in_up_api(
         raise_bad_input_exception(
             "Please provide one of redirectURIInfo or oAuthTokens in the request body"
         )
-
-    user_context = default_user_context(api_options.request)
 
     mt_recipe = MultitenancyRecipe.get_instance()
     tenant_id = await mt_recipe.recipe_implementation.get_tenant_id(

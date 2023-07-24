@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict
 
 from supertokens_python.recipe.emailpassword.interfaces import SignUpPostOkResult
 from supertokens_python.types import GeneralErrorResponse
@@ -34,7 +34,10 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_sign_up_api(
-    tenant_id: str, api_implementation: APIInterface, api_options: APIOptions
+    tenant_id: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_sign_up_post:
         return None
@@ -45,7 +48,6 @@ async def handle_sign_up_api(
     form_fields = await validate_form_fields_or_throw_error(
         api_options.config.sign_up_feature.form_fields, form_fields_raw
     )
-    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.sign_up_post(
         form_fields, tenant_id, api_options, user_context

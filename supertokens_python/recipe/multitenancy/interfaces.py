@@ -129,19 +129,19 @@ class AssociateUserToTenantOkResult:
         self.was_already_associated = was_already_associated
 
 
-class AssociateUserToTenantUnknownUserIdErrorResult:
+class AssociateUserToTenantUnknownUserIdError:
     status = "UNKNOWN_USER_ID_ERROR"
 
 
-class AssociateUserToTenantEmailAlreadyExistsErrorResult:
+class AssociateUserToTenantEmailAlreadyExistsError:
     status = "EMAIL_ALREADY_EXISTS_ERROR"
 
 
-class AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult:
+class AssociateUserToTenantPhoneNumberAlreadyExistsError:
     status = "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
 
 
-class AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult:
+class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
     status = "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
 
 
@@ -158,15 +158,15 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_tenant_id(
-        self, tenant_id_from_frontend: Optional[str], user_context: Dict[str, Any]
-    ) -> Optional[str]:
+        self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
+    ) -> str:
         pass
 
     @abstractmethod
     async def create_or_update_tenant(
         self,
         tenant_id: Optional[str],
-        config: TenantConfig,
+        config: Optional[TenantConfig],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         pass
@@ -218,10 +218,10 @@ class RecipeInterface(ABC):
         user_context: Dict[str, Any],
     ) -> Union[
         AssociateUserToTenantOkResult,
-        AssociateUserToTenantUnknownUserIdErrorResult,
-        AssociateUserToTenantEmailAlreadyExistsErrorResult,
-        AssociateUserToTenantPhoneNumberAlreadyExistsErrorResult,
-        AssociateUserToTenantThirdPartyUserAlreadyExistsErrorResult,
+        AssociateUserToTenantUnknownUserIdError,
+        AssociateUserToTenantEmailAlreadyExistsError,
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
         pass
 
@@ -336,5 +336,5 @@ class APIInterface(ABC):
 
 
 TypeGetAllowedDomainsForTenantId = Callable[
-    [Optional[str], Dict[str, Any]], Awaitable[Optional[List[str]]]
+    [str, Dict[str, Any]], Awaitable[Optional[List[str]]]
 ]

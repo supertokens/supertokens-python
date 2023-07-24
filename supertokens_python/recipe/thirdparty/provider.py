@@ -103,7 +103,7 @@ class ProviderClientConfig:
             "clientSecret": self.client_secret,
             "clientType": self.client_type,
             "scope": self.scope,
-            "forcePkce": self.force_pkce,
+            "forcePKCE": self.force_pkce,
             "additionalConfig": self.additional_config,
         }
 
@@ -252,8 +252,8 @@ class ProviderConfig:
             "thirdPartyId": self.third_party_id,
             "name": self.name,
             "clients": [c.to_json() for c in self.clients]
-            if isinstance(self.clients, list)
-            else None,
+            if self.clients is not None
+            else [],
             "authorizationEndpoint": self.authorization_endpoint,
             "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
             "tokenEndpoint": self.token_endpoint,
@@ -261,7 +261,7 @@ class ProviderConfig:
             "userInfoEndpoint": self.user_info_endpoint,
             "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
             "userInfoEndpointHeaders": self.user_info_endpoint_headers,
-            "jwksUri": self.jwks_uri,
+            "jwksURI": self.jwks_uri,
             "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
             "userInfoMap": self.user_info_map.to_json()
             if self.user_info_map is not None

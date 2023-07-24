@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, List
+from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
 
 from supertokens_python.supertokens import Supertokens
 
@@ -34,7 +34,9 @@ from supertokens_python.exceptions import GeneralError, raise_bad_input_exceptio
 
 
 async def handle_users_get_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> APIResponse:
     _ = api_implementation
 
@@ -74,7 +76,7 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
         user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id)
+        user_metadata = await get_user_metadata(user.user_id, user_context)
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 

@@ -13,21 +13,24 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
 
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
-async def handle_refresh_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_refresh_api(
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if (
         api_implementation.disable_refresh_post
         or api_implementation.refresh_post is None
     ):
         return None
-    user_context = default_user_context(api_options.request)
 
     await api_implementation.refresh_post(api_options, user_context)
     if api_options.response is None:
