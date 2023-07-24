@@ -40,7 +40,7 @@ class RecipeImplementation(RecipeInterface):
         self.querier = querier
 
     async def add_role_to_user(
-        self, tenant_id: str, user_id: str, role: str, user_context: Dict[str, Any]
+        self, user_id: str, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {"userId": user_id, "role": role}
         response = await self.querier.send_put_request(
@@ -53,7 +53,7 @@ class RecipeImplementation(RecipeInterface):
         return UnknownRoleError()
 
     async def remove_user_role(
-        self, tenant_id: str, user_id: str, role: str, user_context: Dict[str, Any]
+        self, user_id: str, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {"userId": user_id, "role": role}
         response = await self.querier.send_post_request(
@@ -66,7 +66,7 @@ class RecipeImplementation(RecipeInterface):
         return UnknownRoleError()
 
     async def get_roles_for_user(
-        self, tenant_id: str, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> GetRolesForUserOkResult:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(
@@ -75,7 +75,7 @@ class RecipeImplementation(RecipeInterface):
         return GetRolesForUserOkResult(roles=response["roles"])
 
     async def get_users_that_have_role(
-        self, tenant_id: str, role: str, user_context: Dict[str, Any]
+        self, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {"role": role}
         response = await self.querier.send_get_request(

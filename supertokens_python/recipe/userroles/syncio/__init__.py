@@ -31,7 +31,10 @@ from supertokens_python.recipe.userroles.interfaces import (
 
 
 def add_role_to_user(
-    tenant_id: str, user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import add_role_to_user
 
@@ -39,7 +42,10 @@ def add_role_to_user(
 
 
 def remove_user_role(
-    tenant_id: str, user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_user_role
 

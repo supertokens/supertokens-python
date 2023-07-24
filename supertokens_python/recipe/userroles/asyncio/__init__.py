@@ -25,7 +25,7 @@ async def add_role_to_user(
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
-        tenant_id, user_id, role, user_context
+        user_id, role, tenant_id, user_context
     )
 
 
@@ -38,7 +38,7 @@ async def remove_user_role(
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
-        tenant_id, user_id, role, user_context
+        user_id, role, tenant_id, user_context
     )
 
 
@@ -49,7 +49,7 @@ async def get_roles_for_user(
         user_context = {}
     return (
         await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
-            tenant_id, user_id, user_context
+            user_id, tenant_id, user_context
         )
     )
 
@@ -60,7 +60,7 @@ async def get_users_that_have_role(
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
-        tenant_id, role, user_context
+        role, tenant_id, user_context
     )
 
 

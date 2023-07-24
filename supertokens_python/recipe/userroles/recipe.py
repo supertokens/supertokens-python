@@ -151,7 +151,7 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
             recipe = UserRolesRecipe.get_instance()
 
             user_roles = await recipe.recipe_implementation.get_roles_for_user(
-                user_id, tenant_id, user_context
+                tenant_id, user_id, user_context
             )
 
             user_permissions: Set[str] = set()
@@ -185,7 +185,7 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
         ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
             res = await recipe.recipe_implementation.get_roles_for_user(
-                user_id, tenant_id, user_context
+                tenant_id, user_id, user_context
             )
             return res.roles
 
