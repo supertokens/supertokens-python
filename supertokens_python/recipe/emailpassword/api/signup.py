@@ -48,7 +48,7 @@ async def handle_sign_up_api(
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.sign_up_post(
-        tenant_id, form_fields, api_options, user_context
+        form_fields, tenant_id, api_options, user_context
     )
 
     if isinstance(response, SignUpPostOkResult):

@@ -36,6 +36,6 @@ async def handle_email_exists_api(
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.email_exists_get(
-        tenant_id, email, api_options, user_context
+        email, api_options, user_context, tenant_id
     )
     return send_200_response(response.to_json(), api_options.response)

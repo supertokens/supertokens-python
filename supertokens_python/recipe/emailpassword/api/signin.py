@@ -42,7 +42,7 @@ async def handle_sign_in_api(
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.sign_in_post(
-        tenant_id, form_fields, api_options, user_context
+        form_fields, tenant_id, api_options, user_context
     )
 
     return send_200_response(response.to_json(), api_options.response)

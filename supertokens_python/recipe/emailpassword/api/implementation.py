@@ -52,20 +52,20 @@ from supertokens_python.types import GeneralErrorResponse
 class APIImplementation(APIInterface):
     async def email_exists_get(
         self,
-        tenant_id: str,
         email: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
+        tenant_id: str,
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         user = await api_options.recipe_implementation.get_user_by_email(
-            tenant_id, email, user_context
+            email, tenant_id, user_context
         )
         return EmailExistsGetOkResult(user is not None)
 
     async def generate_password_reset_token_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
@@ -77,7 +77,7 @@ class APIImplementation(APIInterface):
         email = emailFormField.value
 
         user = await api_options.recipe_implementation.get_user_by_email(
-            tenant_id, email, user_context
+            email, tenant_id, user_context
         )
 
         if user is None:
@@ -85,7 +85,7 @@ class APIImplementation(APIInterface):
 
         token_result = (
             await api_options.recipe_implementation.create_reset_password_token(
-                tenant_id, user.user_id, user_context
+                user.user_id, tenant_id, user_context
             )
         )
 
@@ -120,9 +120,9 @@ class APIImplementation(APIInterface):
 
     async def password_reset_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
         token: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -138,7 +138,7 @@ class APIImplementation(APIInterface):
         new_password = new_password_for_field.value
 
         result = await api_options.recipe_implementation.reset_password_using_token(
-            tenant_id, token, new_password, user_context
+            token, new_password, tenant_id, user_context
         )
 
         if isinstance(result, ResetPasswordUsingTokenInvalidTokenError):
@@ -148,8 +148,8 @@ class APIImplementation(APIInterface):
 
     async def sign_in_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -170,7 +170,7 @@ class APIImplementation(APIInterface):
         email = email_form_field.value
 
         result = await api_options.recipe_implementation.sign_in(
-            tenant_id, email, password, user_context
+            email, password, tenant_id, user_context
         )
 
         if isinstance(result, SignInWrongCredentialsError):
@@ -188,8 +188,8 @@ class APIImplementation(APIInterface):
 
     async def sign_up_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -210,7 +210,7 @@ class APIImplementation(APIInterface):
         email = email_form_field.value
 
         result = await api_options.recipe_implementation.sign_up(
-            tenant_id, email, password, user_context
+            email, password, tenant_id, user_context
         )
 
         if isinstance(result, SignUpEmailAlreadyExistsError):

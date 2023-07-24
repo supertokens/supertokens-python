@@ -50,7 +50,7 @@ async def get_user_by_email(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(
-        tenant_id, email, user_context
+        email, tenant_id, user_context
     )
 
 
@@ -60,7 +60,7 @@ async def create_reset_password_token(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(
-        tenant_id, user_id, user_context
+        user_id, tenant_id, user_context
     )
 
 
@@ -73,7 +73,7 @@ async def reset_password_using_token(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        tenant_id, token, new_password, user_context
+        token, new_password, tenant_id, user_context
     )
 
 
@@ -86,7 +86,7 @@ async def sign_in(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(
-        tenant_id, email, password, user_context
+        email, password, tenant_id, user_context
     )
 
 
@@ -99,7 +99,7 @@ async def sign_up(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(
-        tenant_id, email, password, user_context
+        email, password, tenant_id, user_context
     )
 
 

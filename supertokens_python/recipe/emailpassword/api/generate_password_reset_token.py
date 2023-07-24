@@ -43,6 +43,6 @@ async def handle_generate_password_reset_token_api(
     user_context = default_user_context(api_options.request)
 
     response = await api_implementation.generate_password_reset_token_post(
-        tenant_id, form_fields, api_options, user_context
+        form_fields, tenant_id, api_options, user_context
     )
     return send_200_response(response.to_json(), api_options.response)

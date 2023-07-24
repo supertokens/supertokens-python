@@ -67,7 +67,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_user_by_email(
-        self, tenant_id: str, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         params = {"email": email}
         response = await self.querier.send_get_request(
@@ -83,7 +83,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def create_reset_password_token(
-        self, tenant_id: str, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         data = {"userId": user_id}
         response = await self.querier.send_post_request(
@@ -95,9 +95,9 @@ class RecipeImplementation(RecipeInterface):
 
     async def reset_password_using_token(
         self,
-        tenant_id: str,
         token: str,
         new_password: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
@@ -114,7 +114,7 @@ class RecipeImplementation(RecipeInterface):
         return ResetPasswordUsingTokenOkResult(user_id)
 
     async def sign_in(
-        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         data = {"password": password, "email": email}
         response = await self.querier.send_post_request(
@@ -132,7 +132,7 @@ class RecipeImplementation(RecipeInterface):
         return SignInWrongCredentialsError()
 
     async def sign_up(
-        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         data = {"password": password, "email": email}
         response = await self.querier.send_post_request(
