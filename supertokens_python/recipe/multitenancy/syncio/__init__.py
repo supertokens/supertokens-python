@@ -20,7 +20,7 @@ from ..interfaces import TenantConfig, ProviderConfig
 
 def create_or_update_tenant(
     tenant_id: Optional[str],
-    config: TenantConfig,
+    config: Optional[TenantConfig],
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:

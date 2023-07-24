@@ -132,14 +132,14 @@ class RecipeImplementation(RecipeInterface):
     async def create_or_update_tenant(
         self,
         tenant_id: Optional[str],
-        config: TenantConfig,
+        config: Optional[TenantConfig],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/multitenancy/tenant"),
             {
                 "tenantId": tenant_id,
-                **config.to_json(),
+                **(config.to_json() if config is not None else {}),
             },
         )
         return CreateOrUpdateTenantOkResult(

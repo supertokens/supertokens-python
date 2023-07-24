@@ -166,7 +166,7 @@ class RecipeInterface(ABC):
     async def create_or_update_tenant(
         self,
         tenant_id: Optional[str],
-        config: TenantConfig,
+        config: Optional[TenantConfig],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         pass
