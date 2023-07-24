@@ -66,7 +66,7 @@ class RecipeImplementation(RecipeInterface):
         self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         users = await self.recipe_implementation.get_users_by_email(
-            tenant_id, email, user_context
+            email, tenant_id, user_context
         )
 
         for user in users:
@@ -84,7 +84,7 @@ class RecipeImplementation(RecipeInterface):
         self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         return await self.recipe_implementation.create_reset_password_token(
-            tenant_id, user_id, user_context
+            user_id, tenant_id, user_context
         )
 
     async def reset_password_using_token(
@@ -97,14 +97,14 @@ class RecipeImplementation(RecipeInterface):
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         return await self.recipe_implementation.reset_password_using_token(
-            tenant_id, token, new_password, user_context
+            token, new_password, tenant_id, user_context
         )
 
     async def sign_in(
         self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         result = await self.recipe_implementation.emailpassword_sign_in(
-            tenant_id, email, password, user_context
+            email, password, tenant_id, user_context
         )
         if isinstance(result, EmailPasswordSignInOkResult):
             return SignInOkResult(
@@ -121,7 +121,7 @@ class RecipeImplementation(RecipeInterface):
         self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         result = await self.recipe_implementation.emailpassword_sign_up(
-            tenant_id, email, password, user_context
+            email, password, tenant_id, user_context
         )
         if isinstance(result, EmailPasswordSignUpOkResult):
             return SignUpOkResult(

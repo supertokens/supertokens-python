@@ -50,7 +50,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         users = await self.recipe_implementation.get_users_by_email(email, user_context)
         users_result: List[User] = []
@@ -76,6 +76,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         user = await self.recipe_implementation.get_user_by_thirdparty_info(
@@ -102,6 +103,7 @@ class RecipeImplementation(RecipeInterface):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         return await self.recipe_implementation.thirdparty_sign_in_up(
@@ -118,6 +120,7 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ManuallyCreateOrUpdateUserOkResult:
         return (
@@ -129,8 +132,8 @@ class RecipeImplementation(RecipeInterface):
     async def get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         return await self.recipe_implementation.thirdparty_get_provider(

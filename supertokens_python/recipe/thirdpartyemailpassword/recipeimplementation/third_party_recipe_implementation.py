@@ -48,10 +48,10 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_users_by_email(
-        self, tenant_id: str, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         users = await self.recipe_implementation.get_users_by_email(
-            tenant_id, email, user_context
+            email, tenant_id, user_context
         )
         users_result: List[User] = []
 

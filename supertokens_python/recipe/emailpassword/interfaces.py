@@ -264,9 +264,9 @@ class APIInterface:
     async def email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
-        tenant_id: str,
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 

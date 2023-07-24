@@ -150,10 +150,10 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_users_by_email(
-        self, tenant_id: str, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         result: List[User] = []
-        ep_user = await self.ep_get_user_by_email(tenant_id, email, user_context)
+        ep_user = await self.ep_get_user_by_email(email, tenant_id, user_context)
 
         if ep_user is not None:
             result.append(
@@ -280,9 +280,9 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def emailpassword_sign_in(
-        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
-        result = await self.ep_sign_in(tenant_id, email, password, user_context)
+        result = await self.ep_sign_in(email, password, tenant_id, user_context)
         if isinstance(result, EPInterfaces.SignInOkResult):
             return EmailPasswordSignInOkResult(
                 User(
@@ -296,9 +296,9 @@ class RecipeImplementation(RecipeInterface):
         return result
 
     async def emailpassword_sign_up(
-        self, tenant_id: str, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsError]:
-        result = await self.ep_sign_up(tenant_id, email, password, user_context)
+        result = await self.ep_sign_up(email, password, tenant_id, user_context)
         if isinstance(result, EPInterfaces.SignUpOkResult):
             return EmailPasswordSignUpOkResult(
                 User(
@@ -312,10 +312,10 @@ class RecipeImplementation(RecipeInterface):
         return result
 
     async def create_reset_password_token(
-        self, tenant_id: str, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         return await self.ep_create_reset_password_token(
-            tenant_id, user_id, user_context
+            user_id, tenant_id, user_context
         )
 
     async def reset_password_using_token(
@@ -328,7 +328,7 @@ class RecipeImplementation(RecipeInterface):
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         return await self.ep_reset_password_using_token(
-            tenant_id, token, new_password, user_context
+            token, new_password, tenant_id, user_context
         )
 
     async def update_email_or_password(

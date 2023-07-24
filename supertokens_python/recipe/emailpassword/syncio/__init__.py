@@ -11,12 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 
 from ..interfaces import SignInOkResult, SignInWrongCredentialsError
 from ..types import EmailTemplateVars, User
+from ...multitenancy.constants import DEFAULT_TENANT_ID
 
 
 def update_email_or_password(
@@ -44,7 +45,9 @@ def get_user_by_id(
 
 
 def get_user_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    email: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[None, User]:
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
 
@@ -52,7 +55,9 @@ def get_user_by_email(
 
 
 def create_reset_password_token(
-    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    user_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
         create_reset_password_token,
@@ -62,7 +67,7 @@ def create_reset_password_token(
 
 
 def reset_password_using_token(
-    tenant_id: str,
+    tenant_id: Optional[str],
     token: str,
     new_password: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -77,7 +82,7 @@ def reset_password_using_token(
 
 
 def sign_in(
-    tenant_id: str,
+    tenant_id: Optional[str],
     email: str,
     password: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -88,7 +93,7 @@ def sign_in(
 
 
 def sign_up(
-    tenant_id: str,
+    tenant_id: Optional[str],
     email: str,
     password: str,
     user_context: Union[None, Dict[str, Any]] = None,

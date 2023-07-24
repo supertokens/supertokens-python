@@ -53,9 +53,9 @@ class APIImplementation(APIInterface):
     async def email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
-        tenant_id: str,
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         user = await api_options.recipe_implementation.get_user_by_email(
             email, tenant_id, user_context

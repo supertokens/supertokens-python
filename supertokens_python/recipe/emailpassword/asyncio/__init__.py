@@ -11,11 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 
 from ..types import EmailTemplateVars, User
+from ...multitenancy.constants import DEFAULT_TENANT_ID
 
 
 async def update_email_or_password(
@@ -45,27 +46,31 @@ async def get_user_by_id(
 
 
 async def get_user_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    email: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(
-        email, tenant_id, user_context
+        email, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def create_reset_password_token(
-    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    user_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(
-        user_id, tenant_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def reset_password_using_token(
-    tenant_id: str,
+    tenant_id: Optional[str],
     token: str,
     new_password: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -73,12 +78,12 @@ async def reset_password_using_token(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        token, new_password, tenant_id, user_context
+        token, new_password, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def sign_in(
-    tenant_id: str,
+    tenant_id: Optional[str],
     email: str,
     password: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -86,12 +91,12 @@ async def sign_in(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(
-        email, password, tenant_id, user_context
+        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def sign_up(
-    tenant_id: str,
+    tenant_id: Optional[str],
     email: str,
     password: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -99,7 +104,7 @@ async def sign_up(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(
-        email, password, tenant_id, user_context
+        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
