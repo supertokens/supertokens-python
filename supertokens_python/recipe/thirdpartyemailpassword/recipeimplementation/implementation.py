@@ -320,9 +320,9 @@ class RecipeImplementation(RecipeInterface):
 
     async def reset_password_using_token(
         self,
-        tenant_id: str,
         token: str,
         new_password: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError

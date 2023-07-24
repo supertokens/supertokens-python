@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     )
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 from .utils import validate_form_fields_or_throw_error
 

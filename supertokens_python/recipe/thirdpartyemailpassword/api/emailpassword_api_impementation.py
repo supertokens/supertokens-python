@@ -63,15 +63,15 @@ def get_interface_impl(
     if not implementation.disable_sign_in_post:
 
         async def sign_in_post(
-            tenant_id: str,
             form_fields: List[FormField],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
             SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse
         ]:
             result = await api_implementation.emailpassword_sign_in_post(
-                tenant_id, form_fields, api_options, user_context
+                form_fields, tenant_id, api_options, user_context
             )
             if isinstance(result, EmailPasswordSignInPostOkResult):
                 return SignInPostOkResult(
@@ -90,15 +90,15 @@ def get_interface_impl(
     if not implementation.disable_sign_up_post:
 
         async def sign_up_post(
-            tenant_id: str,
             form_fields: List[FormField],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
             SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse
         ]:
             result = await api_implementation.emailpassword_sign_up_post(
-                tenant_id, form_fields, api_options, user_context
+                form_fields, tenant_id, api_options, user_context
             )
             if isinstance(result, EmailPasswordSignUpPostOkResult):
                 return SignUpPostOkResult(

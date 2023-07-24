@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -188,23 +188,23 @@ class EmailPasswordRecipe(RecipeModule):
         )
         if request_id == SIGNUP:
             return await handle_sign_up_api(
-                tenant_id, self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options, user_context
             )
         if request_id == SIGNIN:
             return await handle_sign_in_api(
-                tenant_id, self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options, user_context
             )
         if request_id == SIGNUP_EMAIL_EXISTS:
             return await handle_email_exists_api(
-                tenant_id, self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options, user_context
             )
         if request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(
-                tenant_id, self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options, user_context
             )
         if request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(
-                tenant_id, self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         return None

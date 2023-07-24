@@ -72,13 +72,13 @@ async def handle_user_password_put(
     async def reset_password(
         form_fields: List[NormalisedFormField],
         create_reset_password_token: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             Awaitable[
                 Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]
             ],
         ],
         reset_password_using_token: Callable[
-            [str, str, Dict[str, Any]],
+            [str, str, str, Dict[str, Any]],
             Awaitable[
                 Union[
                     ResetPasswordUsingTokenOkResult,
@@ -100,7 +100,10 @@ async def handle_user_password_put(
                 password_validation_error
             )
 
-        password_reset_token = await create_reset_password_token(user_id, user_context)
+        # TODO: Pass tenant id
+        password_reset_token = await create_reset_password_token(
+            "pass-tenant-id", user_id, user_context
+        )
 
         if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
             # Techincally it can but its an edge case so we assume that it wont
@@ -108,7 +111,7 @@ async def handle_user_password_put(
             raise Exception("Should never come here")
 
         password_reset_response = await reset_password_using_token(
-            password_reset_token.token, new_password, user_context
+            "pass-tenant-id", password_reset_token.token, new_password, user_context
         )
 
         if isinstance(

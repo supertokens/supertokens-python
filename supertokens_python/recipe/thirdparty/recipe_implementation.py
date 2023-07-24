@@ -176,8 +176,8 @@ class RecipeImplementation(RecipeInterface):
     async def get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ):
         mt_recipe = MultitenancyRecipe.get_instance()

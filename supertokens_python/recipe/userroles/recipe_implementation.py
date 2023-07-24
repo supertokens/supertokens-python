@@ -13,7 +13,7 @@
 # under the License.
 
 
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier

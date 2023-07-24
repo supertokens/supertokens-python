@@ -17,7 +17,6 @@ from supertokens_python.async_to_sync_wrapper import sync
 
 from ..interfaces import SignInOkResult, SignInWrongCredentialsError
 from ..types import EmailTemplateVars, User
-from ...multitenancy.constants import DEFAULT_TENANT_ID
 
 
 def update_email_or_password(

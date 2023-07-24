@@ -96,31 +96,31 @@ class APIImplementation(APIInterface):
 
     async def emailpassword_email_exists_get(
         self,
-        tenant_id: str,
         email: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         return await self.ep_email_exists_get(
-            tenant_id, email, api_options, user_context
+            email, tenant_id, api_options, user_context
         )
 
     async def generate_password_reset_token_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         return await self.ep_generate_password_reset_token_post(
-            tenant_id, form_fields, api_options, user_context
+            form_fields, tenant_id, api_options, user_context
         )
 
     async def password_reset_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
         token: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -129,7 +129,7 @@ class APIImplementation(APIInterface):
         GeneralErrorResponse,
     ]:
         return await self.ep_password_reset_post(
-            tenant_id, form_fields, token, api_options, user_context
+            form_fields, token, tenant_id, api_options, user_context
         )
 
     async def thirdparty_sign_in_up_post(
@@ -169,8 +169,8 @@ class APIImplementation(APIInterface):
 
     async def emailpassword_sign_in_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -179,7 +179,7 @@ class APIImplementation(APIInterface):
         GeneralErrorResponse,
     ]:
         result = await self.ep_sign_in_post(
-            tenant_id, form_fields, api_options, user_context
+            form_fields, tenant_id, api_options, user_context
         )
         if isinstance(result, SignInPostOkResult):
             return EmailPasswordSignInPostOkResult(
@@ -196,8 +196,8 @@ class APIImplementation(APIInterface):
 
     async def emailpassword_sign_up_post(
         self,
-        tenant_id: str,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -206,7 +206,7 @@ class APIImplementation(APIInterface):
         GeneralErrorResponse,
     ]:
         result = await self.ep_sign_up_post(
-            tenant_id, form_fields, api_options, user_context
+            form_fields, tenant_id, api_options, user_context
         )
         if isinstance(result, SignUpPostOkResult):
             return EmailPasswordSignUpPostOkResult(

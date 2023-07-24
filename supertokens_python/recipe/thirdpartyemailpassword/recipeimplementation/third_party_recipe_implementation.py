@@ -48,10 +48,11 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_users_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
+        self, email: str, user_context: Dict[str, Any]
     ) -> List[User]:
+        # TODO: Pass tenant id here
         users = await self.recipe_implementation.get_users_by_email(
-            email, tenant_id, user_context
+            email, "pass-tenant-id", user_context
         )
         users_result: List[User] = []
 
@@ -156,8 +157,8 @@ class RecipeImplementation(RecipeInterface):
     async def get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         return await self.recipe_implementation.thirdparty_get_provider(
