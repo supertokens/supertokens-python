@@ -61,7 +61,7 @@ class RecipeInterface(ABC):
         self,
         user_id: str,
         role: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
         pass
@@ -71,20 +71,20 @@ class RecipeInterface(ABC):
         self,
         user_id: str,
         role: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def get_roles_for_user(
-        self, user_id: str, tenant_id: Optional[str], user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> GetRolesForUserOkResult:
         pass
 
     @abstractmethod
     async def get_users_that_have_role(
-        self, role: str, tenant_id: Optional[str], user_context: Dict[str, Any]
+        self, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         pass
 
