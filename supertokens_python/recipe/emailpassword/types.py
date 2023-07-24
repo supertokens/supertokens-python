@@ -30,7 +30,7 @@ class User:
         self.time_joined = time_joined
         self.tenant_ids = tenant_ids
 
-    def __eq__(self, other: 'User'):
+    def __eq__(self, other: "User"):
         return (
             isinstance(other, self.__class__)
             and self.user_id == other.user_id
