@@ -296,7 +296,7 @@ class RecipeImplementation(RecipeInterface):
         if self.tp_get_provider is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_get_provider(
-            third_party_id, tenant_id, client_type, user_context
+            third_party_id, client_type, tenant_id, user_context
         )
 
     async def get_user_by_phone_number(
