@@ -58,8 +58,8 @@ async def handle_authorisation_url_api(
 
     provider_response = await api_options.recipe_implementation.get_provider(
         third_party_id=third_party_id,
-        tenant_id=tenant_id,
         client_type=client_type,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
