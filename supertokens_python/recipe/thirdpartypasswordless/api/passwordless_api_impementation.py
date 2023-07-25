@@ -87,6 +87,7 @@ def get_interface_impl(
                         result.user.email,
                         result.user.phone_number,
                         result.user.time_joined,
+                        result.user.tenant_ids,
                     ),
                     result.session,
                 )

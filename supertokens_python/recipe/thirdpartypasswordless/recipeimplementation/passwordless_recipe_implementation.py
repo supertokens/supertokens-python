@@ -95,6 +95,7 @@ class RecipeImplementation(RecipeInterface):
                     result.user.email,
                     result.user.phone_number,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                 ),
             )
         return result
@@ -112,6 +113,7 @@ class RecipeImplementation(RecipeInterface):
                     otherTypeUser.email,
                     otherTypeUser.phone_number,
                     otherTypeUser.time_joined,
+                    otherTypeUser.tenant_ids,
                 )
 
         return None
@@ -123,7 +125,11 @@ class RecipeImplementation(RecipeInterface):
         for user in users:
             if user.third_party_info is not None:
                 return User(
-                    user.user_id, user.email, user.phone_number, user.time_joined
+                    user.user_id,
+                    user.email,
+                    user.phone_number,
+                    user.time_joined,
+                    user.tenant_ids,
                 )
 
         return None
@@ -141,6 +147,7 @@ class RecipeImplementation(RecipeInterface):
                     otherTypeUser.email,
                     otherTypeUser.phone_number,
                     otherTypeUser.time_joined,
+                    otherTypeUser.tenant_ids,
                 )
 
         return None

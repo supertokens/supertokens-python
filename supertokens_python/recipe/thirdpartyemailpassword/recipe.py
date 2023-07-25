@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Optional, Dict, Any
+from typing import TYPE_CHECKING, List, Union, Dict, Any
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -210,7 +210,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,

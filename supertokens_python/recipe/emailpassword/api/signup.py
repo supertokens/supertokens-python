@@ -34,6 +34,7 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_sign_up_api(
+    tenant_id: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],
@@ -49,7 +50,7 @@ async def handle_sign_up_api(
     )
 
     response = await api_implementation.sign_up_post(
-        form_fields, api_options, user_context
+        form_fields, tenant_id, api_options, user_context
     )
 
     if isinstance(response, SignUpPostOkResult):

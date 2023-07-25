@@ -280,8 +280,8 @@ async def passwordlessSigninup(
             result.user.user_id,
             result.user.email,
             result.user.phone_number,
-            None,
             result.user.time_joined,
+            result.user.tenant_ids,
             None,
         ),
     )

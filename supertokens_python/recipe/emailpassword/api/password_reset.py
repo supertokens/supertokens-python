@@ -28,6 +28,7 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_password_reset_api(
+    tenant_id: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],
@@ -51,6 +52,6 @@ async def handle_password_reset_api(
     token = body["token"]
 
     response = await api_implementation.password_reset_post(
-        form_fields, token, api_options, user_context
+        form_fields, token, tenant_id, api_options, user_context
     )
     return send_200_response(response.to_json(), api_options.response)

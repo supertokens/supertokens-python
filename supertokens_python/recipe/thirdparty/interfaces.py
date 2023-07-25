@@ -109,8 +109,8 @@ class RecipeInterface(ABC):
     async def get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         pass

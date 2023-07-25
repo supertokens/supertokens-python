@@ -28,6 +28,7 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_sign_in_api(
+    tenant_id: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],
@@ -43,7 +44,7 @@ async def handle_sign_in_api(
     )
 
     response = await api_implementation.sign_in_post(
-        form_fields, api_options, user_context
+        form_fields, tenant_id, api_options, user_context
     )
 
     return send_200_response(response.to_json(), api_options.response)

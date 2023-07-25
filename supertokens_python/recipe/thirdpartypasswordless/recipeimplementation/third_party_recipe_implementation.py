@@ -45,8 +45,8 @@ class RecipeImplementation(RecipeInterface):
             user_id=user.user_id,
             email=user.email,
             time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
             third_party_info=user.third_party_info,
-            tenant_id=user.tenant_id,
         )
 
     async def get_users_by_email(
@@ -65,8 +65,8 @@ class RecipeImplementation(RecipeInterface):
                         user_id=user.user_id,
                         email=user.email,
                         time_joined=user.time_joined,
+                        tenant_ids=user.tenant_ids,
                         third_party_info=user.third_party_info,
-                        tenant_id=user.tenant_id,
                     )
                 )
 
@@ -91,8 +91,8 @@ class RecipeImplementation(RecipeInterface):
             user_id=user.user_id,
             email=user.email,
             time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
             third_party_info=user.third_party_info,
-            tenant_id=user.tenant_id,
         )
 
     async def sign_in_up(
@@ -129,8 +129,8 @@ class RecipeImplementation(RecipeInterface):
     async def get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         return await self.recipe_implementation.thirdparty_get_provider(

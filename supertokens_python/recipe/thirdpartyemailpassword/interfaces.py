@@ -96,7 +96,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         pass
 
@@ -143,25 +143,29 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def emailpassword_sign_in(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_up(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsError]:
         pass
 
     @abstractmethod
     async def create_reset_password_token(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         pass
 
     @abstractmethod
     async def reset_password_using_token(
-        self, token: str, new_password: str, user_context: Dict[str, Any]
+        self,
+        token: str,
+        new_password: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
@@ -296,6 +300,7 @@ class APIInterface(ABC):
     async def emailpassword_sign_in_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -309,6 +314,7 @@ class APIInterface(ABC):
     async def emailpassword_sign_up_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -322,6 +328,7 @@ class APIInterface(ABC):
     async def emailpassword_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: EmailPasswordAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailPasswordEmailExistsGetOkResult, GeneralErrorResponse]:
@@ -331,6 +338,7 @@ class APIInterface(ABC):
     async def generate_password_reset_token_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
@@ -341,6 +349,7 @@ class APIInterface(ABC):
         self,
         form_fields: List[FormField],
         token: str,
+        tenant_id: str,
         api_options: EmailPasswordAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[

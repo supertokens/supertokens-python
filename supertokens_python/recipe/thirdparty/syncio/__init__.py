@@ -67,10 +67,10 @@ def manually_create_or_update_user(
 
 def get_provider(
     third_party_id: str,
-    tenant_id: Optional[str] = None,
     client_type: Optional[str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdparty.asyncio import get_provider
 
-    return sync(get_provider(third_party_id, tenant_id, client_type, user_context))
+    return sync(get_provider(third_party_id, client_type, tenant_id, user_context))

@@ -53,11 +53,11 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
                 ),
-                response["user"].get("tenantId"),
             )
         return None
 
@@ -77,10 +77,10 @@ class RecipeImplementation(RecipeInterface):
                     user["id"],
                     user["email"],
                     user["timeJoined"],
+                    response["user"]["tenantIds"],
                     ThirdPartyInfo(
                         user["thirdParty"]["userId"], user["thirdParty"]["id"]
                     ),
-                    response["user"].get("tenantId"),
                 )
             )
         return users
@@ -103,11 +103,11 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
                 ),
-                response["user"].get("tenantId"),
             )
         return None
 
@@ -133,11 +133,11 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
                 ),
-                response["user"].get("tenantId"),
             ),
             response["createdNewUser"],
             oauth_tokens,
@@ -164,11 +164,11 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
                 ),
-                response["user"].get("tenantId"),
             ),
             response["createdNewUser"],
         )
@@ -176,8 +176,8 @@ class RecipeImplementation(RecipeInterface):
     async def get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ):
         mt_recipe = MultitenancyRecipe.get_instance()

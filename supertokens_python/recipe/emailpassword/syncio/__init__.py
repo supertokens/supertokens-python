@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 
@@ -44,47 +44,62 @@ def get_user_by_id(
 
 
 def get_user_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    email: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[None, User]:
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
 
-    return sync(get_user_by_email(email, user_context))
+    return sync(get_user_by_email(tenant_id, email, user_context))
 
 
 def create_reset_password_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    user_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
         create_reset_password_token,
     )
 
-    return sync(create_reset_password_token(user_id, user_context))
+    return sync(create_reset_password_token(tenant_id, user_id, user_context))
 
 
 def reset_password_using_token(
-    token: str, new_password: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    token: str,
+    new_password: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
         reset_password_using_token,
     )
 
-    return sync(reset_password_using_token(token, new_password, user_context))
+    return sync(
+        reset_password_using_token(tenant_id, token, new_password, user_context)
+    )
 
 
 def sign_in(
-    email: str, password: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    email: str,
+    password: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
     from supertokens_python.recipe.emailpassword.asyncio import sign_in
 
-    return sync(sign_in(email, password, user_context))
+    return sync(sign_in(tenant_id, email, password, user_context))
 
 
 def sign_up(
-    email: str, password: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: Optional[str],
+    email: str,
+    password: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
 
-    return sync(sign_up(email, password, user_context))
+    return sync(sign_up(tenant_id, email, password, user_context))
 
 
 def send_email(

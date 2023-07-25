@@ -137,6 +137,7 @@ class RecipeImplementation(RecipeInterface):
                 email=email,
                 phone_number=phone_number,
                 time_joined=result["user"]["timeJoined"],
+                tenant_ids=result["user"]["tenantIds"],
             )
             return ConsumeCodeOkResult(result["createdNewUser"], user)
         if result["status"] == "RESTART_FLOW_ERROR":
@@ -170,6 +171,7 @@ class RecipeImplementation(RecipeInterface):
                 email=email,
                 phone_number=phone_number,
                 time_joined=result["user"]["timeJoined"],
+                tenant_ids=result["user"]["tenantIds"],
             )
         return None
 
@@ -191,6 +193,7 @@ class RecipeImplementation(RecipeInterface):
                 user_id=result["user"]["id"],
                 email=email_resp,
                 phone_number=phone_number_resp,
+                tenant_ids=result["user"]["tenantIds"],
                 time_joined=result["user"]["timeJoined"],
             )
         return None
@@ -214,6 +217,7 @@ class RecipeImplementation(RecipeInterface):
                 email=email_resp,
                 phone_number=phone_number_resp,
                 time_joined=result["user"]["timeJoined"],
+                tenant_ids=result["user"]["tenantIds"],
             )
         return None
 
