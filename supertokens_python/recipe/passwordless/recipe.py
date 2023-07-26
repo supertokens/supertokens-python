@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -185,7 +185,7 @@ class PasswordlessRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -203,16 +203,24 @@ class PasswordlessRecipe(RecipeModule):
             self.sms_delivery,
         )
         if request_id == CONSUME_CODE_API:
-            return await consume_code(self.api_implementation, options, user_context)
+            return await consume_code(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == CREATE_CODE_API:
-            return await create_code(self.api_implementation, options, user_context)
+            return await create_code(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == DOES_EMAIL_EXIST_API:
-            return await email_exists(self.api_implementation, options, user_context)
+            return await email_exists(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == DOES_PHONE_NUMBER_EXIST_API:
             return await phone_number_exists(
-                self.api_implementation, options, user_context
+                self.api_implementation, tenant_id, options, user_context
             )
-        return await resend_code(self.api_implementation, options, user_context)
+        return await resend_code(
+            self.api_implementation, tenant_id, options, user_context
+        )
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -286,6 +294,7 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> str:
         user_input_code = None
@@ -295,6 +304,7 @@ class PasswordlessRecipe(RecipeModule):
         code_info = await self.recipe_implementation.create_code(
             email=email,
             phone_number=phone_number,
+            tenant_id=tenant_id,
             user_input_code=user_input_code,
             user_context=user_context,
         )
@@ -309,6 +319,8 @@ class PasswordlessRecipe(RecipeModule):
             + self.get_recipe_id()
             + "&preAuthSessionId="
             + code_info.pre_auth_session_id
+            + "&tenantId="
+            + tenant_id
             + "#"
             + code_info.link_code
         )
@@ -318,19 +330,22 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ConsumeCodeOkResult:
         code_info = await self.recipe_implementation.create_code(
             email=email,
             phone_number=phone_number,
-            user_context=user_context,
             user_input_code=None,
+            tenant_id=tenant_id,
+            user_context=user_context,
         )
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
             pre_auth_session_id=code_info.pre_auth_session_id,
             device_id=code_info.device_id,
             user_input_code=code_info.user_input_code,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
         if isinstance(consume_code_result, ConsumeCodeOkResult):

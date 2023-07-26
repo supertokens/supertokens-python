@@ -55,10 +55,12 @@ class Provider:
     async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
         self,
         redirect_uri_on_provider_dashboard: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> AuthorisationRedirect:
         _ = redirect_uri_on_provider_dashboard
-        __ = user_context
+        __ = tenant_id
+        ___ = user_context
         raise NotImplementedError()
 
     async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use

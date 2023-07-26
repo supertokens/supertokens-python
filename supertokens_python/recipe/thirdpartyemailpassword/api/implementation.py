@@ -137,6 +137,7 @@ class APIImplementation(APIInterface):
         provider: Provider,
         redirect_uri_info: Union[RedirectUriInfo, None],
         oauth_tokens: Union[Dict[str, Any], None],
+        tenant_id: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -148,6 +149,7 @@ class APIImplementation(APIInterface):
             provider,
             redirect_uri_info,
             oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -225,11 +227,16 @@ class APIImplementation(APIInterface):
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
+        tenant_id: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         return await self.tp_authorisation_url_get(
-            provider, redirect_uri_on_provider_dashboard, api_options, user_context
+            provider,
+            redirect_uri_on_provider_dashboard,
+            tenant_id,
+            api_options,
+            user_context,
         )
 
     async def apple_redirect_handler_post(

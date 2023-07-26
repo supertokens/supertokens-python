@@ -19,6 +19,7 @@ from supertokens_python.utils import send_200_response
 
 async def resend_code(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
@@ -39,6 +40,6 @@ async def resend_code(
     device_id = body["deviceId"]
 
     result = await api_implementation.resend_code_post(
-        device_id, pre_auth_session_id, api_options, user_context
+        device_id, pre_auth_session_id, tenant_id, api_options, user_context
     )
     return send_200_response(result.to_json(), api_options.response)

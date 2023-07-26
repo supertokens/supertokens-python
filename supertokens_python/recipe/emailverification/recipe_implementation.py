@@ -41,25 +41,25 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
 
     async def create_email_verification_token(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[
         CreateEmailVerificationTokenOkResult,
         CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     ]:
         data = {"userId": user_id, "email": email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/email/verify/token"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token"), data
         )
         if "status" in response and response["status"] == "OK":
             return CreateEmailVerificationTokenOkResult(response["token"])
         return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
 
     async def verify_email_using_token(
-        self, token: str, user_context: Dict[str, Any]
+        self, token: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         data = {"method": "token", "token": token}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/email/verify"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify"), data
         )
         if "status" in response and response["status"] == "OK":
             return VerifyEmailUsingTokenOkResult(
@@ -77,11 +77,12 @@ class RecipeImplementation(RecipeInterface):
         return response["isVerified"]
 
     async def revoke_email_verification_tokens(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> RevokeEmailVerificationTokensOkResult:
         data = {"userId": user_id, "email": email}
         await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/email/verify/token/remove"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token/remove"),
+            data,
         )
         return RevokeEmailVerificationTokensOkResult()
 

@@ -59,8 +59,10 @@ async def handle_email_verify_token_post(
 
     assert isinstance(email_verification_token, CreateEmailVerificationTokenOkResult)
 
+    # TODO: Pass tenant id
+    tenant_id = "pass-tenant-id"
     email_verify_link = get_email_verify_link(
-        api_options.app_info, email_verification_token.token, user_id
+        api_options.app_info, email_verification_token.token, user_id, tenant_id
     )
 
     await send_email(

@@ -66,7 +66,10 @@ class BackwardCompatibilityService(
         )
 
     async def send_email(
-        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: VerificationEmailTemplateVars,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> None:
         try:
             email_user = User(template_vars.user.id, template_vars.user.email)

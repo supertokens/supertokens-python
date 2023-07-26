@@ -62,10 +62,10 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/users/by-email"), {"email": email}
+            NormalisedURLPath(f"{tenant_id}/recipe/users/by-email"), {"email": email}
         )
         users: List[User] = []
         users_list: List[Dict[str, Any]] = (
@@ -89,6 +89,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         params = {
@@ -96,7 +97,7 @@ class RecipeImplementation(RecipeInterface):
             "thirdPartyUserId": third_party_user_id,
         }
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user"), params
         )
         if "status" in response and response["status"] == "OK":
             return User(
@@ -118,6 +119,7 @@ class RecipeImplementation(RecipeInterface):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         data = {
@@ -126,7 +128,7 @@ class RecipeImplementation(RecipeInterface):
             "email": {"id": email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/signinup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup"), data
         )
         return SignInUpOkResult(
             User(
@@ -149,6 +151,7 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ManuallyCreateOrUpdateUserOkResult:
         data = {
@@ -157,7 +160,7 @@ class RecipeImplementation(RecipeInterface):
             "email": {"id": email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/signinup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup"), data
         )
         return ManuallyCreateOrUpdateUserOkResult(
             User(

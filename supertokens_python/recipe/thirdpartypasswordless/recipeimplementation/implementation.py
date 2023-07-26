@@ -193,10 +193,10 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         result: List[User] = []
-        pless_user = await self.pless_get_user_by_email(email, user_context)
+        pless_user = await self.pless_get_user_by_email(email, tenant_id, user_context)
 
         if pless_user is not None:
             result.append(
@@ -213,7 +213,7 @@ class RecipeImplementation(RecipeInterface):
         if self.tp_get_users_by_email is None:
             return result
 
-        tp_users = await self.tp_get_users_by_email(email, user_context)
+        tp_users = await self.tp_get_users_by_email(email, tenant_id, user_context)
 
         for tp_user in tp_users:
             result.append(
@@ -233,12 +233,13 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         if self.tp_get_user_by_thirdparty_info is None:
             return None
         tp_user = await self.tp_get_user_by_thirdparty_info(
-            third_party_id, third_party_user_id, user_context
+            third_party_id, third_party_user_id, tenant_id, user_context
         )
 
         if tp_user is None:
@@ -260,6 +261,7 @@ class RecipeImplementation(RecipeInterface):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         if self.tp_sign_in_up is None:
@@ -270,6 +272,7 @@ class RecipeImplementation(RecipeInterface):
             email,
             oauth_tokens,
             raw_user_info_from_provider,
+            tenant_id,
             user_context,
         )
 
@@ -278,19 +281,20 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ManuallyCreateOrUpdateUserOkResult:
         if self.tp_manually_create_or_update_user is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_manually_create_or_update_user(
-            third_party_id, third_party_user_id, email, user_context
+            third_party_id, third_party_user_id, tenant_id, email, user_context
         )
 
     async def thirdparty_get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         if self.tp_get_provider is None:
@@ -300,10 +304,10 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_user_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         pless_user = await self.pless_get_user_by_phone_number(
-            phone_number, user_context
+            phone_number, tenant_id, user_context
         )
         if pless_user is not None:
             return User(
@@ -322,16 +326,18 @@ class RecipeImplementation(RecipeInterface):
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> CreateCodeOkResult:
         return await self.pless_create_code(
-            email, phone_number, user_input_code, user_context
+            email, phone_number, user_input_code, tenant_id, user_context
         )
 
     async def create_new_code_for_device(
         self,
         device_id: str,
         user_input_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         CreateNewCodeForDeviceOkResult,
@@ -339,7 +345,7 @@ class RecipeImplementation(RecipeInterface):
         CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
     ]:
         return await self.pless_create_new_code_for_device(
-            device_id, user_input_code, user_context
+            device_id, user_input_code, tenant_id, user_context
         )
 
     async def consume_code(
@@ -348,6 +354,7 @@ class RecipeImplementation(RecipeInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         ConsumeCodeOkResult,
@@ -356,7 +363,12 @@ class RecipeImplementation(RecipeInterface):
         ConsumeCodeRestartFlowError,
     ]:
         result = await self.pless_consume_code(
-            pre_auth_session_id, user_input_code, device_id, link_code, user_context
+            pre_auth_session_id,
+            user_input_code,
+            device_id,
+            link_code,
+            tenant_id,
+            user_context,
         )
         if isinstance(result, PasswordlessConsumeCodeOkResult):
             return ConsumeCodeOkResult(
@@ -421,33 +433,40 @@ class RecipeImplementation(RecipeInterface):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> RevokeAllCodesOkResult:
-        return await self.pless_revoke_all_codes(email, phone_number, user_context)
+        return await self.pless_revoke_all_codes(
+            email, phone_number, tenant_id, user_context
+        )
 
     async def revoke_code(
-        self, code_id: str, user_context: Dict[str, Any]
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> RevokeCodeOkResult:
-        return await self.pless_revoke_code(code_id, user_context)
+        return await self.pless_revoke_code(code_id, tenant_id, user_context)
 
     async def list_codes_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[DeviceType]:
-        return await self.pless_list_codes_by_email(email, user_context)
+        return await self.pless_list_codes_by_email(email, tenant_id, user_context)
 
     async def list_codes_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[DeviceType]:
-        return await self.pless_list_codes_by_phone_number(phone_number, user_context)
+        return await self.pless_list_codes_by_phone_number(
+            phone_number, tenant_id, user_context
+        )
 
     async def list_codes_by_device_id(
-        self, device_id: str, user_context: Dict[str, Any]
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[DeviceType, None]:
-        return await self.pless_list_codes_by_device_id(device_id, user_context)
+        return await self.pless_list_codes_by_device_id(
+            device_id, tenant_id, user_context
+        )
 
     async def list_codes_by_pre_auth_session_id(
-        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+        self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[DeviceType, None]:
         return await self.pless_list_codes_by_pre_auth_session_id(
-            pre_auth_session_id, user_context
+            pre_auth_session_id, tenant_id, user_context
         )

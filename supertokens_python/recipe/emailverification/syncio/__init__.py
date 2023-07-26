@@ -21,23 +21,28 @@ from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 def create_email_verification_token(
     user_id: str,
     email: Optional[str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         create_email_verification_token,
     )
 
-    return sync(create_email_verification_token(user_id, email, user_context))
+    return sync(
+        create_email_verification_token(user_id, email, tenant_id, user_context)
+    )
 
 
 def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
+    token: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         verify_email_using_token,
     )
 
-    return sync(verify_email_using_token(token, user_context))
+    return sync(verify_email_using_token(token, tenant_id, user_context))
 
 
 def is_email_verified(
@@ -53,13 +58,16 @@ def is_email_verified(
 def revoke_email_verification_tokens(
     user_id: str,
     email: Optional[str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         revoke_email_verification_tokens,
     )
 
-    return sync(revoke_email_verification_tokens(user_id, email, user_context))
+    return sync(
+        revoke_email_verification_tokens(user_id, email, tenant_id, user_context)
+    )
 
 
 def unverify_email(
@@ -73,8 +81,10 @@ def unverify_email(
 
 
 def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: EmailTemplateVars,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import send_email
 
-    return sync(send_email(input_, user_context))
+    return sync(send_email(input_, tenant_id, user_context))

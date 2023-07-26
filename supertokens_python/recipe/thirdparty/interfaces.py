@@ -70,7 +70,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         pass
 
@@ -79,6 +79,7 @@ class RecipeInterface(ABC):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         pass
@@ -89,6 +90,7 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ManuallyCreateOrUpdateUserOkResult:
         pass
@@ -101,6 +103,7 @@ class RecipeInterface(ABC):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         pass
@@ -110,7 +113,7 @@ class RecipeInterface(ABC):
         self,
         third_party_id: str,
         client_type: Optional[str],
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         pass
@@ -204,6 +207,7 @@ class APIInterface:
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
@@ -215,6 +219,7 @@ class APIInterface:
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[

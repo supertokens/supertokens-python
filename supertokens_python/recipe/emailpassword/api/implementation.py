@@ -113,7 +113,7 @@ class APIImplementation(APIInterface):
             password_reset_link=password_reset_link,
         )
         await api_options.email_delivery.ingredient_interface_impl.send_email(
-            send_email_input, user_context
+            send_email_input, tenant_id, user_context
         )
 
         return GeneratePasswordResetTokenPostOkResult()

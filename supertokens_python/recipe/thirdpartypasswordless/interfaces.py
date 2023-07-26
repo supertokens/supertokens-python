@@ -6,6 +6,7 @@ from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfa
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
 from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.recipe.thirdparty import provider as TPProvider
 
 from ..passwordless import interfaces as PlessInterfaces
 from .types import User
@@ -66,6 +67,11 @@ ThirdPartySignInUpPostNoEmailGivenByProviderResponse = (
     ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
 )
 
+ThirdpartyProviderInput = TPProvider.ProviderInput
+ThirdpartyProviderConfig = TPProvider.ProviderConfig
+ThirdpartyProviderClientConfig = TPProvider.ProviderClientConfig
+ThirdpartyProviderConfigForClientType = TPProvider.ProviderConfigForClientType
+
 
 class ConsumeCodeOkResult:
     def __init__(self, created_new_user: bool, user: User):
@@ -85,13 +91,13 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         pass
 
     @abstractmethod
     async def get_user_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         pass
 
@@ -100,6 +106,7 @@ class RecipeInterface(ABC):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         pass
@@ -112,6 +119,7 @@ class RecipeInterface(ABC):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartySignInUpOkResult:
         pass
@@ -122,6 +130,7 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartyManuallyCreateOrUpdateUserOkResult:
         pass
@@ -130,8 +139,8 @@ class RecipeInterface(ABC):
     async def thirdparty_get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartyInterfaces.GetProviderOkResult:
         pass
@@ -142,6 +151,7 @@ class RecipeInterface(ABC):
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> CreateCodeOkResult:
         pass
@@ -151,6 +161,7 @@ class RecipeInterface(ABC):
         self,
         device_id: str,
         user_input_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         CreateNewCodeForDeviceOkResult,
@@ -166,6 +177,7 @@ class RecipeInterface(ABC):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         ConsumeCodeOkResult,
@@ -211,37 +223,38 @@ class RecipeInterface(ABC):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> RevokeAllCodesOkResult:
         pass
 
     @abstractmethod
     async def revoke_code(
-        self, code_id: str, user_context: Dict[str, Any]
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> RevokeCodeOkResult:
         pass
 
     @abstractmethod
     async def list_codes_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[DeviceType]:
         pass
 
     @abstractmethod
     async def list_codes_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[DeviceType]:
         pass
 
     @abstractmethod
     async def list_codes_by_device_id(
-        self, device_id: str, user_context: Dict[str, Any]
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[DeviceType, None]:
         pass
 
     @abstractmethod
     async def list_codes_by_pre_auth_session_id(
-        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+        self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[DeviceType, None]:
         pass
 
@@ -319,6 +332,7 @@ class APIInterface(ABC):
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
+        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
@@ -330,6 +344,7 @@ class APIInterface(ABC):
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -353,6 +368,7 @@ class APIInterface(ABC):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
@@ -363,6 +379,7 @@ class APIInterface(ABC):
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -377,6 +394,7 @@ class APIInterface(ABC):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -392,6 +410,7 @@ class APIInterface(ABC):
     async def passwordless_user_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
@@ -401,6 +420,7 @@ class APIInterface(ABC):
     async def passwordless_user_phone_number_exists_get(
         self,
         phone_number: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:

@@ -34,6 +34,7 @@ class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVar
     async def send_sms(
         self,
         template_vars: PasswordlessLoginSMSTemplateVars,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         supertokens = Supertokens.get_instance()

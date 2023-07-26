@@ -165,7 +165,7 @@ class EmailVerificationRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -186,7 +186,7 @@ class EmailVerificationRecipe(RecipeModule):
                 self.api_implementation, api_options, user_context
             )
         return await handle_email_verify_api(
-            self.api_implementation, api_options, user_context
+            self.api_implementation, tenant_id, api_options, user_context
         )
 
     async def handle_error(
@@ -342,12 +342,13 @@ class APIImplementation(APIInterface):
         self,
         token: str,
         session: Optional[SessionContainer],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
 
         response = await api_options.recipe_implementation.verify_email_using_token(
-            token, user_context
+            token, tenant_id, user_context
         )
         if isinstance(response, VerifyEmailUsingTokenOkResult):
             if session is not None:
@@ -411,6 +412,7 @@ class APIImplementation(APIInterface):
         email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
             user_id, user_context
         )
+        tenant_id = session.get_access_token_payload()["tid"]
 
         if isinstance(email_info, EmailDoesNotExistError):
             log_debug_message(
@@ -423,6 +425,7 @@ class APIImplementation(APIInterface):
                 await api_options.recipe_implementation.create_email_verification_token(
                     user_id,
                     email_info.email,
+                    tenant_id,
                     user_context,
                 )
             )
@@ -450,7 +453,7 @@ class APIImplementation(APIInterface):
                 await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
 
             email_verify_link = get_email_verify_link(
-                api_options.app_info, response.token, api_options.recipe_id
+                api_options.app_info, response.token, api_options.recipe_id, tenant_id
             )
 
             log_debug_message("Sending email verification email to %s", email_info)
@@ -460,7 +463,7 @@ class APIImplementation(APIInterface):
                 user_context=user_context,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
-                email_verification_email_delivery_input, user_context
+                email_verification_email_delivery_input, tenant_id, user_context
             )
             return GenerateEmailVerifyTokenPostOkResult()
 

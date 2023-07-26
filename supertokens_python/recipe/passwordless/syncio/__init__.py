@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.passwordless import asyncio
@@ -111,11 +111,13 @@ def get_user_by_email(
 
 
 def get_user_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     return sync(
         asyncio.get_user_by_phone_number(
-            phone_number=phone_number, user_context=user_context
+            phone_number=phone_number, tenant_id=tenant_id, user_context=user_context
         )
     )
 
@@ -192,19 +194,27 @@ def list_codes_by_phone_number(
 
 
 def list_codes_by_device_id(
-    device_id: str, user_context: Union[None, Dict[str, Any]] = None
+    device_id: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     return sync(
-        asyncio.list_codes_by_device_id(device_id=device_id, user_context=user_context)
+        asyncio.list_codes_by_device_id(
+            device_id=device_id, tenant_id=tenant_id, user_context=user_context
+        )
     )
 
 
 def list_codes_by_pre_auth_session_id(
-    pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None
+    pre_auth_session_id: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     return sync(
         asyncio.list_codes_by_pre_auth_session_id(
-            pre_auth_session_id=pre_auth_session_id, user_context=user_context
+            pre_auth_session_id=pre_auth_session_id,
+            tenant_id=tenant_id,
+            user_context=user_context,
         )
     )
 
@@ -212,11 +222,15 @@ def list_codes_by_pre_auth_session_id(
 def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     return sync(
         asyncio.create_magic_link(
-            email=email, phone_number=phone_number, user_context=user_context
+            email=email,
+            phone_number=phone_number,
+            tenant_id=tenant_id,
+            user_context=user_context,
         )
     )
 
@@ -224,24 +238,30 @@ def create_magic_link(
 def signinup(
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> ConsumeCodeOkResult:
     return sync(
         asyncio.signinup(
-            email=email, phone_number=phone_number, user_context=user_context
+            email=email,
+            phone_number=phone_number,
+            tenant_id=tenant_id,
+            user_context=user_context,
         )
     )
 
 
 def send_email(
     input_: PasswordlessLoginEmailTemplateVars,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> None:
-    return sync(asyncio.send_email(input_, user_context))
+    return sync(asyncio.send_email(input_, tenant_id, user_context))
 
 
 def send_sms(
     input_: PasswordlessLoginSMSTemplateVars,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> None:
-    return sync(asyncio.send_sms(input_, user_context))
+    return sync(asyncio.send_sms(input_, tenant_id, user_context))

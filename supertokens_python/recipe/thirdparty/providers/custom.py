@@ -228,7 +228,10 @@ class GenericProvider(Provider):
         )
 
     async def get_authorisation_redirect_url(
-        self, redirect_uri_on_provider_dashboard: str, user_context: Dict[str, Any]
+        self,
+        redirect_uri_on_provider_dashboard: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> AuthorisationRedirect:
         query_params: Dict[str, str] = {
             "client_id": self.config.client_id,

@@ -88,6 +88,7 @@ class BackwardCompatibilityService(
     async def send_email(
         self,
         template_vars: PasswordlessLoginEmailTemplateVars,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         await self.create_and_send_custom_email(

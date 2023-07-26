@@ -19,6 +19,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.recipe import (
 )
 
 from ..types import EmailTemplateVars, User
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 
 async def get_user_by_id(
@@ -34,12 +35,16 @@ async def get_user_by_id(
 async def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
-        third_party_id, third_party_user_id, user_context
+        third_party_id,
+        third_party_user_id,
+        tenant_id or DEFAULT_TENANT_ID,
+        user_context,
     )
 
 
@@ -47,74 +52,81 @@ async def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_manually_create_or_update_user(
-        third_party_id, third_party_user_id, email, user_context
+        third_party_id,
+        third_party_user_id,
+        email,
+        tenant_id or DEFAULT_TENANT_ID,
+        user_context,
     )
 
 
 async def thirdparty_get_provider(
     third_party_id: str,
-    tenant_id: Optional[str] = None,
     client_type: Optional[str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_get_provider(
-        third_party_id, tenant_id, client_type, user_context
+        third_party_id, client_type, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def create_reset_password_token(
-    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(
-        tenant_id, user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def reset_password_using_token(
-    tenant_id: str,
     token: str,
     new_password: str,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        tenant_id, token, new_password, user_context
+        token, new_password, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def emailpassword_sign_in(
-    tenant_id: str,
     email: str,
     password: str,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_in(
-        tenant_id, email, password, user_context
+        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def emailpassword_sign_up(
-    tenant_id: str,
     email: str,
     password: str,
+    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_up(
-        tenant_id, email, password, user_context
+        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
@@ -133,20 +145,24 @@ async def update_email_or_password(
 
 
 async def get_users_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    email: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(
-        tenant_id, email, user_context
+        email, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: EmailTemplateVars,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, user_context
+        input_, tenant_id or DEFAULT_TENANT_ID, user_context
     )

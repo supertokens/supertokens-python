@@ -113,7 +113,9 @@ def validate_and_normalise_user_input(
     )
 
 
-def get_email_verify_link(app_info: AppInfo, token: str, recipe_id: str) -> str:
+def get_email_verify_link(
+    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str
+) -> str:
     return (
         app_info.website_domain.get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
@@ -122,4 +124,6 @@ def get_email_verify_link(app_info: AppInfo, token: str, recipe_id: str) -> str:
         + token
         + "&rid="
         + recipe_id
+        + "&tenantId="
+        + tenant_id
     )

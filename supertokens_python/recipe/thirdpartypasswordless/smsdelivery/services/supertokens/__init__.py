@@ -30,6 +30,11 @@ class SuperTokensSMSService(SMSDeliveryInterface[SMSTemplateVars]):
         self.pless_supertokens_service = PlessSuperTokensService(api_key)
 
     async def send_sms(
-        self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: SMSTemplateVars,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> None:
-        await self.pless_supertokens_service.send_sms(template_vars, user_context)
+        await self.pless_supertokens_service.send_sms(
+            template_vars, tenant_id, user_context
+        )

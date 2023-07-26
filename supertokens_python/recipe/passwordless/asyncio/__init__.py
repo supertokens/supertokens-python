@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
@@ -39,11 +39,14 @@ from supertokens_python.recipe.passwordless.types import (
     User,
 )
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 
 async def create_code(
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> CreateCodeOkResult:
     if user_context is None:
@@ -52,6 +55,7 @@ async def create_code(
         email=email,
         phone_number=phone_number,
         user_input_code=user_input_code,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         user_context=user_context,
     )
 
@@ -59,6 +63,7 @@ async def create_code(
 async def create_new_code_for_device(
     device_id: str,
     user_input_code: Union[str, None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     CreateNewCodeForDeviceOkResult,
@@ -68,7 +73,10 @@ async def create_new_code_for_device(
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(
-        device_id=device_id, user_input_code=user_input_code, user_context=user_context
+        device_id=device_id,
+        user_input_code=user_input_code,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
@@ -77,6 +85,7 @@ async def consume_code(
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
     link_code: Union[str, None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     ConsumeCodeOkResult,
@@ -91,6 +100,7 @@ async def consume_code(
         user_input_code=user_input_code,
         device_id=device_id,
         link_code=link_code,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         user_context=user_context,
     )
 
@@ -106,24 +116,32 @@ async def get_user_by_id(
 
 
 async def get_user_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    email: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return (
         await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_email(
-            email=email, user_context=user_context
+            email=email,
+            tenant_id=tenant_id or DEFAULT_TENANT_ID,
+            user_context=user_context,
         )
     )
 
 
 async def get_user_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
-        phone_number=phone_number, user_context=user_context
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
@@ -171,106 +189,140 @@ async def delete_phone_number_for_user(
 async def revoke_all_codes(
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> RevokeAllCodesOkResult:
     if user_context is None:
         user_context = {}
     return (
         await PasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(
-            email=email, phone_number=phone_number, user_context=user_context
+            email=email,
+            phone_number=phone_number,
+            tenant_id=tenant_id or DEFAULT_TENANT_ID,
+            user_context=user_context,
         )
     )
 
 
 async def revoke_code(
-    code_id: str, user_context: Union[None, Dict[str, Any]] = None
+    code_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> RevokeCodeOkResult:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.revoke_code(
-        code_id=code_id, user_context=user_context
+        code_id=code_id,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def list_codes_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    email: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[DeviceType]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(
-        email=email, user_context=user_context
+        email=email, tenant_id=tenant_id or DEFAULT_TENANT_ID, user_context=user_context
     )
 
 
 async def list_codes_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[DeviceType]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(
-        phone_number=phone_number, user_context=user_context
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def list_codes_by_device_id(
-    device_id: str, user_context: Union[None, Dict[str, Any]] = None
+    device_id: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(
-        device_id=device_id, user_context=user_context
+        device_id=device_id,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def list_codes_by_pre_auth_session_id(
-    pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None
+    pre_auth_session_id: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(
-        pre_auth_session_id=pre_auth_session_id, user_context=user_context
+        pre_auth_session_id=pre_auth_session_id,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().create_magic_link(
-        email=email, phone_number=phone_number, user_context=user_context
+        email=email,
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def signinup(
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> ConsumeCodeOkResult:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().signinup(
-        email=email, phone_number=phone_number, user_context=user_context
+        email=email,
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: EmailTemplateVars,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, user_context
+        input_, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def send_sms(
-    input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: SMSTemplateVars,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
-        input_, user_context
+        input_, tenant_id or DEFAULT_TENANT_ID, user_context
     )

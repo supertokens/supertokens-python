@@ -52,6 +52,7 @@ class APIImplementation(APIInterface):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
@@ -61,7 +62,7 @@ class APIImplementation(APIInterface):
                 user_context
             )
         response = await api_options.recipe_implementation.create_code(
-            email, phone_number, user_input_code, user_context
+            email, phone_number, user_input_code, tenant_id, user_context
         )
         magic_link = None
         user_input_code = None
@@ -75,6 +76,8 @@ class APIImplementation(APIInterface):
                 + api_options.recipe_id
                 + "&preAuthSessionId="
                 + response.pre_auth_session_id
+                + "&tenantId="
+                + tenant_id
                 + "#"
                 + response.link_code
             )
@@ -97,7 +100,7 @@ class APIImplementation(APIInterface):
                 pre_auth_session_id=response.pre_auth_session_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
-                passwordless_email_delivery_input, user_context
+                passwordless_email_delivery_input, tenant_id, user_context
             )
         elif isinstance(
             api_options.config.contact_config,
@@ -114,7 +117,7 @@ class APIImplementation(APIInterface):
                 pre_auth_session_id=response.pre_auth_session_id,
             )
             await api_options.sms_delivery.ingredient_interface_impl.send_sms(
-                sms_input, user_context
+                sms_input, tenant_id, user_context
             )
 
         return CreateCodePostOkResult(
@@ -125,13 +128,14 @@ class APIImplementation(APIInterface):
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
-            device_id=device_id, user_context=user_context
+            device_id=device_id, tenant_id=tenant_id, user_context=user_context
         )
         if device_info is None:
             return ResendCodePostRestartFlowError()
@@ -155,6 +159,7 @@ class APIImplementation(APIInterface):
                 await api_options.recipe_implementation.create_new_code_for_device(
                     device_id=device_id,
                     user_input_code=user_input_code,
+                    tenant_id=tenant_id,
                     user_context=user_context,
                 )
             )
@@ -180,6 +185,8 @@ class APIImplementation(APIInterface):
                         + api_options.recipe_id
                         + "&preAuthSessionId="
                         + response.pre_auth_session_id
+                        + "&tenantId="
+                        + tenant_id
                         + "#"
                         + response.link_code
                     )
@@ -210,7 +217,7 @@ class APIImplementation(APIInterface):
                         )
                     )
                     await api_options.email_delivery.ingredient_interface_impl.send_email(
-                        passwordless_email_delivery_input, user_context
+                        passwordless_email_delivery_input, tenant_id, user_context
                     )
                 elif isinstance(
                     api_options.config.contact_config,
@@ -229,7 +236,7 @@ class APIImplementation(APIInterface):
                         pre_auth_session_id=response.pre_auth_session_id,
                     )
                     await api_options.sms_delivery.ingredient_interface_impl.send_sms(
-                        sms_input, user_context
+                        sms_input, tenant_id, user_context
                     )
                 return ResendCodePostOkResult()
             return ResendCodePostRestartFlowError()
@@ -240,6 +247,7 @@ class APIImplementation(APIInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -254,6 +262,7 @@ class APIImplementation(APIInterface):
             user_input_code=user_input_code,
             device_id=device_id,
             link_code=link_code,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
 
@@ -278,12 +287,14 @@ class APIImplementation(APIInterface):
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
                     user.user_id,
                     user.email,
+                    tenant_id,
                     user_context,
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
                         token_response.token,
+                        tenant_id,
                         user_context,
                     )
 
@@ -302,17 +313,25 @@ class APIImplementation(APIInterface):
         )
 
     async def email_exists_get(
-        self, email: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        email: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_email(
-            email, user_context
+            email, tenant_id, user_context
         )
         return EmailExistsGetOkResult(exists=response is not None)
 
     async def phone_number_exists_get(
-        self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        phone_number: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_phone_number(
-            phone_number, user_context
+            phone_number, tenant_id, user_context
         )
         return PhoneNumberExistsGetOkResult(exists=response is not None)

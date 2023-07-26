@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union, Optional
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -24,7 +24,9 @@ class ThirdPartyInfo:
 
 class RawUserInfoFromProvider:
     def __init__(
-        self, from_id_token_payload: Dict[str, Any], from_user_info_api: Dict[str, Any]
+        self,
+        from_id_token_payload: Optional[Dict[str, Any]],
+        from_user_info_api: Optional[Dict[str, Any]],
     ):
         self.from_id_token_payload = from_id_token_payload
         self.from_user_info_api = from_user_info_api

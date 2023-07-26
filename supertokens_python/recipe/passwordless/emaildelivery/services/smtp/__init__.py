@@ -45,6 +45,7 @@ class SMTPService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
     async def send_email(
         self,
         template_vars: PasswordlessLoginEmailTemplateVars,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         content = await self.service_implementation.get_content(

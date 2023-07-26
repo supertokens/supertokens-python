@@ -22,7 +22,9 @@ _T = TypeVar("_T")
 
 class SMSDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_sms(self, template_vars: _T, user_context: Dict[str, Any]) -> None:
+    async def send_sms(
+        self, template_vars: _T, tenant_id: str, user_context: Dict[str, Any]
+    ) -> None:
         pass
 
 

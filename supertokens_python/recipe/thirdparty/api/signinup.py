@@ -18,7 +18,6 @@ from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.multitenancy.exceptions import (
     RecipeDisabledForTenantError,
 )
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
 if TYPE_CHECKING:
@@ -30,6 +29,7 @@ from supertokens_python.utils import send_200_response
 
 async def handle_sign_in_up_api(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
@@ -42,7 +42,6 @@ async def handle_sign_in_up_api(
 
     third_party_id = body.get("thirdPartyId")
     client_type = body.get("clientType")
-    tenant_id = body.get("tenantId")
 
     if third_party_id is None or not isinstance(third_party_id, str):
         raise_bad_input_exception("Please provide the thirdPartyId in request body")
@@ -61,11 +60,6 @@ async def handle_sign_in_up_api(
         raise_bad_input_exception(
             "Please provide one of redirectURIInfo or oAuthTokens in the request body"
         )
-
-    mt_recipe = MultitenancyRecipe.get_instance()
-    tenant_id = await mt_recipe.recipe_implementation.get_tenant_id(
-        tenant_id, user_context
-    )
 
     provider_response = await api_options.recipe_implementation.get_provider(
         third_party_id=third_party_id,
@@ -91,6 +85,7 @@ async def handle_sign_in_up_api(
             pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
         ),
         oauth_tokens=oauth_tokens,
+        tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
     )

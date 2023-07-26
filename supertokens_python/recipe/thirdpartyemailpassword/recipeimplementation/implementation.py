@@ -169,7 +169,7 @@ class RecipeImplementation(RecipeInterface):
         if self.tp_get_users_by_email is None:
             return result
 
-        tp_users = await self.tp_get_users_by_email(email, user_context)
+        tp_users = await self.tp_get_users_by_email(email, tenant_id, user_context)
 
         for tp_user in tp_users:
             result.append(
@@ -188,12 +188,13 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         if self.tp_get_user_by_thirdparty_info is None:
             return None
         tp_user = await self.tp_get_user_by_thirdparty_info(
-            third_party_id, third_party_user_id, user_context
+            third_party_id, third_party_user_id, tenant_id, user_context
         )
 
         if tp_user is None:
@@ -214,6 +215,7 @@ class RecipeImplementation(RecipeInterface):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartySignInUpOkResult:
         if self.tp_sign_in_up is None:
@@ -224,6 +226,7 @@ class RecipeImplementation(RecipeInterface):
             email,
             oauth_tokens,
             raw_user_info_from_provider,
+            tenant_id,
             user_context,
         )
         return ThirdPartySignInUpOkResult(
@@ -244,6 +247,7 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartyManuallyCreateOrUpdateUserOkResult:
         if self.tp_manually_create_or_update_user is None:
@@ -252,6 +256,7 @@ class RecipeImplementation(RecipeInterface):
             third_party_id,
             third_party_user_id,
             email,
+            tenant_id,
             user_context,
         )
         return ThirdPartyManuallyCreateOrUpdateUserOkResult(
@@ -268,8 +273,8 @@ class RecipeImplementation(RecipeInterface):
     async def thirdparty_get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         if self.tp_get_provider is None:

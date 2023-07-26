@@ -45,6 +45,9 @@ class TwilioService(SMSDeliveryInterface[SMSTemplateVars]):
         self.pless_twilio_service = PlessTwilioService(twilio_settings, override)
 
     async def send_sms(
-        self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: SMSTemplateVars,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> None:
-        await self.pless_twilio_service.send_sms(template_vars, user_context)
+        await self.pless_twilio_service.send_sms(template_vars, tenant_id, user_context)

@@ -42,7 +42,10 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         self.service_implementation = oi if override is None else override(oi)
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> None:
         content = await self.service_implementation.get_content(
             template_vars, user_context
