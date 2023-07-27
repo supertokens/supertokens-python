@@ -43,6 +43,7 @@ def create_new_session(
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -55,7 +56,8 @@ def create_new_session(
             user_id,
             access_token_payload,
             session_data_in_database,
-            user_context=user_context,
+            tenant_id,
+            user_context,
         )
     )
 
@@ -65,6 +67,7 @@ def create_new_session_without_request_response(
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -77,6 +80,7 @@ def create_new_session_without_request_response(
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
+            tenant_id,
             user_context,
         )
     )
@@ -183,23 +187,23 @@ def revoke_session(
 
 
 def revoke_all_sessions_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str, tenant_id: Optional[str], user_context: Union[None, Dict[str, Any]] = None
 ) -> List[str]:
     from supertokens_python.recipe.session.asyncio import (
         revoke_all_sessions_for_user as async_revoke_all_sessions_for_user,
     )
 
-    return sync(async_revoke_all_sessions_for_user(user_id, user_context))
+    return sync(async_revoke_all_sessions_for_user(user_id, tenant_id, user_context))
 
 
 def get_all_session_handles_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str, tenant_id: Optional[str], user_context: Union[None, Dict[str, Any]] = None
 ) -> List[str]:
     from supertokens_python.recipe.session.asyncio import (
         get_all_session_handles_for_user as async_get_all_session_handles_for_user,
     )
 
-    return sync(async_get_all_session_handles_for_user(user_id, user_context))
+    return sync(async_get_all_session_handles_for_user(user_id, tenant_id, user_context))
 
 
 def revoke_multiple_sessions(

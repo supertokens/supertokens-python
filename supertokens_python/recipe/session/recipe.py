@@ -183,7 +183,7 @@ class SessionRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,

@@ -412,7 +412,7 @@ class APIImplementation(APIInterface):
         email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
             user_id, user_context
         )
-        tenant_id = session.get_access_token_payload()["tid"]
+        tenant_id = session.get_tenant_id()
 
         if isinstance(email_info, EmailDoesNotExistError):
             log_debug_message(

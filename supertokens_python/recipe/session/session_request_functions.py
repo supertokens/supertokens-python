@@ -217,6 +217,7 @@ async def create_new_session_in_request(
     config: SessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
+    tenant_id: str,
 ) -> SessionContainer:
     log_debug_message("createNewSession: Started")
 
@@ -280,6 +281,7 @@ async def create_new_session_in_request(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )
 

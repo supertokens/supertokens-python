@@ -37,12 +37,15 @@ from .exceptions import (
     raise_unauthorised_exception,
 )
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 
 class CreateOrRefreshAPIResponseSession:
-    def __init__(self, handle: str, userId: str, userDataInJWT: Any):
+    def __init__(self, handle: str, userId: str, userDataInJWT: Any, tenant_id: str):
         self.handle = handle
         self.userId = userId
         self.userDataInJWT = userDataInJWT
+        self.tenant_id = tenant_id
 
 
 class CreateOrRefreshAPIResponse:
@@ -66,11 +69,13 @@ class GetSessionAPIResponseSession:
         userId: str,
         userDataInJWT: Dict[str, Any],
         expiryTime: int,
+        tenant_id: str,
     ) -> None:
         self.handle = handle
         self.userId = userId
         self.userDataInJWT = userDataInJWT
         self.expiryTime = expiryTime
+        self.tenant_id = tenant_id
 
 
 class GetSessionAPIResponseAccessToken:
@@ -96,18 +101,21 @@ async def create_new_session(
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
+    tenant_id: Optional[str]
 ) -> CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
 
     enable_anti_csrf = (
         disable_anti_csrf is False
         and recipe_implementation.config.anti_csrf == "VIA_TOKEN"
     )
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath("/recipe/session"),
+        NormalisedURLPath(f"{tenant_id}/recipe/session"),
         {
             "userId": user_id,
             "userDataInJWT": access_token_payload,
@@ -124,6 +132,7 @@ async def create_new_session(
             response["session"]["handle"],
             response["session"]["userId"],
             response["session"]["userDataInJWT"],
+            response["session"]["tenantId"],
         ),
         TokenInfo(
             response["accessToken"]["token"],
@@ -254,6 +263,7 @@ async def get_session(
                 access_token_info["userId"],
                 access_token_info["userData"],
                 access_token_info["expiryTime"],
+                access_token_info["tenantId"]
             )
         )
 
@@ -292,6 +302,7 @@ async def get_session(
                         "expiryTime"
                     ]  # if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
                 ),  # This will throw error if others are none and 'expiryTime' key doesn't exist in the payload
+                response["session"].get("tenantId") or (access_token_info or {}).get("tenantId") or DEFAULT_TENANT_ID,
             ),
             GetSessionAPIResponseAccessToken(
                 response["accessToken"]["token"],
@@ -348,6 +359,7 @@ async def refresh_session(
                 response["session"]["handle"],
                 response["session"]["userId"],
                 response["session"]["userDataInJWT"],
+                response["session"]["tenantId"],
             ),
             TokenInfo(
                 response["accessToken"]["token"],
@@ -375,19 +387,32 @@ async def refresh_session(
 
 
 async def revoke_all_sessions_for_user(
-    recipe_implementation: RecipeImplementation, user_id: str
+    recipe_implementation: RecipeImplementation, user_id: str,
+    tenant_id: Optional[str], revoke_across_all_tenants: Optional[bool],
 ) -> List[str]:
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath("/recipe/session/remove"), {"userId": user_id}
+        NormalisedURLPath(f"{tenant_id}/recipe/session/remove"),
+        {
+            "userId": user_id,
+            "revokeAcrossAllTenants": revoke_across_all_tenants
+        }
     )
     return response["sessionHandlesRevoked"]
 
 
 async def get_all_session_handles_for_user(
-    recipe_implementation: RecipeImplementation, user_id: str
+    recipe_implementation: RecipeImplementation, user_id: str,
+    tenant_id: Optional[str], fetch_across_all_tenants: Optional[bool]
 ) -> List[str]:
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
     response = await recipe_implementation.querier.send_get_request(
-        NormalisedURLPath("/recipe/session/user"), {"userId": user_id}
+        NormalisedURLPath(f"{tenant_id}/recipe/session/user"),
+        {"userId": user_id, "fetchAcrossAllTenants": fetch_across_all_tenants}
     )
     return response["sessionHandles"]
 
@@ -406,7 +431,8 @@ async def revoke_multiple_sessions(
     recipe_implementation: RecipeImplementation, session_handles: List[str]
 ) -> List[str]:
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath("/recipe/session/remove"), {"sessionHandles": session_handles}
+        NormalisedURLPath("/recipe/session/remove"),
+        {"sessionHandles": session_handles}
     )
     return response["sessionHandlesRevoked"]
 
@@ -455,5 +481,6 @@ async def get_session_information(
             response["expiry"],
             response["userDataInJWT"],
             response["timeCreated"],
+            response["tenantId"]
         )
     return None

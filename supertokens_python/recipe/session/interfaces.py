@@ -41,10 +41,11 @@ from supertokens_python.framework import BaseResponse
 
 
 class SessionObj:
-    def __init__(self, handle: str, user_id: str, user_data_in_jwt: Dict[str, Any]):
+    def __init__(self, handle: str, user_id: str, user_data_in_jwt: Dict[str, Any], tenant_id: str):
         self.handle = handle
         self.user_id = user_id
         self.user_data_in_jwt = user_data_in_jwt
+        self.tenant_id = tenant_id
 
 
 class AccessTokenObj:
@@ -69,15 +70,15 @@ class SessionInformationResult:
         expiry: int,
         custom_claims_in_access_token_payload: Dict[str, Any],
         time_created: int,
+        tenant_id: str,
     ):
-        self.session_handle: str = session_handle
-        self.user_id: str = user_id
-        self.session_data_in_database: Dict[str, Any] = session_data_in_database
-        self.expiry: int = expiry
-        self.custom_claims_in_access_token_payload: Dict[
-            str, Any
-        ] = custom_claims_in_access_token_payload
-        self.time_created: int = time_created
+        self.session_handle = session_handle
+        self.user_id = user_id
+        self.session_data_in_database = session_data_in_database
+        self.expiry = expiry
+        self.custom_claims_in_access_token_payload = custom_claims_in_access_token_payload
+        self.time_created = time_created
+        self.tenant_id = tenant_id
 
 
 class ReqResInfo:
@@ -137,6 +138,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         pass
@@ -206,13 +208,13 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def revoke_all_sessions_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, revoke_across_all_tenants: Optional[bool], user_context: Dict[str, Any]
     ) -> List[str]:
         pass
 
     @abstractmethod
     async def get_all_session_handles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, fetch_across_all_tenants: Optional[bool], user_context: Dict[str, Any]
     ) -> List[str]:
         pass
 
@@ -383,6 +385,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         user_data_in_access_token: Optional[Dict[str, Any]],
         req_res_info: Optional[ReqResInfo],
         access_token_updated: bool,
+        tenant_id: str,
     ):
         self.recipe_implementation = recipe_implementation
         self.config = config
@@ -395,6 +398,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.user_data_in_access_token = user_data_in_access_token
         self.req_res_info: Optional[ReqResInfo] = req_res_info
         self.access_token_updated = access_token_updated
+        self.tenant_id = tenant_id
 
         self.response_mutators: List[ResponseMutator] = []
 
@@ -434,6 +438,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_tenant_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
         pass
 
     @abstractmethod

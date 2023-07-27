@@ -43,6 +43,8 @@ from ..session_request_functions import (
 )
 from ..utils import get_required_claim_validators
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 _T = TypeVar("_T")
 
 
@@ -51,6 +53,7 @@ async def create_new_session(
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -73,6 +76,7 @@ async def create_new_session(
         config,
         app_info,
         session_data_in_database,
+        tenant_id or DEFAULT_TENANT_ID,
     )
 
 
@@ -81,6 +85,7 @@ async def create_new_session_without_request_response(
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -102,7 +107,6 @@ async def create_new_session_without_request_response(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        # TODO: Pass tenant id
         update = await claim.build(user_id, "pass-tenant-id", user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
@@ -111,6 +115,7 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id or DEFAULT_TENANT_ID,
         user_context=user_context,
     )
 
@@ -421,22 +426,23 @@ async def revoke_session(
 
 
 async def revoke_all_sessions_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str, tenant_id: Optional[str], user_context: Union[None, Dict[str, Any]] = None
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID,
+        tenant_id is None, user_context
     )
 
 
 async def get_all_session_handles_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str, tenant_id: Optional[str], user_context: Union[None, Dict[str, Any]] = None
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )
 
 
