@@ -6,7 +6,10 @@ from supertokens_python import Supertokens
 
 
 async def handle_user_delete(
-    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -> UserDeleteAPIResponse:
     user_id = api_options.request.get_query_param("userId")
 

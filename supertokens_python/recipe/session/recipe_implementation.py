@@ -75,7 +75,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
-            tenant_id
+            tenant_id,
         )
         log_debug_message("createNewSession: Finished")
 
@@ -97,7 +97,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             payload,
             None,
             True,
-            tenant_id
+            tenant_id,
         )
 
         return new_session
@@ -327,14 +327,26 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         return await session_functions.revoke_session(self, session_handle)
 
     async def revoke_all_sessions_for_user(
-        self, user_id: str, tenant_id: Optional[str], revoke_across_all_tenants: Optional[bool], user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        tenant_id: Optional[str],
+        revoke_across_all_tenants: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> List[str]:
-        return await session_functions.revoke_all_sessions_for_user(self, user_id, tenant_id, revoke_across_all_tenants)
+        return await session_functions.revoke_all_sessions_for_user(
+            self, user_id, tenant_id, revoke_across_all_tenants
+        )
 
     async def get_all_session_handles_for_user(
-        self, user_id: str, tenant_id: Optional[str], fetch_across_all_tenants: Optional[bool], user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        tenant_id: Optional[str],
+        fetch_across_all_tenants: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> List[str]:
-        return await session_functions.get_all_session_handles_for_user(self, user_id, tenant_id, fetch_across_all_tenants)
+        return await session_functions.get_all_session_handles_for_user(
+            self, user_id, tenant_id, fetch_across_all_tenants
+        )
 
     async def revoke_multiple_sessions(
         self, session_handles: List[str], user_context: Dict[str, Any]
@@ -467,6 +479,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             response["session"]["handle"],
             response["session"]["userId"],
             response["session"]["userDataInJWT"],
-            response["session"]["tenantId"]
+            response["session"]["tenantId"],
         )
         return RegenerateAccessTokenOkResult(session, access_token_obj)

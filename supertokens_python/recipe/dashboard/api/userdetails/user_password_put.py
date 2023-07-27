@@ -37,7 +37,10 @@ from ...interfaces import (
 
 
 async def handle_user_password_put(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> Union[UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -100,9 +103,8 @@ async def handle_user_password_put(
                 password_validation_error
             )
 
-        # TODO: Pass tenant id
         password_reset_token = await create_reset_password_token(
-            "pass-tenant-id", user_id, user_context
+            user_id, tenant_id, user_context
         )
 
         if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
@@ -111,7 +113,7 @@ async def handle_user_password_put(
             raise Exception("Should never come here")
 
         password_reset_response = await reset_password_using_token(
-            "pass-tenant-id", password_reset_token.token, new_password, user_context
+            password_reset_token.token, new_password, tenant_id, user_context
         )
 
         if isinstance(

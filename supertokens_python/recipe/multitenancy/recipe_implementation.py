@@ -36,6 +36,7 @@ from .interfaces import (
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
+    ListAllTenantsItem,
 )
 
 if TYPE_CHECKING:
@@ -183,13 +184,21 @@ class RecipeImplementation(RecipeInterface):
             {},
         )
 
-        tenant_configs: List[TenantConfigResponse] = []
+        tenant_items: List[ListAllTenantsItem] = []
 
         for tenant in response["tenants"]:
-            tenant_configs.append(parse_tenant_config(tenant))
+            config = parse_tenant_config(tenant)
+            item = ListAllTenantsItem(
+                tenant["tenantId"],
+                config.emailpassword,
+                config.passwordless,
+                config.third_party,
+                config.core_config,
+            )
+            tenant_items.append(item)
 
         return ListAllTenantsOkResult(
-            tenants=tenant_configs,
+            tenants=tenant_items,
         )
 
     async def create_or_update_third_party_config(

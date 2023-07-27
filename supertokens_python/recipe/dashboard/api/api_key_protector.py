@@ -32,9 +32,10 @@ from supertokens_python.utils import (
 
 async def api_key_protector(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     api_function: Callable[
-        [APIInterface, APIOptions, Dict[str, Any]], Awaitable[APIResponse]
+        [APIInterface, str, APIOptions, Dict[str, Any]], Awaitable[APIResponse]
     ],
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
@@ -47,5 +48,7 @@ async def api_key_protector(
             "Unauthorised access", 401, api_options.response
         )
 
-    response = await api_function(api_implementation, api_options, user_context)
+    response = await api_function(
+        api_implementation, tenant_id, api_options, user_context
+    )
     return send_200_response(response.to_json(), api_options.response)

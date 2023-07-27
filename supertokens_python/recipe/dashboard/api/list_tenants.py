@@ -1,4 +1,4 @@
-# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+# Copyright (c) 2023, VRAI Labs and/or its affiliates. All rights reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
 # "License") as published by the Apache Software Foundation.
@@ -11,25 +11,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Any
-
-from supertokens_python.supertokens import Supertokens
-from supertokens_python.recipe.dashboard.interfaces import UserCountGetAPIResponse
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
     )
+    from supertokens_python.types import APIResponse
+
+from supertokens_python.recipe.multitenancy.asyncio import list_all_tenants
+from supertokens_python.recipe.dashboard.interfaces import (
+    DashboardListTenantsGetResponse,
+)
 
 
-async def handle_users_count_get_api(
-    _: APIInterface,
-    tenant_id: str,
+async def handle_list_tenants_api(
+    _api_implementation: APIInterface,
+    _tenant_id: str,
     _api_options: APIOptions,
-    _user_context: Dict[str, Any],
-) -> UserCountGetAPIResponse:
-    count = await Supertokens.get_instance().get_user_count(None, tenant_id)
-    return UserCountGetAPIResponse(count=count)
+    user_context: Dict[str, Any],
+) -> APIResponse:
+    tenants = await list_all_tenants(user_context)
+    return DashboardListTenantsGetResponse(tenants.tenants)

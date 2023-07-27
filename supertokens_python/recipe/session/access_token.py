@@ -155,7 +155,9 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
 
         if version >= 4:
             if not isinstance(payload.get("tId"), str):
-                raise Exception("Access token does not contain all the information. Maybe the structure has changed?")
+                raise Exception(
+                    "Access token does not contain all the information. Maybe the structure has changed?"
+                )
 
     elif (
         not isinstance(payload.get("sessionHandle"), str)

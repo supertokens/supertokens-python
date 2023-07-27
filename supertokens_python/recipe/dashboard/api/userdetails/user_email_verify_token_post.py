@@ -28,7 +28,10 @@ from ...interfaces import (
 
 
 async def handle_email_verify_token_post(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> Union[
     UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
@@ -49,7 +52,7 @@ async def handle_email_verify_token_post(
         raise Exception("Should not come here")
 
     email_verification_token = await create_email_verification_token(
-        user_id, user_context=user_context
+        user_id, tenant_id=tenant_id, user_context=user_context
     )
 
     if isinstance(
@@ -59,8 +62,6 @@ async def handle_email_verify_token_post(
 
     assert isinstance(email_verification_token, CreateEmailVerificationTokenOkResult)
 
-    # TODO: Pass tenant id
-    tenant_id = "pass-tenant-id"
     email_verify_link = get_email_verify_link(
         api_options.app_info, email_verification_token.token, user_id, tenant_id
     )

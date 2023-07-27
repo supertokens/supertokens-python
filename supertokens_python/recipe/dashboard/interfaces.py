@@ -101,6 +101,17 @@ class DashboardUsersGetResponse(APIResponse):
         }
 
 
+from supertokens_python.recipe.multitenancy.interfaces import ListAllTenantsOkResult
+
+
+class DashboardListTenantsGetResponse(APIResponse, ListAllTenantsOkResult):
+    def to_json(self):
+        return {
+            "status": self.status,
+            "tenants": [t.to_json() for t in self.tenants],
+        }
+
+
 class UserCountGetAPIResponse(APIResponse):
     status: str = "OK"
 

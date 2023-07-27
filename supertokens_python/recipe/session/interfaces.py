@@ -41,7 +41,13 @@ from supertokens_python.framework import BaseResponse
 
 
 class SessionObj:
-    def __init__(self, handle: str, user_id: str, user_data_in_jwt: Dict[str, Any], tenant_id: str):
+    def __init__(
+        self,
+        handle: str,
+        user_id: str,
+        user_data_in_jwt: Dict[str, Any],
+        tenant_id: str,
+    ):
         self.handle = handle
         self.user_id = user_id
         self.user_data_in_jwt = user_data_in_jwt
@@ -76,7 +82,9 @@ class SessionInformationResult:
         self.user_id = user_id
         self.session_data_in_database = session_data_in_database
         self.expiry = expiry
-        self.custom_claims_in_access_token_payload = custom_claims_in_access_token_payload
+        self.custom_claims_in_access_token_payload = (
+            custom_claims_in_access_token_payload
+        )
         self.time_created = time_created
         self.tenant_id = tenant_id
 
@@ -208,13 +216,21 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def revoke_all_sessions_for_user(
-        self, user_id: str, tenant_id: str, revoke_across_all_tenants: Optional[bool], user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        tenant_id: str,
+        revoke_across_all_tenants: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> List[str]:
         pass
 
     @abstractmethod
     async def get_all_session_handles_for_user(
-        self, user_id: str, tenant_id: str, fetch_across_all_tenants: Optional[bool], user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        tenant_id: str,
+        fetch_across_all_tenants: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> List[str]:
         pass
 

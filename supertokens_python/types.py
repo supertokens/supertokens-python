@@ -32,6 +32,7 @@ class User:
         email: Union[str, None],
         phone_number: Union[str, None],
         third_party_info: Union[ThirdPartyInfo, None],
+        tenant_ids: List[str],
     ):
         self.recipe_id = recipe_id
         self.user_id = user_id
@@ -39,6 +40,7 @@ class User:
         self.time_joined = time_joined
         self.third_party_info = third_party_info
         self.phone_number = phone_number
+        self.tenant_ids = tenant_ids
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -51,6 +53,7 @@ class User:
                 if self.third_party_info is None
                 else self.third_party_info.__dict__,
                 "phoneNumber": self.phone_number,
+                "tenantIds": self.tenant_ids,
             },
         }
 

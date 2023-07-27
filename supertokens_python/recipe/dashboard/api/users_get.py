@@ -35,6 +35,7 @@ from supertokens_python.exceptions import GeneralError, raise_bad_input_exceptio
 
 async def handle_users_get_api(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -> APIResponse:
@@ -58,6 +59,7 @@ async def handle_users_get_api(
         pagination_token=pagination_token,
         include_recipe_ids=None,
         query=api_options.request.get_query_params(),
+        tenant_id=tenant_id,
     )
 
     # user metadata bulk fetch with batches:

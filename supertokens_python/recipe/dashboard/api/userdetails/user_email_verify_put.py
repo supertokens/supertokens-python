@@ -19,7 +19,10 @@ from ...interfaces import (
 
 
 async def handle_user_email_verify_put(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> UserEmailVerifyPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -37,7 +40,7 @@ async def handle_user_email_verify_put(
 
     if verified:
         token_response = await create_email_verification_token(
-            user_id, user_context=user_context
+            user_id, tenant_id=tenant_id, user_context=user_context
         )
 
         if isinstance(
@@ -46,7 +49,7 @@ async def handle_user_email_verify_put(
             return UserEmailVerifyPutAPIResponse()
 
         verify_response = await verify_email_using_token(
-            token_response.token, user_context=user_context
+            token_response.token, tenant_id, user_context=user_context
         )
 
         if isinstance(verify_response, VerifyEmailUsingTokenInvalidTokenError):

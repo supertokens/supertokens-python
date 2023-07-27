@@ -16,14 +16,19 @@ from ...interfaces import (
 
 
 async def handle_sessions_get(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> UserSessionsGetAPIResponse:
     user_id = api_options.request.get_query_param("userId")
 
     if user_id is None:
         raise_bad_input_exception("Missing required parameter 'userId'")
 
-    session_handles = await get_all_session_handles_for_user(user_id, user_context)
+    session_handles = await get_all_session_handles_for_user(
+        user_id, None, user_context
+    )
     sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
 
     async def call_(i: int, session_handle: str):

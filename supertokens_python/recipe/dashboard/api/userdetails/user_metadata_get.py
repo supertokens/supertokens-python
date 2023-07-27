@@ -11,7 +11,10 @@ from typing import Union, Dict, Any
 
 
 async def handle_metadata_get(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> Union[UserMetadataGetAPIOkResponse, FeatureNotEnabledError]:
     user_id = api_options.request.get_query_param("userId")
 

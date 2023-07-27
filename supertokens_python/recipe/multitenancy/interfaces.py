@@ -71,16 +71,28 @@ class EmailPasswordConfig:
     def __init__(self, enabled: bool):
         self.enabled = enabled
 
+    def to_json(self):
+        return {"enabled": self.enabled}
+
 
 class PasswordlessConfig:
     def __init__(self, enabled: bool):
         self.enabled = enabled
+
+    def to_json(self):
+        return {"enabled": self.enabled}
 
 
 class ThirdPartyConfig:
     def __init__(self, enabled: bool, providers: List[ProviderConfig]):
         self.enabled = enabled
         self.providers = providers
+
+    def to_json(self):
+        return {
+            "enabled": self.enabled,
+            "providers": [provider.to_json() for provider in self.providers],
+        }
 
 
 class TenantConfigResponse:
@@ -101,10 +113,32 @@ class GetTenantOkResult(TenantConfigResponse):
     status = "OK"
 
 
+class ListAllTenantsItem(TenantConfigResponse):
+    def __init__(
+        self,
+        tenant_id: str,
+        emailpassword: EmailPasswordConfig,
+        passwordless: PasswordlessConfig,
+        third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
+    ):
+        super().__init__(emailpassword, passwordless, third_party, core_config)
+        self.tenant_id = tenant_id
+
+    def to_json(self):
+        return {
+            "tenantId": self.tenant_id,
+            "emailpassword": self.emailpassword.to_json(),
+            "passwordless": self.passwordless.to_json(),
+            "thirdParty": self.third_party.to_json(),
+            "coreConfig": self.core_config,
+        }
+
+
 class ListAllTenantsOkResult:
     status = "OK"
 
-    def __init__(self, tenants: List[TenantConfigResponse]):
+    def __init__(self, tenants: List[ListAllTenantsItem]):
         self.tenants = tenants
 
 
