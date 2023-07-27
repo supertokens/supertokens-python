@@ -287,7 +287,7 @@ class RecipeImplementation(RecipeInterface):
         if self.tp_manually_create_or_update_user is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_manually_create_or_update_user(
-            third_party_id, third_party_user_id, tenant_id, email, user_context
+            third_party_id, third_party_user_id, email, tenant_id, user_context
         )
 
     async def thirdparty_get_provider(

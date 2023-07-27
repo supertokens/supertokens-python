@@ -40,6 +40,16 @@ class User:
         self.time_joined = time_joined
         self.tenant_ids = tenant_ids
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.phone_number == other.phone_number
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )
+
 
 class DeviceCode:
     def __init__(self, code_id: str, time_created: str, code_life_time: int):

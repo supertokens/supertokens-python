@@ -21,6 +21,13 @@ class ThirdPartyInfo:
         self.user_id = third_party_user_id
         self.id = third_party_id
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.id == other.id
+        )
+
 
 class RawUserInfoFromProvider:
     def __init__(
@@ -46,6 +53,16 @@ class User:
         self.time_joined: int = time_joined
         self.tenant_ids = tenant_ids
         self.third_party_info: ThirdPartyInfo = third_party_info
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+            and self.third_party_info == other.third_party_info
+        )
 
 
 class UserInfoEmail:
