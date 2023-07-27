@@ -31,7 +31,7 @@ async def test_create_access_token_payload_with_session_claims(timestamp: int):
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 9
+    assert len(payload) == 10
     assert payload["st-true"] == {"v": True, "t": timestamp}
 
 
@@ -44,7 +44,7 @@ async def test_should_create_access_token_payload_with_session_claims_with_an_no
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 8
+    assert len(payload) == 9
     assert payload.get("st-true") is None
 
 
