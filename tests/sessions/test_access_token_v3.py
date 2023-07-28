@@ -13,7 +13,9 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
-from supertokens_python.recipe.session.access_token import validate_access_token_structure
+from supertokens_python.recipe.session.access_token import (
+    validate_access_token_structure,
+)
 from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
@@ -219,7 +221,7 @@ async def test_validation_logic_with_keys_that_can_use_json_nulls_values_in_clai
         "sub": "",
         "refreshTokenHash1": "",
         "exp": float(0),
-        "iat": float(0)
+        "iat": float(0),
     }
 
     validate_access_token_structure(payload, V3)
