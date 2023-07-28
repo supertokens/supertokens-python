@@ -30,15 +30,42 @@ if TYPE_CHECKING:
 
 
 class CreateEmailVerificationTokenOkResult:
+    status = "OK"
+
     def __init__(self, token: str):
         self.token = token
 
 
 class CreateEmailVerificationTokenEmailAlreadyVerifiedError:
-    pass
+    status = "EMAIL_ALREADY_VERIFIED_ERROR"
+
+
+class CreateEmailVerificationLinkEmailAlreadyVerifiedError:
+    status = "EMAIL_ALREADY_VERIFIED_ERROR"
+
+
+class CreateEmailVerificationLinkOkResult:
+    status = "OK"
+
+    def __init__(self, link: str):
+        self.link = link
+
+
+class SendEmailVerificationEmailDoesntExistError:
+    status = "EMAIL_DOES_NOT_EXIST_ERROR"
+
+
+class SendEmailVerificationEmailAlreadyVerifiedError:
+    status = "EMAIL_ALREADY_VERIFIED_ERROR"
+
+
+class SendEmailVerificationEmailOkResult:
+    status = "OK"
 
 
 class VerifyEmailUsingTokenOkResult:
+    status = "OK"
+
     def __init__(self, user: User):
         self.user = user
 

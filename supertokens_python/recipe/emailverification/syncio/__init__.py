@@ -88,3 +88,29 @@ def send_email(
     from supertokens_python.recipe.emailverification.asyncio import send_email
 
     return sync(send_email(input_, tenant_id, user_context))
+
+
+def create_email_verification_link(
+    user_id: str,
+    email: Optional[str],
+    tenant_id: Optional[str],
+    user_context: Dict[str, Any],
+):
+    from supertokens_python.recipe.emailverification.asyncio import (
+        create_email_verification_link,
+    )
+
+    return sync(create_email_verification_link(user_id, email, tenant_id, user_context))
+
+
+def send_email_verification_email(
+    user_id: str,
+    email: Optional[str],
+    tenant_id: Optional[str],
+    user_context: Dict[str, Any],
+):
+    from supertokens_python.recipe.emailverification.asyncio import (
+        send_email_verification_email,
+    )
+
+    return sync(send_email_verification_email(user_id, email, tenant_id, user_context))

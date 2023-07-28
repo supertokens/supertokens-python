@@ -16,6 +16,11 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     EmailDoesNotExistError,
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    CreateEmailVerificationLinkOkResult,
+    CreateEmailVerificationLinkEmailAlreadyVerifiedError,
+    SendEmailVerificationEmailOkResult,
+    SendEmailVerificationEmailDoesntExistError,
+    SendEmailVerificationEmailAlreadyVerifiedError,
     UnverifyEmailOkResult,
     CreateEmailVerificationTokenOkResult,
     RevokeEmailVerificationTokensOkResult,
@@ -24,6 +29,12 @@ from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
+from supertokens_python.recipe.emailverification.utils import get_email_verify_link
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+    VerificationEmailTemplateVarsUser,
+)
 
 
 async def create_email_verification_token(
@@ -146,3 +157,76 @@ async def send_email(
     return await EmailVerificationRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
         input_, tenant_id or DEFAULT_TENANT_ID, user_context
     )
+
+
+async def create_email_verification_link(
+    user_id: str,
+    email: Optional[str],
+    tenant_id: Optional[str],
+    user_context: Dict[str, Any],
+) -> Union[
+    CreateEmailVerificationLinkOkResult,
+    CreateEmailVerificationLinkEmailAlreadyVerifiedError,
+]:
+    recipe_instance = EmailVerificationRecipe.get_instance()
+    app_info = recipe_instance.get_app_info()
+
+    email_verification_token = await create_email_verification_token(
+        user_id, email, tenant_id, user_context
+    )
+    if isinstance(
+        email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
+    ):
+        return CreateEmailVerificationLinkEmailAlreadyVerifiedError()
+
+    return CreateEmailVerificationLinkOkResult(
+        link=get_email_verify_link(
+            app_info,
+            email_verification_token.token,
+            recipe_instance.get_recipe_id(),
+            tenant_id or DEFAULT_TENANT_ID,
+        )
+    )
+
+
+async def send_email_verification_email(
+    user_id: str,
+    email: Optional[str],
+    tenant_id: Optional[str],
+    user_context: Dict[str, Any],
+) -> Union[
+    SendEmailVerificationEmailOkResult,
+    SendEmailVerificationEmailDoesntExistError,
+    SendEmailVerificationEmailAlreadyVerifiedError,
+]:
+    if email is None:
+        recipe_instance = EmailVerificationRecipe.get_instance()
+
+        email_info = await recipe_instance.get_email_for_user_id(user_id, user_context)
+        if isinstance(email_info, GetEmailForUserIdOkResult):
+            email = email_info.email
+        elif isinstance(email_info, EmailDoesNotExistError):
+            return SendEmailVerificationEmailDoesntExistError()
+        else:
+            raise Exception("Unknown User ID provided without email")
+
+    email_verification_link = await create_email_verification_link(
+        user_id, email, tenant_id, user_context
+    )
+
+    if isinstance(
+        email_verification_link, CreateEmailVerificationLinkEmailAlreadyVerifiedError
+    ):
+        return SendEmailVerificationEmailAlreadyVerifiedError()
+
+    await send_email(
+        VerificationEmailTemplateVars(
+            user=VerificationEmailTemplateVarsUser(user_id, email),
+            email_verify_link=email_verification_link.link,
+            user_context={},
+        ),
+        tenant_id,
+        user_context,
+    )
+
+    return SendEmailVerificationEmailOkResult()

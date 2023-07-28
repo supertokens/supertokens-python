@@ -2,28 +2,17 @@ from typing import Any, Dict, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailverification.asyncio import (
-    create_email_verification_token,
-    send_email,
+    send_email_verification_email,
+    SendEmailVerificationEmailDoesntExistError,
+    SendEmailVerificationEmailAlreadyVerifiedError,
 )
-from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-    CreateEmailVerificationTokenOkResult,
-)
-from supertokens_python.recipe.emailverification.recipe import (
-    EmailVerificationRecipe,
-    GetEmailForUserIdOkResult,
-)
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-    VerificationEmailTemplateVarsUser,
-)
-from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
     UserEmailVerifyTokenPostAPIOkResponse,
+    UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
+    UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse,
 )
 
 
@@ -35,6 +24,7 @@ async def handle_email_verify_token_post(
 ) -> Union[
     UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
+    UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse,
 ]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -44,34 +34,11 @@ async def handle_email_verify_token_post(
             "Required parameter 'userId' is missing or has an invalid type"
         )
 
-    email_response = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
-        user_id, user_context
-    )
+    res = await send_email_verification_email(user_id, None, tenant_id, user_context)
 
-    if not isinstance(email_response, GetEmailForUserIdOkResult):
-        raise Exception("Should not come here")
-
-    email_verification_token = await create_email_verification_token(
-        user_id, tenant_id=tenant_id, user_context=user_context
-    )
-
-    if isinstance(
-        email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
-    ):
+    if isinstance(res, SendEmailVerificationEmailAlreadyVerifiedError):
         return UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse()
-
-    assert isinstance(email_verification_token, CreateEmailVerificationTokenOkResult)
-
-    email_verify_link = get_email_verify_link(
-        api_options.app_info, email_verification_token.token, user_id, tenant_id
-    )
-
-    await send_email(
-        VerificationEmailTemplateVars(
-            user=VerificationEmailTemplateVarsUser(user_id, email_response.email),
-            email_verify_link=email_verify_link,
-            user_context={},
-        )
-    )
+    if isinstance(res, SendEmailVerificationEmailDoesntExistError):
+        return UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse()
 
     return UserEmailVerifyTokenPostAPIOkResponse()
