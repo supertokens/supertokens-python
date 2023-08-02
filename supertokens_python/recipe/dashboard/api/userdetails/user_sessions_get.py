@@ -26,8 +26,9 @@ async def handle_sessions_get(
     if user_id is None:
         raise_bad_input_exception("Missing required parameter 'userId'")
 
+    # TODO: Pass tenant id here
     session_handles = await get_all_session_handles_for_user(
-        user_id, None, user_context
+        user_id, "pass-tenant-id", user_context
     )
     sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
 
