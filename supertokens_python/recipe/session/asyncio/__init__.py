@@ -426,18 +426,21 @@ async def revoke_session(
 
 
 async def revoke_all_sessions_for_user(
-    user_id: str, tenant_id: Optional[str] = None, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
-        user_id, tenant_id or DEFAULT_TENANT_ID,
-        tenant_id is None, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )
 
 
 async def get_all_session_handles_for_user(
-    user_id: str, tenant_id: Optional[str], user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str],
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}
