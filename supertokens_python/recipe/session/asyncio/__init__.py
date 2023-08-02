@@ -107,7 +107,9 @@ async def create_new_session_without_request_response(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, tenant_id or DEFAULT_TENANT_ID, user_context)
+        update = await claim.build(
+            user_id, tenant_id or DEFAULT_TENANT_ID, user_context
+        )
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
@@ -426,7 +428,9 @@ async def revoke_session(
 
 
 async def revoke_all_sessions_for_user(
-    user_id: str, tenant_id: Optional[str] = None, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}

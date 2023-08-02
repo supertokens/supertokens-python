@@ -92,9 +92,12 @@ def send_email(
 def create_email_verification_link(
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str],
-    user_context: Dict[str, Any],
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
+    if user_context is None:
+        user_context = {}
+
     from supertokens_python.recipe.emailverification.asyncio import (
         create_email_verification_link,
     )
@@ -105,9 +108,12 @@ def create_email_verification_link(
 def send_email_verification_email(
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str],
-    user_context: Dict[str, Any],
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
+    if user_context is None:
+        user_context = {}
+
     from supertokens_python.recipe.emailverification.asyncio import (
         send_email_verification_email,
     )
