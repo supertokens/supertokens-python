@@ -166,9 +166,8 @@ def get_users_by_email(
 
 def send_email(
     input_: EmailTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import send_email
 
-    return sync(send_email(input_, tenant_id, user_context))
+    return sync(send_email(input_, user_context))

@@ -56,7 +56,6 @@ class TwilioService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
     async def send_sms(
         self,
         template_vars: PasswordlessLoginSMSTemplateVars,
-        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         content = await self.service_implementation.get_content(

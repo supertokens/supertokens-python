@@ -111,9 +111,10 @@ class APIImplementation(APIInterface):
         send_email_input = PasswordResetEmailTemplateVars(
             user=PasswordResetEmailTemplateVarsUser(user.user_id, user.email),
             password_reset_link=password_reset_link,
+            tenant_id=tenant_id,
         )
         await api_options.email_delivery.ingredient_interface_impl.send_email(
-            send_email_input, tenant_id, user_context
+            send_email_input, user_context
         )
 
         return GeneratePasswordResetTokenPostOkResult()

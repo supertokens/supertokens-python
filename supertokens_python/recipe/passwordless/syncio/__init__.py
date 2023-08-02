@@ -253,15 +253,13 @@ def signinup(
 
 def send_email(
     input_: PasswordlessLoginEmailTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> None:
-    return sync(asyncio.send_email(input_, tenant_id, user_context))
+    return sync(asyncio.send_email(input_, user_context))
 
 
 def send_sms(
     input_: PasswordlessLoginSMSTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> None:
-    return sync(asyncio.send_sms(input_, tenant_id, user_context))
+    return sync(asyncio.send_sms(input_, user_context))

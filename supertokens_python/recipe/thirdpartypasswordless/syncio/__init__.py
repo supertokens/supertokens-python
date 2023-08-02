@@ -306,15 +306,13 @@ def passwordlessSigninup(
 
 def send_email(
     input_: EmailTemplateVars,
-    tenant_id: str,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
-    return sync(asyncio.send_email(input_, tenant_id, user_context))
+    return sync(asyncio.send_email(input_, user_context))
 
 
 def send_sms(
     input_: SMSTemplateVars,
-    tenant_id: str,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
-    return sync(asyncio.send_sms(input_, tenant_id, user_context))
+    return sync(asyncio.send_sms(input_, user_context))

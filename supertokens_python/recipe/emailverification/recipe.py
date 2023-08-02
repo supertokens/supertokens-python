@@ -412,7 +412,7 @@ class APIImplementation(APIInterface):
         email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
             user_id, user_context
         )
-        tenant_id = session.get_access_token_payload()["tid"]
+        tenant_id = session.get_access_token_payload()["tId"]
 
         if isinstance(email_info, EmailDoesNotExistError):
             log_debug_message(
@@ -460,10 +460,10 @@ class APIImplementation(APIInterface):
             email_verification_email_delivery_input = VerificationEmailTemplateVars(
                 user=VerificationEmailTemplateVarsUser(user_id, email_info.email),
                 email_verify_link=email_verify_link,
-                user_context=user_context,
+                tenant_id=tenant_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
-                email_verification_email_delivery_input, tenant_id, user_context
+                email_verification_email_delivery_input, user_context
             )
             return GenerateEmailVerifyTokenPostOkResult()
 

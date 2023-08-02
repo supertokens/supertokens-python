@@ -158,11 +158,13 @@ async def get_users_by_email(
 
 async def send_email(
     input_: EmailTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
+    if input_.tenant_id is None:
+        input_.tenant_id = DEFAULT_TENANT_ID
+
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, tenant_id or DEFAULT_TENANT_ID, user_context
+        input_, user_context
     )
