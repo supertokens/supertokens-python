@@ -3,7 +3,6 @@ from typing import Any, Dict, Union
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailverification.asyncio import (
     send_email_verification_email,
-    SendEmailVerificationEmailDoesntExistError,
     SendEmailVerificationEmailAlreadyVerifiedError,
 )
 
@@ -12,7 +11,6 @@ from ...interfaces import (
     APIOptions,
     UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
-    UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse,
 )
 
 
@@ -24,7 +22,6 @@ async def handle_email_verify_token_post(
 ) -> Union[
     UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
-    UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse,
 ]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -38,7 +35,5 @@ async def handle_email_verify_token_post(
 
     if isinstance(res, SendEmailVerificationEmailAlreadyVerifiedError):
         return UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse()
-    if isinstance(res, SendEmailVerificationEmailDoesntExistError):
-        return UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse()
 
     return UserEmailVerifyTokenPostAPIOkResponse()

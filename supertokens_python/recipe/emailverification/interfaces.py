@@ -51,9 +51,6 @@ class CreateEmailVerificationLinkOkResult:
         self.link = link
 
 
-class SendEmailVerificationEmailDoesntExistError:
-    status = "EMAIL_DOES_NOT_EXIST_ERROR"
-
 
 class SendEmailVerificationEmailAlreadyVerifiedError:
     status = "EMAIL_ALREADY_VERIFIED_ERROR"

@@ -251,13 +251,6 @@ class UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse(APIResponse):
         return {"status": self.status}
 
 
-class UserEmailVerifyTokenPostAPIEmailDoesntExistErrorResponse(APIResponse):
-    status: str = "EMAIL_ALREADY_VERIFIED_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
 class UserMetadataPutAPIResponse(APIResponse):
     status: str = "OK"
 

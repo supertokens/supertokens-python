@@ -19,7 +19,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationLinkOkResult,
     CreateEmailVerificationLinkEmailAlreadyVerifiedError,
     SendEmailVerificationEmailOkResult,
-    SendEmailVerificationEmailDoesntExistError,
     SendEmailVerificationEmailAlreadyVerifiedError,
     UnverifyEmailOkResult,
     CreateEmailVerificationTokenOkResult,
@@ -198,7 +197,6 @@ async def send_email_verification_email(
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     SendEmailVerificationEmailOkResult,
-    SendEmailVerificationEmailDoesntExistError,
     SendEmailVerificationEmailAlreadyVerifiedError,
 ]:
     if user_context is None:
@@ -211,7 +209,7 @@ async def send_email_verification_email(
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
-            return SendEmailVerificationEmailDoesntExistError()
+            return SendEmailVerificationEmailAlreadyVerifiedError()
         else:
             raise Exception("Unknown User ID provided without email")
 
