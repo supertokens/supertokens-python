@@ -161,12 +161,15 @@ async def send_email(
 async def create_email_verification_link(
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str],
-    user_context: Dict[str, Any],
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     CreateEmailVerificationLinkOkResult,
     CreateEmailVerificationLinkEmailAlreadyVerifiedError,
 ]:
+    if user_context is None:
+        user_context = {}
+
     recipe_instance = EmailVerificationRecipe.get_instance()
     app_info = recipe_instance.get_app_info()
 
@@ -191,13 +194,16 @@ async def create_email_verification_link(
 async def send_email_verification_email(
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str],
-    user_context: Dict[str, Any],
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     SendEmailVerificationEmailOkResult,
     SendEmailVerificationEmailDoesntExistError,
     SendEmailVerificationEmailAlreadyVerifiedError,
 ]:
+    if user_context is None:
+        user_context = {}
+
     if email is None:
         recipe_instance = EmailVerificationRecipe.get_instance()
 
@@ -222,9 +228,8 @@ async def send_email_verification_email(
         VerificationEmailTemplateVars(
             user=VerificationEmailTemplateVarsUser(user_id, email),
             email_verify_link=email_verification_link.link,
-            user_context={},
+            tenant_id=tenant_id,
         ),
-        tenant_id,
         user_context,
     )
 
