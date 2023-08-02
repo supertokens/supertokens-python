@@ -39,7 +39,7 @@ async def get_user_by_id(
 async def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -56,7 +56,7 @@ async def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -85,7 +85,7 @@ async def thirdparty_get_provider(
 
 async def get_users_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     if user_context is None:
@@ -160,7 +160,7 @@ async def consume_code(
 
 async def get_user_by_phone_number(
     phone_number: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
@@ -231,7 +231,7 @@ async def revoke_all_codes(
 
 async def revoke_code(
     code_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.RevokeCodeOkResult:
     if user_context is None:
@@ -245,7 +245,7 @@ async def revoke_code(
 
 async def list_codes_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[interfaces.DeviceType]:
     if user_context is None:
@@ -257,7 +257,7 @@ async def list_codes_by_email(
 
 async def list_codes_by_phone_number(
     phone_number: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[interfaces.DeviceType]:
     if user_context is None:
@@ -271,7 +271,7 @@ async def list_codes_by_phone_number(
 
 async def list_codes_by_device_id(
     device_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     if user_context is None:
@@ -285,7 +285,7 @@ async def list_codes_by_device_id(
 
 async def list_codes_by_pre_auth_session_id(
     pre_auth_session_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     if user_context is None:
@@ -300,7 +300,7 @@ async def list_codes_by_pre_auth_session_id(
 async def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     if user_context is None:
@@ -316,7 +316,7 @@ async def create_magic_link(
 async def passwordlessSigninup(
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.ConsumeCodeOkResult:
     if user_context is None:

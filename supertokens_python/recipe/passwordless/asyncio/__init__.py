@@ -133,7 +133,7 @@ async def get_user_by_email(
 
 async def get_user_by_phone_number(
     phone_number: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
@@ -246,7 +246,7 @@ async def list_codes_by_phone_number(
 
 async def list_codes_by_device_id(
     device_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     if user_context is None:
@@ -260,7 +260,7 @@ async def list_codes_by_device_id(
 
 async def list_codes_by_pre_auth_session_id(
     pre_auth_session_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     if user_context is None:

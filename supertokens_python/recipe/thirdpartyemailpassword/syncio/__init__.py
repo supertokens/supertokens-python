@@ -34,7 +34,7 @@ def get_user_by_id(
 def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -52,7 +52,7 @@ def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -83,7 +83,7 @@ def thirdparty_get_provider(
 
 def create_reset_password_token(
     user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -96,7 +96,7 @@ def create_reset_password_token(
 def reset_password_using_token(
     token: str,
     new_password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -111,7 +111,7 @@ def reset_password_using_token(
 def emailpassword_sign_in(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -124,7 +124,7 @@ def emailpassword_sign_in(
 def emailpassword_sign_up(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -154,7 +154,7 @@ def update_email_or_password(
 
 def get_users_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (

@@ -35,7 +35,7 @@ def get_user_by_id(
 def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from ..asyncio import get_user_by_third_party_info
@@ -51,7 +51,7 @@ def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from ..asyncio import thirdparty_manually_create_or_update_user
@@ -77,7 +77,9 @@ def thirdparty_get_provider(
 
 
 def get_users_by_email(
-    email: str, tenant_id: str, user_context: Union[None, Dict[str, Any]] = None
+    email: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     from ..asyncio import get_users_by_email
 
@@ -148,7 +150,9 @@ def consume_code(
 
 
 def get_user_by_phone_number(
-    phone_number: str, tenant_id: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     return sync(
         asyncio.get_user_by_phone_number(
@@ -214,7 +218,7 @@ def revoke_all_codes(
 
 def revoke_code(
     code_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.RevokeCodeOkResult:
     return sync(
@@ -226,7 +230,7 @@ def revoke_code(
 
 def list_codes_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[interfaces.DeviceType]:
     return sync(
@@ -237,7 +241,9 @@ def list_codes_by_email(
 
 
 def list_codes_by_phone_number(
-    phone_number: str, tenant_id: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[interfaces.DeviceType]:
     return sync(
         asyncio.list_codes_by_phone_number(
@@ -248,7 +254,7 @@ def list_codes_by_phone_number(
 
 def list_codes_by_device_id(
     device_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     return sync(
@@ -260,7 +266,7 @@ def list_codes_by_device_id(
 
 def list_codes_by_pre_auth_session_id(
     pre_auth_session_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     return sync(
@@ -275,7 +281,7 @@ def list_codes_by_pre_auth_session_id(
 def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     return sync(
@@ -291,7 +297,7 @@ def create_magic_link(
 def passwordlessSigninup(
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.ConsumeCodeOkResult:
     return sync(

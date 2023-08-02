@@ -35,7 +35,7 @@ def create_email_verification_token(
 
 def verify_email_using_token(
     token: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
