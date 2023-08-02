@@ -98,9 +98,10 @@ class APIImplementation(APIInterface):
                 url_with_link_code=magic_link,
                 code_life_time=response.code_life_time,
                 pre_auth_session_id=response.pre_auth_session_id,
+                tenant_id=tenant_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
-                passwordless_email_delivery_input, tenant_id, user_context
+                passwordless_email_delivery_input, user_context
             )
         elif isinstance(
             api_options.config.contact_config,
@@ -115,9 +116,10 @@ class APIImplementation(APIInterface):
                 url_with_link_code=magic_link,
                 code_life_time=response.code_life_time,
                 pre_auth_session_id=response.pre_auth_session_id,
+                tenant_id=tenant_id,
             )
             await api_options.sms_delivery.ingredient_interface_impl.send_sms(
-                sms_input, tenant_id, user_context
+                sms_input, user_context
             )
 
         return CreateCodePostOkResult(
@@ -214,10 +216,11 @@ class APIImplementation(APIInterface):
                             url_with_link_code=magic_link,
                             code_life_time=response.code_life_time,
                             pre_auth_session_id=response.pre_auth_session_id,
+                            tenant_id=tenant_id,
                         )
                     )
                     await api_options.email_delivery.ingredient_interface_impl.send_email(
-                        passwordless_email_delivery_input, tenant_id, user_context
+                        passwordless_email_delivery_input, user_context
                     )
                 elif isinstance(
                     api_options.config.contact_config,
@@ -234,9 +237,10 @@ class APIImplementation(APIInterface):
                         url_with_link_code=magic_link,
                         code_life_time=response.code_life_time,
                         pre_auth_session_id=response.pre_auth_session_id,
+                        tenant_id=tenant_id,
                     )
                     await api_options.sms_delivery.ingredient_interface_impl.send_sms(
-                        sms_input, tenant_id, user_context
+                        sms_input, user_context
                     )
                 return ResendCodePostOkResult()
             return ResendCodePostRestartFlowError()

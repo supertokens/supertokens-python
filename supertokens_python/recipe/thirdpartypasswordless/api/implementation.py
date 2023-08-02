@@ -90,14 +90,12 @@ class APIImplementation(APIInterface):
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
-        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         return await self.tp_authorisation_url_get(
             provider,
             redirect_uri_on_provider_dashboard,
-            tenant_id,
             api_options,
             user_context,
         )

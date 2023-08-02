@@ -35,7 +35,7 @@ async def get_user_by_id(
 async def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -52,7 +52,7 @@ async def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -81,7 +81,7 @@ async def thirdparty_get_provider(
 
 async def create_reset_password_token(
     user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -94,7 +94,7 @@ async def create_reset_password_token(
 async def reset_password_using_token(
     token: str,
     new_password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -107,7 +107,7 @@ async def reset_password_using_token(
 async def emailpassword_sign_in(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -120,7 +120,7 @@ async def emailpassword_sign_in(
 async def emailpassword_sign_up(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -146,7 +146,7 @@ async def update_email_or_password(
 
 async def get_users_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     if user_context is None:
@@ -158,11 +158,13 @@ async def get_users_by_email(
 
 async def send_email(
     input_: EmailTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
+    if input_.tenant_id is None:
+        input_.tenant_id = DEFAULT_TENANT_ID
+
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, tenant_id or DEFAULT_TENANT_ID, user_context
+        input_, user_context
     )

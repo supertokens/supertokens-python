@@ -70,7 +70,7 @@ async def handle_email_verify_token_post(
         VerificationEmailTemplateVars(
             user=VerificationEmailTemplateVarsUser(user_id, email_response.email),
             email_verify_link=email_verify_link,
-            user_context={},
+            tenant_id=tenant_id,
         )
     )
 

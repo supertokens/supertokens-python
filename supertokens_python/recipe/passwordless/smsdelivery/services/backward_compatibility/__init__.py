@@ -110,7 +110,6 @@ class BackwardCompatibilityService(
     async def send_sms(
         self,
         template_vars: PasswordlessLoginSMSTemplateVars,
-        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         await self.create_and_send_custom_sms(

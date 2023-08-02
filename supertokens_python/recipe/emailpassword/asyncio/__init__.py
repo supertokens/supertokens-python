@@ -110,11 +110,10 @@ async def sign_up(
 
 async def send_email(
     input_: EmailTemplateVars,
-    tenant_id: str,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, tenant_id, user_context
+        input_, user_context
     )
