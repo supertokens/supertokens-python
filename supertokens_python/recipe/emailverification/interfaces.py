@@ -51,7 +51,6 @@ class CreateEmailVerificationLinkOkResult:
         self.link = link
 
 
-
 class SendEmailVerificationEmailAlreadyVerifiedError:
     status = "EMAIL_ALREADY_VERIFIED_ERROR"
 
