@@ -33,7 +33,7 @@ async def get_user_by_id(
 
 async def get_users_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     if user_context is None:
@@ -48,7 +48,7 @@ async def get_users_by_email(
 async def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -65,7 +65,7 @@ async def manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:

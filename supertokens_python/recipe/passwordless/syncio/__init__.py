@@ -112,7 +112,7 @@ def get_user_by_email(
 
 def get_user_by_phone_number(
     phone_number: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     return sync(
@@ -195,7 +195,7 @@ def list_codes_by_phone_number(
 
 def list_codes_by_device_id(
     device_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     return sync(
@@ -207,7 +207,7 @@ def list_codes_by_device_id(
 
 def list_codes_by_pre_auth_session_id(
     pre_auth_session_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     return sync(
@@ -222,7 +222,7 @@ def list_codes_by_pre_auth_session_id(
 def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     return sync(
@@ -238,7 +238,7 @@ def create_magic_link(
 def signinup(
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> ConsumeCodeOkResult:
     return sync(
@@ -253,15 +253,13 @@ def signinup(
 
 def send_email(
     input_: PasswordlessLoginEmailTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> None:
-    return sync(asyncio.send_email(input_, tenant_id, user_context))
+    return sync(asyncio.send_email(input_, user_context))
 
 
 def send_sms(
     input_: PasswordlessLoginSMSTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> None:
-    return sync(asyncio.send_sms(input_, tenant_id, user_context))
+    return sync(asyncio.send_sms(input_, user_context))

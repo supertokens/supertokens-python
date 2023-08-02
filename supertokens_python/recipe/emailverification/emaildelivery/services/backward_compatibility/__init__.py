@@ -68,7 +68,6 @@ class BackwardCompatibilityService(
     async def send_email(
         self,
         template_vars: VerificationEmailTemplateVars,
-        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         try:

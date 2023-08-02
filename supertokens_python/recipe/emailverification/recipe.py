@@ -460,10 +460,10 @@ class APIImplementation(APIInterface):
             email_verification_email_delivery_input = VerificationEmailTemplateVars(
                 user=VerificationEmailTemplateVarsUser(user_id, email_info.email),
                 email_verify_link=email_verify_link,
-                user_context=user_context,
+                tenant_id=tenant_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
-                email_verification_email_delivery_input, tenant_id, user_context
+                email_verification_email_delivery_input, user_context
             )
             return GenerateEmailVerifyTokenPostOkResult()
 

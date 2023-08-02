@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Awaitable, Callable, List, TypeVar, Union
+from typing import Awaitable, Callable, List, TypeVar, Union, Optional
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -99,9 +99,11 @@ class PasswordResetEmailTemplateVars:
         self,
         user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
+        tenant_id: Optional[str],
     ) -> None:
         self.user = user
         self.password_reset_link = password_reset_link
+        self.tenant_id = tenant_id
 
 
 # Export:

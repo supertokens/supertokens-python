@@ -133,7 +133,7 @@ async def get_user_by_email(
 
 async def get_user_by_phone_number(
     phone_number: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
@@ -246,7 +246,7 @@ async def list_codes_by_phone_number(
 
 async def list_codes_by_device_id(
     device_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     if user_context is None:
@@ -260,7 +260,7 @@ async def list_codes_by_device_id(
 
 async def list_codes_by_pre_auth_session_id(
     pre_auth_session_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     if user_context is None:
@@ -306,23 +306,27 @@ async def signinup(
 
 async def send_email(
     input_: EmailTemplateVars,
-    tenant_id: Optional[str],
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
+    if input_.tenant_id is None:
+        input_.tenant_id = DEFAULT_TENANT_ID
+
     return await PasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, tenant_id or DEFAULT_TENANT_ID, user_context
+        input_, user_context
     )
 
 
 async def send_sms(
     input_: SMSTemplateVars,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
+    if input_.tenant_id is None:
+        input_.tenant_id = DEFAULT_TENANT_ID
+
     return await PasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
-        input_, tenant_id or DEFAULT_TENANT_ID, user_context
+        input_, user_context
     )

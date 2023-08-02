@@ -82,12 +82,14 @@ class CreateAndSendCustomEmailParameters:
         email: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
+        tenant_id: Union[str, None] = None,
     ):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
+        self.email = email
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
 
 
 PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
@@ -101,12 +103,14 @@ class CreateAndSendCustomTextMessageParameters:
         phone_number: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
+        tenant_id: Union[str, None] = None,
     ):
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.phone_number: str = phone_number
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.phone_number = phone_number
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
 
 
 PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters
