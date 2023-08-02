@@ -44,13 +44,11 @@ class APIImplementation(APIInterface):
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
-        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         authorisation_url_info = await provider.get_authorisation_redirect_url(
             redirect_uri_on_provider_dashboard=redirect_uri_on_provider_dashboard,
-            tenant_id=tenant_id,
             user_context=user_context,
         )
 

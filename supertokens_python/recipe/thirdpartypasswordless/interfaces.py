@@ -6,7 +6,6 @@ from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfa
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
 from supertokens_python.types import APIResponse, GeneralErrorResponse
-from supertokens_python.recipe.thirdparty import provider as TPProvider
 
 from ..passwordless import interfaces as PlessInterfaces
 from .types import User
@@ -66,11 +65,6 @@ ThirdPartyManuallyCreateOrUpdateUserOkResult = (
 ThirdPartySignInUpPostNoEmailGivenByProviderResponse = (
     ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
 )
-
-ThirdpartyProviderInput = TPProvider.ProviderInput
-ThirdpartyProviderConfig = TPProvider.ProviderConfig
-ThirdpartyProviderClientConfig = TPProvider.ProviderClientConfig
-ThirdpartyProviderConfigForClientType = TPProvider.ProviderConfigForClientType
 
 
 class ConsumeCodeOkResult:
@@ -332,7 +326,6 @@ class APIInterface(ABC):
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
-        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:

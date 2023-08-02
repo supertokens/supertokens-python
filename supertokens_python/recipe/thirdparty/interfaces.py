@@ -207,7 +207,6 @@ class APIInterface:
         self,
         provider: Provider,
         redirect_uri_on_provider_dashboard: str,
-        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
