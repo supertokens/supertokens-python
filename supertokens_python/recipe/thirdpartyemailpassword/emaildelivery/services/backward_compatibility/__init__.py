@@ -51,9 +51,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     async def send_email(
         self,
         template_vars: EmailTemplateVars,
-        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> None:
         await self.ep_backward_compatiblity_service.send_email(
-            template_vars, tenant_id, user_context
+            template_vars, user_context
         )

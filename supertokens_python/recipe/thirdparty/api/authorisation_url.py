@@ -66,7 +66,6 @@ async def handle_authorisation_url_api(
     result = await api_implementation.authorisation_url_get(
         provider=provider,
         redirect_uri_on_provider_dashboard=redirect_uri_on_provider_dashboard,
-        tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
     )
