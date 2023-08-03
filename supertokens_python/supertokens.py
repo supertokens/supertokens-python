@@ -47,6 +47,7 @@ from .utils import (
 )
 
 from .always_initialised_recipes import DEFAULT_MULTITENANCY_RECIPE
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
@@ -254,7 +255,9 @@ class Supertokens:
         return list(headers_set)
 
     async def get_user_count(  # pylint: disable=no-self-use
-        self, include_recipe_ids: Union[None, List[str]]
+        self,
+        include_recipe_ids: Union[None, List[str]],
+        tenant_id: Optional[str] = None,
     ) -> int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
@@ -262,7 +265,11 @@ class Supertokens:
             include_recipe_ids_str = ",".join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(USER_COUNT), {"includeRecipeIds": include_recipe_ids_str}
+            NormalisedURLPath(f"/{tenant_id or DEFAULT_TENANT_ID}{USER_COUNT}"),
+            {
+                "includeRecipeIds": include_recipe_ids_str,
+                "includeAllTenants": tenant_id is None,
+            },
         )
 
         return int(response["count"])
@@ -287,6 +294,7 @@ class Supertokens:
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
         query: Union[Dict[str, str], None] = None,
+        tenant_id: Optional[str] = None,
     ) -> UsersResponse:
         querier = Querier.get_instance(None)
         params = {"timeJoinedOrder": time_joined_order}
@@ -303,7 +311,12 @@ class Supertokens:
         if query is not None:
             params = {**params, **query}
 
-        response = await querier.send_get_request(NormalisedURLPath(USERS), params)
+        if tenant_id is None:
+            tenant_id = DEFAULT_TENANT_ID
+
+        response = await querier.send_get_request(
+            NormalisedURLPath(f"/{tenant_id}{USERS}"), params
+        )
         next_pagination_token = None
         if "nextPaginationToken" in response:
             next_pagination_token = response["nextPaginationToken"]
@@ -331,6 +344,7 @@ class Supertokens:
                     email,
                     phone_number,
                     third_party,
+                    user_obj["tenantIds"],
                 )
             )
 

@@ -6,7 +6,10 @@ from ...interfaces import APIInterface, APIOptions, UserSessionsPostAPIResponse
 
 
 async def handle_user_sessions_post(
-    _api_interface: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -> UserSessionsPostAPIResponse:
     request_body = await api_options.request.json()  # type: ignore
     session_handles: Optional[List[str]] = request_body.get("sessionHandles")  # type: ignore

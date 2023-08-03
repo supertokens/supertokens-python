@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -76,6 +76,7 @@ class UserWithMetadata:
     tp_info: Optional[Dict[str, Any]] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    tenant_ids: List[str]
 
     def from_user(
         self,
@@ -94,6 +95,7 @@ class UserWithMetadata:
         self.tp_info = (
             None if user.third_party_info is None else user.third_party_info.__dict__
         )
+        self.tenant_ids = user.tenant_ids
 
         return self
 

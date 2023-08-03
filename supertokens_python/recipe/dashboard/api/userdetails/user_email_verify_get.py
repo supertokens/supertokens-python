@@ -12,7 +12,10 @@ from typing import Union, Dict, Any
 
 
 async def handle_user_email_verify_get(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> Union[UserEmailVerifyGetAPIResponse, FeatureNotEnabledError]:
     req = api_options.request
     user_id = req.get_query_param("userId")

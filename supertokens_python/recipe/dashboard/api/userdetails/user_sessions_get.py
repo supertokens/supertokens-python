@@ -16,7 +16,10 @@ from ...interfaces import (
 
 
 async def handle_sessions_get(
-    _api_interface: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]
+    _api_interface: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> UserSessionsGetAPIResponse:
     user_id = api_options.request.get_query_param("userId")
 

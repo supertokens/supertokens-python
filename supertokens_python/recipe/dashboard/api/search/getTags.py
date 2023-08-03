@@ -24,7 +24,7 @@ from supertokens_python.recipe.dashboard.interfaces import SearchTagsOK
 
 
 async def handle_get_tags(
-    _: APIInterface, __: APIOptions, _user_context: Dict[str, Any]
+    _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
 ) -> SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
         NormalisedURLPath("/user/search/tags")

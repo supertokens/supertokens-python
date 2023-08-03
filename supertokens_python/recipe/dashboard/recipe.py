@@ -41,6 +41,7 @@ from .api import (
     handle_users_count_get_api,
     handle_users_get_api,
     handle_validate_key_api,
+    handle_list_tenants_api,
 )
 from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
@@ -72,6 +73,7 @@ from .constants import (
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
+    TENANTS_LIST_API,
 )
 from .utils import (
     InputOverrideConfig,
@@ -129,7 +131,7 @@ class DashboardRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -160,7 +162,9 @@ class DashboardRecipe(RecipeModule):
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
-            Callable[[APIInterface, APIOptions, Dict[str, Any]], Awaitable[APIResponse]]
+            Callable[
+                [APIInterface, str, APIOptions, Dict[str, Any]], Awaitable[APIResponse]
+            ]
         ] = None
         if request_id == USERS_LIST_GET_API:
             api_function = handle_users_get_api
@@ -199,10 +203,16 @@ class DashboardRecipe(RecipeModule):
         elif request_id == DASHBOARD_ANALYTICS_API:
             if method == "post":
                 api_function = handle_analytics_post
+        elif request_id == TENANTS_LIST_API:
+            api_function = handle_list_tenants_api
 
         if api_function is not None:
             return await api_key_protector(
-                self.api_implementation, api_options, api_function, user_context
+                self.api_implementation,
+                tenant_id,
+                api_options,
+                api_function,
+                user_context,
             )
 
         return None
