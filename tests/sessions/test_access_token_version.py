@@ -13,6 +13,9 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
+from supertokens_python.recipe.session.access_token import (
+    validate_access_token_structure,
+)
 from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
@@ -197,3 +200,64 @@ async def test_should_validate_v3_tokens_with_check_database_enabled(app: TestCl
         "sessionExists": True,
         "sessionHandle": info["body"]["sessionHandle"],
     }
+
+
+async def test_validation_logic_with_keys_that_can_use_json_nulls_values_in_claims():
+    """We want to make sure that for access token claims that can be null, the SDK does not fail access token validation if the
+    core does not send them as part of the payload. For this we verify that validation passes when the keys are None, empty,
+    or of a different type.
+
+    For now this test checks for:
+    - antiCsrfToken
+    - parentRefreshTokenHash1
+
+    But this test should be updated to include any keys that the core considers optional in the payload (i.e either it sends
+    JSON null or skips them entirely)
+    """
+
+    V3 = 3
+    payload = {
+        "sessionHandle": "",
+        "sub": "",
+        "refreshTokenHash1": "",
+        "exp": float(0),
+        "iat": float(0),
+    }
+
+    validate_access_token_structure(payload, V3)
+
+    payload = {
+        "sessionHandle": "",
+        "sub": "",
+        "refreshTokenHash1": "",
+        "exp": float(0),
+        "iat": float(0),
+        "parentRefreshTokenHash1": None,
+        "antiCsrfToken": None,
+    }
+
+    validate_access_token_structure(payload, V3)
+
+    payload = {
+        "sessionHandle": "",
+        "sub": "",
+        "refreshTokenHash1": "",
+        "exp": float(0),
+        "iat": float(0),
+        "parentRefreshTokenHash1": "",
+        "antiCsrfToken": "",
+    }
+
+    validate_access_token_structure(payload, V3)
+
+    payload = {
+        "sessionHandle": "",
+        "sub": "",
+        "refreshTokenHash1": "",
+        "exp": float(0),
+        "iat": float(0),
+        "parentRefreshTokenHash1": 1,
+        "antiCsrfToken": 1,
+    }
+
+    validate_access_token_structure(payload, V3)

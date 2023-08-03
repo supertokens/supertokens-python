@@ -31,7 +31,9 @@
 -   [ ] If have added a new web framework, update the `supertokens_python/utils.py` file to include that in the `FRAMEWORKS` variable
 -   [ ] If added a new recipe that has a User type with extra info, then be sure to change the User type in supertokens_python/types.py
 -   [ ] Make sure that `syncio` / `asyncio` functions are consistent.
- 
+-   [ ] If access token structure has changed
+    -   Modified test in `tests/sessions/test_access_token_version.py` to account for any new claims that are optional or omitted by the core
+
 ## Remaining TODOs for this PR
 
 -   [ ] Item1
