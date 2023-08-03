@@ -42,6 +42,7 @@ async def handle_password_reset_api(
     form_fields = await validate_form_fields_or_throw_error(
         api_options.config.reset_password_using_token_feature.form_fields_for_password_reset_form,
         form_fields_raw,
+        tenant_id,
     )
 
     if "token" not in body:

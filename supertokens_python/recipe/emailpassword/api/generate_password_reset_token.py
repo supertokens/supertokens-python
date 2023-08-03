@@ -42,6 +42,7 @@ async def handle_generate_password_reset_token_api(
     form_fields = await validate_form_fields_or_throw_error(
         api_options.config.reset_password_using_token_feature.form_fields_for_generate_token_form,
         form_fields_raw,
+        tenant_id,
     )
 
     response = await api_implementation.generate_password_reset_token_post(

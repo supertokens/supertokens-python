@@ -46,7 +46,7 @@ async def handle_sign_up_api(
         raise_bad_input_exception("Please provide a JSON body")
     form_fields_raw: Any = body["formFields"] if "formFields" in body else []
     form_fields = await validate_form_fields_or_throw_error(
-        api_options.config.sign_up_feature.form_fields, form_fields_raw
+        api_options.config.sign_up_feature.form_fields, form_fields_raw, tenant_id
     )
 
     response = await api_implementation.sign_up_post(

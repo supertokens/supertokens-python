@@ -63,7 +63,7 @@ class InputFormField:
         self,
         id: str,  # pylint: disable=redefined-builtin
         validate: Union[
-            Callable[[str], Awaitable[Union[str, None]]],
+            Callable[[str, str], Awaitable[Union[str, None]]],
             None,
         ] = None,
         optional: Union[bool, None] = None,
@@ -77,7 +77,7 @@ class NormalisedFormField:
     def __init__(
         self,
         id: str,  # pylint: disable=redefined-builtin
-        validate: Callable[[str], Awaitable[Union[str, None]]],
+        validate: Callable[[str, str], Awaitable[Union[str, None]]],
         optional: bool,
     ):
         self.id = id
