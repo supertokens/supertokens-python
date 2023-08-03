@@ -62,6 +62,7 @@ class APIImplementation(APIInterface):
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -106,6 +107,7 @@ class APIImplementation(APIInterface):
             email=email,
             oauth_tokens=oauth_tokens_to_use,
             raw_user_info_from_provider=user_info.raw_user_info_from_provider,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
 
@@ -115,12 +117,15 @@ class APIImplementation(APIInterface):
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
                     user_id=signinup_response.user.user_id,
                     email=signinup_response.user.email,
+                    tenant_id=tenant_id,
                     user_context=user_context,
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        token=token_response.token, user_context=user_context
+                        token=token_response.token,
+                        tenant_id=tenant_id,
+                        user_context=user_context,
                     )
 
         user = signinup_response.user

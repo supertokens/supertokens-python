@@ -152,6 +152,7 @@ class RecipeInterface(ABC):
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> CreateCodeOkResult:
         pass
@@ -161,6 +162,7 @@ class RecipeInterface(ABC):
         self,
         device_id: str,
         user_input_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         CreateNewCodeForDeviceOkResult,
@@ -176,6 +178,7 @@ class RecipeInterface(ABC):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
         ConsumeCodeOkResult,
@@ -193,13 +196,13 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         pass
 
     @abstractmethod
     async def get_user_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[User, None]:
         pass
 
@@ -235,37 +238,38 @@ class RecipeInterface(ABC):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> RevokeAllCodesOkResult:
         pass
 
     @abstractmethod
     async def revoke_code(
-        self, code_id: str, user_context: Dict[str, Any]
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> RevokeCodeOkResult:
         pass
 
     @abstractmethod
     async def list_codes_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[DeviceType]:
         pass
 
     @abstractmethod
     async def list_codes_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[DeviceType]:
         pass
 
     @abstractmethod
     async def list_codes_by_device_id(
-        self, device_id: str, user_context: Dict[str, Any]
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[DeviceType, None]:
         pass
 
     @abstractmethod
     async def list_codes_by_pre_auth_session_id(
-        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+        self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[DeviceType, None]:
         pass
 
@@ -425,6 +429,7 @@ class APIInterface:
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
@@ -435,6 +440,7 @@ class APIInterface:
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -449,6 +455,7 @@ class APIInterface:
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -462,12 +469,20 @@ class APIInterface:
 
     @abstractmethod
     async def email_exists_get(
-        self, email: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        email: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(
-        self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        phone_number: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         pass

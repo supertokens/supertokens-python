@@ -40,6 +40,16 @@ class User:
         self.time_joined = time_joined
         self.tenant_ids = tenant_ids
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.phone_number == other.phone_number
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )
+
 
 class DeviceCode:
     def __init__(self, code_id: str, time_created: str, code_life_time: int):
@@ -72,12 +82,14 @@ class CreateAndSendCustomEmailParameters:
         email: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
+        tenant_id: Union[str, None] = None,
     ):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
+        self.email = email
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
 
 
 PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
@@ -91,12 +103,14 @@ class CreateAndSendCustomTextMessageParameters:
         phone_number: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
+        tenant_id: Union[str, None] = None,
     ):
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.phone_number: str = phone_number
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.phone_number = phone_number
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
 
 
 PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters

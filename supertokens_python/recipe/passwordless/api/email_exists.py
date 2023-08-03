@@ -20,6 +20,7 @@ from supertokens_python.utils import send_200_response
 
 async def email_exists(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
@@ -30,5 +31,7 @@ async def email_exists(
     if email is None:
         raise_bad_input_exception("Please provide the email as a GET param")
 
-    result = await api_implementation.email_exists_get(email, api_options, user_context)
+    result = await api_implementation.email_exists_get(
+        email, tenant_id, api_options, user_context
+    )
     return send_200_response(result.to_json(), api_options.response)

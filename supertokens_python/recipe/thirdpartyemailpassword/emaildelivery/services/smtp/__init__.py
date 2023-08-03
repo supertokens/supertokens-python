@@ -38,6 +38,8 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         self.ep_smtp_service = EmailPasswordSMTPService(smtp_settings, override)
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -> None:
         await self.ep_smtp_service.send_email(template_vars, user_context)

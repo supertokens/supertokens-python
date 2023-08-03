@@ -61,7 +61,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_email_verification_token(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[
         CreateEmailVerificationTokenOkResult,
         CreateEmailVerificationTokenEmailAlreadyVerifiedError,
@@ -70,7 +70,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def verify_email_using_token(
-        self, token: str, user_context: Dict[str, Any]
+        self, token: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         pass
 
@@ -82,7 +82,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def revoke_email_verification_tokens(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> RevokeEmailVerificationTokensOkResult:
         pass
 
@@ -169,6 +169,7 @@ class APIInterface(ABC):
         self,
         token: str,
         session: Optional[SessionContainer],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[

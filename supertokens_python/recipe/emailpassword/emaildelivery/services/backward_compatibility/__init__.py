@@ -87,7 +87,9 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         )
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -> None:
         user = await self.recipe_interface_impl.get_user_by_id(
             user_id=template_vars.user.id, user_context=user_context

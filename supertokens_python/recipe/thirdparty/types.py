@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union, Optional
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -21,10 +21,19 @@ class ThirdPartyInfo:
         self.user_id = third_party_user_id
         self.id = third_party_id
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.id == other.id
+        )
+
 
 class RawUserInfoFromProvider:
     def __init__(
-        self, from_id_token_payload: Dict[str, Any], from_user_info_api: Dict[str, Any]
+        self,
+        from_id_token_payload: Optional[Dict[str, Any]],
+        from_user_info_api: Optional[Dict[str, Any]],
     ):
         self.from_id_token_payload = from_id_token_payload
         self.from_user_info_api = from_user_info_api
@@ -44,6 +53,16 @@ class User:
         self.time_joined: int = time_joined
         self.tenant_ids = tenant_ids
         self.third_party_info: ThirdPartyInfo = third_party_info
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+            and self.third_party_info == other.third_party_info
+        )
 
 
 class UserInfoEmail:

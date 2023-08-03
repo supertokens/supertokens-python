@@ -28,6 +28,7 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 async def handle_email_verify_api(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
@@ -52,7 +53,7 @@ async def handle_email_verify_api(
         )
 
         result = await api_implementation.email_verify_post(
-            token, session, api_options, user_context
+            token, session, tenant_id, api_options, user_context
         )
     else:
         if api_implementation.disable_is_email_verified_get:

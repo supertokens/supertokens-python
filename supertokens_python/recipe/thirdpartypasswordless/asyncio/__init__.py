@@ -23,6 +23,8 @@ from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
 from ..types import EmailTemplateVars, SMSTemplateVars, User
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 
 async def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
@@ -37,12 +39,16 @@ async def get_user_by_id(
 async def get_user_by_third_party_info(
     third_party_id: str,
     third_party_user_id: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
-        third_party_id, third_party_user_id, user_context
+        third_party_id,
+        third_party_user_id,
+        tenant_id or DEFAULT_TENANT_ID,
+        user_context,
     )
 
 
@@ -50,35 +56,42 @@ async def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_manually_create_or_update_user(
-        third_party_id, third_party_user_id, email, user_context
+        third_party_id,
+        third_party_user_id,
+        email,
+        tenant_id or DEFAULT_TENANT_ID,
+        user_context,
     )
 
 
 async def thirdparty_get_provider(
     third_party_id: str,
-    tenant_id: Optional[str] = None,
     client_type: Optional[str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_get_provider(
-        third_party_id, tenant_id, client_type, user_context
+        third_party_id, client_type, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
 async def get_users_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    email: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[User]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_users_by_email(
-        email, user_context
+        email, tenant_id or DEFAULT_TENANT_ID, user_context
     )
 
 
@@ -86,6 +99,7 @@ async def create_code(
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.CreateCodeOkResult:
     if user_context is None:
@@ -94,6 +108,7 @@ async def create_code(
         email=email,
         phone_number=phone_number,
         user_input_code=user_input_code,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         user_context=user_context,
     )
 
@@ -101,6 +116,7 @@ async def create_code(
 async def create_new_code_for_device(
     device_id: str,
     user_input_code: Union[str, None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     interfaces.CreateNewCodeForDeviceOkResult,
@@ -110,7 +126,10 @@ async def create_new_code_for_device(
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(
-        device_id=device_id, user_input_code=user_input_code, user_context=user_context
+        device_id=device_id,
+        user_input_code=user_input_code,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
@@ -119,6 +138,7 @@ async def consume_code(
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
     link_code: Union[str, None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     interfaces.ConsumeCodeOkResult,
@@ -133,17 +153,22 @@ async def consume_code(
         user_input_code=user_input_code,
         device_id=device_id,
         link_code=link_code,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         user_context=user_context,
     )
 
 
 async def get_user_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
-        phone_number=phone_number, user_context=user_context
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
@@ -191,87 +216,117 @@ async def delete_phone_number_for_user(
 async def revoke_all_codes(
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.RevokeAllCodesOkResult:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(
-        email=email, phone_number=phone_number, user_context=user_context
+        email=email,
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def revoke_code(
-    code_id: str, user_context: Union[None, Dict[str, Any]] = None
+    code_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.RevokeCodeOkResult:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_code(
-        code_id=code_id, user_context=user_context
+        code_id=code_id,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def list_codes_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    email: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[interfaces.DeviceType]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(
-        email=email, user_context=user_context
+        email=email, tenant_id=tenant_id or DEFAULT_TENANT_ID, user_context=user_context
     )
 
 
 async def list_codes_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    phone_number: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[interfaces.DeviceType]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(
-        phone_number=phone_number, user_context=user_context
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def list_codes_by_device_id(
-    device_id: str, user_context: Union[None, Dict[str, Any]] = None
+    device_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(
-        device_id=device_id, user_context=user_context
+        device_id=device_id,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def list_codes_by_pre_auth_session_id(
-    pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None
+    pre_auth_session_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(
-        pre_auth_session_id=pre_auth_session_id, user_context=user_context
+        pre_auth_session_id=pre_auth_session_id,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def create_magic_link(
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
-        email=email, phone_number=phone_number, user_context=user_context
+        email=email,
+        phone_number=phone_number,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        user_context=user_context,
     )
 
 
 async def passwordlessSigninup(
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.ConsumeCodeOkResult:
     if user_context is None:
         user_context = {}
     result = (
         await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(
-            email=email, phone_number=phone_number, user_context=user_context
+            email=email,
+            phone_number=phone_number,
+            tenant_id=tenant_id or DEFAULT_TENANT_ID,
+            user_context=user_context,
         )
     )
     return interfaces.ConsumeCodeOkResult(
@@ -288,20 +343,28 @@ async def passwordlessSigninup(
 
 
 async def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: EmailTemplateVars,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
+    if input_.tenant_id is None:
+        input_.tenant_id = DEFAULT_TENANT_ID
+
     return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
         input_, user_context
     )
 
 
 async def send_sms(
-    input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: SMSTemplateVars,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
+    if input_.tenant_id is None:
+        input_.tenant_id = DEFAULT_TENANT_ID
+
     return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
         input_, user_context
     )

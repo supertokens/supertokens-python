@@ -28,6 +28,7 @@ from supertokens_python.utils import send_200_response
 
 async def create_code(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
@@ -107,6 +108,7 @@ async def create_code(
     result = await api_implementation.create_code_post(
         email=email,
         phone_number=phone_number,
+        tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
     )

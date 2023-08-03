@@ -109,7 +109,8 @@ async def sign_up(
 
 
 async def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: EmailTemplateVars,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}

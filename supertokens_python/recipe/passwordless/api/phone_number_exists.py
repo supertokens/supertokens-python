@@ -19,6 +19,7 @@ from supertokens_python.utils import send_200_response
 
 async def phone_number_exists(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
@@ -30,6 +31,6 @@ async def phone_number_exists(
         raise_bad_input_exception("Please provide the phoneNumber as a GET param")
 
     result = await api_implementation.phone_number_exists_get(
-        phone_number, api_options, user_context
+        phone_number, tenant_id, api_options, user_context
     )
     return send_200_response(result.to_json(), api_options.response)

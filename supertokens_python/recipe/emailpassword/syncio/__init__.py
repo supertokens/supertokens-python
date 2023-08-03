@@ -103,7 +103,8 @@ def sign_up(
 
 
 def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+    input_: EmailTemplateVars,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import send_email
 

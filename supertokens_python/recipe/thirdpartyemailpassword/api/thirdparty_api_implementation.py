@@ -51,6 +51,7 @@ def get_interface_impl(
             provider: Provider,
             redirect_uri_info: Union[RedirectUriInfo, None],
             oauth_tokens: Union[Dict[str, Any], None],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
@@ -62,6 +63,7 @@ def get_interface_impl(
                 provider,
                 redirect_uri_info,
                 oauth_tokens,
+                tenant_id,
                 api_options,
                 user_context,
             )

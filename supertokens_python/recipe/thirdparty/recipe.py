@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -121,7 +121,7 @@ class ThirdPartyRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -140,11 +140,11 @@ class ThirdPartyRecipe(RecipeModule):
 
         if request_id == SIGNINUP:
             return await handle_sign_in_up_api(
-                self.api_implementation, api_options, user_context
+                self.api_implementation, tenant_id, api_options, user_context
             )
         if request_id == AUTHORISATIONURL:
             return await handle_authorisation_url_api(
-                self.api_implementation, api_options, user_context
+                self.api_implementation, tenant_id, api_options, user_context
             )
         if request_id == APPLE_REDIRECT_HANDLER:
             return await handle_apple_redirect_api(

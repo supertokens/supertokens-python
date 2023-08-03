@@ -105,6 +105,7 @@ class RecipeInterface(ABC):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         pass
@@ -117,6 +118,7 @@ class RecipeInterface(ABC):
         email: str,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartySignInUpOkResult:
         pass
@@ -127,6 +129,7 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartyManuallyCreateOrUpdateUserOkResult:
         pass
@@ -135,8 +138,8 @@ class RecipeInterface(ABC):
     async def thirdparty_get_provider(
         self,
         third_party_id: str,
-        tenant_id: Optional[str],
         client_type: Optional[str],
+        tenant_id: Optional[str],
         user_context: Dict[str, Any],
     ) -> ThirdPartyInterfaces.GetProviderOkResult:
         pass
@@ -287,6 +290,7 @@ class APIInterface(ABC):
         provider: Provider,
         redirect_uri_info: Union[RedirectUriInfo, None],
         oauth_tokens: Union[Dict[str, Any], None],
+        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
