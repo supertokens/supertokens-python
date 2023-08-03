@@ -43,6 +43,7 @@ class User:
 # Export:
 EmailTemplateVars = ep_types.EmailTemplateVars
 PasswordResetEmailTemplateVars = ep_types.PasswordResetEmailTemplateVars
+PasswordResetEmailTemplateVarsUser = ep_types.PasswordResetEmailTemplateVarsUser
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 

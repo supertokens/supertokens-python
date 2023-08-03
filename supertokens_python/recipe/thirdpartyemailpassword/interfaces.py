@@ -17,6 +17,14 @@ EmailPasswordAPIOptions = EPInterfaces.APIOptions
 # Exporting re-used classes
 CreateResetPasswordOkResult = EPInterfaces.CreateResetPasswordOkResult
 CreateResetPasswordWrongUserIdError = EPInterfaces.CreateResetPasswordWrongUserIdError
+CreateResetPasswordLinkOkResult = EPInterfaces.CreateResetPasswordLinkOkResult
+CreateResetPasswordLinkUknownUserIdError = (
+    EPInterfaces.CreateResetPasswordLinkUknownUserIdError
+)
+CreateResetPasswordEmailOkResult = EPInterfaces.CreateResetPasswordEmailOkResult
+CreateResetPasswordEmailUnknownUserIdError = (
+    EPInterfaces.CreateResetPasswordEmailUnknownUserIdError
+)
 EmailPasswordEmailExistsGetOkResult = EPInterfaces.EmailExistsGetOkResult
 GeneratePasswordResetTokenPostOkResult = (
     EPInterfaces.GeneratePasswordResetTokenPostOkResult

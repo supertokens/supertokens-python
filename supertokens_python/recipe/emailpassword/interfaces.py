@@ -57,6 +57,23 @@ class CreateResetPasswordWrongUserIdError:
     pass
 
 
+class CreateResetPasswordLinkOkResult:
+    def __init__(self, link: str):
+        self.link = link
+
+
+class CreateResetPasswordLinkUknownUserIdError:
+    pass
+
+
+class CreateResetPasswordEmailOkResult:
+    pass
+
+
+class CreateResetPasswordEmailUnknownUserIdError:
+    pass
+
+
 class ResetPasswordUsingTokenOkResult:
     def __init__(self, user_id: Union[str, None]):
         self.user_id = user_id
