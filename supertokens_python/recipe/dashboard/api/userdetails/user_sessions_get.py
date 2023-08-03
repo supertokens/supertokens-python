@@ -23,8 +23,8 @@ async def handle_sessions_get(
     if user_id is None:
         raise_bad_input_exception("Missing required parameter 'userId'")
 
-    # Not passing tenant_id because we want to get all the sessions
-    # across all the tenants for this user.
+    # Passing tenant id as None sets fetch_across_all_tenants to True
+    # which is what we want here.
     session_handles = await get_all_session_handles_for_user(
         user_id, None, user_context
     )
