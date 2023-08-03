@@ -64,6 +64,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SessionContainer:
         log_debug_message("createNewSession: Started")
@@ -74,6 +75,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
+            tenant_id,
         )
         log_debug_message("createNewSession: Finished")
 
@@ -95,6 +97,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             payload,
             None,
             True,
+            tenant_id,
         )
 
         return new_session
@@ -262,6 +265,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             payload,
             None,
             access_token_updated,
+            response.session.tenant_id,
         )
 
         return session
@@ -312,6 +316,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
+            tenant_id=payload["tId"],
         )
 
         return session
@@ -322,14 +327,26 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         return await session_functions.revoke_session(self, session_handle)
 
     async def revoke_all_sessions_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        tenant_id: Optional[str],
+        revoke_across_all_tenants: bool,
+        user_context: Dict[str, Any],
     ) -> List[str]:
-        return await session_functions.revoke_all_sessions_for_user(self, user_id)
+        return await session_functions.revoke_all_sessions_for_user(
+            self, user_id, tenant_id, revoke_across_all_tenants
+        )
 
     async def get_all_session_handles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        tenant_id: Optional[str],
+        fetch_across_all_tenants: bool,
+        user_context: Dict[str, Any],
     ) -> List[str]:
-        return await session_functions.get_all_session_handles_for_user(self, user_id)
+        return await session_functions.get_all_session_handles_for_user(
+            self, user_id, tenant_id, fetch_across_all_tenants
+        )
 
     async def revoke_multiple_sessions(
         self, session_handles: List[str], user_context: Dict[str, Any]
@@ -383,9 +400,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         if session_info is None:
             return False
 
-        # TODO: Pass tenant id
         access_token_payload_update = await claim.build(
-            session_info.user_id, "pass-tenant-id", user_context
+            session_info.user_id, session_info.tenant_id, user_context
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context
@@ -463,5 +479,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             response["session"]["handle"],
             response["session"]["userId"],
             response["session"]["userDataInJWT"],
+            response["session"]["tenantId"],
         )
         return RegenerateAccessTokenOkResult(session, access_token_obj)

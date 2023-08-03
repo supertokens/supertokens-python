@@ -21,7 +21,7 @@ _ = teardown_function  # type:ignore
 pytestmark = pytest.mark.asyncio
 
 
-async def test_access_token_v3():
+async def test_access_token_v4():
     init(**get_st_init_args([session.init()]))  # type:ignore
     start_st()
 
@@ -39,6 +39,7 @@ async def test_access_token_v3():
         False,
     )
     assert res["userId"] == "user-id"
+    assert parsed_info.version == 4
 
 
 async def test_parsing_access_token_v2():

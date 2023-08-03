@@ -133,6 +133,9 @@ class Session(SessionContainer):
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.user_id
 
+    def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        return self.tenant_id
+
     def get_access_token_payload(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -> Dict[str, Any]:

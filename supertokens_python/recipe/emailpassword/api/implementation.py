@@ -183,6 +183,7 @@ class APIImplementation(APIInterface):
             user.user_id,
             access_token_payload={},
             session_data_in_database={},
+            tenant_id=tenant_id,
             user_context=user_context,
         )
         return SignInPostOkResult(user, session)
@@ -223,6 +224,7 @@ class APIImplementation(APIInterface):
             user.user_id,
             access_token_payload={},
             session_data_in_database={},
+            tenant_id=tenant_id,
             user_context=user_context,
         )
         return SignUpPostOkResult(user, session)

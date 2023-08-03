@@ -307,6 +307,7 @@ class APIImplementation(APIInterface):
             user.user_id,
             {},
             {},
+            tenant_id,
             user_context=user_context,
         )
 

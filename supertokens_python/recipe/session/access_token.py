@@ -24,6 +24,8 @@ from supertokens_python.utils import get_timestamp_ms
 from .exceptions import raise_try_refresh_token_exception
 from .jwt import ParsedJWTInfo
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 
 def sanitize_string(s: Any) -> Union[str, None]:
     if s == "":
@@ -102,6 +104,10 @@ def get_info_from_access_token(
             payload.get("parentRefreshTokenHash1")
         )
         anti_csrf_token = sanitize_string(payload.get("antiCsrfToken"))
+        tenant_id = DEFAULT_TENANT_ID
+
+        if jwt_info.version >= 4:
+            tenant_id = sanitize_string(payload.get("tId"))
 
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
@@ -120,6 +126,7 @@ def get_info_from_access_token(
             "antiCsrfToken": anti_csrf_token,
             "expiryTime": expiry_time,
             "timeCreated": time_created,
+            "tenantId": tenant_id,
         }
     except Exception as e:
         log_debug_message(
@@ -145,6 +152,13 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
             raise Exception(
                 "Access token does not contain all the information. Maybe the structure has changed?"
             )
+
+        if version >= 4:
+            if not isinstance(payload.get("tId"), str):
+                raise Exception(
+                    "Access token does not contain all the information. Maybe the structure has changed?"
+                )
+
     elif (
         not isinstance(payload.get("sessionHandle"), str)
         or payload.get("userData") is None

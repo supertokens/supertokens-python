@@ -217,6 +217,7 @@ async def create_new_session_in_request(
     config: SessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
+    tenant_id: str,
 ) -> SessionContainer:
     log_debug_message("createNewSession: Started")
 
@@ -238,8 +239,7 @@ async def create_new_session_in_request(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        # TODO: Pass tenant id
-        update = await claim.build(user_id, "pass-tenant-id", user_context)
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     log_debug_message("createNewSession: Access token payload built")
@@ -280,6 +280,7 @@ async def create_new_session_in_request(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )
 
