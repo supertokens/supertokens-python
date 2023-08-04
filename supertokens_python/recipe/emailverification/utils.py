@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -23,16 +23,15 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
-from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from typing import Awaitable, Callable, Union
+    from typing import Callable, Union
 
     from supertokens_python.supertokens import AppInfo
 
     from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
-    from .types import EmailTemplateVars, User, VerificationEmailTemplateVars
+    from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
 
 class OverrideConfig:

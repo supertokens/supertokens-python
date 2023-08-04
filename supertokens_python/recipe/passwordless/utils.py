@@ -49,7 +49,7 @@ from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compat
 )
 
 
-async def default_validate_phone_number(value: str, tenant_id: str):
+async def default_validate_phone_number(value: str, _tenant_id: str):
     try:
         parsed_phone_number: Any = parse(value, None)
         if not is_valid_number(parsed_phone_number):

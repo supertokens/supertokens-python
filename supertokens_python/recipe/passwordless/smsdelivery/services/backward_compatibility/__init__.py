@@ -14,7 +14,7 @@
 
 import json
 from os import environ
-from typing import Any, Awaitable, Callable, Dict, Union
+from typing import Any, Dict
 
 from httpx import AsyncClient, HTTPStatusError, Response
 from supertokens_python.ingredients.smsdelivery.services.supertokens import (

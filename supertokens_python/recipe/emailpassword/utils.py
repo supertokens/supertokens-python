@@ -38,11 +38,11 @@ from .constants import (
 )
 
 
-async def default_validator(_: str) -> Union[str, None]:
+async def default_validator(_: str, __: str) -> Union[str, None]:
     return None
 
 
-async def default_password_validator(value: str) -> Union[str, None]:
+async def default_password_validator(_: str, value: str) -> Union[str, None]:
     # length >= 8 && < 100
     # must have a number and a character
     # as per
@@ -62,7 +62,7 @@ async def default_password_validator(value: str) -> Union[str, None]:
     return None
 
 
-async def default_email_validator(value: Any) -> Union[str, None]:
+async def default_email_validator(_: str, value: Any) -> Union[str, None]:
     # We check if the email syntax is correct
     # As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     # Regex from https://stackoverflow.com/a/46181/3867175

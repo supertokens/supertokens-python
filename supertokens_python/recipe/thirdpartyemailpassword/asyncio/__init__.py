@@ -173,12 +173,18 @@ async def update_email_or_password(
     email: Union[None, str] = None,
     password: Union[None, str] = None,
     apply_password_policy: Union[bool, None] = None,
+    tenant_id_for_password_policy: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(
-        user_id, email, password, apply_password_policy, user_context
+        user_id,
+        email,
+        password,
+        apply_password_policy,
+        tenant_id_for_password_policy or DEFAULT_TENANT_ID,
+        user_context,
     )
 
 

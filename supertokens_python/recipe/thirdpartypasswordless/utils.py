@@ -24,11 +24,6 @@ from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig,
     SMSDeliveryConfigWithService,
 )
-from supertokens_python.recipe.passwordless import (
-    ContactEmailOnlyConfig,
-    ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig,
-)
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
@@ -38,8 +33,6 @@ from typing_extensions import Literal
 
 from ..passwordless.utils import (
     ContactConfig,
-    ContactEmailOnlyConfig,
-    ContactEmailOrPhoneConfig,
 )
 
 if TYPE_CHECKING:

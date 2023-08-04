@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -24,7 +24,6 @@ from supertokens_python.recipe.emailverification.exceptions import (
 from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars,
     EmailVerificationIngredients,
-    User,
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
@@ -206,7 +205,7 @@ class EmailVerificationRecipe(RecipeModule):
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
         override: Union[OverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        def func(app_info: AppInfo) -> EmailVerificationRecipe:
             if EmailVerificationRecipe.__instance is None:
                 ingredients = EmailVerificationIngredients(email_delivery=None)
                 EmailVerificationRecipe.__instance = EmailVerificationRecipe(
@@ -231,7 +230,7 @@ class EmailVerificationRecipe(RecipeModule):
                 PostSTInitCallbacks.add_post_init_callback(callback)
 
                 return EmailVerificationRecipe.__instance
-            raise_general_exception(
+            return raise_general_exception(
                 "Emailverification recipe has already been initialised. Please check your code for bugs."
             )
 

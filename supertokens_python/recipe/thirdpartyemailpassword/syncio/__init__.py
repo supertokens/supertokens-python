@@ -166,6 +166,7 @@ def update_email_or_password(
     email: Union[None, str] = None,
     password: Union[None, str] = None,
     apply_password_policy: Union[bool, None] = None,
+    tenant_id_for_password_policy: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -174,7 +175,12 @@ def update_email_or_password(
 
     return sync(
         update_email_or_password(
-            user_id, email, password, apply_password_policy, user_context
+            user_id,
+            email,
+            password,
+            apply_password_policy,
+            tenant_id_for_password_policy,
+            user_context,
         )
     )
 

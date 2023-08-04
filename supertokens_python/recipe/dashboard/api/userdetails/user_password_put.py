@@ -96,7 +96,9 @@ async def handle_user_password_put(
             field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
         ][0]
 
-        password_validation_error = await password_form_field.validate(new_password)
+        password_validation_error = await password_form_field.validate(
+            new_password, tenant_id
+        )
 
         if password_validation_error is not None:
             return UserPasswordPutAPIInvalidPasswordErrorResponse(
