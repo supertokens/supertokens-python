@@ -27,7 +27,7 @@ from supertokens_python.recipe.thirdparty.asyncio import (
 )
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
-from tests.sessions.claims.utils import get_st_init_args
+from tests.utils import get_st_init_args
 from tests.utils import setup_function, teardown_function, setup_multitenancy_feature
 
 
@@ -40,7 +40,7 @@ pytestmark = mark.asyncio
 async def test_multitenancy_functions():
     # test that different roles can be assigned for the same user for each tenant
     args = get_st_init_args([session.init(), thirdparty.init(), multitenancy.init()])
-    init(**args)
+    init(**args) # type: ignore
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))

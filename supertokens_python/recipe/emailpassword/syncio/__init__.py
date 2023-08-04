@@ -51,7 +51,7 @@ def get_user_by_id(
 
 def get_user_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[None, User]:
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
@@ -61,7 +61,7 @@ def get_user_by_email(
 
 def create_reset_password_token(
     user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
@@ -74,7 +74,7 @@ def create_reset_password_token(
 def reset_password_using_token(
     token: str,
     new_password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
@@ -89,7 +89,7 @@ def reset_password_using_token(
 def sign_in(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
     from supertokens_python.recipe.emailpassword.asyncio import sign_in
@@ -100,7 +100,7 @@ def sign_in(
 def sign_up(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up

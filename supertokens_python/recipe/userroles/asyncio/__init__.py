@@ -18,9 +18,9 @@ from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 
 
 async def add_role_to_user(
-    tenant_id: Optional[str],
     user_id: str,
     role: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
     if user_context is None:
@@ -31,9 +31,9 @@ async def add_role_to_user(
 
 
 async def remove_user_role(
-    tenant_id: Optional[str],
     user_id: str,
     role: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
     if user_context is None:
@@ -44,8 +44,8 @@ async def remove_user_role(
 
 
 async def get_roles_for_user(
-    tenant_id: Optional[str],
     user_id: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[Dict[str, Any], None] = None,
 ) -> GetRolesForUserOkResult:
     if user_context is None:
@@ -58,8 +58,8 @@ async def get_roles_for_user(
 
 
 async def get_users_that_have_role(
-    tenant_id: Optional[str],
     role: str,
+    tenant_id: Optional[str] = None,
     user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
