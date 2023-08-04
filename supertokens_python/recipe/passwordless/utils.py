@@ -58,7 +58,7 @@ async def default_validate_phone_number(value: str, _tenant_id: str):
         return "Phone number is invalid"
 
 
-async def default_validate_email(value: str, tenant_id: str):
+async def default_validate_email(value: str, _tenant_id: str):
     pattern = r"^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$"
     if fullmatch(pattern, value) is None:
         return "Email is invalid"
