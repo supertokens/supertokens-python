@@ -69,16 +69,8 @@ def validate_and_normalise_user_input(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    create_and_send_custom_email: Union[
-        Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-    ] = None,
     override: Union[OverrideConfig, None] = None,
 ) -> EmailVerificationConfig:
-    if create_and_send_custom_email:
-        deprecated_warn(
-            "create_and_send_custom_email is deprecated. Please use email delivery config instead"
-        )
-
     if mode not in ["REQUIRED", "OPTIONAL"]:
         raise ValueError(
             "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
@@ -89,9 +81,7 @@ def validate_and_normalise_user_input(
     ]:
         email_service = email_delivery.service if email_delivery is not None else None
         if email_service is None:
-            email_service = BackwardCompatibilityService(
-                app_info, create_and_send_custom_email
-            )
+            email_service = BackwardCompatibilityService(app_info)
 
         if email_delivery is not None and email_delivery.override is not None:
             override = email_delivery.override

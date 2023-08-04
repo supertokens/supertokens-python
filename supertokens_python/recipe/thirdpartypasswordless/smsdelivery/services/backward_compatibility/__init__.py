@@ -12,14 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Awaitable, Callable, Dict, Union
+from typing import Any, Dict
 
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryInterface
 from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import (
     BackwardCompatibilityService as PlessBackwardCompatibilityService,
-)
-from supertokens_python.recipe.passwordless.types import (
-    PasswordlessLoginSMSTemplateVars,
 )
 from supertokens_python.supertokens import AppInfo
 
@@ -32,15 +29,9 @@ class BackwardCompatibilityService(SMSDeliveryInterface[SMSTemplateVars]):
     def __init__(
         self,
         app_info: AppInfo,
-        pless_create_and_send_custom_text_message: Union[
-            Callable[
-                [PasswordlessLoginSMSTemplateVars, Dict[str, Any]], Awaitable[None]
-            ],
-            None,
-        ] = None,
     ) -> None:
         self.pless_backward_compatibility_service = PlessBackwardCompatibilityService(
-            app_info, pless_create_and_send_custom_text_message
+            app_info
         )
 
     async def send_sms(

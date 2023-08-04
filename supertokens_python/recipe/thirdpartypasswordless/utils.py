@@ -88,7 +88,7 @@ class ThirdPartyPasswordlessConfig:
             [], SMSDeliveryConfigWithService[SMSTemplateVars]
         ],
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
     ):
         self.providers = providers
@@ -109,7 +109,7 @@ def validate_and_normalise_user_input(
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
     ],
     get_custom_user_input_code: Union[
-        Callable[[Dict[str, Any]], Awaitable[str]], None
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ] = None,
     override: Union[InputOverrideConfig, None] = None,
     providers: Union[List[ProviderInput], None] = None,
@@ -144,18 +144,9 @@ def validate_and_normalise_user_input(
         EmailTemplateVars
     ]:
         email_service = email_delivery.service if email_delivery is not None else None
-        if isinstance(
-            contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            create_and_send_custom_email = contact_config.create_and_send_custom_email
-        else:
-            create_and_send_custom_email = None
 
         if email_service is None:
-            email_service = BackwardCompatibilityService(
-                recipe.app_info,
-                create_and_send_custom_email,
-            )
+            email_service = BackwardCompatibilityService(recipe.app_info)
 
         if email_delivery is not None and email_delivery.override is not None:
             override = email_delivery.override
@@ -170,19 +161,7 @@ def validate_and_normalise_user_input(
                 service=sms_delivery.service, override=sms_delivery.override
             )
 
-        if isinstance(
-            contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            pless_create_and_send_custom_text_message = (
-                contact_config.create_and_send_custom_text_message
-            )
-        else:
-            pless_create_and_send_custom_text_message = None
-
-        sms_service = SMSBackwardCompatibilityService(
-            recipe.app_info,
-            pless_create_and_send_custom_text_message,
-        )
+        sms_service = SMSBackwardCompatibilityService(recipe.app_info)
 
         if sms_delivery is not None and sms_delivery.override is not None:
             override = sms_delivery.override

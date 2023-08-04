@@ -75,7 +75,9 @@ async def create_code(
     ):
         email = email.strip()
         validation_error = (
-            await api_options.config.contact_config.validate_email_address(email)
+            await api_options.config.contact_config.validate_email_address(
+                email, tenant_id
+            )
         )
         if validation_error is not None:
             api_options.response.set_json_content(
@@ -90,7 +92,9 @@ async def create_code(
         )
     ):
         validation_error = (
-            await api_options.config.contact_config.validate_phone_number(phone_number)
+            await api_options.config.contact_config.validate_phone_number(
+                phone_number, tenant_id
+            )
         )
         if validation_error is not None:
             api_options.response.set_json_content(

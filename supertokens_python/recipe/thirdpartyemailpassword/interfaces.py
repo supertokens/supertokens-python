@@ -189,6 +189,7 @@ class RecipeInterface(ABC):
         email: Union[str, None],
         password: Union[str, None],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,

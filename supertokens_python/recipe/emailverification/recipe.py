@@ -92,9 +92,6 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
         override: Union[OverrideConfig, None] = None,
     ) -> None:
         super().__init__(recipe_id, app_info)
@@ -103,7 +100,6 @@ class EmailVerificationRecipe(RecipeModule):
             mode,
             email_delivery,
             get_email_for_user_id,
-            create_and_send_custom_email,
             override,
         )
 
@@ -208,9 +204,6 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
         override: Union[OverrideConfig, None] = None,
     ):
         def func(app_info: AppInfo):
@@ -223,7 +216,6 @@ class EmailVerificationRecipe(RecipeModule):
                     mode,
                     email_delivery,
                     get_email_for_user_id,
-                    create_and_send_custom_email,
                     override,
                 )
 

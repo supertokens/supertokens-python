@@ -133,7 +133,7 @@ class ProviderConfigForClientType:
         user_info_map: Optional[UserInfoMap] = None,
         require_email: bool = True,
         generate_fake_email: Optional[
-            Callable[[str, Dict[str, Any]], Awaitable[str]]
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
         validate_id_token_payload: Optional[
             Callable[
@@ -227,7 +227,7 @@ class ProviderConfig:
             ]
         ] = None,
         generate_fake_email: Optional[
-            Callable[[str, Dict[str, Any]], Awaitable[str]]
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
     ):
         self.third_party_id = third_party_id

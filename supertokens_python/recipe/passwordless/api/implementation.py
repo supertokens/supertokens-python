@@ -59,7 +59,7 @@ class APIImplementation(APIInterface):
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(
-                user_context
+                tenant_id, user_context
             )
         response = await api_options.recipe_implementation.create_code(
             email, phone_number, user_input_code, tenant_id, user_context
@@ -155,7 +155,7 @@ class APIImplementation(APIInterface):
             user_input_code = None
             if api_options.config.get_custom_user_input_code is not None:
                 user_input_code = await api_options.config.get_custom_user_input_code(
-                    user_context
+                    tenant_id, user_context
                 )
             response = (
                 await api_options.recipe_implementation.create_new_code_for_device(
