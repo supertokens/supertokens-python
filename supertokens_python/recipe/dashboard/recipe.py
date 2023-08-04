@@ -13,12 +13,11 @@
 # under the License.
 from __future__ import annotations
 
-import re
 from os import environ
 from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import APIHandled, RecipeModule, ApiIdWithTenantId
+from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
     api_key_protector,
@@ -47,7 +46,6 @@ from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
 from .interfaces import APIInterface, APIOptions
 from .recipe_implementation import RecipeImplementation
-from ..multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -56,7 +54,7 @@ if TYPE_CHECKING:
     from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.dashboard.utils import get_api_path_with_dashboard_base
 
 from .constants import (
     DASHBOARD_ANALYTICS_API,
@@ -77,8 +75,6 @@ from .constants import (
 )
 from .utils import (
     InputOverrideConfig,
-    get_api_if_matched,
-    is_api_path,
     validate_and_normalise_user_input,
 )
 
@@ -119,14 +115,140 @@ class DashboardRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
-        # Normally this array is used by the SDK to decide whether the recipe
-        # handles a specific API path and method and then returns the ID.
-
-        # However, for the dashboard recipe this logic is fully custom and handled inside the
-        # `return_api_id_if_can_handle_request` method of this class. Since this array is never
-        # used for this recipe, we simply return an empty array.
-
-        return []
+        return [
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base("/")),
+                "get",
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(EMAIL_PASSWORD_SIGN_IN)
+                ),
+                "post",
+                EMAIL_PASSWORD_SIGN_IN,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(VALIDATE_KEY_API)),
+                "post",
+                VALIDATE_KEY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(EMAIL_PASSSWORD_SIGNOUT)
+                ),
+                "post",
+                EMAIL_PASSSWORD_SIGNOUT,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERS_LIST_GET_API)),
+                "get",
+                USERS_LIST_GET_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERS_COUNT_API)),
+                "get",
+                USERS_COUNT_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "get",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "post",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "put",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "delete",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                ),
+                "get",
+                USER_EMAIL_VERIFY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                ),
+                "put",
+                USER_EMAIL_VERIFY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_METADATA_API)),
+                "get",
+                USER_METADATA_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_METADATA_API)),
+                "put",
+                USER_METADATA_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_SESSION_API)),
+                "get",
+                USER_SESSION_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_PASSWORD_API)),
+                "put",
+                USER_PASSWORD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                ),
+                "post",
+                USER_EMAIL_VERIFY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(SEARCH_TAGS_API)),
+                "get",
+                SEARCH_TAGS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(DASHBOARD_ANALYTICS_API)
+                ),
+                "post",
+                DASHBOARD_ANALYTICS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANTS_LIST_API)),
+                "get",
+                TENANTS_LIST_API,
+                False,
+            ),
+        ]
 
     async def handle_api_request(
         self,
@@ -261,70 +383,3 @@ class DashboardRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         DashboardRecipe.__instance = None
-
-    async def return_api_id_if_can_handle_request(
-        self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
-    ) -> Union[ApiIdWithTenantId, None]:
-        dashboard_bundle_path = self.app_info.api_base_path.append(
-            NormalisedURLPath(DASHBOARD_API)
-        )
-
-        base_path_str = self.app_info.api_base_path.get_as_string_dangerous()
-        path_str = path.get_as_string_dangerous()
-        regex = rf"^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$"
-        # some examples against for above regex:
-        # books => match = None
-        # public/books => match = None
-        # /books => match.group(1) = None, match.group(2) = /dashboard
-        # /public/books => match.group(1) = 'public', match.group(2) = '/books'
-        # /public/book/1 => match.group(1) = 'public', match.group(2) = '/book/1'
-
-        match = re.match(regex, path_str)
-        match_group_1 = match.group(1) if match is not None else None
-        match_group_2 = match.group(2) if match is not None else None
-
-        tenant_id: str = DEFAULT_TENANT_ID
-        remaining_path: Optional[NormalisedURLPath] = None
-
-        if (
-            match is not None
-            and isinstance(match_group_1, str)
-            and isinstance(match_group_2, str)
-        ):
-            tenant_id = match_group_1
-            remaining_path = NormalisedURLPath(match_group_2)
-
-        mt_recipe = MultitenancyRecipe.get_instance()
-
-        if is_api_path(path, self.app_info.api_base_path) or (
-            remaining_path is not None
-            and is_api_path(
-                path,
-                self.app_info.api_base_path.append(NormalisedURLPath(f"/{tenant_id}")),
-            )
-        ):
-            # check remainingPath first as path that contains tenantId might match as well
-            # since getApiIdIfMatched uses endsWith to match
-            if remaining_path is not None:
-                id_ = get_api_if_matched(remaining_path, method)
-                if id_ is not None:
-                    final_tenant_id = (
-                        await mt_recipe.recipe_implementation.get_tenant_id(
-                            DEFAULT_TENANT_ID if tenant_id is None else tenant_id,
-                            user_context,
-                        )
-                    )
-                    return ApiIdWithTenantId(id_, final_tenant_id)
-
-            id_ = get_api_if_matched(path, method)
-            if id_ is not None:
-                final_tenant_id = await mt_recipe.recipe_implementation.get_tenant_id(
-                    DEFAULT_TENANT_ID, user_context
-                )
-                return ApiIdWithTenantId(id_, final_tenant_id)
-
-        if path.startswith(dashboard_bundle_path):
-            return ApiIdWithTenantId(DASHBOARD_API, DEFAULT_TENANT_ID)
-
-        # tenantId is not supported for bundlePath, so not matching for it
-        return None
