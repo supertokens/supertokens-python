@@ -25,7 +25,11 @@ from supertokens_python.recipe.emailpassword.asyncio import (
     create_reset_password_token,
     reset_password_using_token,
 )
-from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult, SignInOkResult, CreateResetPasswordOkResult
+from supertokens_python.recipe.emailpassword.interfaces import (
+    SignUpOkResult,
+    SignInOkResult,
+    CreateResetPasswordOkResult,
+)
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from tests.utils import get_st_init_args
@@ -48,7 +52,7 @@ async def test_multitenancy_in_user_roles():
             multitenancy.init(),
         ]
     )
-    init(**args) # type: ignore
+    init(**args)  # type: ignore
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
