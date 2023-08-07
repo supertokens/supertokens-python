@@ -22,8 +22,8 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordWrongUserIdError,
     CreateResetPasswordLinkUknownUserIdError,
     CreateResetPasswordLinkOkResult,
-    CreateResetPasswordEmailOkResult,
-    CreateResetPasswordEmailUnknownUserIdError,
+    SendResetPasswordEmailOkResult,
+    SendResetPasswordEmailUnknownUserIdError,
 )
 from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
 from supertokens_python.recipe.emailpassword.types import (
@@ -159,7 +159,7 @@ async def send_reset_password_email(
 ):
     link = await create_reset_password_link(user_id, tenant_id, user_context)
     if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
-        return CreateResetPasswordEmailUnknownUserIdError()
+        return SendResetPasswordEmailUnknownUserIdError()
 
     user = await get_user_by_id(user_id, user_context)
     assert user is not None
@@ -173,4 +173,4 @@ async def send_reset_password_email(
         user_context,
     )
 
-    return CreateResetPasswordEmailOkResult()
+    return SendResetPasswordEmailOkResult()

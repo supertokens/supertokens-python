@@ -66,11 +66,11 @@ class CreateResetPasswordLinkUknownUserIdError:
     pass
 
 
-class CreateResetPasswordEmailOkResult:
+class SendResetPasswordEmailOkResult:
     pass
 
 
-class CreateResetPasswordEmailUnknownUserIdError:
+class SendResetPasswordEmailUnknownUserIdError:
     pass
 
 
