@@ -47,6 +47,8 @@ ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
 SMTPService = emaildelivery_services.SMTPService
 TwilioService = smsdelivery_services.TwilioService
 SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
+EmailDeliveryInterface = types.EmailDeliveryInterface
+SMSDeliveryInterface = types.SMSDeliveryInterface
 
 
 def init(

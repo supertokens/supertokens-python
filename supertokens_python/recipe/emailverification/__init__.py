@@ -19,6 +19,7 @@ from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
 from . import recipe
+from . import types
 from .interfaces import TypeGetEmailForUserIdFunction
 from .recipe import EmailVerificationRecipe
 from .types import EmailTemplateVars
@@ -28,6 +29,7 @@ InputOverrideConfig = utils.OverrideConfig
 exception = ex
 SMTPService = emaildelivery_services.SMTPService
 EmailVerificationClaim = recipe.EmailVerificationClaim
+EmailDeliveryInterface = types.EmailDeliveryInterface
 
 
 if TYPE_CHECKING:

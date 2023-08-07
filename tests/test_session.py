@@ -90,7 +90,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     if not isinstance(s.recipe_implementation, RecipeImplementation):
         raise Exception("Should never come here")
 
-    response = await create_new_session(s.recipe_implementation, "", False, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "", False, {}, {}, "public"
+    )
 
     assert response.session is not None
     assert response.accessToken is not None
@@ -187,11 +189,16 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     access_tokens: List[str] = []
     for _ in range(7):
         new_session = await create_new_session(
-            s.recipe_implementation, "someUser", False, {"someKey": "someValue"}, {}
+            s.recipe_implementation,
+            "someUser",
+            False,
+            {"someKey": "someValue"},
+            {},
+            "public",
         )
         access_tokens.append(new_session.accessToken.token)
 
-    session_handles = await get_all_session_handles_for_user("someUser")
+    session_handles = await get_all_session_handles_for_user("someUser", "public")
 
     assert len(session_handles) == 7
 
@@ -274,7 +281,9 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
         raise Exception("Should never come here")
     user_id = "user_id"
 
-    response = await create_new_session(s.recipe_implementation, user_id, False, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, False, {}, {}, None
+    )
 
     session_handle = response.session.handle
 

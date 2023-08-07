@@ -89,7 +89,7 @@ async def test_update_email_or_password_with_default_validator(
 async def test_update_email_or_password_with_custom_validator(
     driver_config_client: TestClient,
 ):
-    async def validate_pass(value: Any):
+    async def validate_pass(value: Any, _tenant_id: str):
         # Validation method to make sure that age >= 18
         if len(value) < 3:
             return "Password should be at least 3 chars long"

@@ -210,6 +210,16 @@ async def send_text_message(
 
 @pytest.mark.asyncio
 async def test_init_validation_passwordless():
+    class CustomSMSDeliveryService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
+    ):
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
     with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -218,8 +228,9 @@ async def test_init_validation_passwordless():
             recipe_list=[
                 passwordless.init(
                     flow_type="USER_INPUT_CODE",
-                    contact_config=passwordless.ContactPhoneOnlyConfig(
-                        create_and_send_custom_text_message=send_text_message
+                    contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    sms_delivery=passwordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
                     ),
                 )
             ],
@@ -239,8 +250,9 @@ async def test_init_validation_passwordless():
             recipe_list=[
                 passwordless.init(
                     flow_type="SOME_OTHER_CODE",  # type: ignore
-                    contact_config=passwordless.ContactPhoneOnlyConfig(
-                        create_and_send_custom_text_message=send_text_message
+                    contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    sms_delivery=passwordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
                     ),
                 )
             ],
@@ -282,8 +294,9 @@ async def test_init_validation_passwordless():
             recipe_list=[
                 passwordless.init(
                     flow_type="USER_INPUT_CODE",
-                    contact_config=passwordless.ContactPhoneOnlyConfig(
-                        create_and_send_custom_text_message=send_text_message
+                    contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    sms_delivery=passwordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
                     ),
                     override="override",  # type: ignore
                 )
@@ -565,6 +578,30 @@ async def test_init_validation_thirdpartypasswordless():
         )
     assert "contact_config must be an instance of ContactConfig" == str(ex.value)
 
+    class CustomEmailDeliveryService(
+        thirdpartypasswordless.EmailDeliveryInterface[
+            thirdpartypasswordless.EmailTemplateVars
+        ]
+    ):
+        async def send_email(
+            self,
+            template_vars: thirdpartypasswordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
+    class CustomSMSDeliveryService(
+        thirdpartypasswordless.SMSDeliveryInterface[
+            thirdpartypasswordless.SMSTemplateVars
+        ]
+    ):
+        async def send_sms(
+            self,
+            template_vars: thirdpartypasswordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
     with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -577,11 +614,14 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="CUSTOM",  # type: ignore
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                 )
             ],
         )
@@ -605,11 +645,14 @@ async def test_init_validation_thirdpartypasswordless():
                     "email verify",  # type: ignore
                 ),
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                 ),
             ],
         )
@@ -630,11 +673,14 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                     override="override",  # type: ignore
                 )
             ],
@@ -655,11 +701,14 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                     providers="providers",  # type: ignore
                 )
             ],
@@ -678,12 +727,15 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers=["providers"],  # type: ignore
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                 )
             ],
         )

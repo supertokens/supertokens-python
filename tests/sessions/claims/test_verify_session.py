@@ -370,6 +370,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:
         mock.side_effect = lambda _, __: raise_invalid_claims_exception(  # type: ignore
@@ -418,6 +419,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:

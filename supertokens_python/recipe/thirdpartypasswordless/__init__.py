@@ -27,6 +27,8 @@ from .emaildelivery import services as emaildelivery_services
 from .recipe import ThirdPartyPasswordlessRecipe
 from .smsdelivery import services as smsdelivery_services
 from .types import EmailTemplateVars, SMSTemplateVars
+from supertokens_python.ingredients.emaildelivery import types as emaildelivery_types
+from supertokens_python.ingredients.smsdelivery import types as smsdelivery_types
 
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
@@ -42,6 +44,8 @@ ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
 ProviderConfigForClientType = provider.ProviderConfigForClientType
+EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
+SMSDeliveryInterface = smsdelivery_types.SMSDeliveryInterface
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

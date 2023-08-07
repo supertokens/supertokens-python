@@ -41,6 +41,7 @@ async def test_should_merge_the_right_value(timestamp: int):
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
     with patch.object(
         Session,

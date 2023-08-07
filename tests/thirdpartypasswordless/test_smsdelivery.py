@@ -251,14 +251,19 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     url_with_link_code = ""
     user_input_code = ""
 
-    async def create_and_send_custom_text_message(
-        input_: PasswordlessLoginSMSTemplateVars, _: Dict[str, Any]
+    class CustomPasswordlessSMSService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
     ):
-        nonlocal phone, code_lifetime, url_with_link_code, user_input_code
-        phone = input_.phone_number
-        code_lifetime = input_.code_life_time
-        url_with_link_code = input_.url_with_link_code
-        user_input_code = input_.user_input_code
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal phone, code_lifetime, url_with_link_code, user_input_code
+            phone = template_vars.phone_number
+            code_lifetime = template_vars.code_life_time
+            url_with_link_code = template_vars.url_with_link_code
+            user_input_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -271,10 +276,11 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         framework="fastapi",
         recipe_list=[
             thirdpartypasswordless.init(
-                contact_config=passwordless.ContactPhoneOnlyConfig(
-                    create_and_send_custom_text_message=create_and_send_custom_text_message,
-                ),
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                sms_delivery=passwordless.SMSDeliveryConfig(
+                    CustomPasswordlessSMSService()
+                ),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
