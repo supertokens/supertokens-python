@@ -330,7 +330,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         user_id: str,
         tenant_id: Optional[str],
-        revoke_across_all_tenants: Optional[bool],
+        revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -> List[str]:
         return await session_functions.revoke_all_sessions_for_user(
@@ -341,7 +341,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         user_id: str,
         tenant_id: Optional[str],
-        fetch_across_all_tenants: Optional[bool],
+        fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -> List[str]:
         return await session_functions.get_all_session_handles_for_user(
