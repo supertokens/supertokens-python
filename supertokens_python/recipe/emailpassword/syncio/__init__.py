@@ -109,3 +109,27 @@ def send_email(
     from supertokens_python.recipe.emailpassword.asyncio import send_email
 
     return sync(send_email(input_, user_context))
+
+
+def create_reset_password_link(
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        create_reset_password_link,
+    )
+
+    return sync(create_reset_password_link(user_id, tenant_id, user_context))
+
+
+def send_reset_password_email(
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        send_reset_password_email,
+    )
+
+    return sync(send_reset_password_email(user_id, tenant_id, user_context))

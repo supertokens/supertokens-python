@@ -40,6 +40,7 @@ from supertokens_python.recipe.emailpassword.types import (
     PasswordResetEmailTemplateVars,
     PasswordResetEmailTemplateVarsUser,
 )
+from ..utils import get_password_reset_link
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.utils import find_first_occurrence_in_list
 
@@ -95,16 +96,8 @@ class APIImplementation(APIInterface):
             )
             return GeneratePasswordResetTokenPostOkResult()
 
-        token = token_result.token
-        password_reset_link = (
-            api_options.app_info.website_domain.get_as_string_dangerous()
-            + api_options.app_info.website_base_path.get_as_string_dangerous()
-            + "/reset-password?token="
-            + token
-            + "&rid="
-            + api_options.recipe_id
-            + "&tenantId="
-            + tenant_id
+        password_reset_link = get_password_reset_link(
+            api_options.app_info, token_result.token, api_options.recipe_id, tenant_id
         )
 
         log_debug_message("Sending password reset email to %s", email)

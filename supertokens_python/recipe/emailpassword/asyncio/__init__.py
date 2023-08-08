@@ -18,6 +18,19 @@ from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from ..types import EmailTemplateVars, User
 from ...multitenancy.constants import DEFAULT_TENANT_ID
 
+from supertokens_python.recipe.emailpassword.interfaces import (
+    CreateResetPasswordWrongUserIdError,
+    CreateResetPasswordLinkUknownUserIdError,
+    CreateResetPasswordLinkOkResult,
+    SendResetPasswordEmailOkResult,
+    SendResetPasswordEmailUnknownUserIdError,
+)
+from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
+from supertokens_python.recipe.emailpassword.types import (
+    PasswordResetEmailTemplateVars,
+    PasswordResetEmailTemplateVarsUser,
+)
+
 
 async def update_email_or_password(
     user_id: str,
@@ -117,3 +130,47 @@ async def send_email(
     return await EmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
         input_, user_context
     )
+
+
+async def create_reset_password_link(
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    token = await create_reset_password_token(user_id, tenant_id, user_context)
+    if isinstance(token, CreateResetPasswordWrongUserIdError):
+        return CreateResetPasswordLinkUknownUserIdError()
+
+    recipe_instance = EmailPasswordRecipe.get_instance()
+    return CreateResetPasswordLinkOkResult(
+        link=get_password_reset_link(
+            recipe_instance.get_app_info(),
+            recipe_instance.get_recipe_id(),
+            token.token,
+            tenant_id or DEFAULT_TENANT_ID,
+        )
+    )
+
+
+async def send_reset_password_email(
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    link = await create_reset_password_link(user_id, tenant_id, user_context)
+    if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
+        return SendResetPasswordEmailUnknownUserIdError()
+
+    user = await get_user_by_id(user_id, user_context)
+    assert user is not None
+
+    await send_email(
+        PasswordResetEmailTemplateVars(
+            PasswordResetEmailTemplateVarsUser(user.user_id, user.email),
+            link.link,
+            tenant_id,
+        ),
+        user_context,
+    )
+
+    return SendResetPasswordEmailOkResult()

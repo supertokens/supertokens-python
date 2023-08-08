@@ -324,3 +324,18 @@ def validate_and_normalise_user_input(
         OverrideConfig(functions=override.functions, apis=override.apis),
         get_email_delivery_config=get_email_delivery_config,
     )
+
+
+def get_password_reset_link(
+    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str
+) -> str:
+    return (
+        app_info.website_domain.get_as_string_dangerous()
+        + app_info.website_base_path.get_as_string_dangerous()
+        + "/reset-password?token="
+        + token
+        + "&rid="
+        + recipe_id
+        + "&tenantId="
+        + tenant_id
+    )
