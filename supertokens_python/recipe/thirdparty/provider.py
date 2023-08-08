@@ -226,7 +226,7 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
         force_pkce: bool = False,
         additional_config: Optional[Dict[str, Any]] = None,
         # CommonProviderConfig:
-        third_party_id: Optional[str] = None,
+        third_party_id: str = "temp",
         name: Optional[str] = None,
         authorization_endpoint: Optional[str] = None,
         authorization_endpoint_query_params: Optional[
@@ -262,7 +262,7 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
         )
         CommonProviderConfig.__init__(
             self,
-            third_party_id or "", # FIXME?
+            third_party_id,
             name,
             authorization_endpoint,
             authorization_endpoint_query_params,
