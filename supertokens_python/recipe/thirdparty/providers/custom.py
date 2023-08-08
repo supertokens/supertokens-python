@@ -43,6 +43,7 @@ def get_provider_config_for_client(
         force_pkce=client_config.force_pkce,
         additional_config=client_config.additional_config,
         # CommonProviderConfig
+        third_party_id=config.third_party_id,
         name=config.name,
         authorization_endpoint=config.authorization_endpoint,
         authorization_endpoint_query_params=config.authorization_endpoint_query_params,

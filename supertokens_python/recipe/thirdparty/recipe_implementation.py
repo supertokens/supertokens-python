@@ -77,7 +77,7 @@ class RecipeImplementation(RecipeInterface):
                     user["id"],
                     user["email"],
                     user["timeJoined"],
-                    response["user"]["tenantIds"],
+                    user["tenantIds"],
                     ThirdPartyInfo(
                         user["thirdParty"]["userId"], user["thirdParty"]["id"]
                     ),

@@ -166,6 +166,8 @@ def merge_providers_from_core_and_static(
                     merged_provider_input.override = provider_input_from_static.override
                     break
 
+            merged_providers.append(merged_provider_input)
+
     return merged_providers
 
 
