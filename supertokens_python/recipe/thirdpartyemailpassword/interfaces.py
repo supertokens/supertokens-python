@@ -21,9 +21,9 @@ CreateResetPasswordLinkOkResult = EPInterfaces.CreateResetPasswordLinkOkResult
 CreateResetPasswordLinkUknownUserIdError = (
     EPInterfaces.CreateResetPasswordLinkUknownUserIdError
 )
-CreateResetPasswordEmailOkResult = EPInterfaces.CreateResetPasswordEmailOkResult
-CreateResetPasswordEmailUnknownUserIdError = (
-    EPInterfaces.CreateResetPasswordEmailUnknownUserIdError
+SendResetPasswordEmailEmailOkResult = EPInterfaces.SendResetPasswordEmailOkResult
+SendResetPasswordEmailUnknownUserIdError = (
+    EPInterfaces.SendResetPasswordEmailUnknownUserIdError
 )
 EmailPasswordEmailExistsGetOkResult = EPInterfaces.EmailExistsGetOkResult
 GeneratePasswordResetTokenPostOkResult = (

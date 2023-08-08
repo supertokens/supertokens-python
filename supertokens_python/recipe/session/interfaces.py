@@ -219,7 +219,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         user_id: str,
         tenant_id: str,
-        revoke_across_all_tenants: Optional[bool],
+        revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -> List[str]:
         pass
@@ -229,7 +229,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         user_id: str,
         tenant_id: str,
-        fetch_across_all_tenants: Optional[bool],
+        fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -> List[str]:
         pass
