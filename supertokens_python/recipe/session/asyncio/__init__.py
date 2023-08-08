@@ -441,7 +441,7 @@ async def revoke_all_sessions_for_user(
 
 async def get_all_session_handles_for_user(
     user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:

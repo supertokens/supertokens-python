@@ -230,7 +230,7 @@ class EmailVerificationRecipe(RecipeModule):
                 PostSTInitCallbacks.add_post_init_callback(callback)
 
                 return EmailVerificationRecipe.__instance
-            return raise_general_exception(
+            raise_general_exception(
                 "Emailverification recipe has already been initialised. Please check your code for bugs."
             )
 
