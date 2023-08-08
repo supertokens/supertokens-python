@@ -46,7 +46,6 @@ from .utils import (
     send_non_200_response_with_message,
 )
 
-from .always_initialised_recipes import DEFAULT_MULTITENANCY_RECIPE
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
