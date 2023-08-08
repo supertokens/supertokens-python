@@ -18,7 +18,7 @@ from typing import Any, Dict, Optional
 from supertokens_python.recipe.thirdparty.types import UserInfo
 from ..provider import (
     Provider,
-    ProviderConfigForClientType,
+    ProviderConfigForClient,
     ProviderInput,
     UserFields,
     UserInfoMap,
@@ -33,7 +33,7 @@ from .custom import (
 class FacebookImpl(GenericProvider):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:

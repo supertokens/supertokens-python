@@ -163,19 +163,19 @@ async def test_get_provider():
     )
 
     provider1 = await get_provider("google", None, "t1")
-    assert provider1.provider.config.thirdparty_id == "google"
+    assert provider1.provider.config.third_party_id == "google"
 
     provider2 = await get_provider("facebook", None, "t1")
-    assert provider2.provider.config.thirdparty_id == "facebook"
+    assert provider2.provider.config.third_party_id == "facebook"
 
     provider3 = await get_provider("facebook", None, "t2")
-    assert provider3.provider.config.thirdparty_id == "facebook"
+    assert provider3.provider.config.third_party_id == "facebook"
 
     provider4 = await get_provider("discord", None, "t2")
-    assert provider4.provider.config.thirdparty_id == "discord"
+    assert provider4.provider.config.third_party_id == "discord"
 
     provider5 = await get_provider("discord", None, "t3")
-    assert provider5.provider.config.thirdparty_id == "discord"
+    assert provider5.provider.config.third_party_id == "discord"
 
     provider6 = await get_provider("linkedin", None, "t3")
-    assert provider6.provider.config.thirdparty_id == "linkedin"
+    assert provider6.provider.config.third_party_id == "linkedin"
