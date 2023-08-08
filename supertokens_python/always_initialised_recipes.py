@@ -18,4 +18,6 @@ if TYPE_CHECKING:
     from supertokens_python.recipe_module import RecipeModule
     from supertokens_python import AppInfo
 
-DEFAULT_MULTITENANCY_RECIPE: Optional[Callable[[AppInfo], RecipeModule]] = None
+from supertokens_python.recipe.multitenancy import init
+
+DEFAULT_MULTITENANCY_RECIPE: Optional[Callable[[AppInfo], RecipeModule]] = init()

@@ -204,8 +204,8 @@ class GenericProvider(Provider):
         )
         super().__init__(input_config.third_party_id, provider_config_for_client)
 
-    def _normalize_input(
-        self, input_config: ProviderConfig  # pylint: disable=no-self-use
+    def _normalize_input(  # pylint: disable=no-self-use
+        self, input_config: ProviderConfig
     ) -> ProviderConfig:
         if input_config.user_info_map is None:
             input_config.user_info_map = UserInfoMap(

@@ -46,8 +46,6 @@ from .utils import (
     send_non_200_response_with_message,
 )
 
-from .always_initialised_recipes import DEFAULT_MULTITENANCY_RECIPE
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
@@ -154,6 +152,8 @@ class Supertokens:
         mode: Union[Literal["asgi", "wsgi"], None],
         telemetry: Union[bool, None],
     ):
+        from .always_initialised_recipes import DEFAULT_MULTITENANCY_RECIPE
+
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 
@@ -189,17 +189,18 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        multitenancy_found = [False]
+        multitenancy_found = False
 
         def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
+            nonlocal multitenancy_found
             recipe_module = recipe(self.app_info)
             if recipe_module.get_recipe_id() == "multitenancy":
-                multitenancy_found[0] = True
+                multitenancy_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
-        if callable(DEFAULT_MULTITENANCY_RECIPE) and not multitenancy_found[0]:
+        if callable(DEFAULT_MULTITENANCY_RECIPE) and not multitenancy_found:
             recipe = DEFAULT_MULTITENANCY_RECIPE(  # pylint: disable=not-callable
                 self.app_info
             )
@@ -259,6 +260,8 @@ class Supertokens:
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
     ) -> int:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -296,6 +299,8 @@ class Supertokens:
         query: Union[Dict[str, str], None] = None,
         tenant_id: Optional[str] = None,
     ) -> UsersResponse:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         querier = Querier.get_instance(None)
         params = {"timeJoinedOrder": time_joined_order}
         if limit is not None:
