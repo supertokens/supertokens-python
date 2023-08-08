@@ -27,7 +27,6 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     CreateResetPasswordLinkOkResult,
     CreateResetPasswordEmailUnknownUserIdError,
     CreateResetPasswordEmailOkResult,
-    RawUserInfoFromProvider,
 )
 from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
 

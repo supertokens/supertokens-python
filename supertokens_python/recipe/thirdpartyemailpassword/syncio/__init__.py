@@ -19,7 +19,6 @@ from supertokens_python.async_to_sync_wrapper import sync
 from ..interfaces import (
     EmailPasswordSignInOkResult,
     EmailPasswordSignInWrongCredentialsError,
-    RawUserInfoFromProvider,
 )
 from ..types import EmailTemplateVars, User
 
@@ -47,7 +46,6 @@ def get_user_by_third_party_info(
             third_party_id, third_party_user_id, tenant_id, user_context
         )
     )
-
 
 
 def thirdparty_manually_create_or_update_user(
