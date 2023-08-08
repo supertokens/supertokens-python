@@ -408,3 +408,7 @@ def validate_api_key(
     # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
     api_key_header_value = api_key_header_value.split(" ")[1]
     return api_key_header_value == config.api_key
+
+
+def get_api_path_with_dashboard_base(path: str) -> str:
+    return DASHBOARD_API + path
