@@ -27,7 +27,6 @@ from .recipe import ThirdPartyEmailPasswordRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
-InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
 InputSignUpFeature = emailpassword.InputSignUpFeature
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
@@ -43,16 +42,12 @@ if TYPE_CHECKING:
 
 def init(
     sign_up_feature: Union[InputSignUpFeature, None] = None,
-    reset_password_using_token_feature: Union[
-        InputResetPasswordUsingTokenFeature, None
-    ] = None,
     override: Union[InputOverrideConfig, None] = None,
     providers: Union[List[ProviderInput], None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(
         sign_up_feature,
-        reset_password_using_token_feature,
         override,
         providers,
         email_delivery,

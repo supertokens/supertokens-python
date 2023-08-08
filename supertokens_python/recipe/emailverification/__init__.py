@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union, Optional, Any, Awaitable, Dict
+from typing import TYPE_CHECKING, Callable, Union, Optional
 
 from . import exceptions as ex
 from . import utils
@@ -21,7 +21,7 @@ from .emaildelivery import services as emaildelivery_services
 from . import recipe
 from .interfaces import TypeGetEmailForUserIdFunction
 from .recipe import EmailVerificationRecipe
-from .types import EmailTemplateVars, User
+from .types import EmailTemplateVars
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 
 InputOverrideConfig = utils.OverrideConfig
@@ -42,15 +42,11 @@ def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    create_and_send_custom_email: Union[
-        Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-    ] = None,
     override: Union[OverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
         get_email_for_user_id,
-        create_and_send_custom_email,
         override,
     )

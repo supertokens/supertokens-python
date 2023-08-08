@@ -155,6 +155,7 @@ class RecipeImplementation(RecipeInterface):
         email: Union[str, None],
         password: Union[str, None],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
@@ -173,7 +174,9 @@ class RecipeImplementation(RecipeInterface):
                 password_field = list(
                     filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
                 )[0]
-                error = await password_field.validate(password)
+                error = await password_field.validate(
+                    password, tenant_id_for_password_policy
+                )
                 if error is not None:
                     return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
             data = {"password": password, **data}

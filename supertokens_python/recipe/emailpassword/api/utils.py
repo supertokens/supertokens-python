@@ -29,7 +29,9 @@ from supertokens_python.utils import find_first_occurrence_in_list
 
 
 async def validate_form_or_throw_error(
-    inputs: List[FormField], config_form_fields: List[NormalisedFormField]
+    inputs: List[FormField],
+    config_form_fields: List[NormalisedFormField],
+    tenant_id: str,
 ):
     validation_errors: List[ErrorFormField] = []
     if len(config_form_fields) != len(inputs):
@@ -42,7 +44,7 @@ async def validate_form_or_throw_error(
         if input_field is None or (input_field.value == "" and not field.optional):
             validation_errors.append(ErrorFormField(field.id, "Field is not optional"))
         else:
-            error = await field.validate(input_field.value)
+            error = await field.validate(input_field.value, tenant_id)
             if error is not None:
                 validation_errors.append(ErrorFormField(field.id, error))
 
@@ -52,7 +54,7 @@ async def validate_form_or_throw_error(
 
 
 async def validate_form_fields_or_throw_error(
-    config_form_fields: List[NormalisedFormField], form_fields_raw: Any
+    config_form_fields: List[NormalisedFormField], form_fields_raw: Any, tenant_id: str
 ) -> List[FormField]:
     if form_fields_raw is None:
         raise_bad_input_exception("Missing input param: formFields")
@@ -77,5 +79,5 @@ async def validate_form_fields_or_throw_error(
             value = value.strip()
         form_fields.append(FormField(current_form_field["id"], value))
 
-    await validate_form_or_throw_error(form_fields, config_form_fields)
+    await validate_form_or_throw_error(form_fields, config_form_fields, tenant_id)
     return form_fields

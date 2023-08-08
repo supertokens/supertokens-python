@@ -89,7 +89,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         ],
         ingredients: ThirdPartyPasswordlessIngredients,
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[ProviderInput], None] = None,
@@ -277,7 +277,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -24,7 +24,6 @@ from supertokens_python.recipe.emailverification.exceptions import (
 from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars,
     EmailVerificationIngredients,
-    User,
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
@@ -92,9 +91,6 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
         override: Union[OverrideConfig, None] = None,
     ) -> None:
         super().__init__(recipe_id, app_info)
@@ -103,7 +99,6 @@ class EmailVerificationRecipe(RecipeModule):
             mode,
             email_delivery,
             get_email_for_user_id,
-            create_and_send_custom_email,
             override,
         )
 
@@ -208,12 +203,9 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
         override: Union[OverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        def func(app_info: AppInfo) -> EmailVerificationRecipe:
             if EmailVerificationRecipe.__instance is None:
                 ingredients = EmailVerificationIngredients(email_delivery=None)
                 EmailVerificationRecipe.__instance = EmailVerificationRecipe(
@@ -223,7 +215,6 @@ class EmailVerificationRecipe(RecipeModule):
                     mode,
                     email_delivery,
                     get_email_for_user_id,
-                    create_and_send_custom_email,
                     override,
                 )
 

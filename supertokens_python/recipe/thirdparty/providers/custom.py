@@ -199,7 +199,7 @@ class GenericProvider(Provider):
         if self.input_config.generate_fake_email is None:
 
             async def default_generate_fake_email(
-                third_party_user_id: str, _: Dict[str, Any]
+                _tenant_id: str, third_party_user_id: str, _: Dict[str, Any]
             ) -> str:
                 return f"{third_party_user_id}@{self.input_config.third_party_id}.fakeemail.com"
 

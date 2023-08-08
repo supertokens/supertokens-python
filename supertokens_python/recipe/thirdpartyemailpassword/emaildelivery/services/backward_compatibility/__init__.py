@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInterface
 from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility import (
@@ -21,9 +21,6 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_com
 )
 from supertokens_python.recipe.emailpassword.interfaces import (
     RecipeInterface as EPRecipeInterface,
-)
-from supertokens_python.recipe.emailpassword.utils import (
-    InputResetPasswordUsingTokenFeature,
 )
 from supertokens_python.recipe.thirdpartyemailpassword.types import (
     EmailTemplateVars,
@@ -38,14 +35,11 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         self,
         app_info: AppInfo,
         ep_recipe_interface_impl: EPRecipeInterface,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
     ) -> None:
+        self.app_info = app_info
         self.ep_backward_compatiblity_service = EPBackwardCompatibilityService(
             app_info,
             ep_recipe_interface_impl,
-            reset_password_using_token_feature,
         )
 
     async def send_email(

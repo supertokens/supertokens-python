@@ -342,6 +342,7 @@ class RecipeImplementation(RecipeInterface):
         email: Union[None, str],
         password: Union[None, str],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
@@ -357,5 +358,10 @@ class RecipeImplementation(RecipeInterface):
                 "Cannot update email or password of a user who signed up using third party login."
             )
         return await self.ep_update_email_or_password(
-            user_id, email, password, apply_password_policy, user_context
+            user_id,
+            email,
+            password,
+            apply_password_policy,
+            tenant_id_for_password_policy,
+            user_context,
         )

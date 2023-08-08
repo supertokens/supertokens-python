@@ -30,7 +30,6 @@ from supertokens_python.recipe.thirdpartyemailpassword.types import (
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ..emailpassword.utils import (
-    InputResetPasswordUsingTokenFeature,
     InputSignUpFeature,
 )
 from .api.emailpassword_api_impementation import (
@@ -85,9 +84,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         app_info: AppInfo,
         ingredients: ThirdPartyEmailPasswordIngredients,
         sign_up_feature: Union[InputSignUpFeature, None] = None,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[ProviderInput], None] = None,
         email_password_recipe: Union[EmailPasswordRecipe, None] = None,
@@ -98,7 +94,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         self.config = validate_and_normalise_user_input(
             self,
             sign_up_feature,
-            reset_password_using_token_feature,
             override,
             providers,
             email_delivery,
@@ -154,7 +149,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 app_info,
                 ep_ingredients,
                 self.config.sign_up_feature,
-                self.config.reset_password_using_token_feature,
                 EPOverrideConfig(
                     func_override_email_password, apis_override_email_password
                 ),
@@ -259,9 +253,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     @staticmethod
     def init(
         sign_up_feature: Union[InputSignUpFeature, None] = None,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[ProviderInput], None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
@@ -275,7 +266,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                         app_info,
                         ingredients,
                         sign_up_feature,
-                        reset_password_using_token_feature,
                         override,
                         providers,
                         email_delivery=email_delivery,

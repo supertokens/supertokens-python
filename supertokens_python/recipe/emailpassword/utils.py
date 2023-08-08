@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from re import fullmatch
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -25,13 +25,12 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_com
 )
 
 from .interfaces import APIInterface, RecipeInterface
-from .types import InputFormField, NormalisedFormField, EmailTemplateVars, User
+from .types import InputFormField, NormalisedFormField, EmailTemplateVars
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
-from typing import Dict
-from supertokens_python.utils import deprecated_warn, get_filtered_list
+from supertokens_python.utils import get_filtered_list
 
 from .constants import (
     FORM_FIELD_EMAIL_ID,
@@ -39,11 +38,11 @@ from .constants import (
 )
 
 
-async def default_validator(_: str) -> Union[str, None]:
+async def default_validator(_: str, __: str) -> Union[str, None]:
     return None
 
 
-async def default_password_validator(value: str) -> Union[str, None]:
+async def default_password_validator(_: str, value: str) -> Union[str, None]:
     # length >= 8 && < 100
     # must have a number and a character
     # as per
@@ -63,7 +62,7 @@ async def default_password_validator(value: str) -> Union[str, None]:
     return None
 
 
-async def default_email_validator(value: Any) -> Union[str, None]:
+async def default_email_validator(_: str, value: Any) -> Union[str, None]:
     # We check if the email syntax is correct
     # As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     # Regex from https://stackoverflow.com/a/46181/3867175
@@ -180,21 +179,6 @@ def validate_and_normalise_sign_in_config(
     return SignInFeature(form_fields)
 
 
-class InputResetPasswordUsingTokenFeature:
-    def __init__(
-        self,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
-    ):
-        self.create_and_send_custom_email = create_and_send_custom_email
-
-        if create_and_send_custom_email:
-            deprecated_warn(
-                "create_and_send_custom_email is deprecated. Please use email delivery config instead"
-            )
-
-
 class ResetPasswordUsingTokenFeature:
     def __init__(
         self,
@@ -272,9 +256,6 @@ class EmailPasswordConfig:
 def validate_and_normalise_user_input(
     app_info: AppInfo,
     sign_up_feature: Union[InputSignUpFeature, None] = None,
-    reset_password_using_token_feature: Union[
-        InputResetPasswordUsingTokenFeature, None
-    ] = None,
     override: Union[InputOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> EmailPasswordConfig:
@@ -282,18 +263,11 @@ def validate_and_normalise_user_input(
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError("sign_up_feature must be of type InputSignUpFeature or None")
 
-    if reset_password_using_token_feature is not None and not isinstance(reset_password_using_token_feature, InputResetPasswordUsingTokenFeature):  # type: ignore
-        raise ValueError(
-            "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
-        )
-
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
         raise ValueError("override must be of type InputOverrideConfig or None")
 
     if override is None:
         override = InputOverrideConfig()
-    if reset_password_using_token_feature is None:
-        reset_password_using_token_feature = InputResetPasswordUsingTokenFeature()
 
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
@@ -309,7 +283,6 @@ def validate_and_normalise_user_input(
         email_service = BackwardCompatibilityService(
             app_info=app_info,
             recipe_interface_impl=ep_recipe,
-            reset_password_using_token_feature=reset_password_using_token_feature,
         )
         if email_delivery is not None and email_delivery.override is not None:
             override = email_delivery.override

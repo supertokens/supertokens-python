@@ -61,7 +61,6 @@ from .constants import (
 )
 from .utils import (
     InputOverrideConfig,
-    InputResetPasswordUsingTokenFeature,
     InputSignUpFeature,
     validate_and_normalise_user_input,
     EmailPasswordConfig,
@@ -79,9 +78,6 @@ class EmailPasswordRecipe(RecipeModule):
         app_info: AppInfo,
         ingredients: EmailPasswordIngredients,
         sign_up_feature: Union[InputSignUpFeature, None] = None,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
         override: Union[InputOverrideConfig, None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     ):
@@ -89,7 +85,6 @@ class EmailPasswordRecipe(RecipeModule):
         self.config = validate_and_normalise_user_input(
             app_info,
             sign_up_feature,
-            reset_password_using_token_feature,
             override,
             email_delivery,
         )
@@ -226,9 +221,6 @@ class EmailPasswordRecipe(RecipeModule):
     @staticmethod
     def init(
         sign_up_feature: Union[InputSignUpFeature, None] = None,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
         override: Union[InputOverrideConfig, None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     ):
@@ -240,7 +232,6 @@ class EmailPasswordRecipe(RecipeModule):
                     app_info,
                     ingredients,
                     sign_up_feature,
-                    reset_password_using_token_feature,
                     override,
                     email_delivery=email_delivery,
                 )

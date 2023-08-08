@@ -140,6 +140,7 @@ class RecipeImplementation(RecipeInterface):
         email: Union[str, None],
         password: Union[str, None],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
@@ -148,5 +149,10 @@ class RecipeImplementation(RecipeInterface):
         UpdateEmailOrPasswordPasswordPolicyViolationError,
     ]:
         return await self.recipe_implementation.update_email_or_password(
-            user_id, email, password, apply_password_policy, user_context
+            user_id,
+            email,
+            password,
+            apply_password_policy,
+            tenant_id_for_password_policy,
+            user_context,
         )
