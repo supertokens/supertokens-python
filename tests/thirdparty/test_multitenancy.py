@@ -28,7 +28,12 @@ from supertokens_python.recipe.thirdparty.asyncio import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from tests.utils import get_st_init_args
-from tests.utils import setup_function, teardown_function, setup_multitenancy_feature, start_st
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    setup_multitenancy_feature,
+    start_st,
+)
 
 
 _ = setup_function
@@ -116,36 +121,38 @@ async def test_thirtyparty_multitenancy_functions():
 
 
 async def test_get_provider():
-    args = get_st_init_args([
-        session.init(),
-        thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
-                providers=[
-                    thirdparty.ProviderInput(
-                        thirdparty.ProviderConfig(
-                            third_party_id="google",
-                        )
-                    ),
-                    thirdparty.ProviderInput(
-                        thirdparty.ProviderConfig(
-                            third_party_id="facebook",
-                        )
-                    ),
-                    thirdparty.ProviderInput(
-                        thirdparty.ProviderConfig(
-                            third_party_id="discord",
-                        )
-                    ),
-                    thirdparty.ProviderInput(
-                        thirdparty.ProviderConfig(
-                            third_party_id="linkedin",
-                        )
-                    ),
-                ]
-            )
-        ),
-        multitenancy.init()
-    ])
+    args = get_st_init_args(
+        [
+            session.init(),
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="google",
+                            )
+                        ),
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="facebook",
+                            )
+                        ),
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="discord",
+                            )
+                        ),
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="linkedin",
+                            )
+                        ),
+                    ]
+                )
+            ),
+            multitenancy.init(),
+        ]
+    )
     init(**args)
     start_st()
     setup_multitenancy_feature()
