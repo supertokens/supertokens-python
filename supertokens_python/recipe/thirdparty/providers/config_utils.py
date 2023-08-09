@@ -17,7 +17,7 @@ from .utils import do_get_request
 
 from ..provider import (
     ProviderConfig,
-    ProviderConfigForClientType,
+    ProviderConfigForClient,
     ProviderInput,
     Provider,
     UserFields,
@@ -216,8 +216,8 @@ async def get_oidc_discovery_info(issuer: str):
 
 
 async def discover_oidc_endpoints(
-    config: ProviderConfigForClientType,
-) -> ProviderConfigForClientType:
+    config: ProviderConfigForClient,
+) -> ProviderConfigForClient:
     if config.oidc_discovery_endpoint is None:
         return config
 

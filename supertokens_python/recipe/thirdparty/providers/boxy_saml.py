@@ -17,7 +17,7 @@ from typing import Any, Dict, Optional
 from .custom import GenericProvider, NewProvider
 from ..provider import (
     Provider,
-    ProviderConfigForClientType,
+    ProviderConfigForClient,
     ProviderInput,
     UserFields,
     UserInfoMap,
@@ -27,7 +27,7 @@ from ..provider import (
 class BoxySAMLImpl(GenericProvider):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
         if (
             config.additional_config is None

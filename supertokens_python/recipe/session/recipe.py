@@ -28,7 +28,6 @@ from .exceptions import (
     UnauthorisedError,
     InvalidClaimsError,
 )
-from ... import AppInfo
 from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:

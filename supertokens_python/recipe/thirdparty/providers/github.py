@@ -18,13 +18,13 @@ from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 from .custom import GenericProvider, NewProvider
-from ..provider import Provider, ProviderConfigForClientType, ProviderInput
+from ..provider import Provider, ProviderConfigForClient, ProviderInput
 
 
 class GithubImpl(GenericProvider):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:

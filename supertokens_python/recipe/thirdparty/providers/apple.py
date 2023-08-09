@@ -19,14 +19,14 @@ from jwt import encode  # type: ignore
 from time import time
 
 from .custom import GenericProvider, NewProvider
-from ..provider import Provider, ProviderConfigForClientType, ProviderInput
+from ..provider import Provider, ProviderConfigForClient, ProviderInput
 from .utils import get_actual_client_id_from_development_client_id
 
 
 class AppleImpl(GenericProvider):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:
@@ -38,7 +38,7 @@ class AppleImpl(GenericProvider):
         return config
 
     async def _get_client_secret(  # pylint: disable=no-self-use
-        self, config: ProviderConfigForClientType
+        self, config: ProviderConfigForClient
     ) -> str:
         if (
             config.additional_config is None

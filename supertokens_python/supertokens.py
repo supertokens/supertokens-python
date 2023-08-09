@@ -46,8 +46,6 @@ from .utils import (
     send_non_200_response_with_message,
 )
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
@@ -259,6 +257,8 @@ class Supertokens:
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
     ) -> int:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -296,6 +296,8 @@ class Supertokens:
         query: Union[Dict[str, str], None] = None,
         tenant_id: Optional[str] = None,
     ) -> UsersResponse:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         querier = Querier.get_instance(None)
         params = {"timeJoinedOrder": time_joined_order}
         if limit is not None:

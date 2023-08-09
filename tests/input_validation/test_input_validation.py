@@ -61,27 +61,6 @@ async def test_init_validation_emailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                emailpassword.init(
-                    reset_password_using_token_feature="reset password"  # type: ignore
-                ),
-            ],
-        )
-    assert (
-        "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
-        == str(ex.value)
-    )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
                 emailverification.init("email verify"),  # type: ignore
                 emailpassword.init(),
             ],
@@ -454,27 +433,6 @@ async def test_init_validation_thirdpartyemailpassword():
             ],
         )
     assert "sign_up_feature must be of type InputSignUpFeature or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartyemailpassword.init(
-                    reset_password_using_token_feature="reset password"  # type: ignore
-                )
-            ],
-        )
-    assert (
-        "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
-        == str(ex.value)
-    )
 
     with pytest.raises(ValueError) as ex:
         init(

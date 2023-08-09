@@ -23,7 +23,7 @@ from ..provider import (
     Provider,
     ProviderClientConfig,
     ProviderConfig,
-    ProviderConfigForClientType,
+    ProviderConfigForClient,
     ProviderInput,
     RedirectUriInfo,
     UserFields,
@@ -33,13 +33,17 @@ from ..provider import (
 
 def get_provider_config_for_client(
     config: ProviderConfig, client_config: ProviderClientConfig
-) -> ProviderConfigForClientType:
-    return ProviderConfigForClientType(
+) -> ProviderConfigForClient:
+    return ProviderConfigForClient(
+        # ProviderClientConfig
         client_id=client_config.client_id,
         client_secret=client_config.client_secret,
+        client_type=client_config.client_type,
         scope=client_config.scope,
         force_pkce=client_config.force_pkce,
         additional_config=client_config.additional_config,
+        # CommonProviderConfig
+        name=config.name,
         authorization_endpoint=config.authorization_endpoint,
         authorization_endpoint_query_params=config.authorization_endpoint_query_params,
         token_endpoint=config.token_endpoint,
@@ -47,13 +51,12 @@ def get_provider_config_for_client(
         user_info_endpoint=config.user_info_endpoint,
         user_info_endpoint_query_params=config.user_info_endpoint_query_params,
         user_info_endpoint_headers=config.user_info_endpoint_headers,
-        user_info_map=config.user_info_map,
         jwks_uri=config.jwks_uri,
         oidc_discovery_endpoint=config.oidc_discovery_endpoint,
-        validate_id_token_payload=config.validate_id_token_payload,
+        user_info_map=config.user_info_map,
         require_email=config.require_email,
+        validate_id_token_payload=config.validate_id_token_payload,
         generate_fake_email=config.generate_fake_email,
-        name=config.name,
     )
 
 
@@ -69,7 +72,7 @@ def access_field(obj: Any, key: str) -> Any:
 
 
 def get_supertokens_user_info_result_from_raw_user_info(
-    config: ProviderConfigForClientType,
+    config: ProviderConfigForClient,
     raw_user_info_from_provider: RawUserInfoFromProvider,
 ) -> UserInfo:
     third_party_user_id = ""
@@ -172,42 +175,71 @@ def merge_into_dict(src: Dict[str, Any], dest: Dict[str, Any]) -> Dict[str, Any]
 
 
 class GenericProvider(Provider):
-    def __init__(self, config: ProviderConfig):
-        super().__init__(config.third_party_id)
+    def __init__(self, provider_config: ProviderConfig):
+        self.input_config = input_config = self._normalize_input(provider_config)
 
-        self.input_config = config
-        self._normalize_input()
+        provider_config_for_client = ProviderConfigForClient(
+            # Will automatically get replaced by correct value
+            # when fetch_and_set_config function runs
+            client_id="temp",
+            client_secret=None,
+            client_type=None,
+            scope=None,
+            force_pkce=False,
+            additional_config=None,
+            name=input_config.name,
+            authorization_endpoint=input_config.authorization_endpoint,
+            authorization_endpoint_query_params=input_config.authorization_endpoint_query_params,
+            token_endpoint=input_config.token_endpoint,
+            token_endpoint_body_params=input_config.token_endpoint_body_params,
+            user_info_endpoint=input_config.user_info_endpoint,
+            user_info_endpoint_query_params=input_config.user_info_endpoint_query_params,
+            user_info_endpoint_headers=input_config.user_info_endpoint_headers,
+            jwks_uri=input_config.jwks_uri,
+            oidc_discovery_endpoint=input_config.oidc_discovery_endpoint,
+            user_info_map=input_config.user_info_map,
+            require_email=input_config.require_email,
+            validate_id_token_payload=input_config.validate_id_token_payload,
+            generate_fake_email=input_config.generate_fake_email,
+        )
+        super().__init__(input_config.third_party_id, provider_config_for_client)
 
-    def _normalize_input(self):
-        if self.input_config.user_info_map is None:
-            self.input_config.user_info_map = UserInfoMap(
+    def _normalize_input(  # pylint: disable=no-self-use
+        self, input_config: ProviderConfig
+    ) -> ProviderConfig:
+        if input_config.user_info_map is None:
+            input_config.user_info_map = UserInfoMap(
                 from_id_token_payload=UserFields(),
                 from_user_info_api=UserFields(),
             )
 
-        if self.input_config.user_info_map.from_id_token_payload.user_id is None:
-            self.input_config.user_info_map.from_id_token_payload.user_id = "sub"
+        if input_config.user_info_map.from_id_token_payload.user_id is None:
+            input_config.user_info_map.from_id_token_payload.user_id = "sub"
 
-        if self.input_config.user_info_map.from_id_token_payload.email is None:
-            self.input_config.user_info_map.from_id_token_payload.email = "email"
+        if input_config.user_info_map.from_id_token_payload.email is None:
+            input_config.user_info_map.from_id_token_payload.email = "email"
 
-        if self.input_config.user_info_map.from_id_token_payload.email_verified is None:
-            self.input_config.user_info_map.from_id_token_payload.email_verified = (
+        if input_config.user_info_map.from_id_token_payload.email_verified is None:
+            input_config.user_info_map.from_id_token_payload.email_verified = (
                 "email_verified"
             )
 
-        if self.input_config.generate_fake_email is None:
+        if input_config.generate_fake_email is None:
 
             async def default_generate_fake_email(
                 _tenant_id: str, third_party_user_id: str, _: Dict[str, Any]
             ) -> str:
-                return f"{third_party_user_id}@{self.input_config.third_party_id}.fakeemail.com"
+                return (
+                    f"{third_party_user_id}@{input_config.third_party_id}.fakeemail.com"
+                )
 
-            self.input_config.generate_fake_email = default_generate_fake_email
+            input_config.generate_fake_email = default_generate_fake_email
+
+        return input_config
 
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         if client_type is None:
             if self.input_config.clients is None or len(self.input_config.clients) != 1:
                 raise ClientTypeNotFoundError(

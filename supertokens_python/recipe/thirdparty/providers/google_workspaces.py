@@ -18,7 +18,7 @@ from .google import Google, GoogleImpl
 
 from ..provider import (
     Provider,
-    ProviderConfigForClientType,
+    ProviderConfigForClient,
     ProviderInput,
 )
 
@@ -26,7 +26,7 @@ from ..provider import (
 class GoogleWorkspacesImpl(GoogleImpl):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.additional_config is None:
@@ -50,7 +50,7 @@ def GoogleWorkspaces(
 
         async def default_validate_id_token_payload(
             id_token_payload: Dict[str, Any],
-            config: ProviderConfigForClientType,
+            config: ProviderConfigForClient,
             _user_context: Dict[str, Any],
         ):
             if (config.additional_config or {}).get("hd", "*") != "*":

@@ -51,7 +51,6 @@ from supertokens_python.recipe.session.utils import (
     TokenTransferMethod,
     get_required_claim_validators,
 )
-from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
     FRAMEWORKS,
@@ -60,10 +59,11 @@ from supertokens_python.utils import (
     normalise_http_method,
     set_request_in_user_context_if_not_defined,
 )
-from supertokens_python import Supertokens
+from supertokens_python.supertokens import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.recipe import SessionRecipe
+    from supertokens_python.supertokens import AppInfo
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 

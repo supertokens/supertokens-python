@@ -41,13 +41,15 @@ class RedirectUriInfo:
 
 
 class Provider:
-    def __init__(self, id: str):  # pylint: disable=redefined-builtin
+    def __init__(
+        self, id: str, config: ProviderConfigForClient
+    ):  # pylint: disable=redefined-builtin
         self.id = id
-        self.config = ProviderConfigForClientType("temp")
+        self.config = config
 
     async def get_config_for_client_type(  # pylint: disable=no-self-use
         self, client_type: Optional[str], user_context: Dict[str, Any]
-    ) -> ProviderConfigForClientType:
+    ) -> ProviderConfigForClient:
         _ = client_type
         __ = user_context
         raise NotImplementedError()
@@ -110,60 +112,6 @@ class ProviderClientConfig:
         return {k: v for k, v in res.items() if v is not None}
 
 
-class ProviderConfigForClientType:
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: Optional[str] = None,
-        scope: Optional[List[str]] = None,
-        force_pkce: bool = False,
-        additional_config: Optional[Dict[str, Any]] = None,
-        name: Optional[str] = None,
-        authorization_endpoint: Optional[str] = None,
-        authorization_endpoint_query_params: Optional[
-            Dict[str, Union[str, None]]
-        ] = None,
-        token_endpoint: Optional[str] = None,
-        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
-        user_info_endpoint: Optional[str] = None,
-        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
-        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
-        jwks_uri: Optional[str] = None,
-        oidc_discovery_endpoint: Optional[str] = None,
-        user_info_map: Optional[UserInfoMap] = None,
-        require_email: bool = True,
-        generate_fake_email: Optional[
-            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
-        ] = None,
-        validate_id_token_payload: Optional[
-            Callable[
-                [Dict[str, Any], ProviderConfigForClientType, Dict[str, Any]],
-                Awaitable[None],
-            ]
-        ] = None,
-    ):
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scope = scope
-        self.force_pkce = force_pkce
-        self.additional_config = additional_config
-
-        self.name = name
-        self.authorization_endpoint = authorization_endpoint
-        self.authorization_endpoint_query_params = authorization_endpoint_query_params
-        self.token_endpoint = token_endpoint
-        self.token_endpoint_body_params = token_endpoint_body_params
-        self.user_info_endpoint = user_info_endpoint
-        self.user_info_endpoint_query_params = user_info_endpoint_query_params
-        self.user_info_endpoint_headers = user_info_endpoint_headers
-        self.jwks_uri = jwks_uri
-        self.oidc_discovery_endpoint = oidc_discovery_endpoint
-        self.user_info_map = user_info_map
-        self.require_email = require_email
-        self.validate_id_token_payload = validate_id_token_payload
-        self.generate_fake_email = generate_fake_email
-
-
 class UserFields:
     def __init__(
         self,
@@ -201,7 +149,142 @@ class UserInfoMap:
         }
 
 
-class ProviderConfig:
+class CommonProviderConfig:
+    def __init__(
+        self,
+        third_party_id: str,
+        name: Optional[str] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        self.third_party_id = third_party_id
+        self.name = name
+        self.authorization_endpoint = authorization_endpoint
+        self.authorization_endpoint_query_params = authorization_endpoint_query_params
+        self.token_endpoint = token_endpoint
+        self.token_endpoint_body_params = token_endpoint_body_params
+        self.user_info_endpoint = user_info_endpoint
+        self.user_info_endpoint_query_params = user_info_endpoint_query_params
+        self.user_info_endpoint_headers = user_info_endpoint_headers
+        self.jwks_uri = jwks_uri
+        self.oidc_discovery_endpoint = oidc_discovery_endpoint
+        self.user_info_map = user_info_map
+        self.require_email = require_email
+        self.validate_id_token_payload = validate_id_token_payload
+        self.generate_fake_email = generate_fake_email
+
+    def to_json(self) -> Dict[str, Any]:
+        res = {
+            "thirdPartyId": self.third_party_id,
+            "name": self.name,
+            "authorizationEndpoint": self.authorization_endpoint,
+            "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
+            "tokenEndpoint": self.token_endpoint,
+            "tokenEndpointBodyParams": self.token_endpoint_body_params,
+            "userInfoEndpoint": self.user_info_endpoint,
+            "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
+            "userInfoEndpointHeaders": self.user_info_endpoint_headers,
+            "jwksURI": self.jwks_uri,
+            "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
+            "userInfoMap": self.user_info_map.to_json()
+            if self.user_info_map is not None
+            else None,
+            "requireEmail": self.require_email,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
+
+
+class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
+    def __init__(
+        self,
+        # ProviderClientConfig:
+        client_id: str,
+        client_secret: Optional[str] = None,
+        client_type: Optional[str] = None,
+        scope: Optional[List[str]] = None,
+        force_pkce: bool = False,
+        additional_config: Optional[Dict[str, Any]] = None,
+        # CommonProviderConfig:
+        name: Optional[str] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        ProviderClientConfig.__init__(
+            self,
+            client_id,
+            client_secret,
+            client_type,
+            scope,
+            force_pkce,
+            additional_config,
+        )
+        CommonProviderConfig.__init__(
+            self,
+            "temp",
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        d1 = ProviderClientConfig.to_json(self)
+        d2 = CommonProviderConfig.to_json(self)
+        return {**d1, **d2}
+
+
+class ProviderConfig(CommonProviderConfig):
     def __init__(
         self,
         third_party_id: str,
@@ -222,7 +305,7 @@ class ProviderConfig:
         require_email: bool = True,
         validate_id_token_payload: Optional[
             Callable[
-                [Dict[str, Any], ProviderConfigForClientType, Dict[str, Any]],
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
                 Awaitable[None],
             ]
         ] = None,
@@ -230,46 +313,32 @@ class ProviderConfig:
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
     ):
-        self.third_party_id = third_party_id
-        self.name = name
+        super().__init__(
+            third_party_id,
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+        )
         self.clients = clients
-        self.authorization_endpoint = authorization_endpoint
-        self.authorization_endpoint_query_params = authorization_endpoint_query_params
-        self.token_endpoint = token_endpoint
-        self.token_endpoint_body_params = token_endpoint_body_params
-        self.user_info_endpoint = user_info_endpoint
-        self.user_info_endpoint_query_params = user_info_endpoint_query_params
-        self.user_info_endpoint_headers = user_info_endpoint_headers
-        self.jwks_uri = jwks_uri
-        self.oidc_discovery_endpoint = oidc_discovery_endpoint
-        self.user_info_map = user_info_map
-        self.require_email = require_email
-        self.validate_id_token_payload = validate_id_token_payload
-        self.generate_fake_email = generate_fake_email
 
     def to_json(self) -> Dict[str, Any]:
-        res = {
-            "thirdPartyId": self.third_party_id,
-            "name": self.name,
-            "clients": [c.to_json() for c in self.clients]
-            if self.clients is not None
-            else [],
-            "authorizationEndpoint": self.authorization_endpoint,
-            "authorizationEndpointQueryParams": self.authorization_endpoint_query_params,
-            "tokenEndpoint": self.token_endpoint,
-            "tokenEndpointBodyParams": self.token_endpoint_body_params,
-            "userInfoEndpoint": self.user_info_endpoint,
-            "userInfoEndpointQueryParams": self.user_info_endpoint_query_params,
-            "userInfoEndpointHeaders": self.user_info_endpoint_headers,
-            "jwksURI": self.jwks_uri,
-            "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
-            "userInfoMap": self.user_info_map.to_json()
-            if self.user_info_map is not None
-            else None,
-            "requireEmail": self.require_email,
-        }
+        d = CommonProviderConfig.to_json(self)
 
-        return {k: v for k, v in res.items() if v is not None}
+        if self.clients is not None:
+            d["clients"] = [c.to_json() for c in self.clients]
+
+        return d
 
 
 class ProviderInput:

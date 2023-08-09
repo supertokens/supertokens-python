@@ -17,7 +17,6 @@ from os import environ
 from typing import TYPE_CHECKING, List, Union, Optional, Any, Dict
 
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.jwt import JWTRecipe
 
 from .api.implementation import APIImplementation
 from .api.open_id_discovery_configuration_get import open_id_discovery_configuration_get
@@ -49,6 +48,8 @@ class OpenIdRecipe(RecipeModule):
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
+        from supertokens_python.recipe.jwt import JWTRecipe
+
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, issuer, override)
         jwt_feature = None

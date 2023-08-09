@@ -43,7 +43,7 @@ SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
-ProviderConfigForClientType = provider.ProviderConfigForClientType
+ProviderConfigForClientType = provider.ProviderConfigForClient
 EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
 SMSDeliveryInterface = smsdelivery_types.SMSDeliveryInterface
 

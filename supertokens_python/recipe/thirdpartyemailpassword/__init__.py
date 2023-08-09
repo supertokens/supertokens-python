@@ -33,7 +33,7 @@ InputSignUpFeature = emailpassword.InputSignUpFeature
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
-ProviderConfigForClientType = provider.ProviderConfigForClientType
+ProviderConfigForClientType = provider.ProviderConfigForClient
 SMTPService = emaildelivery_services.SMTPService
 
 EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
