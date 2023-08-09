@@ -26,18 +26,16 @@ if TYPE_CHECKING:
 
     from ...recipe_module import RecipeModule
     from .interfaces import TypeGetAllowedDomainsForTenantId
-    from .utils import InputErrorHandlers, InputOverrideConfig
+    from .utils import InputOverrideConfig
 
 
 def init(
     get_allowed_domains_for_tenant_id: Union[
         TypeGetAllowedDomainsForTenantId, None
     ] = None,
-    error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return recipe.MultitenancyRecipe.init(
         get_allowed_domains_for_tenant_id,
-        error_handlers,
         override,
     )

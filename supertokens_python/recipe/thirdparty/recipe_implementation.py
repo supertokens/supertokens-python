@@ -200,5 +200,4 @@ class RecipeImplementation(RecipeInterface):
 
         return GetProviderOkResult(
             provider,
-            tenant_config.third_party.enabled,
         )

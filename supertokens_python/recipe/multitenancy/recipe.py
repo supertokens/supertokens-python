@@ -47,7 +47,7 @@ from supertokens_python.types import GeneralErrorResponse
 
 from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
-from .exceptions import TenantDoesNotExistError, RecipeDisabledForTenantError
+from .exceptions import MultitenancyError
 from .interfaces import (
     LoginMethodsGetOkResult,
     ThirdPartyProvider,
@@ -56,7 +56,6 @@ from .interfaces import (
     LoginMethodThirdParty,
 )
 from .utils import (
-    InputErrorHandlers,
     InputOverrideConfig,
     validate_and_normalise_user_input,
 )
@@ -73,13 +72,11 @@ class MultitenancyRecipe(RecipeModule):
         get_allowed_domains_for_tenant_id: Optional[
             TypeGetAllowedDomainsForTenantId
         ] = None,
-        error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ) -> None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             get_allowed_domains_for_tenant_id,
-            error_handlers,
             override,
         )
 
@@ -105,7 +102,7 @@ class MultitenancyRecipe(RecipeModule):
         )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
-        return isinstance(err, (TenantDoesNotExistError, RecipeDisabledForTenantError))
+        return isinstance(err, MultitenancyError)
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -144,17 +141,7 @@ class MultitenancyRecipe(RecipeModule):
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
     ) -> BaseResponse:
-        if isinstance(err, TenantDoesNotExistError):
-            return await self.config.error_handlers.on_tenant_does_not_exist(
-                err, request, response
-            )
-
-        if isinstance(err, RecipeDisabledForTenantError):
-            return await self.config.error_handlers.on_recipe_disabled_for_tenant(
-                err, request, response
-            )
-
-        raise Exception("should never come here")
+        raise err
 
     def get_all_cors_headers(self) -> List[str]:
         return []
@@ -164,7 +151,6 @@ class MultitenancyRecipe(RecipeModule):
         get_allowed_domains_for_tenant_id: Union[
             TypeGetAllowedDomainsForTenantId, None
         ] = None,
-        error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
         def func(app_info: AppInfo):
@@ -173,7 +159,6 @@ class MultitenancyRecipe(RecipeModule):
                     MultitenancyRecipe.recipe_id,
                     app_info,
                     get_allowed_domains_for_tenant_id,
-                    error_handlers,
                     override,
                 )
 
