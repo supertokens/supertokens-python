@@ -11,8 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import setup
-
 from pytest import mark
 from supertokens_python.recipe import session, userroles, emailpassword, multitenancy
 from supertokens_python import init
@@ -21,6 +19,7 @@ from supertokens_python.recipe.multitenancy.asyncio import (
     associate_user_to_tenant,
 )
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
+from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
@@ -28,7 +27,7 @@ from supertokens_python.recipe.userroles.asyncio import (
     get_roles_for_user,
 )
 
-from tests.sessions.claims.utils import get_st_init_args
+from tests.utils import get_st_init_args
 from tests.utils import setup_function, teardown_function, setup_multitenancy_feature
 
 
@@ -48,7 +47,7 @@ async def test_multitenancy_in_user_roles():
             multitenancy.init(),
         ]
     )
-    init(**args)
+    init(**args)  # type: ignore
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
@@ -56,6 +55,7 @@ async def test_multitenancy_in_user_roles():
     await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
 
     user = await sign_up("test@example.com", "password1")
+    assert isinstance(user, SignUpOkResult)
     user_id = user.user.user_id
 
     await associate_user_to_tenant("t1", user_id)
@@ -66,18 +66,18 @@ async def test_multitenancy_in_user_roles():
     await create_new_role_or_add_permissions("role2", [])
     await create_new_role_or_add_permissions("role3", [])
 
-    await add_role_to_user("t1", user_id, "role1")
-    await add_role_to_user("t1", user_id, "role2")
-    await add_role_to_user("t2", user_id, "role2")
-    await add_role_to_user("t2", user_id, "role3")
-    await add_role_to_user("t3", user_id, "role3")
-    await add_role_to_user("t3", user_id, "role1")
+    await add_role_to_user(user_id, "role1", "t1")
+    await add_role_to_user(user_id, "role2", "t1")
+    await add_role_to_user(user_id, "role2", "t2")
+    await add_role_to_user(user_id, "role3", "t2")
+    await add_role_to_user(user_id, "role3", "t3")
+    await add_role_to_user(user_id, "role1", "t3")
 
-    roles = await get_roles_for_user("t1", user_id)
+    roles = await get_roles_for_user(user_id, "t1")
     assert roles.roles == ["role1", "role2"]
 
-    roles = await get_roles_for_user("t2", user_id)
+    roles = await get_roles_for_user(user_id, "t2")
     assert roles.roles == ["role2", "role3"]
 
-    roles = await get_roles_for_user("t3", user_id)
+    roles = await get_roles_for_user(user_id, "t3")
     assert roles.roles == ["role1", "role3"]

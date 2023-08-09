@@ -66,7 +66,7 @@ async def get_user_by_id(
 
 async def get_user_by_email(
     email: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     if user_context is None:
@@ -78,7 +78,7 @@ async def get_user_by_email(
 
 async def create_reset_password_token(
     user_id: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -91,7 +91,7 @@ async def create_reset_password_token(
 async def reset_password_using_token(
     token: str,
     new_password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -104,7 +104,7 @@ async def reset_password_using_token(
 async def sign_in(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -117,7 +117,7 @@ async def sign_in(
 async def sign_up(
     email: str,
     password: str,
-    tenant_id: Optional[str],
+    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
