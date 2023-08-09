@@ -27,7 +27,7 @@ from supertokens_python.recipe.passwordless.asyncio import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from tests.utils import get_st_init_args
-from tests.utils import setup_function, teardown_function, setup_multitenancy_feature
+from tests.utils import setup_function, teardown_function, setup_multitenancy_feature, start_st
 
 
 _ = setup_function
@@ -49,6 +49,7 @@ async def test_multitenancy_functions():
         ]
     )
     init(**args)
+    start_st()
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
