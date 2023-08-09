@@ -22,7 +22,6 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -126,11 +125,19 @@ async def test_that_generated_password_link_is_correct(
     token_info: Union[None, str] = None
     rid_info: Union[None, str] = None
 
-    async def custom_f(_: User, password_reset_url_with_token: str, __: Dict[str, Any]):
-        nonlocal reset_url, token_info, rid_info
-        reset_url = password_reset_url_with_token.split("?")[0]
-        token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
-        rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
+    class CustomEmailService(
+        emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: emailpassword.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal reset_url, token_info, rid_info
+            password_reset_url_with_token = template_vars.password_reset_link
+            reset_url = password_reset_url_with_token.split("?")[0]
+            token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
+            rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -144,9 +151,7 @@ async def test_that_generated_password_link_is_correct(
         recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             emailpassword.init(
-                reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
-                    create_and_send_custom_email=custom_f
-                )
+                email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService()),
             ),
         ],
     )
@@ -240,11 +245,19 @@ async def test_valid_token_input_and_passoword_has_changed(
 ):
     token_info = None
 
-    async def custom_f(_: User, password_reset_url_with_token: str, __: Dict[str, Any]):
-        nonlocal token_info
-        token_info = (
-            password_reset_url_with_token.split("?")[1].split("&")[0].split("=")[1]
-        )
+    class CustomEmailService(
+        emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: emailpassword.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token_info
+            password_reset_url_with_token = template_vars.password_reset_link
+            token_info = (
+                password_reset_url_with_token.split("?")[1].split("&")[0].split("=")[1]
+            )
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -257,9 +270,7 @@ async def test_valid_token_input_and_passoword_has_changed(
         framework="fastapi",
         recipe_list=[
             emailpassword.init(
-                reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
-                    create_and_send_custom_email=custom_f
-                )
+                email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService())
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],

@@ -46,7 +46,6 @@ from .utils import (
     send_non_200_response_with_message,
 )
 
-from .always_initialised_recipes import DEFAULT_MULTITENANCY_RECIPE
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 if TYPE_CHECKING:
@@ -189,20 +188,21 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        multitenancy_found = [False]
+        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
+        multitenancy_found = False
 
         def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
+            nonlocal multitenancy_found
             recipe_module = recipe(self.app_info)
-            if recipe_module.get_recipe_id() == "multitenancy":
-                multitenancy_found[0] = True
+            if recipe_module.get_recipe_id() == MultitenancyRecipe.recipe_id:
+                multitenancy_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
-        if callable(DEFAULT_MULTITENANCY_RECIPE) and not multitenancy_found[0]:
-            recipe = DEFAULT_MULTITENANCY_RECIPE(  # pylint: disable=not-callable
-                self.app_info
-            )
+        if not multitenancy_found:
+            recipe = MultitenancyRecipe.init()(self.app_info)
             self.recipe_modules.append(recipe)
 
         self.telemetry = (

@@ -26,7 +26,7 @@ from supertokens_python.recipe.passwordless.asyncio import (
 )
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
-from tests.sessions.claims.utils import get_st_init_args
+from tests.utils import get_st_init_args
 from tests.utils import setup_function, teardown_function, setup_multitenancy_feature
 
 

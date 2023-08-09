@@ -147,7 +147,7 @@ async def test_tenant_thirdparty_config():
     ):
         return
 
-    async def generate_fake_email(_: str, __: Dict[str, Any]):
+    async def generate_fake_email(_: str, __: str, ___: Dict[str, Any]):
         return "fake@example.com"
 
     # update thirdparty config

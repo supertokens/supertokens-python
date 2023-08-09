@@ -33,17 +33,14 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.recipe import emailpassword, emailverification, session
-from supertokens_python.recipe.emailpassword import InputResetPasswordUsingTokenFeature
 from supertokens_python.recipe.emailpassword.emaildelivery.services import SMTPService
 from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
     PasswordResetEmailTemplateVars,
 )
-from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailverification.emaildelivery.services import (
     SMTPService as EVSMTPService,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
@@ -200,12 +197,17 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
     email = ""
     password_reset_url = ""
 
-    async def custom_create_and_send_custom_email(
-        user: EPUser, password_reset_link: str, _: Dict[str, Any]
+    class CustomEmailService(
+        emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
     ):
-        nonlocal email, password_reset_url
-        email = user.email
-        password_reset_url = password_reset_link
+        async def send_email(
+            self,
+            template_vars: emailpassword.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email, password_reset_url
+            email = template_vars.user.email
+            password_reset_url = template_vars.password_reset_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -218,9 +220,7 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
         framework="fastapi",
         recipe_list=[
             emailpassword.init(
-                reset_password_using_token_feature=InputResetPasswordUsingTokenFeature(
-                    create_and_send_custom_email=custom_create_and_send_custom_email,
-                )
+                email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService())
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
@@ -325,12 +325,15 @@ async def test_reset_password_custom_override_with_send_email_override(
         oi.send_email = send_email
         return oi
 
-    async def custom_create_and_send_custom_email(
-        user: EPUser, password_reset_link: str, _: Dict[str, Any]
+    class CustomEmailService(
+        emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
     ):
-        nonlocal email, password_reset_url
-        email = user.email
-        password_reset_url = password_reset_link
+        async def send_email(
+            self, template_vars: Any, user_context: Dict[str, Any]
+        ) -> None:
+            nonlocal email, password_reset_url
+            email = template_vars.user.email
+            password_reset_url = template_vars.password_reset_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -344,11 +347,8 @@ async def test_reset_password_custom_override_with_send_email_override(
         recipe_list=[
             emailpassword.init(
                 email_delivery=EmailDeliveryConfig(
-                    service=None,
+                    service=CustomEmailService(),
                     override=email_delivery_override,
-                ),
-                reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
-                    create_and_send_custom_email=custom_create_and_send_custom_email
                 ),
             ),
             session.init(),
@@ -609,7 +609,9 @@ async def test_email_verification_default_backward_compatibility(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -673,7 +675,9 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -714,12 +718,17 @@ async def test_email_verification_backward_compatibility(
     email = ""
     email_verify_url = ""
 
-    async def custom_create_and_send_custom_email(
-        user: EVUser, email_verification_link: str, _: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal email, email_verify_url
-        email = user.email
-        email_verify_url = email_verification_link
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email, email_verify_url
+            email = template_vars.user.email
+            email_verify_url = template_vars.email_verify_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -733,7 +742,9 @@ async def test_email_verification_backward_compatibility(
         recipe_list=[
             emailverification.init(
                 mode="REQUIRED",
-                create_and_send_custom_email=custom_create_and_send_custom_email,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
             ),
             emailpassword.init(),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -747,7 +758,9 @@ async def test_email_verification_backward_compatibility(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     res = email_verify_token_request(
         driver_config_client,
@@ -816,7 +829,9 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -946,7 +961,9 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     resp = email_verify_token_request(
         driver_config_client,

@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+from supertokens_python.ingredients.emaildelivery import types as emaildelivery_types
 
 from . import exceptions as ex
 from . import utils
@@ -28,6 +29,7 @@ InputOverrideConfig = utils.InputOverrideConfig
 InputSignUpFeature = utils.InputSignUpFeature
 InputFormField = utils.InputFormField
 SMTPService = emaildelivery_services.SMTPService
+EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

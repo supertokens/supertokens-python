@@ -30,8 +30,6 @@ if TYPE_CHECKING:
 from .exceptions import SuperTokensError
 from .normalised_url_path import NormalisedURLPath
 
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-
 
 class ApiIdWithTenantId:
     def __init__(self, api_id: str, tenant_id: str):
@@ -54,6 +52,7 @@ class RecipeModule(abc.ABC):
         self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
     ) -> Union[ApiIdWithTenantId, None]:
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
         apis_handled = self.get_apis_handled()
 

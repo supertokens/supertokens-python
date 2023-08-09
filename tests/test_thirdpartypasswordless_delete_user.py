@@ -59,18 +59,30 @@ async def driver_config_client():
 async def test_tp_passworldless_delete_user_info(driver_config_client: TestClient):
     DUMMY_CODE = "DUMMY_CODE"
 
-    async def save_code_text(
-        _param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
-    ):
-        pass
-
-    async def save_code_email(
-        _param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]
-    ):
-        pass
-
-    async def get_custom_user_input_code(_input: Dict[str, Any]) -> str:
+    async def get_custom_user_input_code(
+        _tenant_id: str, _input: Dict[str, Any]
+    ) -> str:
         return DUMMY_CODE
+
+    class CustomEmailService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
+    class CustomSMSService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
+    ):
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -83,13 +95,12 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
         framework="fastapi",
         recipe_list=[
             thirdpartypasswordless.init(
-                contact_config=ContactEmailOrPhoneConfig(
-                    create_and_send_custom_text_message=save_code_text,
-                    create_and_send_custom_email=save_code_email,
-                ),
+                contact_config=ContactEmailOrPhoneConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[],
                 get_custom_user_input_code=get_custom_user_input_code,
+                email_delivery=passwordless.EmailDeliveryConfig(CustomEmailService()),
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],

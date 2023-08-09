@@ -40,6 +40,7 @@ async def test_should_attempt_to_set_claim_to_none():
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
     with patch.object(
         Session,

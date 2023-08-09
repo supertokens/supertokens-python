@@ -36,7 +36,6 @@ from supertokens_python.recipe import emailverification, session, thirdparty
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
     SMTPService,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
@@ -148,7 +147,9 @@ async def test_email_verify_default_backward_compatibility(
         raise Exception("Should never come here")
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -220,7 +221,9 @@ async def test_email_verify_default_backward_compatibility_supress_error(
         raise Exception("Should never come here")
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -260,12 +263,17 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email = ""
     email_verify_url = ""
 
-    async def create_and_send_custom_email(
-        input_: EVUser, email_verification_link: str, _: Dict[str, Any]
+    class CustomEmailVerificationEmailService(
+        emailverification.EmailDeliveryInterface[VerificationEmailTemplateVars]
     ):
-        nonlocal email, email_verify_url
-        email = input_.email
-        email_verify_url = email_verification_link
+        async def send_email(
+            self,
+            template_vars: VerificationEmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email, email_verify_url
+            email = template_vars.user.email
+            email_verify_url = template_vars.email_verify_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -279,7 +287,10 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         recipe_list=[
             emailverification.init(
                 mode="OPTIONAL",
-                create_and_send_custom_email=create_and_send_custom_email,
+                # create_and_send_custom_email=create_and_send_custom_email,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailVerificationEmailService()
+                ),
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -300,7 +311,9 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         raise Exception("Should never come here")
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     resp = email_verify_token_request(
         driver_config_client,
@@ -377,7 +390,9 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -515,7 +530,9 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, user_id, True, {}, {}, None
+    )
 
     resp = email_verify_token_request(
         driver_config_client,

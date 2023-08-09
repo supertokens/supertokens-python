@@ -31,6 +31,7 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         {},  # user_data_in_access_token
         None,
         False,  # access_token_updated
+        "public",
     )
 
     with patch.object(
@@ -62,6 +63,7 @@ async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
     with patch.object(
         Session,
