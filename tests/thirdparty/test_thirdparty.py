@@ -1,4 +1,5 @@
 import respx
+import json
 
 from pytest import fixture, mark
 from fastapi import FastAPI
@@ -7,6 +8,7 @@ from starlette.testclient import TestClient
 
 from supertokens_python.recipe import session, thirdparty
 from supertokens_python import init
+from base64 import b64encode
 
 from tests.utils import (
     setup_function,
@@ -65,15 +67,12 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
     init(**st_init_args)  # type: ignore
     start_st()
 
-    data = {
-        "state": "afc596274293e1587315c",
-        "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
-    }
+    state = b64encode(json.dumps({"redirectURI": "http://localhost:3000/redirect" }).encode()).decode()
+    code = "testing"
 
+    data = { "state": state, "code": code}
     res = fastapi_client.post("/auth/callback/apple", data=data)
 
-    assert res.status_code == 200
-    assert (
-        res.content
-        == b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>'
-    )
+    assert res.status_code == 303
+    assert res.content == b''
+    assert res.headers["location"] == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"

@@ -81,7 +81,7 @@ async def test_primitive_claim_fetch_value_params_correct():
     user_id, ctx = "user_id", {}
     await claim.build(user_id, DEFAULT_TENANT_ID, ctx)
     assert sync_fetch_value.call_count == 1
-    assert (user_id, ctx) == sync_fetch_value.call_args_list[0][
+    assert (user_id, DEFAULT_TENANT_ID, ctx) == sync_fetch_value.call_args_list[0][
         0
     ]  # extra [0] refers to call params
 
