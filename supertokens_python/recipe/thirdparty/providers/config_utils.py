@@ -262,13 +262,11 @@ async def find_and_create_provider_instance(
     third_party_id: str,
     client_type: Optional[str],
     user_context: Dict[str, Any],
-) -> Provider:
+) -> Optional[Provider]:
     for provider_input in providers:
         if provider_input.config.third_party_id == third_party_id:
             provider_instance = create_provider(provider_input)
             await fetch_and_set_config(provider_instance, client_type, user_context)
             return provider_instance
 
-    raise Exception(
-        f"the provider {third_party_id} could not be found in the configuration"
-    )
+    return None

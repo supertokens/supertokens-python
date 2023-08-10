@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Dict
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
-from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
 from supertokens_python.utils import send_200_response
 
 
@@ -53,7 +53,12 @@ async def handle_authorisation_url_api(
         user_context=user_context,
     )
 
-    provider = provider_response.provider
+    if provider_response is None:
+        raise BadInputError(
+            f"the provider {third_party_id} could not be found in the configuration"
+        )
+
+    provider = provider_response
     result = await api_implementation.authorisation_url_get(
         provider=provider,
         redirect_uri_on_provider_dashboard=redirect_uri_on_provider_dashboard,

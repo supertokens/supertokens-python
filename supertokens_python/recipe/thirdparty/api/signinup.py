@@ -19,7 +19,7 @@ from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
-from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
 from supertokens_python.utils import send_200_response
 
 
@@ -64,7 +64,12 @@ async def handle_sign_in_up_api(
         user_context=user_context,
     )
 
-    provider = provider_response.provider
+    if provider_response is None:
+        raise BadInputError(
+            f"the provider {third_party_id} could not be found in the configuration"
+        )
+
+    provider = provider_response
 
     result = await api_implementation.sign_in_up_post(
         provider=provider,

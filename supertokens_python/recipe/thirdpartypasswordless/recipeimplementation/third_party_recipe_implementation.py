@@ -16,7 +16,6 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
-    GetProviderOkResult,
     ManuallyCreateOrUpdateUserOkResult,
     RecipeInterface,
     SignInUpOkResult,
@@ -24,6 +23,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider, User
 
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessRecipeInterface
+from ...thirdparty.provider import Provider
 
 
 class RecipeImplementation(RecipeInterface):
@@ -138,7 +138,7 @@ class RecipeImplementation(RecipeInterface):
         client_type: Optional[str],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -> GetProviderOkResult:
+    ) -> Optional[Provider]:
         return await self.recipe_implementation.thirdparty_get_provider(
             third_party_id, client_type, tenant_id, user_context
         )

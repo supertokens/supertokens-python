@@ -44,6 +44,9 @@ class APIImplementation(APIInterface):
             tenant_id, user_context
         )
 
+        if tenant_config_res is None:
+            raise Exception("Tenant not found")
+
         provider_inputs_from_static = api_options.static_third_party_providers
         provider_configs_from_core = tenant_config_res.third_party.providers
 
@@ -61,6 +64,11 @@ class APIImplementation(APIInterface):
                     client_type,
                     user_context,
                 )
+
+                if provider_instance is None:
+                    # because creating instance from the merged provider list itself
+                    raise Exception("Should never come here")
+
                 final_provider_list.append(
                     ThirdPartyProvider(
                         provider_instance.id, provider_instance.config.name

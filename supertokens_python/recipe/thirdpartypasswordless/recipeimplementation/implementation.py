@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.recipe.thirdparty.provider import ProviderInput, Provider
 from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
 
 from ...passwordless.interfaces import (
@@ -42,7 +42,6 @@ from ...passwordless.interfaces import (
     UpdateUserUnknownUserIdError,
 )
 from ...thirdparty.interfaces import (
-    GetProviderOkResult,
     ManuallyCreateOrUpdateUserOkResult,
     SignInUpOkResult,
 )
@@ -296,7 +295,7 @@ class RecipeImplementation(RecipeInterface):
         client_type: Optional[str],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -> GetProviderOkResult:
+    ) -> Optional[Provider]:
         if self.tp_get_provider is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_get_provider(

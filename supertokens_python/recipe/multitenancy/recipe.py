@@ -216,6 +216,9 @@ class APIImplementation(APIInterface):
             tenant_id, user_context
         )
 
+        if tenant_config is None:
+            raise Exception("Tenant not found")
+
         provider_inputs_from_static = api_options.static_third_party_providers
         provider_configs_from_core = tenant_config.third_party.providers
 
@@ -233,6 +236,10 @@ class APIImplementation(APIInterface):
                     client_type,
                     user_context,
                 )
+
+                if provider_instance is None:
+                    raise Exception("Should never come here")
+
             except ClientTypeNotFoundError:
                 continue
             final_provider_list.append(
