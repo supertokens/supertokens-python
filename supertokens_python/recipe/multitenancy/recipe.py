@@ -20,9 +20,7 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.recipe.session.claim_base_classes.primitive_array_claim import (
     PrimitiveArrayClaim,
 )
-from supertokens_python.recipe.session.interfaces import JSONObject
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from supertokens_python.utils import get_timestamp_ms
 
 from ...post_init_callbacks import PostSTInitCallbacks
 
@@ -273,27 +271,6 @@ class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
             )
 
         super().__init__("st-t-dmns", fetch_value, default_max_age_in_sec)
-
-    def get_value_from_payload(
-        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
-    ) -> Optional[List[str]]:
-        _ = user_context
-
-        res = payload.get(self.key, {}).get("v")
-        if res is None:
-            return []
-        return res
-
-    def get_last_refetch_time(
-        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
-    ) -> Optional[int]:
-        _ = user_context
-
-        res = payload.get(self.key, {}).get("t")
-        if res is None:
-            return get_timestamp_ms()
-
-        return res
 
 
 AllowedDomainsClaim = AllowedDomainsClaimClass()
