@@ -223,3 +223,41 @@ async def test_get_provider():
     provider6 = await get_provider("t3", "linkedin", None)
     assert provider6 is not None
     assert provider6.config.third_party_id == "linkedin"
+
+
+async def test_get_provider_returns_correct_config_from_core():
+    args = get_st_init_args([thirdparty.init()])
+    init(**args)  # type: ignore
+    start_st()
+    setup_multitenancy_feature()
+
+    await create_or_update_third_party_config(
+        "public",
+        thirdparty.ProviderConfig(
+            "google",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id="core-client-id",
+                    client_secret="core-secret",
+                )
+            ],
+        ),
+    )
+
+    thirdparty_info = await get_provider("public", "google")
+    assert thirdparty_info is not None
+    assert thirdparty_info.config.third_party_id == "google"
+
+    client = thirdparty_info.config.clients[0]
+    assert client.client_id == "core-client-id"
+    assert client.client_secret == "core-secret"
+    assert thirdparty_info.config.user_info_map.from_id_token_payload == {
+        "userId": "sub",
+        "email": "email",
+        "emailVerified": "email_verified",
+    }
+    assert thirdparty_info.config.user_info_map.from_user_info_api == {
+        "userId": "sub",
+        "email": "email",
+        "emailVerified": "email_verified",
+    }
