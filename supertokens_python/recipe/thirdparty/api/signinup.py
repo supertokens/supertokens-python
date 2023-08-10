@@ -14,10 +14,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-from supertokens_python.recipe.multitenancy.exceptions import (
-    RecipeDisabledForTenantError,
-)
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
 if TYPE_CHECKING:
@@ -67,11 +63,6 @@ async def handle_sign_in_up_api(
         tenant_id=tenant_id,
         user_context=user_context,
     )
-
-    if not provider_response.third_party_enabled:
-        raise RecipeDisabledForTenantError(
-            f"The third party recipe is disabled for {tenant_id if tenant_id is not None and tenant_id != DEFAULT_TENANT_ID else 'default tenant'}"
-        )
 
     provider = provider_response.provider
 

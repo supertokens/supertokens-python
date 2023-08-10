@@ -53,9 +53,8 @@ class ManuallyCreateOrUpdateUserOkResult:
 
 
 class GetProviderOkResult:
-    def __init__(self, provider: Provider, third_party_enabled: bool):
+    def __init__(self, provider: Provider):
         self.provider = provider
-        self.third_party_enabled = third_party_enabled
 
 
 class RecipeInterface(ABC):

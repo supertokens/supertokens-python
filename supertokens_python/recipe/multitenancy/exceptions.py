@@ -16,9 +16,5 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 
 
-class TenantDoesNotExistError(SuperTokensError):
-    pass
-
-
-class RecipeDisabledForTenantError(SuperTokensError):
+class MultitenancyError(SuperTokensError):
     pass

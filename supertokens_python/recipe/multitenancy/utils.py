@@ -19,7 +19,6 @@ from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.utils import (
     resolve,
-    send_non_200_response_with_message,
 )
 
 if TYPE_CHECKING:
@@ -62,45 +61,6 @@ class ErrorHandlers:
         )
 
 
-class InputErrorHandlers(ErrorHandlers):
-    def __init__(
-        self,
-        on_tenant_does_not_exist: Union[
-            None,
-            Callable[
-                [SuperTokensError, BaseRequest, BaseResponse],
-                Union[BaseResponse, Awaitable[BaseResponse]],
-            ],
-        ] = None,
-        on_recipe_disabled_for_tenant: Union[
-            None,
-            Callable[
-                [SuperTokensError, BaseRequest, BaseResponse],
-                Union[BaseResponse, Awaitable[BaseResponse]],
-            ],
-        ] = None,
-    ):
-        if on_tenant_does_not_exist is None:
-            on_tenant_does_not_exist = default_on_tenant_does_not_exist
-
-        if on_recipe_disabled_for_tenant is None:
-            on_recipe_disabled_for_tenant = default_on_recipe_disabled_for_tenant
-
-        super().__init__(on_tenant_does_not_exist, on_recipe_disabled_for_tenant)
-
-
-async def default_on_tenant_does_not_exist(
-    err: SuperTokensError, _: BaseRequest, response: BaseResponse
-):
-    return send_non_200_response_with_message(str(err), 422, response)
-
-
-async def default_on_recipe_disabled_for_tenant(
-    err: SuperTokensError, _: BaseRequest, response: BaseResponse
-):
-    return send_non_200_response_with_message(str(err), 403, response)
-
-
 class InputOverrideConfig:
     def __init__(
         self,
@@ -125,33 +85,23 @@ class MultitenancyConfig:
     def __init__(
         self,
         get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId],
-        error_handlers: ErrorHandlers,
         override: OverrideConfig,
     ):
         self.get_allowed_domains_for_tenant_id = get_allowed_domains_for_tenant_id
-        self.error_handlers = error_handlers
         self.override = override
 
 
 def validate_and_normalise_user_input(
     get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId],
-    error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> MultitenancyConfig:
-    if error_handlers is not None and not isinstance(error_handlers, ErrorHandlers):  # type: ignore
-        raise ValueError("error_handlers must be an instance of ErrorHandlers or None")
-
     if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
         raise ValueError("override must be of type OverrideConfig or None")
-
-    if error_handlers is None:
-        error_handlers = InputErrorHandlers()
 
     if override is None:
         override = InputOverrideConfig()
 
     return MultitenancyConfig(
         get_allowed_domains_for_tenant_id,
-        error_handlers,
         OverrideConfig(override.functions, override.apis),
     )
