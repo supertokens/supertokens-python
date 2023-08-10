@@ -47,6 +47,7 @@ def st_init_generator_with_overriden_global_validators(
     def session_function_override(oi: RecipeInterface) -> RecipeInterface:
         async def new_get_global_claim_validators(
             _user_id: str,
+            _tenant_id: str,
             _claim_validators_added_by_other_recipes: List[SessionClaimValidator],
             _user_context: Dict[str, Any],
         ):
@@ -73,6 +74,7 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
     def session_function_override(oi: RecipeInterface) -> RecipeInterface:
         async def new_get_global_claim_validators(
             _user_id: str,
+            _tenant_id: str,
             claim_validators_added_by_other_recipes: List[SessionClaimValidator],
             _user_context: Dict[str, Any],
         ):
