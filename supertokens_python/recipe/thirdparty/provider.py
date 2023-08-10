@@ -155,9 +155,7 @@ class CommonProviderConfig:
         third_party_id: str,
         name: Optional[str] = None,
         authorization_endpoint: Optional[str] = None,
-        authorization_endpoint_query_params: Optional[
-            Dict[str, Union[str, None]]
-        ] = None,
+        authorization_endpoint_query_params: Optional[Dict[str, Any]] = None,
         token_endpoint: Optional[str] = None,
         token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
         user_info_endpoint: Optional[str] = None,

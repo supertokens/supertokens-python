@@ -4,10 +4,12 @@ from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from .active_directory import ActiveDirectory
 from .apple import Apple
+from .bitbucket import Bitbucket
 from .boxy_saml import BoxySAML
 from .discord import Discord
 from .facebook import Facebook
 from .github import Github
+from .gitlab import Gitlab
 from .google_workspaces import GoogleWorkspaces
 from .google import Google
 from .linkedin import Linkedin
@@ -176,12 +178,16 @@ def create_provider(provider_input: ProviderInput) -> Provider:
         return ActiveDirectory(provider_input)
     if provider_input.config.third_party_id.startswith("apple"):
         return Apple(provider_input)
+    if provider_input.config.third_party_id.startswith("bitbucket"):
+        return Bitbucket(provider_input)
     if provider_input.config.third_party_id.startswith("discord"):
         return Discord(provider_input)
     if provider_input.config.third_party_id.startswith("facebook"):
         return Facebook(provider_input)
     if provider_input.config.third_party_id.startswith("github"):
         return Github(provider_input)
+    if provider_input.config.third_party_id.startswith("gitlab"):
+        return Gitlab(provider_input)
     if provider_input.config.third_party_id.startswith("google-workspaces"):
         return GoogleWorkspaces(provider_input)
     if provider_input.config.third_party_id.startswith("google"):
