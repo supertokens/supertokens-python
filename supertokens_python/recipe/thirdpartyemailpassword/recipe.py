@@ -155,7 +155,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             )
 
         if third_party_recipe is not None:
-            self.third_party_recipe: Union[ThirdPartyRecipe, None] = third_party_recipe
+            self.third_party_recipe = third_party_recipe
         else:
 
             def func_override_third_party(
@@ -168,18 +168,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             ) -> ThirdPartyAPIInterface:
                 return get_third_party_interface_impl(self.api_implementation)
 
-            self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
+            # No email delivery ingredient required for third party recipe
+            # but we pass an object for future proofing
             tp_ingredients = ThirdPartyIngredients()
-            if len(self.config.providers) != 0:
-                self.third_party_recipe = ThirdPartyRecipe(
-                    recipe_id,
-                    app_info,
-                    SignInAndUpFeature(self.config.providers),
-                    tp_ingredients,
-                    TPOverrideConfig(
-                        func_override_third_party, apis_override_third_party
-                    ),
-                )
+            self.third_party_recipe = ThirdPartyRecipe(
+                recipe_id,
+                app_info,
+                SignInAndUpFeature(self.config.providers),
+                tp_ingredients,
+                TPOverrideConfig(func_override_third_party, apis_override_third_party),
+            )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
@@ -188,17 +186,13 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 err
             )
             or (
-                self.third_party_recipe is not None
-                and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(
-                    err
-                )
+                self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err)
             )
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
         apis_handled = self.email_password_recipe.get_apis_handled()
-        if self.third_party_recipe is not None:
-            apis_handled = apis_handled + self.third_party_recipe.get_apis_handled()
+        apis_handled += self.third_party_recipe.get_apis_handled()
         return apis_handled
 
     async def handle_api_request(
@@ -221,8 +215,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 request_id, tenant_id, request, path, method, response, user_context
             )
         if (
-            self.third_party_recipe is not None
-            and await self.third_party_recipe.return_api_id_if_can_handle_request(
+            await self.third_party_recipe.return_api_id_if_can_handle_request(
                 path, method, user_context
             )
             is not None
@@ -237,17 +230,13 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     ) -> BaseResponse:
         if self.email_password_recipe.is_error_from_this_recipe_based_on_instance(err):
             return await self.email_password_recipe.handle_error(request, err, response)
-        if (
-            self.third_party_recipe is not None
-            and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err)
-        ):
+        if self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err):
             return await self.third_party_recipe.handle_error(request, err, response)
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = self.email_password_recipe.get_all_cors_headers()
-        if self.third_party_recipe is not None:
-            cors_headers = cors_headers + self.third_party_recipe.get_all_cors_headers()
+        cors_headers += self.third_party_recipe.get_all_cors_headers()
         return cors_headers
 
     @staticmethod
