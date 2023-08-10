@@ -75,7 +75,7 @@ def get_cookies(response: HttpResponse) -> Dict[str, Any]:
 
 
 async def create_new_session_view(request: HttpRequest):
-    await create_new_session(request, "user_id")
+    await create_new_session("public", request, "user_id")
     return JsonResponse({"foo": "bar"})
 
 

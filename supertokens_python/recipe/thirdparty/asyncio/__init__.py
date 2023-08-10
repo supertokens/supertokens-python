@@ -32,9 +32,7 @@ async def get_user_by_id(
 
 
 async def get_users_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[User]:
     if user_context is None:
         user_context = {}
@@ -46,9 +44,9 @@ async def get_users_by_email(
 
 
 async def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -56,16 +54,16 @@ async def get_user_by_third_party_info(
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
         third_party_id,
         third_party_user_id,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
 
 async def manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -74,19 +72,19 @@ async def manually_create_or_update_user(
         third_party_id,
         third_party_user_id,
         email,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
 
 async def get_provider(
+    tenant_id: str,
     third_party_id: str,
     client_type: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_provider(
-        third_party_id, client_type, tenant_id or DEFAULT_TENANT_ID, user_context
+        third_party_id, client_type, tenant_id, user_context
     )

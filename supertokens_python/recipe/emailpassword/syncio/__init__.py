@@ -50,31 +50,31 @@ def get_user_by_id(
 
 
 def get_user_by_email(
+    tenant_id: str,
     email: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[None, User]:
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
 
-    return sync(get_user_by_email(email, tenant_id, user_context))
+    return sync(get_user_by_email(tenant_id, email, user_context))
 
 
 def create_reset_password_token(
+    tenant_id: str,
     user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
         create_reset_password_token,
     )
 
-    return sync(create_reset_password_token(user_id, tenant_id, user_context))
+    return sync(create_reset_password_token(tenant_id, user_id, user_context))
 
 
 def reset_password_using_token(
+    tenant_id: str,
     token: str,
     new_password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
@@ -82,30 +82,30 @@ def reset_password_using_token(
     )
 
     return sync(
-        reset_password_using_token(token, new_password, tenant_id, user_context)
+        reset_password_using_token(tenant_id, token, new_password, user_context)
     )
 
 
 def sign_in(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
     from supertokens_python.recipe.emailpassword.asyncio import sign_in
 
-    return sync(sign_in(email, password, tenant_id, user_context))
+    return sync(sign_in(tenant_id, email, password, user_context))
 
 
 def sign_up(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
 
-    return sync(sign_up(email, password, tenant_id, user_context))
+    return sync(sign_up(tenant_id, email, password, user_context))
 
 
 def send_email(
@@ -118,24 +118,24 @@ def send_email(
 
 
 def create_reset_password_link(
+    tenant_id: str,
     user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
         create_reset_password_link,
     )
 
-    return sync(create_reset_password_link(user_id, tenant_id, user_context))
+    return sync(create_reset_password_link(tenant_id, user_id, user_context))
 
 
 def send_reset_password_email(
+    tenant_id: str,
     user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailpassword.asyncio import (
         send_reset_password_email,
     )
 
-    return sync(send_reset_password_email(user_id, tenant_id, user_context))
+    return sync(send_reset_password_email(tenant_id, user_id, user_context))

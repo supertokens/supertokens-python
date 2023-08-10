@@ -1104,7 +1104,7 @@ async def set_role_api(
 ):
     body = await request.json()
     await create_new_role_or_add_permissions(body["role"], body["permissions"])
-    await add_role_to_user(session_.get_user_id(), body["role"])
+    await add_role_to_user("public", session_.get_user_id(), body["role"])
     await session_.fetch_and_set_claim(UserRoleClaim)
     await session_.fetch_and_set_claim(PermissionClaim)
     return JSONResponse({"status": "OK"})

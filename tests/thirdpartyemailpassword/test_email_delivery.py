@@ -504,7 +504,7 @@ async def test_email_verification_default_backward_compatibility(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     def api_side_effect(request: httpx.Request):
@@ -570,7 +570,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     def api_side_effect(request: httpx.Request):
@@ -654,7 +654,7 @@ async def test_email_verification_backward_compatibility(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, False, {}, {}, None
+        s.recipe_implementation, "public", user_id, False, {}, {}
     )
 
     res = email_verify_token_request(
@@ -725,7 +725,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     def api_side_effect(request: httpx.Request):
@@ -857,7 +857,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     resp = email_verify_token_request(
@@ -934,7 +934,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
     start_st()
 
     resp = await thirdparty_manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
     user_id: str = resp.user.user_id  # type: ignore
 
@@ -942,7 +942,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     res = email_verify_token_request(
@@ -1013,7 +1013,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     start_st()
 
     resp = await thirdparty_manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
     user_id: str = resp.user.user_id  # type: ignore
 
@@ -1021,7 +1021,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     res = email_verify_token_request(

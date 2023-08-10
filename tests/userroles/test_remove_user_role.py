@@ -64,22 +64,22 @@ async def test_remove_role_from_a_user():
     assert result.created_new_role
 
     # Add role to the user:
-    result = await asyncio.add_role_to_user(user_id, role)
+    result = await asyncio.add_role_to_user("public", user_id, role)
     assert isinstance(result, interfaces.AddRoleToUserOkResult)
     assert not result.did_user_already_have_role
 
     # Check that user has a role:
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert result.roles == [role]
 
     # Remove role from the user:
-    result = await asyncio.remove_user_role(user_id, role)
+    result = await asyncio.remove_user_role("public", user_id, role)
     assert isinstance(result, interfaces.RemoveUserRoleOkResult)
     assert result.did_user_have_role
 
     # Check that the permission has been removed from the role:
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert result.roles == []
 
@@ -115,7 +115,7 @@ async def test_remove_unassigned_role_from_user():
     assert result.created_new_role
 
     # Remove (unassigned) role from the user:
-    result = await asyncio.remove_user_role(user_id, role)
+    result = await asyncio.remove_user_role("public", user_id, role)
     assert isinstance(result, interfaces.RemoveUserRoleOkResult)
     assert not result.did_user_have_role
 
@@ -146,5 +146,5 @@ async def test_remove_non_existent_role_from_user():
     role = "role"
 
     # Remove (non-existent) role from the user:
-    result = await asyncio.remove_user_role(user_id, role)
+    result = await asyncio.remove_user_role("public", user_id, role)
     assert isinstance(result, interfaces.UnknownRoleError)

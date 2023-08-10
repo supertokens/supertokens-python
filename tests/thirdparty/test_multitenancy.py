@@ -55,22 +55,22 @@ async def test_thirtyparty_multitenancy_functions():
 
     # sign up:
     user1a = await manually_create_or_update_user(
-        "google", "googleid1", "test@example.com", "t1"
+        "t1", "google", "googleid1", "test@example.com"
     )
     user1b = await manually_create_or_update_user(
-        "facebook", "fbid1", "test@example.com", "t1"
+        "t1", "facebook", "fbid1", "test@example.com"
     )
     user2a = await manually_create_or_update_user(
-        "google", "googleid1", "test@example.com", "t2"
+        "t2", "google", "googleid1", "test@example.com"
     )
     user2b = await manually_create_or_update_user(
-        "facebook", "fbid1", "test@example.com", "t2"
+        "t2", "facebook", "fbid1", "test@example.com"
     )
     user3a = await manually_create_or_update_user(
-        "google", "googleid1", "test@example.com", "t3"
+        "t3", "google", "googleid1", "test@example.com"
     )
     user3b = await manually_create_or_update_user(
-        "facebook", "fbid1", "test@example.com", "t3"
+        "t3", "facebook", "fbid1", "test@example.com"
     )
 
     assert user1a.user.tenant_ids == ["t1"]
@@ -96,21 +96,21 @@ async def test_thirtyparty_multitenancy_functions():
     assert g_user3b == user3b.user
 
     # get user by email:
-    by_email_user1 = await get_users_by_email("test@example.com", "t1")
-    by_email_user2 = await get_users_by_email("test@example.com", "t2")
-    by_email_user3 = await get_users_by_email("test@example.com", "t3")
+    by_email_user1 = await get_users_by_email("t1", "test@example.com")
+    by_email_user2 = await get_users_by_email("t2", "test@example.com")
+    by_email_user3 = await get_users_by_email("t3", "test@example.com")
 
     assert by_email_user1 == [user1a.user, user1b.user]
     assert by_email_user2 == [user2a.user, user2b.user]
     assert by_email_user3 == [user3a.user, user3b.user]
 
     # get user by thirdparty id:
-    g_user_by_tpid1a = await get_user_by_third_party_info("google", "googleid1", "t1")
-    g_user_by_tpid1b = await get_user_by_third_party_info("facebook", "fbid1", "t1")
-    g_user_by_tpid2a = await get_user_by_third_party_info("google", "googleid1", "t2")
-    g_user_by_tpid2b = await get_user_by_third_party_info("facebook", "fbid1", "t2")
-    g_user_by_tpid3a = await get_user_by_third_party_info("google", "googleid1", "t3")
-    g_user_by_tpid3b = await get_user_by_third_party_info("facebook", "fbid1", "t3")
+    g_user_by_tpid1a = await get_user_by_third_party_info("t1", "google", "googleid1")
+    g_user_by_tpid1b = await get_user_by_third_party_info("t1", "facebook", "fbid1")
+    g_user_by_tpid2a = await get_user_by_third_party_info("t2", "google", "googleid1")
+    g_user_by_tpid2b = await get_user_by_third_party_info("t2", "facebook", "fbid1")
+    g_user_by_tpid3a = await get_user_by_third_party_info("t3", "google", "googleid1")
+    g_user_by_tpid3b = await get_user_by_third_party_info("t3", "facebook", "fbid1")
 
     assert g_user_by_tpid1a == user1a.user
     assert g_user_by_tpid1b == user1b.user
@@ -200,20 +200,20 @@ async def test_get_provider():
         ),
     )
 
-    provider1 = await get_provider("google", None, "t1")
+    provider1 = await get_provider("t1", "google", None)
     assert provider1.provider.config.third_party_id == "google"
 
-    provider2 = await get_provider("facebook", None, "t1")
+    provider2 = await get_provider("t1", "facebook", None)
     assert provider2.provider.config.third_party_id == "facebook"
 
-    provider3 = await get_provider("facebook", None, "t2")
+    provider3 = await get_provider("t2", "facebook", None)
     assert provider3.provider.config.third_party_id == "facebook"
 
-    provider4 = await get_provider("discord", None, "t2")
+    provider4 = await get_provider("t2", "discord", None)
     assert provider4.provider.config.third_party_id == "discord"
 
-    provider5 = await get_provider("discord", None, "t3")
+    provider5 = await get_provider("t3", "discord", None)
     assert provider5.provider.config.third_party_id == "discord"
 
-    provider6 = await get_provider("linkedin", None, "t3")
+    provider6 = await get_provider("t3", "linkedin", None)
     assert provider6.provider.config.third_party_id == "linkedin"

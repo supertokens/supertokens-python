@@ -63,7 +63,7 @@ async def test_delete_user_id_mapping(user_type: USER_TYPE):
         skip()
 
     # Create ST User
-    sign_up_res = await sign_up("test@example.com", "password")
+    sign_up_res = await sign_up("public", "test@example.com", "password")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     supertokens_user_id = sign_up_res.user.user_id
@@ -101,7 +101,7 @@ async def test_delete_user_id_mapping_without_and_with_force():
         skip()
 
     # Create a user:
-    sign_up_res = await sign_up("test@example.com", "testPass123")
+    sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     supertokens_user_id = sign_up_res.user.user_id

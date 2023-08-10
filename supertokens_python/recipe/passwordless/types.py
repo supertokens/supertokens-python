@@ -77,12 +77,12 @@ class DeviceType:
 class CreateAndSendCustomEmailParameters:
     def __init__(
         self,
+        tenant_id: str,
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
-        tenant_id: Union[str, None] = None,
     ):
         self.email = email
         self.code_life_time = code_life_time
@@ -98,12 +98,12 @@ PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
 class CreateAndSendCustomTextMessageParameters:
     def __init__(
         self,
+        tenant_id: str,
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
-        tenant_id: Union[str, None] = None,
     ):
         self.code_life_time = code_life_time
         self.pre_auth_session_id = pre_auth_session_id

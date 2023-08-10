@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.userroles.interfaces import (
@@ -31,45 +31,41 @@ from supertokens_python.recipe.userroles.interfaces import (
 
 
 def add_role_to_user(
+    tenant_id: str,
     user_id: str,
     role: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import add_role_to_user
 
-    return sync(add_role_to_user(user_id, role, tenant_id, user_context))
+    return sync(add_role_to_user(tenant_id, user_id, role, user_context))
 
 
 def remove_user_role(
+    tenant_id: str,
     user_id: str,
     role: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[Dict[str, Any], None] = None,
 ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_user_role
 
-    return sync(remove_user_role(user_id, role, tenant_id, user_context))
+    return sync(remove_user_role(tenant_id, user_id, role, user_context))
 
 
 def get_roles_for_user(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[Dict[str, Any], None] = None,
+    tenant_id: str, user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -> GetRolesForUserOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
 
-    return sync(get_roles_for_user(user_id, tenant_id, user_context))
+    return sync(get_roles_for_user(tenant_id, user_id, user_context))
 
 
 def get_users_that_have_role(
-    role: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[Dict[str, Any], None] = None,
+    tenant_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_users_that_have_role
 
-    return sync(get_users_that_have_role(role, tenant_id, user_context))
+    return sync(get_users_that_have_role(tenant_id, role, user_context))
 
 
 def create_new_role_or_add_permissions(

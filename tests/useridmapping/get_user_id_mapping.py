@@ -59,7 +59,7 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
     if not is_version_gte(version, "2.15"):
         skip()
 
-    sign_up_res = await sign_up("test@example.com", "password")
+    sign_up_res = await sign_up("public", "test@example.com", "password")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     supertokens_user_id = sign_up_res.user.user_id

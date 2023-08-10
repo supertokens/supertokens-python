@@ -49,7 +49,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
+        await create_new_session("public", request, user_id, {}, {})
         return {"userId": user_id}
 
     return TestClient(app)

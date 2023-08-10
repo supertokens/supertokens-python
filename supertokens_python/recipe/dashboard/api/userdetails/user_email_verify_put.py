@@ -40,7 +40,7 @@ async def handle_user_email_verify_put(
 
     if verified:
         token_response = await create_email_verification_token(
-            user_id, tenant_id=tenant_id, user_context=user_context
+            tenant_id=tenant_id, user_id=user_id, email=None, user_context=user_context
         )
 
         if isinstance(
@@ -49,7 +49,7 @@ async def handle_user_email_verify_put(
             return UserEmailVerifyPutAPIResponse()
 
         verify_response = await verify_email_using_token(
-            token_response.token, tenant_id, user_context=user_context
+            tenant_id=tenant_id, token=token_response.token, user_context=user_context
         )
 
         if isinstance(verify_response, VerifyEmailUsingTokenInvalidTokenError):

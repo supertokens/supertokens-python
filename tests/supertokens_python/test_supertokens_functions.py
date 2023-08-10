@@ -59,7 +59,7 @@ async def test_supertokens_functions():
     emails = [f"{u}@example.com" for u in ["foo", "bar", "baz"]]
     user_ids: List[str] = []
     for e in emails:
-        signup_resp = await ep_asyncio.sign_up(e, "secret_pass")
+        signup_resp = await ep_asyncio.sign_up("public", e, "secret_pass")
         assert isinstance(signup_resp, SignUpOkResult)
         user_ids.append(signup_resp.user.user_id)
 
@@ -67,12 +67,12 @@ async def test_supertokens_functions():
     assert await st_asyncio.get_user_count() == len(emails)
 
     # Get users in ascending order by joining time
-    users_asc = (await st_asyncio.get_users_oldest_first(limit=10)).users
+    users_asc = (await st_asyncio.get_users_oldest_first("public", limit=10)).users
     emails_asc = [user.email for user in users_asc]
     assert emails_asc == emails
 
     # Get users in descending order by joining time
-    users_desc = (await st_asyncio.get_users_newest_first(limit=10)).users
+    users_desc = (await st_asyncio.get_users_newest_first("public", limit=10)).users
     emails_desc = [user.email for user in users_desc]
     assert emails_desc == emails[::-1]
 
@@ -86,7 +86,7 @@ async def test_supertokens_functions():
 
     # Again, get users in ascending order by joining time
     # We expect that the 2nd user (bar@example.com) must be absent.
-    users_asc = (await st_asyncio.get_users_oldest_first(limit=10)).users
+    users_asc = (await st_asyncio.get_users_oldest_first("public", limit=10)).users
     emails_asc = [user.email for user in users_asc]
     assert emails[1] not in emails_asc  # The 2nd user must be deleted now.
 
@@ -94,10 +94,14 @@ async def test_supertokens_functions():
         # If the version is less than 2.20, query users doesn't exist, so we mark the test successful
         return
     users_asc = (
-        await st_asyncio.get_users_oldest_first(limit=10, query={"email": "baz"})
+        await st_asyncio.get_users_oldest_first(
+            "public", limit=10, query={"email": "baz"}
+        )
     ).users
     users_desc = (
-        await st_asyncio.get_users_newest_first(limit=10, query={"email": "baz"})
+        await st_asyncio.get_users_newest_first(
+            "public", limit=10, query={"email": "baz"}
+        )
     ).users
     emails_asc = [user.email for user in users_asc]
     emails_desc = [user.email for user in users_desc]
@@ -105,10 +109,14 @@ async def test_supertokens_functions():
     assert len(emails_desc) == 1
 
     users_asc = (
-        await st_asyncio.get_users_oldest_first(limit=10, query={"email": "john"})
+        await st_asyncio.get_users_oldest_first(
+            "public", limit=10, query={"email": "john"}
+        )
     ).users
     users_desc = (
-        await st_asyncio.get_users_newest_first(limit=10, query={"email": "john"})
+        await st_asyncio.get_users_newest_first(
+            "public", limit=10, query={"email": "john"}
+        )
     ).users
     emails_asc = [user.email for user in users_asc]
     emails_desc = [user.email for user in users_desc]

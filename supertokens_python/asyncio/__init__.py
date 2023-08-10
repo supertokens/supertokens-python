@@ -28,29 +28,35 @@ from supertokens_python.types import UsersResponse
 
 
 async def get_users_oldest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
 ) -> UsersResponse:
     return await Supertokens.get_instance().get_users(
-        "ASC", limit, pagination_token, include_recipe_ids, query
+        tenant_id, "ASC", limit, pagination_token, include_recipe_ids, query
     )
 
 
 async def get_users_newest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
 ) -> UsersResponse:
     return await Supertokens.get_instance().get_users(
-        "DESC", limit, pagination_token, include_recipe_ids, query
+        tenant_id, "DESC", limit, pagination_token, include_recipe_ids, query
     )
 
 
-async def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -> int:
-    return await Supertokens.get_instance().get_user_count(include_recipe_ids)
+async def get_user_count(
+    include_recipe_ids: Union[None, List[str]] = None, tenant_id: Optional[str] = None
+) -> int:
+    return await Supertokens.get_instance().get_user_count(
+        include_recipe_ids, tenant_id
+    )
 
 
 async def delete_user(user_id: str) -> None:

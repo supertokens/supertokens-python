@@ -37,9 +37,9 @@ from supertokens_python.recipe.emailverification.types import (
 
 
 async def create_email_verification_token(
+    tenant_id: str,
     user_id: str,
     email: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     CreateEmailVerificationTokenOkResult,
@@ -63,9 +63,7 @@ async def create_email_verification_token(
 
 
 async def verify_email_using_token(
-    token: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, token: str, user_context: Union[None, Dict[str, Any]] = None
 ):
     if user_context is None:
         user_context = {}
@@ -98,9 +96,9 @@ async def is_email_verified(
 
 
 async def revoke_email_verification_tokens(
+    tenant_id: str,
     user_id: str,
     email: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> RevokeEmailVerificationTokensOkResult:
     if user_context is None:
@@ -158,9 +156,9 @@ async def send_email(
 
 
 async def create_email_verification_link(
+    tenant_id: str,
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     CreateEmailVerificationLinkOkResult,
@@ -173,7 +171,7 @@ async def create_email_verification_link(
     app_info = recipe_instance.get_app_info()
 
     email_verification_token = await create_email_verification_token(
-        user_id, email, tenant_id, user_context
+        tenant_id, user_id, email, user_context
     )
     if isinstance(
         email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
@@ -191,9 +189,9 @@ async def create_email_verification_link(
 
 
 async def send_email_verification_email(
+    tenant_id: str,
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     SendEmailVerificationEmailOkResult,
@@ -214,7 +212,7 @@ async def send_email_verification_email(
             raise Exception("Unknown User ID provided without email")
 
     email_verification_link = await create_email_verification_link(
-        user_id, email, tenant_id, user_context
+        tenant_id, user_id, email, user_context
     )
 
     if isinstance(

@@ -36,7 +36,7 @@ def get_users_oldest_first(
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            "ASC", limit, pagination_token, include_recipe_ids, query
+            "public", "ASC", limit, pagination_token, include_recipe_ids, query
         )
     )
 
@@ -49,7 +49,7 @@ def get_users_newest_first(
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            "DESC", limit, pagination_token, include_recipe_ids, query
+            "public", "DESC", limit, pagination_token, include_recipe_ids, query
         )
     )
 

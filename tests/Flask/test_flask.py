@@ -191,7 +191,7 @@ def driver_config_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        create_new_session(request, user_id, {}, {})
+        create_new_session("public", request, user_id, {}, {})
 
         return jsonify({"userId": user_id, "session": "ssss"})
 
@@ -748,7 +748,7 @@ def flask_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        s = create_new_session(request, user_id, {}, {})
+        s = create_new_session("public", request, user_id, {}, {})
         return jsonify({"user": s.get_user_id()})
 
     @app.route("/ping")  # type: ignore

@@ -1119,7 +1119,7 @@ def verify_email_api():
     session_: SessionContainer = g.supertokens  # type: ignore
     body: Dict[str, Any] = request.get_json()  # type: ignore
     create_new_role_or_add_permissions(body["role"], body["permissions"])
-    add_role_to_user(session_.get_user_id(), body["role"])
+    add_role_to_user("public", session_.get_user_id(), body["role"])
     session_.sync_fetch_and_set_claim(UserRoleClaim)
     session_.sync_fetch_and_set_claim(PermissionClaim)
     return jsonify({"status": "OK"})

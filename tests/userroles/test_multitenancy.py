@@ -60,7 +60,7 @@ async def test_multitenancy_in_user_roles():
     await create_or_update_tenant("t2", TenantConfig(email_password_enabled=True))
     await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
 
-    user = await sign_up("test@example.com", "password1")
+    user = await sign_up("public", "test@example.com", "password1")
     assert isinstance(user, SignUpOkResult)
     user_id = user.user.user_id
 
@@ -72,18 +72,18 @@ async def test_multitenancy_in_user_roles():
     await create_new_role_or_add_permissions("role2", [])
     await create_new_role_or_add_permissions("role3", [])
 
-    await add_role_to_user(user_id, "role1", "t1")
-    await add_role_to_user(user_id, "role2", "t1")
-    await add_role_to_user(user_id, "role2", "t2")
-    await add_role_to_user(user_id, "role3", "t2")
-    await add_role_to_user(user_id, "role3", "t3")
-    await add_role_to_user(user_id, "role1", "t3")
+    await add_role_to_user("t1", user_id, "role1")
+    await add_role_to_user("t1", user_id, "role2")
+    await add_role_to_user("t2", user_id, "role2")
+    await add_role_to_user("t2", user_id, "role3")
+    await add_role_to_user("t3", user_id, "role3")
+    await add_role_to_user("t3", user_id, "role1")
 
-    roles = await get_roles_for_user(user_id, "t1")
+    roles = await get_roles_for_user("t1", user_id)
     assert roles.roles == ["role1", "role2"]
 
-    roles = await get_roles_for_user(user_id, "t2")
+    roles = await get_roles_for_user("t2", user_id)
     assert roles.roles == ["role2", "role3"]
 
-    roles = await get_roles_for_user(user_id, "t3")
+    roles = await get_roles_for_user("t3", user_id)
     assert roles.roles == ["role1", "role3"]

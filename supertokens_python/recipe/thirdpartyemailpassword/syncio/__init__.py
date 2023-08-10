@@ -33,9 +33,9 @@ def get_user_by_id(
 
 
 def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -44,18 +44,18 @@ def get_user_by_third_party_info(
 
     return sync(
         get_user_by_third_party_info(
-            third_party_id, third_party_user_id, tenant_id, user_context
+            tenant_id, third_party_id, third_party_user_id, user_context
         )
     )
 
 
 def thirdparty_sign_in_up(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
     oauth_tokens: Dict[str, Any],
     raw_user_info_from_provider: RawUserInfoFromProvider,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -64,22 +64,22 @@ def thirdparty_sign_in_up(
 
     return sync(
         thirdparty_sign_in_up(
+            tenant_id,
             third_party_id,
             third_party_user_id,
             email,
             oauth_tokens,
             raw_user_info_from_provider,
-            tenant_id,
             user_context,
         )
     )
 
 
 def thirdparty_manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -88,15 +88,15 @@ def thirdparty_manually_create_or_update_user(
 
     return sync(
         thirdparty_manually_create_or_update_user(
-            third_party_id, third_party_user_id, email, tenant_id, user_context
+            tenant_id, third_party_id, third_party_user_id, email, user_context
         )
     )
 
 
 def thirdparty_get_provider(
+    tenant_id: str,
     third_party_id: str,
     client_type: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -104,26 +104,24 @@ def thirdparty_get_provider(
     )
 
     return sync(
-        thirdparty_get_provider(third_party_id, client_type, tenant_id, user_context)
+        thirdparty_get_provider(tenant_id, third_party_id, client_type, user_context)
     )
 
 
 def create_reset_password_token(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
         create_reset_password_token,
     )
 
-    return sync(create_reset_password_token(user_id, tenant_id, user_context))
+    return sync(create_reset_password_token(tenant_id, user_id, user_context))
 
 
 def reset_password_using_token(
+    tenant_id: str,
     token: str,
     new_password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -131,34 +129,34 @@ def reset_password_using_token(
     )
 
     return sync(
-        reset_password_using_token(token, new_password, tenant_id, user_context)
+        reset_password_using_token(tenant_id, token, new_password, user_context)
     )
 
 
 def emailpassword_sign_in(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
         emailpassword_sign_in,
     )
 
-    return sync(emailpassword_sign_in(email, password, tenant_id, user_context))
+    return sync(emailpassword_sign_in(tenant_id, email, password, user_context))
 
 
 def emailpassword_sign_up(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
         emailpassword_sign_up,
     )
 
-    return sync(emailpassword_sign_up(email, password, tenant_id, user_context))
+    return sync(emailpassword_sign_up(tenant_id, email, password, user_context))
 
 
 def update_email_or_password(
@@ -186,15 +184,13 @@ def update_email_or_password(
 
 
 def get_users_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[User]:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
         get_users_by_email,
     )
 
-    return sync(get_users_by_email(email, tenant_id, user_context))
+    return sync(get_users_by_email(tenant_id, email, user_context))
 
 
 def send_email(
@@ -207,24 +203,22 @@ def send_email(
 
 
 def create_reset_password_link(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
         create_reset_password_link,
     )
 
-    return sync(create_reset_password_link(user_id, tenant_id, user_context))
+    return sync(create_reset_password_link(tenant_id, user_id, user_context))
 
 
 def send_reset_password_email(
+    tenant_id: str,
     user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
         send_reset_password_email,
     )
 
-    return sync(send_reset_password_email(user_id, tenant_id, user_context))
+    return sync(send_reset_password_email(tenant_id, user_id, user_context))

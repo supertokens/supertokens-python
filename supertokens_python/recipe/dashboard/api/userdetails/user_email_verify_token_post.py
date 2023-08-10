@@ -31,7 +31,9 @@ async def handle_email_verify_token_post(
             "Required parameter 'userId' is missing or has an invalid type"
         )
 
-    res = await send_email_verification_email(user_id, None, tenant_id, user_context)
+    res = await send_email_verification_email(
+        tenant_id=tenant_id, user_id=user_id, email=None, user_context=user_context
+    )
 
     if isinstance(res, SendEmailVerificationEmailAlreadyVerifiedError):
         return UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse()

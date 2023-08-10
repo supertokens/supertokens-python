@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 async def create_or_update_tenant(
-    tenant_id: Optional[str],
+    tenant_id: str,
     config: Optional[TenantConfig],
     user_context: Optional[Dict[str, Any]] = None,
 ) -> CreateOrUpdateTenantOkResult:
@@ -60,7 +60,7 @@ async def delete_tenant(
 
 
 async def get_tenant(
-    tenant_id: Optional[str], user_context: Optional[Dict[str, Any]] = None
+    tenant_id: str, user_context: Optional[Dict[str, Any]] = None
 ) -> GetTenantOkResult:
     if user_context is None:
         user_context = {}
@@ -81,7 +81,7 @@ async def list_all_tenants(
 
 
 async def create_or_update_third_party_config(
-    tenant_id: Optional[str],
+    tenant_id: str,
     config: ProviderConfig,
     skip_validation: Optional[bool] = None,
     user_context: Optional[Dict[str, Any]] = None,
@@ -97,7 +97,7 @@ async def create_or_update_third_party_config(
 
 
 async def delete_third_party_config(
-    tenant_id: Optional[str],
+    tenant_id: str,
     third_party_id: str,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> DeleteThirdPartyConfigOkResult:
@@ -112,7 +112,7 @@ async def delete_third_party_config(
 
 
 async def associate_user_to_tenant(
-    tenant_id: Optional[str],
+    tenant_id: str,
     user_id: str,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
@@ -133,7 +133,7 @@ async def associate_user_to_tenant(
 
 
 async def dissociate_user_from_tenant(
-    tenant_id: Optional[str],
+    tenant_id: str,
     user_id: str,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> DisassociateUserFromTenantOkResult:

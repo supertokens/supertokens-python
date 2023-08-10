@@ -584,23 +584,25 @@ async def create_users(
         users = json.loads(json_data.read())["users"]
     for user in users:
         if user["recipe"] == "emailpassword" and emailpassword:
-            await sign_up(user["email"], user["password"])
+            await sign_up("public", user["email"], user["password"])
         elif user["recipe"] == "passwordless" and passwordless:
             if user.get("email"):
-                coderesponse = await create_code(user["email"])
+                coderesponse = await create_code("public", user["email"])
                 await consume_code(
+                    "public",
                     coderesponse.pre_auth_session_id,
                     coderesponse.user_input_code,
                     coderesponse.device_id,
                 )
             else:
-                coderesponse = await create_code(None, user["phone"])
+                coderesponse = await create_code("public", None, user["phone"])
                 await consume_code(
+                    "public",
                     coderesponse.pre_auth_session_id,
                     coderesponse.user_input_code,
                     coderesponse.device_id,
                 )
         elif user["recipe"] == "thirdparty" and thirdparty:
             await manually_create_or_update_user(
-                user["provider"], user["userId"], user["email"]
+                "public", user["provider"], user["userId"], user["email"]
             )

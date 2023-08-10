@@ -162,7 +162,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         client_type: Optional[str],
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         return await self.recipe_implementation.thirdparty_get_provider(

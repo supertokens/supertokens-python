@@ -37,9 +37,9 @@ async def get_user_by_id(
 
 
 async def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -53,10 +53,10 @@ async def get_user_by_third_party_info(
 
 
 async def thirdparty_manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -71,9 +71,9 @@ async def thirdparty_manually_create_or_update_user(
 
 
 async def thirdparty_get_provider(
+    tenant_id: str,
     third_party_id: str,
     client_type: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -84,9 +84,7 @@ async def thirdparty_get_provider(
 
 
 async def get_users_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[User]:
     if user_context is None:
         user_context = {}
@@ -96,10 +94,10 @@ async def get_users_by_email(
 
 
 async def create_code(
+    tenant_id: str,
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.CreateCodeOkResult:
     if user_context is None:
@@ -114,9 +112,9 @@ async def create_code(
 
 
 async def create_new_code_for_device(
+    tenant_id: str,
     device_id: str,
     user_input_code: Union[str, None] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     interfaces.CreateNewCodeForDeviceOkResult,
@@ -134,11 +132,11 @@ async def create_new_code_for_device(
 
 
 async def consume_code(
+    tenant_id: str,
     pre_auth_session_id: str,
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
     link_code: Union[str, None] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     interfaces.ConsumeCodeOkResult,
@@ -159,9 +157,7 @@ async def consume_code(
 
 
 async def get_user_by_phone_number(
-    phone_number: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[User, None]:
     if user_context is None:
         user_context = {}
@@ -214,9 +210,9 @@ async def delete_phone_number_for_user(
 
 
 async def revoke_all_codes(
+    tenant_id: str,
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.RevokeAllCodesOkResult:
     if user_context is None:
@@ -230,9 +226,7 @@ async def revoke_all_codes(
 
 
 async def revoke_code(
-    code_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, code_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> interfaces.RevokeCodeOkResult:
     if user_context is None:
         user_context = {}
@@ -244,9 +238,7 @@ async def revoke_code(
 
 
 async def list_codes_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[interfaces.DeviceType]:
     if user_context is None:
         user_context = {}
@@ -256,9 +248,7 @@ async def list_codes_by_email(
 
 
 async def list_codes_by_phone_number(
-    phone_number: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[interfaces.DeviceType]:
     if user_context is None:
         user_context = {}
@@ -270,9 +260,7 @@ async def list_codes_by_phone_number(
 
 
 async def list_codes_by_device_id(
-    device_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, device_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[interfaces.DeviceType, None]:
     if user_context is None:
         user_context = {}
@@ -284,8 +272,8 @@ async def list_codes_by_device_id(
 
 
 async def list_codes_by_pre_auth_session_id(
+    tenant_id: str,
     pre_auth_session_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[interfaces.DeviceType, None]:
     if user_context is None:
@@ -298,34 +286,34 @@ async def list_codes_by_pre_auth_session_id(
 
 
 async def create_magic_link(
+    tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         email=email,
         phone_number=phone_number,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         user_context=user_context,
     )
 
 
 async def passwordlessSigninup(
+    tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.ConsumeCodeOkResult:
     if user_context is None:
         user_context = {}
     result = (
         await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(
+            tenant_id=tenant_id or DEFAULT_TENANT_ID,
             email=email,
             phone_number=phone_number,
-            tenant_id=tenant_id or DEFAULT_TENANT_ID,
             user_context=user_context,
         )
     )

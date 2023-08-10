@@ -23,13 +23,13 @@ from supertokens_python.utils import send_200_response
 
 async def handle_login_methods_api(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
     if api_implementation.disable_login_methods_get:
         return None
 
-    tenant_id = api_options.request.get_query_param("tenantId")
     client_type = api_options.request.get_query_param("clientType")
 
     result = await api_implementation.login_methods_get(

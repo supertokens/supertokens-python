@@ -287,7 +287,7 @@ def login_options():
 @app.route("/login", methods=["POST"])  # type: ignore
 def login():
     user_id: str = request.get_json()["userId"]  # type: ignore
-    _session = create_new_session(request, user_id)
+    _session = create_new_session("public", request, user_id)
     return _session.get_user_id()
 
 

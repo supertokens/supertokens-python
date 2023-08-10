@@ -48,9 +48,9 @@ async def get_user_by_id(
 
 
 async def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -64,12 +64,12 @@ async def get_user_by_third_party_info(
 
 
 async def thirdparty_sign_in_up(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
     oauth_tokens: Dict[str, Any],
     raw_user_info_from_provider: RawUserInfoFromProvider,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -87,10 +87,10 @@ async def thirdparty_sign_in_up(
 
 
 async def thirdparty_manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -105,9 +105,9 @@ async def thirdparty_manually_create_or_update_user(
 
 
 async def thirdparty_get_provider(
+    tenant_id: str,
     third_party_id: str,
     client_type: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -118,9 +118,7 @@ async def thirdparty_get_provider(
 
 
 async def create_reset_password_token(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ):
     if user_context is None:
         user_context = {}
@@ -130,9 +128,9 @@ async def create_reset_password_token(
 
 
 async def reset_password_using_token(
+    tenant_id: str,
     token: str,
     new_password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -143,9 +141,9 @@ async def reset_password_using_token(
 
 
 async def emailpassword_sign_in(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -156,9 +154,9 @@ async def emailpassword_sign_in(
 
 
 async def emailpassword_sign_up(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -189,9 +187,7 @@ async def update_email_or_password(
 
 
 async def get_users_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[User]:
     if user_context is None:
         user_context = {}
@@ -215,11 +211,9 @@ async def send_email(
 
 
 async def create_reset_password_link(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
-    token = await create_reset_password_token(user_id, tenant_id, user_context)
+    token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
         return CreateResetPasswordLinkUknownUserIdError()
 
@@ -239,11 +233,11 @@ async def create_reset_password_link(
 
 
 async def send_reset_password_email(
+    tenant_id: str,
     user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
-    link = await create_reset_password_link(user_id, tenant_id, user_context)
+    link = await create_reset_password_link(tenant_id, user_id, user_context)
     if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
         return CreateResetPasswordEmailUnknownUserIdError()
 

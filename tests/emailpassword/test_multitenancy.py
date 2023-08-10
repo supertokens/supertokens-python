@@ -66,9 +66,9 @@ async def test_multitenancy_in_emailpassword():
     await create_or_update_tenant("t2", TenantConfig(email_password_enabled=True))
     await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
 
-    user1 = await sign_up("test@example.com", "password1", "t1")
-    user2 = await sign_up("test@example.com", "password2", "t2")
-    user3 = await sign_up("test@example.com", "password3", "t3")
+    user1 = await sign_up("t1", "test@example.com", "password1")
+    user2 = await sign_up("t2", "test@example.com", "password2")
+    user3 = await sign_up("t3", "test@example.com", "password3")
 
     assert isinstance(user1, SignUpOkResult)
     assert isinstance(user2, SignUpOkResult)
@@ -83,9 +83,9 @@ async def test_multitenancy_in_emailpassword():
     assert user3.user.tenant_ids == ["t3"]
 
     # sign in
-    ep_user1 = await sign_in("test@example.com", "password1", "t1")
-    ep_user2 = await sign_in("test@example.com", "password2", "t2")
-    ep_user3 = await sign_in("test@example.com", "password3", "t3")
+    ep_user1 = await sign_in("t1", "test@example.com", "password1")
+    ep_user2 = await sign_in("t2", "test@example.com", "password2")
+    ep_user3 = await sign_in("t3", "test@example.com", "password3")
 
     assert isinstance(ep_user1, SignInOkResult)
     assert isinstance(ep_user2, SignInOkResult)
@@ -105,18 +105,18 @@ async def test_multitenancy_in_emailpassword():
     assert g_user3 == user3.user
 
     # get user by email:
-    by_email_user1 = await get_user_by_email("test@example.com", "t1")
-    by_email_user2 = await get_user_by_email("test@example.com", "t2")
-    by_email_user3 = await get_user_by_email("test@example.com", "t3")
+    by_email_user1 = await get_user_by_email("t1", "test@example.com")
+    by_email_user2 = await get_user_by_email("t2", "test@example.com")
+    by_email_user3 = await get_user_by_email("t3", "test@example.com")
 
     assert by_email_user1 == user1.user
     assert by_email_user2 == user2.user
     assert by_email_user3 == user3.user
 
     # create password reset token:
-    pless_reset_link1 = await create_reset_password_token(user1.user.user_id, "t1")
-    pless_reset_link2 = await create_reset_password_token(user2.user.user_id, "t2")
-    pless_reset_link3 = await create_reset_password_token(user3.user.user_id, "t3")
+    pless_reset_link1 = await create_reset_password_token("t1", user1.user.user_id)
+    pless_reset_link2 = await create_reset_password_token("t2", user2.user.user_id)
+    pless_reset_link3 = await create_reset_password_token("t3", user3.user.user_id)
 
     assert isinstance(pless_reset_link1, CreateResetPasswordOkResult)
     assert isinstance(pless_reset_link2, CreateResetPasswordOkResult)
@@ -127,14 +127,14 @@ async def test_multitenancy_in_emailpassword():
     assert pless_reset_link3.token is not None
 
     # reset password using token:
-    await reset_password_using_token(pless_reset_link1.token, "newpassword1", "t1")
-    await reset_password_using_token(pless_reset_link2.token, "newpassword2", "t2")
-    await reset_password_using_token(pless_reset_link3.token, "newpassword3", "t3")
+    await reset_password_using_token("t1", pless_reset_link1.token, "newpassword1")
+    await reset_password_using_token("t2", pless_reset_link2.token, "newpassword2")
+    await reset_password_using_token("t3", pless_reset_link3.token, "newpassword3")
 
     # new password should work:
-    s_user1 = await sign_in("test@example.com", "newpassword1", "t1")
-    s_user2 = await sign_in("test@example.com", "newpassword2", "t2")
-    s_user3 = await sign_in("test@example.com", "newpassword3", "t3")
+    s_user1 = await sign_in("t1", "test@example.com", "newpassword1")
+    s_user2 = await sign_in("t2", "test@example.com", "newpassword2")
+    s_user3 = await sign_in("t3", "test@example.com", "newpassword3")
 
     assert isinstance(s_user1, SignInOkResult)
     assert isinstance(s_user2, SignInOkResult)

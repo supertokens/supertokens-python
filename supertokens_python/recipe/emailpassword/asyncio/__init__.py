@@ -65,21 +65,17 @@ async def get_user_by_id(
 
 
 async def get_user_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(
-        email, tenant_id or DEFAULT_TENANT_ID, user_context
+        tenant_id or DEFAULT_TENANT_ID, email, user_context
     )
 
 
 async def create_reset_password_token(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ):
     if user_context is None:
         user_context = {}
@@ -89,22 +85,22 @@ async def create_reset_password_token(
 
 
 async def reset_password_using_token(
+    tenant_id: str,
     token: str,
     new_password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        token, new_password, tenant_id or DEFAULT_TENANT_ID, user_context
+        new_password, tenant_id or DEFAULT_TENANT_ID, token, user_context
     )
 
 
 async def sign_in(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -115,9 +111,9 @@ async def sign_in(
 
 
 async def sign_up(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -139,11 +135,9 @@ async def send_email(
 
 
 async def create_reset_password_link(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
-    token = await create_reset_password_token(user_id, tenant_id, user_context)
+    token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
         return CreateResetPasswordLinkUknownUserIdError()
 
@@ -159,11 +153,9 @@ async def create_reset_password_link(
 
 
 async def send_reset_password_email(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
-    link = await create_reset_password_link(user_id, tenant_id, user_context)
+    link = await create_reset_password_link(tenant_id, user_id, user_context)
     if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
         return CreateResetPasswordEmailUnknownUserIdError()
 

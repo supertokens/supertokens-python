@@ -97,19 +97,16 @@ class GetSessionAPIResponse:
 
 async def create_new_session(
     recipe_implementation: RecipeImplementation,
+    tenant_id: str,
     user_id: str,
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
-    tenant_id: Optional[str],
 ) -> CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
-    if tenant_id is None:
-        tenant_id = DEFAULT_TENANT_ID
-
     enable_anti_csrf = (
         disable_anti_csrf is False
         and recipe_implementation.config.anti_csrf == "VIA_TOKEN"

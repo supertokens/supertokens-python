@@ -35,7 +35,7 @@ from supertokens_python.recipe.thirdparty.exceptions import ClientTypeNotFoundEr
 class APIImplementation(APIInterface):
     async def login_methods_get(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         client_type: Optional[str],
         api_options: APIOptions,
         user_context: Dict[str, Any],

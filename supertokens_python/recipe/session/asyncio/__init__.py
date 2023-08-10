@@ -49,11 +49,11 @@ _T = TypeVar("_T")
 
 
 async def create_new_session(
+    tenant_id: str,
     request: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -76,16 +76,16 @@ async def create_new_session(
         config,
         app_info,
         session_data_in_database,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
     )
 
 
 async def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -117,7 +117,7 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context=user_context,
     )
 

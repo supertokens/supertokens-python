@@ -19,7 +19,7 @@ from ..interfaces import TenantConfig, ProviderConfig
 
 
 def create_or_update_tenant(
-    tenant_id: Optional[str],
+    tenant_id: str,
     config: Optional[TenantConfig],
     user_context: Optional[Dict[str, Any]] = None,
 ):
@@ -40,7 +40,7 @@ def delete_tenant(tenant_id: str, user_context: Optional[Dict[str, Any]] = None)
     return sync(delete_tenant(tenant_id, user_context))
 
 
-def get_tenant(tenant_id: Optional[str], user_context: Optional[Dict[str, Any]] = None):
+def get_tenant(tenant_id: str, user_context: Optional[Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
 
@@ -59,7 +59,7 @@ def list_all_tenants(user_context: Optional[Dict[str, Any]] = None):
 
 
 def create_or_update_third_party_config(
-    tenant_id: Optional[str],
+    tenant_id: str,
     config: ProviderConfig,
     skip_validation: Optional[bool] = None,
     user_context: Optional[Dict[str, Any]] = None,
@@ -79,7 +79,7 @@ def create_or_update_third_party_config(
 
 
 def delete_third_party_config(
-    tenant_id: Optional[str],
+    tenant_id: str,
     third_party_id: str,
     user_context: Optional[Dict[str, Any]] = None,
 ):
@@ -92,7 +92,7 @@ def delete_third_party_config(
 
 
 def associate_user_to_tenant(
-    tenant_id: Optional[str],
+    tenant_id: str,
     user_id: str,
     user_context: Optional[Dict[str, Any]] = None,
 ):
@@ -105,7 +105,7 @@ def associate_user_to_tenant(
 
 
 def dissociate_user_from_tenant(
-    tenant_id: Optional[str],
+    tenant_id: str,
     user_id: str,
     user_context: Optional[Dict[str, Any]] = None,
 ):

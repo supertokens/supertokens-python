@@ -64,11 +64,11 @@ async def test_get_roles_for_user():
         assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
         assert result.created_new_role
 
-        result = await asyncio.add_role_to_user(user_id, role)
+        result = await asyncio.add_role_to_user("public", user_id, role)
         assert isinstance(result, interfaces.AddRoleToUserOkResult)
         assert not result.did_user_already_have_role
 
     # Get all the roles assigned the user
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert result.roles == roles
