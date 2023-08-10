@@ -28,7 +28,12 @@ from supertokens_python.recipe.thirdparty.asyncio import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from tests.utils import get_st_init_args
-from tests.utils import setup_function, teardown_function, setup_multitenancy_feature
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    setup_multitenancy_feature,
+    start_st,
+)
 
 
 _ = setup_function
@@ -37,10 +42,11 @@ _ = teardown_function
 pytestmark = mark.asyncio
 
 
-async def test_multitenancy_functions():
+async def test_thirtyparty_multitenancy_functions():
     # test that different roles can be assigned for the same user for each tenant
     args = get_st_init_args([session.init(), thirdparty.init(), multitenancy.init()])
     init(**args)  # type: ignore
+    start_st()
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
@@ -115,13 +121,45 @@ async def test_multitenancy_functions():
 
 
 async def test_get_provider():
-    args = get_st_init_args([session.init(), thirdparty.init(), multitenancy.init()])
+    args = get_st_init_args(
+        [
+            session.init(),
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="google",
+                            )
+                        ),
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="facebook",
+                            )
+                        ),
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="discord",
+                            )
+                        ),
+                        thirdparty.ProviderInput(
+                            thirdparty.ProviderConfig(
+                                third_party_id="linkedin",
+                            )
+                        ),
+                    ]
+                )
+            ),
+            multitenancy.init(),
+        ]
+    )
     init(**args)
+    start_st()
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
-    await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
-    await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant("t2", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant("t3", TenantConfig(third_party_enabled=True))
 
     await create_or_update_third_party_config(
         "t1",

@@ -56,5 +56,5 @@ async def test_should_work_for_non_existing_handle():
     init(**new_st_init)  # type: ignore
     start_st()
 
-    res = await get_claim_value("non_existing_handle", TrueClaim)
+    res = await get_claim_value("non-existing-handle", TrueClaim)
     assert isinstance(res, SessionDoesNotExistError)

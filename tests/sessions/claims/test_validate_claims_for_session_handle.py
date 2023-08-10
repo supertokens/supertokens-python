@@ -59,6 +59,6 @@ async def test_should_work_for_not_existing_handle():
     start_st()
 
     res = await validate_claims_for_session_handle(
-        "non_existing_handle", lambda _, __, ___: []
+        "non-existing-handle", lambda _, __, ___: []
     )
     assert isinstance(res, SessionDoesNotExistError)

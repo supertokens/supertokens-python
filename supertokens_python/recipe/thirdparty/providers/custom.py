@@ -43,6 +43,7 @@ def get_provider_config_for_client(
         force_pkce=client_config.force_pkce,
         additional_config=client_config.additional_config,
         # CommonProviderConfig
+        third_party_id=config.third_party_id,
         name=config.name,
         authorization_endpoint=config.authorization_endpoint,
         authorization_endpoint_query_params=config.authorization_endpoint_query_params,
@@ -179,7 +180,8 @@ class GenericProvider(Provider):
         self.input_config = input_config = self._normalize_input(provider_config)
 
         provider_config_for_client = ProviderConfigForClient(
-            # Will automatically get replaced by correct value
+            # Will automatically get replaced with correct value
+            # in get_provider_config_for_client
             # when fetch_and_set_config function runs
             client_id="temp",
             client_secret=None,

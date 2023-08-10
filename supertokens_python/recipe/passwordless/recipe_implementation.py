@@ -206,7 +206,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         param = {"phoneNumber": phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath("{tenant_id}/recipe/user"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/user"), param
         )
         if result["status"] == "OK":
             email_resp = None

@@ -33,7 +33,12 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from tests.utils import get_st_init_args
-from tests.utils import setup_function, teardown_function, setup_multitenancy_feature
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    setup_multitenancy_feature,
+    start_st,
+)
 
 
 _ = setup_function
@@ -42,7 +47,7 @@ _ = teardown_function
 pytestmark = mark.asyncio
 
 
-async def test_multitenancy_in_user_roles():
+async def test_multitenancy_in_emailpassword():
     # test that different roles can be assigned for the same user for each tenant
     args = get_st_init_args(
         [
@@ -53,6 +58,8 @@ async def test_multitenancy_in_user_roles():
         ]
     )
     init(**args)  # type: ignore
+    start_st()
+
     setup_multitenancy_feature()
 
     await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
@@ -77,14 +84,16 @@ async def test_multitenancy_in_user_roles():
 
     # sign in
     ep_user1 = await sign_in("test@example.com", "password1", "t1")
-    ep_user2 = await sign_in("test@example.com", "password1", "t2")
-    ep_user3 = await sign_in("test@example.com", "password1", "t3")
+    ep_user2 = await sign_in("test@example.com", "password2", "t2")
+    ep_user3 = await sign_in("test@example.com", "password3", "t3")
 
     assert isinstance(ep_user1, SignInOkResult)
     assert isinstance(ep_user2, SignInOkResult)
     assert isinstance(ep_user3, SignInOkResult)
 
-    assert ep_user1.user.user_id == user2.user.user_id == user3.user.user_id
+    assert ep_user1.user.user_id == user1.user.user_id
+    assert ep_user2.user.user_id == user2.user.user_id
+    assert ep_user3.user.user_id == user3.user.user_id
 
     # get user by id:
     g_user1 = await get_user_by_id(user1.user.user_id)
@@ -106,8 +115,8 @@ async def test_multitenancy_in_user_roles():
 
     # create password reset token:
     pless_reset_link1 = await create_reset_password_token(user1.user.user_id, "t1")
-    pless_reset_link2 = await create_reset_password_token(user1.user.user_id, "t2")
-    pless_reset_link3 = await create_reset_password_token(user1.user.user_id, "t3")
+    pless_reset_link2 = await create_reset_password_token(user2.user.user_id, "t2")
+    pless_reset_link3 = await create_reset_password_token(user3.user.user_id, "t3")
 
     assert isinstance(pless_reset_link1, CreateResetPasswordOkResult)
     assert isinstance(pless_reset_link2, CreateResetPasswordOkResult)
