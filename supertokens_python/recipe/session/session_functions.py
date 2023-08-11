@@ -300,8 +300,7 @@ async def get_session(
                     ]  # if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
                 ),  # This will throw error if others are none and 'expiryTime' key doesn't exist in the payload
                 response["session"].get("tenantId")
-                or (access_token_info or {}).get("tenantId")
-                or DEFAULT_TENANT_ID,
+                or (access_token_info or {}).get("tenantId"),
             ),
             GetSessionAPIResponseAccessToken(
                 response["accessToken"]["token"],

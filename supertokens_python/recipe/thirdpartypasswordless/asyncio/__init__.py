@@ -47,7 +47,7 @@ async def get_user_by_third_party_info(
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
         third_party_id,
         third_party_user_id,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
@@ -65,7 +65,7 @@ async def thirdparty_manually_create_or_update_user(
         third_party_id,
         third_party_user_id,
         email,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
@@ -79,7 +79,7 @@ async def thirdparty_get_provider(
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_get_provider(
-        third_party_id, client_type, tenant_id or DEFAULT_TENANT_ID, user_context
+        third_party_id, client_type, tenant_id, user_context
     )
 
 
@@ -89,7 +89,7 @@ async def get_users_by_email(
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_users_by_email(
-        email, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, tenant_id, user_context
     )
 
 
@@ -106,7 +106,7 @@ async def create_code(
         email=email,
         phone_number=phone_number,
         user_input_code=user_input_code,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -126,7 +126,7 @@ async def create_new_code_for_device(
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(
         device_id=device_id,
         user_input_code=user_input_code,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -151,7 +151,7 @@ async def consume_code(
         user_input_code=user_input_code,
         device_id=device_id,
         link_code=link_code,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -163,7 +163,7 @@ async def get_user_by_phone_number(
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
         phone_number=phone_number,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -220,7 +220,7 @@ async def revoke_all_codes(
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(
         email=email,
         phone_number=phone_number,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -232,7 +232,7 @@ async def revoke_code(
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_code(
         code_id=code_id,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -243,7 +243,7 @@ async def list_codes_by_email(
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(
-        email=email, tenant_id=tenant_id or DEFAULT_TENANT_ID, user_context=user_context
+        email=email, tenant_id=tenant_id, user_context=user_context
     )
 
 
@@ -254,7 +254,7 @@ async def list_codes_by_phone_number(
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(
         phone_number=phone_number,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -266,7 +266,7 @@ async def list_codes_by_device_id(
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(
         device_id=device_id,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -280,7 +280,7 @@ async def list_codes_by_pre_auth_session_id(
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(
         pre_auth_session_id=pre_auth_session_id,
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -294,7 +294,7 @@ async def create_magic_link(
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
-        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        tenant_id=tenant_id,
         email=email,
         phone_number=phone_number,
         user_context=user_context,
@@ -311,7 +311,7 @@ async def passwordlessSigninup(
         user_context = {}
     result = (
         await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(
-            tenant_id=tenant_id or DEFAULT_TENANT_ID,
+            tenant_id=tenant_id,
             email=email,
             phone_number=phone_number,
             user_context=user_context,

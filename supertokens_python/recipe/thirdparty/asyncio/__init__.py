@@ -18,8 +18,6 @@ from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
 from ..types import User
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
 
 async def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
@@ -38,7 +36,7 @@ async def get_users_by_email(
         user_context = {}
     return (
         await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(
-            email, tenant_id or DEFAULT_TENANT_ID, user_context
+            email, tenant_id, user_context
         )
     )
 

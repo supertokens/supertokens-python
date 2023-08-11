@@ -27,8 +27,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
 from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
@@ -58,7 +56,7 @@ async def create_email_verification_token(
             raise Exception("Unknown User ID provided without email")
 
     return await recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, tenant_id or DEFAULT_TENANT_ID, user_context
+        user_id, email, tenant_id, user_context
     )
 
 
@@ -68,7 +66,7 @@ async def verify_email_using_token(
     if user_context is None:
         user_context = {}
     return await EmailVerificationRecipe.get_instance().recipe_implementation.verify_email_using_token(
-        token, tenant_id or DEFAULT_TENANT_ID, user_context
+        token, tenant_id, user_context
     )
 
 
@@ -115,7 +113,7 @@ async def revoke_email_verification_tokens(
             raise Exception("Unknown User ID provided without email")
 
     return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, tenant_id or DEFAULT_TENANT_ID, user_context
+        user_id, email, tenant_id, user_context
     )
 
 
@@ -183,7 +181,7 @@ async def create_email_verification_link(
             app_info,
             email_verification_token.token,
             recipe_instance.get_recipe_id(),
-            tenant_id or DEFAULT_TENANT_ID,
+            tenant_id,
         )
     )
 

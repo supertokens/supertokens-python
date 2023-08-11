@@ -57,7 +57,7 @@ async def get_user_by_third_party_info(
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
         third_party_id,
         third_party_user_id,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
@@ -75,7 +75,7 @@ async def thirdparty_manually_create_or_update_user(
         third_party_id,
         third_party_user_id,
         email,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
@@ -89,7 +89,7 @@ async def thirdparty_get_provider(
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_get_provider(
-        third_party_id, client_type, tenant_id or DEFAULT_TENANT_ID, user_context
+        third_party_id, client_type, tenant_id, user_context
     )
 
 
@@ -99,7 +99,7 @@ async def create_reset_password_token(
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(
-        user_id, tenant_id or DEFAULT_TENANT_ID, user_context
+        user_id, tenant_id, user_context
     )
 
 
@@ -112,7 +112,7 @@ async def reset_password_using_token(
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        token, new_password, tenant_id or DEFAULT_TENANT_ID, user_context
+        token, new_password, tenant_id, user_context
     )
 
 
@@ -125,7 +125,7 @@ async def emailpassword_sign_in(
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_in(
-        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, password, tenant_id, user_context
     )
 
 
@@ -138,7 +138,7 @@ async def emailpassword_sign_up(
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_up(
-        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, password, tenant_id, user_context
     )
 
 
@@ -168,7 +168,7 @@ async def get_users_by_email(
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(
-        email, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, tenant_id, user_context
     )
 
 
@@ -178,8 +178,6 @@ async def send_email(
 ):
     if user_context is None:
         user_context = {}
-    if input_.tenant_id is None:
-        input_.tenant_id = DEFAULT_TENANT_ID
 
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
         input_, user_context
@@ -203,7 +201,7 @@ async def create_reset_password_link(
             recipe_instance.get_app_info(),
             token.token,
             recipe_instance.get_recipe_id(),
-            tenant_id or DEFAULT_TENANT_ID,
+            tenant_id,
         )
     )
 
