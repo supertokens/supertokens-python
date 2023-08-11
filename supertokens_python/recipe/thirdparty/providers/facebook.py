@@ -76,10 +76,4 @@ def Facebook(input: ProviderInput) -> Provider:  # pylint: disable=redefined-bui
     if input.config.user_info_map.from_user_info_api.user_id is None:
         input.config.user_info_map.from_user_info_api.user_id = "id"
 
-    if input.config.user_info_map.from_user_info_api.email is None:
-        input.config.user_info_map.from_user_info_api.email = "email"
-
-    if input.config.user_info_map.from_user_info_api.email_verified is None:
-        input.config.user_info_map.from_user_info_api.email = "verified"
-
     return NewProvider(input, FacebookImpl)

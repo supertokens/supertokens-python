@@ -54,13 +54,4 @@ def ActiveDirectory(
     if input.config.name is None:
         input.config.name = "Active Directory"
 
-    if input.config.user_info_map is None:
-        input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
-
-    if input.config.user_info_map.from_id_token_payload.user_id is None:
-        input.config.user_info_map.from_id_token_payload.user_id = "sub"
-
-    if input.config.user_info_map.from_id_token_payload.email is None:
-        input.config.user_info_map.from_id_token_payload.email = "email"
-
     return NewProvider(input, ActiveDirectoryImpl)

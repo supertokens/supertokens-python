@@ -215,6 +215,8 @@ class GenericProvider(Provider):
                 from_user_info_api=UserFields(),
             )
 
+        # These are safe defaults common to most providers. Each provider
+        # implementations override these as necessary
         if input_config.user_info_map.from_id_token_payload.user_id is None:
             input_config.user_info_map.from_id_token_payload.user_id = "sub"
 
@@ -223,6 +225,17 @@ class GenericProvider(Provider):
 
         if input_config.user_info_map.from_id_token_payload.email_verified is None:
             input_config.user_info_map.from_id_token_payload.email_verified = (
+                "email_verified"
+            )
+
+        if input_config.user_info_map.from_user_info_api.user_id is None:
+            input_config.user_info_map.from_user_info_api.user_id = "sub"
+
+        if input_config.user_info_map.from_user_info_api.email is None:
+            input_config.user_info_map.from_user_info_api.email = "email"
+
+        if input_config.user_info_map.from_user_info_api.email_verified is None:
+            input_config.user_info_map.from_user_info_api.email_verified = (
                 "email_verified"
             )
 
