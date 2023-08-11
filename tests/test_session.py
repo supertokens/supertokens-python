@@ -202,7 +202,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
 
     assert len(session_handles) == 7
 
-    for i, handle in enumerate(session_handles):
+    for handle in session_handles:
         info = await get_session_information(handle)
         assert info is not None
         assert info.user_id == "someUser"
@@ -224,18 +224,21 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         assert info.custom_claims_in_access_token_payload == {"someKey2": "someValue"}
         assert info.session_data_in_database == {"foo": "bar"}
 
+    regenerated_session_handles: List[str] = []
     # Regenerate access token with new access_token_payload
-    for i, token in enumerate(access_tokens):
+    for token in access_tokens:
         result = await regenerate_access_token(token, {"bar": "baz"})
         assert result is not None
-        assert (
-            result.session.handle == session_handles[i]
-        )  # Session handle should remain the same
+        regenerated_session_handles.append(result.session.handle)
 
         # Confirm that update worked:
         info = await get_session_information(result.session.handle)
         assert info is not None
         assert info.custom_claims_in_access_token_payload == {"bar": "baz"}
+
+    # Session handle should remain the same session handle should remain the same
+    # but order isn't guaranteed so we should sort them
+    assert sorted(regenerated_session_handles) == sorted(session_handles)
 
     # Try updating invalid handles:
     is_updated = await merge_into_access_token_payload("invalidHandle", {"foo": "bar"})

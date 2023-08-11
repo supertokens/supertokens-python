@@ -14,6 +14,7 @@
 
 import json
 from typing import Any, Dict, Union
+from base64 import b64encode
 
 import pytest
 from _pytest.fixtures import fixture
@@ -477,17 +478,15 @@ def test_thirdparty_parsing_works(driver_config_app: Any):
     start_st()
 
     test_client = driver_config_app.test_client()
-    data = {
-        "state": "afc596274293e1587315c",
-        "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
-    }
-    response = test_client.post("/auth/callback/apple", data=data)
+    state = b64encode(json.dumps({"redirectURI": "http://localhost:3000/redirect" }).encode()).decode()
+    code = "testing"
 
-    assert response.status_code == 200
-    assert (
-        response.data
-        == b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>'
-    )
+    data = { "state": state, "code": code}
+    res = test_client.post("/auth/callback/apple", data=data)
+
+    assert res.status_code == 303
+    assert res.data == b''
+    assert res.headers["location"] == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
 
 
 from flask.wrappers import Response

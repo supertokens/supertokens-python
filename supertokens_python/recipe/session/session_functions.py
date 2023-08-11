@@ -389,7 +389,7 @@ async def revoke_all_sessions_for_user(
     recipe_implementation: RecipeImplementation,
     user_id: str,
     tenant_id: Optional[str],
-    revoke_across_all_tenants: Optional[bool],
+    revoke_across_all_tenants: bool,
 ) -> List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -405,7 +405,7 @@ async def get_all_session_handles_for_user(
     recipe_implementation: RecipeImplementation,
     user_id: str,
     tenant_id: Optional[str],
-    fetch_across_all_tenants: Optional[bool],
+    fetch_across_all_tenants: bool,
 ) -> List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID

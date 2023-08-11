@@ -16,6 +16,7 @@ import json
 from urllib.parse import urlencode
 from datetime import datetime
 from inspect import isawaitable
+from base64 import b64encode
 from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -455,10 +456,10 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        data = {
-            "state": "afc596274293e1587315c",
-            "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
-        }
+        state = b64encode(json.dumps({"redirectURI": "http://localhost:3000/redirect" }).encode()).decode()
+        code = "testing"
+
+        data = { "state": state, "code": code}
 
         request = self.factory.post(
             "/auth/callback/apple",
@@ -470,11 +471,9 @@ class SupertokensTest(TestCase):
             raise Exception("Should never come here")
         response = await temp
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content,
-            b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>',
-        )
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.content, b'')
+        self.assertEqual(response.headers['location'], f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}")
 
     @pytest.mark.asyncio
     async def test_search_with_multiple_emails(self):
