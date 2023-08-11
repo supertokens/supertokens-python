@@ -26,7 +26,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     CreateResetPasswordLinkUknownUserIdError,
     CreateResetPasswordLinkOkResult,
     SendResetPasswordEmailUnknownUserIdError,
-    SendResetPasswordEmailEmailOkResult
+    SendResetPasswordEmailEmailOkResult,
 )
 from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
 
@@ -60,6 +60,7 @@ async def get_user_by_third_party_info(
         tenant_id or DEFAULT_TENANT_ID,
         user_context,
     )
+
 
 async def thirdparty_manually_create_or_update_user(
     tenant_id: str,

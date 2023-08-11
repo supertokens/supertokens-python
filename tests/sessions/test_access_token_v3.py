@@ -74,7 +74,7 @@ async def app():
         except Exception:
             pass
 
-        session = await create_new_session("public", request, "userId", body, {})
+        session = await create_new_session(request, "public", "userId", body, {})
         return {"message": True, "sessionHandle": session.get_handle()}
 
     @fast.get("/merge-into-payload")

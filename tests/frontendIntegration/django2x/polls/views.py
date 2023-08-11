@@ -396,7 +396,7 @@ def login(request: HttpRequest):
     if request.method == "POST":
         user_id = json.loads(request.body)["userId"]
 
-        session_ = create_new_session("public", request, user_id)
+        session_ = create_new_session(request, "public", user_id)
         return HttpResponse(session_.get_user_id())
     else:
         return send_options_api_response()

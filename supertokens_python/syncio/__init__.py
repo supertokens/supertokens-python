@@ -29,6 +29,7 @@ from supertokens_python.types import UsersResponse
 
 
 def get_users_oldest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
@@ -36,12 +37,13 @@ def get_users_oldest_first(
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            "public", "ASC", limit, pagination_token, include_recipe_ids, query
+            tenant_id, "ASC", limit, pagination_token, include_recipe_ids, query
         )
     )
 
 
 def get_users_newest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
@@ -49,13 +51,18 @@ def get_users_newest_first(
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            "public", "DESC", limit, pagination_token, include_recipe_ids, query
+            tenant_id, "DESC", limit, pagination_token, include_recipe_ids, query
         )
     )
 
 
-def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -> int:
-    return sync(Supertokens.get_instance().get_user_count(include_recipe_ids))
+def get_user_count(
+    include_recipe_ids: Union[None, List[str]] = None,
+    tenant_id: Optional[str] = None,
+) -> int:
+    return sync(
+        Supertokens.get_instance().get_user_count(include_recipe_ids, tenant_id)
+    )
 
 
 def delete_user(user_id: str) -> None:

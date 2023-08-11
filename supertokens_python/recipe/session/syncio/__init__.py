@@ -39,8 +39,8 @@ from ..interfaces import (
 
 
 def create_new_session(
-    tenant_id: str,
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,

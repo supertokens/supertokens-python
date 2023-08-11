@@ -258,7 +258,7 @@ async def driver_config_client():
 
     @app.post("/create")
     async def create_api(request: Request):  # type: ignore
-        await async_create_new_session("public", request, "test-user", {}, {})
+        await async_create_new_session(request, "public", "test-user", {}, {})
         return ""
 
     return TestClient(app)
