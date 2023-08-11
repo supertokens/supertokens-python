@@ -176,7 +176,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             )
 
         if third_party_recipe is not None:
-            self.third_party_recipe: Union[ThirdPartyRecipe, None] = third_party_recipe
+            self.third_party_recipe = third_party_recipe
         else:
 
             def func_override_third_party(
@@ -189,36 +189,30 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             ) -> ThirdPartyAPIInterface:
                 return get_third_party_interface_impl(self.api_implementation)
 
-            self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
-
-            if len(self.config.providers) != 0:
-                tp_ingredients = ThirdPartyIngredients()
-                self.third_party_recipe = ThirdPartyRecipe(
-                    recipe_id,
-                    app_info,
-                    SignInAndUpFeature(self.config.providers),
-                    tp_ingredients,
-                    TPOverrideConfig(
-                        func_override_third_party, apis_override_third_party
-                    ),
-                )
+            # Thirdparty recipe doesn't need ingredients
+            # as of now. But we are passing ingredients object
+            # so that it's future-proof.
+            tp_ingredients = ThirdPartyIngredients()
+            self.third_party_recipe = ThirdPartyRecipe(
+                recipe_id,
+                app_info,
+                SignInAndUpFeature(self.config.providers),
+                tp_ingredients,
+                TPOverrideConfig(func_override_third_party, apis_override_third_party),
+            )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SupertokensThirdPartyPasswordlessError)
             or self.passwordless_recipe.is_error_from_this_recipe_based_on_instance(err)
             or (
-                self.third_party_recipe is not None
-                and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(
-                    err
-                )
+                self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err)
             )
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
         apis_handled = self.passwordless_recipe.get_apis_handled()
-        if self.third_party_recipe is not None:
-            apis_handled = apis_handled + self.third_party_recipe.get_apis_handled()
+        apis_handled += self.third_party_recipe.get_apis_handled()
         return apis_handled
 
     async def handle_api_request(
@@ -241,8 +235,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 request_id, tenant_id, request, path, method, response, user_context
             )
         if (
-            self.third_party_recipe is not None
-            and await self.third_party_recipe.return_api_id_if_can_handle_request(
+            await self.third_party_recipe.return_api_id_if_can_handle_request(
                 path, method, user_context
             )
             is not None
@@ -257,17 +250,13 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
     ) -> BaseResponse:
         if self.passwordless_recipe.is_error_from_this_recipe_based_on_instance(err):
             return await self.passwordless_recipe.handle_error(request, err, response)
-        if (
-            self.third_party_recipe is not None
-            and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err)
-        ):
+        if self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err):
             return await self.third_party_recipe.handle_error(request, err, response)
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = self.passwordless_recipe.get_all_cors_headers()
-        if self.third_party_recipe is not None:
-            cors_headers = cors_headers + self.third_party_recipe.get_all_cors_headers()
+        cors_headers += self.third_party_recipe.get_all_cors_headers()
         return cors_headers
 
     @staticmethod
