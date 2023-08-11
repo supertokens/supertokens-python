@@ -152,6 +152,7 @@ async def validate_claims_for_session_handle(
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            session_info.tenant_id,
             session_info.user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -187,6 +188,7 @@ async def validate_claims_for_session_handle(
 
 
 async def validate_claims_in_jwt_payload(
+    tenant_id: str,
     user_id: str,
     jwt_payload: JSONObject,
     override_global_claim_validators: Optional[
@@ -211,6 +213,7 @@ async def validate_claims_in_jwt_payload(
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            tenant_id,
             user_id,
             claim_validators_added_by_other_recipes,
             user_context,

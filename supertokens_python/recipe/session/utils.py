@@ -480,6 +480,7 @@ async def get_required_claim_validators(
     )
     global_claim_validators = await resolve(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
+            session.get_tenant_id(),
             session.get_user_id(),
             claim_validators_added_by_other_recipes,
             user_context,

@@ -437,6 +437,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
     def get_global_claim_validators(
         self,
+        tenant_id: str,
         user_id: str,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
