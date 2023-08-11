@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
+from typing_extensions import Literal
 
 from supertokens_python.supertokens import Supertokens
 
@@ -45,7 +46,7 @@ async def handle_users_get_api(
     if limit is None:
         raise_bad_input_exception("Missing required parameter 'limit'")
 
-    time_joined_order: str = api_options.request.get_query_param(  # type: ignore
+    time_joined_order: Literal["ASC", "DESC"] = api_options.request.get_query_param(  # type: ignore
         "timeJoinedOrder", "DESC"
     )
     if time_joined_order not in ["ASC", "DESC"]:
@@ -54,12 +55,12 @@ async def handle_users_get_api(
     pagination_token = api_options.request.get_query_param("paginationToken")
 
     users_response = await Supertokens.get_instance().get_users(
+        tenant_id,
+        time_joined_order=time_joined_order,
         limit=int(limit),
-        time_joined_order=time_joined_order,  # type: ignore
         pagination_token=pagination_token,
         include_recipe_ids=None,
         query=api_options.request.get_query_params(),
-        tenant_id=tenant_id,
     )
 
     # user metadata bulk fetch with batches:

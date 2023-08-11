@@ -192,7 +192,7 @@ def driver_config_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        create_new_session(request, user_id, {}, {})
+        create_new_session(request, "public", user_id, {}, {})
 
         return jsonify({"userId": user_id, "session": "ssss"})
 
@@ -478,15 +478,20 @@ def test_thirdparty_parsing_works(driver_config_app: Any):
     start_st()
 
     test_client = driver_config_app.test_client()
-    state = b64encode(json.dumps({"redirectURI": "http://localhost:3000/redirect" }).encode()).decode()
+    state = b64encode(
+        json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+    ).decode()
     code = "testing"
 
-    data = { "state": state, "code": code}
+    data = {"state": state, "code": code}
     res = test_client.post("/auth/callback/apple", data=data)
 
     assert res.status_code == 303
-    assert res.data == b''
-    assert res.headers["location"] == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
+    assert res.data == b""
+    assert (
+        res.headers["location"]
+        == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
+    )
 
 
 from flask.wrappers import Response
@@ -747,7 +752,7 @@ def flask_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        s = create_new_session(request, user_id, {}, {})
+        s = create_new_session(request, "public", user_id, {}, {})
         return jsonify({"user": s.get_user_id()})
 
     @app.route("/ping")  # type: ignore

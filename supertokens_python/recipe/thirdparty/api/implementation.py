@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from supertokens_python.utils import utf_base64decode
 from base64 import b64decode
 import json
 
@@ -116,24 +115,24 @@ class APIImplementation(APIInterface):
             ev_instance = EmailVerificationRecipe.get_instance_optional()
             if ev_instance is not None:
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
+                    tenant_id=tenant_id,
                     user_id=signinup_response.user.user_id,
                     email=signinup_response.user.email,
-                    tenant_id=tenant_id,
                     user_context=user_context,
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        token=token_response.token,
                         tenant_id=tenant_id,
+                        token=token_response.token,
                         user_context=user_context,
                     )
 
         user = signinup_response.user
         session = await create_new_session(
-            api_options.request,
-            user.user_id,
             tenant_id=tenant_id,
+            request=api_options.request,
+            user_id=user.user_id,
             user_context=user_context,
         )
 

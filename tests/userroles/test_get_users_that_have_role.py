@@ -65,12 +65,12 @@ async def test_get_users_that_have_role():
 
     # Assign the role to users:
     for user in users:
-        result = await asyncio.add_role_to_user(user, role)
+        result = await asyncio.add_role_to_user("public", user, role)
         assert isinstance(result, interfaces.AddRoleToUserOkResult)
         assert not result.did_user_already_have_role
 
     # Get all users for a certain role
-    result = await asyncio.get_users_that_have_role(role)
+    result = await asyncio.get_users_that_have_role("public", role)
     assert isinstance(result, interfaces.GetUsersThatHaveRoleOkResult)
     assert result.users == users
 
@@ -100,5 +100,5 @@ async def test_get_users_for_unknown_role():
     role = "role"
 
     # Get all users for a certain role
-    result = await asyncio.get_users_that_have_role(role)
+    result = await asyncio.get_users_that_have_role("public", role)
     assert isinstance(result, interfaces.UnknownRoleError)

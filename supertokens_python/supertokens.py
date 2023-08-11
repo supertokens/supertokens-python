@@ -257,15 +257,13 @@ class Supertokens:
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
     ) -> int:
-        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
             include_recipe_ids_str = ",".join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(f"/{tenant_id or DEFAULT_TENANT_ID}{USER_COUNT}"),
+            NormalisedURLPath(f"/{tenant_id}{USER_COUNT}"),
             {
                 "includeRecipeIds": include_recipe_ids_str,
                 "includeAllTenants": tenant_id is None,
@@ -289,12 +287,12 @@ class Supertokens:
 
     async def get_users(  # pylint: disable=no-self-use
         self,
+        tenant_id: str,
         time_joined_order: Literal["ASC", "DESC"],
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
         query: Union[Dict[str, str], None] = None,
-        tenant_id: Optional[str] = None,
     ) -> UsersResponse:
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 

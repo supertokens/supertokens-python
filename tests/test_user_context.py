@@ -182,7 +182,7 @@ async def test_user_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("random@gmail.com", "validpass123", "public", {"manualCall": True})
+    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
 
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
     assert res.status_code == 200
@@ -288,7 +288,7 @@ async def test_default_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("random@gmail.com", "validpass123", "public", {"manualCall": True})
+    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
 
     assert res.status_code == 200
@@ -413,7 +413,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("random@gmail.com", "validpass123", "public", {"manualCall": True})
+    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
 
     assert res.status_code == 200

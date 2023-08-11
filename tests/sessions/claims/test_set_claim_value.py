@@ -57,7 +57,7 @@ async def test_should_overwrite_claim_value(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
     assert len(payload) == 10
@@ -76,7 +76,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
     assert len(payload) == 10

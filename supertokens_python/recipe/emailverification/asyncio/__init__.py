@@ -27,8 +27,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
 from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
@@ -37,9 +35,9 @@ from supertokens_python.recipe.emailverification.types import (
 
 
 async def create_email_verification_token(
+    tenant_id: str,
     user_id: str,
     email: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     CreateEmailVerificationTokenOkResult,
@@ -58,19 +56,17 @@ async def create_email_verification_token(
             raise Exception("Unknown User ID provided without email")
 
     return await recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, tenant_id or DEFAULT_TENANT_ID, user_context
+        user_id, email, tenant_id, user_context
     )
 
 
 async def verify_email_using_token(
-    token: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, token: str, user_context: Union[None, Dict[str, Any]] = None
 ):
     if user_context is None:
         user_context = {}
     return await EmailVerificationRecipe.get_instance().recipe_implementation.verify_email_using_token(
-        token, tenant_id or DEFAULT_TENANT_ID, user_context
+        token, tenant_id, user_context
     )
 
 
@@ -98,9 +94,9 @@ async def is_email_verified(
 
 
 async def revoke_email_verification_tokens(
+    tenant_id: str,
     user_id: str,
     email: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> RevokeEmailVerificationTokensOkResult:
     if user_context is None:
@@ -117,7 +113,7 @@ async def revoke_email_verification_tokens(
             raise Exception("Unknown User ID provided without email")
 
     return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, tenant_id or DEFAULT_TENANT_ID, user_context
+        user_id, email, tenant_id, user_context
     )
 
 
@@ -158,9 +154,9 @@ async def send_email(
 
 
 async def create_email_verification_link(
+    tenant_id: str,
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     CreateEmailVerificationLinkOkResult,
@@ -173,7 +169,7 @@ async def create_email_verification_link(
     app_info = recipe_instance.get_app_info()
 
     email_verification_token = await create_email_verification_token(
-        user_id, email, tenant_id, user_context
+        tenant_id, user_id, email, user_context
     )
     if isinstance(
         email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
@@ -185,15 +181,15 @@ async def create_email_verification_link(
             app_info,
             email_verification_token.token,
             recipe_instance.get_recipe_id(),
-            tenant_id or DEFAULT_TENANT_ID,
+            tenant_id,
         )
     )
 
 
 async def send_email_verification_email(
+    tenant_id: str,
     user_id: str,
     email: Optional[str],
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     SendEmailVerificationEmailOkResult,
@@ -214,7 +210,7 @@ async def send_email_verification_email(
             raise Exception("Unknown User ID provided without email")
 
     email_verification_link = await create_email_verification_link(
-        user_id, email, tenant_id, user_context
+        tenant_id, user_id, email, user_context
     )
 
     if isinstance(

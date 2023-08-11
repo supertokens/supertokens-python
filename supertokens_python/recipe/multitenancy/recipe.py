@@ -117,7 +117,7 @@ class MultitenancyRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
@@ -134,6 +134,7 @@ class MultitenancyRecipe(RecipeModule):
         )
         return await handle_login_methods_api(
             self.api_implementation,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -198,7 +199,7 @@ class MultitenancyRecipe(RecipeModule):
 class APIImplementation(APIInterface):
     async def login_methods_get(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         client_type: Optional[str],
         api_options: APIOptions,
         user_context: Dict[str, Any],

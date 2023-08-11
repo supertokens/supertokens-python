@@ -32,7 +32,6 @@ from .interfaces import (
     RemoveUserRoleOkResult,
     UnknownRoleError,
 )
-from ..multitenancy.constants import DEFAULT_TENANT_ID
 
 
 class RecipeImplementation(RecipeInterface):
@@ -49,7 +48,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {"userId": user_id, "role": role}
         response = await self.querier.send_put_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/user/role"),
+            NormalisedURLPath(f"{tenant_id}/recipe/user/role"),
             params,
         )
         if response.get("status") == "OK":
@@ -67,9 +66,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {"userId": user_id, "role": role}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(
-                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/user/role/remove"
-            ),
+            NormalisedURLPath(f"{tenant_id}/recipe/user/role/remove"),
             params,
         )
         if response["status"] == "OK":
@@ -83,7 +80,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> GetRolesForUserOkResult:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/user/roles"),
+            NormalisedURLPath(f"{tenant_id}/recipe/user/roles"),
             params,
         )
         return GetRolesForUserOkResult(roles=response["roles"])
@@ -93,7 +90,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {"role": role}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/role/users"),
+            NormalisedURLPath(f"{tenant_id}/recipe/role/users"),
             params,
         )
         if response.get("status") == "OK":

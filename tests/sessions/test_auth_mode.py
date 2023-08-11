@@ -33,7 +33,7 @@ async def app():
     @fast.post("/create")
     async def _create(request: Request):  # type: ignore
         body = await request.json()
-        session = await create_new_session(request, "userId", body, {})
+        session = await create_new_session(request, "public", "userId", body, {})
         return {"message": True, "sessionHandle": session.get_handle()}
 
     @fast.get("/update-payload")

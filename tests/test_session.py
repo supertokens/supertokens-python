@@ -91,7 +91,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         raise Exception("Should never come here")
 
     response = await create_new_session(
-        s.recipe_implementation, "", False, {}, {}, "public"
+        s.recipe_implementation, "public", "", False, {}, {}
     )
 
     assert response.session is not None
@@ -190,11 +190,11 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     for _ in range(7):
         new_session = await create_new_session(
             s.recipe_implementation,
+            "public",
             "someUser",
             False,
             {"someKey": "someValue"},
             {},
-            "public",
         )
         access_tokens.append(new_session.accessToken.token)
 
@@ -258,7 +258,7 @@ async def driver_config_client():
 
     @app.post("/create")
     async def create_api(request: Request):  # type: ignore
-        await async_create_new_session(request, "test-user", {}, {})
+        await async_create_new_session(request, "public", "test-user", {}, {})
         return ""
 
     return TestClient(app)
@@ -285,7 +285,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
     user_id = "user_id"
 
     response = await create_new_session(
-        s.recipe_implementation, user_id, False, {}, {}, None
+        s.recipe_implementation, "public", user_id, False, {}, {}
     )
 
     session_handle = response.session.handle
@@ -350,7 +350,7 @@ async def test_should_use_override_functions_in_session_container_methods():
 
     mock_response = MagicMock()
 
-    my_session = await async_create_new_session(mock_response, "test_id")
+    my_session = await async_create_new_session("public", mock_response, "test_id")
     data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
@@ -683,7 +683,7 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    session1 = await create_new_session_without_request_response("user-id")
+    session1 = await create_new_session_without_request_response("public", "user-id")
 
     assert session1 is not None
     assert session1.access_token != ""

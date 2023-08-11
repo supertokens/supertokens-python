@@ -139,7 +139,7 @@ async def test_email_verify_default_backward_compatibility(
     start_st()
 
     resp = await manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -148,7 +148,7 @@ async def test_email_verify_default_backward_compatibility(
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     def api_side_effect(request: httpx.Request):
@@ -213,7 +213,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
     start_st()
 
     resp = await manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -222,7 +222,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     def api_side_effect(request: httpx.Request):
@@ -303,7 +303,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     start_st()
 
     resp = await manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -312,7 +312,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     resp = email_verify_token_request(
@@ -381,7 +381,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     start_st()
 
     resp = await manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -391,7 +391,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     def api_side_effect(request: httpx.Request):
@@ -521,7 +521,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     start_st()
 
     resp = await manually_create_or_update_user(
-        "supertokens", "test-user-id", "test@example.com"
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -531,7 +531,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
     response = await create_new_session(
-        s.recipe_implementation, user_id, True, {}, {}, None
+        s.recipe_implementation, "public", user_id, True, {}, {}
     )
 
     resp = email_verify_token_request(

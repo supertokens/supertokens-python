@@ -199,7 +199,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def create_or_update_tenant(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         config: Optional[TenantConfig],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
@@ -213,7 +213,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_tenant(
-        self, tenant_id: Optional[str], user_context: Dict[str, Any]
+        self, tenant_id: str, user_context: Dict[str, Any]
     ) -> GetTenantOkResult:
         pass
 
@@ -227,7 +227,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def create_or_update_third_party_config(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         config: ProviderConfig,
         skip_validation: Optional[bool],
         user_context: Dict[str, Any],
@@ -237,7 +237,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def delete_third_party_config(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         third_party_id: str,
         user_context: Dict[str, Any],
     ) -> DeleteThirdPartyConfigOkResult:
@@ -247,7 +247,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def associate_user_to_tenant(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -262,7 +262,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def dissociate_user_from_tenant(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_id: str,
         user_context: Dict[str, Any],
     ) -> DisassociateUserFromTenantOkResult:
@@ -361,7 +361,7 @@ class APIInterface(ABC):
     @abstractmethod
     async def login_methods_get(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         client_type: Optional[str],
         api_options: APIOptions,
         user_context: Dict[str, Any],

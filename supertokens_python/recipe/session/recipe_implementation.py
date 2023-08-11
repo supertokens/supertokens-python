@@ -71,11 +71,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         result = await session_functions.create_new_session(
             self,
+            tenant_id,
             user_id,
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
-            tenant_id,
         )
         log_debug_message("createNewSession: Finished")
 

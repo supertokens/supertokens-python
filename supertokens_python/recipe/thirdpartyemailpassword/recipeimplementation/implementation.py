@@ -274,7 +274,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         client_type: Optional[str],
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> GetProviderOkResult:
         if self.tp_get_provider is None:

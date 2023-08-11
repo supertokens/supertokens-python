@@ -94,7 +94,7 @@ class RecipeModule(abc.ABC):
                 ).equals(self.app_info.api_base_path.append(remaining_path)):
                     final_tenant_id = (
                         await mt_recipe.recipe_implementation.get_tenant_id(
-                            tenant_id or DEFAULT_TENANT_ID, user_context
+                            tenant_id, user_context
                         )
                     )
                     return ApiIdWithTenantId(current_api.request_id, final_tenant_id)

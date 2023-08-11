@@ -40,10 +40,10 @@ from ..interfaces import (
 
 def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -52,22 +52,22 @@ def create_new_session(
 
     return sync(
         async_create_new_session(
-            request,
-            user_id,
-            access_token_payload,
-            session_data_in_database,
-            tenant_id,
-            user_context,
+            tenant_id=tenant_id,
+            request=request,
+            user_id=user_id,
+            access_token_payload=access_token_payload,
+            session_data_in_database=session_data_in_database,
+            user_context=user_context,
         )
     )
 
 
 def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
@@ -76,11 +76,11 @@ def create_new_session_without_request_response(
 
     return sync(
         async_create_new_session_without_request_response(
+            tenant_id,
             user_id,
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
-            tenant_id,
             user_context,
         )
     )

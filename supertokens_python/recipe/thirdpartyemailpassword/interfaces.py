@@ -147,7 +147,7 @@ class RecipeInterface(ABC):
         self,
         third_party_id: str,
         client_type: Optional[str],
-        tenant_id: Optional[str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartyInterfaces.GetProviderOkResult:
         pass

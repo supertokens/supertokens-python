@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Optional, Any, Dict
+from typing import TYPE_CHECKING, List, Union, Any, Dict
 
 from supertokens_python.querier import Querier
 
@@ -90,7 +90,7 @@ class OpenIdRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
-        tenant_id: Optional[str],
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,

@@ -62,32 +62,32 @@ async def test_multitenancy_functions():
     await create_or_update_tenant("t3", TenantConfig(passwordless_enabled=True))
 
     code1 = await create_code(
-        email="test@example.com", user_input_code="123456", tenant_id="t1"
+        tenant_id="t1", email="test@example.com", user_input_code="123456"
     )
     code2 = await create_code(
-        email="test@example.com", user_input_code="456789", tenant_id="t2"
+        tenant_id="t2", email="test@example.com", user_input_code="456789"
     )
     code3 = await create_code(
-        email="test@example.com", user_input_code="789123", tenant_id="t3"
+        tenant_id="t3", email="test@example.com", user_input_code="789123"
     )
 
     user1 = await consume_code(
-        pre_auth_session_id=code1.pre_auth_session_id,
-        device_id=code1.device_id,
-        user_input_code="123456",
         tenant_id="t1",
+        pre_auth_session_id=code1.pre_auth_session_id,
+        user_input_code="123456",
+        device_id=code1.device_id,
     )
     user2 = await consume_code(
-        pre_auth_session_id=code2.pre_auth_session_id,
-        device_id=code2.device_id,
-        user_input_code="456789",
         tenant_id="t2",
+        pre_auth_session_id=code2.pre_auth_session_id,
+        user_input_code="456789",
+        device_id=code2.device_id,
     )
     user3 = await consume_code(
-        pre_auth_session_id=code3.pre_auth_session_id,
-        device_id=code3.device_id,
-        user_input_code="789123",
         tenant_id="t3",
+        pre_auth_session_id=code3.pre_auth_session_id,
+        user_input_code="789123",
+        device_id=code3.device_id,
     )
 
     assert isinstance(user1, ConsumeCodeOkResult)
@@ -112,9 +112,9 @@ async def test_multitenancy_functions():
     assert g_user3 == user3.user
 
     # get user by email:
-    by_email_user1 = await get_user_by_email("test@example.com", "t1")
-    by_email_user2 = await get_user_by_email("test@example.com", "t2")
-    by_email_user3 = await get_user_by_email("test@example.com", "t3")
+    by_email_user1 = await get_user_by_email("t1", "test@example.com")
+    by_email_user2 = await get_user_by_email("t2", "test@example.com")
+    by_email_user3 = await get_user_by_email("t3", "test@example.com")
 
     assert by_email_user1 == user1.user
     assert by_email_user2 == user2.user

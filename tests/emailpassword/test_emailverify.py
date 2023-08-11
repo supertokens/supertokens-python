@@ -79,7 +79,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
+        await create_new_session(request, "public", user_id, {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -192,9 +192,9 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     user_id = dict_response["user"]["id"]
     cookies = extract_all_cookies(response_1)
 
-    verify_token = await create_email_verification_token(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        await verify_email_using_token(verify_token.token)
+        await verify_email_using_token("public", verify_token.token)
 
         response = email_verify_token_request(
             driver_config_client,
@@ -1101,11 +1101,11 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await create_email_verification_token(user_id)
-    await revoke_email_verification_tokens(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
+    await revoke_email_verification_tokens("public", user_id)
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        response = await verify_email_using_token(verify_token.token)
+        response = await verify_email_using_token("public", verify_token.token)
         assert isinstance(response, VerifyEmailUsingTokenInvalidTokenError)
         return
     raise Exception("Test failed")
@@ -1145,9 +1145,9 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await create_email_verification_token(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        await verify_email_using_token(verify_token.token)
+        await verify_email_using_token("public", verify_token.token)
 
         assert await is_email_verified(user_id)
 
@@ -1249,9 +1249,9 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     cookies = extract_all_cookies(res)
 
     # Start verification:
-    verify_token = await create_email_verification_token(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
     assert isinstance(verify_token, CreateEmailVerificationTokenOkResult)
-    await verify_email_using_token(verify_token.token)
+    await verify_email_using_token("public", verify_token.token)
 
     res = email_verify_token_request(
         driver_config_client,

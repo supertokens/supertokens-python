@@ -52,7 +52,7 @@ async def test_create_user_id_mapping():
     if not is_version_gte(version, "2.15"):
         skip()
 
-    sign_up_res = await sign_up("test@example.com", "testPass123")
+    sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     supertokens_user_id = sign_up_res.user.user_id
@@ -84,7 +84,7 @@ async def test_create_user_id_mapping_without_and_with_force():
         skip()
 
     # Create a user:
-    sign_up_res = await sign_up("test@example.com", "testPass123")
+    sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     supertokens_user_id = sign_up_res.user.user_id
@@ -143,7 +143,7 @@ async def create_user_id_mapping_when_mapping_already_exists():
     if not is_version_gte(version, "2.15"):
         skip()
 
-    sign_up_res = await sign_up("test@example.com", "testPass123")
+    sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     supertokens_user_id = sign_up_res.user.user_id
@@ -167,7 +167,7 @@ async def create_user_id_mapping_when_mapping_already_exists():
     assert res.does_external_user_id_exist is False
 
     # Try creating a duplicate mapping where external_user_id exists and but supertokens_user_id doesn't (new)
-    sign_up_res = await sign_up("foo@bar.com", "baz")
+    sign_up_res = await sign_up("public", "foo@bar.com", "baz")
     assert isinstance(sign_up_res, SignUpOkResult)
     new_supertokens_user_id = sign_up_res.user.user_id
 

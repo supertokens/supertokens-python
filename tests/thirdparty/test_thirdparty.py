@@ -67,12 +67,17 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
     init(**st_init_args)  # type: ignore
     start_st()
 
-    state = b64encode(json.dumps({"redirectURI": "http://localhost:3000/redirect" }).encode()).decode()
+    state = b64encode(
+        json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+    ).decode()
     code = "testing"
 
-    data = { "state": state, "code": code}
+    data = {"state": state, "code": code}
     res = fastapi_client.post("/auth/callback/apple", data=data)
 
     assert res.status_code == 303
-    assert res.content == b''
-    assert res.headers["location"] == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
+    assert res.content == b""
+    assert (
+        res.headers["location"]
+        == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
+    )

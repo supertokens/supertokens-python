@@ -245,7 +245,7 @@ async def test_user_association_and_disassociation_with_tenants():
     await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
     await create_or_update_tenant("t3", TenantConfig(third_party_enabled=True))
 
-    signup_response = await sign_up("test@example.com", "password1")
+    signup_response = await sign_up("public", "test@example.com", "password1")
     assert isinstance(signup_response, SignUpOkResult)
     user_id = signup_response.user.user_id
 

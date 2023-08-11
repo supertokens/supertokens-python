@@ -172,11 +172,11 @@ class APIImplementation(APIInterface):
 
         user = result.user
         session = await create_new_session(
-            api_options.request,
-            user.user_id,
+            tenant_id=tenant_id,
+            request=api_options.request,
+            user_id=user.user_id,
             access_token_payload={},
             session_data_in_database={},
-            tenant_id=tenant_id,
             user_context=user_context,
         )
         return SignInPostOkResult(user, session)
@@ -213,11 +213,11 @@ class APIImplementation(APIInterface):
 
         user = result.user
         session = await create_new_session(
-            api_options.request,
-            user.user_id,
+            tenant_id=tenant_id,
+            request=api_options.request,
+            user_id=user.user_id,
             access_token_payload={},
             session_data_in_database={},
-            tenant_id=tenant_id,
             user_context=user_context,
         )
         return SignUpPostOkResult(user, session)

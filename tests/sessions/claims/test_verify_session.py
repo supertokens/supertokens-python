@@ -134,13 +134,13 @@ async def fastapi_client():
     @app.post("/login")
     async def _login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
+        await create_new_session(request, "public", user_id, {}, {})
         return {"userId": user_id}
 
     @app.post("/create-with-claim")
     async def _create_with_claim(request: Request):  # type: ignore
         user_id = "userId"
-        _ = await create_new_session(request, user_id, {}, {})
+        _ = await create_new_session(request, "public", user_id, {}, {})
         key: str = (await request.json())["key"]
         # PrimitiveClaim(key, fetch_value="Value").add_to_session(session, "value")
         return {"userId": key}

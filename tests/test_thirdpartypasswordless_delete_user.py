@@ -139,7 +139,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     response = await delete_phone_number_for_user(user_id)
     assert isinstance(response, DeleteUserInfoOkResult)
 
-    user = await get_user_by_phone_number("+919494949494")
+    user = await get_user_by_phone_number("public", "+919494949494")
     assert user is None
 
     user = await get_user_by_id(user_id)
@@ -154,7 +154,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     response = await delete_email_for_passwordless_user(user_id)
     assert isinstance(response, DeleteUserInfoOkResult)
 
-    users = await get_users_by_email("foo@example.com")
+    users = await get_users_by_email("public", "foo@example.com")
     assert users == []
 
     user = await get_user_by_id(user_id)

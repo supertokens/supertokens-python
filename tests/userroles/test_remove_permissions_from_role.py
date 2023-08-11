@@ -98,5 +98,5 @@ async def test_remove_permissions_from_unknown_role():
     role = "role"
 
     # Get all users for a certain role
-    result = await asyncio.get_users_that_have_role(role)
+    result = await asyncio.get_users_that_have_role("public", role)
     assert isinstance(result, interfaces.UnknownRoleError)

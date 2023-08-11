@@ -26,7 +26,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     CreateResetPasswordLinkUknownUserIdError,
     CreateResetPasswordLinkOkResult,
     SendResetPasswordEmailUnknownUserIdError,
-    SendResetPasswordEmailEmailOkResult
+    SendResetPasswordEmailEmailOkResult,
 )
 from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
 
@@ -47,9 +47,9 @@ async def get_user_by_id(
 
 
 async def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -57,16 +57,16 @@ async def get_user_by_third_party_info(
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
         third_party_id,
         third_party_user_id,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
 
 async def thirdparty_manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -75,72 +75,70 @@ async def thirdparty_manually_create_or_update_user(
         third_party_id,
         third_party_user_id,
         email,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context,
     )
 
 
 async def thirdparty_get_provider(
+    tenant_id: str,
     third_party_id: str,
     client_type: Optional[str] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_get_provider(
-        third_party_id, client_type, tenant_id or DEFAULT_TENANT_ID, user_context
+        third_party_id, client_type, tenant_id, user_context
     )
 
 
 async def create_reset_password_token(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(
-        user_id, tenant_id or DEFAULT_TENANT_ID, user_context
+        user_id, tenant_id, user_context
     )
 
 
 async def reset_password_using_token(
+    tenant_id: str,
     token: str,
     new_password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        token, new_password, tenant_id or DEFAULT_TENANT_ID, user_context
+        token, new_password, tenant_id, user_context
     )
 
 
 async def emailpassword_sign_in(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_in(
-        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, password, tenant_id, user_context
     )
 
 
 async def emailpassword_sign_up(
+    tenant_id: str,
     email: str,
     password: str,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_up(
-        email, password, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, password, tenant_id, user_context
     )
 
 
@@ -165,14 +163,12 @@ async def update_email_or_password(
 
 
 async def get_users_by_email(
-    email: str,
-    tenant_id: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[User]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(
-        email, tenant_id or DEFAULT_TENANT_ID, user_context
+        email, tenant_id, user_context
     )
 
 
@@ -182,8 +178,6 @@ async def send_email(
 ):
     if user_context is None:
         user_context = {}
-    if input_.tenant_id is None:
-        input_.tenant_id = DEFAULT_TENANT_ID
 
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
         input_, user_context
@@ -191,11 +185,9 @@ async def send_email(
 
 
 async def create_reset_password_link(
-    user_id: str,
-    tenant_id: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None,
+    tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
-    token = await create_reset_password_token(user_id, tenant_id, user_context)
+    token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
         return CreateResetPasswordLinkUknownUserIdError()
 
@@ -209,17 +201,17 @@ async def create_reset_password_link(
             recipe_instance.get_app_info(),
             token.token,
             recipe_instance.get_recipe_id(),
-            tenant_id or DEFAULT_TENANT_ID,
+            tenant_id,
         )
     )
 
 
 async def send_reset_password_email(
+    tenant_id: str,
     user_id: str,
-    tenant_id: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
-    link = await create_reset_password_link(user_id, tenant_id, user_context)
+    link = await create_reset_password_link(tenant_id, user_id, user_context)
     if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
         return SendResetPasswordEmailUnknownUserIdError()
 

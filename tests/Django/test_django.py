@@ -76,7 +76,7 @@ def get_cookies(response: HttpResponse) -> Dict[str, Any]:
 
 
 async def create_new_session_view(request: HttpRequest):
-    await create_new_session(request, "user_id")
+    await create_new_session(request, "public", "user_id")
     return JsonResponse({"foo": "bar"})
 
 
@@ -456,10 +456,12 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        state = b64encode(json.dumps({"redirectURI": "http://localhost:3000/redirect" }).encode()).decode()
+        state = b64encode(
+            json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+        ).decode()
         code = "testing"
 
-        data = { "state": state, "code": code}
+        data = {"state": state, "code": code}
 
         request = self.factory.post(
             "/auth/callback/apple",
@@ -472,8 +474,11 @@ class SupertokensTest(TestCase):
         response = await temp
 
         self.assertEqual(response.status_code, 303)
-        self.assertEqual(response.content, b'')
-        self.assertEqual(response.headers['location'], f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}")
+        self.assertEqual(response.content, b"")
+        self.assertEqual(
+            response.headers["location"],
+            f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}",
+        )
 
     @pytest.mark.asyncio
     async def test_search_with_multiple_emails(self):

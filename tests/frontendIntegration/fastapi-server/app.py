@@ -265,7 +265,7 @@ def login_options():
 @app.post("/login")
 async def login(request: Request):
     user_id = (await request.json())["userId"]
-    _session = await create_new_session(request, user_id)
+    _session = await create_new_session(request, "public", user_id)
     return PlainTextResponse(content=_session.get_user_id())
 
 

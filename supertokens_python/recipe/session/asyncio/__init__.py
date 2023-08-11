@@ -50,10 +50,10 @@ _T = TypeVar("_T")
 
 async def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -76,16 +76,16 @@ async def create_new_session(
         config,
         app_info,
         session_data_in_database,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
     )
 
 
 async def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
-    tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> SessionContainer:
     if user_context is None:
@@ -107,9 +107,7 @@ async def create_new_session_without_request_response(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(
-            user_id, tenant_id or DEFAULT_TENANT_ID, user_context
-        )
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
@@ -117,7 +115,7 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
-        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id,
         user_context=user_context,
     )
 
