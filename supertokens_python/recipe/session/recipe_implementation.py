@@ -437,8 +437,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
     def get_global_claim_validators(
         self,
-        user_id: str,
         tenant_id: str,
+        user_id: str,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> MaybeAwaitable[List[SessionClaimValidator]]:

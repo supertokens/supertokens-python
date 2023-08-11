@@ -385,8 +385,8 @@ def validate_claims_for_session_handle(
 
 
 def validate_claims_in_jwt_payload(
-    user_id: str,
     tenant_id: str,
+    user_id: str,
     jwt_payload: JSONObject,
     override_global_claim_validators: Optional[
         Callable[
@@ -402,8 +402,8 @@ def validate_claims_in_jwt_payload(
 
     return sync(
         async_validate_claims_in_jwt_payload(
-            user_id,
             tenant_id,
+            user_id,
             jwt_payload,
             override_global_claim_validators,
             user_context,
