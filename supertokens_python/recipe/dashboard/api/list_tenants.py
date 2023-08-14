@@ -16,8 +16,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from supertokens_python.recipe.multitenancy.interfaces import (
-    ListAllTenantsItem,
+from supertokens_python.recipe.dashboard.interfaces import (
+    DashboardListTenantItem
 )
 
 if TYPE_CHECKING:
@@ -32,9 +32,6 @@ from supertokens_python.recipe.dashboard.interfaces import (
     DashboardListTenantsGetResponse,
 )
 
-from copy import deepcopy
-
-
 async def handle_list_tenants_api(
     _api_implementation: APIInterface,
     _tenant_id: str,
@@ -43,11 +40,15 @@ async def handle_list_tenants_api(
 ) -> APIResponse:
     tenants = await list_all_tenants(user_context)
 
-    final_tenants: List[ListAllTenantsItem] = []
+    final_tenants: List[DashboardListTenantItem] = []
 
     for current_tenant in tenants.tenants:
-        modified_tenant = deepcopy(current_tenant)
-        modified_tenant.core_config = None
-        final_tenants.append(modified_tenant)
+        dashboard_tenant = DashboardListTenantItem(
+            tenant_id=current_tenant.tenant_id,
+            emailpassword=current_tenant.emailpassword,
+            passwordless=current_tenant.passwordless,
+            third_party=current_tenant.third_party,
+        )
+        final_tenants.append(dashboard_tenant)
 
-    return DashboardListTenantsGetResponse(tenants.tenants)
+    return DashboardListTenantsGetResponse(final_tenants)

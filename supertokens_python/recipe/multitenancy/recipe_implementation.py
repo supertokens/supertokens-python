@@ -193,7 +193,7 @@ class RecipeImplementation(RecipeInterface):
                 config.emailpassword,
                 config.passwordless,
                 config.third_party,
-                config.core_config or {},
+                config.core_config,
             )
             tenant_items.append(item)
 

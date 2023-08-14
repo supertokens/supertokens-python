@@ -101,7 +101,7 @@ class TenantConfigResponse:
         emailpassword: EmailPasswordConfig,
         passwordless: PasswordlessConfig,
         third_party: ThirdPartyConfig,
-        core_config: Optional[Dict[str, Any]],
+        core_config: Dict[str, Any],
     ):
         self.emailpassword = emailpassword
         self.passwordless = passwordless
@@ -131,9 +131,8 @@ class ListAllTenantsItem(TenantConfigResponse):
             "emailpassword": self.emailpassword.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
+            "coreConfig": self.core_config
         }
-        if self.core_config is not None:
-            res["coreConfig"] = self.core_config
 
         return res
 
