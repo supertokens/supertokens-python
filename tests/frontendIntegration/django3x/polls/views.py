@@ -440,6 +440,11 @@ async def get_info(request: HttpRequest):
     return HttpResponse("")
 
 
+def check_rid_no_session(request: HttpRequest):
+    rid = request.headers.get("rid")  # type: ignore
+    return HttpResponse("fail" if rid is None else "success")
+
+
 @custom_decorator_for_update_jwt()
 @verify_session()
 async def update_jwt(request: HttpRequest):

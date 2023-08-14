@@ -181,6 +181,8 @@ async def get_session_from_request(
         do_anti_csrf_check = normalise_http_method(request.method()) != &#34;get&#34;
     if request_transfer_method == &#34;header&#34;:
         do_anti_csrf_check = False
+    if request_access_token is None:
+        do_anti_csrf_check = False
 
     if do_anti_csrf_check and config.anti_csrf == &#34;VIA_CUSTOM_HEADER&#34;:
         if config.anti_csrf == &#34;VIA_CUSTOM_HEADER&#34;:
@@ -690,6 +692,8 @@ async def refresh_session_in_request(
     if do_anti_csrf_check is None:
         do_anti_csrf_check = normalise_http_method(request.method()) != &#34;get&#34;
     if request_transfer_method == &#34;header&#34;:
+        do_anti_csrf_check = False
+    if request_access_token is None:
         do_anti_csrf_check = False
 
     if do_anti_csrf_check and config.anti_csrf == &#34;VIA_CUSTOM_HEADER&#34;:

@@ -153,6 +153,8 @@ async def get_session_from_request(
         do_anti_csrf_check = normalise_http_method(request.method()) != "get"
     if request_transfer_method == "header":
         do_anti_csrf_check = False
+    if request_access_token is None:
+        do_anti_csrf_check = False
 
     if do_anti_csrf_check and config.anti_csrf == "VIA_CUSTOM_HEADER":
         if config.anti_csrf == "VIA_CUSTOM_HEADER":

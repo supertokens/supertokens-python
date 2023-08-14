@@ -11,11 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import json
+
 from typing import Any, Callable, Coroutine, Dict, Union, List, Optional
 
+from supertokens_python import Supertokens
 from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
+from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.types import MaybeAwaitable
+from fastapi.responses import JSONResponse
+from fastapi import Request
 
 from ...interfaces import SessionContainer, SessionClaimValidator
 from supertokens_python.utils import set_request_in_user_context_if_not_defined
@@ -38,14 +45,14 @@ def verify_session(
 
     async def func(request: Request) -> Union[SessionContainer, None]:
         nonlocal user_context
-        baseRequest = FastApiRequest(request)
+        base_req = FastApiRequest(request)
         user_context = set_request_in_user_context_if_not_defined(
-            user_context, baseRequest
+            user_context, base_req
         )
 
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(
-            baseRequest,
+            base_req,
             anti_csrf_check,
             session_required,
             check_database,
@@ -55,9 +62,28 @@ def verify_session(
         if session is None:
             if session_required:
                 raise Exception("Should never come here")
-            baseRequest.set_session_as_none()
+            base_req.set_session_as_none()
         else:
-            baseRequest.set_session(session)
-        return baseRequest.get_session()
+            base_req.set_session(session)
+        return base_req.get_session()
 
     return func
+
+
+async def session_exception_handler(
+    request: Request, exc: SuperTokensError
+) -> JSONResponse:
+    """FastAPI exceptional handler for errors raised by Supertokens SDK when not using middleware
+
+    Usage: `app.add_exception_handler(SuperTokensError, st_exception_handler)`
+    """
+    base_req = FastApiRequest(request)
+    base_res = FastApiResponse(JSONResponse())
+    result = await Supertokens.get_instance().handle_supertokens_error(
+        base_req, exc, base_res
+    )
+    if isinstance(result, FastApiResponse):
+        body = json.loads(result.response.body)
+        return JSONResponse(body, status_code=result.response.status_code)
+
+    raise Exception("Should never come here")

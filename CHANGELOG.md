@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.8] - 2023-07-07
+## Fixes
+
+- Anti csrf check should happen only when access token is passed while session is optional
+- `verify_session` middleware now handles supertokens related errors as well.
+
+## [0.14.7] - 2023-07-03
+- Fixes error message in querier.
 
 ## [0.14.6] - 2023-06-22
 

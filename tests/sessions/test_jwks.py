@@ -22,6 +22,7 @@ from tests.utils import (
     teardown_function as default_teardown_function,
     set_key_value_in_config,
     st_init_common_args,
+    reset,
 )
 
 from supertokens_python.recipe.session.jwks import (
@@ -623,3 +624,78 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     # With cache lifetime being 2s, we expect the cache to be missed 5 times
     assert next(not_returned_from_cache_count) == 1 + 5  # 1 original + 5 misses
     JWKSConfig.update(original_jwks_config)
+
+
+from pytest import fixture
+from fastapi import FastAPI, Request, Depends
+from fastapi.testclient import TestClient
+from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.session import SessionContainer
+
+
+@fixture(scope="function")
+async def client():
+    app = FastAPI()
+    app.add_middleware(get_middleware())
+
+    @app.get("/login")
+    async def login(request: Request):  # type: ignore
+        user_id = "test"
+        s = await create_new_session(request, user_id, {}, {})
+        return {"jwt": s.get_access_token()}
+
+    @app.get("/sessioninfo")
+    async def info(s: SessionContainer = Depends(verify_session())):  # type: ignore
+        user_id = s.get_user_id()
+        return {"user_id": user_id}
+
+    return TestClient(app)
+
+
+async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_as_expected(
+    client: TestClient,
+):
+    args = get_st_init_args(
+        recipe_list=[session.init(use_dynamic_access_token_signing_key=False)]
+    )
+    init(**args)  # type: ignore
+    start_st()
+
+    # Create a session:
+    res = client.get("/login")
+    assert res.status_code == 200
+
+    jwt_with_static_key = res.json()["jwt"]
+
+    res = client.get(
+        "/sessioninfo", headers={"Authorization": f"Bearer {jwt_with_static_key}"}
+    )
+    assert res.status_code == 200
+    assert res.json()["user_id"] == "test"
+
+    reset(stop_core=False)
+
+    # initalize again with use_dynamic_access_token_signing_key=True
+    args = get_st_init_args(
+        recipe_list=[session.init(use_dynamic_access_token_signing_key=True)]
+    )
+    init(**args)  # type: ignore
+
+    from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
+
+    res = client.get(
+        "/sessioninfo", headers={"Authorization": f"Bearer {jwt_with_static_key}"}
+    )
+    assert res.status_code == 401
+    assert res.json() == {"message": "try refresh token"}
+
+    try:
+        res = await get_session_without_request_response(jwt_with_static_key)
+        assert False
+    except TryRefreshTokenError as e:
+        assert (
+            str(e)
+            == "The access token doesn't match the useDynamicAccessTokenSigningKey setting"
+        )
