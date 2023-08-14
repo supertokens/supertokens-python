@@ -106,7 +106,7 @@ async def handle_user_password_put(
             )
 
         password_reset_token = await create_reset_password_token(
-            user_id, tenant_id, user_context
+            tenant_id, user_id, user_context
         )
 
         if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
@@ -115,7 +115,7 @@ async def handle_user_password_put(
             raise Exception("Should never come here")
 
         password_reset_response = await reset_password_using_token(
-            password_reset_token.token, new_password, tenant_id, user_context
+            tenant_id, password_reset_token.token, new_password, user_context
         )
 
         if isinstance(

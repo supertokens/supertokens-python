@@ -114,7 +114,7 @@ class RecipeInterface(ABC):
         client_type: Optional[str],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -> GetProviderOkResult:
+    ) -> Optional[Provider]:
         pass
 
 

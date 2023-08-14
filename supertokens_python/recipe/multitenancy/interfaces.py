@@ -216,7 +216,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_tenant(
         self, tenant_id: str, user_context: Dict[str, Any]
-    ) -> GetTenantOkResult:
+    ) -> Optional[GetTenantOkResult]:
         pass
 
     @abstractmethod

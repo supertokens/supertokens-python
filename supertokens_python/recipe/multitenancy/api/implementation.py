@@ -40,12 +40,16 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
-        tenant_config_res = await api_options.recipe_implementation.get_tenant(
+
+        tenant_config = await api_options.recipe_implementation.get_tenant(
             tenant_id, user_context
         )
 
+        if tenant_config is None:
+            raise Exception("Tenant not found")
+
         provider_inputs_from_static = api_options.static_third_party_providers
-        provider_configs_from_core = tenant_config_res.third_party.providers
+        provider_configs_from_core = tenant_config.third_party.providers
 
         merged_providers = merge_providers_from_core_and_static(
             provider_configs_from_core, provider_inputs_from_static
@@ -61,24 +65,22 @@ class APIImplementation(APIInterface):
                     client_type,
                     user_context,
                 )
-                final_provider_list.append(
-                    ThirdPartyProvider(
-                        provider_instance.id, provider_instance.config.name
-                    )
-                )
-            except Exception as e:
-                if isinstance(e, ClientTypeNotFoundError):
-                    continue
-                raise e
+
+                if provider_instance is None:
+                    raise Exception("Should never come here")
+
+            except ClientTypeNotFoundError:
+                continue
+            final_provider_list.append(
+                ThirdPartyProvider(provider_instance.id, provider_instance.config.name)
+            )
 
         return LoginMethodsGetOkResult(
             email_password=LoginMethodEmailPassword(
-                tenant_config_res.emailpassword.enabled
+                tenant_config.emailpassword.enabled
             ),
-            passwordless=LoginMethodPasswordless(
-                tenant_config_res.passwordless.enabled
-            ),
+            passwordless=LoginMethodPasswordless(tenant_config.passwordless.enabled),
             third_party=LoginMethodThirdParty(
-                tenant_config_res.third_party.enabled, final_provider_list
+                tenant_config.third_party.enabled, final_provider_list
             ),
         )

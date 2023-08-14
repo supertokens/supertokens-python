@@ -27,7 +27,6 @@ from supertokens_python.utils import get_timestamp_ms
 from ...post_init_callbacks import PostSTInitCallbacks
 
 from .interfaces import (
-    APIInterface,
     APIOptions,
     TypeGetAllowedDomainsForTenantId,
 )
@@ -42,19 +41,12 @@ if TYPE_CHECKING:
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.recipe.multitenancy.api.implementation import APIImplementation
 
 
 from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
 from .exceptions import MultitenancyError
-from .interfaces import (
-    LoginMethodsGetOkResult,
-    ThirdPartyProvider,
-    LoginMethodEmailPassword,
-    LoginMethodPasswordless,
-    LoginMethodThirdParty,
-)
 from .utils import (
     InputOverrideConfig,
     validate_and_normalise_user_input,
@@ -194,58 +186,6 @@ class MultitenancyRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         MultitenancyRecipe.__instance = None
-
-
-class APIImplementation(APIInterface):
-    async def login_methods_get(
-        self,
-        tenant_id: str,
-        client_type: Optional[str],
-        api_options: APIOptions,
-        user_context: Dict[str, Any],
-    ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
-        from supertokens_python.recipe.thirdparty.providers.config_utils import (
-            find_and_create_provider_instance,
-            merge_providers_from_core_and_static,
-        )
-        from supertokens_python.recipe.thirdparty.exceptions import (
-            ClientTypeNotFoundError,
-        )
-
-        tenant_config = await api_options.recipe_implementation.get_tenant(
-            tenant_id, user_context
-        )
-
-        provider_inputs_from_static = api_options.static_third_party_providers
-        provider_configs_from_core = tenant_config.third_party.providers
-
-        merged_providers = merge_providers_from_core_and_static(
-            provider_configs_from_core, provider_inputs_from_static
-        )
-
-        final_provider_list: List[ThirdPartyProvider] = []
-
-        for provider_input in merged_providers:
-            try:
-                provider_instance = await find_and_create_provider_instance(
-                    merged_providers,
-                    provider_input.config.third_party_id,
-                    client_type,
-                    user_context,
-                )
-            except ClientTypeNotFoundError:
-                continue
-            final_provider_list.append(
-                ThirdPartyProvider(provider_instance.id, provider_instance.config.name)
-            )
-
-        return LoginMethodsGetOkResult(
-            LoginMethodEmailPassword(tenant_config.emailpassword.enabled),
-            LoginMethodPasswordless(tenant_config.passwordless.enabled),
-            LoginMethodThirdParty(
-                tenant_config.third_party.enabled, final_provider_list
-            ),
-        )
 
 
 class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):

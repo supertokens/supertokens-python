@@ -61,7 +61,7 @@ async def delete_tenant(
 
 async def get_tenant(
     tenant_id: str, user_context: Optional[Dict[str, Any]] = None
-) -> GetTenantOkResult:
+) -> Optional[GetTenantOkResult]:
     if user_context is None:
         user_context = {}
     recipe = MultitenancyRecipe.get_instance()
