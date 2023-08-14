@@ -54,15 +54,6 @@ def Google(
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
 
-    if input.config.user_info_map.from_user_info_api.user_id is None:
-        input.config.user_info_map.from_user_info_api.user_id = "id"
-
-    if input.config.user_info_map.from_user_info_api.email is None:
-        input.config.user_info_map.from_user_info_api.email = "email"
-
-    if input.config.user_info_map.from_user_info_api.email_verified is None:
-        input.config.user_info_map.from_user_info_api.email = "email_verified"
-
     if input.config.authorization_endpoint_query_params is None:
         input.config.authorization_endpoint_query_params = {}
 

@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional
 
 from httpx import AsyncClient
 
+from supertokens_python.logger import log_debug_message
 
 DEV_OAUTH_CLIENT_IDS = [
     "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
@@ -33,12 +34,14 @@ async def do_get_request(
     if headers is None:
         headers = {}
 
-    # TODO logging
-
     async with AsyncClient() as client:
-        return (
-            await client.get(url, params=query_params, headers=headers)  # type:ignore
-        ).json()
+        res = await client.get(url, params=query_params, headers=headers)  # type:ignore
+
+        log_debug_message(
+            "Received response with status %s and body %s", res.status_code, res.text
+        )
+
+        return res.json()
 
 
 async def do_post_request(
@@ -54,9 +57,9 @@ async def do_post_request(
     headers["content-type"] = "application/x-www-form-urlencoded"
     headers["accept"] = "application/json"
 
-    # TODO logging
-
     async with AsyncClient() as client:
-        return (
-            await client.post(url, data=body_params, headers=headers)  # type:ignore
-        ).json()
+        res = await client.post(url, data=body_params, headers=headers)  # type:ignore
+        log_debug_message(
+            "Received response with status %s and body %s", res.status_code, res.text
+        )
+        return res.json()

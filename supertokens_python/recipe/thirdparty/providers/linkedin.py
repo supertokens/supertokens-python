@@ -64,8 +64,10 @@ class LinkedinImpl(GenericProvider):
         )
         raw_user_info_from_provider.from_user_info_api = user_info
 
+        email_api_url = "https://api.linkedin.com/v2/emailAddress"
         email_info: Dict[str, Any] = await do_get_request(
-            "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
+            email_api_url,
+            query_params={"q": "members", "projection": "(elements*(handle~))"},
             headers=headers,
         )
 
