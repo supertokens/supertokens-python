@@ -101,7 +101,12 @@ class DashboardUsersGetResponse(APIResponse):
         }
 
 
-from supertokens_python.recipe.multitenancy.interfaces import EmailPasswordConfig, PasswordlessConfig, ThirdPartyConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    EmailPasswordConfig,
+    PasswordlessConfig,
+    ThirdPartyConfig,
+)
+
 
 class DashboardListTenantItem:
     def __init__(
@@ -125,6 +130,7 @@ class DashboardListTenantItem:
         }
 
         return res
+
 
 class DashboardListTenantsGetResponse(APIResponse):
     status: str = "OK"

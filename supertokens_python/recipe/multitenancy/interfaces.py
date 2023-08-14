@@ -131,7 +131,7 @@ class ListAllTenantsItem(TenantConfigResponse):
             "emailpassword": self.emailpassword.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
-            "coreConfig": self.core_config
+            "coreConfig": self.core_config,
         }
 
         return res

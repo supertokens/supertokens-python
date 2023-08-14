@@ -16,9 +16,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from supertokens_python.recipe.dashboard.interfaces import (
-    DashboardListTenantItem
-)
+from supertokens_python.recipe.dashboard.interfaces import DashboardListTenantItem
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -31,6 +29,7 @@ from supertokens_python.recipe.multitenancy.asyncio import list_all_tenants
 from supertokens_python.recipe.dashboard.interfaces import (
     DashboardListTenantsGetResponse,
 )
+
 
 async def handle_list_tenants_api(
     _api_implementation: APIInterface,
