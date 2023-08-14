@@ -160,12 +160,15 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
-    ) -> GetTenantOkResult:
+    ) -> Optional[GetTenantOkResult]:
         res = await self.querier.send_get_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
             ),
         )
+
+        if res["status"] == "TENANT_NOT_FOUND_ERROR":
+            return None
 
         tenant_config = parse_tenant_config(res)
 

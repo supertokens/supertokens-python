@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
 from .interfaces import (
-    GetProviderOkResult,
     ManuallyCreateOrUpdateUserOkResult,
     RecipeInterface,
     SignInUpOkResult,
@@ -189,6 +188,9 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
+        if tenant_config is None:
+            raise Exception("Tenant not found")
+
         merged_providers = merge_providers_from_core_and_static(
             provider_configs_from_core=tenant_config.third_party.providers,
             provider_inputs_from_static=self.providers,
@@ -198,6 +200,4 @@ class RecipeImplementation(RecipeInterface):
             merged_providers, third_party_id, client_type, user_context
         )
 
-        return GetProviderOkResult(
-            provider,
-        )
+        return provider
