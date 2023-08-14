@@ -126,13 +126,15 @@ class ListAllTenantsItem(TenantConfigResponse):
         self.tenant_id = tenant_id
 
     def to_json(self):
-        return {
+        res = {
             "tenantId": self.tenant_id,
             "emailpassword": self.emailpassword.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
             "coreConfig": self.core_config,
         }
+
+        return res
 
 
 class ListAllTenantsOkResult:

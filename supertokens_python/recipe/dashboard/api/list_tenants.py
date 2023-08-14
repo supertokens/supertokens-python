@@ -14,7 +14,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
+
+from supertokens_python.recipe.dashboard.interfaces import DashboardListTenantItem
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -36,4 +38,16 @@ async def handle_list_tenants_api(
     user_context: Dict[str, Any],
 ) -> APIResponse:
     tenants = await list_all_tenants(user_context)
-    return DashboardListTenantsGetResponse(tenants.tenants)
+
+    final_tenants: List[DashboardListTenantItem] = []
+
+    for current_tenant in tenants.tenants:
+        dashboard_tenant = DashboardListTenantItem(
+            tenant_id=current_tenant.tenant_id,
+            emailpassword=current_tenant.emailpassword,
+            passwordless=current_tenant.passwordless,
+            third_party=current_tenant.third_party,
+        )
+        final_tenants.append(dashboard_tenant)
+
+    return DashboardListTenantsGetResponse(final_tenants)

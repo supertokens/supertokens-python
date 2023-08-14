@@ -101,11 +101,44 @@ class DashboardUsersGetResponse(APIResponse):
         }
 
 
-from supertokens_python.recipe.multitenancy.interfaces import ListAllTenantsOkResult
+from supertokens_python.recipe.multitenancy.interfaces import (
+    EmailPasswordConfig,
+    PasswordlessConfig,
+    ThirdPartyConfig,
+)
 
 
-class DashboardListTenantsGetResponse(APIResponse, ListAllTenantsOkResult):
+class DashboardListTenantItem:
+    def __init__(
+        self,
+        tenant_id: str,
+        emailpassword: EmailPasswordConfig,
+        passwordless: PasswordlessConfig,
+        third_party: ThirdPartyConfig,
+    ):
+        self.tenant_id = tenant_id
+        self.emailpassword = emailpassword
+        self.passwordless = passwordless
+        self.third_party = third_party
+
     def to_json(self):
+        res = {
+            "tenantId": self.tenant_id,
+            "emailpassword": self.emailpassword.to_json(),
+            "passwordless": self.passwordless.to_json(),
+            "thirdParty": self.third_party.to_json(),
+        }
+
+        return res
+
+
+class DashboardListTenantsGetResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, tenants: List[DashboardListTenantItem]) -> None:
+        self.tenants = tenants
+
+    def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
             "tenants": [t.to_json() for t in self.tenants],
