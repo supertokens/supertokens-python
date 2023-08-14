@@ -153,7 +153,7 @@ class APIImplementation(APIInterface):
         state_in_b64: str = form_post_info["state"]
         state = b64decode(state_in_b64).decode("utf-8")
         state_obj = json.loads(state)
-        redirect_uri: str = state_obj["redirectURI"]
+        redirect_uri: str = state_obj["frontendRedirectURI"]
 
         url_obj = urlparse(redirect_uri)
         qparams = parse_qs(url_obj.query)
