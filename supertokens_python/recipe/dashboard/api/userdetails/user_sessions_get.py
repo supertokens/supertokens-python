@@ -17,7 +17,7 @@ from ...interfaces import (
 
 async def handle_sessions_get(
     _api_interface: APIInterface,
-    tenant_id: str,
+    _tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -> UserSessionsGetAPIResponse:

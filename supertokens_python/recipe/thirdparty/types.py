@@ -76,13 +76,13 @@ class UserInfo:
         self,
         third_party_user_id: str,
         email: Union[UserInfoEmail, None] = None,
-        raw_user_info_from_provider: RawUserInfoFromProvider = RawUserInfoFromProvider(
-            {}, {}
-        ),
+        raw_user_info_from_provider: Optional[RawUserInfoFromProvider] = None,
     ):
         self.third_party_user_id: str = third_party_user_id
         self.email: Union[UserInfoEmail, None] = email
-        self.raw_user_info_from_provider = raw_user_info_from_provider
+        self.raw_user_info_from_provider = (
+            raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
+        )
 
 
 class AccessTokenAPI:

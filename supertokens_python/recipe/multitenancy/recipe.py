@@ -30,6 +30,7 @@ from .interfaces import (
 )
 
 from .recipe_implementation import RecipeImplementation
+from ..session import SessionRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -154,7 +155,13 @@ class MultitenancyRecipe(RecipeModule):
                 )
 
                 def callback():
-                    pass  # TODO CLAIMS
+                    try:
+                        SessionRecipe.get_instance().add_claim_from_other_recipe(
+                            AllowedDomainsClaim
+                        )
+                    except Exception:
+                        # Skip adding claims if session recipe is not initilised
+                        pass
 
                 PostSTInitCallbacks.add_post_init_callback(callback)
 

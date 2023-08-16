@@ -23,8 +23,6 @@ from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
 from ..types import EmailTemplateVars, SMSTemplateVars, User
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
 
 async def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
@@ -301,7 +299,7 @@ async def create_magic_link(
     )
 
 
-async def passwordlessSigninup(
+async def passwordless_signinup(
     tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
@@ -336,8 +334,6 @@ async def send_email(
 ):
     if user_context is None:
         user_context = {}
-    if input_.tenant_id is None:
-        input_.tenant_id = DEFAULT_TENANT_ID
 
     return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
         input_, user_context
@@ -350,8 +346,6 @@ async def send_sms(
 ):
     if user_context is None:
         user_context = {}
-    if input_.tenant_id is None:
-        input_.tenant_id = DEFAULT_TENANT_ID
 
     return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
         input_, user_context

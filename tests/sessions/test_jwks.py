@@ -643,7 +643,7 @@ async def client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "test"
-        s = await create_new_session(request, user_id, {}, {})
+        s = await create_new_session(request, "public", user_id, {}, {})
         return {"jwt": s.get_access_token()}
 
     @app.get("/sessioninfo")

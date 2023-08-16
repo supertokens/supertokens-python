@@ -971,7 +971,9 @@ class SupertokensTest(TestCase):
         assert json.loads(response.content) == {"message": "unauthorised"}
 
         # Create a session and get access token
-        s = await create_new_session_without_request_response("userId", {}, {})
+        s = await create_new_session_without_request_response(
+            "public", "userId", {}, {}
+        )
         access_token = s.get_access_token()
         headers = {"HTTP_AUTHORIZATION": "Bearer " + access_token}
 

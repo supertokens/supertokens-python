@@ -259,10 +259,25 @@ form_fields = [
     InputFormField("country", optional=True),
 ]
 
+from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
-def auth0_provider_override(provider: Provider) -> Provider:
-    # TODO: Finish when Node SDK is ready
-    return provider
+
+def auth0_provider_override(oi: Provider) -> Provider:
+    async def get_user_info(  # pylint: disable=no-self-use
+        oauth_tokens: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> UserInfo:
+        access_token = oauth_tokens.get("access_token")
+        if access_token is None:
+            raise Exception("access token is undefined")
+
+        return UserInfo(
+            "someId",
+            UserInfoEmail("test@example.com", True),
+        )
+
+    oi.get_user_info = get_user_info
+    return oi
 
 
 def custom_init(
@@ -332,11 +347,14 @@ def custom_init(
         thirdparty.ProviderInput(
             config=thirdparty.ProviderConfig(
                 third_party_id="auth0",
+                name="Auth0",
+                authorization_endpoint=f"https://{os.environ['AUTH0_DOMAIN']}/authorize",
+                authorization_endpoint_query_params={"scope": "openid profile"},
+                token_endpoint=f"https://{os.environ['AUTH0_DOMAIN']}/oauth/token",
                 clients=[
                     thirdparty.ProviderClientConfig(
                         client_id=os.environ["AUTH0_CLIENT_ID"],
                         client_secret=os.environ["AUTH0_CLIENT_SECRET"],
-                        additional_config={"domain": os.environ["AUTH0_DOMAIN"]},
                     )
                 ],
             ),

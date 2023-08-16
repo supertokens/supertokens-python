@@ -61,7 +61,7 @@ from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
 )
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    passwordlessSigninup,
+    passwordless_signinup,
     thirdparty_manually_create_or_update_user,
 )
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import (
@@ -611,7 +611,7 @@ async def test_email_verify_for_pless_user_no_callback():
     if not is_version_gte(version, "2.11"):
         return
 
-    pless_response = await passwordlessSigninup(
+    pless_response = await passwordless_signinup(
         DEFAULT_TENANT_ID, "test@example.com", None, {}
     )
     create_token = await create_email_verification_token(

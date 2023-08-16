@@ -248,9 +248,11 @@ async def test_get_provider_returns_correct_config_from_core():
     assert thirdparty_info is not None
     assert thirdparty_info.config.third_party_id == "google"
 
-    client = thirdparty_info.config.clients[0]
+    client = thirdparty_info.config
     assert client.client_id == "core-client-id"
     assert client.client_secret == "core-secret"
+    assert thirdparty_info.config.user_info_map is not None
+    assert thirdparty_info.config.user_info_map.from_id_token_payload is not None
     assert thirdparty_info.config.user_info_map.from_id_token_payload == {
         "userId": "sub",
         "email": "email",

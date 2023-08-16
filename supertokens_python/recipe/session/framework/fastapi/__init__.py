@@ -22,7 +22,6 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.types import MaybeAwaitable
 from fastapi.responses import JSONResponse
-from fastapi import Request
 
 from ...interfaces import SessionContainer, SessionClaimValidator
 from supertokens_python.utils import set_request_in_user_context_if_not_defined
