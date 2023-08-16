@@ -193,13 +193,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     Before:
 
     ```python
-    emailpassword.asyncio.sign_up("test@example.com", "password");
+    emailpassword.asyncio.sign_up("test@example.com", "password")
     ```
 
     After:
 
     ```python
-    emailpassword.asyncio.sign_up("public", "test@example.com", "password");
+    emailpassword.asyncio.sign_up("public", "test@example.com", "password")
     ```
 
 -   Input for provider array change as follows:
