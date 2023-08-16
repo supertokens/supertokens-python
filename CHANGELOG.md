@@ -8,6 +8,510 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+
+## [15.0.0] - 2023-09-16
+
+-   Fixes apple redirect
+-   Fixes an issue where the user management dashboard would incorrectly show an email as unverified even if it was verified
+
+### Added
+
+-   Added Multitenancy Recipe & always initialized by default.
+-   Adds Multitenancy support to all the recipes
+-   Added new Social login providers - LinkedIn
+-   Added new Multi-tenant SSO providers - Okta, Active Directory, Boxy SAML
+-   All APIs handled by Supertokens middleware can have an optional `tenantId` prefixed in the path. e.g. `<basePath>/<tenantId>/signinup`
+-   Following recipe functions (asyncio/syncio) have been added:
+    -   `EmailPassword`
+        - `create_reset_password_link`
+        - `send_reset_password_email`
+    -   `EmailVerification`
+        - `create_email_verification_link`
+        - `send_email_verification_email`
+    -   `ThirdParty`
+        - `get_provider`
+    -   `ThirdPartyEmailPassword`
+        - `third_party_get_provider`
+        - `create_reset_password_link`
+        - `send_reset_password_email`
+    -   `ThirdPartyPasswordless`
+        - `third_party_get_provider`
+        - `create_reset_password_link`
+        - `send_reset_password_email`
+
+### Breaking changes
+
+-   Only supporting FDI 1.17
+-   Core must be upgraded to 6.0
+-   `get_users_oldest_first` & `get_users_newest_first` has mandatory parameter `tenant_id`. Pass `'public'` if not using multitenancy.
+-   Added mandatory field `tenant_id` to `EmailDeliveryInterface` and `SmsDeliveryInterface`. Pass `'public'` if not using multitenancy.
+-   Removed deprecated config `create_and_send_custom_email` and `create_and_send_custom_text_message`.
+-   EmailPassword recipe changes:
+    -   Added mandatory `tenant_id` field to `TypeEmailPasswordPasswordResetEmailDeliveryInput`
+    -   Removed `reset_password_using_token_feature` from `TypeInput`
+    -   Added `tenant_id` param to `validate` function in `TypeInputFormField`
+    -   Added mandatory `tenant_id` as first parameter to the following recipe index functions:
+        -   `sign_up`
+        -   `sign_in`
+        -   `get_user_by_email`
+        -   `create_reset_password_token`
+        -   `reset_password_using_token`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `sign_up`
+        -   `sign_in`
+        -   `get_user_by_email`
+        -   `create_reset_password_token`
+        -   `reset_password_using_token`
+        -   `update_email_or_password`
+    -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `email_exists_get`
+        -   `generate_password_reset_token_post`
+        -   `password_reset_post`
+        -   `sign_in_post`
+        -   `sign_up_post`
+-   EmailVerification recipe changes:
+    -   Added mandatory `tenant_id` field to `TypeEmailVerificationEmailDeliveryInput`
+    -   Added mandatory `tenant_id` as first parameter to the following recipe index functions:
+        -   `create_email_verification_token`
+        -   `verify_email_using_token`
+        -   `revoke_email_verification_tokens`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `create_email_verification_token`
+        -   `verify_email_using_token`
+        -   `revoke_email_verification_tokens`
+    -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `verify_email_post`
+-   Passwordless recipe changes:
+    -   Added `tenant_id` param to `validate_email_address`, `validate_phone_number` and `get_custom_user_input_code` functions in `TypeInput`
+    -   Added mandatory `tenant_id` field to `TypePasswordlessEmailDeliveryInput` and `TypePasswordlessSmsDeliveryInput`
+    -   Added mandatory `tenant_id` in the input to the following recipe index functions:
+        -   `create_code`
+        -   `create_new_code_for_device`
+        -   `get_user_by_email`
+        -   `get_user_by_phone_number`
+        -   `update_user`
+        -   `revoke_code`
+        -   `list_codes_by_email`
+        -   `list_codes_by_phone_number`
+        -   `list_codes_by_device_id`
+        -   `list_codes_by_pre_auth_session_id`
+        -   `sign_in_up`
+    -   Added mandatory `tenant_id` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `create_code`
+        -   `create_new_code_for_device`
+        -   `consume_code`
+        -   `get_user_by_email`
+        -   `get_user_by_phone_number`
+        -   `revoke_all_codes`
+        -   `revoke_code`
+        -   `list_codes_by_email`
+        -   `list_codes_by_phone_number`
+        -   `list_codes_by_device_id`
+        -   `list_codes_by_pre_auth_session_id`
+    -   Added mandatory `tenant_id` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `create_code_post`
+        -   `resend_code_post`
+        -   `consume_code_post`
+        -   `email_exists_get`
+        -   `phone_number_exists_get`
+-   ThirdParty recipe changes
+    -   The providers array in `sign_in_up_feature` accepts `List[ProviderInput]` instead of `List[Provider]`. `Provider` interface is re-written. Refer migration section for more info.
+    -   Removed `sign_in_up` and added `manually_create_or_update_user` instead in the recipe index functions.
+    -   Added `manually_create_or_update_user` to recipe interface which is being called by the function mentioned above.
+        -   `manually_create_or_update_user` recipe interface function should not be overridden as it is not going to be called by the SDK in the sign in/up flow.
+        -   `sign_in_up` recipe interface functions is not removed and is being used by the sign in/up flow.
+    -   Added mandatory `tenant_id` as first parameter to the following recipe index functions:
+        -   `get_users_by_email`
+        -   `get_user_by_third_party_info`
+    -   Added mandatory `tenant_id` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `get_users_by_email`
+        -   `get_user_by_third_party_info`
+        -   `sign_in_up`
+    -   Added mandatory `tenant_id` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `authorisation_url_get`
+        -   `sign_in_up_post`
+    -   Updated `sign_in_up` recipe interface function in thirdparty with new parameters:
+        -   `o_auth_tokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
+        -   `raw_user_info_from_provider` - contains all the user profile info as returned by the provider
+    -   Updated `authorisation_url_get` API
+        -   Changed: Doesn't accept `client_id` anymore and accepts `client_type` instead to determine the matching config
+        -   Added: optional `pkce_code_verifier` in the response, to support PKCE
+    -   Updated `sign_in_up_post` API
+        -   Removed: `client_id`, `redirect_uri`, `auth_code_response` and `code` from the input
+        -   Instead,
+            -   accepts `client_type` to determine the matching config
+            -   One of redirectURIInfo (for code flow) or oAuthTokens (for token flow) is required
+    -   Updated `apple_redirect_handler_post`
+        -   to accept all the form fields instead of just the code
+        -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
+        -   to use HTTP 303 instead of javascript based redirection.
+-   Session recipe changes
+    -   Added mandatory `tenant_id` as first parameter to the following recipe index functions:
+        -   `create_new_session`
+        -   `create_new_session_without_request_response`
+        -   `validate_claims_in_jwt_payload`
+    -   Added mandatory `tenant_id` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `create_new_session`
+        -   `get_global_claim_validators`
+    -   Added `tenant_id` and `revoke_across_all_tenants` params to `revoke_all_sessions_for_user` in the recipe interface.
+    -   Added `tenant_id` and `fetch_across_all_tenants` params to `get_all_session_handles_for_user` in the recipe interface.
+    -   Added `get_tenant_id` function to `SessionContainerInterface`
+    -   Added `tenant_id` to `fetch_value` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
+-   UserRoles recipe changes
+    -   Added mandatory `tenant_id` as first parameter to the following recipe index functions:
+        -   `add_role_to_user`
+        -   `remove_user_role`
+        -   `get_roles_for_user`
+        -   `get_users_that_have_role`
+    -   Added mandatory `tenant_id` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `add_role_to_user`
+        -   `remove_user_role`
+        -   `get_roles_for_user`
+        -   `get_roles_for_user`
+-   Similar changes in combination recipes (thirdpartyemailpassword and thirdpartypasswordless) have been made
+-   Even if thirdpartyemailpassword and thirdpartpasswordless recipes do not have a providers array as an input, they will still expose the third party recipe routes to the frontend.
+-   Returns 400 status code in emailpassword APIs if the input email or password are not of type string.
+
+### Changes
+
+-   Recipe function changes:
+    -   Added optional `tenant_id_for_password_policy` param to `EmailPassword.update_email_or_password`, `ThirdPartyEmailPassword.update_email_or_password`
+    -   Added optional param `tenant_id` to `Session.revoke_all_sessions_for_user`. If tenantId is undefined, sessions are revoked across all tenants
+    -   Added optional param `tenant_id` to `Session.get_all_session_handles_for_user`. If tenantId is undefined, sessions handles across all tenants are returned
+-   Adds optional param `tenant_id` to `get_user_count` which returns total count across all tenants if not passed.
+-   Adds protected prop `tId` to the accessToken payload
+-   Adds `includes_any` claim validator to `PrimitiveArrayClaim`
+
+### Fixes
+
+-   Fixed an issue where certain Dashboard API routes would return a 404 for Hapi
+
+### Migration
+
+-   To call any recipe function that has `tenant_id` added to it, pass `'public`'
+
+    Before:
+
+    ```pytho
+    emailpassword.asyncio.sign_up("test@example.com", "password");
+    ```
+
+    After:
+
+    ```python
+    emailpassword.asyncio.sign_up("public", "test@example.com", "password");
+    ```
+
+-   Input for provider array change as follows:
+
+    Before:
+
+    ```python
+    google_provider = thirdparty.Google(
+        client_id="...",
+        client_secret="...",
+    )
+    ```
+
+    After:
+
+    ```python
+    google_provider = thirdparty.ProviderConfig(
+        third_party_id="google",
+        clients=[thirdparty.ProviderClientConfig(client_id="...", client_secret="...")],
+    )
+    ```
+
+-   Single instance with multiple clients of each provider instead of multiple instances of them. Also use `client_type` to differentiate them. `client_type` passed from the frontend will be used to determine the right config. `is_default` option has been removed and `client_type` is expected to be passed when there are more than one client. If there is only one client, `client_type` is optional and will be used by default.
+
+    Before:
+
+    ```python
+    providers = [
+        thirdparty.Google(
+            is_default=True,
+            client_id="clientid1",
+            client_secret="...",
+        ),
+        thirdParty.Google(
+            client_id="clientid2",
+            client_secret="...",
+        ),
+    ]
+    ```
+
+    After:
+
+    ```python
+    providers = [
+        thirdparty.ProviderConfig(
+            third_party_id="google",
+            clients=[
+                thirdparty.ProviderClientConfig(client_type="web", client_id= "clientid1", client_secret= "..."),
+                thirdparty.ProviderClientConfig(client_type="mobile", client_id="clientid2", client_secret="..."),
+            ],
+        )
+    ]
+    ```
+
+-   Change in the implementation of custom providers
+
+    -   All config is part of `ProviderInput`
+    -   To provide implementation for `get_profile_info`
+        -   either use `user_info_endpoint`, `user_info_endpoint_query_params` and `user_info_map` to fetch the user info from the provider
+        -   or specify custom implementation in an override for `get_user_info` (override example in the next section)
+
+    Before:
+
+    ```python
+    class CustomProvider(Provider):
+        def get_access_token_api_info(
+            self,
+            redirect_uri: str,
+            auth_code_from_request: str,
+            user_context: Dict[str, Any],
+        ) -> AccessTokenAPI:
+            params = {
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "grant_type": "...",
+                "code": auth_code_from_request,
+                "redirect_uri": redirect_uri,
+            }
+            return AccessTokenAPI(self.access_token_api_url, params)
+
+        def get_authorisation_redirect_api_info(
+            self, user_context: Dict[str, Any]
+        ) -> AuthorisationRedirectAPI:
+            params: Dict[str, Any] = {
+                "scope": "...",
+                "response_type": "...",
+                "client_id": self.client_id,
+            }
+            return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+
+        def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+            return None
+
+        def get_client_id(self, user_context: Dict[str, Any]) -> str:
+            return self.client_id
+
+        async def get_profile_info(
+            self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+        ) -> UserInfo:
+            return UserInfo(id="...", UserInfoEmail(email="...", True))
+    ```
+
+    After:
+
+    ```python
+    custom_provider = thirdparty.Provider(
+        config=thirdparty.ProviderConfig(
+            third_party_id="custom",
+            clients=[
+                thirdparty.ProviderConfigClient(
+                    client_id="...",
+                    client_secret="...",
+                ),
+            ],
+            authorization_endpoint="...",
+            authorization_endpoint_query_params={},
+            token_endpoint="...",
+            token_endpoint_body_params={},
+            user_info_endpoint="...",
+            user_info_endpoint_query_params={},
+            user_info_map=UserInfoMap(
+                from_user_info_api=UserFields(
+                    user_id="id",
+                    email="email",
+                    email_verified="email_verified",
+                ),
+            ),
+        ),
+    )
+    ```
+
+    Also, if the custom provider supports openid, it can automatically discover the endpoints
+
+    ```python
+    custom_provider = thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="custom",
+            clients=[
+                thirdparty.ProviderConfigClient(
+                    client_id="...",
+                    client_secret="...",
+                ),
+            ],
+            oidc_discovery_endpoint="...",
+            user_info_map=UserInfoMap(
+                from_user_info_api=UserFields(
+                    user_id="id",
+                    email="email",
+                    email_verified="email_verified",
+                ),
+            ),
+        ),
+    )
+    ```
+
+    Note: The SDK will fetch the oauth2 endpoints from the provider's OIDC discovery endpoint. No need to `/.well-known/openid-configuration` to the `oidcDiscoveryEndpoint` config. For eg. if `oidcDiscoveryEndpoint` is set to `"https://accounts.google.com/"`, the SDK will fetch the endpoints from `"https://accounts.google.com/.well-known/openid-configuration"`
+
+-   Any of the functions in the TypeProvider can be overridden for custom implementation
+
+    -   Overrides can do the following:
+        -   update params, headers dynamically for the authorization redirect url or in the exchange of code to tokens
+        -   add custom logic to exchange code to tokens
+        -   add custom logic to get the user info
+
+    ```python
+    def override(oi):
+        oi_get_authorisation_redirect_url = oi.get_authorisation_redirect_url
+        oi_exchange_auth_code_for_oauth_tokens = oi.exchange_auth_code_for_oauth_tokens
+        oi_get_user_info = oi.get_user_info
+
+        async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
+            redirect_uri_on_provider_dashboard: str,
+            user_context: Dict[str, Any],
+        ) -> AuthorisationRedirect:
+            res = await oi_get_authorisation_redirect_url(redirect_uri_on_provider_dashboard, user_context)
+            # ...
+            return res
+
+        async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
+            redirect_uri_info: RedirectUriInfo,
+            user_context: Dict[str, Any],
+        ) -> Dict[str, Any]:
+            res = await oi_exchange_auth_code_for_oauth_tokens(redirect_uri_info, auth_code, user_context)
+            # ...
+            return res
+
+        async def get_user_info(  # pylint: disable=no-self-use
+            oauth_tokens: Dict[str, Any],
+            user_context: Dict[str, Any],
+        ) -> UserInfo:
+            res = await oi_get_user_info(oauth_tokens, user_context)
+            # ...
+            return res
+
+        oi.get_authorisation_redirect_url = get_authorisation_redirect_url
+        oi.exchange_auth_code_for_oauth_tokens = exchange_auth_code_for_oauth_tokens
+        oi.get_user_info = get_user_info
+
+        return oi
+
+    custom_provider = thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="custom",
+            clients=[
+                thirdparty.ProviderConfigClient(
+                    client_id="...",
+                    client_secret="...",
+                ),
+            ],
+            oidc_discovery_endpoint="...",
+            user_info_map=UserInfoMap(
+                from_user_info_api=UserFields(
+                    user_id="id",
+                    email="email",
+                    email_verified="email_verified",
+                ),
+            ),
+        ),
+        override=override
+    )
+    ```
+
+-   To get access token and raw user info from the provider, override the signInUp function
+
+    ```python
+    def override_functions(oi):
+        oi_sign_in_up = oi.sign_in_up
+
+        async def sign_in_up(
+            third_party_id: str,
+            third_party_user_id: str,
+            email: str,
+            oauth_tokens: Dict[str, Any],
+            raw_user_info_from_provider: RawUserInfoFromProvider,
+            tenant_id: str,
+            user_context: Dict[str, Any],
+        ) -> SignInUpOkResult:
+            res = await oi_sign_in_up(third_party_id, third_party_user_id, email, oauth_tokens, raw_user_info_from_provider, tenant_id, user_context)
+            # res.oauth_tokens['access_token']
+            # res.oauth_tokens['id_token']
+            # res.raw_user_info_from_provider.from_user_info_api
+            # res.raw_user_info_from_provider.from_id_token_payload
+            return res
+
+    thirdparty.init(
+        override=thirdparty.InputOverrideConfig(functions=override_functions)
+    )
+    ```
+
+-   Request body of thirdparty signinup API has changed
+
+    -   If using auth code:
+
+        Before:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientId": "...",
+            "redirectURI": "...", // optional
+            "code": "..."
+        }
+        ```
+
+        After:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientType": "...",
+            "redirectURIInfo": {
+                "redirectURIOnProviderDashboard": "...", // required
+                "redirectURIQueryParams": {
+                    "code": "...",
+                    "state": "..."
+                    // ... all callback query params
+                },
+                "pkceCodeVerifier": "..." // optional, use this if using PKCE flow
+            }
+        }
+        ```
+
+    -   If using tokens:
+
+        Before:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientId": "...",
+            "redirectURI": "...",
+            "authCodeResponse": {
+                "access_token": "...", // required
+                "id_token": "..."
+            }
+        }
+        ```
+
+        After:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientType": "...",
+            "oAuthTokens": {
+                "access_token": "...", // now optional
+                "id_token": "..."
+                // rest of the oAuthTokens as returned by the provider
+            }
+        }
+        ```
+
 ## [0.14.8] - 2023-07-07
 ## Fixes
 
@@ -148,7 +652,7 @@ if (accessTokenPayload.sub !== undefined) {
 ```python
 from supertokens_python.recipe.session.interfaces import SessionContainer
 
-session: SessionContainer = ... 
+session: SessionContainer = ...
 access_token_payload = await session.get_access_token_payload()
 
 if access_token_payload.get('sub') is not None:
