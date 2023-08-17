@@ -39,12 +39,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+from typing import Any, Dict
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
-async def email_exists(api_implementation: APIInterface, api_options: APIOptions):
+async def email_exists(
+    api_implementation: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if api_implementation.disable_email_exists_get:
         return None
 
@@ -52,9 +59,9 @@ async def email_exists(api_implementation: APIInterface, api_options: APIOptions
     if email is None:
         raise_bad_input_exception(&#34;Please provide the email as a GET param&#34;)
 
-    user_context = default_user_context(api_options.request)
-
-    result = await api_implementation.email_exists_get(email, api_options, user_context)
+    result = await api_implementation.email_exists_get(
+        email, tenant_id, api_options, user_context
+    )
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </section>
@@ -66,7 +73,7 @@ async def email_exists(api_implementation: APIInterface, api_options: APIOptions
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.api.email_exists.email_exists"><code class="name flex">
-<span>async def <span class="ident">email_exists</span></span>(<span>api_implementation: <a title="supertokens_python.recipe.passwordless.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>)</span>
+<span>async def <span class="ident">email_exists</span></span>(<span>api_implementation: APIInterface, tenant_id: str, api_options: APIOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -74,7 +81,12 @@ async def email_exists(api_implementation: APIInterface, api_options: APIOptions
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def email_exists(api_implementation: APIInterface, api_options: APIOptions):
+<pre><code class="python">async def email_exists(
+    api_implementation: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     if api_implementation.disable_email_exists_get:
         return None
 
@@ -82,9 +94,9 @@ async def email_exists(api_implementation: APIInterface, api_options: APIOptions
     if email is None:
         raise_bad_input_exception(&#34;Please provide the email as a GET param&#34;)
 
-    user_context = default_user_context(api_options.request)
-
-    result = await api_implementation.email_exists_get(email, api_options, user_context)
+    result = await api_implementation.email_exists_get(
+        email, tenant_id, api_options, user_context
+    )
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </dd>

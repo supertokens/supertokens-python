@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, Dict, Any
+from typing import Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -67,11 +67,11 @@ class VerificationEmailTemplateVars:
         self,
         user: VerificationEmailTemplateVarsUser,
         email_verify_link: str,
-        user_context: Dict[str, Any],
+        tenant_id: str,
     ) -&gt; None:
         self.user = user
         self.email_verify_link = email_verify_link
-        self.user_context = user_context
+        self.tenant_id = tenant_id
 
 
 # Export:
@@ -135,7 +135,7 @@ class EmailVerificationIngredients:
 </dd>
 <dt id="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars"><code class="flex name class">
 <span>class <span class="ident">VerificationEmailTemplateVars</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a>, email_verify_link: str, user_context: Dict[str, Any])</span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a>, email_verify_link: str, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -148,16 +148,16 @@ class EmailVerificationIngredients:
         self,
         user: VerificationEmailTemplateVarsUser,
         email_verify_link: str,
-        user_context: Dict[str, Any],
+        tenant_id: str,
     ) -&gt; None:
         self.user = user
         self.email_verify_link = email_verify_link
-        self.user_context = user_context</code></pre>
+        self.tenant_id = tenant_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars"><code class="flex name class">
 <span>class <span class="ident">EmailTemplateVars</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a>, email_verify_link: str, user_context: Dict[str, Any])</span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a>, email_verify_link: str, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -170,11 +170,11 @@ class EmailVerificationIngredients:
         self,
         user: VerificationEmailTemplateVarsUser,
         email_verify_link: str,
-        user_context: Dict[str, Any],
+        tenant_id: str,
     ) -&gt; None:
         self.user = user
         self.email_verify_link = email_verify_link
-        self.user_context = user_context</code></pre>
+        self.tenant_id = tenant_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser"><code class="flex name class">

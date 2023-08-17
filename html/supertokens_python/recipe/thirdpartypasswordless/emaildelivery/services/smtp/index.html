@@ -78,7 +78,9 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         )
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -&gt; None:
         return await self.pless_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
@@ -127,7 +129,9 @@ inheritance.</p></div>
         )
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -&gt; None:
         return await self.pless_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
@@ -149,7 +153,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def send_email(
-    self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    self,
+    template_vars: EmailTemplateVars,
+    user_context: Dict[str, Any],
 ) -&gt; None:
     return await self.pless_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>

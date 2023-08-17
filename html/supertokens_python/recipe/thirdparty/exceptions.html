@@ -45,7 +45,13 @@ from supertokens_python.exceptions import SuperTokensError
 
 
 class SuperTokensThirdPartyError(SuperTokensError):
-    pass</code></pre>
+    pass
+
+
+class ClientTypeNotFoundError(SuperTokensError):
+    def __init__(self, message: str):
+        super().__init__()
+        self.message = message</code></pre>
 </details>
 </section>
 <section>
@@ -57,6 +63,28 @@ class SuperTokensThirdPartyError(SuperTokensError):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError"><code class="flex name class">
+<span>class <span class="ident">ClientTypeNotFoundError</span></span>
+<span>(</span><span>message: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ClientTypeNotFoundError(SuperTokensError):
+    def __init__(self, message: str):
+        super().__init__()
+        self.message = message</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.exceptions.SuperTokensError" href="../../exceptions.html#supertokens_python.exceptions.SuperTokensError">SuperTokensError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensThirdPartyError</span></span>
 <span>(</span><span>*args, **kwargs)</span>
@@ -93,6 +121,9 @@ class SuperTokensThirdPartyError(SuperTokensError):
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError" href="#supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError">ClientTypeNotFoundError</a></code></h4>
+</li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError" href="#supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError">SuperTokensThirdPartyError</a></code></h4>
 </li>

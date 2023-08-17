@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
@@ -52,7 +52,9 @@ from supertokens_python.querier import Querier
 from supertokens_python.utils import send_200_response
 
 
-async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptions):
+async def handle_emailpassword_signin_api(
+    _: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
+):
     body = await api_options.request.json()
     if body is None:
         raise_bad_input_exception(&#34;Please send body&#34;)
@@ -92,7 +94,7 @@ async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptio
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.signin.handle_emailpassword_signin_api"><code class="name flex">
-<span>async def <span class="ident">handle_emailpassword_signin_api</span></span>(<span>_: APIInterface, api_options: APIOptions)</span>
+<span>async def <span class="ident">handle_emailpassword_signin_api</span></span>(<span>_: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -100,7 +102,9 @@ async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptio
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def handle_emailpassword_signin_api(_: APIInterface, api_options: APIOptions):
+<pre><code class="python">async def handle_emailpassword_signin_api(
+    _: APIInterface, api_options: APIOptions, _user_context: Dict[str, Any]
+):
     body = await api_options.request.json()
     if body is None:
         raise_bad_input_exception(&#34;Please send body&#34;)

@@ -60,6 +60,7 @@ class User:
         email: Union[str, None],
         phone_number: Union[str, None],
         third_party_info: Union[ThirdPartyInfo, None],
+        tenant_ids: List[str],
     ):
         self.recipe_id = recipe_id
         self.user_id = user_id
@@ -67,20 +68,26 @@ class User:
         self.time_joined = time_joined
         self.third_party_info = third_party_info
         self.phone_number = phone_number
+        self.tenant_ids = tenant_ids
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {
+        res: Dict[str, Any] = {
             &#34;recipeId&#34;: self.recipe_id,
             &#34;user&#34;: {
                 &#34;id&#34;: self.user_id,
-                &#34;email&#34;: self.email,
                 &#34;timeJoined&#34;: self.time_joined,
-                &#34;thirdParty&#34;: None
-                if self.third_party_info is None
-                else self.third_party_info.__dict__,
-                &#34;phoneNumber&#34;: self.phone_number,
+                &#34;tenantIds&#34;: self.tenant_ids,
             },
         }
+
+        if self.email is not None:
+            res[&#34;user&#34;][&#34;email&#34;] = self.email
+        if self.phone_number is not None:
+            res[&#34;user&#34;][&#34;phoneNumber&#34;] = self.phone_number
+        if self.third_party_info is not None:
+            res[&#34;user&#34;][&#34;thirdParty&#34;] = self.third_party_info.__dict__
+
+        return res
 
 
 class UsersResponse:
@@ -138,6 +145,7 @@ inheritance.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.dashboard.interfaces.AnalyticsResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.AnalyticsResponse">AnalyticsResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantsGetResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.DashboardListTenantsGetResponse">DashboardListTenantsGetResponse</a></li>
 <li><a title="supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse">DashboardUsersGetResponse</a></li>
 <li><a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a></li>
 <li><a title="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.SearchTagsOK">SearchTagsOK</a></li>
@@ -176,6 +184,7 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a></li>
 <li><a title="supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a></li>
 <li><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="recipe/jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a></li>
+<li><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="recipe/multitenancy/interfaces.html#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a></li>
 <li><a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="recipe/openid/interfaces.html#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a></li>
@@ -274,7 +283,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
-<span>(</span><span>recipe_id: str, user_id: str, time_joined: int, email: Optional[str], phone_number: Optional[str], third_party_info: Optional[<a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a>])</span>
+<span>(</span><span>recipe_id: str, user_id: str, time_joined: int, email: Optional[str], phone_number: Optional[str], third_party_info: Optional[<a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a>], tenant_ids: List[str])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -291,6 +300,7 @@ inheritance.</p></div>
         email: Union[str, None],
         phone_number: Union[str, None],
         third_party_info: Union[ThirdPartyInfo, None],
+        tenant_ids: List[str],
     ):
         self.recipe_id = recipe_id
         self.user_id = user_id
@@ -298,20 +308,26 @@ inheritance.</p></div>
         self.time_joined = time_joined
         self.third_party_info = third_party_info
         self.phone_number = phone_number
+        self.tenant_ids = tenant_ids
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {
+        res: Dict[str, Any] = {
             &#34;recipeId&#34;: self.recipe_id,
             &#34;user&#34;: {
                 &#34;id&#34;: self.user_id,
-                &#34;email&#34;: self.email,
                 &#34;timeJoined&#34;: self.time_joined,
-                &#34;thirdParty&#34;: None
-                if self.third_party_info is None
-                else self.third_party_info.__dict__,
-                &#34;phoneNumber&#34;: self.phone_number,
+                &#34;tenantIds&#34;: self.tenant_ids,
             },
-        }</code></pre>
+        }
+
+        if self.email is not None:
+            res[&#34;user&#34;][&#34;email&#34;] = self.email
+        if self.phone_number is not None:
+            res[&#34;user&#34;][&#34;phoneNumber&#34;] = self.phone_number
+        if self.third_party_info is not None:
+            res[&#34;user&#34;][&#34;thirdParty&#34;] = self.third_party_info.__dict__
+
+        return res</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -325,18 +341,23 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
+    res: Dict[str, Any] = {
         &#34;recipeId&#34;: self.recipe_id,
         &#34;user&#34;: {
             &#34;id&#34;: self.user_id,
-            &#34;email&#34;: self.email,
             &#34;timeJoined&#34;: self.time_joined,
-            &#34;thirdParty&#34;: None
-            if self.third_party_info is None
-            else self.third_party_info.__dict__,
-            &#34;phoneNumber&#34;: self.phone_number,
+            &#34;tenantIds&#34;: self.tenant_ids,
         },
-    }</code></pre>
+    }
+
+    if self.email is not None:
+        res[&#34;user&#34;][&#34;email&#34;] = self.email
+    if self.phone_number is not None:
+        res[&#34;user&#34;][&#34;phoneNumber&#34;] = self.phone_number
+    if self.third_party_info is not None:
+        res[&#34;user&#34;][&#34;thirdParty&#34;] = self.third_party_info.__dict__
+
+    return res</code></pre>
 </details>
 </dd>
 </dl>

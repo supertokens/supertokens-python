@@ -161,6 +161,9 @@ class Session(SessionContainer):
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
 
+    def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+        return self.tenant_id
+
     def get_access_token_payload(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -&gt; Dict[str, Any]:
@@ -248,7 +251,9 @@ class Session(SessionContainer):
         if user_context is None:
             user_context = {}
 
-        update = await claim.build(self.get_user_id(), user_context)
+        update = await claim.build(
+            self.get_user_id(), self.get_tenant_id(), user_context
+        )
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def set_claim_value(
@@ -362,7 +367,7 @@ class Session(SessionContainer):
 <dl>
 <dt id="supertokens_python.recipe.session.session_class.Session"><code class="flex name class">
 <span>class <span class="ident">Session</span></span>
-<span>(</span><span>recipe_implementation: RecipeInterface, config: SessionConfig, access_token: str, front_token: str, refresh_token: Optional[TokenInfo], anti_csrf_token: Optional[str], session_handle: str, user_id: str, user_data_in_access_token: Optional[Dict[str, Any]], req_res_info: Optional[ReqResInfo], access_token_updated: bool)</span>
+<span>(</span><span>recipe_implementation: RecipeInterface, config: SessionConfig, access_token: str, front_token: str, refresh_token: Optional[TokenInfo], anti_csrf_token: Optional[str], session_handle: str, user_id: str, user_data_in_access_token: Optional[Dict[str, Any]], req_res_info: Optional[ReqResInfo], access_token_updated: bool, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -463,6 +468,9 @@ inheritance.</p></div>
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
 
+    def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+        return self.tenant_id
+
     def get_access_token_payload(
         self, user_context: Union[Dict[str, Any], None] = None
     ) -&gt; Dict[str, Any]:
@@ -550,7 +558,9 @@ inheritance.</p></div>
         if user_context is None:
             user_context = {}
 
-        update = await claim.build(self.get_user_id(), user_context)
+        update = await claim.build(
+            self.get_user_id(), self.get_tenant_id(), user_context
+        )
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def set_claim_value(
@@ -756,7 +766,9 @@ inheritance.</p></div>
     if user_context is None:
         user_context = {}
 
-    update = await claim.build(self.get_user_id(), user_context)
+    update = await claim.build(
+        self.get_user_id(), self.get_tenant_id(), user_context
+    )
     return await self.merge_into_access_token_payload(update, user_context)</code></pre>
 </details>
 </dd>
@@ -890,6 +902,19 @@ inheritance.</p></div>
         raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
     return session_info.session_data_in_database</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.session_class.Session.get_tenant_id"><code class="name flex">
+<span>def <span class="ident">get_tenant_id</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    return self.tenant_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_time_created"><code class="name flex">
@@ -1140,6 +1165,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_expiry" href="#supertokens_python.recipe.session.session_class.Session.get_expiry">get_expiry</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_handle" href="#supertokens_python.recipe.session.session_class.Session.get_handle">get_handle</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_session_data_from_database" href="#supertokens_python.recipe.session.session_class.Session.get_session_data_from_database">get_session_data_from_database</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_class.Session.get_tenant_id" href="#supertokens_python.recipe.session.session_class.Session.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_time_created" href="#supertokens_python.recipe.session.session_class.Session.get_time_created">get_time_created</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_user_id" href="#supertokens_python.recipe.session.session_class.Session.get_user_id">get_user_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.merge_into_access_token_payload" href="#supertokens_python.recipe.session.session_class.Session.merge_into_access_token_payload">merge_into_access_token_payload</a></code></li>

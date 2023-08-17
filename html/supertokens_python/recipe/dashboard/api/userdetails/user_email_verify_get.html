@@ -36,11 +36,14 @@ from ...interfaces import (
     FeatureNotEnabledError,
 )
 
-from typing import Union
+from typing import Union, Dict, Any
 
 
 async def handle_user_email_verify_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Union[UserEmailVerifyGetAPIResponse, FeatureNotEnabledError]:
     req = api_options.request
     user_id = req.get_query_param(&#34;userId&#34;)
@@ -53,7 +56,7 @@ async def handle_user_email_verify_get(
     except Exception:
         return FeatureNotEnabledError()
 
-    is_verified = await is_email_verified(user_id)
+    is_verified = await is_email_verified(user_id, user_context=user_context)
     return UserEmailVerifyGetAPIResponse(is_verified)</code></pre>
 </details>
 </section>
@@ -65,7 +68,7 @@ async def handle_user_email_verify_get(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_email_verify_get.handle_user_email_verify_get"><code class="name flex">
-<span>async def <span class="ident">handle_user_email_verify_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse">UserEmailVerifyGetAPIResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a>]</span>
+<span>async def <span class="ident">handle_user_email_verify_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse">UserEmailVerifyGetAPIResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -74,7 +77,10 @@ async def handle_user_email_verify_get(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_user_email_verify_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Union[UserEmailVerifyGetAPIResponse, FeatureNotEnabledError]:
     req = api_options.request
     user_id = req.get_query_param(&#34;userId&#34;)
@@ -87,7 +93,7 @@ async def handle_user_email_verify_get(
     except Exception:
         return FeatureNotEnabledError()
 
-    is_verified = await is_email_verified(user_id)
+    is_verified = await is_email_verified(user_id, user_context=user_context)
     return UserEmailVerifyGetAPIResponse(is_verified)</code></pre>
 </details>
 </dd>

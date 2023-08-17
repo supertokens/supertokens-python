@@ -94,11 +94,14 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         payload: JSONObject,
         user_context: Dict[str, Any],
         is_include: bool,
+        is_include_any: bool = False,
     ):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
         expected_key = &#34;expectedToInclude&#34; if is_include else &#34;expectedToNotInclude&#34;
+        if is_include_any:
+            expected_key = &#34;expectedToIncludeAtLeastOneOf&#34;
 
         assert isinstance(self.claim, PrimitiveArrayClaim)
         claim_val = self.claim.get_value_from_payload(payload, user_context)
@@ -133,7 +136,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         )  # pyright: reportGeneralTypeIssues=false
 
         claim_val_set = set(claim_val)
-        if is_include:
+        if is_include and not is_include_any:
             for v in vals:
                 if v not in claim_val_set:
                     return ClaimValidationResult(
@@ -148,6 +151,9 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         else:
             for v in vals:
                 if v in claim_val_set:
+                    if is_include_any:
+                        return ClaimValidationResult(is_valid=True)
+
                     return ClaimValidationResult(
                         is_valid=False,
                         reason={
@@ -157,6 +163,17 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
                             &#34;actualValue&#34;: claim_val,
                         },
                     )
+
+            if is_include_any:
+                return ClaimValidationResult(
+                    is_valid=False,
+                    reason={
+                        &#34;message&#34;: &#34;wrong value&#34;,
+                        expected_key: val,
+                        # other SDKs return the item itself
+                        &#34;actualValue&#34;: claim_val,
+                    },
+                )
 
         return ClaimValidationResult(is_valid=True)
 
@@ -186,6 +203,17 @@ class IncludesAllSCV(SCVMixin[PrimitiveList]):
         user_context: Dict[str, Any],
     ):
         return await self._validate(payload, user_context, is_include=True)
+
+
+class IncludesAnySCV(SCVMixin[PrimitiveList]):
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ):
+        return await self._validate(
+            payload, user_context, is_include=True, is_include_any=True
+        )
 
 
 class ExcludesAllSCV(SCVMixin[PrimitiveList]):
@@ -239,6 +267,17 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
             (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
         )
 
+    def includes_any(
+        self,
+        val: PrimitiveList,
+        max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
+    ) -&gt; SessionClaimValidator:
+        max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
+        return IncludesAnySCV(
+            (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+        )
+
     def excludes_all(
         self,
         val: PrimitiveList,
@@ -256,7 +295,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,
@@ -454,6 +493,57 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV"><code class="flex name class">
+<span>class <span class="ident">IncludesAnySCV</span></span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IncludesAnySCV(SCVMixin[PrimitiveList]):
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ):
+        return await self._validate(
+            payload, user_context, is_include=True, is_include_any=True
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.SCVMixin" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.SCVMixin">SCVMixin</a></li>
+<li><a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV.validate"><code class="name flex">
+<span>async def <span class="ident">validate</span></span>(<span>self, payload: Dict[str, Any], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def validate(
+    self,
+    payload: JSONObject,
+    user_context: Dict[str, Any],
+):
+    return await self._validate(
+        payload, user_context, is_include=True, is_include_any=True
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV"><code class="flex name class">
 <span>class <span class="ident">IncludesSCV</span></span>
 <span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
@@ -503,7 +593,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveArrayClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, str, Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -527,7 +617,7 @@ don't want to add the claim to the session automatically</dd>
         self,
         key: str,
         fetch_value: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,
@@ -582,6 +672,7 @@ don't want to add the claim to the session automatically</dd>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.recipe.multitenancy.recipe.AllowedDomainsClaimClass" href="../../multitenancy/recipe.html#supertokens_python.recipe.multitenancy.recipe.AllowedDomainsClaimClass">AllowedDomainsClaimClass</a></li>
 <li><a title="supertokens_python.recipe.userroles.recipe.PermissionClaimClass" href="../../userroles/recipe.html#supertokens_python.recipe.userroles.recipe.PermissionClaimClass">PermissionClaimClass</a></li>
 <li><a title="supertokens_python.recipe.userroles.recipe.UserRoleClaimClass" href="../../userroles/recipe.html#supertokens_python.recipe.userroles.recipe.UserRoleClaimClass">UserRoleClaimClass</a></li>
 </ul>
@@ -679,6 +770,17 @@ return default</p></div>
     ) -&gt; SessionClaimValidator:
         max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
         return IncludesAllSCV(
+            (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+        )
+
+    def includes_any(
+        self,
+        val: PrimitiveList,
+        max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
+    ) -&gt; SessionClaimValidator:
+        max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
+        return IncludesAnySCV(
             (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
         )
 
@@ -783,6 +885,27 @@ return default</p></div>
     )</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_any"><code class="name flex">
+<span>def <span class="ident">includes_any</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def includes_any(
+    self,
+    val: PrimitiveList,
+    max_age_in_seconds: Optional[int] = None,
+    id_: Union[str, None] = None,
+) -&gt; SessionClaimValidator:
+    max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
+    return IncludesAnySCV(
+        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+    )</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.SCVMixin"><code class="flex name class">
@@ -829,11 +952,14 @@ inheritance.</p></div>
         payload: JSONObject,
         user_context: Dict[str, Any],
         is_include: bool,
+        is_include_any: bool = False,
     ):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
         expected_key = &#34;expectedToInclude&#34; if is_include else &#34;expectedToNotInclude&#34;
+        if is_include_any:
+            expected_key = &#34;expectedToIncludeAtLeastOneOf&#34;
 
         assert isinstance(self.claim, PrimitiveArrayClaim)
         claim_val = self.claim.get_value_from_payload(payload, user_context)
@@ -868,7 +994,7 @@ inheritance.</p></div>
         )  # pyright: reportGeneralTypeIssues=false
 
         claim_val_set = set(claim_val)
-        if is_include:
+        if is_include and not is_include_any:
             for v in vals:
                 if v not in claim_val_set:
                     return ClaimValidationResult(
@@ -883,6 +1009,9 @@ inheritance.</p></div>
         else:
             for v in vals:
                 if v in claim_val_set:
+                    if is_include_any:
+                        return ClaimValidationResult(is_valid=True)
+
                     return ClaimValidationResult(
                         is_valid=False,
                         reason={
@@ -892,6 +1021,17 @@ inheritance.</p></div>
                             &#34;actualValue&#34;: claim_val,
                         },
                     )
+
+            if is_include_any:
+                return ClaimValidationResult(
+                    is_valid=False,
+                    reason={
+                        &#34;message&#34;: &#34;wrong value&#34;,
+                        expected_key: val,
+                        # other SDKs return the item itself
+                        &#34;actualValue&#34;: claim_val,
+                    },
+                )
 
         return ClaimValidationResult(is_valid=True)</code></pre>
 </details>
@@ -906,6 +1046,7 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.ExcludesAllSCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.ExcludesAllSCV">ExcludesAllSCV</a></li>
 <li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.ExcludesSCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.ExcludesSCV">ExcludesSCV</a></li>
 <li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAllSCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAllSCV">IncludesAllSCV</a></li>
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV">IncludesAnySCV</a></li>
 <li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV">IncludesSCV</a></li>
 </ul>
 <h3>Methods</h3>
@@ -972,6 +1113,12 @@ inheritance.</p></div>
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV">IncludesAnySCV</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV.validate" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAnySCV.validate">validate</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV">IncludesSCV</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV.validate" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV.validate">validate</a></code></li>
@@ -990,6 +1137,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.excludes_all" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.excludes_all">excludes_all</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes">includes</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_all" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_all">includes_all</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_any" href="#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_any">includes_any</a></code></li>
 </ul>
 </li>
 <li>

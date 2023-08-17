@@ -45,44 +45,50 @@ from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 
 
 async def add_role_to_user(
-    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
-        user_id, role, user_context
+        role, tenant_id, user_id, user_context
     )
 
 
 async def remove_user_role(
-    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
-        user_id, role, user_context
+        role, tenant_id, user_id, user_context
     )
 
 
 async def get_roles_for_user(
-    user_id: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str, user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; GetRolesForUserOkResult:
     if user_context is None:
         user_context = {}
     return (
         await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
-            user_id, user_context
+            user_id, tenant_id, user_context
         )
     )
 
 
 async def get_users_that_have_role(
-    role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
-        role, user_context
+        role, tenant_id, user_context
     )
 
 
@@ -154,7 +160,7 @@ async def get_all_roles(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.userroles.asyncio.add_role_to_user"><code class="name flex">
-<span>async def <span class="ident">add_role_to_user</span></span>(<span>user_id: str, role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult">AddRoleToUserOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">add_role_to_user</span></span>(<span>tenant_id: str, user_id: str, role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult">AddRoleToUserOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -163,12 +169,15 @@ async def get_all_roles(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def add_role_to_user(
-    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
-        user_id, role, user_context
+        role, tenant_id, user_id, user_context
     )</code></pre>
 </details>
 </dd>
@@ -249,7 +258,7 @@ async def get_all_roles(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_roles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_roles_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
+<span>async def <span class="ident">get_roles_for_user</span></span>(<span>tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -258,13 +267,13 @@ async def get_all_roles(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_roles_for_user(
-    user_id: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str, user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; GetRolesForUserOkResult:
     if user_context is None:
         user_context = {}
     return (
         await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
-            user_id, user_context
+            user_id, tenant_id, user_context
         )
     )</code></pre>
 </details>
@@ -289,7 +298,7 @@ async def get_all_roles(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_users_that_have_role"><code class="name flex">
-<span>async def <span class="ident">get_users_that_have_role</span></span>(<span>role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">get_users_that_have_role</span></span>(<span>tenant_id: str, role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -298,12 +307,12 @@ async def get_all_roles(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_users_that_have_role(
-    role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
-        role, user_context
+        role, tenant_id, user_context
     )</code></pre>
 </details>
 </dd>
@@ -327,7 +336,7 @@ async def get_all_roles(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.remove_user_role"><code class="name flex">
-<span>async def <span class="ident">remove_user_role</span></span>(<span>user_id: str, role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">remove_user_role</span></span>(<span>tenant_id: str, user_id: str, role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -336,12 +345,15 @@ async def get_all_roles(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def remove_user_role(
-    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+    tenant_id: str,
+    user_id: str,
+    role: str,
+    user_context: Union[Dict[str, Any], None] = None,
 ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
-        user_id, role, user_context
+        role, tenant_id, user_id, user_context
     )</code></pre>
 </details>
 </dd>

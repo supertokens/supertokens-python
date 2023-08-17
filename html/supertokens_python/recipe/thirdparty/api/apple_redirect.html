@@ -41,28 +41,25 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions
 
-from supertokens_python.utils import default_user_context
-
 
 async def handle_apple_redirect_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_apple_redirect_handler_post:
         return None
-    body = await api_options.request.form_data()
 
-    code = body[&#34;code&#34;] if &#34;code&#34; in body else &#34;&#34;
-    state = body[&#34;state&#34;] if &#34;state&#34; in body else &#34;&#34;
-    user_context = default_user_context(api_options.request)
+    body = await api_options.request.form_data()
 
     # this will redirect the user...
     await api_implementation.apple_redirect_handler_post(
-        code, state, api_options, user_context
+        body, api_options, user_context
     )
 
     return api_options.response</code></pre>
@@ -76,7 +73,7 @@ async def handle_apple_redirect_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.api.apple_redirect.handle_apple_redirect_api"><code class="name flex">
-<span>async def <span class="ident">handle_apple_redirect_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions)</span>
+<span>async def <span class="ident">handle_apple_redirect_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -85,19 +82,18 @@ async def handle_apple_redirect_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_apple_redirect_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_apple_redirect_handler_post:
         return None
-    body = await api_options.request.form_data()
 
-    code = body[&#34;code&#34;] if &#34;code&#34; in body else &#34;&#34;
-    state = body[&#34;state&#34;] if &#34;state&#34; in body else &#34;&#34;
-    user_context = default_user_context(api_options.request)
+    body = await api_options.request.form_data()
 
     # this will redirect the user...
     await api_implementation.apple_redirect_handler_post(
-        code, state, api_options, user_context
+        body, api_options, user_context
     )
 
     return api_options.response</code></pre>

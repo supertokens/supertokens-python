@@ -68,11 +68,16 @@ class RecipeImplementation(RecipeInterface):
         self.querier = querier
 
     async def add_role_to_user(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
         response = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user/role&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
+            params,
         )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return AddRoleToUserOkResult(
@@ -81,11 +86,16 @@ class RecipeImplementation(RecipeInterface):
         return UnknownRoleError()
 
     async def remove_user_role(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role/remove&#34;),
+            params,
         )
         if response[&#34;status&#34;] == &#34;OK&#34;:
             return RemoveUserRoleOkResult(
@@ -94,20 +104,22 @@ class RecipeImplementation(RecipeInterface):
         return UnknownRoleError()
 
     async def get_roles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; GetRolesForUserOkResult:
         params = {&#34;userId&#34;: user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user/roles&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/roles&#34;),
+            params,
         )
         return GetRolesForUserOkResult(roles=response[&#34;roles&#34;])
 
     async def get_users_that_have_role(
-        self, role: str, user_context: Dict[str, Any]
+        self, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/role/users&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/role/users&#34;),
+            params,
         )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
@@ -198,11 +210,16 @@ inheritance.</p></div>
         self.querier = querier
 
     async def add_role_to_user(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
         response = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user/role&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
+            params,
         )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return AddRoleToUserOkResult(
@@ -211,11 +228,16 @@ inheritance.</p></div>
         return UnknownRoleError()
 
     async def remove_user_role(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role/remove&#34;),
+            params,
         )
         if response[&#34;status&#34;] == &#34;OK&#34;:
             return RemoveUserRoleOkResult(
@@ -224,20 +246,22 @@ inheritance.</p></div>
         return UnknownRoleError()
 
     async def get_roles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; GetRolesForUserOkResult:
         params = {&#34;userId&#34;: user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user/roles&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/roles&#34;),
+            params,
         )
         return GetRolesForUserOkResult(roles=response[&#34;roles&#34;])
 
     async def get_users_that_have_role(
-        self, role: str, user_context: Dict[str, Any]
+        self, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/role/users&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/role/users&#34;),
+            params,
         )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
@@ -309,7 +333,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.userroles.recipe_implementation.RecipeImplementation.add_role_to_user"><code class="name flex">
-<span>async def <span class="ident">add_role_to_user</span></span>(<span>self, user_id: str, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult">AddRoleToUserOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">add_role_to_user</span></span>(<span>self, user_id: str, role: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult">AddRoleToUserOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -318,11 +342,16 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def add_role_to_user(
-    self, user_id: str, role: str, user_context: Dict[str, Any]
+    self,
+    user_id: str,
+    role: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
     response = await self.querier.send_put_request(
-        NormalisedURLPath(&#34;/recipe/user/role&#34;), params
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
+        params,
     )
     if response.get(&#34;status&#34;) == &#34;OK&#34;:
         return AddRoleToUserOkResult(
@@ -410,7 +439,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.recipe_implementation.RecipeImplementation.get_roles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_roles_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
+<span>async def <span class="ident">get_roles_for_user</span></span>(<span>self, user_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -419,11 +448,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_roles_for_user(
-    self, user_id: str, user_context: Dict[str, Any]
+    self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; GetRolesForUserOkResult:
     params = {&#34;userId&#34;: user_id}
     response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user/roles&#34;), params
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/roles&#34;),
+        params,
     )
     return GetRolesForUserOkResult(roles=response[&#34;roles&#34;])</code></pre>
 </details>
@@ -448,7 +478,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.recipe_implementation.RecipeImplementation.get_users_that_have_role"><code class="name flex">
-<span>async def <span class="ident">get_users_that_have_role</span></span>(<span>self, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">get_users_that_have_role</span></span>(<span>self, role: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -457,11 +487,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_users_that_have_role(
-    self, role: str, user_context: Dict[str, Any]
+    self, role: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     params = {&#34;role&#34;: role}
     response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/role/users&#34;), params
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/role/users&#34;),
+        params,
     )
     if response.get(&#34;status&#34;) == &#34;OK&#34;:
         return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
@@ -490,7 +521,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.recipe_implementation.RecipeImplementation.remove_user_role"><code class="name flex">
-<span>async def <span class="ident">remove_user_role</span></span>(<span>self, user_id: str, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">remove_user_role</span></span>(<span>self, user_id: str, role: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -499,11 +530,16 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def remove_user_role(
-    self, user_id: str, role: str, user_context: Dict[str, Any]
+    self,
+    user_id: str,
+    role: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role/remove&#34;),
+        params,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return RemoveUserRoleOkResult(

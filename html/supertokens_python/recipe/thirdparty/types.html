@@ -39,7 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union, Optional
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -49,6 +49,23 @@ class ThirdPartyInfo:
         self.user_id = third_party_user_id
         self.id = third_party_id
 
+    def __eq__(self, other: object) -&gt; bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.id == other.id
+        )
+
+
+class RawUserInfoFromProvider:
+    def __init__(
+        self,
+        from_id_token_payload: Optional[Dict[str, Any]],
+        from_user_info_api: Optional[Dict[str, Any]],
+    ):
+        self.from_id_token_payload = from_id_token_payload
+        self.from_user_info_api = from_user_info_api
+
 
 class User:
     def __init__(
@@ -56,12 +73,24 @@ class User:
         user_id: str,
         email: str,
         time_joined: int,
+        tenant_ids: List[str],
         third_party_info: ThirdPartyInfo,
     ):
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
+        self.tenant_ids = tenant_ids
         self.third_party_info: ThirdPartyInfo = third_party_info
+
+    def __eq__(self, other: object) -&gt; bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+            and self.third_party_info == other.third_party_info
+        )
 
 
 class UserInfoEmail:
@@ -71,9 +100,17 @@ class UserInfoEmail:
 
 
 class UserInfo:
-    def __init__(self, user_id: str, email: Union[UserInfoEmail, None] = None):
-        self.user_id: str = user_id
+    def __init__(
+        self,
+        third_party_user_id: str,
+        email: Union[UserInfoEmail, None] = None,
+        raw_user_info_from_provider: Optional[RawUserInfoFromProvider] = None,
+    ):
+        self.third_party_user_id: str = third_party_user_id
         self.email: Union[UserInfoEmail, None] = email
+        self.raw_user_info_from_provider = (
+            raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
+        )
 
 
 class AccessTokenAPI:
@@ -149,6 +186,26 @@ class ThirdPartyIngredients:
         self.params = params</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider"><code class="flex name class">
+<span>class <span class="ident">RawUserInfoFromProvider</span></span>
+<span>(</span><span>from_id_token_payload: Optional[Dict[str, Any]], from_user_info_api: Optional[Dict[str, Any]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RawUserInfoFromProvider:
+    def __init__(
+        self,
+        from_id_token_payload: Optional[Dict[str, Any]],
+        from_user_info_api: Optional[Dict[str, Any]],
+    ):
+        self.from_id_token_payload = from_id_token_payload
+        self.from_user_info_api = from_user_info_api</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.types.SignInUpResponse"><code class="flex name class">
 <span>class <span class="ident">SignInUpResponse</span></span>
 <span>(</span><span>user: <a title="supertokens_python.recipe.thirdparty.types.User" href="#supertokens_python.recipe.thirdparty.types.User">User</a>, is_new_user: bool)</span>
@@ -178,7 +235,14 @@ class ThirdPartyIngredients:
 <pre><code class="python">class ThirdPartyInfo:
     def __init__(self, third_party_user_id: str, third_party_id: str):
         self.user_id = third_party_user_id
-        self.id = third_party_id</code></pre>
+        self.id = third_party_id
+
+    def __eq__(self, other: object) -&gt; bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.id == other.id
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients"><code class="flex name class">
@@ -196,7 +260,7 @@ class ThirdPartyIngredients:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
-<span>(</span><span>user_id: str, email: str, time_joined: int, third_party_info: <a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>)</span>
+<span>(</span><span>user_id: str, email: str, time_joined: int, tenant_ids: List[str], third_party_info: <a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -210,17 +274,29 @@ class ThirdPartyIngredients:
         user_id: str,
         email: str,
         time_joined: int,
+        tenant_ids: List[str],
         third_party_info: ThirdPartyInfo,
     ):
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
-        self.third_party_info: ThirdPartyInfo = third_party_info</code></pre>
+        self.tenant_ids = tenant_ids
+        self.third_party_info: ThirdPartyInfo = third_party_info
+
+    def __eq__(self, other: object) -&gt; bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+            and self.third_party_info == other.third_party_info
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.UserInfo"><code class="flex name class">
 <span>class <span class="ident">UserInfo</span></span>
-<span>(</span><span>user_id: str, email: Optional[<a title="supertokens_python.recipe.thirdparty.types.UserInfoEmail" href="#supertokens_python.recipe.thirdparty.types.UserInfoEmail">UserInfoEmail</a>] = None)</span>
+<span>(</span><span>third_party_user_id: str, email: Optional[<a title="supertokens_python.recipe.thirdparty.types.UserInfoEmail" href="#supertokens_python.recipe.thirdparty.types.UserInfoEmail">UserInfoEmail</a>] = None, raw_user_info_from_provider: Optional[<a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider" href="#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider">RawUserInfoFromProvider</a>] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -229,9 +305,17 @@ class ThirdPartyIngredients:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UserInfo:
-    def __init__(self, user_id: str, email: Union[UserInfoEmail, None] = None):
-        self.user_id: str = user_id
-        self.email: Union[UserInfoEmail, None] = email</code></pre>
+    def __init__(
+        self,
+        third_party_user_id: str,
+        email: Union[UserInfoEmail, None] = None,
+        raw_user_info_from_provider: Optional[RawUserInfoFromProvider] = None,
+    ):
+        self.third_party_user_id: str = third_party_user_id
+        self.email: Union[UserInfoEmail, None] = email
+        self.raw_user_info_from_provider = (
+            raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.UserInfoEmail"><code class="flex name class">
@@ -287,6 +371,9 @@ class ThirdPartyIngredients:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI" href="#supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI">AuthorisationRedirectAPI</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider" href="#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider">RawUserInfoFromProvider</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.SignInUpResponse" href="#supertokens_python.recipe.thirdparty.types.SignInUpResponse">SignInUpResponse</a></code></h4>

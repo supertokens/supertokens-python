@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Union
+<pre><code class="python">from typing import Union, Dict, Any
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
@@ -44,7 +44,10 @@ from ...utils import is_recipe_initialised, is_valid_recipe_id
 
 
 async def handle_user_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; Union[
     UserGetAPINoUserFoundError,
     UserGetAPIOkResponse,
@@ -79,7 +82,7 @@ async def handle_user_get(
 
         return UserGetAPIOkResponse(recipe_id, user)
 
-    user_metadata = await get_user_metadata(user_id)
+    user_metadata = await get_user_metadata(user_id, user_context=_user_context)
     first_name = user_metadata.metadata.get(&#34;first_name&#34;, &#34;&#34;)
     last_name = user_metadata.metadata.get(&#34;last_name&#34;, &#34;&#34;)
 
@@ -97,7 +100,7 @@ async def handle_user_get(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_get.handle_user_get"><code class="name flex">
-<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError">UserGetAPIRecipeNotInitialisedError</a>]</span>
+<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, _user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError">UserGetAPIRecipeNotInitialisedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -106,7 +109,10 @@ async def handle_user_get(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_user_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; Union[
     UserGetAPINoUserFoundError,
     UserGetAPIOkResponse,
@@ -141,7 +147,7 @@ async def handle_user_get(
 
         return UserGetAPIOkResponse(recipe_id, user)
 
-    user_metadata = await get_user_metadata(user_id)
+    user_metadata = await get_user_metadata(user_id, user_context=_user_context)
     first_name = user_metadata.metadata.get(&#34;first_name&#34;, &#34;&#34;)
     last_name = user_metadata.metadata.get(&#34;last_name&#34;, &#34;&#34;)
 

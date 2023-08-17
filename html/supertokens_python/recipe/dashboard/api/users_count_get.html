@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.recipe.dashboard.interfaces import UserCountGetAPIResponse
@@ -54,9 +54,12 @@ if TYPE_CHECKING:
 
 
 async def handle_users_count_get_api(
-    _: APIInterface, _api_options: APIOptions
+    _: APIInterface,
+    tenant_id: str,
+    _api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; UserCountGetAPIResponse:
-    count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
+    count = await Supertokens.get_instance().get_user_count(None, tenant_id)
     return UserCountGetAPIResponse(count=count)</code></pre>
 </details>
 </section>
@@ -68,7 +71,7 @@ async def handle_users_count_get_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.users_count_get.handle_users_count_get_api"><code class="name flex">
-<span>async def <span class="ident">handle_users_count_get_api</span></span>(<span>_: APIInterface, _api_options: APIOptions) ‑> UserCountGetAPIResponse</span>
+<span>async def <span class="ident">handle_users_count_get_api</span></span>(<span>_: APIInterface, tenant_id: str, _api_options: APIOptions, _user_context: Dict[str, Any]) ‑> UserCountGetAPIResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -77,9 +80,12 @@ async def handle_users_count_get_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_users_count_get_api(
-    _: APIInterface, _api_options: APIOptions
+    _: APIInterface,
+    tenant_id: str,
+    _api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; UserCountGetAPIResponse:
-    count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
+    count = await Supertokens.get_instance().get_user_count(None, tenant_id)
     return UserCountGetAPIResponse(count=count)</code></pre>
 </details>
 </dd>

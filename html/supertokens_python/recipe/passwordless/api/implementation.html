@@ -80,16 +80,17 @@ class APIImplementation(APIInterface):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(
-                user_context
+                tenant_id, user_context
             )
         response = await api_options.recipe_implementation.create_code(
-            email, phone_number, user_input_code, user_context
+            email, phone_number, user_input_code, tenant_id, user_context
         )
         magic_link = None
         user_input_code = None
@@ -103,6 +104,8 @@ class APIImplementation(APIInterface):
                 + api_options.recipe_id
                 + &#34;&amp;preAuthSessionId=&#34;
                 + response.pre_auth_session_id
+                + &#34;&amp;tenantId=&#34;
+                + tenant_id
                 + &#34;#&#34;
                 + response.link_code
             )
@@ -123,6 +126,7 @@ class APIImplementation(APIInterface):
                 url_with_link_code=magic_link,
                 code_life_time=response.code_life_time,
                 pre_auth_session_id=response.pre_auth_session_id,
+                tenant_id=tenant_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
                 passwordless_email_delivery_input, user_context
@@ -140,6 +144,7 @@ class APIImplementation(APIInterface):
                 url_with_link_code=magic_link,
                 code_life_time=response.code_life_time,
                 pre_auth_session_id=response.pre_auth_session_id,
+                tenant_id=tenant_id,
             )
             await api_options.sms_delivery.ingredient_interface_impl.send_sms(
                 sms_input, user_context
@@ -153,13 +158,14 @@ class APIImplementation(APIInterface):
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
-            device_id=device_id, user_context=user_context
+            device_id=device_id, tenant_id=tenant_id, user_context=user_context
         )
         if device_info is None:
             return ResendCodePostRestartFlowError()
@@ -177,12 +183,13 @@ class APIImplementation(APIInterface):
             user_input_code = None
             if api_options.config.get_custom_user_input_code is not None:
                 user_input_code = await api_options.config.get_custom_user_input_code(
-                    user_context
+                    tenant_id, user_context
                 )
             response = (
                 await api_options.recipe_implementation.create_new_code_for_device(
                     device_id=device_id,
                     user_input_code=user_input_code,
+                    tenant_id=tenant_id,
                     user_context=user_context,
                 )
             )
@@ -208,6 +215,8 @@ class APIImplementation(APIInterface):
                         + api_options.recipe_id
                         + &#34;&amp;preAuthSessionId=&#34;
                         + response.pre_auth_session_id
+                        + &#34;&amp;tenantId=&#34;
+                        + tenant_id
                         + &#34;#&#34;
                         + response.link_code
                     )
@@ -235,6 +244,7 @@ class APIImplementation(APIInterface):
                             url_with_link_code=magic_link,
                             code_life_time=response.code_life_time,
                             pre_auth_session_id=response.pre_auth_session_id,
+                            tenant_id=tenant_id,
                         )
                     )
                     await api_options.email_delivery.ingredient_interface_impl.send_email(
@@ -255,6 +265,7 @@ class APIImplementation(APIInterface):
                         url_with_link_code=magic_link,
                         code_life_time=response.code_life_time,
                         pre_auth_session_id=response.pre_auth_session_id,
+                        tenant_id=tenant_id,
                     )
                     await api_options.sms_delivery.ingredient_interface_impl.send_sms(
                         sms_input, user_context
@@ -268,6 +279,7 @@ class APIImplementation(APIInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -282,6 +294,7 @@ class APIImplementation(APIInterface):
             user_input_code=user_input_code,
             device_id=device_id,
             link_code=link_code,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
 
@@ -304,22 +317,20 @@ class APIImplementation(APIInterface):
             ev_instance = EmailVerificationRecipe.get_instance_optional()
             if ev_instance is not None:
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                    user.user_id,
-                    user.email,
-                    user_context,
+                    tenant_id, user.user_id, user.email, user_context
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        token_response.token,
-                        user_context,
+                        tenant_id, token_response.token, user_context
                     )
 
         session = await create_new_session(
-            api_options.request,
-            user.user_id,
-            {},
-            {},
+            tenant_id=tenant_id,
+            request=api_options.request,
+            user_id=user.user_id,
+            access_token_payload={},
+            session_data_in_database={},
             user_context=user_context,
         )
 
@@ -330,18 +341,26 @@ class APIImplementation(APIInterface):
         )
 
     async def email_exists_get(
-        self, email: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        email: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_email(
-            email, user_context
+            email, tenant_id, user_context
         )
         return EmailExistsGetOkResult(exists=response is not None)
 
     async def phone_number_exists_get(
-        self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        phone_number: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_phone_number(
-            phone_number, user_context
+            phone_number, tenant_id, user_context
         )
         return PhoneNumberExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
@@ -369,16 +388,17 @@ class APIImplementation(APIInterface):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(
-                user_context
+                tenant_id, user_context
             )
         response = await api_options.recipe_implementation.create_code(
-            email, phone_number, user_input_code, user_context
+            email, phone_number, user_input_code, tenant_id, user_context
         )
         magic_link = None
         user_input_code = None
@@ -392,6 +412,8 @@ class APIImplementation(APIInterface):
                 + api_options.recipe_id
                 + &#34;&amp;preAuthSessionId=&#34;
                 + response.pre_auth_session_id
+                + &#34;&amp;tenantId=&#34;
+                + tenant_id
                 + &#34;#&#34;
                 + response.link_code
             )
@@ -412,6 +434,7 @@ class APIImplementation(APIInterface):
                 url_with_link_code=magic_link,
                 code_life_time=response.code_life_time,
                 pre_auth_session_id=response.pre_auth_session_id,
+                tenant_id=tenant_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
                 passwordless_email_delivery_input, user_context
@@ -429,6 +452,7 @@ class APIImplementation(APIInterface):
                 url_with_link_code=magic_link,
                 code_life_time=response.code_life_time,
                 pre_auth_session_id=response.pre_auth_session_id,
+                tenant_id=tenant_id,
             )
             await api_options.sms_delivery.ingredient_interface_impl.send_sms(
                 sms_input, user_context
@@ -442,13 +466,14 @@ class APIImplementation(APIInterface):
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
-            device_id=device_id, user_context=user_context
+            device_id=device_id, tenant_id=tenant_id, user_context=user_context
         )
         if device_info is None:
             return ResendCodePostRestartFlowError()
@@ -466,12 +491,13 @@ class APIImplementation(APIInterface):
             user_input_code = None
             if api_options.config.get_custom_user_input_code is not None:
                 user_input_code = await api_options.config.get_custom_user_input_code(
-                    user_context
+                    tenant_id, user_context
                 )
             response = (
                 await api_options.recipe_implementation.create_new_code_for_device(
                     device_id=device_id,
                     user_input_code=user_input_code,
+                    tenant_id=tenant_id,
                     user_context=user_context,
                 )
             )
@@ -497,6 +523,8 @@ class APIImplementation(APIInterface):
                         + api_options.recipe_id
                         + &#34;&amp;preAuthSessionId=&#34;
                         + response.pre_auth_session_id
+                        + &#34;&amp;tenantId=&#34;
+                        + tenant_id
                         + &#34;#&#34;
                         + response.link_code
                     )
@@ -524,6 +552,7 @@ class APIImplementation(APIInterface):
                             url_with_link_code=magic_link,
                             code_life_time=response.code_life_time,
                             pre_auth_session_id=response.pre_auth_session_id,
+                            tenant_id=tenant_id,
                         )
                     )
                     await api_options.email_delivery.ingredient_interface_impl.send_email(
@@ -544,6 +573,7 @@ class APIImplementation(APIInterface):
                         url_with_link_code=magic_link,
                         code_life_time=response.code_life_time,
                         pre_auth_session_id=response.pre_auth_session_id,
+                        tenant_id=tenant_id,
                     )
                     await api_options.sms_delivery.ingredient_interface_impl.send_sms(
                         sms_input, user_context
@@ -557,6 +587,7 @@ class APIImplementation(APIInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -571,6 +602,7 @@ class APIImplementation(APIInterface):
             user_input_code=user_input_code,
             device_id=device_id,
             link_code=link_code,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
 
@@ -593,22 +625,20 @@ class APIImplementation(APIInterface):
             ev_instance = EmailVerificationRecipe.get_instance_optional()
             if ev_instance is not None:
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                    user.user_id,
-                    user.email,
-                    user_context,
+                    tenant_id, user.user_id, user.email, user_context
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        token_response.token,
-                        user_context,
+                        tenant_id, token_response.token, user_context
                     )
 
         session = await create_new_session(
-            api_options.request,
-            user.user_id,
-            {},
-            {},
+            tenant_id=tenant_id,
+            request=api_options.request,
+            user_id=user.user_id,
+            access_token_payload={},
+            session_data_in_database={},
             user_context=user_context,
         )
 
@@ -619,18 +649,26 @@ class APIImplementation(APIInterface):
         )
 
     async def email_exists_get(
-        self, email: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        email: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_email(
-            email, user_context
+            email, tenant_id, user_context
         )
         return EmailExistsGetOkResult(exists=response is not None)
 
     async def phone_number_exists_get(
-        self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        phone_number: str,
+        tenant_id: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_phone_number(
-            phone_number, user_context
+            phone_number, tenant_id, user_context
         )
         return PhoneNumberExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
@@ -641,7 +679,7 @@ class APIImplementation(APIInterface):
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.consume_code_post"><code class="name flex">
-<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -655,6 +693,7 @@ class APIImplementation(APIInterface):
     user_input_code: Union[str, None],
     device_id: Union[str, None],
     link_code: Union[str, None],
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -669,6 +708,7 @@ class APIImplementation(APIInterface):
         user_input_code=user_input_code,
         device_id=device_id,
         link_code=link_code,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
 
@@ -691,22 +731,20 @@ class APIImplementation(APIInterface):
         ev_instance = EmailVerificationRecipe.get_instance_optional()
         if ev_instance is not None:
             token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                user.user_id,
-                user.email,
-                user_context,
+                tenant_id, user.user_id, user.email, user_context
             )
 
             if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                 await ev_instance.recipe_implementation.verify_email_using_token(
-                    token_response.token,
-                    user_context,
+                    tenant_id, token_response.token, user_context
                 )
 
     session = await create_new_session(
-        api_options.request,
-        user.user_id,
-        {},
-        {},
+        tenant_id=tenant_id,
+        request=api_options.request,
+        user_id=user.user_id,
+        access_token_payload={},
+        session_data_in_database={},
         user_context=user_context,
     )
 
@@ -718,7 +756,7 @@ class APIImplementation(APIInterface):
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.create_code_post"><code class="name flex">
-<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -730,16 +768,17 @@ class APIImplementation(APIInterface):
     self,
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
     user_input_code = None
     if api_options.config.get_custom_user_input_code is not None:
         user_input_code = await api_options.config.get_custom_user_input_code(
-            user_context
+            tenant_id, user_context
         )
     response = await api_options.recipe_implementation.create_code(
-        email, phone_number, user_input_code, user_context
+        email, phone_number, user_input_code, tenant_id, user_context
     )
     magic_link = None
     user_input_code = None
@@ -753,6 +792,8 @@ class APIImplementation(APIInterface):
             + api_options.recipe_id
             + &#34;&amp;preAuthSessionId=&#34;
             + response.pre_auth_session_id
+            + &#34;&amp;tenantId=&#34;
+            + tenant_id
             + &#34;#&#34;
             + response.link_code
         )
@@ -773,6 +814,7 @@ class APIImplementation(APIInterface):
             url_with_link_code=magic_link,
             code_life_time=response.code_life_time,
             pre_auth_session_id=response.pre_auth_session_id,
+            tenant_id=tenant_id,
         )
         await api_options.email_delivery.ingredient_interface_impl.send_email(
             passwordless_email_delivery_input, user_context
@@ -790,6 +832,7 @@ class APIImplementation(APIInterface):
             url_with_link_code=magic_link,
             code_life_time=response.code_life_time,
             pre_auth_session_id=response.pre_auth_session_id,
+            tenant_id=tenant_id,
         )
         await api_options.sms_delivery.ingredient_interface_impl.send_sms(
             sms_input, user_context
@@ -801,7 +844,7 @@ class APIImplementation(APIInterface):
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.email_exists_get"><code class="name flex">
-<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -810,16 +853,20 @@ class APIImplementation(APIInterface):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def email_exists_get(
-    self, email: str, api_options: APIOptions, user_context: Dict[str, Any]
+    self,
+    email: str,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
     response = await api_options.recipe_implementation.get_user_by_email(
-        email, user_context
+        email, tenant_id, user_context
     )
     return EmailExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.phone_number_exists_get"><code class="name flex">
-<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -828,16 +875,20 @@ class APIImplementation(APIInterface):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def phone_number_exists_get(
-    self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]
+    self,
+    phone_number: str,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
     response = await api_options.recipe_implementation.get_user_by_phone_number(
-        phone_number, user_context
+        phone_number, tenant_id, user_context
     )
     return PhoneNumberExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.resend_code_post"><code class="name flex">
-<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -849,13 +900,14 @@ class APIImplementation(APIInterface):
     self,
     device_id: str,
     pre_auth_session_id: str,
+    tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
     ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
 ]:
     device_info = await api_options.recipe_implementation.list_codes_by_device_id(
-        device_id=device_id, user_context=user_context
+        device_id=device_id, tenant_id=tenant_id, user_context=user_context
     )
     if device_info is None:
         return ResendCodePostRestartFlowError()
@@ -873,12 +925,13 @@ class APIImplementation(APIInterface):
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(
-                user_context
+                tenant_id, user_context
             )
         response = (
             await api_options.recipe_implementation.create_new_code_for_device(
                 device_id=device_id,
                 user_input_code=user_input_code,
+                tenant_id=tenant_id,
                 user_context=user_context,
             )
         )
@@ -904,6 +957,8 @@ class APIImplementation(APIInterface):
                     + api_options.recipe_id
                     + &#34;&amp;preAuthSessionId=&#34;
                     + response.pre_auth_session_id
+                    + &#34;&amp;tenantId=&#34;
+                    + tenant_id
                     + &#34;#&#34;
                     + response.link_code
                 )
@@ -931,6 +986,7 @@ class APIImplementation(APIInterface):
                         url_with_link_code=magic_link,
                         code_life_time=response.code_life_time,
                         pre_auth_session_id=response.pre_auth_session_id,
+                        tenant_id=tenant_id,
                     )
                 )
                 await api_options.email_delivery.ingredient_interface_impl.send_email(
@@ -951,6 +1007,7 @@ class APIImplementation(APIInterface):
                     url_with_link_code=magic_link,
                     code_life_time=response.code_life_time,
                     pre_auth_session_id=response.pre_auth_session_id,
+                    tenant_id=tenant_id,
                 )
                 await api_options.sms_delivery.ingredient_interface_impl.send_sms(
                     sms_input, user_context

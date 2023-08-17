@@ -41,59 +41,36 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Union, Optional
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 
 from .interfaces import APIInterface, RecipeInterface
 
 if TYPE_CHECKING:
-    from .provider import Provider
+    from .provider import ProviderInput
 
-from jwt import PyJWKClient, decode
+from jwt import PyJWKClient, decode  # type: ignore
 
 
 class SignInAndUpFeature:
-    def __init__(self, providers: List[Provider]):
-        if len(providers) == 0:
-            raise_bad_input_exception(
-                &#34;thirdparty recipe requires atleast 1 provider to be passed in sign_in_and_up_feature.providers config&#34;
-            )
-        default_providers_set: Set[str] = set()
-        all_providers_set: Set[str] = set()
+    def __init__(self, providers: Optional[List[ProviderInput]] = None):
+        if providers is None:
+            providers = []
+
+        third_party_id_set: Set[str] = set()
 
         for provider in providers:
-            provider_id = provider.id
-            all_providers_set.add(provider_id)
-            is_default = provider.is_default
+            third_party_id = provider.config.third_party_id
 
-            if not is_default:
-                # if this id is not being used by any other provider, we treat
-                # this as the is_default
-                other_providers_with_same_id = list(
-                    filter(lambda p: p.id == provider_id and provider != p, providers)
+            if third_party_id in third_party_id_set:
+                raise_bad_input_exception(
+                    &#34;The providers array has multiple entries for the same third party provider.&#34;
                 )
-                if len(other_providers_with_same_id) == 0:
-                    # we treat this as the isDefault now.
-                    is_default = True
-            if is_default:
-                if provider_id in default_providers_set:
-                    raise_bad_input_exception(
-                        &#39;You have provided multiple third party providers that have the id: &#34;&#39;
-                        + provider_id
-                        + &#39;&#34; &#39;
-                        &#34;and &#34;
-                        &#34;are &#34;
-                        &#39;marked as &#34;is_default: True&#34;. Please only mark one of them as is_default.&#39;
-                    )
-                default_providers_set.add(provider_id)
 
-        if len(default_providers_set) != len(all_providers_set):
-            # this means that there is no provider marked as is_default
-            raise_bad_input_exception(
-                &#34;The providers array has multiple entries for the same third party provider. Please &#34;
-                &#39;mark one of them as the default one by using &#34;is_default: true&#34;.&#39;
-            )
+            third_party_id_set.add(third_party_id)
+
         self.providers = providers
 
 
@@ -148,36 +125,6 @@ def validate_and_normalise_user_input(
     )
 
 
-def find_right_provider(
-    providers: List[Provider], third_party_id: str, client_id: Union[str, None]
-) -&gt; Union[Provider, None]:
-    for provider in providers:
-        provider_id = provider.id
-        if provider_id != third_party_id:
-            continue
-
-        # first if there is only one provider with third_party_id in the
-        # providers array
-        other_providers_with_same_id = list(
-            filter(lambda p: p.id == provider_id and provider != p, providers)
-        )
-        if len(other_providers_with_same_id) == 0:
-            # then we always return that.
-            return provider
-
-        # otherwise, we look for the is_default provider if client_id is
-        # missing
-        if client_id is None and provider.is_default:
-            return provider
-
-        # otherwise, we return a provider that matches based on client Id as
-        # well.
-        if provider.get_client_id({}) == client_id:
-            return provider
-
-    return None
-
-
 def verify_id_token_from_jwks_endpoint(
     id_token: str, jwks_uri: str, audience: str, issuers: List[str]
 ) -&gt; Dict[str, Any]:
@@ -210,45 +157,6 @@ def verify_id_token_from_jwks_endpoint(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.utils.find_right_provider"><code class="name flex">
-<span>def <span class="ident">find_right_provider</span></span>(<span>providers: List[Provider], third_party_id: str, client_id: Union[str, None]) ‑> Union[Provider, None]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def find_right_provider(
-    providers: List[Provider], third_party_id: str, client_id: Union[str, None]
-) -&gt; Union[Provider, None]:
-    for provider in providers:
-        provider_id = provider.id
-        if provider_id != third_party_id:
-            continue
-
-        # first if there is only one provider with third_party_id in the
-        # providers array
-        other_providers_with_same_id = list(
-            filter(lambda p: p.id == provider_id and provider != p, providers)
-        )
-        if len(other_providers_with_same_id) == 0:
-            # then we always return that.
-            return provider
-
-        # otherwise, we look for the is_default provider if client_id is
-        # missing
-        if client_id is None and provider.is_default:
-            return provider
-
-        # otherwise, we return a provider that matches based on client Id as
-        # well.
-        if provider.get_client_id({}) == client_id:
-            return provider
-
-    return None</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input"><code class="name flex">
 <span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a>, override: Union[<a title="supertokens_python.recipe.thirdparty.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdparty.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a></span>
 </code></dt>
@@ -360,7 +268,7 @@ def verify_id_token_from_jwks_endpoint(
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature"><code class="flex name class">
 <span>class <span class="ident">SignInAndUpFeature</span></span>
-<span>(</span><span>providers: List[Provider])</span>
+<span>(</span><span>providers: Optional[List[ProviderInput]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -369,46 +277,22 @@ def verify_id_token_from_jwks_endpoint(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SignInAndUpFeature:
-    def __init__(self, providers: List[Provider]):
-        if len(providers) == 0:
-            raise_bad_input_exception(
-                &#34;thirdparty recipe requires atleast 1 provider to be passed in sign_in_and_up_feature.providers config&#34;
-            )
-        default_providers_set: Set[str] = set()
-        all_providers_set: Set[str] = set()
+    def __init__(self, providers: Optional[List[ProviderInput]] = None):
+        if providers is None:
+            providers = []
+
+        third_party_id_set: Set[str] = set()
 
         for provider in providers:
-            provider_id = provider.id
-            all_providers_set.add(provider_id)
-            is_default = provider.is_default
+            third_party_id = provider.config.third_party_id
 
-            if not is_default:
-                # if this id is not being used by any other provider, we treat
-                # this as the is_default
-                other_providers_with_same_id = list(
-                    filter(lambda p: p.id == provider_id and provider != p, providers)
+            if third_party_id in third_party_id_set:
+                raise_bad_input_exception(
+                    &#34;The providers array has multiple entries for the same third party provider.&#34;
                 )
-                if len(other_providers_with_same_id) == 0:
-                    # we treat this as the isDefault now.
-                    is_default = True
-            if is_default:
-                if provider_id in default_providers_set:
-                    raise_bad_input_exception(
-                        &#39;You have provided multiple third party providers that have the id: &#34;&#39;
-                        + provider_id
-                        + &#39;&#34; &#39;
-                        &#34;and &#34;
-                        &#34;are &#34;
-                        &#39;marked as &#34;is_default: True&#34;. Please only mark one of them as is_default.&#39;
-                    )
-                default_providers_set.add(provider_id)
 
-        if len(default_providers_set) != len(all_providers_set):
-            # this means that there is no provider marked as is_default
-            raise_bad_input_exception(
-                &#34;The providers array has multiple entries for the same third party provider. Please &#34;
-                &#39;mark one of them as the default one by using &#34;is_default: true&#34;.&#39;
-            )
+            third_party_id_set.add(third_party_id)
+
         self.providers = providers</code></pre>
 </details>
 </dd>
@@ -448,7 +332,6 @@ def verify_id_token_from_jwks_endpoint(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.thirdparty.utils.find_right_provider" href="#supertokens_python.recipe.thirdparty.utils.find_right_provider">find_right_provider</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint" href="#supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint">verify_id_token_from_jwks_endpoint</a></code></li>
 </ul>

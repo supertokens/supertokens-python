@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
 import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
@@ -56,7 +56,7 @@ from ...thirdparty.api.implementation import (
     APIImplementation as ThirdPartyImplementation,
 )
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
-from ...thirdparty.provider import Provider
+from ...thirdparty.provider import Provider, RedirectUriInfo
 from ..interfaces import (
     APIInterface,
     AuthorisationUrlGetOkResult,
@@ -117,18 +117,23 @@ class APIImplementation(APIInterface):
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider,
+            redirect_uri_on_provider_dashboard,
+            api_options,
+            user_context,
+        )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
+        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -138,10 +143,9 @@ class APIImplementation(APIInterface):
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -151,48 +155,51 @@ class APIImplementation(APIInterface):
                     result.user.user_id,
                     result.user.email,
                     None,
-                    result.user.third_party_info,
                     result.user.time_joined,
+                    result.user.tenant_ids,
+                    result.user.third_party_info,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )
 
     async def create_code_post(
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         return await self.pless_create_code_post(
-            email, phone_number, api_options, user_context
+            email, phone_number, tenant_id, api_options, user_context
         )
 
     async def resend_code_post(
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         return await self.pless_resend_code_post(
-            device_id, pre_auth_session_id, api_options, user_context
+            device_id, pre_auth_session_id, tenant_id, api_options, user_context
         )
 
     async def consume_code_post(
@@ -201,6 +208,7 @@ class APIImplementation(APIInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -215,6 +223,7 @@ class APIImplementation(APIInterface):
             user_input_code,
             device_id,
             link_code,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -225,8 +234,9 @@ class APIImplementation(APIInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.phone_number,
-                    None,
                     result.user.time_joined,
+                    result.user.tenant_ids,
+                    None,
                 ),
                 result.session,
             )
@@ -235,19 +245,23 @@ class APIImplementation(APIInterface):
     async def passwordless_user_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
-        return await self.pless_email_exists_get(email, api_options, user_context)
+        return await self.pless_email_exists_get(
+            email, tenant_id, api_options, user_context
+        )
 
     async def passwordless_user_phone_number_exists_get(
         self,
         phone_number: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         return await self.pless_phone_number_exists_get(
-            phone_number, api_options, user_context
+            phone_number, tenant_id, api_options, user_context
         )</code></pre>
 </details>
 </section>
@@ -308,18 +322,23 @@ inheritance.</p></div>
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider,
+            redirect_uri_on_provider_dashboard,
+            api_options,
+            user_context,
+        )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
+        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -329,10 +348,9 @@ inheritance.</p></div>
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -342,48 +360,51 @@ inheritance.</p></div>
                     result.user.user_id,
                     result.user.email,
                     None,
-                    result.user.third_party_info,
                     result.user.time_joined,
+                    result.user.tenant_ids,
+                    result.user.third_party_info,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )
 
     async def create_code_post(
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         return await self.pless_create_code_post(
-            email, phone_number, api_options, user_context
+            email, phone_number, tenant_id, api_options, user_context
         )
 
     async def resend_code_post(
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         return await self.pless_resend_code_post(
-            device_id, pre_auth_session_id, api_options, user_context
+            device_id, pre_auth_session_id, tenant_id, api_options, user_context
         )
 
     async def consume_code_post(
@@ -392,6 +413,7 @@ inheritance.</p></div>
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -406,6 +428,7 @@ inheritance.</p></div>
             user_input_code,
             device_id,
             link_code,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -416,8 +439,9 @@ inheritance.</p></div>
                     result.user.user_id,
                     result.user.email,
                     result.user.phone_number,
-                    None,
                     result.user.time_joined,
+                    result.user.tenant_ids,
+                    None,
                 ),
                 result.session,
             )
@@ -426,19 +450,23 @@ inheritance.</p></div>
     async def passwordless_user_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
-        return await self.pless_email_exists_get(email, api_options, user_context)
+        return await self.pless_email_exists_get(
+            email, tenant_id, api_options, user_context
+        )
 
     async def passwordless_user_phone_number_exists_get(
         self,
         phone_number: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         return await self.pless_phone_number_exists_get(
-            phone_number, api_options, user_context
+            phone_number, tenant_id, api_options, user_context
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -449,7 +477,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.apple_redirect_handler_post"><code class="name flex">
-<span>async def <span class="ident">apple_redirect_handler_post</span></span>(<span>self, code: str, state: str, api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any])</span>
+<span>async def <span class="ident">apple_redirect_handler_post</span></span>(<span>self, form_post_info: Dict[str, Any], api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -459,18 +487,17 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def apple_redirect_handler_post(
     self,
-    code: str,
-    state: str,
+    form_post_info: Dict[str, Any],
     api_options: ThirdPartyAPIOptions,
     user_context: Dict[str, Any],
 ):
     return await self.tp_apple_redirect_handler_post(
-        code, state, api_options, user_context
+        form_post_info, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.authorisation_url_get"><code class="name flex">
-<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, redirect_uri_on_provider_dashboard: str, api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -481,14 +508,20 @@ inheritance.</p></div>
 <pre><code class="python">async def authorisation_url_get(
     self,
     provider: Provider,
+    redirect_uri_on_provider_dashboard: str,
     api_options: ThirdPartyAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-    return await self.tp_authorisation_url_get(provider, api_options, user_context)</code></pre>
+    return await self.tp_authorisation_url_get(
+        provider,
+        redirect_uri_on_provider_dashboard,
+        api_options,
+        user_context,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.consume_code_post"><code class="name flex">
-<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>]</span>
+<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], tenant_id: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -502,6 +535,7 @@ inheritance.</p></div>
     user_input_code: Union[str, None],
     device_id: Union[str, None],
     link_code: Union[str, None],
+    tenant_id: str,
     api_options: PasswordlessAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -516,6 +550,7 @@ inheritance.</p></div>
         user_input_code,
         device_id,
         link_code,
+        tenant_id,
         api_options,
         user_context,
     )
@@ -526,8 +561,9 @@ inheritance.</p></div>
                 result.user.user_id,
                 result.user.email,
                 result.user.phone_number,
-                None,
                 result.user.time_joined,
+                result.user.tenant_ids,
+                None,
             ),
             result.session,
         )
@@ -535,7 +571,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.create_code_post"><code class="name flex">
-<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], tenant_id: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -547,16 +583,17 @@ inheritance.</p></div>
     self,
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: str,
     api_options: PasswordlessAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
     return await self.pless_create_code_post(
-        email, phone_number, api_options, user_context
+        email, phone_number, tenant_id, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.passwordless_user_email_exists_get"><code class="name flex">
-<span>async def <span class="ident">passwordless_user_email_exists_get</span></span>(<span>self, email: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">passwordless_user_email_exists_get</span></span>(<span>self, email: str, tenant_id: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -567,14 +604,17 @@ inheritance.</p></div>
 <pre><code class="python">async def passwordless_user_email_exists_get(
     self,
     email: str,
+    tenant_id: str,
     api_options: PasswordlessAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
-    return await self.pless_email_exists_get(email, api_options, user_context)</code></pre>
+    return await self.pless_email_exists_get(
+        email, tenant_id, api_options, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.passwordless_user_phone_number_exists_get"><code class="name flex">
-<span>async def <span class="ident">passwordless_user_phone_number_exists_get</span></span>(<span>self, phone_number: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">passwordless_user_phone_number_exists_get</span></span>(<span>self, phone_number: str, tenant_id: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -585,16 +625,17 @@ inheritance.</p></div>
 <pre><code class="python">async def passwordless_user_phone_number_exists_get(
     self,
     phone_number: str,
+    tenant_id: str,
     api_options: PasswordlessAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
     return await self.pless_phone_number_exists_get(
-        phone_number, api_options, user_context
+        phone_number, tenant_id, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.resend_code_post"><code class="name flex">
-<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, tenant_id: str, api_options: PasswordlessAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -606,18 +647,19 @@ inheritance.</p></div>
     self,
     device_id: str,
     pre_auth_session_id: str,
+    tenant_id: str,
     api_options: PasswordlessAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
     ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
 ]:
     return await self.pless_resend_code_post(
-        device_id, pre_auth_session_id, api_options, user_context
+        device_id, pre_auth_session_id, tenant_id, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.api.implementation.APIImplementation.thirdparty_sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: Provider, redirect_uri_info: Optional[RedirectUriInfo], oauth_tokens: Optional[Dict[str, Any]], tenant_id: str, api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -628,10 +670,9 @@ inheritance.</p></div>
 <pre><code class="python">async def thirdparty_sign_in_up_post(
     self,
     provider: Provider,
-    code: str,
-    redirect_uri: str,
-    client_id: Union[str, None],
-    auth_code_response: Union[Dict[str, Any], None],
+    redirect_uri_info: Optional[RedirectUriInfo],
+    oauth_tokens: Optional[Dict[str, Any]],
+    tenant_id: str,
     api_options: ThirdPartyAPIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -641,10 +682,9 @@ inheritance.</p></div>
 ]:
     result = await self.tp_sign_in_up_post(
         provider,
-        code,
-        redirect_uri,
-        client_id,
-        auth_code_response,
+        redirect_uri_info,
+        oauth_tokens,
+        tenant_id,
         api_options,
         user_context,
     )
@@ -654,12 +694,14 @@ inheritance.</p></div>
                 result.user.user_id,
                 result.user.email,
                 None,
-                result.user.third_party_info,
                 result.user.time_joined,
+                result.user.tenant_ids,
+                result.user.third_party_info,
             ),
             result.created_new_user,
-            result.auth_code_response,
             result.session,
+            result.oauth_tokens,
+            result.raw_user_info_from_provider,
         )
     return result</code></pre>
 </details>

@@ -35,11 +35,14 @@
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
-from typing import Union
+from typing import Union, Dict, Any
 
 
 async def handle_metadata_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Union[UserMetadataGetAPIOkResponse, FeatureNotEnabledError]:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
 
@@ -51,7 +54,7 @@ async def handle_metadata_get(
     except Exception:
         return FeatureNotEnabledError()
 
-    metadata_response = await get_user_metadata(user_id)
+    metadata_response = await get_user_metadata(user_id, user_context=user_context)
     return UserMetadataGetAPIOkResponse(metadata_response.metadata)</code></pre>
 </details>
 </section>
@@ -63,7 +66,7 @@ async def handle_metadata_get(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_metadata_get.handle_metadata_get"><code class="name flex">
-<span>async def <span class="ident">handle_metadata_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse">UserMetadataGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a>]</span>
+<span>async def <span class="ident">handle_metadata_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse">UserMetadataGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -72,7 +75,10 @@ async def handle_metadata_get(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_metadata_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Union[UserMetadataGetAPIOkResponse, FeatureNotEnabledError]:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
 
@@ -84,7 +90,7 @@ async def handle_metadata_get(
     except Exception:
         return FeatureNotEnabledError()
 
-    metadata_response = await get_user_metadata(user_id)
+    metadata_response = await get_user_metadata(user_id, user_context=user_context)
     return UserMetadataGetAPIOkResponse(metadata_response.metadata)</code></pre>
 </details>
 </dd>

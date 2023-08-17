@@ -86,25 +86,33 @@ class GetAllRolesOkResult:
 class RecipeInterface(ABC):
     @abstractmethod
     async def add_role_to_user(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def remove_user_role(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def get_roles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; GetRolesForUserOkResult:
         pass
 
     @abstractmethod
     async def get_users_that_have_role(
-        self, role: str, user_context: Dict[str, Any]
+        self, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         pass
 
@@ -307,25 +315,33 @@ inheritance.</p></div>
 <pre><code class="python">class RecipeInterface(ABC):
     @abstractmethod
     async def add_role_to_user(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def remove_user_role(
-        self, user_id: str, role: str, user_context: Dict[str, Any]
+        self,
+        user_id: str,
+        role: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def get_roles_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; GetRolesForUserOkResult:
         pass
 
     @abstractmethod
     async def get_users_that_have_role(
-        self, role: str, user_context: Dict[str, Any]
+        self, role: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         pass
 
@@ -374,7 +390,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.userroles.interfaces.RecipeInterface.add_role_to_user"><code class="name flex">
-<span>async def <span class="ident">add_role_to_user</span></span>(<span>self, user_id: str, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult" href="#supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult">AddRoleToUserOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">add_role_to_user</span></span>(<span>self, user_id: str, role: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult" href="#supertokens_python.recipe.userroles.interfaces.AddRoleToUserOkResult">AddRoleToUserOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -384,7 +400,11 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">@abstractmethod
 async def add_role_to_user(
-    self, user_id: str, role: str, user_context: Dict[str, Any]
+    self,
+    user_id: str,
+    role: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     pass</code></pre>
 </details>
@@ -452,7 +472,7 @@ async def get_permissions_for_role(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.interfaces.RecipeInterface.get_roles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_roles_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
+<span>async def <span class="ident">get_roles_for_user</span></span>(<span>self, user_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -462,7 +482,7 @@ async def get_permissions_for_role(
 </summary>
 <pre><code class="python">@abstractmethod
 async def get_roles_for_user(
-    self, user_id: str, user_context: Dict[str, Any]
+    self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; GetRolesForUserOkResult:
     pass</code></pre>
 </details>
@@ -484,7 +504,7 @@ async def get_roles_that_have_permission(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.interfaces.RecipeInterface.get_users_that_have_role"><code class="name flex">
-<span>async def <span class="ident">get_users_that_have_role</span></span>(<span>self, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">get_users_that_have_role</span></span>(<span>self, role: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -494,7 +514,7 @@ async def get_roles_that_have_permission(
 </summary>
 <pre><code class="python">@abstractmethod
 async def get_users_that_have_role(
-    self, role: str, user_context: Dict[str, Any]
+    self, role: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     pass</code></pre>
 </details>
@@ -516,7 +536,7 @@ async def remove_permissions_from_role(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.interfaces.RecipeInterface.remove_user_role"><code class="name flex">
-<span>async def <span class="ident">remove_user_role</span></span>(<span>self, user_id: str, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>async def <span class="ident">remove_user_role</span></span>(<span>self, user_id: str, role: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -526,7 +546,11 @@ async def remove_permissions_from_role(
 </summary>
 <pre><code class="python">@abstractmethod
 async def remove_user_role(
-    self, user_id: str, role: str, user_context: Dict[str, Any]
+    self,
+    user_id: str,
+    role: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     pass</code></pre>
 </details>

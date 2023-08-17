@@ -160,7 +160,7 @@ class PrimitiveClaim(SessionClaim[Primitive]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             MaybeAwaitable[Optional[Primitive]],
         ],
         default_max_age_in_sec: Optional[int] = None,
@@ -400,7 +400,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -424,7 +424,7 @@ don't want to add the claim to the session automatically</dd>
         self,
         key: str,
         fetch_value: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             MaybeAwaitable[Optional[Primitive]],
         ],
         default_max_age_in_sec: Optional[int] = None,

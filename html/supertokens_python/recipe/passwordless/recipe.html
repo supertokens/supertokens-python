@@ -118,7 +118,7 @@ class PasswordlessRecipe(RecipeModule):
         ingredients: PasswordlessIngredients,
         override: Union[OverrideConfig, None] = None,
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
         email_delivery: Union[
             EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
@@ -213,10 +213,12 @@ class PasswordlessRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -229,14 +231,24 @@ class PasswordlessRecipe(RecipeModule):
             self.sms_delivery,
         )
         if request_id == CONSUME_CODE_API:
-            return await consume_code(self.api_implementation, options)
+            return await consume_code(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == CREATE_CODE_API:
-            return await create_code(self.api_implementation, options)
+            return await create_code(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == DOES_EMAIL_EXIST_API:
-            return await email_exists(self.api_implementation, options)
+            return await email_exists(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == DOES_PHONE_NUMBER_EXIST_API:
-            return await phone_number_exists(self.api_implementation, options)
-        return await resend_code(self.api_implementation, options)
+            return await phone_number_exists(
+                self.api_implementation, tenant_id, options, user_context
+            )
+        return await resend_code(
+            self.api_implementation, tenant_id, options, user_context
+        )
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -259,7 +271,7 @@ class PasswordlessRecipe(RecipeModule):
         ],
         override: Union[OverrideConfig, None] = None,
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
         email_delivery: Union[
             EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
@@ -310,15 +322,19 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
-            user_input_code = await self.config.get_custom_user_input_code(user_context)
+            user_input_code = await self.config.get_custom_user_input_code(
+                tenant_id, user_context
+            )
 
         code_info = await self.recipe_implementation.create_code(
             email=email,
             phone_number=phone_number,
+            tenant_id=tenant_id,
             user_input_code=user_input_code,
             user_context=user_context,
         )
@@ -333,6 +349,8 @@ class PasswordlessRecipe(RecipeModule):
             + self.get_recipe_id()
             + &#34;&amp;preAuthSessionId=&#34;
             + code_info.pre_auth_session_id
+            + &#34;&amp;tenantId=&#34;
+            + tenant_id
             + &#34;#&#34;
             + code_info.link_code
         )
@@ -342,19 +360,22 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; ConsumeCodeOkResult:
         code_info = await self.recipe_implementation.create_code(
             email=email,
             phone_number=phone_number,
-            user_context=user_context,
             user_input_code=None,
+            tenant_id=tenant_id,
+            user_context=user_context,
         )
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
             pre_auth_session_id=code_info.pre_auth_session_id,
             device_id=code_info.device_id,
             user_input_code=code_info.user_input_code,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
         if isinstance(consume_code_result, ConsumeCodeOkResult):
@@ -385,7 +406,7 @@ class PasswordlessRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe"><code class="flex name class">
 <span>class <span class="ident">PasswordlessRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", ingredients: PasswordlessIngredients, override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", ingredients: PasswordlessIngredients, override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -411,7 +432,7 @@ inheritance.</p></div>
         ingredients: PasswordlessIngredients,
         override: Union[OverrideConfig, None] = None,
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
         email_delivery: Union[
             EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
@@ -506,10 +527,12 @@ inheritance.</p></div>
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -522,14 +545,24 @@ inheritance.</p></div>
             self.sms_delivery,
         )
         if request_id == CONSUME_CODE_API:
-            return await consume_code(self.api_implementation, options)
+            return await consume_code(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == CREATE_CODE_API:
-            return await create_code(self.api_implementation, options)
+            return await create_code(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == DOES_EMAIL_EXIST_API:
-            return await email_exists(self.api_implementation, options)
+            return await email_exists(
+                self.api_implementation, tenant_id, options, user_context
+            )
         if request_id == DOES_PHONE_NUMBER_EXIST_API:
-            return await phone_number_exists(self.api_implementation, options)
-        return await resend_code(self.api_implementation, options)
+            return await phone_number_exists(
+                self.api_implementation, tenant_id, options, user_context
+            )
+        return await resend_code(
+            self.api_implementation, tenant_id, options, user_context
+        )
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -552,7 +585,7 @@ inheritance.</p></div>
         ],
         override: Union[OverrideConfig, None] = None,
         get_custom_user_input_code: Union[
-            Callable[[Dict[str, Any]], Awaitable[str]], None
+            Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
         email_delivery: Union[
             EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
@@ -603,15 +636,19 @@ inheritance.</p></div>
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
-            user_input_code = await self.config.get_custom_user_input_code(user_context)
+            user_input_code = await self.config.get_custom_user_input_code(
+                tenant_id, user_context
+            )
 
         code_info = await self.recipe_implementation.create_code(
             email=email,
             phone_number=phone_number,
+            tenant_id=tenant_id,
             user_input_code=user_input_code,
             user_context=user_context,
         )
@@ -626,6 +663,8 @@ inheritance.</p></div>
             + self.get_recipe_id()
             + &#34;&amp;preAuthSessionId=&#34;
             + code_info.pre_auth_session_id
+            + &#34;&amp;tenantId=&#34;
+            + tenant_id
             + &#34;#&#34;
             + code_info.link_code
         )
@@ -635,19 +674,22 @@ inheritance.</p></div>
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; ConsumeCodeOkResult:
         code_info = await self.recipe_implementation.create_code(
             email=email,
             phone_number=phone_number,
-            user_context=user_context,
             user_input_code=None,
+            tenant_id=tenant_id,
+            user_context=user_context,
         )
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
             pre_auth_session_id=code_info.pre_auth_session_id,
             device_id=code_info.device_id,
             user_input_code=code_info.user_input_code,
+            tenant_id=tenant_id,
             user_context=user_context,
         )
         if isinstance(consume_code_result, ConsumeCodeOkResult):
@@ -707,7 +749,7 @@ def get_instance() -&gt; PasswordlessRecipe:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -723,7 +765,7 @@ def init(
     ],
     override: Union[OverrideConfig, None] = None,
     get_custom_user_input_code: Union[
-        Callable[[Dict[str, Any]], Awaitable[str]], None
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ] = None,
     email_delivery: Union[
         EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
@@ -777,7 +819,7 @@ def reset():
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.create_magic_link"><code class="name flex">
-<span>async def <span class="ident">create_magic_link</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> str</span>
+<span>async def <span class="ident">create_magic_link</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -789,15 +831,19 @@ def reset():
     self,
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; str:
     user_input_code = None
     if self.config.get_custom_user_input_code is not None:
-        user_input_code = await self.config.get_custom_user_input_code(user_context)
+        user_input_code = await self.config.get_custom_user_input_code(
+            tenant_id, user_context
+        )
 
     code_info = await self.recipe_implementation.create_code(
         email=email,
         phone_number=phone_number,
+        tenant_id=tenant_id,
         user_input_code=user_input_code,
         user_context=user_context,
     )
@@ -812,6 +858,8 @@ def reset():
         + self.get_recipe_id()
         + &#34;&amp;preAuthSessionId=&#34;
         + code_info.pre_auth_session_id
+        + &#34;&amp;tenantId=&#34;
+        + tenant_id
         + &#34;#&#34;
         + code_info.link_code
     )
@@ -878,7 +926,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.get_email_for_user_id"><code class="name flex">
-<span>async def <span class="ident">get_email_for_user_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult">GetEmailForUserIdOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError">EmailDoesNotExistError</a>]</span>
+<span>async def <span class="ident">get_email_for_user_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult">GetEmailForUserIdOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError">EmailDoesNotExistError</a>, <a title="supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError">UnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -900,7 +948,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse)</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -911,10 +959,12 @@ def reset():
 <pre><code class="python">async def handle_api_request(
     self,
     request_id: str,
+    tenant_id: str,
     request: BaseRequest,
     path: NormalisedURLPath,
     method: str,
     response: BaseResponse,
+    user_context: Dict[str, Any],
 ):
     options = APIOptions(
         request,
@@ -927,14 +977,24 @@ def reset():
         self.sms_delivery,
     )
     if request_id == CONSUME_CODE_API:
-        return await consume_code(self.api_implementation, options)
+        return await consume_code(
+            self.api_implementation, tenant_id, options, user_context
+        )
     if request_id == CREATE_CODE_API:
-        return await create_code(self.api_implementation, options)
+        return await create_code(
+            self.api_implementation, tenant_id, options, user_context
+        )
     if request_id == DOES_EMAIL_EXIST_API:
-        return await email_exists(self.api_implementation, options)
+        return await email_exists(
+            self.api_implementation, tenant_id, options, user_context
+        )
     if request_id == DOES_PHONE_NUMBER_EXIST_API:
-        return await phone_number_exists(self.api_implementation, options)
-    return await resend_code(self.api_implementation, options)</code></pre>
+        return await phone_number_exists(
+            self.api_implementation, tenant_id, options, user_context
+        )
+    return await resend_code(
+        self.api_implementation, tenant_id, options, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.handle_error"><code class="name flex">
@@ -968,7 +1028,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.signinup"><code class="name flex">
-<span>async def <span class="ident">signinup</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
+<span>async def <span class="ident">signinup</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -980,19 +1040,22 @@ def reset():
     self,
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; ConsumeCodeOkResult:
     code_info = await self.recipe_implementation.create_code(
         email=email,
         phone_number=phone_number,
-        user_context=user_context,
         user_input_code=None,
+        tenant_id=tenant_id,
+        user_context=user_context,
     )
     consume_code_result = await self.recipe_implementation.consume_code(
         link_code=code_info.link_code,
         pre_auth_session_id=code_info.pre_auth_session_id,
         device_id=code_info.device_id,
         user_input_code=code_info.user_input_code,
+        tenant_id=tenant_id,
         user_context=user_context,
     )
     if isinstance(consume_code_result, ConsumeCodeOkResult):

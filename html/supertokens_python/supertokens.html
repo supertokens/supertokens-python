@@ -214,9 +214,22 @@ class Supertokens:
                 &#34;Please provide at least one recipe to the supertokens.init function call&#34;
             )
 
-        self.recipe_modules: List[RecipeModule] = list(
-            map(lambda func: func(self.app_info), recipe_list)
-        )
+        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
+        multitenancy_found = False
+
+        def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -&gt; RecipeModule:
+            nonlocal multitenancy_found
+            recipe_module = recipe(self.app_info)
+            if recipe_module.get_recipe_id() == MultitenancyRecipe.recipe_id:
+                multitenancy_found = True
+            return recipe_module
+
+        self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
+
+        if not multitenancy_found:
+            recipe = MultitenancyRecipe.init()(self.app_info)
+            self.recipe_modules.append(recipe)
 
         self.telemetry = (
             telemetry
@@ -268,7 +281,9 @@ class Supertokens:
         return list(headers_set)
 
     async def get_user_count(  # pylint: disable=no-self-use
-        self, include_recipe_ids: Union[None, List[str]]
+        self,
+        include_recipe_ids: Union[None, List[str]],
+        tenant_id: Optional[str] = None,
     ) -&gt; int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
@@ -276,7 +291,11 @@ class Supertokens:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(USER_COUNT), {&#34;includeRecipeIds&#34;: include_recipe_ids_str}
+            NormalisedURLPath(f&#34;/{tenant_id}{USER_COUNT}&#34;),
+            {
+                &#34;includeRecipeIds&#34;: include_recipe_ids_str,
+                &#34;includeAllTenants&#34;: tenant_id is None,
+            },
         )
 
         return int(response[&#34;count&#34;])
@@ -296,12 +315,15 @@ class Supertokens:
 
     async def get_users(  # pylint: disable=no-self-use
         self,
+        tenant_id: str,
         time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;],
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
         query: Union[Dict[str, str], None] = None,
     ) -&gt; UsersResponse:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
         if limit is not None:
@@ -317,7 +339,12 @@ class Supertokens:
         if query is not None:
             params = {**params, **query}
 
-        response = await querier.send_get_request(NormalisedURLPath(USERS), params)
+        if tenant_id is None:
+            tenant_id = DEFAULT_TENANT_ID
+
+        response = await querier.send_get_request(
+            NormalisedURLPath(f&#34;/{tenant_id}{USERS}&#34;), params
+        )
         next_pagination_token = None
         if &#34;nextPaginationToken&#34; in response:
             next_pagination_token = response[&#34;nextPaginationToken&#34;]
@@ -345,6 +372,7 @@ class Supertokens:
                     email,
                     phone_number,
                     third_party,
+                    user_obj[&#34;tenantIds&#34;],
                 )
             )
 
@@ -481,7 +509,7 @@ class Supertokens:
         raise_general_exception(&#34;Please upgrade the SuperTokens core to &gt;= 3.15.0&#34;)
 
     async def middleware(  # pylint: disable=no-self-use
-        self, request: BaseRequest, response: BaseResponse
+        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
     ) -&gt; Union[BaseResponse, None]:
         log_debug_message(&#34;middleware: Started&#34;)
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
@@ -503,7 +531,7 @@ class Supertokens:
             # see
             # https://github.com/supertokens/supertokens-python/issues/54
             request_rid = None
-        request_id = None
+        api_and_tenant_id = None
         matched_recipe = None
         if request_rid is not None:
             for recipe in Supertokens.get_instance().recipe_modules:
@@ -515,8 +543,10 @@ class Supertokens:
                     matched_recipe = recipe
                     break
             if matched_recipe is not None:
-                request_id = matched_recipe.return_api_id_if_can_handle_request(
-                    path, method
+                api_and_tenant_id = (
+                    await matched_recipe.return_api_id_if_can_handle_request(
+                        path, method, user_context
+                    )
                 )
         else:
             for recipe in Supertokens.get_instance().recipe_modules:
@@ -524,8 +554,10 @@ class Supertokens:
                     &#34;middleware: Checking recipe ID for match: %s&#34;,
                     recipe.get_recipe_id(),
                 )
-                request_id = recipe.return_api_id_if_can_handle_request(path, method)
-                if request_id is not None:
+                api_and_tenant_id = await recipe.return_api_id_if_can_handle_request(
+                    path, method, user_context
+                )
+                if api_and_tenant_id is not None:
                     matched_recipe = recipe
                     break
         if matched_recipe is not None:
@@ -534,18 +566,26 @@ class Supertokens:
             )
         else:
             log_debug_message(&#34;middleware: Not handling because no recipe matched&#34;)
-        if matched_recipe is not None and request_id is None:
+
+        if matched_recipe is not None and api_and_tenant_id is None:
             log_debug_message(
                 &#34;middleware: Not handling because recipe doesn&#39;t handle request path or method. Request path: %s, request method: %s&#34;,
                 path.get_as_string_dangerous(),
                 method,
             )
-        if request_id is not None and matched_recipe is not None:
+        if api_and_tenant_id is not None and matched_recipe is not None:
             log_debug_message(
-                &#34;middleware: Request being handled by recipe. ID is: %s&#34;, request_id
+                &#34;middleware: Request being handled by recipe. ID is: %s&#34;,
+                api_and_tenant_id.api_id,
             )
             api_resp = await matched_recipe.handle_api_request(
-                request_id, request, path, method, response
+                api_and_tenant_id.api_id,
+                api_and_tenant_id.tenant_id,
+                request,
+                path,
+                method,
+                response,
+                user_context,
             )
             if api_resp is None:
                 log_debug_message(&#34;middleware: Not handled because API returned None&#34;)
@@ -800,9 +840,22 @@ class Supertokens:
                 &#34;Please provide at least one recipe to the supertokens.init function call&#34;
             )
 
-        self.recipe_modules: List[RecipeModule] = list(
-            map(lambda func: func(self.app_info), recipe_list)
-        )
+        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
+        multitenancy_found = False
+
+        def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -&gt; RecipeModule:
+            nonlocal multitenancy_found
+            recipe_module = recipe(self.app_info)
+            if recipe_module.get_recipe_id() == MultitenancyRecipe.recipe_id:
+                multitenancy_found = True
+            return recipe_module
+
+        self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
+
+        if not multitenancy_found:
+            recipe = MultitenancyRecipe.init()(self.app_info)
+            self.recipe_modules.append(recipe)
 
         self.telemetry = (
             telemetry
@@ -854,7 +907,9 @@ class Supertokens:
         return list(headers_set)
 
     async def get_user_count(  # pylint: disable=no-self-use
-        self, include_recipe_ids: Union[None, List[str]]
+        self,
+        include_recipe_ids: Union[None, List[str]],
+        tenant_id: Optional[str] = None,
     ) -&gt; int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
@@ -862,7 +917,11 @@ class Supertokens:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(USER_COUNT), {&#34;includeRecipeIds&#34;: include_recipe_ids_str}
+            NormalisedURLPath(f&#34;/{tenant_id}{USER_COUNT}&#34;),
+            {
+                &#34;includeRecipeIds&#34;: include_recipe_ids_str,
+                &#34;includeAllTenants&#34;: tenant_id is None,
+            },
         )
 
         return int(response[&#34;count&#34;])
@@ -882,12 +941,15 @@ class Supertokens:
 
     async def get_users(  # pylint: disable=no-self-use
         self,
+        tenant_id: str,
         time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;],
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
         query: Union[Dict[str, str], None] = None,
     ) -&gt; UsersResponse:
+        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
         if limit is not None:
@@ -903,7 +965,12 @@ class Supertokens:
         if query is not None:
             params = {**params, **query}
 
-        response = await querier.send_get_request(NormalisedURLPath(USERS), params)
+        if tenant_id is None:
+            tenant_id = DEFAULT_TENANT_ID
+
+        response = await querier.send_get_request(
+            NormalisedURLPath(f&#34;/{tenant_id}{USERS}&#34;), params
+        )
         next_pagination_token = None
         if &#34;nextPaginationToken&#34; in response:
             next_pagination_token = response[&#34;nextPaginationToken&#34;]
@@ -931,6 +998,7 @@ class Supertokens:
                     email,
                     phone_number,
                     third_party,
+                    user_obj[&#34;tenantIds&#34;],
                 )
             )
 
@@ -1067,7 +1135,7 @@ class Supertokens:
         raise_general_exception(&#34;Please upgrade the SuperTokens core to &gt;= 3.15.0&#34;)
 
     async def middleware(  # pylint: disable=no-self-use
-        self, request: BaseRequest, response: BaseResponse
+        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
     ) -&gt; Union[BaseResponse, None]:
         log_debug_message(&#34;middleware: Started&#34;)
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
@@ -1089,7 +1157,7 @@ class Supertokens:
             # see
             # https://github.com/supertokens/supertokens-python/issues/54
             request_rid = None
-        request_id = None
+        api_and_tenant_id = None
         matched_recipe = None
         if request_rid is not None:
             for recipe in Supertokens.get_instance().recipe_modules:
@@ -1101,8 +1169,10 @@ class Supertokens:
                     matched_recipe = recipe
                     break
             if matched_recipe is not None:
-                request_id = matched_recipe.return_api_id_if_can_handle_request(
-                    path, method
+                api_and_tenant_id = (
+                    await matched_recipe.return_api_id_if_can_handle_request(
+                        path, method, user_context
+                    )
                 )
         else:
             for recipe in Supertokens.get_instance().recipe_modules:
@@ -1110,8 +1180,10 @@ class Supertokens:
                     &#34;middleware: Checking recipe ID for match: %s&#34;,
                     recipe.get_recipe_id(),
                 )
-                request_id = recipe.return_api_id_if_can_handle_request(path, method)
-                if request_id is not None:
+                api_and_tenant_id = await recipe.return_api_id_if_can_handle_request(
+                    path, method, user_context
+                )
+                if api_and_tenant_id is not None:
                     matched_recipe = recipe
                     break
         if matched_recipe is not None:
@@ -1120,18 +1192,26 @@ class Supertokens:
             )
         else:
             log_debug_message(&#34;middleware: Not handling because no recipe matched&#34;)
-        if matched_recipe is not None and request_id is None:
+
+        if matched_recipe is not None and api_and_tenant_id is None:
             log_debug_message(
                 &#34;middleware: Not handling because recipe doesn&#39;t handle request path or method. Request path: %s, request method: %s&#34;,
                 path.get_as_string_dangerous(),
                 method,
             )
-        if request_id is not None and matched_recipe is not None:
+        if api_and_tenant_id is not None and matched_recipe is not None:
             log_debug_message(
-                &#34;middleware: Request being handled by recipe. ID is: %s&#34;, request_id
+                &#34;middleware: Request being handled by recipe. ID is: %s&#34;,
+                api_and_tenant_id.api_id,
             )
             api_resp = await matched_recipe.handle_api_request(
-                request_id, request, path, method, response
+                api_and_tenant_id.api_id,
+                api_and_tenant_id.tenant_id,
+                request,
+                path,
+                method,
+                response,
+                user_context,
             )
             if api_resp is None:
                 log_debug_message(&#34;middleware: Not handled because API returned None&#34;)
@@ -1409,7 +1489,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_user_count"><code class="name flex">
-<span>async def <span class="ident">get_user_count</span></span>(<span>self, include_recipe_ids: Union[None, List[str]]) ‑> int</span>
+<span>async def <span class="ident">get_user_count</span></span>(<span>self, include_recipe_ids: Union[None, List[str]], tenant_id: Optional[str] = None) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1418,7 +1498,9 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_user_count(  # pylint: disable=no-self-use
-    self, include_recipe_ids: Union[None, List[str]]
+    self,
+    include_recipe_ids: Union[None, List[str]],
+    tenant_id: Optional[str] = None,
 ) -&gt; int:
     querier = Querier.get_instance(None)
     include_recipe_ids_str = None
@@ -1426,7 +1508,11 @@ def reset():
         include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
 
     response = await querier.send_get_request(
-        NormalisedURLPath(USER_COUNT), {&#34;includeRecipeIds&#34;: include_recipe_ids_str}
+        NormalisedURLPath(f&#34;/{tenant_id}{USER_COUNT}&#34;),
+        {
+            &#34;includeRecipeIds&#34;: include_recipe_ids_str,
+            &#34;includeAllTenants&#34;: tenant_id is None,
+        },
     )
 
     return int(response[&#34;count&#34;])</code></pre>
@@ -1475,7 +1561,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_users"><code class="name flex">
-<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None], pagination_token: Union[str, None], include_recipe_ids: Union[None, List[str]], query: Union[Dict[str, str], None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users</span></span>(<span>self, tenant_id: str, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None], pagination_token: Union[str, None], include_recipe_ids: Union[None, List[str]], query: Union[Dict[str, str], None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1485,12 +1571,15 @@ def reset():
 </summary>
 <pre><code class="python">async def get_users(  # pylint: disable=no-self-use
     self,
+    tenant_id: str,
     time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;],
     limit: Union[int, None],
     pagination_token: Union[str, None],
     include_recipe_ids: Union[None, List[str]],
     query: Union[Dict[str, str], None] = None,
 ) -&gt; UsersResponse:
+    from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
     querier = Querier.get_instance(None)
     params = {&#34;timeJoinedOrder&#34;: time_joined_order}
     if limit is not None:
@@ -1506,7 +1595,12 @@ def reset():
     if query is not None:
         params = {**params, **query}
 
-    response = await querier.send_get_request(NormalisedURLPath(USERS), params)
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
+    response = await querier.send_get_request(
+        NormalisedURLPath(f&#34;/{tenant_id}{USERS}&#34;), params
+    )
     next_pagination_token = None
     if &#34;nextPaginationToken&#34; in response:
         next_pagination_token = response[&#34;nextPaginationToken&#34;]
@@ -1534,6 +1628,7 @@ def reset():
                 email,
                 phone_number,
                 third_party,
+                user_obj[&#34;tenantIds&#34;],
             )
         )
 
@@ -1578,7 +1673,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.middleware"><code class="name flex">
-<span>async def <span class="ident">middleware</span></span>(<span>self, request: BaseRequest, response: BaseResponse) ‑> Union[BaseResponse, None]</span>
+<span>async def <span class="ident">middleware</span></span>(<span>self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1587,7 +1682,7 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def middleware(  # pylint: disable=no-self-use
-    self, request: BaseRequest, response: BaseResponse
+    self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
 ) -&gt; Union[BaseResponse, None]:
     log_debug_message(&#34;middleware: Started&#34;)
     path = Supertokens.get_instance().app_info.api_gateway_path.append(
@@ -1609,7 +1704,7 @@ def reset():
         # see
         # https://github.com/supertokens/supertokens-python/issues/54
         request_rid = None
-    request_id = None
+    api_and_tenant_id = None
     matched_recipe = None
     if request_rid is not None:
         for recipe in Supertokens.get_instance().recipe_modules:
@@ -1621,8 +1716,10 @@ def reset():
                 matched_recipe = recipe
                 break
         if matched_recipe is not None:
-            request_id = matched_recipe.return_api_id_if_can_handle_request(
-                path, method
+            api_and_tenant_id = (
+                await matched_recipe.return_api_id_if_can_handle_request(
+                    path, method, user_context
+                )
             )
     else:
         for recipe in Supertokens.get_instance().recipe_modules:
@@ -1630,8 +1727,10 @@ def reset():
                 &#34;middleware: Checking recipe ID for match: %s&#34;,
                 recipe.get_recipe_id(),
             )
-            request_id = recipe.return_api_id_if_can_handle_request(path, method)
-            if request_id is not None:
+            api_and_tenant_id = await recipe.return_api_id_if_can_handle_request(
+                path, method, user_context
+            )
+            if api_and_tenant_id is not None:
                 matched_recipe = recipe
                 break
     if matched_recipe is not None:
@@ -1640,18 +1739,26 @@ def reset():
         )
     else:
         log_debug_message(&#34;middleware: Not handling because no recipe matched&#34;)
-    if matched_recipe is not None and request_id is None:
+
+    if matched_recipe is not None and api_and_tenant_id is None:
         log_debug_message(
             &#34;middleware: Not handling because recipe doesn&#39;t handle request path or method. Request path: %s, request method: %s&#34;,
             path.get_as_string_dangerous(),
             method,
         )
-    if request_id is not None and matched_recipe is not None:
+    if api_and_tenant_id is not None and matched_recipe is not None:
         log_debug_message(
-            &#34;middleware: Request being handled by recipe. ID is: %s&#34;, request_id
+            &#34;middleware: Request being handled by recipe. ID is: %s&#34;,
+            api_and_tenant_id.api_id,
         )
         api_resp = await matched_recipe.handle_api_request(
-            request_id, request, path, method, response
+            api_and_tenant_id.api_id,
+            api_and_tenant_id.tenant_id,
+            request,
+            path,
+            method,
+            response,
+            user_context,
         )
         if api_resp is None:
             log_debug_message(&#34;middleware: Not handled because API returned None&#34;)

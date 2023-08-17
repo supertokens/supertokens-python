@@ -79,7 +79,7 @@ class RecipeImplementation(RecipeInterface):
                 &#34;status&#34; in session_verification_response
                 and session_verification_response[&#34;status&#34;] == &#34;OK&#34;
             )
-        return validate_api_key(request, config)</code></pre>
+        return validate_api_key(request, config, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -128,7 +128,7 @@ inheritance.</p></div>
                 &#34;status&#34; in session_verification_response
                 and session_verification_response[&#34;status&#34;] == &#34;OK&#34;
             )
-        return validate_api_key(request, config)</code></pre>
+        return validate_api_key(request, config, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -182,7 +182,7 @@ inheritance.</p></div>
             &#34;status&#34; in session_verification_response
             and session_verification_response[&#34;status&#34;] == &#34;OK&#34;
         )
-    return validate_api_key(request, config)</code></pre>
+    return validate_api_key(request, config, user_context)</code></pre>
 </details>
 </dd>
 </dl>

@@ -46,7 +46,7 @@ from typing import Union, NoReturn
 
 def raise_general_exception(
     msg: Union[str, Exception], previous: Union[None, Exception] = None
-):
+) -&gt; NoReturn:
     if isinstance(msg, SuperTokensError):
         raise msg
     if isinstance(msg, Exception):
@@ -91,7 +91,7 @@ class BadInputError(SuperTokensError):
 </details>
 </dd>
 <dt id="supertokens_python.exceptions.raise_general_exception"><code class="name flex">
-<span>def <span class="ident">raise_general_exception</span></span>(<span>msg: Union[str, Exception], previous: Union[None, Exception] = None)</span>
+<span>def <span class="ident">raise_general_exception</span></span>(<span>msg: Union[str, Exception], previous: Union[None, Exception] = None) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -101,7 +101,7 @@ class BadInputError(SuperTokensError):
 </summary>
 <pre><code class="python">def raise_general_exception(
     msg: Union[str, Exception], previous: Union[None, Exception] = None
-):
+) -&gt; NoReturn:
     if isinstance(msg, SuperTokensError):
         raise msg
     if isinstance(msg, Exception):
@@ -180,9 +180,11 @@ class BadInputError(SuperTokensError):
 <li><a title="supertokens_python.recipe.emailpassword.exceptions.SuperTokensEmailPasswordError" href="recipe/emailpassword/exceptions.html#supertokens_python.recipe.emailpassword.exceptions.SuperTokensEmailPasswordError">SuperTokensEmailPasswordError</a></li>
 <li><a title="supertokens_python.recipe.emailverification.exceptions.SuperTokensEmailVerificationError" href="recipe/emailverification/exceptions.html#supertokens_python.recipe.emailverification.exceptions.SuperTokensEmailVerificationError">SuperTokensEmailVerificationError</a></li>
 <li><a title="supertokens_python.recipe.jwt.exceptions.SuperTokensJWTError" href="recipe/jwt/exceptions.html#supertokens_python.recipe.jwt.exceptions.SuperTokensJWTError">SuperTokensJWTError</a></li>
+<li><a title="supertokens_python.recipe.multitenancy.exceptions.MultitenancyError" href="recipe/multitenancy/exceptions.html#supertokens_python.recipe.multitenancy.exceptions.MultitenancyError">MultitenancyError</a></li>
 <li><a title="supertokens_python.recipe.openid.exceptions.SuperTokensOpenIdError" href="recipe/openid/exceptions.html#supertokens_python.recipe.openid.exceptions.SuperTokensOpenIdError">SuperTokensOpenIdError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.exceptions.SuperTokensPasswordlessError" href="recipe/passwordless/exceptions.html#supertokens_python.recipe.passwordless.exceptions.SuperTokensPasswordlessError">SuperTokensPasswordlessError</a></li>
 <li><a title="supertokens_python.recipe.session.exceptions.SuperTokensSessionError" href="recipe/session/exceptions.html#supertokens_python.recipe.session.exceptions.SuperTokensSessionError">SuperTokensSessionError</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError" href="recipe/thirdparty/exceptions.html#supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError">ClientTypeNotFoundError</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError" href="recipe/thirdparty/exceptions.html#supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError">SuperTokensThirdPartyError</a></li>
 <li><a title="supertokens_python.recipe.thirdpartyemailpassword.exceptions.SupertokensThirdPartyEmailPasswordError" href="recipe/thirdpartyemailpassword/exceptions.html#supertokens_python.recipe.thirdpartyemailpassword.exceptions.SupertokensThirdPartyEmailPasswordError">SupertokensThirdPartyEmailPasswordError</a></li>
 <li><a title="supertokens_python.recipe.thirdpartypasswordless.exceptions.SupertokensThirdPartyPasswordlessError" href="recipe/thirdpartypasswordless/exceptions.html#supertokens_python.recipe.thirdpartypasswordless.exceptions.SupertokensThirdPartyPasswordlessError">SupertokensThirdPartyPasswordlessError</a></li>

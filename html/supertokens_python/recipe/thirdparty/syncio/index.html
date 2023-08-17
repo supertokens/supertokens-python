@@ -39,7 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
@@ -55,14 +55,17 @@ def get_user_by_id(
 
 
 def get_users_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str,
+    email: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; List[User]:
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
 
-    return sync(get_users_by_email(email, user_context))
+    return sync(get_users_by_email(tenant_id, email, user_context))
 
 
 def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -72,19 +75,39 @@ def get_user_by_third_party_info(
     )
 
     return sync(
-        get_user_by_third_party_info(third_party_id, third_party_user_id, user_context)
+        get_user_by_third_party_info(
+            tenant_id, third_party_id, third_party_user_id, user_context
+        )
     )
 
 
-def sign_in_up(
+def manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
+    from supertokens_python.recipe.thirdparty.asyncio import (
+        manually_create_or_update_user,
+    )
 
-    return sync(sign_in_up(third_party_id, third_party_user_id, email, user_context))</code></pre>
+    return sync(
+        manually_create_or_update_user(
+            tenant_id, third_party_id, third_party_user_id, email, user_context
+        )
+    )
+
+
+def get_provider(
+    tenant_id: str,
+    third_party_id: str,
+    client_type: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.thirdparty.asyncio import get_provider
+
+    return sync(get_provider(tenant_id, third_party_id, client_type, user_context))</code></pre>
 </details>
 </section>
 <section>
@@ -94,6 +117,26 @@ def sign_in_up(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.thirdparty.syncio.get_provider"><code class="name flex">
+<span>def <span class="ident">get_provider</span></span>(<span>tenant_id: str, third_party_id: str, client_type: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_provider(
+    tenant_id: str,
+    third_party_id: str,
+    client_type: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.thirdparty.asyncio import get_provider
+
+    return sync(get_provider(tenant_id, third_party_id, client_type, user_context))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.syncio.get_user_by_id"><code class="name flex">
 <span>def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
@@ -112,7 +155,7 @@ def sign_in_up(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.syncio.get_user_by_third_party_info"><code class="name flex">
-<span>def <span class="ident">get_user_by_third_party_info</span></span>(<span>third_party_id: str, third_party_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">get_user_by_third_party_info</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -121,6 +164,7 @@ def sign_in_up(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_user_by_third_party_info(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -130,12 +174,14 @@ def sign_in_up(
     )
 
     return sync(
-        get_user_by_third_party_info(third_party_id, third_party_user_id, user_context)
+        get_user_by_third_party_info(
+            tenant_id, third_party_id, third_party_user_id, user_context
+        )
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.syncio.get_users_by_email"><code class="name flex">
-<span>def <span class="ident">get_users_by_email</span></span>(<span>email: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
+<span>def <span class="ident">get_users_by_email</span></span>(<span>tenant_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -144,15 +190,17 @@ def sign_in_up(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_users_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str,
+    email: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; List[User]:
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
 
-    return sync(get_users_by_email(email, user_context))</code></pre>
+    return sync(get_users_by_email(tenant_id, email, user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.syncio.sign_in_up"><code class="name flex">
-<span>def <span class="ident">sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<dt id="supertokens_python.recipe.thirdparty.syncio.manually_create_or_update_user"><code class="name flex">
+<span>def <span class="ident">manually_create_or_update_user</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -160,15 +208,22 @@ def sign_in_up(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sign_in_up(
+<pre><code class="python">def manually_create_or_update_user(
+    tenant_id: str,
     third_party_id: str,
     third_party_user_id: str,
     email: str,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
+    from supertokens_python.recipe.thirdparty.asyncio import (
+        manually_create_or_update_user,
+    )
 
-    return sync(sign_in_up(third_party_id, third_party_user_id, email, user_context))</code></pre>
+    return sync(
+        manually_create_or_update_user(
+            tenant_id, third_party_id, third_party_user_id, email, user_context
+        )
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -189,10 +244,11 @@ def sign_in_up(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.syncio.get_provider" href="#supertokens_python.recipe.thirdparty.syncio.get_provider">get_provider</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.syncio.get_user_by_id" href="#supertokens_python.recipe.thirdparty.syncio.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.syncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdparty.syncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.syncio.get_users_by_email" href="#supertokens_python.recipe.thirdparty.syncio.get_users_by_email">get_users_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.syncio.sign_in_up" href="#supertokens_python.recipe.thirdparty.syncio.sign_in_up">sign_in_up</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.syncio.manually_create_or_update_user" href="#supertokens_python.recipe.thirdparty.syncio.manually_create_or_update_user">manually_create_or_update_user</a></code></li>
 </ul>
 </li>
 </ul>

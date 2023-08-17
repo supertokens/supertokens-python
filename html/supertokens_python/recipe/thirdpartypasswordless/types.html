@@ -39,7 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import TypeVar, Union
+from typing import TypeVar, Union, List
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
@@ -62,14 +62,16 @@ class User:
         user_id: str,
         email: Union[str, None],
         phone_number: Union[str, None],
-        third_party_info: Union[ThirdPartyInfo, None],
         time_joined: int,
+        tenant_ids: List[str],
+        third_party_info: Union[ThirdPartyInfo, None],
     ):
-        self.user_id: str = user_id
-        self.email: Union[str, None] = email
-        self.phone_number: Union[str, None] = phone_number
-        self.time_joined: int = time_joined
-        self.third_party_info: Union[ThirdPartyInfo, None] = third_party_info
+        self.user_id = user_id
+        self.email = email
+        self.phone_number = phone_number
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+        self.third_party_info = third_party_info
 
 
 _T = TypeVar(&#34;_T&#34;)
@@ -128,7 +130,7 @@ class ThirdPartyPasswordlessIngredients:
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
-<span>(</span><span>user_id: str, email: Optional[str], phone_number: Optional[str], third_party_info: Optional[<a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>], time_joined: int)</span>
+<span>(</span><span>user_id: str, email: Optional[str], phone_number: Optional[str], time_joined: int, tenant_ids: List[str], third_party_info: Optional[<a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -142,14 +144,16 @@ class ThirdPartyPasswordlessIngredients:
         user_id: str,
         email: Union[str, None],
         phone_number: Union[str, None],
-        third_party_info: Union[ThirdPartyInfo, None],
         time_joined: int,
+        tenant_ids: List[str],
+        third_party_info: Union[ThirdPartyInfo, None],
     ):
-        self.user_id: str = user_id
-        self.email: Union[str, None] = email
-        self.phone_number: Union[str, None] = phone_number
-        self.time_joined: int = time_joined
-        self.third_party_info: Union[ThirdPartyInfo, None] = third_party_info</code></pre>
+        self.user_id = user_id
+        self.email = email
+        self.phone_number = phone_number
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+        self.third_party_info = third_party_info</code></pre>
 </details>
 </dd>
 </dl>

@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>supertokens_python.recipe.thirdparty.providers.config_utils API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.thirdparty.providers.config_utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import List, Dict, Optional, Any
+
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from .active_directory import ActiveDirectory
+from .apple import Apple
+from .bitbucket import Bitbucket
+from .boxy_saml import BoxySAML
+from .discord import Discord
+from .facebook import Facebook
+from .github import Github
+from .gitlab import Gitlab
+from .google_workspaces import GoogleWorkspaces
+from .google import Google
+from .linkedin import Linkedin
+from .okta import Okta
+from .custom import NewProvider
+from .utils import do_get_request
+
+from ..provider import (
+    ProviderConfig,
+    ProviderConfigForClient,
+    ProviderInput,
+    Provider,
+    UserFields,
+    UserInfoMap,
+)
+
+
+def merge_config(
+    config_from_static: ProviderConfig, config_from_core: ProviderConfig
+) -&gt; ProviderConfig:
+    result = ProviderConfig(
+        third_party_id=config_from_static.third_party_id,
+        name=(
+            config_from_static.name
+            if config_from_core.name is None
+            else config_from_core.name
+        ),
+        authorization_endpoint=(
+            config_from_static.authorization_endpoint
+            if config_from_core.authorization_endpoint is None
+            else config_from_core.authorization_endpoint
+        ),
+        authorization_endpoint_query_params=(
+            config_from_static.authorization_endpoint_query_params
+            if config_from_core.authorization_endpoint_query_params is None
+            else config_from_core.authorization_endpoint_query_params
+        ),
+        token_endpoint=(
+            config_from_static.token_endpoint
+            if config_from_core.token_endpoint is None
+            else config_from_core.token_endpoint
+        ),
+        token_endpoint_body_params=(
+            config_from_static.token_endpoint_body_params
+            if config_from_core.token_endpoint_body_params is None
+            else config_from_core.token_endpoint_body_params
+        ),
+        user_info_endpoint=(
+            config_from_static.user_info_endpoint
+            if config_from_core.user_info_endpoint is None
+            else config_from_core.user_info_endpoint
+        ),
+        user_info_endpoint_headers=(
+            config_from_static.user_info_endpoint_headers
+            if config_from_core.user_info_endpoint_headers is None
+            else config_from_core.user_info_endpoint_headers
+        ),
+        user_info_endpoint_query_params=(
+            config_from_static.user_info_endpoint_query_params
+            if config_from_core.user_info_endpoint_query_params is None
+            else config_from_core.user_info_endpoint_query_params
+        ),
+        jwks_uri=(
+            config_from_static.jwks_uri
+            if config_from_core.jwks_uri is None
+            else config_from_core.jwks_uri
+        ),
+        oidc_discovery_endpoint=(
+            config_from_static.oidc_discovery_endpoint
+            if config_from_core.oidc_discovery_endpoint is None
+            else config_from_core.oidc_discovery_endpoint
+        ),
+        require_email=(
+            config_from_static.require_email
+            if config_from_core.require_email is None
+            else config_from_core.require_email
+        ),
+        user_info_map=config_from_static.user_info_map,
+        generate_fake_email=config_from_static.generate_fake_email,
+        validate_id_token_payload=config_from_static.validate_id_token_payload,
+    )
+
+    if result.user_info_map is None:
+        result.user_info_map = UserInfoMap(UserFields(), UserFields())
+
+    if result.user_info_map.from_user_info_api is None:
+        result.user_info_map.from_user_info_api = UserFields()
+    if result.user_info_map.from_id_token_payload is None:
+        result.user_info_map.from_id_token_payload = UserFields()
+
+    if config_from_core.user_info_map is not None:
+        if config_from_core.user_info_map.from_user_info_api is None:
+            config_from_core.user_info_map.from_user_info_api = UserFields()
+        if config_from_core.user_info_map.from_id_token_payload is None:
+            config_from_core.user_info_map.from_id_token_payload = UserFields()
+
+        if config_from_core.user_info_map.from_id_token_payload.user_id is not None:
+            result.user_info_map.from_id_token_payload.user_id = (
+                config_from_core.user_info_map.from_id_token_payload.user_id
+            )
+        if config_from_core.user_info_map.from_id_token_payload.email is not None:
+            result.user_info_map.from_id_token_payload.email = (
+                config_from_core.user_info_map.from_id_token_payload.email
+            )
+        if (
+            config_from_core.user_info_map.from_id_token_payload.email_verified
+            is not None
+        ):
+            result.user_info_map.from_id_token_payload.email_verified = (
+                config_from_core.user_info_map.from_id_token_payload.email_verified
+            )
+
+        if config_from_core.user_info_map.from_user_info_api.user_id is not None:
+            result.user_info_map.from_user_info_api.user_id = (
+                config_from_core.user_info_map.from_user_info_api.user_id
+            )
+        if config_from_core.user_info_map.from_user_info_api.email is not None:
+            result.user_info_map.from_user_info_api.email = (
+                config_from_core.user_info_map.from_user_info_api.email
+            )
+        if config_from_core.user_info_map.from_user_info_api.email_verified is not None:
+            result.user_info_map.from_user_info_api.email_verified = (
+                config_from_core.user_info_map.from_user_info_api.email_verified
+            )
+
+    merged_clients = (config_from_static.clients or [])[:]  # Make a copy
+    core_config_clients = config_from_core.clients or []
+
+    for core_client in core_config_clients:
+        found = False
+        for idx, static_client in enumerate(merged_clients):
+            if static_client.client_type == core_client.client_type:
+                merged_clients[idx] = core_client
+                found = True
+                break
+
+        if not found:
+            merged_clients.append(core_client)
+
+    result.clients = merged_clients
+
+    return result
+
+
+def merge_providers_from_core_and_static(
+    provider_configs_from_core: List[ProviderConfig],
+    provider_inputs_from_static: List[ProviderInput],
+) -&gt; List[ProviderInput]:
+    merged_providers: List[ProviderInput] = []
+
+    if len(provider_configs_from_core) == 0:
+        for config in provider_inputs_from_static:
+            merged_providers.append(config)
+    else:
+        for provider_config_from_core in provider_configs_from_core:
+            merged_provider_input = ProviderInput(provider_config_from_core)
+
+            for provider_input_from_static in provider_inputs_from_static:
+                if (
+                    provider_input_from_static.config.third_party_id
+                    == provider_config_from_core.third_party_id
+                ):
+                    merged_provider_input.config = merge_config(
+                        provider_input_from_static.config, provider_config_from_core
+                    )
+                    merged_provider_input.override = provider_input_from_static.override
+                    break
+
+            merged_providers.append(merged_provider_input)
+
+    return merged_providers
+
+
+def create_provider(provider_input: ProviderInput) -&gt; Provider:
+    if provider_input.config.third_party_id.startswith(&#34;active-directory&#34;):
+        return ActiveDirectory(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;apple&#34;):
+        return Apple(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;bitbucket&#34;):
+        return Bitbucket(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;discord&#34;):
+        return Discord(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;facebook&#34;):
+        return Facebook(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;github&#34;):
+        return Github(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;gitlab&#34;):
+        return Gitlab(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;google-workspaces&#34;):
+        return GoogleWorkspaces(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;google&#34;):
+        return Google(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;okta&#34;):
+        return Okta(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;linkedin&#34;):
+        return Linkedin(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;boxy-saml&#34;):
+        return BoxySAML(provider_input)
+
+    return NewProvider(provider_input)
+
+
+OIDC_INFO_MAP: Dict[str, Any] = {}
+
+
+async def get_oidc_discovery_info(issuer: str):
+    if issuer in OIDC_INFO_MAP:
+        return OIDC_INFO_MAP[issuer]
+
+    ndomain = NormalisedURLDomain(issuer)
+    npath = NormalisedURLPath(issuer)
+    openid_config_path = NormalisedURLPath(&#34;/.well-known/openid-configuration&#34;)
+
+    npath = npath.append(openid_config_path)
+
+    oidc_info = await do_get_request(
+        ndomain.get_as_string_dangerous() + npath.get_as_string_dangerous()
+    )
+    OIDC_INFO_MAP[issuer] = oidc_info
+
+    return oidc_info
+
+
+async def discover_oidc_endpoints(
+    config: ProviderConfigForClient,
+) -&gt; ProviderConfigForClient:
+    if config.oidc_discovery_endpoint is None:
+        return config
+
+    oidc_info = await get_oidc_discovery_info(config.oidc_discovery_endpoint)
+    if (
+        oidc_info.get(&#34;authorization_endpoint&#34;) is not None
+        and config.authorization_endpoint is None
+    ):
+        config.authorization_endpoint = oidc_info[&#34;authorization_endpoint&#34;]
+
+    if oidc_info.get(&#34;token_endpoint&#34;) is not None and config.token_endpoint is None:
+        config.token_endpoint = oidc_info[&#34;token_endpoint&#34;]
+
+    if (
+        oidc_info.get(&#34;userinfo_endpoint&#34;) is not None
+        and config.user_info_endpoint is None
+    ):
+        config.user_info_endpoint = oidc_info[&#34;userinfo_endpoint&#34;]
+
+    if oidc_info.get(&#34;jwks_uri&#34;) is not None and config.jwks_uri is None:
+        config.jwks_uri = oidc_info[&#34;jwks_uri&#34;]
+
+    return config
+
+
+async def fetch_and_set_config(
+    provider_instance: Provider,
+    client_type: Optional[str],
+    user_context: Dict[str, Any],
+):
+    config = await provider_instance.get_config_for_client_type(
+        client_type, user_context
+    )
+    config = await discover_oidc_endpoints(config)
+    provider_instance.config = config
+
+
+async def find_and_create_provider_instance(
+    providers: List[ProviderInput],
+    third_party_id: str,
+    client_type: Optional[str],
+    user_context: Dict[str, Any],
+) -&gt; Optional[Provider]:
+    for provider_input in providers:
+        if provider_input.config.third_party_id == third_party_id:
+            provider_instance = create_provider(provider_input)
+            await fetch_and_set_config(provider_instance, client_type, user_context)
+            return provider_instance
+
+    return None</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.create_provider"><code class="name flex">
+<span>def <span class="ident">create_provider</span></span>(<span>provider_input: <a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a>) ‑> <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_provider(provider_input: ProviderInput) -&gt; Provider:
+    if provider_input.config.third_party_id.startswith(&#34;active-directory&#34;):
+        return ActiveDirectory(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;apple&#34;):
+        return Apple(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;bitbucket&#34;):
+        return Bitbucket(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;discord&#34;):
+        return Discord(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;facebook&#34;):
+        return Facebook(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;github&#34;):
+        return Github(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;gitlab&#34;):
+        return Gitlab(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;google-workspaces&#34;):
+        return GoogleWorkspaces(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;google&#34;):
+        return Google(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;okta&#34;):
+        return Okta(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;linkedin&#34;):
+        return Linkedin(provider_input)
+    if provider_input.config.third_party_id.startswith(&#34;boxy-saml&#34;):
+        return BoxySAML(provider_input)
+
+    return NewProvider(provider_input)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.discover_oidc_endpoints"><code class="name flex">
+<span>async def <span class="ident">discover_oidc_endpoints</span></span>(<span>config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def discover_oidc_endpoints(
+    config: ProviderConfigForClient,
+) -&gt; ProviderConfigForClient:
+    if config.oidc_discovery_endpoint is None:
+        return config
+
+    oidc_info = await get_oidc_discovery_info(config.oidc_discovery_endpoint)
+    if (
+        oidc_info.get(&#34;authorization_endpoint&#34;) is not None
+        and config.authorization_endpoint is None
+    ):
+        config.authorization_endpoint = oidc_info[&#34;authorization_endpoint&#34;]
+
+    if oidc_info.get(&#34;token_endpoint&#34;) is not None and config.token_endpoint is None:
+        config.token_endpoint = oidc_info[&#34;token_endpoint&#34;]
+
+    if (
+        oidc_info.get(&#34;userinfo_endpoint&#34;) is not None
+        and config.user_info_endpoint is None
+    ):
+        config.user_info_endpoint = oidc_info[&#34;userinfo_endpoint&#34;]
+
+    if oidc_info.get(&#34;jwks_uri&#34;) is not None and config.jwks_uri is None:
+        config.jwks_uri = oidc_info[&#34;jwks_uri&#34;]
+
+    return config</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.fetch_and_set_config"><code class="name flex">
+<span>async def <span class="ident">fetch_and_set_config</span></span>(<span>provider_instance: <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>, client_type: Optional[str], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def fetch_and_set_config(
+    provider_instance: Provider,
+    client_type: Optional[str],
+    user_context: Dict[str, Any],
+):
+    config = await provider_instance.get_config_for_client_type(
+        client_type, user_context
+    )
+    config = await discover_oidc_endpoints(config)
+    provider_instance.config = config</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.find_and_create_provider_instance"><code class="name flex">
+<span>async def <span class="ident">find_and_create_provider_instance</span></span>(<span>providers: List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a>], third_party_id: str, client_type: Optional[str], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def find_and_create_provider_instance(
+    providers: List[ProviderInput],
+    third_party_id: str,
+    client_type: Optional[str],
+    user_context: Dict[str, Any],
+) -&gt; Optional[Provider]:
+    for provider_input in providers:
+        if provider_input.config.third_party_id == third_party_id:
+            provider_instance = create_provider(provider_input)
+            await fetch_and_set_config(provider_instance, client_type, user_context)
+            return provider_instance
+
+    return None</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.get_oidc_discovery_info"><code class="name flex">
+<span>async def <span class="ident">get_oidc_discovery_info</span></span>(<span>issuer: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_oidc_discovery_info(issuer: str):
+    if issuer in OIDC_INFO_MAP:
+        return OIDC_INFO_MAP[issuer]
+
+    ndomain = NormalisedURLDomain(issuer)
+    npath = NormalisedURLPath(issuer)
+    openid_config_path = NormalisedURLPath(&#34;/.well-known/openid-configuration&#34;)
+
+    npath = npath.append(openid_config_path)
+
+    oidc_info = await do_get_request(
+        ndomain.get_as_string_dangerous() + npath.get_as_string_dangerous()
+    )
+    OIDC_INFO_MAP[issuer] = oidc_info
+
+    return oidc_info</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.merge_config"><code class="name flex">
+<span>def <span class="ident">merge_config</span></span>(<span>config_from_static: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>, config_from_core: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def merge_config(
+    config_from_static: ProviderConfig, config_from_core: ProviderConfig
+) -&gt; ProviderConfig:
+    result = ProviderConfig(
+        third_party_id=config_from_static.third_party_id,
+        name=(
+            config_from_static.name
+            if config_from_core.name is None
+            else config_from_core.name
+        ),
+        authorization_endpoint=(
+            config_from_static.authorization_endpoint
+            if config_from_core.authorization_endpoint is None
+            else config_from_core.authorization_endpoint
+        ),
+        authorization_endpoint_query_params=(
+            config_from_static.authorization_endpoint_query_params
+            if config_from_core.authorization_endpoint_query_params is None
+            else config_from_core.authorization_endpoint_query_params
+        ),
+        token_endpoint=(
+            config_from_static.token_endpoint
+            if config_from_core.token_endpoint is None
+            else config_from_core.token_endpoint
+        ),
+        token_endpoint_body_params=(
+            config_from_static.token_endpoint_body_params
+            if config_from_core.token_endpoint_body_params is None
+            else config_from_core.token_endpoint_body_params
+        ),
+        user_info_endpoint=(
+            config_from_static.user_info_endpoint
+            if config_from_core.user_info_endpoint is None
+            else config_from_core.user_info_endpoint
+        ),
+        user_info_endpoint_headers=(
+            config_from_static.user_info_endpoint_headers
+            if config_from_core.user_info_endpoint_headers is None
+            else config_from_core.user_info_endpoint_headers
+        ),
+        user_info_endpoint_query_params=(
+            config_from_static.user_info_endpoint_query_params
+            if config_from_core.user_info_endpoint_query_params is None
+            else config_from_core.user_info_endpoint_query_params
+        ),
+        jwks_uri=(
+            config_from_static.jwks_uri
+            if config_from_core.jwks_uri is None
+            else config_from_core.jwks_uri
+        ),
+        oidc_discovery_endpoint=(
+            config_from_static.oidc_discovery_endpoint
+            if config_from_core.oidc_discovery_endpoint is None
+            else config_from_core.oidc_discovery_endpoint
+        ),
+        require_email=(
+            config_from_static.require_email
+            if config_from_core.require_email is None
+            else config_from_core.require_email
+        ),
+        user_info_map=config_from_static.user_info_map,
+        generate_fake_email=config_from_static.generate_fake_email,
+        validate_id_token_payload=config_from_static.validate_id_token_payload,
+    )
+
+    if result.user_info_map is None:
+        result.user_info_map = UserInfoMap(UserFields(), UserFields())
+
+    if result.user_info_map.from_user_info_api is None:
+        result.user_info_map.from_user_info_api = UserFields()
+    if result.user_info_map.from_id_token_payload is None:
+        result.user_info_map.from_id_token_payload = UserFields()
+
+    if config_from_core.user_info_map is not None:
+        if config_from_core.user_info_map.from_user_info_api is None:
+            config_from_core.user_info_map.from_user_info_api = UserFields()
+        if config_from_core.user_info_map.from_id_token_payload is None:
+            config_from_core.user_info_map.from_id_token_payload = UserFields()
+
+        if config_from_core.user_info_map.from_id_token_payload.user_id is not None:
+            result.user_info_map.from_id_token_payload.user_id = (
+                config_from_core.user_info_map.from_id_token_payload.user_id
+            )
+        if config_from_core.user_info_map.from_id_token_payload.email is not None:
+            result.user_info_map.from_id_token_payload.email = (
+                config_from_core.user_info_map.from_id_token_payload.email
+            )
+        if (
+            config_from_core.user_info_map.from_id_token_payload.email_verified
+            is not None
+        ):
+            result.user_info_map.from_id_token_payload.email_verified = (
+                config_from_core.user_info_map.from_id_token_payload.email_verified
+            )
+
+        if config_from_core.user_info_map.from_user_info_api.user_id is not None:
+            result.user_info_map.from_user_info_api.user_id = (
+                config_from_core.user_info_map.from_user_info_api.user_id
+            )
+        if config_from_core.user_info_map.from_user_info_api.email is not None:
+            result.user_info_map.from_user_info_api.email = (
+                config_from_core.user_info_map.from_user_info_api.email
+            )
+        if config_from_core.user_info_map.from_user_info_api.email_verified is not None:
+            result.user_info_map.from_user_info_api.email_verified = (
+                config_from_core.user_info_map.from_user_info_api.email_verified
+            )
+
+    merged_clients = (config_from_static.clients or [])[:]  # Make a copy
+    core_config_clients = config_from_core.clients or []
+
+    for core_client in core_config_clients:
+        found = False
+        for idx, static_client in enumerate(merged_clients):
+            if static_client.client_type == core_client.client_type:
+                merged_clients[idx] = core_client
+                found = True
+                break
+
+        if not found:
+            merged_clients.append(core_client)
+
+    result.clients = merged_clients
+
+    return result</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.config_utils.merge_providers_from_core_and_static"><code class="name flex">
+<span>def <span class="ident">merge_providers_from_core_and_static</span></span>(<span>provider_configs_from_core: List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>], provider_inputs_from_static: List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a>]) ‑> List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def merge_providers_from_core_and_static(
+    provider_configs_from_core: List[ProviderConfig],
+    provider_inputs_from_static: List[ProviderInput],
+) -&gt; List[ProviderInput]:
+    merged_providers: List[ProviderInput] = []
+
+    if len(provider_configs_from_core) == 0:
+        for config in provider_inputs_from_static:
+            merged_providers.append(config)
+    else:
+        for provider_config_from_core in provider_configs_from_core:
+            merged_provider_input = ProviderInput(provider_config_from_core)
+
+            for provider_input_from_static in provider_inputs_from_static:
+                if (
+                    provider_input_from_static.config.third_party_id
+                    == provider_config_from_core.third_party_id
+                ):
+                    merged_provider_input.config = merge_config(
+                        provider_input_from_static.config, provider_config_from_core
+                    )
+                    merged_provider_input.override = provider_input_from_static.override
+                    break
+
+            merged_providers.append(merged_provider_input)
+
+    return merged_providers</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers" href="index.html">supertokens_python.recipe.thirdparty.providers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.create_provider" href="#supertokens_python.recipe.thirdparty.providers.config_utils.create_provider">create_provider</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.discover_oidc_endpoints" href="#supertokens_python.recipe.thirdparty.providers.config_utils.discover_oidc_endpoints">discover_oidc_endpoints</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.fetch_and_set_config" href="#supertokens_python.recipe.thirdparty.providers.config_utils.fetch_and_set_config">fetch_and_set_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.find_and_create_provider_instance" href="#supertokens_python.recipe.thirdparty.providers.config_utils.find_and_create_provider_instance">find_and_create_provider_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.get_oidc_discovery_info" href="#supertokens_python.recipe.thirdparty.providers.config_utils.get_oidc_discovery_info">get_oidc_discovery_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.merge_config" href="#supertokens_python.recipe.thirdparty.providers.config_utils.merge_config">merge_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.config_utils.merge_providers_from_core_and_static" href="#supertokens_python.recipe.thirdparty.providers.config_utils.merge_providers_from_core_and_static">merge_providers_from_core_and_static</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

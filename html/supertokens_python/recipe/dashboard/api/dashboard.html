@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Dict, Any
 
 from supertokens_python.framework import BaseResponse
 
@@ -51,16 +51,15 @@ if TYPE_CHECKING:
         APIInterface,
     )
 
-from supertokens_python.utils import default_user_context
-
 
 async def handle_dashboard_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Optional[BaseResponse]:
     if api_implementation.dashboard_get is None:
         return None
 
-    user_context = default_user_context(api_options.request)
     html_str = await api_implementation.dashboard_get(api_options, user_context)
 
     api_options.response.set_html_content(html_str)
@@ -75,7 +74,7 @@ async def handle_dashboard_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.dashboard.handle_dashboard_api"><code class="name flex">
-<span>async def <span class="ident">handle_dashboard_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions) ‑> Optional[BaseResponse]</span>
+<span>async def <span class="ident">handle_dashboard_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Optional[BaseResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -84,12 +83,13 @@ async def handle_dashboard_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_dashboard_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; Optional[BaseResponse]:
     if api_implementation.dashboard_get is None:
         return None
 
-    user_context = default_user_context(api_options.request)
     html_str = await api_implementation.dashboard_get(api_options, user_context)
 
     api_options.response.set_html_content(html_str)

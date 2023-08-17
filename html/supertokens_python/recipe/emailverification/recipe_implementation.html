@@ -69,25 +69,25 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
 
     async def create_email_verification_token(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[
         CreateEmailVerificationTokenOkResult,
         CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     ]:
         data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/email/verify/token&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return CreateEmailVerificationTokenOkResult(response[&#34;token&#34;])
         return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
 
     async def verify_email_using_token(
-        self, token: str, user_context: Dict[str, Any]
+        self, token: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/email/verify&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return VerifyEmailUsingTokenOkResult(
@@ -105,11 +105,12 @@ class RecipeImplementation(RecipeInterface):
         return response[&#34;isVerified&#34;]
 
     async def revoke_email_verification_tokens(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; RevokeEmailVerificationTokensOkResult:
         data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/email/verify/token/remove&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token/remove&#34;),
+            data,
         )
         return RevokeEmailVerificationTokensOkResult()
 
@@ -150,25 +151,25 @@ inheritance.</p></div>
         self.config = config
 
     async def create_email_verification_token(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[
         CreateEmailVerificationTokenOkResult,
         CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     ]:
         data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/email/verify/token&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return CreateEmailVerificationTokenOkResult(response[&#34;token&#34;])
         return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
 
     async def verify_email_using_token(
-        self, token: str, user_context: Dict[str, Any]
+        self, token: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/email/verify&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return VerifyEmailUsingTokenOkResult(
@@ -186,11 +187,12 @@ inheritance.</p></div>
         return response[&#34;isVerified&#34;]
 
     async def revoke_email_verification_tokens(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; RevokeEmailVerificationTokensOkResult:
         data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/email/verify/token/remove&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token/remove&#34;),
+            data,
         )
         return RevokeEmailVerificationTokensOkResult()
 
@@ -211,7 +213,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.create_email_verification_token"><code class="name flex">
-<span>async def <span class="ident">create_email_verification_token</span></span>(<span>self, user_id: str, email: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult">CreateEmailVerificationTokenOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError">CreateEmailVerificationTokenEmailAlreadyVerifiedError</a>]</span>
+<span>async def <span class="ident">create_email_verification_token</span></span>(<span>self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult">CreateEmailVerificationTokenOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError">CreateEmailVerificationTokenEmailAlreadyVerifiedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -220,14 +222,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_email_verification_token(
-    self, user_id: str, email: str, user_context: Dict[str, Any]
+    self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[
     CreateEmailVerificationTokenOkResult,
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
 ]:
     data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/email/verify/token&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token&#34;), data
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return CreateEmailVerificationTokenOkResult(response[&#34;token&#34;])
@@ -254,7 +256,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.revoke_email_verification_tokens"><code class="name flex">
-<span>async def <span class="ident">revoke_email_verification_tokens</span></span>(<span>self, user_id: str, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult">RevokeEmailVerificationTokensOkResult</a></span>
+<span>async def <span class="ident">revoke_email_verification_tokens</span></span>(<span>self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult">RevokeEmailVerificationTokensOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -263,11 +265,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_email_verification_tokens(
-    self, user_id: str, email: str, user_context: Dict[str, Any]
+    self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; RevokeEmailVerificationTokensOkResult:
     data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
     await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/email/verify/token/remove&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token/remove&#34;),
+        data,
     )
     return RevokeEmailVerificationTokensOkResult()</code></pre>
 </details>
@@ -292,7 +295,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.verify_email_using_token"><code class="name flex">
-<span>async def <span class="ident">verify_email_using_token</span></span>(<span>self, token: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult">VerifyEmailUsingTokenOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError">VerifyEmailUsingTokenInvalidTokenError</a>]</span>
+<span>async def <span class="ident">verify_email_using_token</span></span>(<span>self, token: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult">VerifyEmailUsingTokenOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError">VerifyEmailUsingTokenInvalidTokenError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -301,11 +304,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def verify_email_using_token(
-    self, token: str, user_context: Dict[str, Any]
+    self, token: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
     data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/email/verify&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify&#34;), data
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return VerifyEmailUsingTokenOkResult(

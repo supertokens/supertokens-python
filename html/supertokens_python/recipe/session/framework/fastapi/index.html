@@ -50,9 +50,11 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.types import MaybeAwaitable
 from fastapi.responses import JSONResponse
-from fastapi import Request
 
 from ...interfaces import SessionContainer, SessionClaimValidator
+from supertokens_python.utils import set_request_in_user_context_if_not_defined
+
+from fastapi import Request
 
 
 def verify_session(
@@ -67,11 +69,15 @@ def verify_session(
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
-    if user_context is None:
-        user_context = {}
+    _ = user_context
 
     async def func(request: Request) -&gt; Union[SessionContainer, None]:
+        nonlocal user_context
         base_req = FastApiRequest(request)
+        user_context = set_request_in_user_context_if_not_defined(
+            user_context, base_req
+        )
+
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(
             base_req,
@@ -168,11 +174,15 @@ async def session_exception_handler(
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
-    if user_context is None:
-        user_context = {}
+    _ = user_context
 
     async def func(request: Request) -&gt; Union[SessionContainer, None]:
+        nonlocal user_context
         base_req = FastApiRequest(request)
+        user_context = set_request_in_user_context_if_not_defined(
+            user_context, base_req
+        )
+
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(
             base_req,

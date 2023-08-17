@@ -26,13 +26,18 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from ...interfaces import APIInterface, APIOptions, UserDeleteAPIResponse
+<pre><code class="python">from typing import Any, Dict
+
+from ...interfaces import APIInterface, APIOptions, UserDeleteAPIResponse
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python import Supertokens
 
 
 async def handle_user_delete(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; UserDeleteAPIResponse:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
 
@@ -52,7 +57,7 @@ async def handle_user_delete(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_delete.handle_user_delete"><code class="name flex">
-<span>async def <span class="ident">handle_user_delete</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse">UserDeleteAPIResponse</a></span>
+<span>async def <span class="ident">handle_user_delete</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, _user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse">UserDeleteAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -61,7 +66,10 @@ async def handle_user_delete(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_user_delete(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; UserDeleteAPIResponse:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
 

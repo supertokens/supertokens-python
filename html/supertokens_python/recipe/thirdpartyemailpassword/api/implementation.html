@@ -71,7 +71,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResult,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface
 from supertokens_python.types import GeneralErrorResponse
 
@@ -125,25 +125,30 @@ class APIImplementation(APIInterface):
     async def emailpassword_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
-        return await self.ep_email_exists_get(email, api_options, user_context)
+        return await self.ep_email_exists_get(
+            email, tenant_id, api_options, user_context
+        )
 
     async def generate_password_reset_token_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         return await self.ep_generate_password_reset_token_post(
-            form_fields, api_options, user_context
+            form_fields, tenant_id, api_options, user_context
         )
 
     async def password_reset_post(
         self,
         form_fields: List[FormField],
         token: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -152,16 +157,15 @@ class APIImplementation(APIInterface):
         GeneralErrorResponse,
     ]:
         return await self.ep_password_reset_post(
-            form_fields, token, api_options, user_context
+            form_fields, token, tenant_id, api_options, user_context
         )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Union[RedirectUriInfo, None],
+        oauth_tokens: Union[Dict[str, Any], None],
+        tenant_id: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -171,10 +175,9 @@ class APIImplementation(APIInterface):
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -184,17 +187,20 @@ class APIImplementation(APIInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     result.user.third_party_info,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def emailpassword_sign_in_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -202,13 +208,16 @@ class APIImplementation(APIInterface):
         SignInPostWrongCredentialsError,
         GeneralErrorResponse,
     ]:
-        result = await self.ep_sign_in_post(form_fields, api_options, user_context)
+        result = await self.ep_sign_in_post(
+            form_fields, tenant_id, api_options, user_context
+        )
         if isinstance(result, SignInPostOkResult):
             return EmailPasswordSignInPostOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
                 result.session,
@@ -218,6 +227,7 @@ class APIImplementation(APIInterface):
     async def emailpassword_sign_up_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -225,13 +235,16 @@ class APIImplementation(APIInterface):
         SignUpPostEmailAlreadyExistsError,
         GeneralErrorResponse,
     ]:
-        result = await self.ep_sign_up_post(form_fields, api_options, user_context)
+        result = await self.ep_sign_up_post(
+            form_fields, tenant_id, api_options, user_context
+        )
         if isinstance(result, SignUpPostOkResult):
             return EmailPasswordSignUpPostOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
                 result.session,
@@ -241,20 +254,25 @@ class APIImplementation(APIInterface):
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider,
+            redirect_uri_on_provider_dashboard,
+            api_options,
+            user_context,
+        )
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )</code></pre>
 </details>
 </section>
@@ -317,25 +335,30 @@ inheritance.</p></div>
     async def emailpassword_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
-        return await self.ep_email_exists_get(email, api_options, user_context)
+        return await self.ep_email_exists_get(
+            email, tenant_id, api_options, user_context
+        )
 
     async def generate_password_reset_token_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         return await self.ep_generate_password_reset_token_post(
-            form_fields, api_options, user_context
+            form_fields, tenant_id, api_options, user_context
         )
 
     async def password_reset_post(
         self,
         form_fields: List[FormField],
         token: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -344,16 +367,15 @@ inheritance.</p></div>
         GeneralErrorResponse,
     ]:
         return await self.ep_password_reset_post(
-            form_fields, token, api_options, user_context
+            form_fields, token, tenant_id, api_options, user_context
         )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Union[RedirectUriInfo, None],
+        oauth_tokens: Union[Dict[str, Any], None],
+        tenant_id: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -363,10 +385,9 @@ inheritance.</p></div>
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -376,17 +397,20 @@ inheritance.</p></div>
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     result.user.third_party_info,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def emailpassword_sign_in_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -394,13 +418,16 @@ inheritance.</p></div>
         SignInPostWrongCredentialsError,
         GeneralErrorResponse,
     ]:
-        result = await self.ep_sign_in_post(form_fields, api_options, user_context)
+        result = await self.ep_sign_in_post(
+            form_fields, tenant_id, api_options, user_context
+        )
         if isinstance(result, SignInPostOkResult):
             return EmailPasswordSignInPostOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
                 result.session,
@@ -410,6 +437,7 @@ inheritance.</p></div>
     async def emailpassword_sign_up_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
@@ -417,13 +445,16 @@ inheritance.</p></div>
         SignUpPostEmailAlreadyExistsError,
         GeneralErrorResponse,
     ]:
-        result = await self.ep_sign_up_post(form_fields, api_options, user_context)
+        result = await self.ep_sign_up_post(
+            form_fields, tenant_id, api_options, user_context
+        )
         if isinstance(result, SignUpPostOkResult):
             return EmailPasswordSignUpPostOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
                 result.session,
@@ -433,20 +464,25 @@ inheritance.</p></div>
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider,
+            redirect_uri_on_provider_dashboard,
+            api_options,
+            user_context,
+        )
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -457,7 +493,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.apple_redirect_handler_post"><code class="name flex">
-<span>async def <span class="ident">apple_redirect_handler_post</span></span>(<span>self, code: str, state: str, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any])</span>
+<span>async def <span class="ident">apple_redirect_handler_post</span></span>(<span>self, form_post_info: Dict[str, Any], api_options: ThirdPartyApiOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -467,18 +503,17 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def apple_redirect_handler_post(
     self,
-    code: str,
-    state: str,
+    form_post_info: Dict[str, Any],
     api_options: ThirdPartyApiOptions,
     user_context: Dict[str, Any],
 ):
     return await self.tp_apple_redirect_handler_post(
-        code, state, api_options, user_context
+        form_post_info, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.authorisation_url_get"><code class="name flex">
-<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, redirect_uri_on_provider_dashboard: str, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -489,14 +524,20 @@ inheritance.</p></div>
 <pre><code class="python">async def authorisation_url_get(
     self,
     provider: Provider,
+    redirect_uri_on_provider_dashboard: str,
     api_options: ThirdPartyApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-    return await self.tp_authorisation_url_get(provider, api_options, user_context)</code></pre>
+    return await self.tp_authorisation_url_get(
+        provider,
+        redirect_uri_on_provider_dashboard,
+        api_options,
+        user_context,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.emailpassword_email_exists_get"><code class="name flex">
-<span>async def <span class="ident">emailpassword_email_exists_get</span></span>(<span>self, email: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">emailpassword_email_exists_get</span></span>(<span>self, email: str, tenant_id: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -507,14 +548,17 @@ inheritance.</p></div>
 <pre><code class="python">async def emailpassword_email_exists_get(
     self,
     email: str,
+    tenant_id: str,
     api_options: EmailPasswordApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
-    return await self.ep_email_exists_get(email, api_options, user_context)</code></pre>
+    return await self.ep_email_exists_get(
+        email, tenant_id, api_options, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.emailpassword_sign_in_post"><code class="name flex">
-<span>async def <span class="ident">emailpassword_sign_in_post</span></span>(<span>self, form_fields: List[FormField], api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult">EmailPasswordSignInPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError">SignInPostWrongCredentialsError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">emailpassword_sign_in_post</span></span>(<span>self, form_fields: List[FormField], tenant_id: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult">EmailPasswordSignInPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError">SignInPostWrongCredentialsError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -525,6 +569,7 @@ inheritance.</p></div>
 <pre><code class="python">async def emailpassword_sign_in_post(
     self,
     form_fields: List[FormField],
+    tenant_id: str,
     api_options: EmailPasswordApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -532,13 +577,16 @@ inheritance.</p></div>
     SignInPostWrongCredentialsError,
     GeneralErrorResponse,
 ]:
-    result = await self.ep_sign_in_post(form_fields, api_options, user_context)
+    result = await self.ep_sign_in_post(
+        form_fields, tenant_id, api_options, user_context
+    )
     if isinstance(result, SignInPostOkResult):
         return EmailPasswordSignInPostOkResult(
             User(
                 result.user.user_id,
                 result.user.email,
                 result.user.time_joined,
+                result.user.tenant_ids,
                 None,
             ),
             result.session,
@@ -547,7 +595,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.emailpassword_sign_up_post"><code class="name flex">
-<span>async def <span class="ident">emailpassword_sign_up_post</span></span>(<span>self, form_fields: List[FormField], api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignUpPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignUpPostOkResult">EmailPasswordSignUpPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError">SignUpPostEmailAlreadyExistsError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">emailpassword_sign_up_post</span></span>(<span>self, form_fields: List[FormField], tenant_id: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignUpPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignUpPostOkResult">EmailPasswordSignUpPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError">SignUpPostEmailAlreadyExistsError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -558,6 +606,7 @@ inheritance.</p></div>
 <pre><code class="python">async def emailpassword_sign_up_post(
     self,
     form_fields: List[FormField],
+    tenant_id: str,
     api_options: EmailPasswordApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -565,13 +614,16 @@ inheritance.</p></div>
     SignUpPostEmailAlreadyExistsError,
     GeneralErrorResponse,
 ]:
-    result = await self.ep_sign_up_post(form_fields, api_options, user_context)
+    result = await self.ep_sign_up_post(
+        form_fields, tenant_id, api_options, user_context
+    )
     if isinstance(result, SignUpPostOkResult):
         return EmailPasswordSignUpPostOkResult(
             User(
                 result.user.user_id,
                 result.user.email,
                 result.user.time_joined,
+                result.user.tenant_ids,
                 None,
             ),
             result.session,
@@ -580,7 +632,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.generate_password_reset_token_post"><code class="name flex">
-<span>async def <span class="ident">generate_password_reset_token_post</span></span>(<span>self, form_fields: List[FormField], api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">generate_password_reset_token_post</span></span>(<span>self, form_fields: List[FormField], tenant_id: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -591,16 +643,17 @@ inheritance.</p></div>
 <pre><code class="python">async def generate_password_reset_token_post(
     self,
     form_fields: List[FormField],
+    tenant_id: str,
     api_options: EmailPasswordApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
     return await self.ep_generate_password_reset_token_post(
-        form_fields, api_options, user_context
+        form_fields, tenant_id, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.password_reset_post"><code class="name flex">
-<span>async def <span class="ident">password_reset_post</span></span>(<span>self, form_fields: List[FormField], token: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">password_reset_post</span></span>(<span>self, form_fields: List[FormField], token: str, tenant_id: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -612,6 +665,7 @@ inheritance.</p></div>
     self,
     form_fields: List[FormField],
     token: str,
+    tenant_id: str,
     api_options: EmailPasswordApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -620,12 +674,12 @@ inheritance.</p></div>
     GeneralErrorResponse,
 ]:
     return await self.ep_password_reset_post(
-        form_fields, token, api_options, user_context
+        form_fields, token, tenant_id, api_options, user_context
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.thirdparty_sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: Provider, redirect_uri_info: Union[RedirectUriInfo, None], oauth_tokens: Union[Dict[str, Any], None], tenant_id: str, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -636,10 +690,9 @@ inheritance.</p></div>
 <pre><code class="python">async def thirdparty_sign_in_up_post(
     self,
     provider: Provider,
-    code: str,
-    redirect_uri: str,
-    client_id: Union[str, None],
-    auth_code_response: Union[Dict[str, Any], None],
+    redirect_uri_info: Union[RedirectUriInfo, None],
+    oauth_tokens: Union[Dict[str, Any], None],
+    tenant_id: str,
     api_options: ThirdPartyApiOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -649,10 +702,9 @@ inheritance.</p></div>
 ]:
     result = await self.tp_sign_in_up_post(
         provider,
-        code,
-        redirect_uri,
-        client_id,
-        auth_code_response,
+        redirect_uri_info,
+        oauth_tokens,
+        tenant_id,
         api_options,
         user_context,
     )
@@ -662,11 +714,13 @@ inheritance.</p></div>
                 result.user.user_id,
                 result.user.email,
                 result.user.time_joined,
+                result.user.tenant_ids,
                 result.user.third_party_info,
             ),
             result.created_new_user,
-            result.auth_code_response,
             result.session,
+            result.oauth_tokens,
+            result.raw_user_info_from_provider,
         )
     return result</code></pre>
 </details>

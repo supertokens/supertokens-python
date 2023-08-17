@@ -79,7 +79,6 @@ from supertokens_python.recipe.session.utils import (
     TokenTransferMethod,
     get_required_claim_validators,
 )
-from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
     FRAMEWORKS,
@@ -88,10 +87,11 @@ from supertokens_python.utils import (
     normalise_http_method,
     set_request_in_user_context_if_not_defined,
 )
-from supertokens_python import Supertokens
+from supertokens_python.supertokens import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.recipe import SessionRecipe
+    from supertokens_python.supertokens import AppInfo
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = &#34;sIdRefreshToken&#34;
 
@@ -247,6 +247,7 @@ async def create_new_session_in_request(
     config: SessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
+    tenant_id: str,
 ) -&gt; SessionContainer:
     log_debug_message(&#34;createNewSession: Started&#34;)
 
@@ -268,7 +269,7 @@ async def create_new_session_in_request(
     final_access_token_payload = {**access_token_payload, &#34;iss&#34;: issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     log_debug_message(&#34;createNewSession: Access token payload built&#34;)
@@ -309,6 +310,7 @@ async def create_new_session_in_request(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )
 
@@ -498,7 +500,7 @@ async def refresh_session_in_request(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.session_request_functions.create_new_session_in_request"><code class="name flex">
-<span>async def <span class="ident">create_new_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], recipe_instance: SessionRecipe, access_token_payload: Dict[str, Any], user_id: str, config: SessionConfig, app_info: AppInfo, session_data_in_database: Dict[str, Any]) ‑> SessionContainer</span>
+<span>async def <span class="ident">create_new_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], recipe_instance: SessionRecipe, access_token_payload: Dict[str, Any], user_id: str, config: SessionConfig, app_info: AppInfo, session_data_in_database: Dict[str, Any], tenant_id: str) ‑> SessionContainer</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -515,6 +517,7 @@ async def refresh_session_in_request(
     config: SessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
+    tenant_id: str,
 ) -&gt; SessionContainer:
     log_debug_message(&#34;createNewSession: Started&#34;)
 
@@ -536,7 +539,7 @@ async def refresh_session_in_request(
     final_access_token_payload = {**access_token_payload, &#34;iss&#34;: issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     log_debug_message(&#34;createNewSession: Access token payload built&#34;)
@@ -577,6 +580,7 @@ async def refresh_session_in_request(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )
 

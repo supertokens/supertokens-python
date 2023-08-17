@@ -39,6 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -49,10 +50,22 @@ from supertokens_python.ingredients.emaildelivery.types import (
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id: str = user_id
-        self.email: str = email
-        self.time_joined: int = time_joined
+    def __init__(
+        self, user_id: str, email: str, time_joined: int, tenant_ids: List[str]
+    ):
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+
+    def __eq__(self, other: object):
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )
 
 
 class UsersResponse:
@@ -78,7 +91,7 @@ class InputFormField:
         self,
         id: str,  # pylint: disable=redefined-builtin
         validate: Union[
-            Callable[[str], Awaitable[Union[str, None]]],
+            Callable[[str, str], Awaitable[Union[str, None]]],
             None,
         ] = None,
         optional: Union[bool, None] = None,
@@ -92,7 +105,7 @@ class NormalisedFormField:
     def __init__(
         self,
         id: str,  # pylint: disable=redefined-builtin
-        validate: Callable[[str], Awaitable[Union[str, None]]],
+        validate: Callable[[str, str], Awaitable[Union[str, None]]],
         optional: bool,
     ):
         self.id = id
@@ -114,9 +127,11 @@ class PasswordResetEmailTemplateVars:
         self,
         user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
+        tenant_id: str,
     ) -&gt; None:
         self.user = user
         self.password_reset_link = password_reset_link
+        self.tenant_id = tenant_id
 
 
 # Export:
@@ -148,7 +163,7 @@ class EmailPasswordIngredients:
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.types.EmailPasswordIngredients"><code class="flex name class">
 <span>class <span class="ident">EmailPasswordIngredients</span></span>
-<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>]] = None)</span>
+<span>(</span><span>email_delivery: Union[EmailDeliveryIngredient[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -198,7 +213,7 @@ class EmailPasswordIngredients:
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.InputFormField"><code class="flex name class">
 <span>class <span class="ident">InputFormField</span></span>
-<span>(</span><span>id: str, validate: Optional[Callable[[str], Awaitable[Optional[str]]]] = None, optional: Optional[bool] = None)</span>
+<span>(</span><span>id: str, validate: Union[Callable[[str, str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -211,7 +226,7 @@ class EmailPasswordIngredients:
         self,
         id: str,  # pylint: disable=redefined-builtin
         validate: Union[
-            Callable[[str], Awaitable[Union[str, None]]],
+            Callable[[str, str], Awaitable[Union[str, None]]],
             None,
         ] = None,
         optional: Union[bool, None] = None,
@@ -223,7 +238,7 @@ class EmailPasswordIngredients:
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.NormalisedFormField"><code class="flex name class">
 <span>class <span class="ident">NormalisedFormField</span></span>
-<span>(</span><span>id: str, validate: Callable[[str], Awaitable[Optional[str]]], optional: bool)</span>
+<span>(</span><span>id: str, validate: Callable[[str, str], Awaitable[Union[str, None]]], optional: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -235,7 +250,7 @@ class EmailPasswordIngredients:
     def __init__(
         self,
         id: str,  # pylint: disable=redefined-builtin
-        validate: Callable[[str], Awaitable[Union[str, None]]],
+        validate: Callable[[str, str], Awaitable[Union[str, None]]],
         optional: bool,
     ):
         self.id = id
@@ -245,7 +260,7 @@ class EmailPasswordIngredients:
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars"><code class="flex name class">
 <span>class <span class="ident">PasswordResetEmailTemplateVars</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser">PasswordResetEmailTemplateVarsUser</a>, password_reset_link: str)</span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser">PasswordResetEmailTemplateVarsUser</a>, password_reset_link: str, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -258,14 +273,16 @@ class EmailPasswordIngredients:
         self,
         user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
+        tenant_id: str,
     ) -&gt; None:
         self.user = user
-        self.password_reset_link = password_reset_link</code></pre>
+        self.password_reset_link = password_reset_link
+        self.tenant_id = tenant_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars"><code class="flex name class">
 <span>class <span class="ident">EmailTemplateVars</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser">PasswordResetEmailTemplateVarsUser</a>, password_reset_link: str)</span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser">PasswordResetEmailTemplateVarsUser</a>, password_reset_link: str, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -278,9 +295,11 @@ class EmailPasswordIngredients:
         self,
         user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
+        tenant_id: str,
     ) -&gt; None:
         self.user = user
-        self.password_reset_link = password_reset_link</code></pre>
+        self.password_reset_link = password_reset_link
+        self.tenant_id = tenant_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser"><code class="flex name class">
@@ -301,7 +320,7 @@ class EmailPasswordIngredients:
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
-<span>(</span><span>user_id: str, email: str, time_joined: int)</span>
+<span>(</span><span>user_id: str, email: str, time_joined: int, tenant_ids: List[str])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -310,15 +329,27 @@ class EmailPasswordIngredients:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class User:
-    def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id: str = user_id
-        self.email: str = email
-        self.time_joined: int = time_joined</code></pre>
+    def __init__(
+        self, user_id: str, email: str, time_joined: int, tenant_ids: List[str]
+    ):
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+
+    def __eq__(self, other: object):
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.UsersResponse"><code class="flex name class">
 <span>class <span class="ident">UsersResponse</span></span>
-<span>(</span><span>users: List[<a title="supertokens_python.recipe.emailpassword.types.User" href="#supertokens_python.recipe.emailpassword.types.User">User</a>], next_pagination_token: Optional[str])</span>
+<span>(</span><span>users: List[<a title="supertokens_python.recipe.emailpassword.types.User" href="#supertokens_python.recipe.emailpassword.types.User">User</a>], next_pagination_token: Union[str, None])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

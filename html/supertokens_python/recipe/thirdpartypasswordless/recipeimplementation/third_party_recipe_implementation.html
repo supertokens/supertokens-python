@@ -41,15 +41,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
     RecipeInterface,
     SignInUpOkResult,
 )
-from supertokens_python.recipe.thirdparty.types import User
+from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider, User
 
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessRecipeInterface
+from ...thirdparty.provider import Provider
 
 
 class RecipeImplementation(RecipeInterface):
@@ -71,13 +73,16 @@ class RecipeImplementation(RecipeInterface):
             user_id=user.user_id,
             email=user.email,
             time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
             third_party_info=user.third_party_info,
         )
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[User]:
-        users = await self.recipe_implementation.get_users_by_email(email, user_context)
+        users = await self.recipe_implementation.get_users_by_email(
+            email, tenant_id, user_context
+        )
         users_result: List[User] = []
 
         for user in users:
@@ -90,6 +95,7 @@ class RecipeImplementation(RecipeInterface):
                         user_id=user.user_id,
                         email=user.email,
                         time_joined=user.time_joined,
+                        tenant_ids=user.tenant_ids,
                         third_party_info=user.third_party_info,
                     )
                 )
@@ -100,10 +106,11 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[User, None]:
         user = await self.recipe_implementation.get_user_by_thirdparty_info(
-            third_party_id, third_party_user_id, user_context
+            third_party_id, third_party_user_id, tenant_id, user_context
         )
         if user is None or user.third_party_info is None:
             return None
@@ -115,6 +122,7 @@ class RecipeImplementation(RecipeInterface):
             user_id=user.user_id,
             email=user.email,
             time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
             third_party_info=user.third_party_info,
         )
 
@@ -123,10 +131,44 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         return await self.recipe_implementation.thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, user_context
+            third_party_id,
+            third_party_user_id,
+            email,
+            oauth_tokens,
+            raw_user_info_from_provider,
+            tenant_id,
+            user_context,
+        )
+
+    async def manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; ManuallyCreateOrUpdateUserOkResult:
+        return (
+            await self.recipe_implementation.thirdparty_manually_create_or_update_user(
+                third_party_id, third_party_user_id, email, tenant_id, user_context
+            )
+        )
+
+    async def get_provider(
+        self,
+        third_party_id: str,
+        client_type: Optional[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Optional[Provider]:
+        return await self.recipe_implementation.thirdparty_get_provider(
+            third_party_id, client_type, tenant_id, user_context
         )</code></pre>
 </details>
 </section>
@@ -169,13 +211,16 @@ inheritance.</p></div>
             user_id=user.user_id,
             email=user.email,
             time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
             third_party_info=user.third_party_info,
         )
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[User]:
-        users = await self.recipe_implementation.get_users_by_email(email, user_context)
+        users = await self.recipe_implementation.get_users_by_email(
+            email, tenant_id, user_context
+        )
         users_result: List[User] = []
 
         for user in users:
@@ -188,6 +233,7 @@ inheritance.</p></div>
                         user_id=user.user_id,
                         email=user.email,
                         time_joined=user.time_joined,
+                        tenant_ids=user.tenant_ids,
                         third_party_info=user.third_party_info,
                     )
                 )
@@ -198,10 +244,11 @@ inheritance.</p></div>
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[User, None]:
         user = await self.recipe_implementation.get_user_by_thirdparty_info(
-            third_party_id, third_party_user_id, user_context
+            third_party_id, third_party_user_id, tenant_id, user_context
         )
         if user is None or user.third_party_info is None:
             return None
@@ -213,6 +260,7 @@ inheritance.</p></div>
             user_id=user.user_id,
             email=user.email,
             time_joined=user.time_joined,
+            tenant_ids=user.tenant_ids,
             third_party_info=user.third_party_info,
         )
 
@@ -221,10 +269,44 @@ inheritance.</p></div>
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         return await self.recipe_implementation.thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, user_context
+            third_party_id,
+            third_party_user_id,
+            email,
+            oauth_tokens,
+            raw_user_info_from_provider,
+            tenant_id,
+            user_context,
+        )
+
+    async def manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; ManuallyCreateOrUpdateUserOkResult:
+        return (
+            await self.recipe_implementation.thirdparty_manually_create_or_update_user(
+                third_party_id, third_party_user_id, email, tenant_id, user_context
+            )
+        )
+
+    async def get_provider(
+        self,
+        third_party_id: str,
+        client_type: Optional[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Optional[Provider]:
+        return await self.recipe_implementation.thirdparty_get_provider(
+            third_party_id, client_type, tenant_id, user_context
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -234,6 +316,27 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_provider"><code class="name flex">
+<span>async def <span class="ident">get_provider</span></span>(<span>self, third_party_id: str, client_type: Optional[str], tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_provider(
+    self,
+    third_party_id: str,
+    client_type: Optional[str],
+    tenant_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Optional[Provider]:
+    return await self.recipe_implementation.thirdparty_get_provider(
+        third_party_id, client_type, tenant_id, user_context
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_id"><code class="name flex">
 <span>async def <span class="ident">get_user_by_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
@@ -257,12 +360,13 @@ inheritance.</p></div>
         user_id=user.user_id,
         email=user.email,
         time_joined=user.time_joined,
+        tenant_ids=user.tenant_ids,
         third_party_info=user.third_party_info,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info"><code class="name flex">
-<span>async def <span class="ident">get_user_by_thirdparty_info</span></span>(<span>self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user_by_thirdparty_info</span></span>(<span>self, third_party_id: str, third_party_user_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -274,10 +378,11 @@ inheritance.</p></div>
     self,
     third_party_id: str,
     third_party_user_id: str,
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[User, None]:
     user = await self.recipe_implementation.get_user_by_thirdparty_info(
-        third_party_id, third_party_user_id, user_context
+        third_party_id, third_party_user_id, tenant_id, user_context
     )
     if user is None or user.third_party_info is None:
         return None
@@ -289,12 +394,13 @@ inheritance.</p></div>
         user_id=user.user_id,
         email=user.email,
         time_joined=user.time_joined,
+        tenant_ids=user.tenant_ids,
         third_party_info=user.third_party_info,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email"><code class="name flex">
-<span>async def <span class="ident">get_users_by_email</span></span>(<span>self, email: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
+<span>async def <span class="ident">get_users_by_email</span></span>(<span>self, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -303,9 +409,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_users_by_email(
-    self, email: str, user_context: Dict[str, Any]
+    self, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; List[User]:
-    users = await self.recipe_implementation.get_users_by_email(email, user_context)
+    users = await self.recipe_implementation.get_users_by_email(
+        email, tenant_id, user_context
+    )
     users_result: List[User] = []
 
     for user in users:
@@ -318,6 +426,7 @@ inheritance.</p></div>
                     user_id=user.user_id,
                     email=user.email,
                     time_joined=user.time_joined,
+                    tenant_ids=user.tenant_ids,
                     third_party_info=user.third_party_info,
                 )
             )
@@ -325,8 +434,32 @@ inheritance.</p></div>
     return users_result</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.manually_create_or_update_user"><code class="name flex">
+<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def manually_create_or_update_user(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
+) -&gt; ManuallyCreateOrUpdateUserOkResult:
+    return (
+        await self.recipe_implementation.thirdparty_manually_create_or_update_user(
+            third_party_id, third_party_user_id, email, tenant_id, user_context
+        )
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -339,10 +472,19 @@ inheritance.</p></div>
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    oauth_tokens: Dict[str, Any],
+    raw_user_info_from_provider: RawUserInfoFromProvider,
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; SignInUpOkResult:
     return await self.recipe_implementation.thirdparty_sign_in_up(
-        third_party_id, third_party_user_id, email, user_context
+        third_party_id,
+        third_party_user_id,
+        email,
+        oauth_tokens,
+        raw_user_info_from_provider,
+        tenant_id,
+        user_context,
     )</code></pre>
 </details>
 </dd>
@@ -367,9 +509,11 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation">RecipeImplementation</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_provider" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_provider">get_provider</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_id" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info">get_user_by_thirdparty_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email">get_users_by_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.manually_create_or_update_user" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.manually_create_or_update_user">manually_create_or_update_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up">sign_in_up</a></code></li>
 </ul>
 </li>

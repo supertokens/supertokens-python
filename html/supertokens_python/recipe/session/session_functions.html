@@ -65,12 +65,15 @@ from .exceptions import (
     raise_unauthorised_exception,
 )
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 
 class CreateOrRefreshAPIResponseSession:
-    def __init__(self, handle: str, userId: str, userDataInJWT: Any):
+    def __init__(self, handle: str, userId: str, userDataInJWT: Any, tenant_id: str):
         self.handle = handle
         self.userId = userId
         self.userDataInJWT = userDataInJWT
+        self.tenant_id = tenant_id
 
 
 class CreateOrRefreshAPIResponse:
@@ -94,11 +97,13 @@ class GetSessionAPIResponseSession:
         userId: str,
         userDataInJWT: Dict[str, Any],
         expiryTime: int,
+        tenant_id: str,
     ) -&gt; None:
         self.handle = handle
         self.userId = userId
         self.userDataInJWT = userDataInJWT
         self.expiryTime = expiryTime
+        self.tenant_id = tenant_id
 
 
 class GetSessionAPIResponseAccessToken:
@@ -120,6 +125,7 @@ class GetSessionAPIResponse:
 
 async def create_new_session(
     recipe_implementation: RecipeImplementation,
+    tenant_id: str,
     user_id: str,
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
@@ -129,13 +135,12 @@ async def create_new_session(
         session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
-
     enable_anti_csrf = (
         disable_anti_csrf is False
         and recipe_implementation.config.anti_csrf == &#34;VIA_TOKEN&#34;
     )
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session&#34;),
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/session&#34;),
         {
             &#34;userId&#34;: user_id,
             &#34;userDataInJWT&#34;: access_token_payload,
@@ -152,6 +157,7 @@ async def create_new_session(
             response[&#34;session&#34;][&#34;handle&#34;],
             response[&#34;session&#34;][&#34;userId&#34;],
             response[&#34;session&#34;][&#34;userDataInJWT&#34;],
+            response[&#34;session&#34;][&#34;tenantId&#34;],
         ),
         TokenInfo(
             response[&#34;accessToken&#34;][&#34;token&#34;],
@@ -282,6 +288,7 @@ async def get_session(
                 access_token_info[&#34;userId&#34;],
                 access_token_info[&#34;userData&#34;],
                 access_token_info[&#34;expiryTime&#34;],
+                access_token_info[&#34;tenantId&#34;],
             )
         )
 
@@ -320,6 +327,8 @@ async def get_session(
                         &#34;expiryTime&#34;
                     ]  # if the token didn&#39;t pass validation, but we got here, it means it was a v2 token that we didn&#39;t have the key cached for.
                 ),  # This will throw error if others are none and &#39;expiryTime&#39; key doesn&#39;t exist in the payload
+                response[&#34;session&#34;].get(&#34;tenantId&#34;)
+                or (access_token_info or {}).get(&#34;tenantId&#34;),
             ),
             GetSessionAPIResponseAccessToken(
                 response[&#34;accessToken&#34;][&#34;token&#34;],
@@ -376,6 +385,7 @@ async def refresh_session(
                 response[&#34;session&#34;][&#34;handle&#34;],
                 response[&#34;session&#34;][&#34;userId&#34;],
                 response[&#34;session&#34;][&#34;userDataInJWT&#34;],
+                response[&#34;session&#34;][&#34;tenantId&#34;],
             ),
             TokenInfo(
                 response[&#34;accessToken&#34;][&#34;token&#34;],
@@ -403,19 +413,33 @@ async def refresh_session(
 
 
 async def revoke_all_sessions_for_user(
-    recipe_implementation: RecipeImplementation, user_id: str
+    recipe_implementation: RecipeImplementation,
+    user_id: str,
+    tenant_id: Optional[str],
+    revoke_across_all_tenants: bool,
 ) -&gt; List[str]:
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/remove&#34;), {&#34;userId&#34;: user_id}
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/session/remove&#34;),
+        {&#34;userId&#34;: user_id, &#34;revokeAcrossAllTenants&#34;: revoke_across_all_tenants},
     )
     return response[&#34;sessionHandlesRevoked&#34;]
 
 
 async def get_all_session_handles_for_user(
-    recipe_implementation: RecipeImplementation, user_id: str
+    recipe_implementation: RecipeImplementation,
+    user_id: str,
+    tenant_id: Optional[str],
+    fetch_across_all_tenants: bool,
 ) -&gt; List[str]:
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
     response = await recipe_implementation.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/session/user&#34;), {&#34;userId&#34;: user_id}
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/session/user&#34;),
+        {&#34;userId&#34;: user_id, &#34;fetchAcrossAllTenants&#34;: fetch_across_all_tenants},
     )
     return response[&#34;sessionHandles&#34;]
 
@@ -483,6 +507,7 @@ async def get_session_information(
             response[&#34;expiry&#34;],
             response[&#34;userDataInJWT&#34;],
             response[&#34;timeCreated&#34;],
+            response[&#34;tenantId&#34;],
         )
     return None</code></pre>
 </details>
@@ -495,7 +520,7 @@ async def get_session_information(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.session_functions.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, disable_anti_csrf: bool, access_token_payload: Union[None, Dict[str, Any]], session_data_in_database: Union[None, Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, tenant_id: str, user_id: str, disable_anti_csrf: bool, access_token_payload: Union[None, Dict[str, Any]], session_data_in_database: Union[None, Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -505,6 +530,7 @@ async def get_session_information(
 </summary>
 <pre><code class="python">async def create_new_session(
     recipe_implementation: RecipeImplementation,
+    tenant_id: str,
     user_id: str,
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
@@ -514,13 +540,12 @@ async def get_session_information(
         session_data_in_database = {}
     if access_token_payload is None:
         access_token_payload = {}
-
     enable_anti_csrf = (
         disable_anti_csrf is False
         and recipe_implementation.config.anti_csrf == &#34;VIA_TOKEN&#34;
     )
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session&#34;),
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/session&#34;),
         {
             &#34;userId&#34;: user_id,
             &#34;userDataInJWT&#34;: access_token_payload,
@@ -537,6 +562,7 @@ async def get_session_information(
             response[&#34;session&#34;][&#34;handle&#34;],
             response[&#34;session&#34;][&#34;userId&#34;],
             response[&#34;session&#34;][&#34;userDataInJWT&#34;],
+            response[&#34;session&#34;][&#34;tenantId&#34;],
         ),
         TokenInfo(
             response[&#34;accessToken&#34;][&#34;token&#34;],
@@ -553,7 +579,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, tenant_id: Optional[str], fetch_across_all_tenants: bool) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -562,10 +588,17 @@ async def get_session_information(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_all_session_handles_for_user(
-    recipe_implementation: RecipeImplementation, user_id: str
+    recipe_implementation: RecipeImplementation,
+    user_id: str,
+    tenant_id: Optional[str],
+    fetch_across_all_tenants: bool,
 ) -&gt; List[str]:
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
     response = await recipe_implementation.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/session/user&#34;), {&#34;userId&#34;: user_id}
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/session/user&#34;),
+        {&#34;userId&#34;: user_id, &#34;fetchAcrossAllTenants&#34;: fetch_across_all_tenants},
     )
     return response[&#34;sessionHandles&#34;]</code></pre>
 </details>
@@ -694,6 +727,7 @@ async def get_session_information(
                 access_token_info[&#34;userId&#34;],
                 access_token_info[&#34;userData&#34;],
                 access_token_info[&#34;expiryTime&#34;],
+                access_token_info[&#34;tenantId&#34;],
             )
         )
 
@@ -732,6 +766,8 @@ async def get_session_information(
                         &#34;expiryTime&#34;
                     ]  # if the token didn&#39;t pass validation, but we got here, it means it was a v2 token that we didn&#39;t have the key cached for.
                 ),  # This will throw error if others are none and &#39;expiryTime&#39; key doesn&#39;t exist in the payload
+                response[&#34;session&#34;].get(&#34;tenantId&#34;)
+                or (access_token_info or {}).get(&#34;tenantId&#34;),
             ),
             GetSessionAPIResponseAccessToken(
                 response[&#34;accessToken&#34;][&#34;token&#34;],
@@ -774,6 +810,7 @@ async def get_session_information(
             response[&#34;expiry&#34;],
             response[&#34;userDataInJWT&#34;],
             response[&#34;timeCreated&#34;],
+            response[&#34;tenantId&#34;],
         )
     return None</code></pre>
 </details>
@@ -824,6 +861,7 @@ async def get_session_information(
                 response[&#34;session&#34;][&#34;handle&#34;],
                 response[&#34;session&#34;][&#34;userId&#34;],
                 response[&#34;session&#34;][&#34;userDataInJWT&#34;],
+                response[&#34;session&#34;][&#34;tenantId&#34;],
             ),
             TokenInfo(
                 response[&#34;accessToken&#34;][&#34;token&#34;],
@@ -851,7 +889,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, tenant_id: Optional[str], revoke_across_all_tenants: bool) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -860,10 +898,17 @@ async def get_session_information(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_all_sessions_for_user(
-    recipe_implementation: RecipeImplementation, user_id: str
+    recipe_implementation: RecipeImplementation,
+    user_id: str,
+    tenant_id: Optional[str],
+    revoke_across_all_tenants: bool,
 ) -&gt; List[str]:
+    if tenant_id is None:
+        tenant_id = DEFAULT_TENANT_ID
+
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/remove&#34;), {&#34;userId&#34;: user_id}
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/session/remove&#34;),
+        {&#34;userId&#34;: user_id, &#34;revokeAcrossAllTenants&#34;: revoke_across_all_tenants},
     )
     return response[&#34;sessionHandlesRevoked&#34;]</code></pre>
 </details>
@@ -984,7 +1029,7 @@ async def get_session_information(
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponseSession"><code class="flex name class">
 <span>class <span class="ident">CreateOrRefreshAPIResponseSession</span></span>
-<span>(</span><span>handle: str, userId: str, userDataInJWT: Any)</span>
+<span>(</span><span>handle: str, userId: str, userDataInJWT: Any, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -993,10 +1038,11 @@ async def get_session_information(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CreateOrRefreshAPIResponseSession:
-    def __init__(self, handle: str, userId: str, userDataInJWT: Any):
+    def __init__(self, handle: str, userId: str, userDataInJWT: Any, tenant_id: str):
         self.handle = handle
         self.userId = userId
-        self.userDataInJWT = userDataInJWT</code></pre>
+        self.userDataInJWT = userDataInJWT
+        self.tenant_id = tenant_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.GetSessionAPIResponse"><code class="flex name class">
@@ -1038,7 +1084,7 @@ async def get_session_information(
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.GetSessionAPIResponseSession"><code class="flex name class">
 <span>class <span class="ident">GetSessionAPIResponseSession</span></span>
-<span>(</span><span>handle: str, userId: str, userDataInJWT: Dict[str, Any], expiryTime: int)</span>
+<span>(</span><span>handle: str, userId: str, userDataInJWT: Dict[str, Any], expiryTime: int, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1053,11 +1099,13 @@ async def get_session_information(
         userId: str,
         userDataInJWT: Dict[str, Any],
         expiryTime: int,
+        tenant_id: str,
     ) -&gt; None:
         self.handle = handle
         self.userId = userId
         self.userDataInJWT = userDataInJWT
-        self.expiryTime = expiryTime</code></pre>
+        self.expiryTime = expiryTime
+        self.tenant_id = tenant_id</code></pre>
 </details>
 </dd>
 </dl>

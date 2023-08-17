@@ -27,7 +27,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import asyncio
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.session.asyncio import (
@@ -44,19 +44,28 @@ from ...interfaces import (
 
 
 async def handle_sessions_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; UserSessionsGetAPIResponse:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
 
     if user_id is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
 
-    session_handles = await get_all_session_handles_for_user(user_id)
+    # Passing tenant id as None sets fetch_across_all_tenants to True
+    # which is what we want here.
+    session_handles = await get_all_session_handles_for_user(
+        user_id, None, user_context
+    )
     sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
 
     async def call_(i: int, session_handle: str):
         try:
-            session_response = await get_session_information(session_handle)
+            session_response = await get_session_information(
+                session_handle, user_context
+            )
             if session_response is not None:
                 sessions[i] = SessionInfo(session_response)
         except Exception:
@@ -79,7 +88,7 @@ async def handle_sessions_get(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_sessions_get.handle_sessions_get"><code class="name flex">
-<span>async def <span class="ident">handle_sessions_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse">UserSessionsGetAPIResponse</a></span>
+<span>async def <span class="ident">handle_sessions_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse">UserSessionsGetAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -88,19 +97,28 @@ async def handle_sessions_get(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_sessions_get(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; UserSessionsGetAPIResponse:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
 
     if user_id is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
 
-    session_handles = await get_all_session_handles_for_user(user_id)
+    # Passing tenant id as None sets fetch_across_all_tenants to True
+    # which is what we want here.
+    session_handles = await get_all_session_handles_for_user(
+        user_id, None, user_context
+    )
     sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
 
     async def call_(i: int, session_handle: str):
         try:
-            session_response = await get_session_information(session_handle)
+            session_response = await get_session_information(
+                session_handle, user_context
+            )
             if session_response is not None:
                 sessions[i] = SessionInfo(session_response)
         except Exception:

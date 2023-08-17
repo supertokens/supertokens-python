@@ -112,10 +112,12 @@ class UserRolesRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -&gt; Union[BaseResponse, None]:
         raise Exception(&#34;Should never come here&#34;)
 
@@ -172,11 +174,13 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
         key = &#34;st-perm&#34;
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+        async def fetch_value(
+            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+        ) -&gt; List[str]:
             recipe = UserRolesRecipe.get_instance()
 
             user_roles = await recipe.recipe_implementation.get_roles_for_user(
-                user_id, user_context
+                user_id, tenant_id, user_context
             )
 
             user_permissions: Set[str] = set()
@@ -205,10 +209,12 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
         key = &#34;st-role&#34;
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+        async def fetch_value(
+            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+        ) -&gt; List[str]:
             recipe = UserRolesRecipe.get_instance()
             res = await recipe.recipe_implementation.get_roles_for_user(
-                user_id, user_context
+                user_id, tenant_id, user_context
             )
             return res.roles
 
@@ -252,11 +258,13 @@ don't want to add the claim to the session automatically</dd>
         key = &#34;st-perm&#34;
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+        async def fetch_value(
+            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+        ) -&gt; List[str]:
             recipe = UserRolesRecipe.get_instance()
 
             user_roles = await recipe.recipe_implementation.get_roles_for_user(
-                user_id, user_context
+                user_id, tenant_id, user_context
             )
 
             user_permissions: Set[str] = set()
@@ -320,10 +328,12 @@ don't want to add the claim to the session automatically</dd>
         key = &#34;st-role&#34;
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+        async def fetch_value(
+            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+        ) -&gt; List[str]:
             recipe = UserRolesRecipe.get_instance()
             res = await recipe.recipe_implementation.get_roles_for_user(
-                user_id, user_context
+                user_id, tenant_id, user_context
             )
             return res.roles
 
@@ -407,10 +417,12 @@ inheritance.</p></div>
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: Optional[str],
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -&gt; Union[BaseResponse, None]:
         raise Exception(&#34;Should never come here&#34;)
 
@@ -468,6 +480,10 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_tenant_id"><code class="name">var <span class="ident">get_tenant_id</span> : Optional[Callable[[str, Dict[str, Any]], Awaitable[str]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -574,7 +590,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: Optional[str], request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -585,10 +601,12 @@ def reset():
 <pre><code class="python">async def handle_api_request(
     self,
     request_id: str,
+    tenant_id: Optional[str],
     request: BaseRequest,
     path: NormalisedURLPath,
     method: str,
     response: BaseResponse,
+    user_context: Dict[str, Any],
 ) -&gt; Union[BaseResponse, None]:
     raise Exception(&#34;Should never come here&#34;)</code></pre>
 </details>
@@ -653,6 +671,7 @@ def reset():
 <li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_all_cors_headers" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_apis_handled" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_apis_handled">get_apis_handled</a></code></li>
 <li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_instance" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_tenant_id" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.handle_api_request" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.handle_api_request">handle_api_request</a></code></li>
 <li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.handle_error" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.handle_error">handle_error</a></code></li>
 <li><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.init" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe.init">init</a></code></li>

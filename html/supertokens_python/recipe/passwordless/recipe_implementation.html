@@ -80,6 +80,7 @@ class RecipeImplementation(RecipeInterface):
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; CreateCodeOkResult:
         data: Dict[str, Any] = {}
@@ -90,7 +91,7 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {**data, &#34;phoneNumber&#34;: phone_number}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;), data
         )
         return CreateCodeOkResult(
             pre_auth_session_id=result[&#34;preAuthSessionId&#34;],
@@ -106,6 +107,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         device_id: str,
         user_input_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         CreateNewCodeForDeviceOkResult,
@@ -116,7 +118,7 @@ class RecipeImplementation(RecipeInterface):
         if user_input_code is not None:
             data = {**data, &#34;userInputCode&#34;: user_input_code}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;), data
         )
         if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
             return CreateNewCodeForDeviceRestartFlowError()
@@ -138,6 +140,7 @@ class RecipeImplementation(RecipeInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         ConsumeCodeOkResult,
@@ -151,7 +154,7 @@ class RecipeImplementation(RecipeInterface):
         else:
             data = {**data, &#34;linkCode&#34;: link_code}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code/consume&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;), data
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
             email = None
@@ -165,6 +168,7 @@ class RecipeImplementation(RecipeInterface):
                 email=email,
                 phone_number=phone_number,
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
             return ConsumeCodeOkResult(result[&#34;createdNewUser&#34;], user)
         if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
@@ -198,15 +202,16 @@ class RecipeImplementation(RecipeInterface):
                 email=email,
                 phone_number=phone_number,
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[User, None]:
         param = {&#34;email&#34;: email}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), param
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
             email_resp = None
@@ -219,16 +224,17 @@ class RecipeImplementation(RecipeInterface):
                 user_id=result[&#34;user&#34;][&#34;id&#34;],
                 email=email_resp,
                 phone_number=phone_number_resp,
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
             )
         return None
 
     async def get_user_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[User, None]:
         param = {&#34;phoneNumber&#34;: phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), param
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
             email_resp = None
@@ -242,6 +248,7 @@ class RecipeImplementation(RecipeInterface):
                 email=email_resp,
                 phone_number=phone_number_resp,
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
@@ -307,6 +314,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; RevokeAllCodesOkResult:
         data: Dict[str, Any] = {}
@@ -315,25 +323,25 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {**data, &#34;email&#34;: phone_number}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes/remove&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;), data
         )
         return RevokeAllCodesOkResult()
 
     async def revoke_code(
-        self, code_id: str, user_context: Dict[str, Any]
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; RevokeCodeOkResult:
         data = {&#34;codeId&#34;: code_id}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code/remove&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;), data
         )
         return RevokeCodeOkResult()
 
     async def list_codes_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[DeviceType]:
         param = {&#34;email&#34;: email}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         devices: List[DeviceType] = []
         if &#34;devices&#34; in result:
@@ -368,11 +376,11 @@ class RecipeImplementation(RecipeInterface):
         return devices
 
     async def list_codes_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[DeviceType]:
         param = {&#34;phoneNumber&#34;: phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         devices: List[DeviceType] = []
         if &#34;devices&#34; in result:
@@ -407,11 +415,11 @@ class RecipeImplementation(RecipeInterface):
         return devices
 
     async def list_codes_by_device_id(
-        self, device_id: str, user_context: Dict[str, Any]
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[DeviceType, None]:
         param = {&#34;deviceId&#34;: device_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
             codes: List[DeviceCode] = []
@@ -442,11 +450,11 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def list_codes_by_pre_auth_session_id(
-        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+        self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[DeviceType, None]:
         param = {&#34;preAuthSessionId&#34;: pre_auth_session_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
             codes: List[DeviceCode] = []
@@ -507,6 +515,7 @@ inheritance.</p></div>
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; CreateCodeOkResult:
         data: Dict[str, Any] = {}
@@ -517,7 +526,7 @@ inheritance.</p></div>
         if phone_number is not None:
             data = {**data, &#34;phoneNumber&#34;: phone_number}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;), data
         )
         return CreateCodeOkResult(
             pre_auth_session_id=result[&#34;preAuthSessionId&#34;],
@@ -533,6 +542,7 @@ inheritance.</p></div>
         self,
         device_id: str,
         user_input_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         CreateNewCodeForDeviceOkResult,
@@ -543,7 +553,7 @@ inheritance.</p></div>
         if user_input_code is not None:
             data = {**data, &#34;userInputCode&#34;: user_input_code}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;), data
         )
         if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
             return CreateNewCodeForDeviceRestartFlowError()
@@ -565,6 +575,7 @@ inheritance.</p></div>
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         ConsumeCodeOkResult,
@@ -578,7 +589,7 @@ inheritance.</p></div>
         else:
             data = {**data, &#34;linkCode&#34;: link_code}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code/consume&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;), data
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
             email = None
@@ -592,6 +603,7 @@ inheritance.</p></div>
                 email=email,
                 phone_number=phone_number,
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
             return ConsumeCodeOkResult(result[&#34;createdNewUser&#34;], user)
         if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
@@ -625,15 +637,16 @@ inheritance.</p></div>
                 email=email,
                 phone_number=phone_number,
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[User, None]:
         param = {&#34;email&#34;: email}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), param
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
             email_resp = None
@@ -646,16 +659,17 @@ inheritance.</p></div>
                 user_id=result[&#34;user&#34;][&#34;id&#34;],
                 email=email_resp,
                 phone_number=phone_number_resp,
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
             )
         return None
 
     async def get_user_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[User, None]:
         param = {&#34;phoneNumber&#34;: phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), param
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
             email_resp = None
@@ -669,6 +683,7 @@ inheritance.</p></div>
                 email=email_resp,
                 phone_number=phone_number_resp,
                 time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
@@ -734,6 +749,7 @@ inheritance.</p></div>
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; RevokeAllCodesOkResult:
         data: Dict[str, Any] = {}
@@ -742,25 +758,25 @@ inheritance.</p></div>
         if phone_number is not None:
             data = {**data, &#34;email&#34;: phone_number}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes/remove&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;), data
         )
         return RevokeAllCodesOkResult()
 
     async def revoke_code(
-        self, code_id: str, user_context: Dict[str, Any]
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; RevokeCodeOkResult:
         data = {&#34;codeId&#34;: code_id}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signinup/code/remove&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;), data
         )
         return RevokeCodeOkResult()
 
     async def list_codes_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[DeviceType]:
         param = {&#34;email&#34;: email}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         devices: List[DeviceType] = []
         if &#34;devices&#34; in result:
@@ -795,11 +811,11 @@ inheritance.</p></div>
         return devices
 
     async def list_codes_by_phone_number(
-        self, phone_number: str, user_context: Dict[str, Any]
+        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[DeviceType]:
         param = {&#34;phoneNumber&#34;: phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         devices: List[DeviceType] = []
         if &#34;devices&#34; in result:
@@ -834,11 +850,11 @@ inheritance.</p></div>
         return devices
 
     async def list_codes_by_device_id(
-        self, device_id: str, user_context: Dict[str, Any]
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[DeviceType, None]:
         param = {&#34;deviceId&#34;: device_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
             codes: List[DeviceCode] = []
@@ -869,11 +885,11 @@ inheritance.</p></div>
         return None
 
     async def list_codes_by_pre_auth_session_id(
-        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+        self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[DeviceType, None]:
         param = {&#34;preAuthSessionId&#34;: pre_auth_session_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
         )
         if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
             codes: List[DeviceCode] = []
@@ -911,7 +927,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code"><code class="name flex">
-<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
+<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -925,6 +941,7 @@ inheritance.</p></div>
     user_input_code: Union[str, None],
     device_id: Union[str, None],
     link_code: Union[str, None],
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
     ConsumeCodeOkResult,
@@ -938,7 +955,7 @@ inheritance.</p></div>
     else:
         data = {**data, &#34;linkCode&#34;: link_code}
     result = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signinup/code/consume&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;), data
     )
     if result[&#34;status&#34;] == &#34;OK&#34;:
         email = None
@@ -952,6 +969,7 @@ inheritance.</p></div>
             email=email,
             phone_number=phone_number,
             time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
         )
         return ConsumeCodeOkResult(result[&#34;createdNewUser&#34;], user)
     if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
@@ -968,7 +986,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_code"><code class="name flex">
-<span>async def <span class="ident">create_code</span></span>(<span>self, email: Union[None, str], phone_number: Union[None, str], user_input_code: Union[None, str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
+<span>async def <span class="ident">create_code</span></span>(<span>self, email: Union[None, str], phone_number: Union[None, str], user_input_code: Union[None, str], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -981,6 +999,7 @@ inheritance.</p></div>
     email: Union[None, str],
     phone_number: Union[None, str],
     user_input_code: Union[None, str],
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; CreateCodeOkResult:
     data: Dict[str, Any] = {}
@@ -991,7 +1010,7 @@ inheritance.</p></div>
     if phone_number is not None:
         data = {**data, &#34;phoneNumber&#34;: phone_number}
     result = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signinup/code&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;), data
     )
     return CreateCodeOkResult(
         pre_auth_session_id=result[&#34;preAuthSessionId&#34;],
@@ -1005,7 +1024,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_new_code_for_device"><code class="name flex">
-<span>async def <span class="ident">create_new_code_for_device</span></span>(<span>self, device_id: str, user_input_code: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
+<span>async def <span class="ident">create_new_code_for_device</span></span>(<span>self, device_id: str, user_input_code: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1017,6 +1036,7 @@ inheritance.</p></div>
     self,
     device_id: str,
     user_input_code: Union[str, None],
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
     CreateNewCodeForDeviceOkResult,
@@ -1027,7 +1047,7 @@ inheritance.</p></div>
     if user_input_code is not None:
         data = {**data, &#34;userInputCode&#34;: user_input_code}
     result = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signinup/code&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;), data
     )
     if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
         return CreateNewCodeForDeviceRestartFlowError()
@@ -1095,7 +1115,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email"><code class="name flex">
-<span>async def <span class="ident">get_user_by_email</span></span>(<span>self, email: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user_by_email</span></span>(<span>self, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1104,11 +1124,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_user_by_email(
-    self, email: str, user_context: Dict[str, Any]
+    self, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[User, None]:
     param = {&#34;email&#34;: email}
     result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user&#34;), param
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), param
     )
     if result[&#34;status&#34;] == &#34;OK&#34;:
         email_resp = None
@@ -1121,6 +1141,7 @@ inheritance.</p></div>
             user_id=result[&#34;user&#34;][&#34;id&#34;],
             email=email_resp,
             phone_number=phone_number_resp,
+            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
         )
     return None</code></pre>
@@ -1154,12 +1175,13 @@ inheritance.</p></div>
             email=email,
             phone_number=phone_number,
             time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
         )
     return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_phone_number"><code class="name flex">
-<span>async def <span class="ident">get_user_by_phone_number</span></span>(<span>self, phone_number: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user_by_phone_number</span></span>(<span>self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1168,11 +1190,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_user_by_phone_number(
-    self, phone_number: str, user_context: Dict[str, Any]
+    self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[User, None]:
     param = {&#34;phoneNumber&#34;: phone_number}
     result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user&#34;), param
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), param
     )
     if result[&#34;status&#34;] == &#34;OK&#34;:
         email_resp = None
@@ -1186,12 +1208,13 @@ inheritance.</p></div>
             email=email_resp,
             phone_number=phone_number_resp,
             time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
+            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
         )
     return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_device_id"><code class="name flex">
-<span>async def <span class="ident">list_codes_by_device_id</span></span>(<span>self, device_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>async def <span class="ident">list_codes_by_device_id</span></span>(<span>self, device_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1200,11 +1223,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def list_codes_by_device_id(
-    self, device_id: str, user_context: Dict[str, Any]
+    self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[DeviceType, None]:
     param = {&#34;deviceId&#34;: device_id}
     result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
     )
     if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
         codes: List[DeviceCode] = []
@@ -1236,7 +1259,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_email"><code class="name flex">
-<span>async def <span class="ident">list_codes_by_email</span></span>(<span>self, email: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>async def <span class="ident">list_codes_by_email</span></span>(<span>self, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1245,11 +1268,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def list_codes_by_email(
-    self, email: str, user_context: Dict[str, Any]
+    self, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; List[DeviceType]:
     param = {&#34;email&#34;: email}
     result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
     )
     devices: List[DeviceType] = []
     if &#34;devices&#34; in result:
@@ -1285,7 +1308,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_phone_number"><code class="name flex">
-<span>async def <span class="ident">list_codes_by_phone_number</span></span>(<span>self, phone_number: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>async def <span class="ident">list_codes_by_phone_number</span></span>(<span>self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1294,11 +1317,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def list_codes_by_phone_number(
-    self, phone_number: str, user_context: Dict[str, Any]
+    self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; List[DeviceType]:
     param = {&#34;phoneNumber&#34;: phone_number}
     result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
     )
     devices: List[DeviceType] = []
     if &#34;devices&#34; in result:
@@ -1334,7 +1357,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_pre_auth_session_id"><code class="name flex">
-<span>async def <span class="ident">list_codes_by_pre_auth_session_id</span></span>(<span>self, pre_auth_session_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>async def <span class="ident">list_codes_by_pre_auth_session_id</span></span>(<span>self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1343,11 +1366,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def list_codes_by_pre_auth_session_id(
-    self, pre_auth_session_id: str, user_context: Dict[str, Any]
+    self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[DeviceType, None]:
     param = {&#34;preAuthSessionId&#34;: pre_auth_session_id}
     result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/signinup/codes&#34;), param
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;), param
     )
     if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
         codes: List[DeviceCode] = []
@@ -1379,7 +1402,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.revoke_all_codes"><code class="name flex">
-<span>async def <span class="ident">revoke_all_codes</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
+<span>async def <span class="ident">revoke_all_codes</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1391,6 +1414,7 @@ inheritance.</p></div>
     self,
     email: Union[str, None],
     phone_number: Union[str, None],
+    tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; RevokeAllCodesOkResult:
     data: Dict[str, Any] = {}
@@ -1399,13 +1423,13 @@ inheritance.</p></div>
     if phone_number is not None:
         data = {**data, &#34;email&#34;: phone_number}
     await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signinup/codes/remove&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;), data
     )
     return RevokeAllCodesOkResult()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.revoke_code"><code class="name flex">
-<span>async def <span class="ident">revoke_code</span></span>(<span>self, code_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
+<span>async def <span class="ident">revoke_code</span></span>(<span>self, code_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1414,11 +1438,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_code(
-    self, code_id: str, user_context: Dict[str, Any]
+    self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; RevokeCodeOkResult:
     data = {&#34;codeId&#34;: code_id}
     await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signinup/code/remove&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;), data
     )
     return RevokeCodeOkResult()</code></pre>
 </details>

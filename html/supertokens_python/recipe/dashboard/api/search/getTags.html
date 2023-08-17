@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
@@ -51,7 +51,9 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe.dashboard.interfaces import SearchTagsOK
 
 
-async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
+async def handle_get_tags(
+    _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
+) -&gt; SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
         NormalisedURLPath(&#34;/user/search/tags&#34;)
     )
@@ -66,7 +68,7 @@ async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.search.getTags.handle_get_tags"><code class="name flex">
-<span>async def <span class="ident">handle_get_tags</span></span>(<span>_: APIInterface, __: APIOptions) ‑> SearchTagsOK</span>
+<span>async def <span class="ident">handle_get_tags</span></span>(<span>_: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]) ‑> SearchTagsOK</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -74,7 +76,9 @@ async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def handle_get_tags(_: APIInterface, __: APIOptions) -&gt; SearchTagsOK:
+<pre><code class="python">async def handle_get_tags(
+    _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
+) -&gt; SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
         NormalisedURLPath(&#34;/user/search/tags&#34;)
     )

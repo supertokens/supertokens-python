@@ -41,7 +41,7 @@
 # under the License.
 
 from os import environ
-from typing import Any, Awaitable, Callable, Dict, Union
+from typing import Any, Dict
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInterface
@@ -54,27 +54,25 @@ from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 
-def default_create_and_send_custom_email(
-    app_info: AppInfo,
-) -&gt; Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
-            return
-        data = {
-            &#34;email&#34;: user.email,
-            &#34;appName&#34;: app_info.app_name,
-            &#34;emailVerifyURL&#34;: email_verification_url,
-        }
-        try:
-            async with AsyncClient() as client:
-                resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/email/verify&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
-                resp.raise_for_status()
-                log_debug_message(&#34;Email verification email sent to %s&#34;, user.email)
-        except Exception as e:
-            log_debug_message(&#34;Error sending verification email&#34;)
-            handle_httpx_client_exceptions(e, data)
+async def create_and_send_email_using_supertokens_service(
+    app_info: AppInfo, user: User, email_verification_url: str
+) -&gt; None:
+    if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
+        return
 
-    return func
+    data = {
+        &#34;email&#34;: user.email,
+        &#34;appName&#34;: app_info.app_name,
+        &#34;emailVerifyURL&#34;: email_verification_url,
+    }
+    try:
+        async with AsyncClient() as client:
+            resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/email/verify&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
+            resp.raise_for_status()
+            log_debug_message(&#34;Email verification email sent to %s&#34;, user.email)
+    except Exception as e:
+        log_debug_message(&#34;Error sending verification email&#34;)
+        handle_httpx_client_exceptions(e, data)
 
 
 class BackwardCompatibilityService(
@@ -83,23 +81,18 @@ class BackwardCompatibilityService(
     def __init__(
         self,
         app_info: AppInfo,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
     ) -&gt; None:
-        self.create_and_send_custom_email = (
-            default_create_and_send_custom_email(app_info)
-            if create_and_send_custom_email is None
-            else create_and_send_custom_email
-        )
+        self.app_info = app_info
 
     async def send_email(
-        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: VerificationEmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -&gt; None:
         try:
             email_user = User(template_vars.user.id, template_vars.user.email)
-            await self.create_and_send_custom_email(
-                email_user, template_vars.email_verify_link, user_context
+            await create_and_send_email_using_supertokens_service(
+                self.app_info, email_user, template_vars.email_verify_link
             )
         except Exception as _:
             pass</code></pre>
@@ -112,8 +105,8 @@ class BackwardCompatibilityService(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.default_create_and_send_custom_email"><code class="name flex">
-<span>def <span class="ident">default_create_and_send_custom_email</span></span>(<span>app_info: <a title="supertokens_python.supertokens.AppInfo" href="../../../../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>) ‑> Callable[[<a title="supertokens_python.recipe.emailverification.types.User" href="../../../types.html#supertokens_python.recipe.emailverification.types.User">User</a>, str, Dict[str, Any]], Awaitable[None]]</span>
+<dt id="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.create_and_send_email_using_supertokens_service"><code class="name flex">
+<span>async def <span class="ident">create_and_send_email_using_supertokens_service</span></span>(<span>app_info: <a title="supertokens_python.supertokens.AppInfo" href="../../../../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>, user: <a title="supertokens_python.recipe.emailverification.types.User" href="../../../types.html#supertokens_python.recipe.emailverification.types.User">User</a>, email_verification_url: str) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -121,27 +114,25 @@ class BackwardCompatibilityService(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def default_create_and_send_custom_email(
-    app_info: AppInfo,
-) -&gt; Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
-            return
-        data = {
-            &#34;email&#34;: user.email,
-            &#34;appName&#34;: app_info.app_name,
-            &#34;emailVerifyURL&#34;: email_verification_url,
-        }
-        try:
-            async with AsyncClient() as client:
-                resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/email/verify&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
-                resp.raise_for_status()
-                log_debug_message(&#34;Email verification email sent to %s&#34;, user.email)
-        except Exception as e:
-            log_debug_message(&#34;Error sending verification email&#34;)
-            handle_httpx_client_exceptions(e, data)
+<pre><code class="python">async def create_and_send_email_using_supertokens_service(
+    app_info: AppInfo, user: User, email_verification_url: str
+) -&gt; None:
+    if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
+        return
 
-    return func</code></pre>
+    data = {
+        &#34;email&#34;: user.email,
+        &#34;appName&#34;: app_info.app_name,
+        &#34;emailVerifyURL&#34;: email_verification_url,
+    }
+    try:
+        async with AsyncClient() as client:
+            resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/email/verify&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
+            resp.raise_for_status()
+            log_debug_message(&#34;Email verification email sent to %s&#34;, user.email)
+    except Exception as e:
+        log_debug_message(&#34;Error sending verification email&#34;)
+        handle_httpx_client_exceptions(e, data)</code></pre>
 </details>
 </dd>
 </dl>
@@ -151,7 +142,7 @@ class BackwardCompatibilityService(
 <dl>
 <dt id="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.BackwardCompatibilityService"><code class="flex name class">
 <span>class <span class="ident">BackwardCompatibilityService</span></span>
-<span>(</span><span>app_info: <a title="supertokens_python.supertokens.AppInfo" href="../../../../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>, create_and_send_custom_email: Optional[Callable[[<a title="supertokens_python.recipe.emailverification.types.User" href="../../../types.html#supertokens_python.recipe.emailverification.types.User">User</a>, str, Dict[str, Any]], Awaitable[None]]] = None)</span>
+<span>(</span><span>app_info: <a title="supertokens_python.supertokens.AppInfo" href="../../../../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -166,23 +157,18 @@ inheritance.</p></div>
     def __init__(
         self,
         app_info: AppInfo,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
     ) -&gt; None:
-        self.create_and_send_custom_email = (
-            default_create_and_send_custom_email(app_info)
-            if create_and_send_custom_email is None
-            else create_and_send_custom_email
-        )
+        self.app_info = app_info
 
     async def send_email(
-        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: VerificationEmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -&gt; None:
         try:
             email_user = User(template_vars.user.id, template_vars.user.email)
-            await self.create_and_send_custom_email(
-                email_user, template_vars.email_verify_link, user_context
+            await create_and_send_email_using_supertokens_service(
+                self.app_info, email_user, template_vars.email_verify_link
             )
         except Exception as _:
             pass</code></pre>
@@ -205,12 +191,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def send_email(
-    self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+    self,
+    template_vars: VerificationEmailTemplateVars,
+    user_context: Dict[str, Any],
 ) -&gt; None:
     try:
         email_user = User(template_vars.user.id, template_vars.user.email)
-        await self.create_and_send_custom_email(
-            email_user, template_vars.email_verify_link, user_context
+        await create_and_send_email_using_supertokens_service(
+            self.app_info, email_user, template_vars.email_verify_link
         )
     except Exception as _:
         pass</code></pre>
@@ -234,7 +222,7 @@ inheritance.</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.default_create_and_send_custom_email" href="#supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.default_create_and_send_custom_email">default_create_and_send_custom_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.create_and_send_email_using_supertokens_service" href="#supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.create_and_send_email_using_supertokens_service">create_and_send_email_using_supertokens_service</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

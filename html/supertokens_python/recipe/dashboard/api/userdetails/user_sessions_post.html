@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, List, Union
+<pre><code class="python">from typing import Any, Dict, List, Optional
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.session.asyncio import revoke_multiple_sessions
@@ -34,17 +34,20 @@ from ...interfaces import APIInterface, APIOptions, UserSessionsPostAPIResponse
 
 
 async def handle_user_sessions_post(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; UserSessionsPostAPIResponse:
-    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
-    session_handles: Union[List[str], Any] = request_body.get(&#34;sessionHandles&#34;)
+    request_body = await api_options.request.json()  # type: ignore
+    session_handles: Optional[List[str]] = request_body.get(&#34;sessionHandles&#34;)  # type: ignore
 
-    if session_handles is None or not isinstance(session_handles, list):
-        return raise_bad_input_exception(
+    if not isinstance(session_handles, list):
+        raise_bad_input_exception(
             &#34;Required parameter &#39;sessionHandles&#39; is missing or has an invalid type&#34;
         )
 
-    await revoke_multiple_sessions(session_handles)
+    await revoke_multiple_sessions(session_handles, _user_context)
     return UserSessionsPostAPIResponse()</code></pre>
 </details>
 </section>
@@ -56,7 +59,7 @@ async def handle_user_sessions_post(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_sessions_post.handle_user_sessions_post"><code class="name flex">
-<span>async def <span class="ident">handle_user_sessions_post</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse">UserSessionsPostAPIResponse</a></span>
+<span>async def <span class="ident">handle_user_sessions_post</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, _user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse">UserSessionsPostAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -65,17 +68,20 @@ async def handle_user_sessions_post(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_user_sessions_post(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; UserSessionsPostAPIResponse:
-    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
-    session_handles: Union[List[str], Any] = request_body.get(&#34;sessionHandles&#34;)
+    request_body = await api_options.request.json()  # type: ignore
+    session_handles: Optional[List[str]] = request_body.get(&#34;sessionHandles&#34;)  # type: ignore
 
-    if session_handles is None or not isinstance(session_handles, list):
-        return raise_bad_input_exception(
+    if not isinstance(session_handles, list):
+        raise_bad_input_exception(
             &#34;Required parameter &#39;sessionHandles&#39; is missing or has an invalid type&#34;
         )
 
-    await revoke_multiple_sessions(session_handles)
+    await revoke_multiple_sessions(session_handles, _user_context)
     return UserSessionsPostAPIResponse()</code></pre>
 </details>
 </dd>

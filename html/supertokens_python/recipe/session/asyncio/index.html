@@ -48,7 +48,6 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     GetClaimValueOkResult,
     JSONObject,
-    RegenerateAccessTokenOkResult,
     SessionClaim,
     SessionClaimValidator,
     SessionContainer,
@@ -71,11 +70,14 @@ from ..session_request_functions import (
 )
 from ..utils import get_required_claim_validators
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 _T = TypeVar(&#34;_T&#34;)
 
 
 async def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -101,10 +103,12 @@ async def create_new_session(
         config,
         app_info,
         session_data_in_database,
+        tenant_id,
     )
 
 
 async def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -130,7 +134,7 @@ async def create_new_session_without_request_response(
     final_access_token_payload = {**access_token_payload, &#34;iss&#34;: issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
@@ -138,6 +142,7 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )
 
@@ -172,6 +177,7 @@ async def validate_claims_for_session_handle(
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            session_info.tenant_id,
             session_info.user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -207,6 +213,7 @@ async def validate_claims_for_session_handle(
 
 
 async def validate_claims_in_jwt_payload(
+    tenant_id: str,
     user_id: str,
     jwt_payload: JSONObject,
     override_global_claim_validators: Optional[
@@ -231,6 +238,7 @@ async def validate_claims_in_jwt_payload(
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            tenant_id,
             user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -448,22 +456,26 @@ async def revoke_session(
 
 
 async def revoke_all_sessions_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )
 
 
 async def get_all_session_handles_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )
 
 
@@ -545,18 +557,6 @@ async def get_open_id_discovery_configuration(
         await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
             user_context
         )
-    )
-
-
-async def regenerate_access_token(
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[RegenerateAccessTokenOkResult, None]:
-    if user_context is None:
-        user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
-        access_token, new_access_token_payload, user_context
     )</code></pre>
 </details>
 </section>
@@ -592,7 +592,7 @@ async def regenerate_access_token(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>request: Any, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>request: Any, tenant_id: str, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -602,6 +602,7 @@ async def regenerate_access_token(
 </summary>
 <pre><code class="python">async def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -627,11 +628,12 @@ async def regenerate_access_token(
         config,
         app_info,
         session_data_in_database,
+        tenant_id,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.create_new_session_without_request_response"><code class="name flex">
-<span>async def <span class="ident">create_new_session_without_request_response</span></span>(<span>user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, disable_anti_csrf: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">create_new_session_without_request_response</span></span>(<span>tenant_id: str, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, disable_anti_csrf: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -640,6 +642,7 @@ async def regenerate_access_token(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -665,7 +668,7 @@ async def regenerate_access_token(
     final_access_token_payload = {**access_token_payload, &#34;iss&#34;: issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
@@ -673,6 +676,7 @@ async def regenerate_access_token(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )</code></pre>
 </details>
@@ -699,7 +703,7 @@ async def regenerate_access_token(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, tenant_id: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -708,12 +712,14 @@ async def regenerate_access_token(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_all_session_handles_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )</code></pre>
 </details>
 </dd>
@@ -1009,27 +1015,6 @@ You can send a 401 response to trigger this behaviour if you are using our front
     )</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.asyncio.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>access_token: str, new_access_token_payload: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def regenerate_access_token(
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[RegenerateAccessTokenOkResult, None]:
-    if user_context is None:
-        user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
-        access_token, new_access_token_payload, user_context
-    )</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.session.asyncio.remove_claim"><code class="name flex">
 <span>async def <span class="ident">remove_claim</span></span>(<span>session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[typing.Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
@@ -1052,7 +1037,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, tenant_id: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1061,12 +1046,14 @@ You can send a 401 response to trigger this behaviour if you are using our front
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_all_sessions_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )</code></pre>
 </details>
 </dd>
@@ -1190,6 +1177,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            session_info.tenant_id,
             session_info.user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -1225,7 +1213,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.validate_claims_in_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">validate_claims_in_jwt_payload</span></span>(<span>user_id: str, jwt_payload: Dict[str, Any], override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], str, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">validate_claims_in_jwt_payload</span></span>(<span>tenant_id: str, user_id: str, jwt_payload: Dict[str, Any], override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], str, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1234,6 +1222,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def validate_claims_in_jwt_payload(
+    tenant_id: str,
     user_id: str,
     jwt_payload: JSONObject,
     override_global_claim_validators: Optional[
@@ -1258,6 +1247,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            tenant_id,
             user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -1310,7 +1300,6 @@ You can send a 401 response to trigger this behaviour if you are using our front
 <li><code><a title="supertokens_python.recipe.session.asyncio.merge_into_access_token_payload" href="#supertokens_python.recipe.session.asyncio.merge_into_access_token_payload">merge_into_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.refresh_session" href="#supertokens_python.recipe.session.asyncio.refresh_session">refresh_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.refresh_session_without_request_response" href="#supertokens_python.recipe.session.asyncio.refresh_session_without_request_response">refresh_session_without_request_response</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.asyncio.regenerate_access_token" href="#supertokens_python.recipe.session.asyncio.regenerate_access_token">regenerate_access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.remove_claim" href="#supertokens_python.recipe.session.asyncio.remove_claim">remove_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.revoke_multiple_sessions" href="#supertokens_python.recipe.session.asyncio.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>

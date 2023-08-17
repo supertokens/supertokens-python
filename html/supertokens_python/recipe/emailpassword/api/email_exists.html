@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
@@ -50,21 +50,23 @@ if TYPE_CHECKING:
     )
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import send_200_response, default_user_context
+from supertokens_python.utils import send_200_response
 
 
 async def handle_email_exists_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    tenant_id: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_email_exists_get:
         return None
     email = api_options.request.get_query_param(&#34;email&#34;)
     if email is None:
         raise_bad_input_exception(&#34;Please provide the email as a GET param&#34;)
-    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.email_exists_get(
-        email, api_options, user_context
+        email, tenant_id, api_options, user_context
     )
     return send_200_response(response.to_json(), api_options.response)</code></pre>
 </details>
@@ -77,7 +79,7 @@ async def handle_email_exists_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.api.email_exists.handle_email_exists_api"><code class="name flex">
-<span>async def <span class="ident">handle_email_exists_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions)</span>
+<span>async def <span class="ident">handle_email_exists_api</span></span>(<span>tenant_id: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -86,17 +88,19 @@ async def handle_email_exists_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_email_exists_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    tenant_id: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_email_exists_get:
         return None
     email = api_options.request.get_query_param(&#34;email&#34;)
     if email is None:
         raise_bad_input_exception(&#34;Please provide the email as a GET param&#34;)
-    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.email_exists_get(
-        email, api_options, user_context
+        email, tenant_id, api_options, user_context
     )
     return send_200_response(response.to_json(), api_options.response)</code></pre>
 </details>

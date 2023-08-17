@@ -90,43 +90,49 @@ class RecipeImplementation(RecipeInterface):
                 response[&#34;user&#34;][&#34;id&#34;],
                 response[&#34;user&#34;][&#34;email&#34;],
                 response[&#34;user&#34;][&#34;timeJoined&#34;],
+                response[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[User, None]:
         params = {&#34;email&#34;: email}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), params
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
                 response[&#34;user&#34;][&#34;id&#34;],
                 response[&#34;user&#34;][&#34;email&#34;],
                 response[&#34;user&#34;][&#34;timeJoined&#34;],
+                response[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
     async def create_reset_password_token(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         data = {&#34;userId&#34;: user_id}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/password/reset/token&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset/token&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return CreateResetPasswordOkResult(response[&#34;token&#34;])
         return CreateResetPasswordWrongUserIdError()
 
     async def reset_password_using_token(
-        self, token: str, new_password: str, user_context: Dict[str, Any]
+        self,
+        token: str,
+        new_password: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token, &#34;newPassword&#34;: new_password}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/password/reset&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset&#34;), data
         )
         if &#34;status&#34; not in response or response[&#34;status&#34;] != &#34;OK&#34;:
             return ResetPasswordUsingTokenInvalidTokenError()
@@ -136,11 +142,11 @@ class RecipeImplementation(RecipeInterface):
         return ResetPasswordUsingTokenOkResult(user_id)
 
     async def sign_in(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[SignInOkResult, SignInWrongCredentialsError]:
         data = {&#34;password&#34;: password, &#34;email&#34;: email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signin&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signin&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return SignInOkResult(
@@ -148,16 +154,17 @@ class RecipeImplementation(RecipeInterface):
                     response[&#34;user&#34;][&#34;id&#34;],
                     response[&#34;user&#34;][&#34;email&#34;],
                     response[&#34;user&#34;][&#34;timeJoined&#34;],
+                    response[&#34;user&#34;][&#34;tenantIds&#34;],
                 )
             )
         return SignInWrongCredentialsError()
 
     async def sign_up(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         data = {&#34;password&#34;: password, &#34;email&#34;: email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signup&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signup&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return SignUpOkResult(
@@ -165,6 +172,7 @@ class RecipeImplementation(RecipeInterface):
                     response[&#34;user&#34;][&#34;id&#34;],
                     response[&#34;user&#34;][&#34;email&#34;],
                     response[&#34;user&#34;][&#34;timeJoined&#34;],
+                    response[&#34;user&#34;][&#34;tenantIds&#34;],
                 )
             )
         return SignUpEmailAlreadyExistsError()
@@ -175,6 +183,7 @@ class RecipeImplementation(RecipeInterface):
         email: Union[str, None],
         password: Union[str, None],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         UpdateEmailOrPasswordOkResult,
@@ -193,7 +202,9 @@ class RecipeImplementation(RecipeInterface):
                 password_field = list(
                     filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
                 )[0]
-                error = await password_field.validate(password)
+                error = await password_field.validate(
+                    password, tenant_id_for_password_policy
+                )
                 if error is not None:
                     return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
             data = {&#34;password&#34;: password, **data}
@@ -249,43 +260,49 @@ inheritance.</p></div>
                 response[&#34;user&#34;][&#34;id&#34;],
                 response[&#34;user&#34;][&#34;email&#34;],
                 response[&#34;user&#34;][&#34;timeJoined&#34;],
+                response[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
     async def get_user_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[User, None]:
         params = {&#34;email&#34;: email}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), params
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
                 response[&#34;user&#34;][&#34;id&#34;],
                 response[&#34;user&#34;][&#34;email&#34;],
                 response[&#34;user&#34;][&#34;timeJoined&#34;],
+                response[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
 
     async def create_reset_password_token(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         data = {&#34;userId&#34;: user_id}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/password/reset/token&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset/token&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return CreateResetPasswordOkResult(response[&#34;token&#34;])
         return CreateResetPasswordWrongUserIdError()
 
     async def reset_password_using_token(
-        self, token: str, new_password: str, user_context: Dict[str, Any]
+        self,
+        token: str,
+        new_password: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -&gt; Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token, &#34;newPassword&#34;: new_password}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/password/reset&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset&#34;), data
         )
         if &#34;status&#34; not in response or response[&#34;status&#34;] != &#34;OK&#34;:
             return ResetPasswordUsingTokenInvalidTokenError()
@@ -295,11 +312,11 @@ inheritance.</p></div>
         return ResetPasswordUsingTokenOkResult(user_id)
 
     async def sign_in(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[SignInOkResult, SignInWrongCredentialsError]:
         data = {&#34;password&#34;: password, &#34;email&#34;: email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signin&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signin&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return SignInOkResult(
@@ -307,16 +324,17 @@ inheritance.</p></div>
                     response[&#34;user&#34;][&#34;id&#34;],
                     response[&#34;user&#34;][&#34;email&#34;],
                     response[&#34;user&#34;][&#34;timeJoined&#34;],
+                    response[&#34;user&#34;][&#34;tenantIds&#34;],
                 )
             )
         return SignInWrongCredentialsError()
 
     async def sign_up(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         data = {&#34;password&#34;: password, &#34;email&#34;: email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/signup&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signup&#34;), data
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return SignUpOkResult(
@@ -324,6 +342,7 @@ inheritance.</p></div>
                     response[&#34;user&#34;][&#34;id&#34;],
                     response[&#34;user&#34;][&#34;email&#34;],
                     response[&#34;user&#34;][&#34;timeJoined&#34;],
+                    response[&#34;user&#34;][&#34;tenantIds&#34;],
                 )
             )
         return SignUpEmailAlreadyExistsError()
@@ -334,6 +353,7 @@ inheritance.</p></div>
         email: Union[str, None],
         password: Union[str, None],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         UpdateEmailOrPasswordOkResult,
@@ -352,7 +372,9 @@ inheritance.</p></div>
                 password_field = list(
                     filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
                 )[0]
-                error = await password_field.validate(password)
+                error = await password_field.validate(
+                    password, tenant_id_for_password_policy
+                )
                 if error is not None:
                     return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
             data = {&#34;password&#34;: password, **data}
@@ -373,7 +395,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.create_reset_password_token"><code class="name flex">
-<span>async def <span class="ident">create_reset_password_token</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult">CreateResetPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordWrongUserIdError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordWrongUserIdError">CreateResetPasswordWrongUserIdError</a>]</span>
+<span>async def <span class="ident">create_reset_password_token</span></span>(<span>self, user_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult">CreateResetPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordWrongUserIdError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordWrongUserIdError">CreateResetPasswordWrongUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -382,11 +404,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_reset_password_token(
-    self, user_id: str, user_context: Dict[str, Any]
+    self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
     data = {&#34;userId&#34;: user_id}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/password/reset/token&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset/token&#34;), data
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return CreateResetPasswordOkResult(response[&#34;token&#34;])
@@ -394,7 +416,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.get_user_by_email"><code class="name flex">
-<span>async def <span class="ident">get_user_by_email</span></span>(<span>self, email: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user_by_email</span></span>(<span>self, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -403,17 +425,18 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_user_by_email(
-    self, email: str, user_context: Dict[str, Any]
+    self, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[User, None]:
     params = {&#34;email&#34;: email}
     response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user&#34;), params
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), params
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return User(
             response[&#34;user&#34;][&#34;id&#34;],
             response[&#34;user&#34;][&#34;email&#34;],
             response[&#34;user&#34;][&#34;timeJoined&#34;],
+            response[&#34;user&#34;][&#34;tenantIds&#34;],
         )
     return None</code></pre>
 </details>
@@ -439,12 +462,13 @@ inheritance.</p></div>
             response[&#34;user&#34;][&#34;id&#34;],
             response[&#34;user&#34;][&#34;email&#34;],
             response[&#34;user&#34;][&#34;timeJoined&#34;],
+            response[&#34;user&#34;][&#34;tenantIds&#34;],
         )
     return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.reset_password_using_token"><code class="name flex">
-<span>async def <span class="ident">reset_password_using_token</span></span>(<span>self, token: str, new_password: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenOkResult">ResetPasswordUsingTokenOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenInvalidTokenError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenInvalidTokenError">ResetPasswordUsingTokenInvalidTokenError</a>]</span>
+<span>async def <span class="ident">reset_password_using_token</span></span>(<span>self, token: str, new_password: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenOkResult">ResetPasswordUsingTokenOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenInvalidTokenError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenInvalidTokenError">ResetPasswordUsingTokenInvalidTokenError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -453,13 +477,17 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def reset_password_using_token(
-    self, token: str, new_password: str, user_context: Dict[str, Any]
+    self,
+    token: str,
+    new_password: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -&gt; Union[
     ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
 ]:
     data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token, &#34;newPassword&#34;: new_password}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/password/reset&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset&#34;), data
     )
     if &#34;status&#34; not in response or response[&#34;status&#34;] != &#34;OK&#34;:
         return ResetPasswordUsingTokenInvalidTokenError()
@@ -470,7 +498,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_in"><code class="name flex">
-<span>async def <span class="ident">sign_in</span></span>(<span>self, email: str, password: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError">SignInWrongCredentialsError</a>]</span>
+<span>async def <span class="ident">sign_in</span></span>(<span>self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError">SignInWrongCredentialsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -479,11 +507,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def sign_in(
-    self, email: str, password: str, user_context: Dict[str, Any]
+    self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[SignInOkResult, SignInWrongCredentialsError]:
     data = {&#34;password&#34;: password, &#34;email&#34;: email}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signin&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signin&#34;), data
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return SignInOkResult(
@@ -491,13 +519,14 @@ inheritance.</p></div>
                 response[&#34;user&#34;][&#34;id&#34;],
                 response[&#34;user&#34;][&#34;email&#34;],
                 response[&#34;user&#34;][&#34;timeJoined&#34;],
+                response[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         )
     return SignInWrongCredentialsError()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_up"><code class="name flex">
-<span>async def <span class="ident">sign_up</span></span>(<span>self, email: str, password: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpEmailAlreadyExistsError">SignUpEmailAlreadyExistsError</a>]</span>
+<span>async def <span class="ident">sign_up</span></span>(<span>self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpEmailAlreadyExistsError">SignUpEmailAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -506,11 +535,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def sign_up(
-    self, email: str, password: str, user_context: Dict[str, Any]
+    self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
     data = {&#34;password&#34;: password, &#34;email&#34;: email}
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/signup&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signup&#34;), data
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return SignUpOkResult(
@@ -518,13 +547,14 @@ inheritance.</p></div>
                 response[&#34;user&#34;][&#34;id&#34;],
                 response[&#34;user&#34;][&#34;email&#34;],
                 response[&#34;user&#34;][&#34;timeJoined&#34;],
+                response[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         )
     return SignUpEmailAlreadyExistsError()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.update_email_or_password"><code class="name flex">
-<span>async def <span class="ident">update_email_or_password</span></span>(<span>self, user_id: str, email: Union[str, None], password: Union[str, None], apply_password_policy: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError">UpdateEmailOrPasswordEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError">UpdateEmailOrPasswordUnknownUserIdError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordPasswordPolicyViolationError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordPasswordPolicyViolationError">UpdateEmailOrPasswordPasswordPolicyViolationError</a>]</span>
+<span>async def <span class="ident">update_email_or_password</span></span>(<span>self, user_id: str, email: Union[str, None], password: Union[str, None], apply_password_policy: Union[bool, None], tenant_id_for_password_policy: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailAlreadyExistsError">UpdateEmailOrPasswordEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordUnknownUserIdError">UpdateEmailOrPasswordUnknownUserIdError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordPasswordPolicyViolationError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordPasswordPolicyViolationError">UpdateEmailOrPasswordPasswordPolicyViolationError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -538,6 +568,7 @@ inheritance.</p></div>
     email: Union[str, None],
     password: Union[str, None],
     apply_password_policy: Union[bool, None],
+    tenant_id_for_password_policy: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
     UpdateEmailOrPasswordOkResult,
@@ -556,7 +587,9 @@ inheritance.</p></div>
             password_field = list(
                 filter(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
             )[0]
-            error = await password_field.validate(password)
+            error = await password_field.validate(
+                password, tenant_id_for_password_policy
+            )
             if error is not None:
                 return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
         data = {&#34;password&#34;: password, **data}

@@ -42,7 +42,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from httpx import AsyncClient
 
@@ -63,7 +63,10 @@ if TYPE_CHECKING:
 
 
 async def handle_analytics_post(
-    _: APIInterface, api_options: APIOptions
+    _: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; AnalyticsResponse:
     if not Supertokens.get_instance().telemetry:
         return AnalyticsResponse()
@@ -142,7 +145,7 @@ async def handle_analytics_post(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.analytics.handle_analytics_post"><code class="name flex">
-<span>async def <span class="ident">handle_analytics_post</span></span>(<span>_: APIInterface, api_options: APIOptions) ‑> AnalyticsResponse</span>
+<span>async def <span class="ident">handle_analytics_post</span></span>(<span>_: APIInterface, _tenant_id: str, api_options: APIOptions, _user_context: Dict[str, Any]) ‑> AnalyticsResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -151,7 +154,10 @@ async def handle_analytics_post(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_analytics_post(
-    _: APIInterface, api_options: APIOptions
+    _: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -&gt; AnalyticsResponse:
     if not Supertokens.get_instance().telemetry:
         return AnalyticsResponse()

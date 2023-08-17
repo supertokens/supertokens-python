@@ -26,88 +26,61 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># # Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
 
-# # This software is licensed under the Apache License, Version 2.0 (the
-# # &#34;License&#34;) as published by the Apache Software Foundation.
-
-# # You may not use this file except in compliance with the License. You may
-# # obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-# # Unless required by applicable law or agreed to in writing, software
-# # distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
-# # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# # License for the specific language governing permissions and limitations
-# # under the License.
-# from __future__ import annotations
-
-# from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
-
-# from httpx import AsyncClient
-# from supertokens_python.recipe.thirdparty.provider import Provider
-# from supertokens_python.recipe.thirdparty.types import (
-#     AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
-
-# if TYPE_CHECKING:
-#     from supertokens_python.framework.request import BaseRequest
+from typing import Any, Dict, Optional
+from .custom import GenericProvider, NewProvider
+from ..provider import (
+    Provider,
+    ProviderConfigForClient,
+    ProviderInput,
+)
 
 
-# class Okta(Provider):
-#     def __init__(self, okta_domain: str, client_id: str, client_secret: str, scope: Union[None, List[str]] = None,
-#                  authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[BaseRequest], str]]]] = None,
-#                  authorization_server_id: str = &#39;default&#39;, is_default: bool = False):
-#         super().__init__(&#39;okta&#39;, is_default)
-#         default_scopes = [&#34;openid&#34;, &#34;email&#34;]
-#         if scope is None:
-#             scope = default_scopes
-#         self.client_id = client_id
-#         self.client_secret = client_secret
-#         self.base_url = &#39;https://&#39; + okta_domain + &#39;/oauth2/&#39; + authorization_server_id
-#         self.scopes = list(set(scope))
-#         self.access_token_api_url = self.base_url + &#39;/v1/token&#39;
-#         self.authorisation_redirect_url = self.base_url + &#39;/v1/authorize&#39;
-#         self.authorisation_redirect_params = {}
-#         if authorisation_redirect is not None:
-#             self.authorisation_redirect_params = authorisation_redirect
+class OktaImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -&gt; ProviderConfigForClient:
+        config = await super().get_config_for_client_type(client_type, user_context)
+        if config.oidc_discovery_endpoint is None:
+            if (
+                config.additional_config is None
+                or config.additional_config.get(&#34;oktaDomain&#34;) is None
+            ):
+                raise Exception(
+                    &#34;Please provide the oktaDomain in the additionalConfig of the Okta provider.&#34;
+                )
 
-#     async def get_profile_info(self, auth_code_response: Dict[str, Any]) -&gt; UserInfo:
-#         access_token: str = auth_code_response[&#39;access_token&#39;]
-#         headers = {
-#             &#39;Authorization&#39;: &#39;Bearer &#39; + access_token
-#         }
-#         async with AsyncClient() as client:
-#             response = await client.get(url=self.base_url + &#39;/v1/userinfo&#39;, headers=headers)
-#             user_info = response.json()
-#             user_id = user_info[&#39;sub&#39;]
-#             if &#39;email&#39; not in user_info or user_info[&#39;email&#39;] is None:
-#                 return UserInfo(user_id)
-#             is_email_verified = user_info[&#39;email_verified&#39;] if &#39;email_verified&#39; in user_info else False
-#             return UserInfo(user_id, UserInfoEmail(
-#                 user_info[&#39;email&#39;], is_email_verified))
+            config.oidc_discovery_endpoint = (
+                f&#34;{config.additional_config.get(&#39;oktaDomain&#39;)}&#34;
+            )
 
-#     def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
-#         params = {
-#             &#39;scope&#39;: &#39; &#39;.join(self.scopes),
-#             &#39;client_id&#39;: self.client_id,
-#             &#39;response_type&#39;: &#39;code&#39;,
-#             **self.authorisation_redirect_params
-#         }
-#         return AuthorisationRedirectAPI(
-#             self.authorisation_redirect_url, params)
+        if config.scope is None:
+            config.scope = [&#34;openid&#34;, &#34;email&#34;]
 
-#     def get_access_token_api_info(
-#             self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
-#         params = {
-#             &#39;client_id&#39;: self.client_id,
-#             &#39;client_secret&#39;: self.client_secret,
-#             &#39;grant_type&#39;: &#39;authorization_code&#39;,
-#             &#39;code&#39;: auth_code_from_request,
-#             &#39;redirect_uri&#39;: redirect_uri
-#         }
-#         return AccessTokenAPI(self.access_token_api_url, params)
+        # TODO later if required, client assertion impl
 
-# def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-#     return None</code></pre>
+        return config
+
+
+def Okta(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
+    if input.config.name is None:
+        input.config.name = &#34;Okta&#34;
+
+    return NewProvider(input, OktaImpl)</code></pre>
 </details>
 </section>
 <section>
@@ -115,8 +88,108 @@
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.okta.Okta"><code class="name flex">
+<span>def <span class="ident">Okta</span></span>(<span>input: ProviderInput) ‑> <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Okta(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
+    if input.config.name is None:
+        input.config.name = &#34;Okta&#34;
+
+    return NewProvider(input, OktaImpl)</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.okta.OktaImpl"><code class="flex name class">
+<span>class <span class="ident">OktaImpl</span></span>
+<span>(</span><span>provider_config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OktaImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -&gt; ProviderConfigForClient:
+        config = await super().get_config_for_client_type(client_type, user_context)
+        if config.oidc_discovery_endpoint is None:
+            if (
+                config.additional_config is None
+                or config.additional_config.get(&#34;oktaDomain&#34;) is None
+            ):
+                raise Exception(
+                    &#34;Please provide the oktaDomain in the additionalConfig of the Okta provider.&#34;
+                )
+
+            config.oidc_discovery_endpoint = (
+                f&#34;{config.additional_config.get(&#39;oktaDomain&#39;)}&#34;
+            )
+
+        if config.scope is None:
+            config.scope = [&#34;openid&#34;, &#34;email&#34;]
+
+        # TODO later if required, client assertion impl
+
+        return config</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider" href="custom.html#supertokens_python.recipe.thirdparty.providers.custom.GenericProvider">GenericProvider</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.okta.OktaImpl.get_config_for_client_type"><code class="name flex">
+<span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_config_for_client_type(
+    self, client_type: Optional[str], user_context: Dict[str, Any]
+) -&gt; ProviderConfigForClient:
+    config = await super().get_config_for_client_type(client_type, user_context)
+    if config.oidc_discovery_endpoint is None:
+        if (
+            config.additional_config is None
+            or config.additional_config.get(&#34;oktaDomain&#34;) is None
+        ):
+            raise Exception(
+                &#34;Please provide the oktaDomain in the additionalConfig of the Okta provider.&#34;
+            )
+
+        config.oidc_discovery_endpoint = (
+            f&#34;{config.additional_config.get(&#39;oktaDomain&#39;)}&#34;
+        )
+
+    if config.scope is None:
+        config.scope = [&#34;openid&#34;, &#34;email&#34;]
+
+    # TODO later if required, client assertion impl
+
+    return config</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -128,6 +201,21 @@
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers" href="index.html">supertokens_python.recipe.thirdparty.providers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.okta.Okta" href="#supertokens_python.recipe.thirdparty.providers.okta.Okta">Okta</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.providers.okta.OktaImpl" href="#supertokens_python.recipe.thirdparty.providers.okta.OktaImpl">OktaImpl</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.okta.OktaImpl.get_config_for_client_type" href="#supertokens_python.recipe.thirdparty.providers.okta.OktaImpl.get_config_for_client_type">get_config_for_client_type</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

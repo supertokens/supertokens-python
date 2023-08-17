@@ -70,7 +70,9 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         self.service_implementation = oi if override is None else override(oi)
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -&gt; None:
         content = await self.service_implementation.get_content(
             template_vars, user_context
@@ -127,7 +129,9 @@ inheritance.</p></div>
         self.service_implementation = oi if override is None else override(oi)
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -&gt; None:
         content = await self.service_implementation.get_content(
             template_vars, user_context
@@ -159,7 +163,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def send_email(
-    self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    self,
+    template_vars: EmailTemplateVars,
+    user_context: Dict[str, Any],
 ) -&gt; None:
     content = await self.service_implementation.get_content(
         template_vars, user_context

@@ -42,46 +42,342 @@
 
 from __future__ import annotations
 
-import abc
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, Union, Optional, List, Callable
 
 if TYPE_CHECKING:
-    from .types import AccessTokenAPI, AuthorisationRedirectAPI, UserInfo
+    from .types import UserInfo
 
 
-class Provider(abc.ABC):
-    def __init__(self, provider_id: str, is_default: bool):
-        self.id: str = provider_id
-        self.is_default: bool = is_default
+class AuthorisationRedirect:
+    def __init__(
+        self, url_with_query_params: str, pkce_code_verifier: Optional[str] = None
+    ):
+        self.url_with_query_params = url_with_query_params
+        self.pkce_code_verifier = pkce_code_verifier
 
-    @abc.abstractmethod
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-    ) -&gt; UserInfo:
-        pass
 
-    @abc.abstractmethod
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -&gt; AuthorisationRedirectAPI:
-        pass
-
-    @abc.abstractmethod
-    def get_access_token_api_info(
+class RedirectUriInfo:
+    def __init__(
         self,
-        redirect_uri: str,
-        auth_code_from_request: str,
+        redirect_uri_on_provider_dashboard: str,
+        redirect_uri_query_params: Dict[str, Any],
+        pkce_code_verifier: Optional[str] = None,
+    ):
+        self.redirect_uri_on_provider_dashboard = redirect_uri_on_provider_dashboard
+        self.redirect_uri_query_params = redirect_uri_query_params
+        self.pkce_code_verifier = pkce_code_verifier
+
+
+class Provider:
+    def __init__(
+        self, id: str, config: ProviderConfigForClient
+    ):  # pylint: disable=redefined-builtin
+        self.id = id
+        self.config = config
+
+    async def get_config_for_client_type(  # pylint: disable=no-self-use
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -&gt; ProviderConfigForClient:
+        _ = client_type
+        __ = user_context
+        raise NotImplementedError()
+
+    async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
+        self,
+        redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
-    ) -&gt; AccessTokenAPI:
-        pass
+    ) -&gt; AuthorisationRedirect:
+        _ = redirect_uri_on_provider_dashboard
+        __ = user_context
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-        pass
+    async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
+        self,
+        redirect_uri_info: RedirectUriInfo,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        _ = redirect_uri_info
+        __ = user_context
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
-        pass</code></pre>
+    async def get_user_info(  # pylint: disable=no-self-use
+        self,
+        oauth_tokens: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; UserInfo:
+        _ = oauth_tokens
+        __ = user_context
+        raise NotImplementedError()
+
+
+class ProviderClientConfig:
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: Optional[str] = None,
+        client_type: Optional[str] = None,
+        scope: Optional[List[str]] = None,
+        force_pkce: bool = False,
+        additional_config: Optional[Dict[str, Any]] = None,
+    ):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.client_type = client_type
+        self.scope = scope
+        self.force_pkce = force_pkce
+        self.additional_config = additional_config
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;clientId&#34;: self.client_id,
+            &#34;clientSecret&#34;: self.client_secret,
+            &#34;clientType&#34;: self.client_type,
+            &#34;scope&#34;: self.scope,
+            &#34;forcePKCE&#34;: self.force_pkce,
+            &#34;additionalConfig&#34;: self.additional_config,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
+
+
+class UserFields:
+    def __init__(
+        self,
+        user_id: Optional[str] = None,
+        email: Optional[str] = None,
+        email_verified: Optional[str] = None,
+    ):
+        self.user_id = user_id
+        self.email = email
+        self.email_verified = email_verified
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;userId&#34;: self.user_id,
+            &#34;email&#34;: self.email,
+            &#34;emailVerified&#34;: self.email_verified,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
+
+
+class UserInfoMap:
+    def __init__(
+        self,
+        from_id_token_payload: Optional[UserFields] = None,
+        from_user_info_api: Optional[UserFields] = None,
+    ):
+        self.from_id_token_payload = from_id_token_payload
+        self.from_user_info_api = from_user_info_api
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        if self.from_id_token_payload:
+            res[&#34;fromIdTokenPayload&#34;] = self.from_id_token_payload.to_json()
+        if self.from_user_info_api:
+            res[&#34;fromUserInfoAPI&#34;] = self.from_user_info_api.to_json()
+        return res
+
+
+class CommonProviderConfig:
+    def __init__(
+        self,
+        third_party_id: str,
+        name: Optional[str] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[Dict[str, Any]] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        self.third_party_id = third_party_id
+        self.name = name
+        self.authorization_endpoint = authorization_endpoint
+        self.authorization_endpoint_query_params = authorization_endpoint_query_params
+        self.token_endpoint = token_endpoint
+        self.token_endpoint_body_params = token_endpoint_body_params
+        self.user_info_endpoint = user_info_endpoint
+        self.user_info_endpoint_query_params = user_info_endpoint_query_params
+        self.user_info_endpoint_headers = user_info_endpoint_headers
+        self.jwks_uri = jwks_uri
+        self.oidc_discovery_endpoint = oidc_discovery_endpoint
+        self.user_info_map = user_info_map
+        self.require_email = require_email
+        self.validate_id_token_payload = validate_id_token_payload
+        self.generate_fake_email = generate_fake_email
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;thirdPartyId&#34;: self.third_party_id,
+            &#34;name&#34;: self.name,
+            &#34;authorizationEndpoint&#34;: self.authorization_endpoint,
+            &#34;authorizationEndpointQueryParams&#34;: self.authorization_endpoint_query_params,
+            &#34;tokenEndpoint&#34;: self.token_endpoint,
+            &#34;tokenEndpointBodyParams&#34;: self.token_endpoint_body_params,
+            &#34;userInfoEndpoint&#34;: self.user_info_endpoint,
+            &#34;userInfoEndpointQueryParams&#34;: self.user_info_endpoint_query_params,
+            &#34;userInfoEndpointHeaders&#34;: self.user_info_endpoint_headers,
+            &#34;jwksURI&#34;: self.jwks_uri,
+            &#34;oidcDiscoveryEndpoint&#34;: self.oidc_discovery_endpoint,
+            &#34;userInfoMap&#34;: self.user_info_map.to_json()
+            if self.user_info_map is not None
+            else None,
+            &#34;requireEmail&#34;: self.require_email,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
+
+
+class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
+    def __init__(
+        self,
+        # ProviderClientConfig:
+        client_id: str,
+        client_secret: Optional[str] = None,
+        client_type: Optional[str] = None,
+        scope: Optional[List[str]] = None,
+        force_pkce: bool = False,
+        additional_config: Optional[Dict[str, Any]] = None,
+        # CommonProviderConfig:
+        third_party_id: str = &#34;temp&#34;,
+        name: Optional[str] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        ProviderClientConfig.__init__(
+            self,
+            client_id,
+            client_secret,
+            client_type,
+            scope,
+            force_pkce,
+            additional_config,
+        )
+        CommonProviderConfig.__init__(
+            self,
+            third_party_id,
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+        )
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        d1 = ProviderClientConfig.to_json(self)
+        d2 = CommonProviderConfig.to_json(self)
+        return {**d1, **d2}
+
+
+class ProviderConfig(CommonProviderConfig):
+    def __init__(
+        self,
+        third_party_id: str,
+        name: Optional[str] = None,
+        clients: Optional[List[ProviderClientConfig]] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        super().__init__(
+            third_party_id,
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+        )
+        self.clients = clients
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        d = CommonProviderConfig.to_json(self)
+
+        if self.clients is not None:
+            d[&#34;clients&#34;] = [c.to_json() for c in self.clients]
+
+        return d
+
+
+class ProviderInput:
+    def __init__(
+        self,
+        config: ProviderConfig,
+        override: Optional[Callable[[Provider], Provider]] = None,
+    ):
+        self.config = config
+        self.override = override</code></pre>
 </details>
 </section>
 <section>
@@ -93,70 +389,106 @@ class Provider(abc.ABC):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.provider.Provider"><code class="flex name class">
-<span>class <span class="ident">Provider</span></span>
-<span>(</span><span>provider_id: str, is_default: bool)</span>
+<dt id="supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect"><code class="flex name class">
+<span>class <span class="ident">AuthorisationRedirect</span></span>
+<span>(</span><span>url_with_query_params: str, pkce_code_verifier: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Provider(abc.ABC):
-    def __init__(self, provider_id: str, is_default: bool):
-        self.id: str = provider_id
-        self.is_default: bool = is_default
-
-    @abc.abstractmethod
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-    ) -&gt; UserInfo:
-        pass
-
-    @abc.abstractmethod
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -&gt; AuthorisationRedirectAPI:
-        pass
-
-    @abc.abstractmethod
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -&gt; AccessTokenAPI:
-        pass
-
-    @abc.abstractmethod
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-        pass
-
-    @abc.abstractmethod
-    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
-        pass</code></pre>
+<pre><code class="python">class AuthorisationRedirect:
+    def __init__(
+        self, url_with_query_params: str, pkce_code_verifier: Optional[str] = None
+    ):
+        self.url_with_query_params = url_with_query_params
+        self.pkce_code_verifier = pkce_code_verifier</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig"><code class="flex name class">
+<span>class <span class="ident">CommonProviderConfig</span></span>
+<span>(</span><span>third_party_id: str, name: Optional[str] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Any]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: bool = True, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CommonProviderConfig:
+    def __init__(
+        self,
+        third_party_id: str,
+        name: Optional[str] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[Dict[str, Any]] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        self.third_party_id = third_party_id
+        self.name = name
+        self.authorization_endpoint = authorization_endpoint
+        self.authorization_endpoint_query_params = authorization_endpoint_query_params
+        self.token_endpoint = token_endpoint
+        self.token_endpoint_body_params = token_endpoint_body_params
+        self.user_info_endpoint = user_info_endpoint
+        self.user_info_endpoint_query_params = user_info_endpoint_query_params
+        self.user_info_endpoint_headers = user_info_endpoint_headers
+        self.jwks_uri = jwks_uri
+        self.oidc_discovery_endpoint = oidc_discovery_endpoint
+        self.user_info_map = user_info_map
+        self.require_email = require_email
+        self.validate_id_token_payload = validate_id_token_payload
+        self.generate_fake_email = generate_fake_email
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;thirdPartyId&#34;: self.third_party_id,
+            &#34;name&#34;: self.name,
+            &#34;authorizationEndpoint&#34;: self.authorization_endpoint,
+            &#34;authorizationEndpointQueryParams&#34;: self.authorization_endpoint_query_params,
+            &#34;tokenEndpoint&#34;: self.token_endpoint,
+            &#34;tokenEndpointBodyParams&#34;: self.token_endpoint_body_params,
+            &#34;userInfoEndpoint&#34;: self.user_info_endpoint,
+            &#34;userInfoEndpointQueryParams&#34;: self.user_info_endpoint_query_params,
+            &#34;userInfoEndpointHeaders&#34;: self.user_info_endpoint_headers,
+            &#34;jwksURI&#34;: self.jwks_uri,
+            &#34;oidcDiscoveryEndpoint&#34;: self.oidc_discovery_endpoint,
+            &#34;userInfoMap&#34;: self.user_info_map.to_json()
+            if self.user_info_map is not None
+            else None,
+            &#34;requireEmail&#34;: self.require_email,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}</code></pre>
+</details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdparty.providers.apple.Apple" href="providers/apple.html#supertokens_python.recipe.thirdparty.providers.apple.Apple">Apple</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket" href="providers/bitbucket.html#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket">Bitbucket</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.discord.Discord" href="providers/discord.html#supertokens_python.recipe.thirdparty.providers.discord.Discord">Discord</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook" href="providers/facebook.html#supertokens_python.recipe.thirdparty.providers.facebook.Facebook">Facebook</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.github.Github" href="providers/github.html#supertokens_python.recipe.thirdparty.providers.github.Github">Github</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.gitlab.GitLab" href="providers/gitlab.html#supertokens_python.recipe.thirdparty.providers.gitlab.GitLab">GitLab</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.google.Google" href="providers/google.html#supertokens_python.recipe.thirdparty.providers.google.Google">Google</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspaces" href="providers/google_workspaces.html#supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspaces">GoogleWorkspaces</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info"><code class="name flex">
-<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) ‑> AccessTokenAPI</span>
+<dt id="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,18 +496,108 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abc.abstractmethod
-def get_access_token_api_info(
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res = {
+        &#34;thirdPartyId&#34;: self.third_party_id,
+        &#34;name&#34;: self.name,
+        &#34;authorizationEndpoint&#34;: self.authorization_endpoint,
+        &#34;authorizationEndpointQueryParams&#34;: self.authorization_endpoint_query_params,
+        &#34;tokenEndpoint&#34;: self.token_endpoint,
+        &#34;tokenEndpointBodyParams&#34;: self.token_endpoint_body_params,
+        &#34;userInfoEndpoint&#34;: self.user_info_endpoint,
+        &#34;userInfoEndpointQueryParams&#34;: self.user_info_endpoint_query_params,
+        &#34;userInfoEndpointHeaders&#34;: self.user_info_endpoint_headers,
+        &#34;jwksURI&#34;: self.jwks_uri,
+        &#34;oidcDiscoveryEndpoint&#34;: self.oidc_discovery_endpoint,
+        &#34;userInfoMap&#34;: self.user_info_map.to_json()
+        if self.user_info_map is not None
+        else None,
+        &#34;requireEmail&#34;: self.require_email,
+    }
+
+    return {k: v for k, v in res.items() if v is not None}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider"><code class="flex name class">
+<span>class <span class="ident">Provider</span></span>
+<span>(</span><span>id: str, config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Provider:
+    def __init__(
+        self, id: str, config: ProviderConfigForClient
+    ):  # pylint: disable=redefined-builtin
+        self.id = id
+        self.config = config
+
+    async def get_config_for_client_type(  # pylint: disable=no-self-use
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -&gt; ProviderConfigForClient:
+        _ = client_type
+        __ = user_context
+        raise NotImplementedError()
+
+    async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
+        self,
+        redirect_uri_on_provider_dashboard: str,
+        user_context: Dict[str, Any],
+    ) -&gt; AuthorisationRedirect:
+        _ = redirect_uri_on_provider_dashboard
+        __ = user_context
+        raise NotImplementedError()
+
+    async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
+        self,
+        redirect_uri_info: RedirectUriInfo,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        _ = redirect_uri_info
+        __ = user_context
+        raise NotImplementedError()
+
+    async def get_user_info(  # pylint: disable=no-self-use
+        self,
+        oauth_tokens: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; UserInfo:
+        _ = oauth_tokens
+        __ = user_context
+        raise NotImplementedError()</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider" href="providers/custom.html#supertokens_python.recipe.thirdparty.providers.custom.GenericProvider">GenericProvider</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider.exchange_auth_code_for_oauth_tokens"><code class="name flex">
+<span>async def <span class="ident">exchange_auth_code_for_oauth_tokens</span></span>(<span>self, redirect_uri_info: <a title="supertokens_python.recipe.thirdparty.provider.RedirectUriInfo" href="#supertokens_python.recipe.thirdparty.provider.RedirectUriInfo">RedirectUriInfo</a>, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
     self,
-    redirect_uri: str,
-    auth_code_from_request: str,
+    redirect_uri_info: RedirectUriInfo,
     user_context: Dict[str, Any],
-) -&gt; AccessTokenAPI:
-    pass</code></pre>
+) -&gt; Dict[str, Any]:
+    _ = redirect_uri_info
+    __ = user_context
+    raise NotImplementedError()</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info"><code class="name flex">
-<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self, user_context: Dict[str, Any]) ‑> AuthorisationRedirectAPI</span>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_url"><code class="name flex">
+<span>async def <span class="ident">get_authorisation_redirect_url</span></span>(<span>self, redirect_uri_on_provider_dashboard: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect" href="#supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect">AuthorisationRedirect</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -183,15 +605,18 @@ def get_access_token_api_info(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abc.abstractmethod
-def get_authorisation_redirect_api_info(
-    self, user_context: Dict[str, Any]
-) -&gt; AuthorisationRedirectAPI:
-    pass</code></pre>
+<pre><code class="python">async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
+    self,
+    redirect_uri_on_provider_dashboard: str,
+    user_context: Dict[str, Any],
+) -&gt; AuthorisationRedirect:
+    _ = redirect_uri_on_provider_dashboard
+    __ = user_context
+    raise NotImplementedError()</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_client_id"><code class="name flex">
-<span>def <span class="ident">get_client_id</span></span>(<span>self, user_context: Dict[str, Any]) ‑> str</span>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_config_for_client_type"><code class="name flex">
+<span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -199,13 +624,16 @@ def get_authorisation_redirect_api_info(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abc.abstractmethod
-def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
-    pass</code></pre>
+<pre><code class="python">async def get_config_for_client_type(  # pylint: disable=no-self-use
+    self, client_type: Optional[str], user_context: Dict[str, Any]
+) -&gt; ProviderConfigForClient:
+    _ = client_type
+    __ = user_context
+    raise NotImplementedError()</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info"><code class="name flex">
-<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) ‑> UserInfo</span>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_user_info"><code class="name flex">
+<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> UserInfo</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -213,15 +641,21 @@ def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abc.abstractmethod
-async def get_profile_info(
-    self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+<pre><code class="python">async def get_user_info(  # pylint: disable=no-self-use
+    self,
+    oauth_tokens: Dict[str, Any],
+    user_context: Dict[str, Any],
 ) -&gt; UserInfo:
-    pass</code></pre>
+    _ = oauth_tokens
+    __ = user_context
+    raise NotImplementedError()</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri"><code class="name flex">
-<span>def <span class="ident">get_redirect_uri</span></span>(<span>self, user_context: Dict[str, Any]) ‑> Optional[str]</span>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig"><code class="flex name class">
+<span>class <span class="ident">ProviderClientConfig</span></span>
+<span>(</span><span>client_id: str, client_secret: Optional[str] = None, client_type: Optional[str] = None, scope: Optional[List[str]] = None, force_pkce: bool = False, additional_config: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -229,9 +663,400 @@ async def get_profile_info(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abc.abstractmethod
-def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-    pass</code></pre>
+<pre><code class="python">class ProviderClientConfig:
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: Optional[str] = None,
+        client_type: Optional[str] = None,
+        scope: Optional[List[str]] = None,
+        force_pkce: bool = False,
+        additional_config: Optional[Dict[str, Any]] = None,
+    ):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.client_type = client_type
+        self.scope = scope
+        self.force_pkce = force_pkce
+        self.additional_config = additional_config
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;clientId&#34;: self.client_id,
+            &#34;clientSecret&#34;: self.client_secret,
+            &#34;clientType&#34;: self.client_type,
+            &#34;scope&#34;: self.scope,
+            &#34;forcePKCE&#34;: self.force_pkce,
+            &#34;additionalConfig&#34;: self.additional_config,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res = {
+        &#34;clientId&#34;: self.client_id,
+        &#34;clientSecret&#34;: self.client_secret,
+        &#34;clientType&#34;: self.client_type,
+        &#34;scope&#34;: self.scope,
+        &#34;forcePKCE&#34;: self.force_pkce,
+        &#34;additionalConfig&#34;: self.additional_config,
+    }
+
+    return {k: v for k, v in res.items() if v is not None}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderConfig"><code class="flex name class">
+<span>class <span class="ident">ProviderConfig</span></span>
+<span>(</span><span>third_party_id: str, name: Optional[str] = None, clients: Optional[List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a>]] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: bool = True, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderConfig(CommonProviderConfig):
+    def __init__(
+        self,
+        third_party_id: str,
+        name: Optional[str] = None,
+        clients: Optional[List[ProviderClientConfig]] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        super().__init__(
+            third_party_id,
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+        )
+        self.clients = clients
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        d = CommonProviderConfig.to_json(self)
+
+        if self.clients is not None:
+            d[&#34;clients&#34;] = [c.to_json() for c in self.clients]
+
+        return d</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig" href="#supertokens_python.recipe.thirdparty.provider.CommonProviderConfig">CommonProviderConfig</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    d = CommonProviderConfig.to_json(self)
+
+    if self.clients is not None:
+        d[&#34;clients&#34;] = [c.to_json() for c in self.clients]
+
+    return d</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient"><code class="flex name class">
+<span>class <span class="ident">ProviderConfigForClient</span></span>
+<span>(</span><span>client_id: str, client_secret: Optional[str] = None, client_type: Optional[str] = None, scope: Optional[List[str]] = None, force_pkce: bool = False, additional_config: Optional[Dict[str, Any]] = None, third_party_id: str = 'temp', name: Optional[str] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: bool = True, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
+    def __init__(
+        self,
+        # ProviderClientConfig:
+        client_id: str,
+        client_secret: Optional[str] = None,
+        client_type: Optional[str] = None,
+        scope: Optional[List[str]] = None,
+        force_pkce: bool = False,
+        additional_config: Optional[Dict[str, Any]] = None,
+        # CommonProviderConfig:
+        third_party_id: str = &#34;temp&#34;,
+        name: Optional[str] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: bool = True,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+    ):
+        ProviderClientConfig.__init__(
+            self,
+            client_id,
+            client_secret,
+            client_type,
+            scope,
+            force_pkce,
+            additional_config,
+        )
+        CommonProviderConfig.__init__(
+            self,
+            third_party_id,
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+        )
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        d1 = ProviderClientConfig.to_json(self)
+        d2 = CommonProviderConfig.to_json(self)
+        return {**d1, **d2}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig" href="#supertokens_python.recipe.thirdparty.provider.CommonProviderConfig">CommonProviderConfig</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    d1 = ProviderClientConfig.to_json(self)
+    d2 = CommonProviderConfig.to_json(self)
+    return {**d1, **d2}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.ProviderInput"><code class="flex name class">
+<span>class <span class="ident">ProviderInput</span></span>
+<span>(</span><span>config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>, override: Optional[Callable[[<a title="supertokens_python.recipe.thirdparty.provider.Provider" href="#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>], <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderInput:
+    def __init__(
+        self,
+        config: ProviderConfig,
+        override: Optional[Callable[[Provider], Provider]] = None,
+    ):
+        self.config = config
+        self.override = override</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.RedirectUriInfo"><code class="flex name class">
+<span>class <span class="ident">RedirectUriInfo</span></span>
+<span>(</span><span>redirect_uri_on_provider_dashboard: str, redirect_uri_query_params: Dict[str, Any], pkce_code_verifier: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RedirectUriInfo:
+    def __init__(
+        self,
+        redirect_uri_on_provider_dashboard: str,
+        redirect_uri_query_params: Dict[str, Any],
+        pkce_code_verifier: Optional[str] = None,
+    ):
+        self.redirect_uri_on_provider_dashboard = redirect_uri_on_provider_dashboard
+        self.redirect_uri_query_params = redirect_uri_query_params
+        self.pkce_code_verifier = pkce_code_verifier</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.UserFields"><code class="flex name class">
+<span>class <span class="ident">UserFields</span></span>
+<span>(</span><span>user_id: Optional[str] = None, email: Optional[str] = None, email_verified: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserFields:
+    def __init__(
+        self,
+        user_id: Optional[str] = None,
+        email: Optional[str] = None,
+        email_verified: Optional[str] = None,
+    ):
+        self.user_id = user_id
+        self.email = email
+        self.email_verified = email_verified
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;userId&#34;: self.user_id,
+            &#34;email&#34;: self.email,
+            &#34;emailVerified&#34;: self.email_verified,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.provider.UserFields.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res = {
+        &#34;userId&#34;: self.user_id,
+        &#34;email&#34;: self.email,
+        &#34;emailVerified&#34;: self.email_verified,
+    }
+
+    return {k: v for k, v in res.items() if v is not None}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.UserInfoMap"><code class="flex name class">
+<span>class <span class="ident">UserInfoMap</span></span>
+<span>(</span><span>from_id_token_payload: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserFields" href="#supertokens_python.recipe.thirdparty.provider.UserFields">UserFields</a>] = None, from_user_info_api: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserFields" href="#supertokens_python.recipe.thirdparty.provider.UserFields">UserFields</a>] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserInfoMap:
+    def __init__(
+        self,
+        from_id_token_payload: Optional[UserFields] = None,
+        from_user_info_api: Optional[UserFields] = None,
+    ):
+        self.from_id_token_payload = from_id_token_payload
+        self.from_user_info_api = from_user_info_api
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        if self.from_id_token_payload:
+            res[&#34;fromIdTokenPayload&#34;] = self.from_id_token_payload.to_json()
+        if self.from_user_info_api:
+            res[&#34;fromUserInfoAPI&#34;] = self.from_user_info_api.to_json()
+        return res</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.provider.UserInfoMap.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res: Dict[str, Any] = {}
+    if self.from_id_token_payload:
+        res[&#34;fromIdTokenPayload&#34;] = self.from_id_token_payload.to_json()
+    if self.from_user_info_api:
+        res[&#34;fromUserInfoAPI&#34;] = self.from_user_info_api.to_json()
+    return res</code></pre>
 </details>
 </dd>
 </dl>
@@ -253,13 +1078,57 @@ def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect" href="#supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect">AuthorisationRedirect</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig" href="#supertokens_python.recipe.thirdparty.provider.CommonProviderConfig">CommonProviderConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig.to_json" href="#supertokens_python.recipe.thirdparty.provider.CommonProviderConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.provider.Provider" href="#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info">get_access_token_api_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info">get_authorisation_redirect_api_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_client_id" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_client_id">get_client_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info">get_profile_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri">get_redirect_uri</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.exchange_auth_code_for_oauth_tokens" href="#supertokens_python.recipe.thirdparty.provider.Provider.exchange_auth_code_for_oauth_tokens">exchange_auth_code_for_oauth_tokens</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_url" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_url">get_authorisation_redirect_url</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_config_for_client_type" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_config_for_client_type">get_config_for_client_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_user_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_user_info">get_user_info</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig.to_json" href="#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig.to_json" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient.to_json" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.RedirectUriInfo" href="#supertokens_python.recipe.thirdparty.provider.RedirectUriInfo">RedirectUriInfo</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.UserFields" href="#supertokens_python.recipe.thirdparty.provider.UserFields">UserFields</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.UserFields.to_json" href="#supertokens_python.recipe.thirdparty.provider.UserFields.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap.to_json" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>

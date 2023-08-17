@@ -40,7 +40,10 @@ from ...interfaces import APIInterface, APIOptions, UserMetadataPutAPIResponse
 
 
 async def handle_metadata_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; UserMetadataPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get(&#34;userId&#34;)
@@ -78,8 +81,8 @@ async def handle_metadata_put(
     #
     # Removing first ensures that the final data is exactly what the user wanted it to be
 
-    await clear_user_metadata(user_id)
-    await update_user_metadata(user_id, parsed_data)
+    await clear_user_metadata(user_id, user_context)
+    await update_user_metadata(user_id, parsed_data, user_context)
 
     return UserMetadataPutAPIResponse()</code></pre>
 </details>
@@ -92,7 +95,7 @@ async def handle_metadata_put(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_metadata_put.handle_metadata_put"><code class="name flex">
-<span>async def <span class="ident">handle_metadata_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse">UserMetadataPutAPIResponse</a></span>
+<span>async def <span class="ident">handle_metadata_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse">UserMetadataPutAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -101,7 +104,10 @@ async def handle_metadata_put(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_metadata_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -&gt; UserMetadataPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get(&#34;userId&#34;)
@@ -139,8 +145,8 @@ async def handle_metadata_put(
     #
     # Removing first ensures that the final data is exactly what the user wanted it to be
 
-    await clear_user_metadata(user_id)
-    await update_user_metadata(user_id, parsed_data)
+    await clear_user_metadata(user_id, user_context)
+    await update_user_metadata(user_id, parsed_data, user_context)
 
     return UserMetadataPutAPIResponse()</code></pre>
 </details>

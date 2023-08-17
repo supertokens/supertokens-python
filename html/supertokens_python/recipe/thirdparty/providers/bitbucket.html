@@ -42,103 +42,99 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+from typing import Dict, Any, Optional
 
-from httpx import AsyncClient
-from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
-    UserInfo,
-    UserInfoEmail,
+from supertokens_python.recipe.thirdparty.provider import (
+    ProviderConfigForClient,
+    ProviderInput,
+    Provider,
 )
+from .custom import GenericProvider, NewProvider
 
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
+from .utils import do_get_request
+from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 
 
-class Bitbucket(Provider):
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        scope: Union[None, List[str]] = None,
-        authorisation_redirect: Union[
-            None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
-        ] = None,
-        is_default: bool = False,
-    ):
-        super().__init__(&#34;bitbucket&#34;, is_default)
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scopes = [&#34;account&#34;, &#34;email&#34;] if scope is None else list(set(scope))
-        self.access_token_api_url = &#34;https://bitbucket.org/site/oauth2/access_token&#34;
-        self.authorisation_redirect_url = &#34;https://bitbucket.org/site/oauth2/authorize&#34;
-        self.authorisation_redirect_params = {}
-        if authorisation_redirect is not None:
-            self.authorisation_redirect_params = authorisation_redirect
+class BitbucketImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -&gt; ProviderConfigForClient:
+        config = await super().get_config_for_client_type(client_type, user_context)
 
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+        if config.scope is None:
+            config.scope = [&#34;account&#34;, &#34;email&#34;]
+
+        return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; UserInfo:
-        access_token: str = auth_code_response[&#34;access_token&#34;]
-        headers = {&#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;}
-        async with AsyncClient() as client:
-            response = await client.get(  # type: ignore
-                url=&#34;https://api.bitbucket.org/2.0/user&#34;,
-                headers=headers,
-            )
-            user_info = response.json()
-            user_id = user_info[&#34;uuid&#34;]
-            email_res = await client.get(  # type: ignore
-                url=&#34;https://api.bitbucket.org/2.0/user/emails&#34;,
-                headers=headers,
-            )
-            email_data = email_res.json()
-            email = None
-            is_verified = False
-            for email_info in email_data[&#34;values&#34;]:
-                if email_info.get(&#34;is_primary&#34;):
-                    email = email_info[&#34;email&#34;]
-                    is_verified = email_info[&#34;is_confirmed&#34;]
-                    break
+        _ = user_context
+        access_token = oauth_tokens.get(&#34;access_token&#34;)
+        if access_token is None:
+            raise Exception(&#34;Access token not found&#34;)
 
-            if email is None:
-                return UserInfo(user_id)
-            return UserInfo(user_id, UserInfoEmail(email, is_verified))
-
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -&gt; AuthorisationRedirectAPI:
-        params = {
-            &#34;scope&#34;: &#34; &#34;.join(self.scopes),
-            &#34;response_type&#34;: &#34;code&#34;,
-            &#34;client_id&#34;: self.client_id,
-            &#34;access_type&#34;: &#34;offline&#34;,
-            **self.authorisation_redirect_params,
+        headers = {
+            &#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;,
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -&gt; AccessTokenAPI:
-        params = {
-            &#34;client_id&#34;: self.client_id,
-            &#34;client_secret&#34;: self.client_secret,
-            &#34;grant_type&#34;: &#34;authorization_code&#34;,
-            &#34;code&#34;: auth_code_from_request,
-            &#34;redirect_uri&#34;: redirect_uri,
+        raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+
+        user_info_from_access_token = await do_get_request(
+            &#34;https://api.bitbucket.org/2.0/user&#34;,
+            query_params=None,
+            headers=headers,
+        )
+
+        raw_user_info_from_provider.from_user_info_api = user_info_from_access_token
+
+        user_info_from_email = await do_get_request(
+            &#34;https://api.bitbucket.org/2.0/user/emails&#34;,
+            query_params=None,
+            headers=headers,
+        )
+
+        if raw_user_info_from_provider.from_id_token_payload is None:
+            # Actually this should never happen but python type
+            # checker is not agreeing so doing this:
+            raw_user_info_from_provider.from_id_token_payload = {}
+
+        raw_user_info_from_provider.from_id_token_payload[
+            &#34;email&#34;
+        ] = user_info_from_email
+
+        email = None
+        is_verified = False
+        for email_info in user_info_from_email.values():
+            if email_info[&#34;is_primary&#34;]:
+                email = email_info[&#34;email&#34;]
+                is_verified = email_info[&#34;is_confirmed&#34;]
+
+        return UserInfo(
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api[&#34;uuid&#34;],
+            email=None if email is None else UserInfoEmail(email, is_verified),
+            raw_user_info_from_provider=raw_user_info_from_provider,
+        )
+
+
+def Bitbucket(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
+    if input.config.name is None:
+        input.config.name = &#34;Bitbucket&#34;
+
+    if input.config.authorization_endpoint is None:
+        input.config.authorization_endpoint = (
+            &#34;https://bitbucket.org/site/oauth2/authorize&#34;
+        )
+
+    if input.config.token_endpoint is None:
+        input.config.token_endpoint = &#34;https://bitbucket.org/site/oauth2/access_token&#34;
+
+    if input.config.authorization_endpoint_query_params is None:
+        input.config.authorization_endpoint_query_params = {
+            &#34;audience&#34;: &#34;api.atlassian.com&#34;,
         }
-        return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-        return None
-
-    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
-        return self.client_id</code></pre>
+    return NewProvider(input, BitbucketImpl)</code></pre>
 </details>
 </section>
 <section>
@@ -146,113 +142,122 @@ class Bitbucket(Provider):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket"><code class="name flex">
+<span>def <span class="ident">Bitbucket</span></span>(<span>input: ProviderInput) ‑> <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Bitbucket(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
+    if input.config.name is None:
+        input.config.name = &#34;Bitbucket&#34;
+
+    if input.config.authorization_endpoint is None:
+        input.config.authorization_endpoint = (
+            &#34;https://bitbucket.org/site/oauth2/authorize&#34;
+        )
+
+    if input.config.token_endpoint is None:
+        input.config.token_endpoint = &#34;https://bitbucket.org/site/oauth2/access_token&#34;
+
+    if input.config.authorization_endpoint_query_params is None:
+        input.config.authorization_endpoint_query_params = {
+            &#34;audience&#34;: &#34;api.atlassian.com&#34;,
+        }
+
+    return NewProvider(input, BitbucketImpl)</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket"><code class="flex name class">
-<span>class <span class="ident">Bitbucket</span></span>
-<span>(</span><span>client_id: str, client_secret: str, scope: Union[None, List[str]] = None, authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[BaseRequest], str]]]] = None, is_default: bool = False)</span>
+<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl"><code class="flex name class">
+<span>class <span class="ident">BitbucketImpl</span></span>
+<span>(</span><span>provider_config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Bitbucket(Provider):
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        scope: Union[None, List[str]] = None,
-        authorisation_redirect: Union[
-            None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
-        ] = None,
-        is_default: bool = False,
-    ):
-        super().__init__(&#34;bitbucket&#34;, is_default)
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scopes = [&#34;account&#34;, &#34;email&#34;] if scope is None else list(set(scope))
-        self.access_token_api_url = &#34;https://bitbucket.org/site/oauth2/access_token&#34;
-        self.authorisation_redirect_url = &#34;https://bitbucket.org/site/oauth2/authorize&#34;
-        self.authorisation_redirect_params = {}
-        if authorisation_redirect is not None:
-            self.authorisation_redirect_params = authorisation_redirect
+<pre><code class="python">class BitbucketImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -&gt; ProviderConfigForClient:
+        config = await super().get_config_for_client_type(client_type, user_context)
 
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+        if config.scope is None:
+            config.scope = [&#34;account&#34;, &#34;email&#34;]
+
+        return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; UserInfo:
-        access_token: str = auth_code_response[&#34;access_token&#34;]
-        headers = {&#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;}
-        async with AsyncClient() as client:
-            response = await client.get(  # type: ignore
-                url=&#34;https://api.bitbucket.org/2.0/user&#34;,
-                headers=headers,
-            )
-            user_info = response.json()
-            user_id = user_info[&#34;uuid&#34;]
-            email_res = await client.get(  # type: ignore
-                url=&#34;https://api.bitbucket.org/2.0/user/emails&#34;,
-                headers=headers,
-            )
-            email_data = email_res.json()
-            email = None
-            is_verified = False
-            for email_info in email_data[&#34;values&#34;]:
-                if email_info.get(&#34;is_primary&#34;):
-                    email = email_info[&#34;email&#34;]
-                    is_verified = email_info[&#34;is_confirmed&#34;]
-                    break
+        _ = user_context
+        access_token = oauth_tokens.get(&#34;access_token&#34;)
+        if access_token is None:
+            raise Exception(&#34;Access token not found&#34;)
 
-            if email is None:
-                return UserInfo(user_id)
-            return UserInfo(user_id, UserInfoEmail(email, is_verified))
-
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -&gt; AuthorisationRedirectAPI:
-        params = {
-            &#34;scope&#34;: &#34; &#34;.join(self.scopes),
-            &#34;response_type&#34;: &#34;code&#34;,
-            &#34;client_id&#34;: self.client_id,
-            &#34;access_type&#34;: &#34;offline&#34;,
-            **self.authorisation_redirect_params,
+        headers = {
+            &#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;,
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -&gt; AccessTokenAPI:
-        params = {
-            &#34;client_id&#34;: self.client_id,
-            &#34;client_secret&#34;: self.client_secret,
-            &#34;grant_type&#34;: &#34;authorization_code&#34;,
-            &#34;code&#34;: auth_code_from_request,
-            &#34;redirect_uri&#34;: redirect_uri,
-        }
-        return AccessTokenAPI(self.access_token_api_url, params)
+        raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-        return None
+        user_info_from_access_token = await do_get_request(
+            &#34;https://api.bitbucket.org/2.0/user&#34;,
+            query_params=None,
+            headers=headers,
+        )
 
-    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
-        return self.client_id</code></pre>
+        raw_user_info_from_provider.from_user_info_api = user_info_from_access_token
+
+        user_info_from_email = await do_get_request(
+            &#34;https://api.bitbucket.org/2.0/user/emails&#34;,
+            query_params=None,
+            headers=headers,
+        )
+
+        if raw_user_info_from_provider.from_id_token_payload is None:
+            # Actually this should never happen but python type
+            # checker is not agreeing so doing this:
+            raw_user_info_from_provider.from_id_token_payload = {}
+
+        raw_user_info_from_provider.from_id_token_payload[
+            &#34;email&#34;
+        ] = user_info_from_email
+
+        email = None
+        is_verified = False
+        for email_info in user_info_from_email.values():
+            if email_info[&#34;is_primary&#34;]:
+                email = email_info[&#34;email&#34;]
+                is_verified = email_info[&#34;is_confirmed&#34;]
+
+        return UserInfo(
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api[&#34;uuid&#34;],
+            email=None if email is None else UserInfoEmail(email, is_verified),
+            raw_user_info_from_provider=raw_user_info_from_provider,
+        )</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider" href="custom.html#supertokens_python.recipe.thirdparty.providers.custom.GenericProvider">GenericProvider</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></li>
-<li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_access_token_api_info"><code class="name flex">
-<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.AccessTokenAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AccessTokenAPI">AccessTokenAPI</a></span>
+<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl.get_config_for_client_type"><code class="name flex">
+<span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -260,98 +265,19 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_access_token_api_info(
-    self,
-    redirect_uri: str,
-    auth_code_from_request: str,
-    user_context: Dict[str, Any],
-) -&gt; AccessTokenAPI:
-    params = {
-        &#34;client_id&#34;: self.client_id,
-        &#34;client_secret&#34;: self.client_secret,
-        &#34;grant_type&#34;: &#34;authorization_code&#34;,
-        &#34;code&#34;: auth_code_from_request,
-        &#34;redirect_uri&#34;: redirect_uri,
-    }
-    return AccessTokenAPI(self.access_token_api_url, params)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_authorisation_redirect_api_info"><code class="name flex">
-<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI">AuthorisationRedirectAPI</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_authorisation_redirect_api_info(
-    self, user_context: Dict[str, Any]
-) -&gt; AuthorisationRedirectAPI:
-    params = {
-        &#34;scope&#34;: &#34; &#34;.join(self.scopes),
-        &#34;response_type&#34;: &#34;code&#34;,
-        &#34;client_id&#34;: self.client_id,
-        &#34;access_type&#34;: &#34;offline&#34;,
-        **self.authorisation_redirect_params,
-    }
-    return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_client_id"><code class="name flex">
-<span>def <span class="ident">get_client_id</span></span>(<span>self, user_context: Dict[str, Any]) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
-    return self.client_id</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_profile_info"><code class="name flex">
-<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_profile_info(
-    self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; UserInfo:
-    access_token: str = auth_code_response[&#34;access_token&#34;]
-    headers = {&#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;}
-    async with AsyncClient() as client:
-        response = await client.get(  # type: ignore
-            url=&#34;https://api.bitbucket.org/2.0/user&#34;,
-            headers=headers,
-        )
-        user_info = response.json()
-        user_id = user_info[&#34;uuid&#34;]
-        email_res = await client.get(  # type: ignore
-            url=&#34;https://api.bitbucket.org/2.0/user/emails&#34;,
-            headers=headers,
-        )
-        email_data = email_res.json()
-        email = None
-        is_verified = False
-        for email_info in email_data[&#34;values&#34;]:
-            if email_info.get(&#34;is_primary&#34;):
-                email = email_info[&#34;email&#34;]
-                is_verified = email_info[&#34;is_confirmed&#34;]
-                break
+<pre><code class="python">async def get_config_for_client_type(
+    self, client_type: Optional[str], user_context: Dict[str, Any]
+) -&gt; ProviderConfigForClient:
+    config = await super().get_config_for_client_type(client_type, user_context)
 
-        if email is None:
-            return UserInfo(user_id)
-        return UserInfo(user_id, UserInfoEmail(email, is_verified))</code></pre>
+    if config.scope is None:
+        config.scope = [&#34;account&#34;, &#34;email&#34;]
+
+    return config</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_redirect_uri"><code class="name flex">
-<span>def <span class="ident">get_redirect_uri</span></span>(<span>self, user_context: Dict[str, Any]) ‑> Optional[str]</span>
+<dt id="supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl.get_user_info"><code class="name flex">
+<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -359,8 +285,55 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-    return None</code></pre>
+<pre><code class="python">async def get_user_info(
+    self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+) -&gt; UserInfo:
+    _ = user_context
+    access_token = oauth_tokens.get(&#34;access_token&#34;)
+    if access_token is None:
+        raise Exception(&#34;Access token not found&#34;)
+
+    headers = {
+        &#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;,
+    }
+
+    raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+
+    user_info_from_access_token = await do_get_request(
+        &#34;https://api.bitbucket.org/2.0/user&#34;,
+        query_params=None,
+        headers=headers,
+    )
+
+    raw_user_info_from_provider.from_user_info_api = user_info_from_access_token
+
+    user_info_from_email = await do_get_request(
+        &#34;https://api.bitbucket.org/2.0/user/emails&#34;,
+        query_params=None,
+        headers=headers,
+    )
+
+    if raw_user_info_from_provider.from_id_token_payload is None:
+        # Actually this should never happen but python type
+        # checker is not agreeing so doing this:
+        raw_user_info_from_provider.from_id_token_payload = {}
+
+    raw_user_info_from_provider.from_id_token_payload[
+        &#34;email&#34;
+    ] = user_info_from_email
+
+    email = None
+    is_verified = False
+    for email_info in user_info_from_email.values():
+        if email_info[&#34;is_primary&#34;]:
+            email = email_info[&#34;email&#34;]
+            is_verified = email_info[&#34;is_confirmed&#34;]
+
+    return UserInfo(
+        third_party_user_id=raw_user_info_from_provider.from_user_info_api[&#34;uuid&#34;],
+        email=None if email is None else UserInfoEmail(email, is_verified),
+        raw_user_info_from_provider=raw_user_info_from_provider,
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -379,16 +352,18 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers" href="index.html">supertokens_python.recipe.thirdparty.providers</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket">Bitbucket</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket">Bitbucket</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl">BitbucketImpl</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_access_token_api_info" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_access_token_api_info">get_access_token_api_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_authorisation_redirect_api_info" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_authorisation_redirect_api_info">get_authorisation_redirect_api_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_client_id" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_client_id">get_client_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_profile_info" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_profile_info">get_profile_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_redirect_uri" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.Bitbucket.get_redirect_uri">get_redirect_uri</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl.get_config_for_client_type" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl.get_config_for_client_type">get_config_for_client_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl.get_user_info" href="#supertokens_python.recipe.thirdparty.providers.bitbucket.BitbucketImpl.get_user_info">get_user_info</a></code></li>
 </ul>
 </li>
 </ul>

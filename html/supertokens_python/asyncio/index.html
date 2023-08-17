@@ -56,29 +56,35 @@ from supertokens_python.types import UsersResponse
 
 
 async def get_users_oldest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return await Supertokens.get_instance().get_users(
-        &#34;ASC&#34;, limit, pagination_token, include_recipe_ids, query
+        tenant_id, &#34;ASC&#34;, limit, pagination_token, include_recipe_ids, query
     )
 
 
 async def get_users_newest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return await Supertokens.get_instance().get_users(
-        &#34;DESC&#34;, limit, pagination_token, include_recipe_ids, query
+        tenant_id, &#34;DESC&#34;, limit, pagination_token, include_recipe_ids, query
     )
 
 
-async def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -&gt; int:
-    return await Supertokens.get_instance().get_user_count(include_recipe_ids)
+async def get_user_count(
+    include_recipe_ids: Union[None, List[str]] = None, tenant_id: Optional[str] = None
+) -&gt; int:
+    return await Supertokens.get_instance().get_user_count(
+        include_recipe_ids, tenant_id
+    )
 
 
 async def delete_user(user_id: str) -&gt; None:
@@ -191,7 +197,7 @@ async def update_or_delete_user_id_mapping_info(
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_user_count"><code class="name flex">
-<span>async def <span class="ident">get_user_count</span></span>(<span>include_recipe_ids: Optional[None] = None) ‑> int</span>
+<span>async def <span class="ident">get_user_count</span></span>(<span>include_recipe_ids: Optional[None] = None, tenant_id: Optional[str] = None) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -199,8 +205,12 @@ async def update_or_delete_user_id_mapping_info(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -&gt; int:
-    return await Supertokens.get_instance().get_user_count(include_recipe_ids)</code></pre>
+<pre><code class="python">async def get_user_count(
+    include_recipe_ids: Union[None, List[str]] = None, tenant_id: Optional[str] = None
+) -&gt; int:
+    return await Supertokens.get_instance().get_user_count(
+        include_recipe_ids, tenant_id
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_user_id_mapping"><code class="name flex">
@@ -220,7 +230,7 @@ async def update_or_delete_user_id_mapping_info(
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_users_newest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_newest_first</span></span>(<span>limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users_newest_first</span></span>(<span>tenant_id: str, limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -229,18 +239,19 @@ async def update_or_delete_user_id_mapping_info(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_users_newest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return await Supertokens.get_instance().get_users(
-        &#34;DESC&#34;, limit, pagination_token, include_recipe_ids, query
+        tenant_id, &#34;DESC&#34;, limit, pagination_token, include_recipe_ids, query
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_users_oldest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_oldest_first</span></span>(<span>limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users_oldest_first</span></span>(<span>tenant_id: str, limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -249,13 +260,14 @@ async def update_or_delete_user_id_mapping_info(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_users_oldest_first(
+    tenant_id: str,
     limit: Union[int, None] = None,
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
 ) -&gt; UsersResponse:
     return await Supertokens.get_instance().get_users(
-        &#34;ASC&#34;, limit, pagination_token, include_recipe_ids, query
+        tenant_id, &#34;ASC&#34;, limit, pagination_token, include_recipe_ids, query
     )</code></pre>
 </details>
 </dd>
