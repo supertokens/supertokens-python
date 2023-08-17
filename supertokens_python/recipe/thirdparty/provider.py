@@ -136,17 +136,19 @@ class UserFields:
 class UserInfoMap:
     def __init__(
         self,
-        from_id_token_payload: UserFields,
-        from_user_info_api: UserFields,
+        from_id_token_payload: Optional[UserFields] = None,
+        from_user_info_api: Optional[UserFields] = None,
     ):
         self.from_id_token_payload = from_id_token_payload
         self.from_user_info_api = from_user_info_api
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            "fromIdTokenPayload": self.from_id_token_payload.to_json(),
-            "fromUserInfoAPI": self.from_user_info_api.to_json(),
-        }
+        res: Dict[str, Any] = {}
+        if self.from_id_token_payload:
+            res["fromIdTokenPayload"] = self.from_id_token_payload.to_json()
+        if self.from_user_info_api:
+            res["fromUserInfoAPI"] = self.from_user_info_api.to_json()
+        return res
 
 
 class CommonProviderConfig:

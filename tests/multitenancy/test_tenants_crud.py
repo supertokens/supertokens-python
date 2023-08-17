@@ -224,6 +224,9 @@ async def test_tenant_thirdparty_config():
     )
 
     assert provider.user_info_map is not None
+    assert provider.user_info_map.from_user_info_api is not None
+    assert provider.user_info_map.from_id_token_payload is not None
+
     assert provider.user_info_map.from_id_token_payload.user_id == "userid"
     assert provider.user_info_map.from_id_token_payload.email == "email"
     assert provider.user_info_map.from_id_token_payload.email_verified == "is_verified"
