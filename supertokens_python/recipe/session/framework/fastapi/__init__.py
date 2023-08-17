@@ -26,6 +26,8 @@ from fastapi.responses import JSONResponse
 from ...interfaces import SessionContainer, SessionClaimValidator
 from supertokens_python.utils import set_request_in_user_context_if_not_defined
 
+from fastapi import Request
+
 
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
@@ -40,7 +42,8 @@ def verify_session(
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
     _ = user_context
-    from fastapi import Request
+
+    from fastapi import Request  # pylint: disable=reimported
 
     async def func(request: Request) -> Union[SessionContainer, None]:
         nonlocal user_context
