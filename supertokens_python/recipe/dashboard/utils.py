@@ -88,6 +88,10 @@ class UserWithMetadata:
         self.last_name = last_name
 
         self.user_id = user.user_id
+        # from_user() is called in /api/users (note extra s)
+        # here we DashboardUsersGetResponse() doesn't maintain
+        # recipe id for each user on its own. That's why we need
+        # to set self.recipe_id here.
         self.recipe_id = user.recipe_id
         self.time_joined = user.time_joined
         self.email = user.email
@@ -101,22 +105,28 @@ class UserWithMetadata:
 
     def from_dict(
         self,
-        user_dict: Dict[str, Any],
+        user_obj_dict: Dict[str, Any],
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ):
         self.first_name = first_name
         self.last_name = last_name
 
-        self.user_id = user_dict["user_id"]
-        self.recipe_id = user_dict.get("recipe_id")
-        self.time_joined = user_dict["time_joined"]
-        self.email = user_dict.get("email")
-        self.phone_number = user_dict.get("phone_number")
+        self.user_id = user_obj_dict["user_id"]
+        # from_dict() is used in `/api/user` where
+        # recipe_id is already passed seperately to
+        # GetUserForRecipeIdResult object
+        # So we set recipe_id to None here
+        self.recipe_id = None
+        self.time_joined = user_obj_dict["time_joined"]
+        self.tenant_ids = user_obj_dict.get("tenant_ids", [])
+
+        self.email = user_obj_dict.get("email")
+        self.phone_number = user_obj_dict.get("phone_number")
         self.tp_info = (
             None
-            if user_dict.get("third_party_info") is None
-            else user_dict["third_party_info"].__dict__
+            if user_obj_dict.get("third_party_info") is None
+            else user_obj_dict["third_party_info"].__dict__
         )
 
         return self
@@ -125,6 +135,7 @@ class UserWithMetadata:
         user_json: Dict[str, Any] = {
             "id": self.user_id,
             "timeJoined": self.time_joined,
+            "tenantIds": self.tenant_ids,
         }
         if self.tp_info is not None:
             user_json["thirdParty"] = {

@@ -128,7 +128,7 @@ class ListAllTenantsItem(TenantConfigResponse):
     def to_json(self):
         res = {
             "tenantId": self.tenant_id,
-            "emailpassword": self.emailpassword.to_json(),
+            "emailPassword": self.emailpassword.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
             "coreConfig": self.core_config,

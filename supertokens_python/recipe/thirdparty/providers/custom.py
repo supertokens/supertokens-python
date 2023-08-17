@@ -81,6 +81,11 @@ def get_supertokens_user_info_result_from_raw_user_info(
     if config.user_info_map is None:
         raise Exception("user info map is missing")
 
+    if config.user_info_map.from_user_info_api is None:
+        config.user_info_map.from_user_info_api = UserFields()
+    if config.user_info_map.from_id_token_payload is None:
+        config.user_info_map.from_id_token_payload = UserFields()
+
     if config.user_info_map.from_user_info_api.user_id is not None:
         user_id = access_field(
             raw_user_info_from_provider.from_user_info_api,
@@ -214,6 +219,10 @@ class GenericProvider(Provider):
                 from_id_token_payload=UserFields(),
                 from_user_info_api=UserFields(),
             )
+        if input_config.user_info_map.from_user_info_api is None:
+            input_config.user_info_map.from_user_info_api = UserFields()
+        if input_config.user_info_map.from_id_token_payload is None:
+            input_config.user_info_map.from_id_token_payload = UserFields()
 
         # These are safe defaults common to most providers. Each provider
         # implementations override these as necessary

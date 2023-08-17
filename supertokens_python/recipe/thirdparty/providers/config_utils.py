@@ -95,7 +95,17 @@ def merge_config(
     if result.user_info_map is None:
         result.user_info_map = UserInfoMap(UserFields(), UserFields())
 
+    if result.user_info_map.from_user_info_api is None:
+        result.user_info_map.from_user_info_api = UserFields()
+    if result.user_info_map.from_id_token_payload is None:
+        result.user_info_map.from_id_token_payload = UserFields()
+
     if config_from_core.user_info_map is not None:
+        if config_from_core.user_info_map.from_user_info_api is None:
+            config_from_core.user_info_map.from_user_info_api = UserFields()
+        if config_from_core.user_info_map.from_id_token_payload is None:
+            config_from_core.user_info_map.from_id_token_payload = UserFields()
+
         if config_from_core.user_info_map.from_id_token_payload.user_id is not None:
             result.user_info_map.from_id_token_payload.user_id = (
                 config_from_core.user_info_map.from_id_token_payload.user_id

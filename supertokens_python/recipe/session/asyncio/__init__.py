@@ -20,7 +20,6 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     GetClaimValueOkResult,
     JSONObject,
-    RegenerateAccessTokenOkResult,
     SessionClaim,
     SessionClaimValidator,
     SessionContainer,
@@ -530,16 +529,4 @@ async def get_open_id_discovery_configuration(
         await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
             user_context
         )
-    )
-
-
-async def regenerate_access_token(
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[RegenerateAccessTokenOkResult, None]:
-    if user_context is None:
-        user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
-        access_token, new_access_token_payload, user_context
     )

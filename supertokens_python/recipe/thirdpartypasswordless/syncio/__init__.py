@@ -289,7 +289,7 @@ def passwordlessSigninup(
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> interfaces.ConsumeCodeOkResult:
     return sync(
-        asyncio.passwordlessSigninup(
+        asyncio.passwordless_signinup(
             tenant_id=tenant_id,
             email=email,
             phone_number=phone_number,

@@ -103,6 +103,9 @@ def Linkedin(input: ProviderInput) -> Provider:  # pylint: disable=redefined-bui
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
 
+    if input.config.user_info_map.from_user_info_api is None:
+        input.config.user_info_map.from_user_info_api = UserFields()
+
     if input.config.user_info_map.from_user_info_api.user_id is None:
         input.config.user_info_map.from_user_info_api.user_id = "id"
 

@@ -131,7 +131,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_or_update_tenant(
         self,
-        tenant_id: Optional[str],
+        tenant_id: str,
         config: Optional[TenantConfig],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:

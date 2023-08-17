@@ -832,7 +832,7 @@ def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middlewa
     assert res.status_code == 401
     assert res.json == {"message": "unauthorised"}
 
-    s = create_new_session_without_request_response("userId", {}, {})
+    s = create_new_session_without_request_response("public", "userId", {}, {})
     res = client.get(
         "/verify", headers={"Authorization": "Bearer " + s.get_access_token()}
     )

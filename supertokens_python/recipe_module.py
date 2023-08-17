@@ -16,8 +16,7 @@ from __future__ import annotations
 
 import abc
 import re
-from typing import TYPE_CHECKING, List, Union, Optional, Dict, Any
-
+from typing import TYPE_CHECKING, List, Union, Optional, Dict, Any, Callable, Awaitable
 from typing_extensions import Literal
 
 from .framework.response import BaseResponse
@@ -38,6 +37,8 @@ class ApiIdWithTenantId:
 
 
 class RecipeModule(abc.ABC):
+    get_tenant_id: Optional[Callable[[str, Dict[str, Any]], Awaitable[str]]] = None
+
     def __init__(self, recipe_id: str, app_info: AppInfo):
         self.recipe_id = recipe_id
         self.app_info = app_info
@@ -52,7 +53,6 @@ class RecipeModule(abc.ABC):
         self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
     ) -> Union[ApiIdWithTenantId, None]:
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
         apis_handled = self.get_apis_handled()
 
@@ -75,27 +75,24 @@ class RecipeModule(abc.ABC):
             tenant_id = match_group_1
             remaining_path = NormalisedURLPath(match_group_2)
 
-        mt_recipe = MultitenancyRecipe.get_instance()
+        assert RecipeModule.get_tenant_id is not None
+        assert callable(RecipeModule.get_tenant_id)
 
         for current_api in apis_handled:
             if not current_api.disabled and current_api.method == method:
                 if self.app_info.api_base_path.append(
                     current_api.path_without_api_base_path
                 ).equals(path):
-                    final_tenant_id = (
-                        await mt_recipe.recipe_implementation.get_tenant_id(
-                            DEFAULT_TENANT_ID, user_context
-                        )
+                    final_tenant_id = await RecipeModule.get_tenant_id(  # pylint: disable=not-callable
+                        DEFAULT_TENANT_ID, user_context
                     )
                     return ApiIdWithTenantId(current_api.request_id, final_tenant_id)
 
                 if remaining_path is not None and self.app_info.api_base_path.append(
                     current_api.path_without_api_base_path
                 ).equals(self.app_info.api_base_path.append(remaining_path)):
-                    final_tenant_id = (
-                        await mt_recipe.recipe_implementation.get_tenant_id(
-                            tenant_id, user_context
-                        )
+                    final_tenant_id = await RecipeModule.get_tenant_id(  # pylint: disable=not-callable
+                        tenant_id, user_context
                     )
                     return ApiIdWithTenantId(current_api.request_id, final_tenant_id)
 

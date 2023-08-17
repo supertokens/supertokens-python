@@ -26,7 +26,6 @@ from ...jwt.interfaces import (
     GetJWKSResult,
 )
 from ..interfaces import (
-    RegenerateAccessTokenOkResult,
     SessionContainer,
     SessionInformationResult,
     SessionClaimValidator,
@@ -293,22 +292,6 @@ def get_open_id_discovery_configuration(
     )
 
     return sync(async_get_open_id_discovery_configuration(user_context))
-
-
-def regenerate_access_token(
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[RegenerateAccessTokenOkResult, None]:
-    from supertokens_python.recipe.session.asyncio import (
-        regenerate_access_token as async_regenerate_access_token,
-    )
-
-    return sync(
-        async_regenerate_access_token(
-            access_token, new_access_token_payload, user_context
-        )
-    )
 
 
 _T = TypeVar("_T")

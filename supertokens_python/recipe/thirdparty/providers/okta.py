@@ -19,8 +19,6 @@ from ..provider import (
     Provider,
     ProviderConfigForClient,
     ProviderInput,
-    UserFields,
-    UserInfoMap,
 )
 
 

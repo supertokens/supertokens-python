@@ -91,6 +91,8 @@ class MultitenancyRecipe(RecipeModule):
             self.config.get_allowed_domains_for_tenant_id
         )
 
+        RecipeModule.get_tenant_id = recipe_implementation.get_tenant_id
+
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, MultitenancyError)
 
@@ -154,7 +156,15 @@ class MultitenancyRecipe(RecipeModule):
                 )
 
                 def callback():
-                    pass  # TODO CLAIMS
+                    try:
+                        from supertokens_python.recipe.session import SessionRecipe
+
+                        SessionRecipe.get_instance().add_claim_from_other_recipe(
+                            AllowedDomainsClaim
+                        )
+                    except Exception:
+                        # Skip adding claims if session recipe is not initilised
+                        pass
 
                 PostSTInitCallbacks.add_post_init_callback(callback)
 
