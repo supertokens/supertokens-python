@@ -19,6 +19,7 @@ from supertokens_python.recipe import (
     emailverification,
     session,
     thirdpartyemailpassword,
+    usermetadata,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
@@ -54,6 +55,7 @@ init(
         session.init(),
         dashboard.init(),
         emailverification.init("REQUIRED"),
+        usermetadata.init(),
         thirdpartyemailpassword.init(
             providers=[
                 thirdpartyemailpassword.ProviderInput(

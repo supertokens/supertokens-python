@@ -43,8 +43,6 @@ def verify_session(
 ) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
     _ = user_context
 
-    from fastapi import Request  # pylint: disable=reimported
-
     async def func(request: Request) -> Union[SessionContainer, None]:
         nonlocal user_context
         base_req = FastApiRequest(request)

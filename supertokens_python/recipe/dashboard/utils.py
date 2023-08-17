@@ -88,6 +88,10 @@ class UserWithMetadata:
         self.last_name = last_name
 
         self.user_id = user.user_id
+        # from_user() is called in /api/users (note extra s)
+        # here we DashboardUsersGetResponse() doesn't maintain
+        # recipe id for each user on its own. That's why we need
+        # to set self.recipe_id here.
         self.recipe_id = user.recipe_id
         self.time_joined = user.time_joined
         self.email = user.email
@@ -109,7 +113,11 @@ class UserWithMetadata:
         self.last_name = last_name
 
         self.user_id = user_obj_dict["user_id"]
-        # self.recipe_id = user_obj_dict.get("recipe_id")
+        # from_dict() is used in `/api/user` where
+        # recipe_id is already passed seperately to
+        # GetUserForRecipeIdResult object
+        # So we set recipe_id to None here
+        self.recipe_id = None
         self.time_joined = user_obj_dict["time_joined"]
         self.tenant_ids = user_obj_dict.get("tenant_ids", [])
 
