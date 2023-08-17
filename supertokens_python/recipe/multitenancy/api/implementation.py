@@ -25,12 +25,6 @@ from supertokens_python.types import GeneralErrorResponse
 
 from ..interfaces import APIInterface, ThirdPartyProvider
 
-from supertokens_python.recipe.thirdparty.providers.config_utils import (
-    merge_providers_from_core_and_static,
-    find_and_create_provider_instance,
-)
-from supertokens_python.recipe.thirdparty.exceptions import ClientTypeNotFoundError
-
 
 class APIImplementation(APIInterface):
     async def login_methods_get(
@@ -40,6 +34,14 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+        from supertokens_python.recipe.thirdparty.providers.config_utils import (
+            merge_providers_from_core_and_static,
+            find_and_create_provider_instance,
+        )
+
+        from supertokens_python.recipe.thirdparty.exceptions import (
+            ClientTypeNotFoundError,
+        )
 
         tenant_config = await api_options.recipe_implementation.get_tenant(
             tenant_id, user_context

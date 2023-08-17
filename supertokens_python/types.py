@@ -43,19 +43,23 @@ class User:
         self.tenant_ids = tenant_ids
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        res: Dict[str, Any] = {
             "recipeId": self.recipe_id,
             "user": {
                 "id": self.user_id,
-                "email": self.email,
                 "timeJoined": self.time_joined,
-                "thirdParty": None
-                if self.third_party_info is None
-                else self.third_party_info.__dict__,
-                "phoneNumber": self.phone_number,
                 "tenantIds": self.tenant_ids,
             },
         }
+
+        if self.email is not None:
+            res["user"]["email"] = self.email
+        if self.phone_number is not None:
+            res["user"]["phoneNumber"] = self.phone_number
+        if self.third_party_info is not None:
+            res["user"]["thirdParty"] = self.third_party_info.__dict__
+
+        return res
 
 
 class UsersResponse:

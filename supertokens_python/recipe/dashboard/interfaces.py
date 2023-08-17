@@ -16,16 +16,22 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.recipe.session.interfaces import SessionInformationResult
 from supertokens_python.types import User
 
 from ...types import APIResponse
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest, BaseResponse
-
     from ...supertokens import AppInfo
     from .utils import DashboardConfig, UserWithMetadata
+
+    from supertokens_python.recipe.session.interfaces import SessionInformationResult
+    from supertokens_python.framework import BaseRequest, BaseResponse
+
+    from supertokens_python.recipe.multitenancy.interfaces import (
+        EmailPasswordConfig,
+        PasswordlessConfig,
+        ThirdPartyConfig,
+    )
 
 
 class SessionInfo:
@@ -36,6 +42,7 @@ class SessionInfo:
         self.expiry = info.expiry
         self.access_token_payload = info.custom_claims_in_access_token_payload
         self.time_created = info.time_created
+        self.tenant_id = info.tenant_id
 
 
 class RecipeInterface(ABC):
@@ -99,13 +106,6 @@ class DashboardUsersGetResponse(APIResponse):
             "users": [u.to_json() for u in self.users],
             "nextPaginationToken": self.next_pagination_token,
         }
-
-
-from supertokens_python.recipe.multitenancy.interfaces import (
-    EmailPasswordConfig,
-    PasswordlessConfig,
-    ThirdPartyConfig,
-)
 
 
 class DashboardListTenantItem:
@@ -210,7 +210,7 @@ class UserSessionsGetAPIResponse(APIResponse):
                 "accessTokenPayload": s.access_token_payload,
                 "expiry": s.expiry,
                 "sessionDataInDatabase": s.session_data_in_database,
-                "status": "OK",
+                "tenantId": s.tenant_id,
                 "timeCreated": s.time_created,
                 "userId": s.user_id,
                 "sessionHandle": s.session_handle,
