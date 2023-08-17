@@ -72,10 +72,12 @@ init(
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["GOOGLE_CLIENT_ID"],
                                 client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+                                client_type="web",
                             ),
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["GOOGLE_CLIENT_ID_MOBILE"],
                                 client_secret=os.environ["GOOGLE_CLIENT_SECRET_MOBILE"],
+                                client_type="mobile",
                             ),
                         ],
                     ),
@@ -87,10 +89,12 @@ init(
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["GITHUB_CLIENT_ID"],
                                 client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+                                client_type="web",
                             ),
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["GITHUB_CLIENT_ID_MOBILE"],
                                 client_secret=os.environ["GITHUB_CLIENT_SECRET_MOBILE"],
+                                client_type="mobile",
                             ),
                         ],
                     )
@@ -101,6 +105,7 @@ init(
                         clients=[
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["APPLE_CLIENT_ID"],
+                                client_type="web",
                                 additional_config={
                                     "keyId": os.environ["APPLE_KEY_ID"],
                                     "teamId": os.environ["APPLE_TEAM_ID"],
@@ -109,6 +114,7 @@ init(
                             ),
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["APPLE_CLIENT_ID_MOBILE"],
+                                client_type="mobile",
                                 additional_config={
                                     "keyId": os.environ["APPLE_KEY_ID"],
                                     "teamId": os.environ["APPLE_TEAM_ID"],
@@ -120,7 +126,7 @@ init(
                 ),
                 thirdpartyemailpassword.ProviderInput(
                     config=thirdpartyemailpassword.ProviderConfig(
-                        third_party_id="googleworkspaces",
+                        third_party_id="google-workspaces",
                         clients=[
                             thirdpartyemailpassword.ProviderClientConfig(
                                 client_id=os.environ["GOOGLE_WORKSPACES_CLIENT_ID"],
