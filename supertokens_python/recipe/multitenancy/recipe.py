@@ -30,7 +30,6 @@ from .interfaces import (
 )
 
 from .recipe_implementation import RecipeImplementation
-from ..session import SessionRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -91,6 +90,8 @@ class MultitenancyRecipe(RecipeModule):
         self.get_allowed_domains_for_tenant_id = (
             self.config.get_allowed_domains_for_tenant_id
         )
+
+        RecipeModule.get_tenant_id = recipe_implementation.get_tenant_id
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, MultitenancyError)
@@ -156,6 +157,8 @@ class MultitenancyRecipe(RecipeModule):
 
                 def callback():
                     try:
+                        from supertokens_python.recipe.session import SessionRecipe
+
                         SessionRecipe.get_instance().add_claim_from_other_recipe(
                             AllowedDomainsClaim
                         )
