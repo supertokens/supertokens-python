@@ -22,9 +22,6 @@ from typing_extensions import Literal
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.openid import (
-    InputOverrideConfig as OpenIdInputOverrideConfig,
-)
 from supertokens_python.utils import (
     is_an_ip_address,
     resolve,
@@ -40,6 +37,9 @@ from .exceptions import ClaimValidationError
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.recipe.openid import (
+        InputOverrideConfig as OpenIdInputOverrideConfig,
+    )
 
     from .interfaces import (
         APIInterface,
@@ -480,6 +480,7 @@ async def get_required_claim_validators(
     )
     global_claim_validators = await resolve(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
+            session.get_tenant_id(),
             session.get_user_id(),
             claim_validators_added_by_other_recipes,
             user_context,

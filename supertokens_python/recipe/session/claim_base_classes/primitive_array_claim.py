@@ -66,11 +66,14 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         payload: JSONObject,
         user_context: Dict[str, Any],
         is_include: bool,
+        is_include_any: bool = False,
     ):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
         expected_key = "expectedToInclude" if is_include else "expectedToNotInclude"
+        if is_include_any:
+            expected_key = "expectedToIncludeAtLeastOneOf"
 
         assert isinstance(self.claim, PrimitiveArrayClaim)
         claim_val = self.claim.get_value_from_payload(payload, user_context)
@@ -105,7 +108,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         )  # pyright: reportGeneralTypeIssues=false
 
         claim_val_set = set(claim_val)
-        if is_include:
+        if is_include and not is_include_any:
             for v in vals:
                 if v not in claim_val_set:
                     return ClaimValidationResult(
@@ -120,6 +123,9 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         else:
             for v in vals:
                 if v in claim_val_set:
+                    if is_include_any:
+                        return ClaimValidationResult(is_valid=True)
+
                     return ClaimValidationResult(
                         is_valid=False,
                         reason={
@@ -129,6 +135,17 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
                             "actualValue": claim_val,
                         },
                     )
+
+            if is_include_any:
+                return ClaimValidationResult(
+                    is_valid=False,
+                    reason={
+                        "message": "wrong value",
+                        expected_key: val,
+                        # other SDKs return the item itself
+                        "actualValue": claim_val,
+                    },
+                )
 
         return ClaimValidationResult(is_valid=True)
 
@@ -158,6 +175,17 @@ class IncludesAllSCV(SCVMixin[PrimitiveList]):
         user_context: Dict[str, Any],
     ):
         return await self._validate(payload, user_context, is_include=True)
+
+
+class IncludesAnySCV(SCVMixin[PrimitiveList]):
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ):
+        return await self._validate(
+            payload, user_context, is_include=True, is_include_any=True
+        )
 
 
 class ExcludesAllSCV(SCVMixin[PrimitiveList]):
@@ -211,6 +239,17 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
             (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
         )
 
+    def includes_any(
+        self,
+        val: PrimitiveList,
+        max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
+    ) -> SessionClaimValidator:
+        max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
+        return IncludesAnySCV(
+            (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+        )
+
     def excludes_all(
         self,
         val: PrimitiveList,
@@ -228,7 +267,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, Dict[str, Any]],
+            [str, str, Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,

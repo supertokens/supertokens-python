@@ -42,6 +42,7 @@ from supertokens_python.recipe.passwordless.types import (
 
 
 def create_code(
+    tenant_id: str,
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
@@ -49,6 +50,7 @@ def create_code(
 ) -> CreateCodeOkResult:
     return sync(
         asyncio.create_code(
+            tenant_id,
             email=email,
             phone_number=phone_number,
             user_input_code=user_input_code,
@@ -58,6 +60,7 @@ def create_code(
 
 
 def create_new_code_for_device(
+    tenant_id: str,
     device_id: str,
     user_input_code: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -68,6 +71,7 @@ def create_new_code_for_device(
 ]:
     return sync(
         asyncio.create_new_code_for_device(
+            tenant_id,
             device_id=device_id,
             user_input_code=user_input_code,
             user_context=user_context,
@@ -76,6 +80,7 @@ def create_new_code_for_device(
 
 
 def consume_code(
+    tenant_id: str,
     pre_auth_session_id: str,
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
@@ -89,6 +94,7 @@ def consume_code(
 ]:
     return sync(
         asyncio.consume_code(
+            tenant_id,
             pre_auth_session_id=pre_auth_session_id,
             user_input_code=user_input_code,
             device_id=device_id,
@@ -105,17 +111,21 @@ def get_user_by_id(
 
 
 def get_user_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[User, None]:
-    return sync(asyncio.get_user_by_email(email=email, user_context=user_context))
+    return sync(
+        asyncio.get_user_by_email(tenant_id, email=email, user_context=user_context)
+    )
 
 
 def get_user_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str,
+    phone_number: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[User, None]:
     return sync(
         asyncio.get_user_by_phone_number(
-            phone_number=phone_number, user_context=user_context
+            tenant_id=tenant_id, phone_number=phone_number, user_context=user_context
         )
     )
 
@@ -158,77 +168,98 @@ def delete_phone_number_for_user(
 
 
 def revoke_all_codes(
+    tenant_id: str,
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> RevokeAllCodesOkResult:
     return sync(
         asyncio.revoke_all_codes(
-            email=email, phone_number=phone_number, user_context=user_context
+            tenant_id, email=email, phone_number=phone_number, user_context=user_context
         )
     )
 
 
 def revoke_code(
-    code_id: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str, code_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> RevokeCodeOkResult:
-    return sync(asyncio.revoke_code(code_id=code_id, user_context=user_context))
+    return sync(
+        asyncio.revoke_code(tenant_id, code_id=code_id, user_context=user_context)
+    )
 
 
 def list_codes_by_email(
-    email: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[DeviceType]:
-    return sync(asyncio.list_codes_by_email(email=email, user_context=user_context))
+    return sync(
+        asyncio.list_codes_by_email(tenant_id, email=email, user_context=user_context)
+    )
 
 
 def list_codes_by_phone_number(
-    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> List[DeviceType]:
     return sync(
         asyncio.list_codes_by_phone_number(
-            phone_number=phone_number, user_context=user_context
+            tenant_id, phone_number=phone_number, user_context=user_context
         )
     )
 
 
 def list_codes_by_device_id(
-    device_id: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str,
+    device_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     return sync(
-        asyncio.list_codes_by_device_id(device_id=device_id, user_context=user_context)
+        asyncio.list_codes_by_device_id(
+            tenant_id=tenant_id, device_id=device_id, user_context=user_context
+        )
     )
 
 
 def list_codes_by_pre_auth_session_id(
-    pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str,
+    pre_auth_session_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[DeviceType, None]:
     return sync(
         asyncio.list_codes_by_pre_auth_session_id(
-            pre_auth_session_id=pre_auth_session_id, user_context=user_context
+            tenant_id=tenant_id,
+            pre_auth_session_id=pre_auth_session_id,
+            user_context=user_context,
         )
     )
 
 
 def create_magic_link(
+    tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> str:
     return sync(
         asyncio.create_magic_link(
-            email=email, phone_number=phone_number, user_context=user_context
+            tenant_id=tenant_id,
+            email=email,
+            phone_number=phone_number,
+            user_context=user_context,
         )
     )
 
 
 def signinup(
+    tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> ConsumeCodeOkResult:
     return sync(
         asyncio.signinup(
-            email=email, phone_number=phone_number, user_context=user_context
+            tenant_id=tenant_id,
+            email=email,
+            phone_number=phone_number,
+            user_context=user_context,
         )
     )
 

@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -21,10 +22,22 @@ from supertokens_python.ingredients.emaildelivery.types import (
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id: str = user_id
-        self.email: str = email
-        self.time_joined: int = time_joined
+    def __init__(
+        self, user_id: str, email: str, time_joined: int, tenant_ids: List[str]
+    ):
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+
+    def __eq__(self, other: object):
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )
 
 
 class UsersResponse:
@@ -50,7 +63,7 @@ class InputFormField:
         self,
         id: str,  # pylint: disable=redefined-builtin
         validate: Union[
-            Callable[[str], Awaitable[Union[str, None]]],
+            Callable[[str, str], Awaitable[Union[str, None]]],
             None,
         ] = None,
         optional: Union[bool, None] = None,
@@ -64,7 +77,7 @@ class NormalisedFormField:
     def __init__(
         self,
         id: str,  # pylint: disable=redefined-builtin
-        validate: Callable[[str], Awaitable[Union[str, None]]],
+        validate: Callable[[str, str], Awaitable[Union[str, None]]],
         optional: bool,
     ):
         self.id = id
@@ -86,9 +99,11 @@ class PasswordResetEmailTemplateVars:
         self,
         user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
+        tenant_id: str,
     ) -> None:
         self.user = user
         self.password_reset_link = password_reset_link
+        self.tenant_id = tenant_id
 
 
 # Export:

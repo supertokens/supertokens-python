@@ -62,6 +62,7 @@ def get_interface_impl(
             user_input_code: Union[str, None],
             device_id: Union[str, None],
             link_code: Union[str, None],
+            tenant_id: str,
             api_options: PasswordlessAPIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
@@ -76,6 +77,7 @@ def get_interface_impl(
                 user_input_code,
                 device_id,
                 link_code,
+                tenant_id,
                 api_options,
                 user_context,
             )
@@ -87,6 +89,7 @@ def get_interface_impl(
                         result.user.email,
                         result.user.phone_number,
                         result.user.time_joined,
+                        result.user.tenant_ids,
                     ),
                     result.session,
                 )

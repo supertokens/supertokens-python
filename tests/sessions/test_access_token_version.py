@@ -24,12 +24,12 @@ _ = teardown_function  # type:ignore
 pytestmark = pytest.mark.asyncio
 
 
-async def test_access_token_v3():
+async def test_access_token_v4():
     init(**get_st_init_args([session.init()]))  # type:ignore
     start_st()
 
     access_token = (
-        await create_new_session_without_request_response("user-id")
+        await create_new_session_without_request_response("public", "user-id")
     ).get_access_token()
     s = await get_session_without_request_response(access_token)
     assert s is not None
@@ -42,6 +42,7 @@ async def test_access_token_v3():
         False,
     )
     assert res["userId"] == "user-id"
+    assert parsed_info.version == 4
 
 
 async def test_parsing_access_token_v2():
@@ -76,7 +77,7 @@ async def app():
         except Exception:
             pass
 
-        session = await create_new_session(request, "userId", body, {})
+        session = await create_new_session(request, "public", "userId", body, {})
         return {"message": True, "sessionHandle": session.get_handle()}
 
     @fast.get("/merge-into-payload")

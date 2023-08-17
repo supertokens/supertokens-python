@@ -16,10 +16,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty import provider
 from supertokens_python.recipe.thirdpartyemailpassword.types import EmailTemplateVars
+from supertokens_python.ingredients.emaildelivery import types as emaildelivery_types
+from . import types
 
-from .. import emailpassword, thirdparty
+from .. import emailpassword
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
@@ -27,17 +29,15 @@ from .recipe import ThirdPartyEmailPasswordRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
-InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
 InputSignUpFeature = emailpassword.InputSignUpFeature
-Apple = thirdparty.Apple
-Discord = thirdparty.Discord
-Facebook = thirdparty.Facebook
-Github = thirdparty.Github
-Google = thirdparty.Google
-GoogleWorkspaces = thirdparty.GoogleWorkspaces
-Bitbucket = thirdparty.Bitbucket
-GitLab = thirdparty.GitLab
+ProviderInput = provider.ProviderInput
+ProviderConfig = provider.ProviderConfig
+ProviderClientConfig = provider.ProviderClientConfig
+ProviderConfigForClientType = provider.ProviderConfigForClient
 SMTPService = emaildelivery_services.SMTPService
+
+EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
+PasswordResetEmailTemplateVars = types.PasswordResetEmailTemplateVars
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -47,16 +47,12 @@ if TYPE_CHECKING:
 
 def init(
     sign_up_feature: Union[InputSignUpFeature, None] = None,
-    reset_password_using_token_feature: Union[
-        InputResetPasswordUsingTokenFeature, None
-    ] = None,
     override: Union[InputOverrideConfig, None] = None,
-    providers: Union[List[Provider], None] = None,
+    providers: Union[List[ProviderInput], None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(
         sign_up_feature,
-        reset_password_using_token_feature,
         override,
         providers,
         email_delivery,

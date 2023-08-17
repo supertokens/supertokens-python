@@ -64,12 +64,12 @@ async def test_add_new_role_to_user():
     assert result.created_new_role
 
     # Add role to the user
-    result = await asyncio.add_role_to_user(user_id, role)
+    result = await asyncio.add_role_to_user("public", user_id, role)
     assert isinstance(result, interfaces.AddRoleToUserOkResult)
     assert not result.did_user_already_have_role
 
     # Check that now the user has the assigned role
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert result.roles == [role]
 
@@ -105,17 +105,17 @@ async def test_add_duplicate_role_to_user():
     assert result.created_new_role
 
     # Add role to the user
-    result = await asyncio.add_role_to_user(user_id, role)
+    result = await asyncio.add_role_to_user("public", user_id, role)
     assert isinstance(result, interfaces.AddRoleToUserOkResult)
     assert not result.did_user_already_have_role
 
     # Add role to the user
-    result = await asyncio.add_role_to_user(user_id, role)
+    result = await asyncio.add_role_to_user("public", user_id, role)
     assert isinstance(result, interfaces.AddRoleToUserOkResult)
     assert result.did_user_already_have_role
 
     # Check that now the user has the assigned role
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert result.roles == [role]
 
@@ -146,10 +146,10 @@ async def test_add_unknown_role_to_user():
     role = "role"
 
     # Add role to the user (without creating the role first)
-    result = await asyncio.add_role_to_user(user_id, role)
+    result = await asyncio.add_role_to_user("public", user_id, role)
     assert isinstance(result, interfaces.UnknownRoleError)
 
     # Check that the user doesn't get any role
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert result.roles == []

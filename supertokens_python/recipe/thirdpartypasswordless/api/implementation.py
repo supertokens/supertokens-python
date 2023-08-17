@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
 import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
@@ -28,7 +28,7 @@ from ...thirdparty.api.implementation import (
     APIImplementation as ThirdPartyImplementation,
 )
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
-from ...thirdparty.provider import Provider
+from ...thirdparty.provider import Provider, RedirectUriInfo
 from ..interfaces import (
     APIInterface,
     AuthorisationUrlGetOkResult,
@@ -89,18 +89,23 @@ class APIImplementation(APIInterface):
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider,
+            redirect_uri_on_provider_dashboard,
+            api_options,
+            user_context,
+        )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
+        tenant_id: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -110,10 +115,9 @@ class APIImplementation(APIInterface):
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -123,48 +127,51 @@ class APIImplementation(APIInterface):
                     result.user.user_id,
                     result.user.email,
                     None,
-                    result.user.third_party_info,
                     result.user.time_joined,
+                    result.user.tenant_ids,
+                    result.user.third_party_info,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )
 
     async def create_code_post(
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         return await self.pless_create_code_post(
-            email, phone_number, api_options, user_context
+            email, phone_number, tenant_id, api_options, user_context
         )
 
     async def resend_code_post(
         self,
         device_id: str,
         pre_auth_session_id: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         return await self.pless_resend_code_post(
-            device_id, pre_auth_session_id, api_options, user_context
+            device_id, pre_auth_session_id, tenant_id, api_options, user_context
         )
 
     async def consume_code_post(
@@ -173,6 +180,7 @@ class APIImplementation(APIInterface):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -187,6 +195,7 @@ class APIImplementation(APIInterface):
             user_input_code,
             device_id,
             link_code,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -197,8 +206,9 @@ class APIImplementation(APIInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.phone_number,
-                    None,
                     result.user.time_joined,
+                    result.user.tenant_ids,
+                    None,
                 ),
                 result.session,
             )
@@ -207,17 +217,21 @@ class APIImplementation(APIInterface):
     async def passwordless_user_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
-        return await self.pless_email_exists_get(email, api_options, user_context)
+        return await self.pless_email_exists_get(
+            email, tenant_id, api_options, user_context
+        )
 
     async def passwordless_user_phone_number_exists_get(
         self,
         phone_number: str,
+        tenant_id: str,
         api_options: PasswordlessAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         return await self.pless_phone_number_exists_get(
-            phone_number, api_options, user_context
+            phone_number, tenant_id, api_options, user_context
         )

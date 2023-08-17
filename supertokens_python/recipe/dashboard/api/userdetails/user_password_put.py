@@ -37,7 +37,10 @@ from ...interfaces import (
 
 
 async def handle_user_password_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> Union[UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -72,13 +75,13 @@ async def handle_user_password_put(
     async def reset_password(
         form_fields: List[NormalisedFormField],
         create_reset_password_token: Callable[
-            [str],
+            [str, str, Dict[str, Any]],
             Awaitable[
                 Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]
             ],
         ],
         reset_password_using_token: Callable[
-            [str, str],
+            [str, str, str, Dict[str, Any]],
             Awaitable[
                 Union[
                     ResetPasswordUsingTokenOkResult,
@@ -93,22 +96,26 @@ async def handle_user_password_put(
             field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
         ][0]
 
-        password_validation_error = await password_form_field.validate(new_password)
+        password_validation_error = await password_form_field.validate(
+            new_password, tenant_id
+        )
 
         if password_validation_error is not None:
             return UserPasswordPutAPIInvalidPasswordErrorResponse(
                 password_validation_error
             )
 
-        password_reset_token = await create_reset_password_token(user_id)  # type: ignore # FIXME
+        password_reset_token = await create_reset_password_token(
+            tenant_id, user_id, user_context
+        )
 
         if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
             # Techincally it can but its an edge case so we assume that it wont
-            # UNKNOWN_USER_ID_ERROR FIXME
+            # UNKNOWN_USER_ID_ERROR
             raise Exception("Should never come here")
 
         password_reset_response = await reset_password_using_token(
-            password_reset_token.token, new_password
+            tenant_id, password_reset_token.token, new_password, user_context
         )
 
         if isinstance(

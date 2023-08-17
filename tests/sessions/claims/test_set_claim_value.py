@@ -41,6 +41,7 @@ async def test_should_merge_the_right_value(timestamp: int):
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
     with patch.object(
         Session,
@@ -56,17 +57,17 @@ async def test_should_overwrite_claim_value(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 9
+    assert len(payload) == 10
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await s.set_claim_value(TrueClaim, False)
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
-    assert len(payload) == 9
+    assert len(payload) == 10
     assert payload["st-true"] == {"t": timestamp, "v": False}
 
 
@@ -75,10 +76,10 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 9
+    assert len(payload) == 10
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await set_claim_value(s.get_handle(), TrueClaim, False)

@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface,
@@ -21,7 +21,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResult,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdparty.types import User
 from supertokens_python.types import GeneralErrorResponse
 
@@ -50,10 +50,9 @@ def get_interface_impl(
 
         async def sign_in_up_post(
             provider: Provider,
-            code: str,
-            redirect_uri: str,
-            client_id: Union[str, None],
-            auth_code_response: Union[Dict[str, Any], None],
+            redirect_uri_info: Optional[RedirectUriInfo],
+            oauth_tokens: Union[Dict[str, Any], None],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
@@ -63,10 +62,9 @@ def get_interface_impl(
         ]:
             response = await api_implementation.thirdparty_sign_in_up_post(
                 provider,
-                code,
-                redirect_uri,
-                client_id,
-                auth_code_response,
+                redirect_uri_info,
+                oauth_tokens,
+                tenant_id,
                 api_options,
                 user_context,
             )
@@ -82,11 +80,13 @@ def get_interface_impl(
                         response.user.user_id,
                         response.user.email,
                         response.user.time_joined,
+                        response.user.tenant_ids,
                         response.user.third_party_info,
                     ),
                     response.created_new_user,
-                    response.auth_code_response,
                     response.session,
+                    response.oauth_tokens,
+                    response.raw_user_info_from_provider,
                 )
             return response
 

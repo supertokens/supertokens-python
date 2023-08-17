@@ -22,10 +22,9 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailpassword.interfaces import (
     RecipeInterface as EPRecipeInterface,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 
 from ..emailpassword.utils import (
-    InputResetPasswordUsingTokenFeature,
     InputSignUpFeature,
 )
 from .emaildelivery.services.backward_compatibility import BackwardCompatibilityService
@@ -59,11 +58,8 @@ class OverrideConfig:
 class ThirdPartyEmailPasswordConfig:
     def __init__(
         self,
-        providers: List[Provider],
+        providers: List[ProviderInput],
         sign_up_feature: Union[InputSignUpFeature, None],
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ],
         get_email_delivery_config: Callable[
             [EPRecipeInterface],
             EmailDeliveryConfigWithService[EmailTemplateVars],
@@ -72,7 +68,6 @@ class ThirdPartyEmailPasswordConfig:
     ):
         self.sign_up_feature = sign_up_feature
         self.providers = providers
-        self.reset_password_using_token_feature = reset_password_using_token_feature
         self.get_email_delivery_config = get_email_delivery_config
         self.override = override
 
@@ -80,30 +75,22 @@ class ThirdPartyEmailPasswordConfig:
 def validate_and_normalise_user_input(
     recipe: ThirdPartyEmailPasswordRecipe,
     sign_up_feature: Union[InputSignUpFeature, None] = None,
-    reset_password_using_token_feature: Union[
-        InputResetPasswordUsingTokenFeature, None
-    ] = None,
     override: Union[InputOverrideConfig, None] = None,
-    providers: Union[List[Provider], None] = None,
+    providers: Union[List[ProviderInput], None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> ThirdPartyEmailPasswordConfig:
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError("sign_up_feature must be of type InputSignUpFeature or None")
 
-    if reset_password_using_token_feature is not None and not isinstance(reset_password_using_token_feature, InputResetPasswordUsingTokenFeature):  # type: ignore
-        raise ValueError(
-            "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
-        )
-
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
         raise ValueError("override must be of type InputOverrideConfig or None")
 
     if providers is not None and not isinstance(providers, List):  # type: ignore
-        raise ValueError("providers must be of type List[Provider] or None")
+        raise ValueError("providers must be of type List[ProviderInput] or None")
 
     for provider in providers or []:
-        if not isinstance(provider, Provider):  # type: ignore
-            raise ValueError("providers must be of type List[Provider] or None")
+        if not isinstance(provider, ProviderInput):  # type: ignore
+            raise ValueError("providers must be of type List[ProviderInput] or None")
 
     if providers is None:
         providers = []
@@ -121,7 +108,6 @@ def validate_and_normalise_user_input(
         email_service = BackwardCompatibilityService(
             app_info=recipe.app_info,
             ep_recipe_interface_impl=ep_recipe_interface_impl,
-            reset_password_using_token_feature=reset_password_using_token_feature,
         )
         if email_delivery is not None and email_delivery.override is not None:
             override = email_delivery.override
@@ -133,7 +119,6 @@ def validate_and_normalise_user_input(
     return ThirdPartyEmailPasswordConfig(
         providers,
         sign_up_feature,
-        reset_password_using_token_feature,
         get_email_delivery_config,
         OverrideConfig(functions=override.functions, apis=override.apis),
     )

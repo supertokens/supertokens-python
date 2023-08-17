@@ -14,10 +14,9 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Any, Dict
 
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.jwt import JWTRecipe
 
 from .api.implementation import APIImplementation
 from .api.open_id_discovery_configuration_get import open_id_discovery_configuration_get
@@ -49,6 +48,8 @@ class OpenIdRecipe(RecipeModule):
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
+        from supertokens_python.recipe.jwt import JWTRecipe
+
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, issuer, override)
         jwt_feature = None
@@ -89,10 +90,12 @@ class OpenIdRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         options = APIOptions(
             request,
@@ -104,10 +107,10 @@ class OpenIdRecipe(RecipeModule):
 
         if request_id == GET_DISCOVERY_CONFIG_URL:
             return await open_id_discovery_configuration_get(
-                self.api_implementation, options
+                self.api_implementation, options, user_context
             )
         return await self.jwt_recipe.handle_api_request(
-            request_id, request, path, method, response
+            request_id, tenant_id, request, path, method, response, user_context
         )
 
     async def handle_error(

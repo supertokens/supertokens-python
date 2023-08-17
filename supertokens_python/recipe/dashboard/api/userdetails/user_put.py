@@ -58,7 +58,11 @@ from ...interfaces import (
 
 
 async def update_email_for_recipe_id(
-    recipe_id: str, user_id: str, email: str
+    recipe_id: str,
+    user_id: str,
+    email: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -> Union[
     UserPutAPIOkResponse,
     UserPutAPIInvalidEmailErrorResponse,
@@ -76,12 +80,14 @@ async def update_email_for_recipe_id(
             if form_field.id == FORM_FIELD_EMAIL_ID
         ]
 
-        validation_error = await email_form_fields[0].validate(email)
+        validation_error = await email_form_fields[0].validate(email, tenant_id)
 
         if validation_error is not None:
             return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
-        email_update_response = await ep_update_email_or_password(user_id, email)
+        email_update_response = await ep_update_email_or_password(
+            user_id, email, user_context=user_context
+        )
 
         if isinstance(
             email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
@@ -100,12 +106,14 @@ async def update_email_for_recipe_id(
             if form_field.id == FORM_FIELD_EMAIL_ID
         ]
 
-        validation_error = await email_form_fields[0].validate(email)
+        validation_error = await email_form_fields[0].validate(email, tenant_id)
 
         if validation_error is not None:
             return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
-        email_update_response = await tpep_update_email_or_password(user_id, email)
+        email_update_response = await tpep_update_email_or_password(
+            user_id, email, user_context=user_context
+        )
 
         if isinstance(
             email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
@@ -123,17 +131,21 @@ async def update_email_for_recipe_id(
         passwordless_config = PasswordlessRecipe.get_instance().config.contact_config
 
         if isinstance(passwordless_config.contact_method, ContactPhoneOnlyConfig):
-            validation_error = await default_validate_email(email)
+            validation_error = await default_validate_email(email, tenant_id)
 
         elif isinstance(
             passwordless_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
         ):
-            validation_error = await passwordless_config.validate_email_address(email)
+            validation_error = await passwordless_config.validate_email_address(
+                email, tenant_id
+            )
 
         if validation_error is not None:
             return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
-        update_result = await pless_update_user(user_id, email)
+        update_result = await pless_update_user(
+            user_id, email, user_context=user_context
+        )
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
             raise Exception("Should never come here")
@@ -151,16 +163,20 @@ async def update_email_for_recipe_id(
         )
 
         if isinstance(passwordless_config, ContactPhoneOnlyConfig):
-            validation_error = await default_validate_email(email)
+            validation_error = await default_validate_email(email, tenant_id)
         elif isinstance(
             passwordless_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
         ):
-            validation_error = await passwordless_config.validate_email_address(email)
+            validation_error = await passwordless_config.validate_email_address(
+                email, tenant_id
+            )
 
         if validation_error is not None:
             return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
-        update_result = await pless_update_user(user_id, email)
+        update_result = await pless_update_user(
+            user_id, email, user_context=user_context
+        )
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
             raise Exception("Should never come here")
@@ -175,7 +191,11 @@ async def update_email_for_recipe_id(
 
 
 async def update_phone_for_recipe_id(
-    recipe_id: str, user_id: str, phone: str
+    recipe_id: str,
+    user_id: str,
+    phone: str,
+    tenant_id: str,
+    user_context: Dict[str, Any],
 ) -> Union[
     UserPutAPIOkResponse,
     UserPutAPIInvalidPhoneErrorResponse,
@@ -189,16 +209,20 @@ async def update_phone_for_recipe_id(
         passwordless_config = PasswordlessRecipe.get_instance().config.contact_config
 
         if isinstance(passwordless_config, ContactEmailOnlyConfig):
-            validation_error = await default_validate_phone_number(phone)
+            validation_error = await default_validate_phone_number(phone, tenant_id)
         elif isinstance(
             passwordless_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
         ):
-            validation_error = await passwordless_config.validate_phone_number(phone)
+            validation_error = await passwordless_config.validate_phone_number(
+                phone, tenant_id
+            )
 
         if validation_error is not None:
             return UserPutAPIInvalidPhoneErrorResponse(validation_error)
 
-        update_result = await pless_update_user(user_id, phone_number=phone)
+        update_result = await pless_update_user(
+            user_id, phone_number=phone, user_context=user_context
+        )
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
             raise Exception("Should never come here")
@@ -216,17 +240,21 @@ async def update_phone_for_recipe_id(
         )
 
         if isinstance(passwordless_config, ContactEmailOnlyConfig):
-            validation_error = await default_validate_phone_number(phone)
+            validation_error = await default_validate_phone_number(phone, tenant_id)
 
         elif isinstance(
             passwordless_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
         ):
-            validation_error = await passwordless_config.validate_phone_number(phone)
+            validation_error = await passwordless_config.validate_phone_number(
+                phone, tenant_id
+            )
 
         if validation_error is not None:
             return UserPutAPIInvalidPhoneErrorResponse(validation_error)
 
-        update_result = await pless_update_user(user_id, phone_number=phone)
+        update_result = await pless_update_user(
+            user_id, phone_number=phone, user_context=user_context
+        )
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
             raise Exception("Should never come here")
@@ -241,7 +269,10 @@ async def update_phone_for_recipe_id(
 
 
 async def handle_user_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> Union[
     UserPutAPIOkResponse,
     UserPutAPIInvalidEmailErrorResponse,
@@ -318,11 +349,11 @@ async def handle_user_put(
             if last_name != "":
                 metadata_update["last_name"] = last_name
 
-            await update_user_metadata(user_id, metadata_update)
+            await update_user_metadata(user_id, metadata_update, user_context)
 
     if email != "":
         email_update_response = await update_email_for_recipe_id(
-            user_response.recipe, user_id, email
+            user_response.recipe, user_id, email, tenant_id, user_context
         )
 
         if not isinstance(email_update_response, UserPutAPIOkResponse):
@@ -330,7 +361,7 @@ async def handle_user_put(
 
     if phone != "":
         phone_update_response = await update_phone_for_recipe_id(
-            user_response.recipe, user_id, phone
+            user_response.recipe, user_id, phone, tenant_id, user_context
         )
 
         if not isinstance(phone_update_response, UserPutAPIOkResponse):

@@ -51,6 +51,7 @@ def st_init_generator_with_overriden_global_validators(
     def session_function_override(oi: RecipeInterface) -> RecipeInterface:
         async def new_get_global_claim_validators(
             _user_id: str,
+            _tenant_id: str,
             _claim_validators_added_by_other_recipes: List[SessionClaimValidator],
             _user_context: Dict[str, Any],
         ):
@@ -77,6 +78,7 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
     def session_function_override(oi: RecipeInterface) -> RecipeInterface:
         async def new_get_global_claim_validators(
             _user_id: str,
+            _tenant_id: str,
             claim_validators_added_by_other_recipes: List[SessionClaimValidator],
             _user_context: Dict[str, Any],
         ):
@@ -136,13 +138,13 @@ async def fastapi_client():
     @app.post("/login")
     async def _login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
+        await create_new_session(request, "public", user_id, {}, {})
         return {"userId": user_id}
 
     @app.post("/create-with-claim")
     async def _create_with_claim(request: Request):  # type: ignore
         user_id = "userId"
-        _ = await create_new_session(request, user_id, {}, {})
+        _ = await create_new_session(request, "public", user_id, {}, {})
         key: str = (await request.json())["key"]
         # PrimitiveClaim(key, fetch_value="Value").add_to_session(session, "value")
         return {"userId": key}
@@ -378,6 +380,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:
         mock.side_effect = lambda _, __: raise_invalid_claims_exception(  # type: ignore
@@ -426,6 +429,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:

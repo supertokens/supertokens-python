@@ -13,11 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
-    from ...supertokens import AppInfo
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -77,6 +76,7 @@ class UserWithMetadata:
     tp_info: Optional[Dict[str, Any]] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    tenant_ids: List[str]
 
     def from_user(
         self,
@@ -88,6 +88,10 @@ class UserWithMetadata:
         self.last_name = last_name
 
         self.user_id = user.user_id
+        # from_user() is called in /api/users (note extra s)
+        # here we DashboardUsersGetResponse() doesn't maintain
+        # recipe id for each user on its own. That's why we need
+        # to set self.recipe_id here.
         self.recipe_id = user.recipe_id
         self.time_joined = user.time_joined
         self.email = user.email
@@ -95,27 +99,34 @@ class UserWithMetadata:
         self.tp_info = (
             None if user.third_party_info is None else user.third_party_info.__dict__
         )
+        self.tenant_ids = user.tenant_ids
 
         return self
 
     def from_dict(
         self,
-        user_dict: Dict[str, Any],
+        user_obj_dict: Dict[str, Any],
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ):
         self.first_name = first_name
         self.last_name = last_name
 
-        self.user_id = user_dict["user_id"]
-        self.recipe_id = user_dict.get("recipe_id")
-        self.time_joined = user_dict["time_joined"]
-        self.email = user_dict.get("email")
-        self.phone_number = user_dict.get("phone_number")
+        self.user_id = user_obj_dict["user_id"]
+        # from_dict() is used in `/api/user` where
+        # recipe_id is already passed seperately to
+        # GetUserForRecipeIdResult object
+        # So we set recipe_id to None here
+        self.recipe_id = None
+        self.time_joined = user_obj_dict["time_joined"]
+        self.tenant_ids = user_obj_dict.get("tenant_ids", [])
+
+        self.email = user_obj_dict.get("email")
+        self.phone_number = user_obj_dict.get("phone_number")
         self.tp_info = (
             None
-            if user_dict.get("third_party_info") is None
-            else user_dict["third_party_info"].__dict__
+            if user_obj_dict.get("third_party_info") is None
+            else user_obj_dict["third_party_info"].__dict__
         )
 
         return self
@@ -124,6 +135,7 @@ class UserWithMetadata:
         user_json: Dict[str, Any] = {
             "id": self.user_id,
             "timeJoined": self.time_joined,
+            "tenantIds": self.tenant_ids,
         }
         if self.tp_info is not None:
             user_json["thirdParty"] = {
@@ -195,10 +207,8 @@ def validate_and_normalise_user_input(
     )
 
 
-def is_api_path(path: NormalisedURLPath, app_info: AppInfo) -> bool:
-    dashboard_recipe_base_path = app_info.api_base_path.append(
-        NormalisedURLPath(DASHBOARD_API)
-    )
+def is_api_path(path: NormalisedURLPath, base_path: NormalisedURLPath) -> bool:
+    dashboard_recipe_base_path = base_path.append(NormalisedURLPath(DASHBOARD_API))
 
     if not path.startswith(dashboard_recipe_base_path):
         return False
@@ -400,10 +410,16 @@ def is_recipe_initialised(recipeId: str) -> bool:
     return isRecipeInitialised
 
 
-def validate_api_key(req: BaseRequest, config: DashboardConfig) -> bool:
+def validate_api_key(
+    req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
+) -> bool:
     api_key_header_value = req.get_header("authorization")
     if not api_key_header_value:
         return False
     # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
     api_key_header_value = api_key_header_value.split(" ")[1]
     return api_key_header_value == config.api_key
+
+
+def get_api_path_with_dashboard_base(path: str) -> str:
+    return DASHBOARD_API + path

@@ -19,7 +19,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
 )
 from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
-from supertokens_python.recipe.thirdparty.provider import Provider
 
 
 @pytest.mark.asyncio
@@ -50,27 +49,6 @@ async def test_init_validation_emailpassword():
             ],
         )
     assert "sign_up_feature must be of type InputSignUpFeature or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                emailpassword.init(
-                    reset_password_using_token_feature="reset password"  # type: ignore
-                ),
-            ],
-        )
-    assert (
-        "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
-        == str(ex.value)
-    )
 
     with pytest.raises(ValueError) as ex:
         init(
@@ -211,6 +189,16 @@ async def send_text_message(
 
 @pytest.mark.asyncio
 async def test_init_validation_passwordless():
+    class CustomSMSDeliveryService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
+    ):
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
     with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -219,8 +207,9 @@ async def test_init_validation_passwordless():
             recipe_list=[
                 passwordless.init(
                     flow_type="USER_INPUT_CODE",
-                    contact_config=passwordless.ContactPhoneOnlyConfig(
-                        create_and_send_custom_text_message=send_text_message
+                    contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    sms_delivery=passwordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
                     ),
                 )
             ],
@@ -240,8 +229,9 @@ async def test_init_validation_passwordless():
             recipe_list=[
                 passwordless.init(
                     flow_type="SOME_OTHER_CODE",  # type: ignore
-                    contact_config=passwordless.ContactPhoneOnlyConfig(
-                        create_and_send_custom_text_message=send_text_message
+                    contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    sms_delivery=passwordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
                     ),
                 )
             ],
@@ -283,8 +273,9 @@ async def test_init_validation_passwordless():
             recipe_list=[
                 passwordless.init(
                     flow_type="USER_INPUT_CODE",
-                    contact_config=passwordless.ContactPhoneOnlyConfig(
-                        create_and_send_custom_text_message=send_text_message
+                    contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    sms_delivery=passwordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
                     ),
                     override="override",  # type: ignore
                 )
@@ -293,18 +284,39 @@ async def test_init_validation_passwordless():
     assert "override must be of type OverrideConfig" == str(ex.value)
 
 
-providers_list: List[Provider] = [
-    thirdparty.Google(
-        client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-        client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+providers_list: List[thirdparty.ProviderInput] = [
+    thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="google",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
+                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+                )
+            ],
+        )
     ),
-    thirdparty.Facebook(
-        client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
-        client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
+    thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="facebook",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
+                    client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
+                )
+            ],
+        )
     ),
-    thirdparty.Github(
-        client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-        client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+    thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="github",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
+                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+                )
+            ],
+        )
     ),
 ]
 
@@ -433,27 +445,6 @@ async def test_init_validation_thirdpartyemailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                thirdpartyemailpassword.init(
-                    reset_password_using_token_feature="reset password"  # type: ignore
-                )
-            ],
-        )
-    assert (
-        "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
-        == str(ex.value)
-    )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
                 emailverification.init("email verification"),  # type: ignore
                 thirdpartyemailpassword.init(),
             ],
@@ -493,7 +484,7 @@ async def test_init_validation_thirdpartyemailpassword():
                 thirdpartyemailpassword.init(providers="providers")  # type: ignore
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
     with pytest.raises(ValueError) as ex:
         init(
@@ -509,7 +500,7 @@ async def test_init_validation_thirdpartyemailpassword():
                 thirdpartyemailpassword.init(providers=["providers"])  # type: ignore
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
 
 async def save_code_text(
@@ -545,6 +536,30 @@ async def test_init_validation_thirdpartypasswordless():
         )
     assert "contact_config must be an instance of ContactConfig" == str(ex.value)
 
+    class CustomEmailDeliveryService(
+        thirdpartypasswordless.EmailDeliveryInterface[
+            thirdpartypasswordless.EmailTemplateVars
+        ]
+    ):
+        async def send_email(
+            self,
+            template_vars: thirdpartypasswordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
+    class CustomSMSDeliveryService(
+        thirdpartypasswordless.SMSDeliveryInterface[
+            thirdpartypasswordless.SMSTemplateVars
+        ]
+    ):
+        async def send_sms(
+            self,
+            template_vars: thirdpartypasswordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
     with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -557,11 +572,14 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="CUSTOM",  # type: ignore
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                 )
             ],
         )
@@ -585,11 +603,14 @@ async def test_init_validation_thirdpartypasswordless():
                     "email verify",  # type: ignore
                 ),
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                 ),
             ],
         )
@@ -610,11 +631,14 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                     override="override",  # type: ignore
                 )
             ],
@@ -635,16 +659,19 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                     providers="providers",  # type: ignore
                 )
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
     with pytest.raises(ValueError) as ex:
         init(
@@ -658,16 +685,19 @@ async def test_init_validation_thirdpartypasswordless():
             framework="fastapi",
             recipe_list=[
                 thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(
-                        create_and_send_custom_text_message=save_code_text,
-                        create_and_send_custom_email=save_code_email,
-                    ),
+                    contact_config=ContactEmailOrPhoneConfig(),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers=["providers"],  # type: ignore
+                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
+                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
+                        CustomSMSDeliveryService()
+                    ),
                 )
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
 
 @pytest.mark.asyncio

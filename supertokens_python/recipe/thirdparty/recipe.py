@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
 from .api import (
     handle_apple_redirect_api,
@@ -64,7 +65,9 @@ class ThirdPartyRecipe(RecipeModule):
             override,
         )
         self.providers = self.config.sign_in_and_up_feature.providers
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self.providers
+        )
         self.recipe_implementation: RecipeInterface = (
             recipe_implementation
             if self.config.override.functions is None
@@ -81,6 +84,10 @@ class ThirdPartyRecipe(RecipeModule):
             ev_recipe = EmailVerificationRecipe.get_instance_optional()
             if ev_recipe:
                 ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+
+            mt_recipe = MultitenancyRecipe.get_instance_optional()
+            if mt_recipe:
+                mt_recipe.static_third_party_providers = self.providers
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -114,10 +121,12 @@ class ThirdPartyRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         api_options = APIOptions(
             request,
@@ -130,13 +139,17 @@ class ThirdPartyRecipe(RecipeModule):
         )
 
         if request_id == SIGNINUP:
-            return await handle_sign_in_up_api(self.api_implementation, api_options)
+            return await handle_sign_in_up_api(
+                self.api_implementation, tenant_id, api_options, user_context
+            )
         if request_id == AUTHORISATIONURL:
             return await handle_authorisation_url_api(
-                self.api_implementation, api_options
+                self.api_implementation, tenant_id, api_options, user_context
             )
         if request_id == APPLE_REDIRECT_HANDLER:
-            return await handle_apple_redirect_api(self.api_implementation, api_options)
+            return await handle_apple_redirect_api(
+                self.api_implementation, api_options, user_context
+            )
 
         return None
 

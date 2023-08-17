@@ -20,7 +20,6 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     GetClaimValueOkResult,
     JSONObject,
-    RegenerateAccessTokenOkResult,
     SessionClaim,
     SessionClaimValidator,
     SessionContainer,
@@ -43,11 +42,14 @@ from ..session_request_functions import (
 )
 from ..utils import get_required_claim_validators
 
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
 _T = TypeVar("_T")
 
 
 async def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -73,10 +75,12 @@ async def create_new_session(
         config,
         app_info,
         session_data_in_database,
+        tenant_id,
     )
 
 
 async def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -102,7 +106,7 @@ async def create_new_session_without_request_response(
     final_access_token_payload = {**access_token_payload, "iss": issuer}
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, user_context)
+        update = await claim.build(user_id, tenant_id, user_context)
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
@@ -110,6 +114,7 @@ async def create_new_session_without_request_response(
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
+        tenant_id,
         user_context=user_context,
     )
 
@@ -144,6 +149,7 @@ async def validate_claims_for_session_handle(
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            session_info.tenant_id,
             session_info.user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -179,6 +185,7 @@ async def validate_claims_for_session_handle(
 
 
 async def validate_claims_in_jwt_payload(
+    tenant_id: str,
     user_id: str,
     jwt_payload: JSONObject,
     override_global_claim_validators: Optional[
@@ -203,6 +210,7 @@ async def validate_claims_in_jwt_payload(
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
+            tenant_id,
             user_id,
             claim_validators_added_by_other_recipes,
             user_context,
@@ -420,22 +428,26 @@ async def revoke_session(
 
 
 async def revoke_all_sessions_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )
 
 
 async def get_all_session_handles_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
-        user_id, user_context
+        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
     )
 
 
@@ -517,16 +529,4 @@ async def get_open_id_discovery_configuration(
         await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
             user_context
         )
-    )
-
-
-async def regenerate_access_token(
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[RegenerateAccessTokenOkResult, None]:
-    if user_context is None:
-        user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
-        access_token, new_access_token_payload, user_context
     )

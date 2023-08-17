@@ -13,9 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
 
 import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
+from supertokens_python.recipe.thirdparty.provider import ProviderInput, Provider
+from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -37,6 +40,7 @@ from ..interfaces import (
     RecipeInterface,
     ResetPasswordUsingTokenInvalidTokenError,
     ResetPasswordUsingTokenOkResult,
+    ThirdPartyManuallyCreateOrUpdateUserOkResult,
     ThirdPartySignInUpOkResult,
     UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
@@ -50,14 +54,14 @@ from .email_password_recipe_implementation import (
 from .third_party_recipe_implementation import (
     RecipeImplementation as DerivedThirdPartyImplementation,
 )
-from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
 
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         emailpassword_querier: Querier,
-        thirdparty_querier: Union[Querier, None],
+        thirdparty_querier: Querier,
+        providers: List[ProviderInput],
         get_emailpassword_config: Callable[[], EmailPasswordConfig],
     ):
         super().__init__()
@@ -94,26 +98,27 @@ class RecipeImplementation(RecipeInterface):
             derived_ep.update_email_or_password
         )
 
-        self.tp_get_user_by_id = None
-        self.tp_get_users_by_email = None
-        self.tp_get_user_by_thirdparty_info = None
-        self.tp_sign_in_up = None
-        if thirdparty_querier is not None:
-            thirdparty_implementation = ThirdPartyImplementation(thirdparty_querier)
-            self.tp_get_user_by_id = thirdparty_implementation.get_user_by_id
-            self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
-            self.tp_get_user_by_thirdparty_info = (
-                thirdparty_implementation.get_user_by_thirdparty_info
-            )
-            self.tp_sign_in_up = thirdparty_implementation.sign_in_up
+        thirdparty_implementation = ThirdPartyImplementation(
+            thirdparty_querier, providers
+        )
+        self.tp_get_user_by_id = thirdparty_implementation.get_user_by_id
+        self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
+        self.tp_get_user_by_thirdparty_info = (
+            thirdparty_implementation.get_user_by_thirdparty_info
+        )
+        self.tp_sign_in_up = thirdparty_implementation.sign_in_up
+        self.tp_manually_create_or_update_user = (
+            thirdparty_implementation.manually_create_or_update_user
+        )
+        self.tp_get_provider = thirdparty_implementation.get_provider
 
-            derived_tp = DerivedThirdPartyImplementation(self)
-            thirdparty_implementation.get_user_by_id = derived_tp.get_user_by_id
-            thirdparty_implementation.get_users_by_email = derived_tp.get_users_by_email
-            thirdparty_implementation.get_user_by_thirdparty_info = (
-                derived_tp.get_user_by_thirdparty_info
-            )
-            thirdparty_implementation.sign_in_up = derived_tp.sign_in_up
+        derived_tp = DerivedThirdPartyImplementation(self)
+        thirdparty_implementation.get_user_by_id = derived_tp.get_user_by_id
+        thirdparty_implementation.get_users_by_email = derived_tp.get_users_by_email
+        thirdparty_implementation.get_user_by_thirdparty_info = (
+            derived_tp.get_user_by_thirdparty_info
+        )
+        thirdparty_implementation.sign_in_up = derived_tp.sign_in_up
 
     async def get_user_by_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -125,6 +130,7 @@ class RecipeImplementation(RecipeInterface):
                 user_id=ep_user.user_id,
                 email=ep_user.email,
                 time_joined=ep_user.time_joined,
+                tenant_ids=ep_user.tenant_ids,
                 third_party_info=None,
             )
 
@@ -138,20 +144,22 @@ class RecipeImplementation(RecipeInterface):
             user_id=tp_user.user_id,
             email=tp_user.email,
             time_joined=tp_user.time_joined,
+            tenant_ids=tp_user.tenant_ids,
             third_party_info=tp_user.third_party_info,
         )
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         result: List[User] = []
-        ep_user = await self.ep_get_user_by_email(email, user_context)
+        ep_user = await self.ep_get_user_by_email(email, tenant_id, user_context)
 
         if ep_user is not None:
             result.append(
                 User(
                     user_id=ep_user.user_id,
                     email=ep_user.email,
+                    tenant_ids=ep_user.tenant_ids,
                     time_joined=ep_user.time_joined,
                     third_party_info=None,
                 )
@@ -160,13 +168,14 @@ class RecipeImplementation(RecipeInterface):
         if self.tp_get_users_by_email is None:
             return result
 
-        tp_users = await self.tp_get_users_by_email(email, user_context)
+        tp_users = await self.tp_get_users_by_email(email, tenant_id, user_context)
 
         for tp_user in tp_users:
             result.append(
                 User(
                     user_id=tp_user.user_id,
                     email=tp_user.email,
+                    tenant_ids=tp_user.tenant_ids,
                     time_joined=tp_user.time_joined,
                     third_party_info=tp_user.third_party_info,
                 )
@@ -178,12 +187,13 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         if self.tp_get_user_by_thirdparty_info is None:
             return None
         tp_user = await self.tp_get_user_by_thirdparty_info(
-            third_party_id, third_party_user_id, user_context
+            third_party_id, third_party_user_id, tenant_id, user_context
         )
 
         if tp_user is None:
@@ -193,6 +203,7 @@ class RecipeImplementation(RecipeInterface):
             user_id=tp_user.user_id,
             email=tp_user.email,
             time_joined=tp_user.time_joined,
+            tenant_ids=tp_user.tenant_ids,
             third_party_info=tp_user.third_party_info,
         )
 
@@ -201,65 +212,127 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ThirdPartySignInUpOkResult:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         result = await self.tp_sign_in_up(
-            third_party_id, third_party_user_id, email, user_context
+            third_party_id,
+            third_party_user_id,
+            email,
+            oauth_tokens,
+            raw_user_info_from_provider,
+            tenant_id,
+            user_context,
         )
         return ThirdPartySignInUpOkResult(
             User(
                 result.user.user_id,
                 result.user.email,
                 result.user.time_joined,
+                result.user.tenant_ids,
+                result.user.third_party_info,
+            ),
+            result.created_new_user,
+            oauth_tokens,
+            raw_user_info_from_provider,
+        )
+
+    async def thirdparty_manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> ThirdPartyManuallyCreateOrUpdateUserOkResult:
+        if self.tp_manually_create_or_update_user is None:
+            raise Exception("No thirdparty provider configured")
+        result = await self.tp_manually_create_or_update_user(
+            third_party_id,
+            third_party_user_id,
+            email,
+            tenant_id,
+            user_context,
+        )
+        return ThirdPartyManuallyCreateOrUpdateUserOkResult(
+            User(
+                result.user.user_id,
+                result.user.email,
+                result.user.time_joined,
+                result.user.tenant_ids,
                 result.user.third_party_info,
             ),
             result.created_new_user,
         )
 
+    async def thirdparty_get_provider(
+        self,
+        third_party_id: str,
+        client_type: Optional[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Optional[Provider]:
+        if self.tp_get_provider is None:
+            raise Exception("No thirdparty provider configured")
+
+        return await self.tp_get_provider(
+            third_party_id, client_type, tenant_id, user_context
+        )
+
     async def emailpassword_sign_in(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
-        result = await self.ep_sign_in(email, password, user_context)
+        result = await self.ep_sign_in(email, password, tenant_id, user_context)
         if isinstance(result, EPInterfaces.SignInOkResult):
             return EmailPasswordSignInOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 )
             )
         return result
 
     async def emailpassword_sign_up(
-        self, email: str, password: str, user_context: Dict[str, Any]
+        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsError]:
-        result = await self.ep_sign_up(email, password, user_context)
+        result = await self.ep_sign_up(email, password, tenant_id, user_context)
         if isinstance(result, EPInterfaces.SignUpOkResult):
             return EmailPasswordSignUpOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 )
             )
         return result
 
     async def create_reset_password_token(
-        self, user_id: str, user_context: Dict[str, Any]
+        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
-        return await self.ep_create_reset_password_token(user_id, user_context)
+        return await self.ep_create_reset_password_token(
+            user_id, tenant_id, user_context
+        )
 
     async def reset_password_using_token(
-        self, token: str, new_password: str, user_context: Dict[str, Any]
+        self,
+        token: str,
+        new_password: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> Union[
         ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
     ]:
         return await self.ep_reset_password_using_token(
-            token, new_password, user_context
+            token, new_password, tenant_id, user_context
         )
 
     async def update_email_or_password(
@@ -268,6 +341,7 @@ class RecipeImplementation(RecipeInterface):
         email: Union[None, str],
         password: Union[None, str],
         apply_password_policy: Union[bool, None],
+        tenant_id_for_password_policy: str,
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
@@ -283,5 +357,10 @@ class RecipeImplementation(RecipeInterface):
                 "Cannot update email or password of a user who signed up using third party login."
             )
         return await self.ep_update_email_or_password(
-            user_id, email, password, apply_password_policy, user_context
+            user_id,
+            email,
+            password,
+            apply_password_policy,
+            tenant_id_for_password_policy,
+            user_context,
         )

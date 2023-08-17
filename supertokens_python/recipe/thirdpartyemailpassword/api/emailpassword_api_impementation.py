@@ -64,18 +64,22 @@ def get_interface_impl(
 
         async def sign_in_post(
             form_fields: List[FormField],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
             SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse
         ]:
             result = await api_implementation.emailpassword_sign_in_post(
-                form_fields, api_options, user_context
+                form_fields, tenant_id, api_options, user_context
             )
             if isinstance(result, EmailPasswordSignInPostOkResult):
                 return SignInPostOkResult(
                     User(
-                        result.user.user_id, result.user.email, result.user.time_joined
+                        result.user.user_id,
+                        result.user.email,
+                        result.user.time_joined,
+                        result.user.tenant_ids,
                     ),
                     result.session,
                 )
@@ -87,18 +91,22 @@ def get_interface_impl(
 
         async def sign_up_post(
             form_fields: List[FormField],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ) -> Union[
             SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse
         ]:
             result = await api_implementation.emailpassword_sign_up_post(
-                form_fields, api_options, user_context
+                form_fields, tenant_id, api_options, user_context
             )
             if isinstance(result, EmailPasswordSignUpPostOkResult):
                 return SignUpPostOkResult(
                     User(
-                        result.user.user_id, result.user.email, result.user.time_joined
+                        result.user.user_id,
+                        result.user.email,
+                        result.user.time_joined,
+                        result.user.tenant_ids,
                     ),
                     result.session,
                 )

@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
@@ -23,7 +23,9 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe.dashboard.interfaces import SearchTagsOK
 
 
-async def handle_get_tags(_: APIInterface, __: APIOptions) -> SearchTagsOK:
+async def handle_get_tags(
+    _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
+) -> SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
         NormalisedURLPath("/user/search/tags")
     )

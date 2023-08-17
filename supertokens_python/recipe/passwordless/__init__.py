@@ -47,6 +47,8 @@ ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
 SMTPService = emaildelivery_services.SMTPService
 TwilioService = smsdelivery_services.TwilioService
 SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
+EmailDeliveryInterface = types.EmailDeliveryInterface
+SMSDeliveryInterface = types.SMSDeliveryInterface
 
 
 def init(
@@ -56,7 +58,7 @@ def init(
     ],
     override: Union[InputOverrideConfig, None] = None,
     get_custom_user_input_code: Union[
-        Callable[[Dict[str, Any]], Awaitable[str]], None
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,

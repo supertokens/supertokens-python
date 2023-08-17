@@ -18,7 +18,7 @@ from typing import Union, NoReturn
 
 def raise_general_exception(
     msg: Union[str, Exception], previous: Union[None, Exception] = None
-):
+) -> NoReturn:
     if isinstance(msg, SuperTokensError):
         raise msg
     if isinstance(msg, Exception):

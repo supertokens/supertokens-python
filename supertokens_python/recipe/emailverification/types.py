@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, Dict, Any
+from typing import Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -39,11 +39,11 @@ class VerificationEmailTemplateVars:
         self,
         user: VerificationEmailTemplateVarsUser,
         email_verify_link: str,
-        user_context: Dict[str, Any],
+        tenant_id: str,
     ) -> None:
         self.user = user
         self.email_verify_link = email_verify_link
-        self.user_context = user_context
+        self.tenant_id = tenant_id
 
 
 # Export:

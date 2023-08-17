@@ -13,59 +13,36 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Set, Union, Optional
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 
 from .interfaces import APIInterface, RecipeInterface
 
 if TYPE_CHECKING:
-    from .provider import Provider
+    from .provider import ProviderInput
 
-from jwt import PyJWKClient, decode
+from jwt import PyJWKClient, decode  # type: ignore
 
 
 class SignInAndUpFeature:
-    def __init__(self, providers: List[Provider]):
-        if len(providers) == 0:
-            raise_bad_input_exception(
-                "thirdparty recipe requires atleast 1 provider to be passed in sign_in_and_up_feature.providers config"
-            )
-        default_providers_set: Set[str] = set()
-        all_providers_set: Set[str] = set()
+    def __init__(self, providers: Optional[List[ProviderInput]] = None):
+        if providers is None:
+            providers = []
+
+        third_party_id_set: Set[str] = set()
 
         for provider in providers:
-            provider_id = provider.id
-            all_providers_set.add(provider_id)
-            is_default = provider.is_default
+            third_party_id = provider.config.third_party_id
 
-            if not is_default:
-                # if this id is not being used by any other provider, we treat
-                # this as the is_default
-                other_providers_with_same_id = list(
-                    filter(lambda p: p.id == provider_id and provider != p, providers)
+            if third_party_id in third_party_id_set:
+                raise_bad_input_exception(
+                    "The providers array has multiple entries for the same third party provider."
                 )
-                if len(other_providers_with_same_id) == 0:
-                    # we treat this as the isDefault now.
-                    is_default = True
-            if is_default:
-                if provider_id in default_providers_set:
-                    raise_bad_input_exception(
-                        'You have provided multiple third party providers that have the id: "'
-                        + provider_id
-                        + '" '
-                        "and "
-                        "are "
-                        'marked as "is_default: True". Please only mark one of them as is_default.'
-                    )
-                default_providers_set.add(provider_id)
 
-        if len(default_providers_set) != len(all_providers_set):
-            # this means that there is no provider marked as is_default
-            raise_bad_input_exception(
-                "The providers array has multiple entries for the same third party provider. Please "
-                'mark one of them as the default one by using "is_default: true".'
-            )
+            third_party_id_set.add(third_party_id)
+
         self.providers = providers
 
 
@@ -118,36 +95,6 @@ def validate_and_normalise_user_input(
         sign_in_and_up_feature,
         OverrideConfig(functions=override.functions, apis=override.apis),
     )
-
-
-def find_right_provider(
-    providers: List[Provider], third_party_id: str, client_id: Union[str, None]
-) -> Union[Provider, None]:
-    for provider in providers:
-        provider_id = provider.id
-        if provider_id != third_party_id:
-            continue
-
-        # first if there is only one provider with third_party_id in the
-        # providers array
-        other_providers_with_same_id = list(
-            filter(lambda p: p.id == provider_id and provider != p, providers)
-        )
-        if len(other_providers_with_same_id) == 0:
-            # then we always return that.
-            return provider
-
-        # otherwise, we look for the is_default provider if client_id is
-        # missing
-        if client_id is None and provider.is_default:
-            return provider
-
-        # otherwise, we return a provider that matches based on client Id as
-        # well.
-        if provider.get_client_id({}) == client_id:
-            return provider
-
-    return None
 
 
 def verify_id_token_from_jwks_endpoint(

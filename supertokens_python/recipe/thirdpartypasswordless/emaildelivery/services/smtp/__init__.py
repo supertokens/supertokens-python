@@ -50,6 +50,8 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         )
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -> None:
         return await self.pless_smtp_service.send_email(template_vars, user_context)

@@ -52,7 +52,7 @@ USER_TYPE = Literal["SUPERTOKENS", "EXTERNAL", "ANY"]
 async def ep_get_new_user_id(email: str) -> str:
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
 
-    sign_up_res = await sign_up(email, "password")
+    sign_up_res = await sign_up("public", email, "password")
     assert isinstance(sign_up_res, SignUpOkResult)
 
     return sign_up_res.user.user_id
@@ -69,7 +69,7 @@ async def ep_get_existing_user_id(user_id: str) -> str:
 async def ep_get_existing_user_by_email(email: str) -> str:
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
 
-    res = await get_user_by_email(email)
+    res = await get_user_by_email("public", email)
     assert res is not None
     return res.user_id
 
@@ -77,7 +77,7 @@ async def ep_get_existing_user_by_email(email: str) -> str:
 async def ep_get_existing_user_by_signin(email: str) -> str:
     from supertokens_python.recipe.emailpassword.asyncio import sign_in
 
-    res = await sign_in(email, "password")
+    res = await sign_in("public", email, "password")
     assert isinstance(res, SignInOkResult)
     return res.user.user_id
 
@@ -89,9 +89,9 @@ async def ep_get_existing_user_after_reset_password(user_id: str) -> str:
         reset_password_using_token,
     )
 
-    result = await create_reset_password_token(user_id)
+    result = await create_reset_password_token("public", user_id)
     assert isinstance(result, CreateResetPasswordOkResult)
-    res = await reset_password_using_token(result.token, new_password)
+    res = await reset_password_using_token("public", result.token, new_password)
     assert isinstance(res, ResetPasswordUsingTokenOkResult)
     assert res.user_id is not None
     return res.user_id
@@ -108,7 +108,7 @@ async def ep_get_existing_user_after_updating_email_and_sign_in(user_id: str) ->
     res = await update_email_or_password(user_id, new_email, "password")
     assert isinstance(res, SignUpOkResult)
 
-    res = await sign_in(new_email, "password")
+    res = await sign_in("public", new_email, "password")
     assert isinstance(res, SignInOkResult)
     return res.user.user_id
 

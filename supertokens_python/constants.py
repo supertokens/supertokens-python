@@ -13,8 +13,8 @@
 # under the License.
 from __future__ import annotations
 
-SUPPORTED_CDI_VERSIONS = ["2.21"]
-VERSION = "0.14.8"
+SUPPORTED_CDI_VERSIONS = ["3.0"]
+VERSION = "0.15.0"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
@@ -27,5 +27,5 @@ RID_KEY_HEADER = "rid"
 FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.6"
+DASHBOARD_VERSION = "0.7"
 HUNDRED_YEARS_IN_MS = 3153600000000

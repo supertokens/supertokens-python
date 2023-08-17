@@ -39,16 +39,12 @@ from supertokens_python.recipe import (
     session,
     thirdpartypasswordless,
 )
-from supertokens_python.recipe.emailverification.asyncio import (
-    create_email_verification_token,
-)
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
     SMTPService as EVSMTPService,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenOkResult,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
@@ -61,16 +57,18 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
-from supertokens_python.recipe.thirdparty.providers import Github
+from supertokens_python.recipe.emailverification.asyncio import (
+    create_email_verification_token,
+)
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    passwordlessSigninup,
-    thirdparty_sign_in_up,
+    passwordless_signinup,
+    thirdparty_manually_create_or_update_user,
 )
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import (
     SMTPService,
 )
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
-    ThirdPartySignInUpOkResult,
+    ThirdPartyManuallyCreateOrUpdateUserOkResult,
 )
 from supertokens_python.recipe.thirdpartypasswordless.types import EmailTemplateVars
 from supertokens_python.utils import is_version_gte
@@ -83,6 +81,7 @@ from tests.utils import (
     sign_in_up_request_code_resend,
     start_st,
 )
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 respx_mock = respx.MockRouter
 
@@ -136,7 +135,16 @@ async def test_email_verify_default_backward_compatibility(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[
-                    Github(client_id="", client_secret="")
+                    thirdpartypasswordless.ProviderInput(
+                        config=thirdpartypasswordless.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdpartypasswordless.ProviderClientConfig(
+                                    client_id="", client_secret=""
+                                )
+                            ],
+                        ),
+                    )
                 ],  # Note: providers must be set to init tp recipe
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -144,16 +152,18 @@ async def test_email_verify_default_backward_compatibility(
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com"
+    resp = await thirdparty_manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, ThirdPartySignInUpOkResult)
+    assert isinstance(resp, ThirdPartyManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -192,12 +202,17 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email = ""
     email_verify_url = ""
 
-    async def create_and_send_custom_email(
-        input_: EVUser, email_verification_link: str, _: Dict[str, Any]
+    class CustomEVEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal email, email_verify_url
-        email = input_.email
-        email_verify_url = email_verification_link
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email, email_verify_url
+            email = template_vars.user.email
+            email_verify_url = template_vars.email_verify_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -211,13 +226,24 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         recipe_list=[
             emailverification.init(
                 mode="OPTIONAL",
-                create_and_send_custom_email=create_and_send_custom_email,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEVEmailService()
+                ),
             ),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[
-                    Github(client_id="", client_secret="")
+                    thirdpartypasswordless.ProviderInput(
+                        config=thirdpartypasswordless.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdpartypasswordless.ProviderClientConfig(
+                                    client_id="", client_secret=""
+                                )
+                            ],
+                        ),
+                    )
                 ],  # Note: providers must be set to init tp recipe
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -225,16 +251,18 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com"
+    resp = await thirdparty_manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, ThirdPartySignInUpOkResult)
+    assert isinstance(resp, ThirdPartyManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     resp = email_verify_token_request(
         driver_config_client,
@@ -295,7 +323,16 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[
-                    Github(client_id="", client_secret="")
+                    thirdpartypasswordless.ProviderInput(
+                        config=thirdpartypasswordless.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdpartypasswordless.ProviderClientConfig(
+                                    client_id="", client_secret=""
+                                )
+                            ],
+                        ),
+                    )
                 ],  # Note: providers must be set to init tp recipe
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -303,17 +340,19 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com"
+    resp = await thirdparty_manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, ThirdPartySignInUpOkResult)
+    assert isinstance(resp, ThirdPartyManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -435,7 +474,16 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[
-                    Github(client_id="", client_secret="")
+                    thirdpartypasswordless.ProviderInput(
+                        config=thirdpartypasswordless.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdpartypasswordless.ProviderClientConfig(
+                                    client_id="", client_secret=""
+                                )
+                            ],
+                        ),
+                    )
                 ],  # Note: providers must be set to init tp recipe
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -443,17 +491,19 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com"
+    resp = await thirdparty_manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, ThirdPartySignInUpOkResult)
+    assert isinstance(resp, ThirdPartyManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     resp = email_verify_token_request(
         driver_config_client,
@@ -561,8 +611,12 @@ async def test_email_verify_for_pless_user_no_callback():
     if not is_version_gte(version, "2.11"):
         return
 
-    pless_response = await passwordlessSigninup("test@example.com", None, {})
-    create_token = await create_email_verification_token(pless_response.user.user_id)
+    pless_response = await passwordless_signinup(
+        DEFAULT_TENANT_ID, "test@example.com", None, {}
+    )
+    create_token = await create_email_verification_token(
+        "public", pless_response.user.user_id
+    )
 
     assert isinstance(create_token, CreateEmailVerificationTokenOkResult)
     # TODO: Replaced CreateEmailVerificationTokenEmailAlreadyVerifiedError. Confirm if this is correct.
@@ -734,15 +788,19 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     url_with_link_code = ""
     user_input_code = ""
 
-    async def create_and_send_custom_email(
-        input_: EmailTemplateVars, _: Dict[str, Any]
+    class CustomEmailDeliveryService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
     ):
-        nonlocal email, code_lifetime, url_with_link_code, user_input_code
-        assert isinstance(input_, PasswordlessLoginEmailTemplateVars)
-        email = input_.email
-        code_lifetime = input_.code_life_time
-        url_with_link_code = input_.url_with_link_code
-        user_input_code = input_.user_input_code
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ):
+            nonlocal email, code_lifetime, url_with_link_code, user_input_code
+            email = template_vars.email
+            code_lifetime = template_vars.code_life_time
+            url_with_link_code = template_vars.url_with_link_code
+            user_input_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -755,10 +813,11 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         framework="fastapi",
         recipe_list=[
             thirdpartypasswordless.init(
-                contact_config=passwordless.ContactEmailOnlyConfig(
-                    create_and_send_custom_email=create_and_send_custom_email,
-                ),
+                contact_config=passwordless.ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                email_delivery=passwordless.EmailDeliveryConfig(
+                    CustomEmailDeliveryService()
+                ),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],

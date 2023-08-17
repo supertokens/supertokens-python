@@ -28,10 +28,10 @@ async def test_create_access_token_payload_with_session_claims(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 9
+    assert len(payload) == 10
     assert payload["st-true"] == {"v": True, "t": timestamp}
 
 
@@ -41,10 +41,10 @@ async def test_should_create_access_token_payload_with_session_claims_with_an_no
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 8
+    assert len(payload) == 9
     assert payload.get("st-true") is None
 
 
@@ -66,9 +66,9 @@ async def test_should_merge_claims_and_passed_access_token_payload_obj(timestamp
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "someId")
+    s = await create_new_session("public", dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"v": True, "t": timestamp}
     assert payload["user-custom-claim"] == "foo"

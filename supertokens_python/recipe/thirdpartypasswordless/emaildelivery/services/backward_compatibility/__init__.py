@@ -14,14 +14,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict, Union
+from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService as PlessBackwardCompatibilityService,
-)
-from supertokens_python.recipe.passwordless.types import (
-    CreateAndSendCustomEmailParameters,
 )
 from supertokens_python.recipe.thirdpartypasswordless.types import EmailTemplateVars
 from supertokens_python.supertokens import AppInfo
@@ -33,19 +30,15 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     def __init__(
         self,
         app_info: AppInfo,
-        create_and_send_custom_email: Union[
-            Callable[
-                [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]
-            ],
-            None,
-        ] = None,
     ) -> None:
         self.pless_backward_compatiblity_service = PlessBackwardCompatibilityService(
-            app_info, create_and_send_custom_email
+            app_info
         )
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -> None:
         await self.pless_backward_compatiblity_service.send_email(
             template_vars, user_context

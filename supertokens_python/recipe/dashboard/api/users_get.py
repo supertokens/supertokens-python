@@ -14,7 +14,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, List
+from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
+from typing_extensions import Literal
 
 from supertokens_python.supertokens import Supertokens
 
@@ -34,7 +35,10 @@ from supertokens_python.exceptions import GeneralError, raise_bad_input_exceptio
 
 
 async def handle_users_get_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> APIResponse:
     _ = api_implementation
 
@@ -42,7 +46,7 @@ async def handle_users_get_api(
     if limit is None:
         raise_bad_input_exception("Missing required parameter 'limit'")
 
-    time_joined_order: str = api_options.request.get_query_param(  # type: ignore
+    time_joined_order: Literal["ASC", "DESC"] = api_options.request.get_query_param(  # type: ignore
         "timeJoinedOrder", "DESC"
     )
     if time_joined_order not in ["ASC", "DESC"]:
@@ -51,8 +55,9 @@ async def handle_users_get_api(
     pagination_token = api_options.request.get_query_param("paginationToken")
 
     users_response = await Supertokens.get_instance().get_users(
+        tenant_id,
+        time_joined_order=time_joined_order,
         limit=int(limit),
-        time_joined_order=time_joined_order,  # type: ignore
         pagination_token=pagination_token,
         include_recipe_ids=None,
         query=api_options.request.get_query_params(),
@@ -74,7 +79,7 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
         user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id)
+        user_metadata = await get_user_metadata(user.user_id, user_context)
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 

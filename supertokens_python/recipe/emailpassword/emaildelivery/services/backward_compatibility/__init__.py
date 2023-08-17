@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
+from typing import Any, Dict
 
 from httpx import AsyncClient
 
@@ -28,33 +28,26 @@ from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
-if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.utils import (
-        InputResetPasswordUsingTokenFeature,
-    )
 
+async def create_and_send_email_using_supertokens_service(
+    app_info: AppInfo, user: User, password_reset_url_with_token: str
+) -> None:
+    if ("SUPERTOKENS_ENV" in environ) and (environ["SUPERTOKENS_ENV"] == "testing"):
+        return
 
-def default_create_and_send_custom_email(
-    app_info: AppInfo,
-) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
-        if ("SUPERTOKENS_ENV" in environ) and (environ["SUPERTOKENS_ENV"] == "testing"):
-            return
-        data = {
-            "email": user.email,
-            "appName": app_info.app_name,
-            "passwordResetURL": password_reset_url_with_token,
-        }
-        try:
-            async with AsyncClient() as client:
-                resp = await client.post("https://api.supertokens.io/0/st/auth/password/reset", json=data, headers={"api-version": "0"})  # type: ignore
-                resp.raise_for_status()
-                log_debug_message("Password reset email sent to %s", user.email)
-        except Exception as e:
-            log_debug_message("Error sending password reset email")
-            handle_httpx_client_exceptions(e, data)
-
-    return func
+    data = {
+        "email": user.email,
+        "appName": app_info.app_name,
+        "passwordResetURL": password_reset_url_with_token,
+    }
+    try:
+        async with AsyncClient() as client:
+            resp = await client.post("https://api.supertokens.io/0/st/auth/password/reset", json=data, headers={"api-version": "0"})  # type: ignore
+            resp.raise_for_status()
+            log_debug_message("Password reset email sent to %s", user.email)
+    except Exception as e:
+        log_debug_message("Error sending password reset email")
+        handle_httpx_client_exceptions(e, data)
 
 
 class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
@@ -64,30 +57,14 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         self,
         app_info: AppInfo,
         recipe_interface_impl: RecipeInterface,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
     ) -> None:
         self.recipe_interface_impl = recipe_interface_impl
-
-        reset_password_feature_send_email_func = default_create_and_send_custom_email(
-            app_info
-        )
-        if (
-            reset_password_using_token_feature
-            and reset_password_using_token_feature.create_and_send_custom_email
-            is not None
-        ):
-            reset_password_feature_send_email_func = (
-                reset_password_using_token_feature.create_and_send_custom_email
-            )
-
-        self.reset_password_feature_send_email_func = (
-            reset_password_feature_send_email_func
-        )
+        self.app_info = app_info
 
     async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        self,
+        template_vars: EmailTemplateVars,
+        user_context: Dict[str, Any],
     ) -> None:
         user = await self.recipe_interface_impl.get_user_by_id(
             user_id=template_vars.user.id, user_context=user_context
@@ -100,8 +77,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         # will get reset by the getUserById call above.
         user.email = template_vars.user.email
         try:
-            await self.reset_password_feature_send_email_func(
-                user, template_vars.password_reset_link, user_context
+            await create_and_send_email_using_supertokens_service(
+                self.app_info, user, template_vars.password_reset_link
             )
         except Exception:
             pass

@@ -14,6 +14,7 @@
 
 import json
 from typing import Any, Dict, Union
+from base64 import b64encode
 
 import pytest
 from _pytest.fixtures import fixture
@@ -83,12 +84,15 @@ def driver_config_app():
         original_func = original_implementation.email_exists_get
 
         async def email_exists_get(
-            email: str, api_options: APIOptions, user_context: Dict[str, Any]
+            email: str,
+            tenant_id: str,
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
         ):
             response_dict = {"custom": True}
             api_options.response.set_status_code(203)
             api_options.response.set_json_content(response_dict)
-            return await original_func(email, api_options, user_context)
+            return await original_func(email, tenant_id, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
         return original_implementation
@@ -131,21 +135,44 @@ def driver_config_app():
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[
-                        thirdparty.Apple(
-                            client_id="4398792-io.supertokens.example.service",
-                            client_key_id="7M48Y4RYDL",
-                            client_team_id="YWQCXGJRJL",
-                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="apple",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="4398792-io.supertokens.example.service",
+                                        additional_config={
+                                            "keyId": "7M48Y4RYDL",
+                                            "teamId": "YWQCXGJRJL",
+                                            "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        },
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Google(
-                            client_id="467101b197249757c71f",
-                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="google",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="467101b197249757c71f",
+                                        client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Github(
-                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                            client_secret="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",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="github",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                        client_secret="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",
+                                    ),
+                                ],
+                            )
                         ),
-                    ]
+                    ],
                 )
             ),
             DashboardRecipe.init(
@@ -166,7 +193,7 @@ def driver_config_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        create_new_session(request, user_id, {}, {})
+        create_new_session(request, "public", user_id, {}, {})
 
         return jsonify({"userId": user_id, "session": "ssss"})
 
@@ -452,16 +479,19 @@ def test_thirdparty_parsing_works(driver_config_app: Any):
     start_st()
 
     test_client = driver_config_app.test_client()
-    data = {
-        "state": "afc596274293e1587315c",
-        "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
-    }
-    response = test_client.post("/auth/callback/apple", data=data)
+    state = b64encode(
+        json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+    ).decode()
+    code = "testing"
 
-    assert response.status_code == 200
+    data = {"state": state, "code": code}
+    res = test_client.post("/auth/callback/apple", data=data)
+
+    assert res.status_code == 303
+    assert res.data == b""
     assert (
-        response.data
-        == b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>'
+        res.headers["location"]
+        == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
     )
 
 
@@ -723,7 +753,7 @@ def flask_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        s = create_new_session(request, user_id, {}, {})
+        s = create_new_session(request, "public", user_id, {}, {})
         return jsonify({"user": s.get_user_id()})
 
     @app.route("/ping")  # type: ignore
@@ -802,7 +832,7 @@ def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middlewa
     assert res.status_code == 401
     assert res.json == {"message": "unauthorised"}
 
-    s = create_new_session_without_request_response("userId", {}, {})
+    s = create_new_session_without_request_response("public", "userId", {}, {})
     res = client.get(
         "/verify", headers={"Authorization": "Bearer " + s.get_access_token()}
     )

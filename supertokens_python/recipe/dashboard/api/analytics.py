@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from httpx import AsyncClient
 
@@ -35,7 +35,10 @@ if TYPE_CHECKING:
 
 
 async def handle_analytics_post(
-    _: APIInterface, api_options: APIOptions
+    _: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    _user_context: Dict[str, Any],
 ) -> AnalyticsResponse:
     if not Supertokens.get_instance().telemetry:
         return AnalyticsResponse()

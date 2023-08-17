@@ -33,7 +33,6 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
-    regenerate_access_token,
 )
 from supertokens_python.recipe.session.asyncio import (
     revoke_session as asyncio_revoke_session,
@@ -95,7 +94,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     if not isinstance(s.recipe_implementation, RecipeImplementation):
         raise Exception("Should never come here")
 
-    response = await create_new_session(s.recipe_implementation, "", False, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", "", False, {}, {}
+    )
 
     assert response.session is not None
     assert response.accessToken is not None
@@ -192,15 +193,20 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     access_tokens: List[str] = []
     for _ in range(7):
         new_session = await create_new_session(
-            s.recipe_implementation, "someUser", False, {"someKey": "someValue"}, {}
+            s.recipe_implementation,
+            "public",
+            "someUser",
+            False,
+            {"someKey": "someValue"},
+            {},
         )
         access_tokens.append(new_session.accessToken.token)
 
-    session_handles = await get_all_session_handles_for_user("someUser")
+    session_handles = await get_all_session_handles_for_user("someUser", "public")
 
     assert len(session_handles) == 7
 
-    for i, handle in enumerate(session_handles):
+    for handle in session_handles:
         info = await get_session_information(handle)
         assert info is not None
         assert info.user_id == "someUser"
@@ -222,18 +228,23 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         assert info.custom_claims_in_access_token_payload == {"someKey2": "someValue"}
         assert info.session_data_in_database == {"foo": "bar"}
 
+    regenerated_session_handles: List[str] = []
     # Regenerate access token with new access_token_payload
-    for i, token in enumerate(access_tokens):
-        result = await regenerate_access_token(token, {"bar": "baz"})
+    for token in access_tokens:
+        result = await s.recipe_implementation.regenerate_access_token(
+            token, {"bar": "baz"}, {}
+        )
         assert result is not None
-        assert (
-            result.session.handle == session_handles[i]
-        )  # Session handle should remain the same
+        regenerated_session_handles.append(result.session.handle)
 
         # Confirm that update worked:
         info = await get_session_information(result.session.handle)
         assert info is not None
         assert info.custom_claims_in_access_token_payload == {"bar": "baz"}
+
+    # Session handle should remain the same session handle should remain the same
+    # but order isn't guaranteed so we should sort them
+    assert sorted(regenerated_session_handles) == sorted(session_handles)
 
     # Try updating invalid handles:
     is_updated = await merge_into_access_token_payload("invalidHandle", {"foo": "bar"})
@@ -253,7 +264,7 @@ async def driver_config_client():
 
     @app.post("/create")
     async def create_api(request: Request):  # type: ignore
-        await async_create_new_session(request, "test-user", {}, {})
+        await async_create_new_session(request, "public", "test-user", {}, {})
         return ""
 
     @app.post("/sessioninfo-optional")
@@ -285,7 +296,9 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
         raise Exception("Should never come here")
     user_id = "user_id"
 
-    response = await create_new_session(s.recipe_implementation, user_id, False, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, False, {}, {}
+    )
 
     session_handle = response.session.handle
 
@@ -349,7 +362,7 @@ async def test_should_use_override_functions_in_session_container_methods():
 
     mock_response = MagicMock()
 
-    my_session = await async_create_new_session(mock_response, "test_id")
+    my_session = await async_create_new_session("public", mock_response, "test_id")
     data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
@@ -682,7 +695,7 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    session1 = await create_new_session_without_request_response("user-id")
+    session1 = await create_new_session_without_request_response("public", "user-id")
 
     assert session1 is not None
     assert session1.access_token != ""

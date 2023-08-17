@@ -14,23 +14,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
 
 from . import exceptions as ex
-from . import providers, utils
+from . import utils, provider
 from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
 SignInAndUpFeature = utils.SignInAndUpFeature
-Apple = providers.Apple
-Discord = providers.Discord
-Facebook = providers.Facebook
-Github = providers.Github
-Google = providers.Google
-GoogleWorkspaces = providers.GoogleWorkspaces
-Bitbucket = providers.Bitbucket
-GitLab = providers.GitLab
+ProviderInput = provider.ProviderInput
+ProviderConfig = provider.ProviderConfig
+ProviderClientConfig = provider.ProviderClientConfig
 exceptions = ex
 
 if TYPE_CHECKING:
@@ -40,7 +35,9 @@ if TYPE_CHECKING:
 
 
 def init(
-    sign_in_and_up_feature: SignInAndUpFeature,
+    sign_in_and_up_feature: Optional[SignInAndUpFeature] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
+    if sign_in_and_up_feature is None:
+        sign_in_and_up_feature = SignInAndUpFeature()
     return ThirdPartyRecipe.init(sign_in_and_up_feature, override)

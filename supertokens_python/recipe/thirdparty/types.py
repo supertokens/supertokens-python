@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union, Optional
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -21,6 +21,23 @@ class ThirdPartyInfo:
         self.user_id = third_party_user_id
         self.id = third_party_id
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.id == other.id
+        )
+
+
+class RawUserInfoFromProvider:
+    def __init__(
+        self,
+        from_id_token_payload: Optional[Dict[str, Any]],
+        from_user_info_api: Optional[Dict[str, Any]],
+    ):
+        self.from_id_token_payload = from_id_token_payload
+        self.from_user_info_api = from_user_info_api
+
 
 class User:
     def __init__(
@@ -28,12 +45,24 @@ class User:
         user_id: str,
         email: str,
         time_joined: int,
+        tenant_ids: List[str],
         third_party_info: ThirdPartyInfo,
     ):
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
+        self.tenant_ids = tenant_ids
         self.third_party_info: ThirdPartyInfo = third_party_info
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+            and self.third_party_info == other.third_party_info
+        )
 
 
 class UserInfoEmail:
@@ -43,9 +72,17 @@ class UserInfoEmail:
 
 
 class UserInfo:
-    def __init__(self, user_id: str, email: Union[UserInfoEmail, None] = None):
-        self.user_id: str = user_id
+    def __init__(
+        self,
+        third_party_user_id: str,
+        email: Union[UserInfoEmail, None] = None,
+        raw_user_info_from_provider: Optional[RawUserInfoFromProvider] = None,
+    ):
+        self.third_party_user_id: str = third_party_user_id
         self.email: Union[UserInfoEmail, None] = email
+        self.raw_user_info_from_provider = (
+            raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
+        )
 
 
 class AccessTokenAPI:

@@ -280,6 +280,7 @@ def functions_override_session(param: RecipeInterface):
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
         disable_anti_csrf: Union[bool, None],
+        tenant_id: str,
         user_context: Dict[str, Any],
     ):
         if access_token_payload is None:
@@ -290,6 +291,7 @@ def functions_override_session(param: RecipeInterface):
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
+            tenant_id,
             user_context,
         )
 
@@ -398,7 +400,7 @@ async def login(request: HttpRequest):
     if request.method == "POST":
         user_id = json.loads(request.body)["userId"]
 
-        session_ = await create_new_session(request, user_id)
+        session_ = await create_new_session(request, "public", user_id)
         return HttpResponse(session_.get_user_id())
     else:
         return send_options_api_response()

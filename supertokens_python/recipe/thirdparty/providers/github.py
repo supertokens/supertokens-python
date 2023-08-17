@@ -12,109 +12,63 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+from typing import Any, Dict, List, Optional
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
+from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
-from httpx import AsyncClient
-from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
-    UserInfo,
-    UserInfoEmail,
-)
-
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-
-from supertokens_python.utils import get_filtered_list
+from .custom import GenericProvider, NewProvider
+from ..provider import Provider, ProviderConfigForClient, ProviderInput
 
 
-class Github(Provider):
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        scope: Union[None, List[str]] = None,
-        authorisation_redirect: Union[
-            None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
-        ] = None,
-        is_default: bool = False,
-    ):
-        super().__init__("github", is_default)
-        default_scopes = ["read:user", "user:email"]
-        if scope is None:
-            scope = default_scopes
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scopes = list(set(scope))
-        self.access_token_api_url = "https://github.com/login/oauth/access_token"
-        self.authorisation_redirect_url = "https://github.com/login/oauth/authorize"
-        self.authorisation_redirect_params = {}
-        if authorisation_redirect is not None:
-            self.authorisation_redirect_params = authorisation_redirect
+class GithubImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -> ProviderConfigForClient:
+        config = await super().get_config_for_client_type(client_type, user_context)
 
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+        if config.scope is None:
+            config.scope = ["read:user", "user:email"]
+
+        return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -> UserInfo:
-        access_token: str = auth_code_response["access_token"]
-        params = {"alt": "json"}
         headers = {
-            "Authorization": "Bearer " + access_token,
+            "Authorization": f"Bearer {oauth_tokens.get('access_token')}",
             "Accept": "application/vnd.github.v3+json",
         }
-        async with AsyncClient() as client:
-            response_user = await client.get(  # type:ignore
-                url="https://api.github.com/user", params=params, headers=headers
-            )
-            response_email = await client.get(  # type:ignore
-                url="https://api.github.com/user/emails", params=params, headers=headers
-            )
-            user_info = response_user.json()
-            emails_info = response_email.json()
-            user_id = str(user_info["id"])
-            email_info = get_filtered_list(
-                lambda x: "primary" in x and x["primary"], emails_info
-            )
 
-            if len(email_info) == 0:
-                return UserInfo(user_id)
-            is_email_verified = (
-                email_info[0]["verified"] if "verified" in email_info[0] else False
-            )
-            email = (
-                email_info[0]["email"]
-                if "email" in email_info[0]
-                else user_info["email"]
-            )
-            return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
+        raw_response = {}
 
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -> AuthorisationRedirectAPI:
-        params = {
-            "scope": " ".join(self.scopes),
-            "client_id": self.client_id,
-            **self.authorisation_redirect_params,
-        }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+        email_info: List[Any] = await do_get_request("https://api.github.com/user/emails", headers=headers)  # type: ignore
+        user_info = await do_get_request("https://api.github.com/user", headers=headers)
 
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -> AccessTokenAPI:
-        params = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "code": auth_code_from_request,
-            "redirect_uri": redirect_uri,
-        }
-        return AccessTokenAPI(self.access_token_api_url, params)
+        raw_response["emails"] = email_info
+        raw_response["user"] = user_info
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-        return None
+        result = UserInfo(
+            third_party_user_id=str(user_info.get("id")),
+        )
 
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
-        return self.client_id
+        for info in email_info:
+            if info.get("primary"):
+                result.email = UserInfoEmail(
+                    email=info.get("email"), email_verified=info.get("verified")
+                )
+
+        return result
+
+
+def Github(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
+    if input.config.name is None:
+        input.config.name = "Github"
+
+    if input.config.authorization_endpoint is None:
+        input.config.authorization_endpoint = "https://github.com/login/oauth/authorize"
+
+    if input.config.token_endpoint is None:
+        input.config.token_endpoint = "https://github.com/login/oauth/access_token"
+
+    return NewProvider(input, GithubImpl)

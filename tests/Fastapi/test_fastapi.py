@@ -91,7 +91,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
+        await create_new_session(request, "public", user_id, {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -135,12 +135,12 @@ async def driver_config_client():
 
     @app.post("/create")
     async def _create(request: Request):  # type: ignore
-        await create_new_session(request, "userId", {}, {})
+        await create_new_session(request, "public", "userId", {}, {})
         return ""
 
     @app.post("/create-throw")
     async def _create_throw(request: Request):  # type: ignore
-        await create_new_session(request, "userId", {}, {})
+        await create_new_session(request, "public", "userId", {}, {})
         raise UnauthorisedError("unauthorised")
 
     return TestClient(app)
@@ -454,12 +454,15 @@ async def test_custom_response(driver_config_client: TestClient):
         original_func = original_implementation.email_exists_get
 
         async def email_exists_get(
-            email: str, api_options: APIOptions, user_context: Dict[str, Any]
+            email: str,
+            tenant_id: str,
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
         ):
             response_dict = {"custom": True}
             api_options.response.set_status_code(203)
             api_options.response.set_json_content(response_dict)
-            return await original_func(email, api_options, user_context)
+            return await original_func(email, tenant_id, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
         return original_implementation
@@ -942,21 +945,44 @@ async def test_search_with_provider_google(driver_config_client: TestClient):
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[
-                        thirdparty.Apple(
-                            client_id="4398792-io.supertokens.example.service",
-                            client_key_id="7M48Y4RYDL",
-                            client_team_id="YWQCXGJRJL",
-                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="apple",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="4398792-io.supertokens.example.service",
+                                        additional_config={
+                                            "keyId": "7M48Y4RYDL",
+                                            "teamId": "YWQCXGJRJL",
+                                            "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        },
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Google(
-                            client_id="467101b197249757c71f",
-                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="google",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="467101b197249757c71f",
+                                        client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Github(
-                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                            client_secret="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",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="github",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                        client_secret="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",
+                                    ),
+                                ],
+                            )
                         ),
-                    ]
+                    ],
                 )
             ),
         ],
@@ -1013,21 +1039,44 @@ async def test_search_with_provider_google_and_phone_1(
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[
-                        thirdparty.Apple(
-                            client_id="4398792-io.supertokens.example.service",
-                            client_key_id="7M48Y4RYDL",
-                            client_team_id="YWQCXGJRJL",
-                            client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="apple",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="4398792-io.supertokens.example.service",
+                                        additional_config={
+                                            "keyId": "7M48Y4RYDL",
+                                            "teamId": "YWQCXGJRJL",
+                                            "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        },
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Google(
-                            client_id="467101b197249757c71f",
-                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="google",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="467101b197249757c71f",
+                                        client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                                    ),
+                                ],
+                            )
                         ),
-                        thirdparty.Github(
-                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                            client_secret="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",
+                        thirdparty.ProviderInput(
+                            config=thirdparty.ProviderConfig(
+                                third_party_id="github",
+                                clients=[
+                                    thirdparty.ProviderClientConfig(
+                                        client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                        client_secret="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",
+                                    ),
+                                ],
+                            )
                         ),
-                    ]
+                    ],
                 )
             ),
         ],

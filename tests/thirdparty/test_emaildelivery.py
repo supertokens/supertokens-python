@@ -13,7 +13,7 @@
 # under the License.
 
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 import httpx
 import respx
@@ -36,7 +36,6 @@ from supertokens_python.recipe import emailverification, session, thirdparty
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
     SMTPService,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
@@ -45,12 +44,12 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
-from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
-from supertokens_python.recipe.thirdparty.interfaces import SignInUpOkResult
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
+from supertokens_python.recipe.thirdparty.interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
+)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
     UserInfo,
     UserInfoEmail,
 )
@@ -84,33 +83,29 @@ async def driver_config_client():
     return TestClient(app)
 
 
-class CustomProvider(Provider):
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-    ) -> UserInfo:
-        return UserInfo(
-            user_id=auth_code_response["id"],
-            email=UserInfoEmail(auth_code_response["email"], True),
-        )
+def CustomProvider(provider_id: str) -> thirdparty.ProviderInput:
+    def custom_provider_override(original_implementation: Provider) -> Provider:
+        async def get_user_info(
+            oauth_tokens: Dict[str, Any],
+            _user_context: Dict[str, Any],
+        ) -> UserInfo:
+            return UserInfo(
+                third_party_user_id=oauth_tokens["id"],
+                email=UserInfoEmail(oauth_tokens["email"], True),
+            )
 
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -> AuthorisationRedirectAPI:
-        return AuthorisationRedirectAPI("https://example.com/oauth/auth", {})
+        original_implementation.get_user_info = get_user_info
+        return original_implementation
 
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -> AccessTokenAPI:
-        return AccessTokenAPI("https://example.com/oauth/token", {})
-
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-        return
-
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
-        return "foo"
+    return thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id=provider_id,
+            clients=[thirdparty.ProviderClientConfig(client_id="foo")],
+            authorization_endpoint="https://example.com/oauth/auth",
+            token_endpoint="https://example.com/oauth/token",
+        ),
+        override=custom_provider_override,
+    )
 
 
 @mark.asyncio
@@ -135,7 +130,7 @@ async def test_email_verify_default_backward_compatibility(
             emailverification.init(mode="OPTIONAL"),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
-                    providers=[CustomProvider("CUSTOM", True)]
+                    providers=[CustomProvider("custom")]
                 )
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -143,14 +138,18 @@ async def test_email_verify_default_backward_compatibility(
     )
     start_st()
 
-    resp = await sign_in_up("supertokens", "test-user-id", "test@example.com")
+    resp = await manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, SignInUpOkResult)
+    assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -205,7 +204,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
             emailverification.init(mode="OPTIONAL"),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
-                    providers=[CustomProvider("CUSTOM", True)]
+                    providers=[CustomProvider("custom")]
                 )
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -213,14 +212,18 @@ async def test_email_verify_default_backward_compatibility_supress_error(
     )
     start_st()
 
-    resp = await sign_in_up("supertokens", "test-user-id", "test@example.com")
+    resp = await manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, SignInUpOkResult)
+    assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -260,12 +263,17 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email = ""
     email_verify_url = ""
 
-    async def create_and_send_custom_email(
-        input_: EVUser, email_verification_link: str, _: Dict[str, Any]
+    class CustomEmailVerificationEmailService(
+        emailverification.EmailDeliveryInterface[VerificationEmailTemplateVars]
     ):
-        nonlocal email, email_verify_url
-        email = input_.email
-        email_verify_url = email_verification_link
+        async def send_email(
+            self,
+            template_vars: VerificationEmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email, email_verify_url
+            email = template_vars.user.email
+            email_verify_url = template_vars.email_verify_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -279,11 +287,14 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         recipe_list=[
             emailverification.init(
                 mode="OPTIONAL",
-                create_and_send_custom_email=create_and_send_custom_email,
+                # create_and_send_custom_email=create_and_send_custom_email,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailVerificationEmailService()
+                ),
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
-                    providers=[CustomProvider("CUSTOM", True)]
+                    providers=[CustomProvider("custom")]
                 )
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -291,14 +302,18 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     )
     start_st()
 
-    resp = await sign_in_up("supertokens", "test-user-id", "test@example.com")
+    resp = await manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, SignInUpOkResult)
+    assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     resp = email_verify_token_request(
         driver_config_client,
@@ -357,7 +372,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
-                    providers=[CustomProvider("CUSTOM", True)]
+                    providers=[CustomProvider("custom")]
                 ),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -365,15 +380,19 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     )
     start_st()
 
-    resp = await sign_in_up("supertokens", "test-user-id", "test@example.com")
+    resp = await manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, SignInUpOkResult)
+    assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -493,7 +512,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
-                    providers=[CustomProvider("CUSTOM", True)]
+                    providers=[CustomProvider("custom")]
                 ),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
@@ -501,15 +520,19 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     )
     start_st()
 
-    resp = await sign_in_up("supertokens", "test-user-id", "test@example.com")
+    resp = await manually_create_or_update_user(
+        "public", "supertokens", "test-user-id", "test@example.com"
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    assert isinstance(resp, SignInUpOkResult)
+    assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
-    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
+    response = await create_new_session(
+        s.recipe_implementation, "public", user_id, True, {}, {}
+    )
 
     resp = email_verify_token_request(
         driver_config_client,

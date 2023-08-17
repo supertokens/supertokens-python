@@ -40,7 +40,9 @@ from supertokens_python.recipe.emailverification.interfaces import (
     EmailVerifyPostOkResult,
     VerifyEmailUsingTokenInvalidTokenError,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
+from supertokens_python.recipe.emailverification.types import (
+    User as EVUser,
+)
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
@@ -63,8 +65,8 @@ from tests.utils import (
     teardown_function,
 )
 
-_ = setup_function  # type: ignore
-_ = teardown_function  # type: ignore
+_ = setup_function
+_ = teardown_function
 
 pytestmark = mark.asyncio
 
@@ -77,7 +79,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, user_id, {}, {})
+        await create_new_session(request, "public", user_id, {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -190,9 +192,9 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     user_id = dict_response["user"]["id"]
     cookies = extract_all_cookies(response_1)
 
-    verify_token = await create_email_verification_token(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        await verify_email_using_token(verify_token.token)
+        await verify_email_using_token("public", verify_token.token)
 
         response = email_verify_token_request(
             driver_config_client,
@@ -311,15 +313,22 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(
     driver_config_client: TestClient,
 ):
-    user_info: Union[None, EVUser] = None
+    ev_user_email: Union[None, str] = None
+    ev_user_id: Union[None, str] = None
     email_token = None
 
-    async def custom_f(
-        user: EVUser, email_verification_url_token: str, _: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal user_info, email_token
-        user_info = user
-        email_token = email_verification_url_token
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal ev_user_email, ev_user_id, email_token
+            ev_user_email = template_vars.user.email
+            ev_user_id = template_vars.user.id
+            email_token = template_vars.email_verify_link
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -336,7 +345,11 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             ),
             emailverification.init(
-                mode="REQUIRED", create_and_send_custom_email=custom_f
+                mode="REQUIRED",
+                # create_and_send_custom_email=custom_f,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
             ),
             emailpassword.init(),
         ],
@@ -362,21 +375,27 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 
     dict_response = json.loads(response_2.text)
     assert dict_response["status"] == "OK"
-    if user_info is None:
+    if ev_user_email is None or ev_user_id is None:
         raise Exception("Should never come here")
-    assert user_info.user_id == user_id  # type: ignore
-    assert user_info.email == "test@gmail.com"  # type: ignore
+    assert ev_user_id == user_id  # type: ignore
+    assert ev_user_email == "test@gmail.com"  # type: ignore
     assert email_token is not None
 
 
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -393,7 +412,10 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             ),
             emailverification.init(
-                mode="REQUIRED", create_and_send_custom_email=custom_f
+                mode="REQUIRED",
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
             ),
             emailpassword.init(),
         ],
@@ -443,11 +465,17 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
 ):
     token = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -464,7 +492,10 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             ),
             emailverification.init(
-                mode="REQUIRED", create_and_send_custom_email=custom_f
+                mode="REQUIRED",
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
             ),
             emailpassword.init(),
         ],
@@ -514,11 +545,17 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
 ):
     token = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEVEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -535,7 +572,10 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             ),
             emailverification.init(
-                mode="REQUIRED", create_and_send_custom_email=custom_f
+                mode="REQUIRED",
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEVEmailService()
+                ),
             ),
             emailpassword.init(),
         ],
@@ -587,11 +627,17 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -599,12 +645,13 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         async def email_verify_post(
             token: str,
             session: Optional[SessionContainer],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, session, api_options, user_context)
+            response = await temp(token, session, tenant_id, api_options, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -630,7 +677,9 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
             ),
             emailverification.init(
                 mode="REQUIRED",
-                create_and_send_custom_email=custom_f,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
                 override=OverrideConfig(apis=apis_override_email_password),
             ),
             emailpassword.init(),
@@ -688,11 +737,17 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
 ):
     token = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -710,7 +765,9 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
             ),
             emailverification.init(
                 mode="REQUIRED",
-                create_and_send_custom_email=custom_f,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
             ),
             emailpassword.init(),
         ],
@@ -801,11 +858,17 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -813,12 +876,13 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         async def email_verify_post(
             token: str,
             session: Optional[SessionContainer],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, session, api_options, user_context)
+            response = await temp(token, session, tenant_id, api_options, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -844,7 +908,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
             ),
             emailverification.init(
                 mode="REQUIRED",
-                create_and_send_custom_email=custom_f,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
                 override=OverrideConfig(apis=apis_override_email_password),
             ),
             emailpassword.init(),
@@ -898,11 +964,17 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(
-        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
-        nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal token
+            email_verification_url_token = template_vars.email_verify_link
+            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -910,12 +982,13 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         async def email_verify_post(
             token: str,
             session: Optional[SessionContainer],
+            tenant_id: str,
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, session, api_options, user_context)
+            response = await temp(token, session, tenant_id, api_options, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -941,7 +1014,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
             ),
             emailverification.init(
                 mode="REQUIRED",
-                create_and_send_custom_email=custom_f,
+                # create_and_send_custom_email=custom_f,
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
                 override=emailverification.InputOverrideConfig(
                     apis=apis_override_email_password
                 ),
@@ -1025,11 +1101,11 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await create_email_verification_token(user_id)
-    await revoke_email_verification_tokens(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
+    await revoke_email_verification_tokens("public", user_id)
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        response = await verify_email_using_token(verify_token.token)
+        response = await verify_email_using_token("public", verify_token.token)
         assert isinstance(response, VerifyEmailUsingTokenInvalidTokenError)
         return
     raise Exception("Test failed")
@@ -1069,9 +1145,9 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await create_email_verification_token(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        await verify_email_using_token(verify_token.token)
+        await verify_email_using_token("public", verify_token.token)
 
         assert await is_email_verified(user_id)
 
@@ -1085,13 +1161,25 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
 
 @min_api_version("2.11")
 async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
-    async def custom_f(_: EVUser, __: str, ___: Optional[Dict[str, Any]]):
-        return None
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            return
 
     st_args = get_st_init_args(
         [
             emailpassword.init(),
-            emailverification.init("OPTIONAL", create_and_send_custom_email=custom_f),
+            emailverification.init(
+                "OPTIONAL",
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEmailService()
+                ),
+            ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ]
     )
@@ -1125,15 +1213,25 @@ async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
 async def test_generate_email_verification_token_api_updates_session_claims(
     driver_config_client: TestClient,
 ):
-    async def custom_f(_: EVUser, __: str, ___: Optional[Dict[str, Any]]):
-        return None
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            return
 
     init(
         **get_st_init_args(
             [
                 emailpassword.init(),
                 emailverification.init(
-                    "OPTIONAL", create_and_send_custom_email=custom_f
+                    "OPTIONAL",
+                    email_delivery=emailverification.EmailDeliveryConfig(
+                        CustomEmailService()
+                    ),
                 ),
                 session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             ]
@@ -1151,9 +1249,9 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     cookies = extract_all_cookies(res)
 
     # Start verification:
-    verify_token = await create_email_verification_token(user_id)
+    verify_token = await create_email_verification_token("public", user_id)
     assert isinstance(verify_token, CreateEmailVerificationTokenOkResult)
-    await verify_email_using_token(verify_token.token)
+    await verify_email_using_token("public", verify_token.token)
 
     res = email_verify_token_request(
         driver_config_client,

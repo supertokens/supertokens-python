@@ -13,76 +13,76 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from supertokens_python.recipe.thirdparty.utils import find_right_provider
+from typing import TYPE_CHECKING, Any, Dict
+from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
-from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
+from supertokens_python.utils import send_200_response
 
 
 async def handle_sign_in_up_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_sign_in_up_post:
         return None
+
     body = await api_options.request.json()
     if body is None:
         raise_bad_input_exception("Please provide a JSON input")
 
-    code = body["code"] if "code" in body else ""
-    auth_code_response = (
-        body["authCodeResponse"] if "authCodeResponse" in body else None
-    )
-    client_id = body["clientId"] if "clientId" in body else None
+    third_party_id = body.get("thirdPartyId")
+    client_type = body.get("clientType")
 
-    if "thirdPartyId" not in body or not isinstance(body["thirdPartyId"], str):
+    if third_party_id is None or not isinstance(third_party_id, str):
         raise_bad_input_exception("Please provide the thirdPartyId in request body")
 
-    if not isinstance(code, str):
-        raise_bad_input_exception(
-            "Please make sure that the code in the request body is a string"
-        )
+    redirect_uri_info = body.get("redirectURIInfo")
+    oauth_tokens = body.get("oAuthTokens")
 
-    if code == "" and auth_code_response is None:
-        raise_bad_input_exception(
-            "Please provide one of code or authCodeResponse in the request body"
-        )
-
-    if auth_code_response is not None and "access_token" not in auth_code_response:
-        raise_bad_input_exception(
-            "Please provide the access_token inside the authCodeResponse request param"
-        )
-
-    if "redirectURI" not in body or not isinstance(body["redirectURI"], str):
-        raise_bad_input_exception("Please provide the redirectURI in request body")
-
-    third_party_id = body["thirdPartyId"]
-    provider = find_right_provider(api_options.providers, third_party_id, client_id)
-    if provider is None:
-        if client_id is None:
+    if redirect_uri_info is not None:
+        if redirect_uri_info.get("redirectURIOnProviderDashboard") is None:
             raise_bad_input_exception(
-                "The third party provider "
-                + third_party_id
-                + " seems to be missing from the backend configs."
+                "Please provide the redirectURIOnProviderDashboard in request body"
             )
+    elif oauth_tokens is not None:
+        pass  # Nothing to do here
+    else:
         raise_bad_input_exception(
-            "The third party provider "
-            + third_party_id
-            + " seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend."
+            "Please provide one of redirectURIInfo or oAuthTokens in the request body"
         )
-    user_context = default_user_context(api_options.request)
+
+    provider_response = await api_options.recipe_implementation.get_provider(
+        third_party_id=third_party_id,
+        client_type=client_type,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+    if provider_response is None:
+        raise BadInputError(
+            f"the provider {third_party_id} could not be found in the configuration"
+        )
+
+    provider = provider_response
 
     result = await api_implementation.sign_in_up_post(
-        provider,
-        code,
-        body["redirectURI"],
-        client_id,
-        auth_code_response,
-        api_options,
-        user_context,
+        provider=provider,
+        redirect_uri_info=RedirectUriInfo(
+            redirect_uri_on_provider_dashboard=redirect_uri_info.get(
+                "redirectURIOnProviderDashboard"
+            ),
+            redirect_uri_query_params=redirect_uri_info.get("redirectURIQueryParams"),
+            pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
+        ),
+        oauth_tokens=oauth_tokens,
+        tenant_id=tenant_id,
+        api_options=api_options,
+        user_context=user_context,
     )
     return send_200_response(result.to_json(), api_options.response)

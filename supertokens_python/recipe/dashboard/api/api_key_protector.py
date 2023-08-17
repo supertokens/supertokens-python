@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Awaitable
+from typing import TYPE_CHECKING, Callable, Optional, Awaitable, Dict, Any
 
 from supertokens_python.framework import BaseResponse
 
@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from supertokens_python.types import APIResponse
 
 from supertokens_python.utils import (
-    default_user_context,
     send_200_response,
     send_non_200_response_with_message,
 )
@@ -33,10 +32,13 @@ from supertokens_python.utils import (
 
 async def api_key_protector(
     api_implementation: APIInterface,
+    tenant_id: str,
     api_options: APIOptions,
-    api_function: Callable[[APIInterface, APIOptions], Awaitable[APIResponse]],
+    api_function: Callable[
+        [APIInterface, str, APIOptions, Dict[str, Any]], Awaitable[APIResponse]
+    ],
+    user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
-    user_context = default_user_context(api_options.request)
     should_allow_access = await api_options.recipe_implementation.should_allow_access(
         api_options.request, api_options.config, user_context
     )
@@ -46,5 +48,7 @@ async def api_key_protector(
             "Unauthorised access", 401, api_options.response
         )
 
-    response = await api_function(api_implementation, api_options)
+    response = await api_function(
+        api_implementation, tenant_id, api_options, user_context
+    )
     return send_200_response(response.to_json(), api_options.response)

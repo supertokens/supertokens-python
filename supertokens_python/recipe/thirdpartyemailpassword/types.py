@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Union
+from typing import Union, List
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -30,17 +30,20 @@ class User:
         user_id: str,
         email: str,
         time_joined: int,
+        tenant_ids: List[str],
         third_party_info: Union[ThirdPartyInfo, None] = None,
     ):
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
         self.third_party_info = third_party_info
 
 
 # Export:
 EmailTemplateVars = ep_types.EmailTemplateVars
 PasswordResetEmailTemplateVars = ep_types.PasswordResetEmailTemplateVars
+PasswordResetEmailTemplateVarsUser = ep_types.PasswordResetEmailTemplateVarsUser
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 

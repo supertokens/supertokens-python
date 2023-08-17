@@ -31,6 +31,7 @@ from .userdetails.user_sessions_post import handle_user_sessions_post
 from .users_count_get import handle_users_count_get_api
 from .users_get import handle_users_get_api
 from .validate_key import handle_validate_key_api
+from .list_tenants import handle_list_tenants_api
 
 __all__ = [
     "handle_dashboard_api",
@@ -53,4 +54,5 @@ __all__ = [
     "handle_emailpassword_signout_api",
     "handle_get_tags",
     "handle_analytics_post",
+    "handle_list_tenants_api",
 ]

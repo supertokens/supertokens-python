@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -23,16 +23,15 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
-from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from typing import Awaitable, Callable, Union
+    from typing import Callable, Union
 
     from supertokens_python.supertokens import AppInfo
 
     from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
-    from .types import EmailTemplateVars, User, VerificationEmailTemplateVars
+    from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
 
 class OverrideConfig:
@@ -69,16 +68,8 @@ def validate_and_normalise_user_input(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    create_and_send_custom_email: Union[
-        Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-    ] = None,
     override: Union[OverrideConfig, None] = None,
 ) -> EmailVerificationConfig:
-    if create_and_send_custom_email:
-        deprecated_warn(
-            "create_and_send_custom_email is deprecated. Please use email delivery config instead"
-        )
-
     if mode not in ["REQUIRED", "OPTIONAL"]:
         raise ValueError(
             "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
@@ -89,9 +80,7 @@ def validate_and_normalise_user_input(
     ]:
         email_service = email_delivery.service if email_delivery is not None else None
         if email_service is None:
-            email_service = BackwardCompatibilityService(
-                app_info, create_and_send_custom_email
-            )
+            email_service = BackwardCompatibilityService(app_info)
 
         if email_delivery is not None and email_delivery.override is not None:
             override = email_delivery.override
@@ -113,7 +102,9 @@ def validate_and_normalise_user_input(
     )
 
 
-def get_email_verify_link(app_info: AppInfo, token: str, recipe_id: str) -> str:
+def get_email_verify_link(
+    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str
+) -> str:
     return (
         app_info.website_domain.get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
@@ -122,4 +113,6 @@ def get_email_verify_link(app_info: AppInfo, token: str, recipe_id: str) -> str:
         + token
         + "&rid="
         + recipe_id
+        + "&tenantId="
+        + tenant_id
     )

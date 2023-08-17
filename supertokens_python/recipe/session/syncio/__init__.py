@@ -26,7 +26,6 @@ from ...jwt.interfaces import (
     GetJWKSResult,
 )
 from ..interfaces import (
-    RegenerateAccessTokenOkResult,
     SessionContainer,
     SessionInformationResult,
     SessionClaimValidator,
@@ -40,6 +39,7 @@ from ..interfaces import (
 
 def create_new_session(
     request: Any,
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -51,16 +51,18 @@ def create_new_session(
 
     return sync(
         async_create_new_session(
-            request,
-            user_id,
-            access_token_payload,
-            session_data_in_database,
+            tenant_id=tenant_id,
+            request=request,
+            user_id=user_id,
+            access_token_payload=access_token_payload,
+            session_data_in_database=session_data_in_database,
             user_context=user_context,
         )
     )
 
 
 def create_new_session_without_request_response(
+    tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
@@ -73,6 +75,7 @@ def create_new_session_without_request_response(
 
     return sync(
         async_create_new_session_without_request_response(
+            tenant_id,
             user_id,
             access_token_payload,
             session_data_in_database,
@@ -183,23 +186,29 @@ def revoke_session(
 
 
 def revoke_all_sessions_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     from supertokens_python.recipe.session.asyncio import (
         revoke_all_sessions_for_user as async_revoke_all_sessions_for_user,
     )
 
-    return sync(async_revoke_all_sessions_for_user(user_id, user_context))
+    return sync(async_revoke_all_sessions_for_user(user_id, tenant_id, user_context))
 
 
 def get_all_session_handles_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    tenant_id: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     from supertokens_python.recipe.session.asyncio import (
         get_all_session_handles_for_user as async_get_all_session_handles_for_user,
     )
 
-    return sync(async_get_all_session_handles_for_user(user_id, user_context))
+    return sync(
+        async_get_all_session_handles_for_user(user_id, tenant_id, user_context)
+    )
 
 
 def revoke_multiple_sessions(
@@ -285,22 +294,6 @@ def get_open_id_discovery_configuration(
     return sync(async_get_open_id_discovery_configuration(user_context))
 
 
-def regenerate_access_token(
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[RegenerateAccessTokenOkResult, None]:
-    from supertokens_python.recipe.session.asyncio import (
-        regenerate_access_token as async_regenerate_access_token,
-    )
-
-    return sync(
-        async_regenerate_access_token(
-            access_token, new_access_token_payload, user_context
-        )
-    )
-
-
 _T = TypeVar("_T")
 
 
@@ -375,6 +368,7 @@ def validate_claims_for_session_handle(
 
 
 def validate_claims_in_jwt_payload(
+    tenant_id: str,
     user_id: str,
     jwt_payload: JSONObject,
     override_global_claim_validators: Optional[
@@ -391,6 +385,10 @@ def validate_claims_in_jwt_payload(
 
     return sync(
         async_validate_claims_in_jwt_payload(
-            user_id, jwt_payload, override_global_claim_validators, user_context
+            tenant_id,
+            user_id,
+            jwt_payload,
+            override_global_claim_validators,
+            user_context,
         )
     )

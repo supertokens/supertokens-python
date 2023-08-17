@@ -43,7 +43,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResult,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface
 from supertokens_python.types import GeneralErrorResponse
 
@@ -97,25 +97,30 @@ class APIImplementation(APIInterface):
     async def emailpassword_email_exists_get(
         self,
         email: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
-        return await self.ep_email_exists_get(email, api_options, user_context)
+        return await self.ep_email_exists_get(
+            email, tenant_id, api_options, user_context
+        )
 
     async def generate_password_reset_token_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         return await self.ep_generate_password_reset_token_post(
-            form_fields, api_options, user_context
+            form_fields, tenant_id, api_options, user_context
         )
 
     async def password_reset_post(
         self,
         form_fields: List[FormField],
         token: str,
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -124,16 +129,15 @@ class APIImplementation(APIInterface):
         GeneralErrorResponse,
     ]:
         return await self.ep_password_reset_post(
-            form_fields, token, api_options, user_context
+            form_fields, token, tenant_id, api_options, user_context
         )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Union[RedirectUriInfo, None],
+        oauth_tokens: Union[Dict[str, Any], None],
+        tenant_id: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -143,10 +147,9 @@ class APIImplementation(APIInterface):
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
+            tenant_id,
             api_options,
             user_context,
         )
@@ -156,17 +159,20 @@ class APIImplementation(APIInterface):
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     result.user.third_party_info,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def emailpassword_sign_in_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -174,13 +180,16 @@ class APIImplementation(APIInterface):
         SignInPostWrongCredentialsError,
         GeneralErrorResponse,
     ]:
-        result = await self.ep_sign_in_post(form_fields, api_options, user_context)
+        result = await self.ep_sign_in_post(
+            form_fields, tenant_id, api_options, user_context
+        )
         if isinstance(result, SignInPostOkResult):
             return EmailPasswordSignInPostOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
                 result.session,
@@ -190,6 +199,7 @@ class APIImplementation(APIInterface):
     async def emailpassword_sign_up_post(
         self,
         form_fields: List[FormField],
+        tenant_id: str,
         api_options: EmailPasswordApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -197,13 +207,16 @@ class APIImplementation(APIInterface):
         SignUpPostEmailAlreadyExistsError,
         GeneralErrorResponse,
     ]:
-        result = await self.ep_sign_up_post(form_fields, api_options, user_context)
+        result = await self.ep_sign_up_post(
+            form_fields, tenant_id, api_options, user_context
+        )
         if isinstance(result, SignUpPostOkResult):
             return EmailPasswordSignUpPostOkResult(
                 User(
                     result.user.user_id,
                     result.user.email,
                     result.user.time_joined,
+                    result.user.tenant_ids,
                     None,
                 ),
                 result.session,
@@ -213,18 +226,23 @@ class APIImplementation(APIInterface):
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider,
+            redirect_uri_on_provider_dashboard,
+            api_options,
+            user_context,
+        )
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyApiOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )

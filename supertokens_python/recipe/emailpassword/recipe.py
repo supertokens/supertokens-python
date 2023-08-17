@@ -61,7 +61,6 @@ from .constants import (
 )
 from .utils import (
     InputOverrideConfig,
-    InputResetPasswordUsingTokenFeature,
     InputSignUpFeature,
     validate_and_normalise_user_input,
     EmailPasswordConfig,
@@ -79,9 +78,6 @@ class EmailPasswordRecipe(RecipeModule):
         app_info: AppInfo,
         ingredients: EmailPasswordIngredients,
         sign_up_feature: Union[InputSignUpFeature, None] = None,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
         override: Union[InputOverrideConfig, None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     ):
@@ -89,7 +85,6 @@ class EmailPasswordRecipe(RecipeModule):
         self.config = validate_and_normalise_user_input(
             app_info,
             sign_up_feature,
-            reset_password_using_token_feature,
             override,
             email_delivery,
         )
@@ -170,10 +165,12 @@ class EmailPasswordRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         api_options = APIOptions(
             request,
@@ -185,17 +182,25 @@ class EmailPasswordRecipe(RecipeModule):
             self.email_delivery,
         )
         if request_id == SIGNUP:
-            return await handle_sign_up_api(self.api_implementation, api_options)
+            return await handle_sign_up_api(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
         if request_id == SIGNIN:
-            return await handle_sign_in_api(self.api_implementation, api_options)
+            return await handle_sign_in_api(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
         if request_id == SIGNUP_EMAIL_EXISTS:
-            return await handle_email_exists_api(self.api_implementation, api_options)
+            return await handle_email_exists_api(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
         if request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(
-                self.api_implementation, api_options
+                tenant_id, self.api_implementation, api_options, user_context
             )
         if request_id == USER_PASSWORD_RESET:
-            return await handle_password_reset_api(self.api_implementation, api_options)
+            return await handle_password_reset_api(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
 
         return None
 
@@ -216,9 +221,6 @@ class EmailPasswordRecipe(RecipeModule):
     @staticmethod
     def init(
         sign_up_feature: Union[InputSignUpFeature, None] = None,
-        reset_password_using_token_feature: Union[
-            InputResetPasswordUsingTokenFeature, None
-        ] = None,
         override: Union[InputOverrideConfig, None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     ):
@@ -230,7 +232,6 @@ class EmailPasswordRecipe(RecipeModule):
                     app_info,
                     ingredients,
                     sign_up_feature,
-                    reset_password_using_token_feature,
                     override,
                     email_delivery=email_delivery,
                 )

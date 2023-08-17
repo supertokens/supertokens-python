@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
@@ -40,6 +40,7 @@ from .api import (
     handle_users_count_get_api,
     handle_users_get_api,
     handle_validate_key_api,
+    handle_list_tenants_api,
 )
 from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
     from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.recipe.dashboard.utils import get_api_path_with_dashboard_base
 
 from .constants import (
     DASHBOARD_ANALYTICS_API,
@@ -69,11 +71,10 @@ from .constants import (
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
+    TENANTS_LIST_API,
 )
 from .utils import (
     InputOverrideConfig,
-    get_api_if_matched,
-    is_api_path,
     validate_and_normalise_user_input,
 )
 
@@ -114,22 +115,150 @@ class DashboardRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
-        # Normally this array is used by the SDK to decide whether the recipe
-        # handles a specific API path and method and then returns the ID.
-
-        # However, for the dashboard recipe this logic is fully custom and handled inside the
-        # `return_api_id_if_can_handle_request` method of this class. Since this array is never
-        # used for this recipe, we simply return an empty array.
-
-        return []
+        return [
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base("/")),
+                "get",
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(EMAIL_PASSWORD_SIGN_IN)
+                ),
+                "post",
+                EMAIL_PASSWORD_SIGN_IN,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(VALIDATE_KEY_API)),
+                "post",
+                VALIDATE_KEY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(EMAIL_PASSSWORD_SIGNOUT)
+                ),
+                "post",
+                EMAIL_PASSSWORD_SIGNOUT,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERS_LIST_GET_API)),
+                "get",
+                USERS_LIST_GET_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERS_COUNT_API)),
+                "get",
+                USERS_COUNT_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "get",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "post",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "put",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
+                "delete",
+                USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                ),
+                "get",
+                USER_EMAIL_VERIFY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                ),
+                "put",
+                USER_EMAIL_VERIFY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_METADATA_API)),
+                "get",
+                USER_METADATA_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_METADATA_API)),
+                "put",
+                USER_METADATA_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_SESSION_API)),
+                "get",
+                USER_SESSION_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_PASSWORD_API)),
+                "put",
+                USER_PASSWORD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                ),
+                "post",
+                USER_EMAIL_VERIFY_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(SEARCH_TAGS_API)),
+                "get",
+                SEARCH_TAGS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(DASHBOARD_ANALYTICS_API)
+                ),
+                "post",
+                DASHBOARD_ANALYTICS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANTS_LIST_API)),
+                "get",
+                TENANTS_LIST_API,
+                False,
+            ),
+        ]
 
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Optional[BaseResponse]:
         api_options = APIOptions(
             request,
@@ -141,17 +270,23 @@ class DashboardRecipe(RecipeModule):
         )
         # For these APIs we dont need API key validation
         if request_id == DASHBOARD_API:
-            return await handle_dashboard_api(self.api_implementation, api_options)
+            return await handle_dashboard_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == VALIDATE_KEY_API:
-            return await handle_validate_key_api(self.api_implementation, api_options)
+            return await handle_validate_key_api(
+                self.api_implementation, api_options, user_context
+            )
         if request_id == EMAIL_PASSWORD_SIGN_IN:
             return await handle_emailpassword_signin_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
-            Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]
+            Callable[
+                [APIInterface, str, APIOptions, Dict[str, Any]], Awaitable[APIResponse]
+            ]
         ] = None
         if request_id == USERS_LIST_GET_API:
             api_function = handle_users_get_api
@@ -190,10 +325,16 @@ class DashboardRecipe(RecipeModule):
         elif request_id == DASHBOARD_ANALYTICS_API:
             if method == "post":
                 api_function = handle_analytics_post
+        elif request_id == TENANTS_LIST_API:
+            api_function = handle_list_tenants_api
 
         if api_function is not None:
             return await api_key_protector(
-                self.api_implementation, api_options, api_function
+                self.api_implementation,
+                tenant_id,
+                api_options,
+                api_function,
+                user_context,
             )
 
         return None
@@ -242,18 +383,3 @@ class DashboardRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         DashboardRecipe.__instance = None
-
-    def return_api_id_if_can_handle_request(
-        self, path: NormalisedURLPath, method: str
-    ) -> Union[str, None]:
-        dashboard_bundle_path = self.app_info.api_base_path.append(
-            NormalisedURLPath(DASHBOARD_API)
-        )
-
-        if is_api_path(path, self.app_info):
-            return get_api_if_matched(path, method)
-
-        if path.startswith(dashboard_bundle_path):
-            return DASHBOARD_API
-
-        return None

@@ -80,7 +80,7 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
 
     assert next(well_known_count) == 0
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
     time.sleep(JWKSConfig["cache_max_age"] / 1000)
 
     tokens = s.get_all_session_tokens_dangerously()
@@ -169,7 +169,7 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
 
     assert next(well_known_count) == 0
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
 
     assert next(well_known_count) == 0
 
@@ -184,7 +184,7 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
 
     assert next(well_known_count) == 1
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
 
     assert next(well_known_count) == 1
 
@@ -255,7 +255,7 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 
     assert next(jwks_refresh_count) == 0
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
 
     assert get_cached_keys() is None
     assert next(jwks_refresh_count) == 0
@@ -381,7 +381,7 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
     assert get_cached_keys() is None
     assert next(jwk_refresh_count) == 0
     assert next(returned_from_cache_count) == 0
@@ -476,7 +476,7 @@ async def test_session_verification_of_jwt_based_on_session_payload(
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
 
     payload = s.get_access_token_payload()
     del payload["iat"]
@@ -498,7 +498,7 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
 
     payload = s.get_access_token_payload()
     del payload["iat"]
@@ -522,7 +522,7 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key():
     )
     start_st()
 
-    s = await create_new_session_without_request_response("userId", {}, {})
+    s = await create_new_session_without_request_response("public", "userId", {}, {})
 
     payload = s.get_access_token_payload()
     del payload["iat"]
@@ -643,7 +643,7 @@ async def client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "test"
-        s = await create_new_session(request, user_id, {}, {})
+        s = await create_new_session(request, "public", user_id, {}, {})
         return {"jwt": s.get_access_token()}
 
     @app.get("/sessioninfo")

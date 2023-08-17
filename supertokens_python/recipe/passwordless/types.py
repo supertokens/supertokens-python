@@ -32,11 +32,23 @@ class User:
         email: Union[str, None],
         phone_number: Union[str, None],
         time_joined: int,
+        tenant_ids: List[str],
     ):
-        self.user_id: str = user_id
-        self.email: Union[str, None] = email
-        self.phone_number: Union[str, None] = phone_number
-        self.time_joined: int = time_joined
+        self.user_id = user_id
+        self.email = email
+        self.phone_number = phone_number
+        self.time_joined = time_joined
+        self.tenant_ids = tenant_ids
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, self.__class__)
+            and self.user_id == other.user_id
+            and self.email == other.email
+            and self.phone_number == other.phone_number
+            and self.time_joined == other.time_joined
+            and self.tenant_ids == other.tenant_ids
+        )
 
 
 class DeviceCode:
@@ -65,17 +77,19 @@ class DeviceType:
 class CreateAndSendCustomEmailParameters:
     def __init__(
         self,
+        tenant_id: str,
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
+        self.email = email
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
 
 
 PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
@@ -84,17 +98,19 @@ PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
 class CreateAndSendCustomTextMessageParameters:
     def __init__(
         self,
+        tenant_id: str,
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.phone_number: str = phone_number
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.phone_number = phone_number
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
 
 
 PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters

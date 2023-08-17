@@ -64,7 +64,7 @@ async def test_create_and_assign_new_role_and_delete_it():
         assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
         assert result.created_new_role
 
-        result = await asyncio.add_role_to_user(user_id, role)
+        result = await asyncio.add_role_to_user("public", user_id, role)
         assert isinstance(result, interfaces.AddRoleToUserOkResult)
         assert not result.did_user_already_have_role
 
@@ -78,7 +78,7 @@ async def test_create_and_assign_new_role_and_delete_it():
     assert isinstance(result, interfaces.GetAllRolesOkResult)
     assert roles[1] not in result.roles
 
-    result = await asyncio.get_roles_for_user(user_id)
+    result = await asyncio.get_roles_for_user("public", user_id)
     assert isinstance(result, interfaces.GetRolesForUserOkResult)
     assert roles[1] not in result.roles
 

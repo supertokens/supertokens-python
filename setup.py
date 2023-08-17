@@ -70,7 +70,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.14.8",
+    version="0.15.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -111,6 +111,7 @@ setup(
         "phonenumbers==8.12.48",
         "twilio==7.9.1",
         "aiosmtplib==1.1.6",
+        "pkce==1.0.3",
     ],
     python_requires=">=3.7",
     include_package_data=True,

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -24,7 +24,6 @@ from supertokens_python.recipe.emailverification.exceptions import (
 from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars,
     EmailVerificationIngredients,
-    User,
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
@@ -92,9 +91,6 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
         override: Union[OverrideConfig, None] = None,
     ) -> None:
         super().__init__(recipe_id, app_info)
@@ -103,7 +99,6 @@ class EmailVerificationRecipe(RecipeModule):
             mode,
             email_delivery,
             get_email_for_user_id,
-            create_and_send_custom_email,
             override,
         )
 
@@ -165,10 +160,12 @@ class EmailVerificationRecipe(RecipeModule):
     async def handle_api_request(
         self,
         request_id: str,
+        tenant_id: str,
         request: BaseRequest,
         path: NormalisedURLPath,
         method: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         api_options = APIOptions(
             request,
@@ -181,11 +178,10 @@ class EmailVerificationRecipe(RecipeModule):
         )
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(
-                self.api_implementation, api_options
+                self.api_implementation, api_options, user_context
             )
         return await handle_email_verify_api(
-            self.api_implementation,
-            api_options,
+            self.api_implementation, tenant_id, api_options, user_context
         )
 
     async def handle_error(
@@ -207,12 +203,9 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
         override: Union[OverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        def func(app_info: AppInfo) -> EmailVerificationRecipe:
             if EmailVerificationRecipe.__instance is None:
                 ingredients = EmailVerificationIngredients(email_delivery=None)
                 EmailVerificationRecipe.__instance = EmailVerificationRecipe(
@@ -222,7 +215,6 @@ class EmailVerificationRecipe(RecipeModule):
                     mode,
                     email_delivery,
                     get_email_for_user_id,
-                    create_and_send_custom_email,
                     override,
                 )
 
@@ -311,7 +303,9 @@ class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
         default_max_age_in_sec = 300
 
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
+        async def fetch_value(
+            user_id: str, _tenant_id: str, user_context: Dict[str, Any]
+        ) -> bool:
             recipe = EmailVerificationRecipe.get_instance()
             email_info = await recipe.get_email_for_user_id(user_id, user_context)
 
@@ -339,12 +333,13 @@ class APIImplementation(APIInterface):
         self,
         token: str,
         session: Optional[SessionContainer],
+        tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
 
         response = await api_options.recipe_implementation.verify_email_using_token(
-            token, user_context
+            token, tenant_id, user_context
         )
         if isinstance(response, VerifyEmailUsingTokenOkResult):
             if session is not None:
@@ -408,6 +403,7 @@ class APIImplementation(APIInterface):
         email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
             user_id, user_context
         )
+        tenant_id = session.get_tenant_id()
 
         if isinstance(email_info, EmailDoesNotExistError):
             log_debug_message(
@@ -420,6 +416,7 @@ class APIImplementation(APIInterface):
                 await api_options.recipe_implementation.create_email_verification_token(
                     user_id,
                     email_info.email,
+                    tenant_id,
                     user_context,
                 )
             )
@@ -447,14 +444,14 @@ class APIImplementation(APIInterface):
                 await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
 
             email_verify_link = get_email_verify_link(
-                api_options.app_info, response.token, api_options.recipe_id
+                api_options.app_info, response.token, api_options.recipe_id, tenant_id
             )
 
             log_debug_message("Sending email verification email to %s", email_info)
             email_verification_email_delivery_input = VerificationEmailTemplateVars(
                 user=VerificationEmailTemplateVarsUser(user_id, email_info.email),
                 email_verify_link=email_verify_link,
-                user_context=user_context,
+                tenant_id=tenant_id,
             )
             await api_options.email_delivery.ingredient_interface_impl.send_email(
                 email_verification_email_delivery_input, user_context

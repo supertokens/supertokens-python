@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+from supertokens_python.ingredients.emaildelivery import types as emaildelivery_types
 
 from . import exceptions as ex
 from . import utils
@@ -25,10 +26,10 @@ from .recipe import EmailPasswordRecipe
 
 exceptions = ex
 InputOverrideConfig = utils.InputOverrideConfig
-InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
 InputSignUpFeature = utils.InputSignUpFeature
 InputFormField = utils.InputFormField
 SMTPService = emaildelivery_services.SMTPService
+EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -38,15 +39,11 @@ if TYPE_CHECKING:
 
 def init(
     sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
-    reset_password_using_token_feature: Union[
-        utils.InputResetPasswordUsingTokenFeature, None
-    ] = None,
     override: Union[utils.InputOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
-        reset_password_using_token_feature,
         override,
         email_delivery,
     )

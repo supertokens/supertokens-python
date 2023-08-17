@@ -236,14 +236,19 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     url_with_link_code = ""
     user_input_code = ""
 
-    async def create_and_send_custom_email(
-        input_: EmailTemplateVars, _: Dict[str, Any]
+    class CustomEmailDeliveryService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
     ):
-        nonlocal email, code_lifetime, url_with_link_code, user_input_code
-        email = input_.email
-        code_lifetime = input_.code_life_time
-        url_with_link_code = input_.url_with_link_code
-        user_input_code = input_.user_input_code
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ):
+            nonlocal email, code_lifetime, url_with_link_code, user_input_code
+            email = template_vars.email
+            code_lifetime = template_vars.code_life_time
+            url_with_link_code = template_vars.url_with_link_code
+            user_input_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -257,9 +262,12 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         recipe_list=[
             passwordless.init(
                 contact_config=passwordless.ContactEmailOnlyConfig(
-                    create_and_send_custom_email=create_and_send_custom_email,
+                    # create_and_send_custom_email=create_and_send_custom_email,
                 ),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                email_delivery=passwordless.EmailDeliveryConfig(
+                    CustomEmailDeliveryService()
+                ),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],

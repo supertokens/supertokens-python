@@ -11,13 +11,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Dict
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import send_200_response
 
 
 async def phone_number_exists(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_phone_number_exists_get:
         return None
@@ -26,9 +30,7 @@ async def phone_number_exists(
     if phone_number is None:
         raise_bad_input_exception("Please provide the phoneNumber as a GET param")
 
-    user_context = default_user_context(api_options.request)
-
     result = await api_implementation.phone_number_exists_get(
-        phone_number, api_options, user_context
+        phone_number, tenant_id, api_options, user_context
     )
     return send_200_response(result.to_json(), api_options.response)

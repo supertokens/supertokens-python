@@ -12,7 +12,10 @@ from ...interfaces import APIInterface, APIOptions, UserMetadataPutAPIResponse
 
 
 async def handle_metadata_put(
-    _api_interface: APIInterface, api_options: APIOptions
+    _api_interface: APIInterface,
+    _tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ) -> UserMetadataPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
@@ -50,7 +53,7 @@ async def handle_metadata_put(
     #
     # Removing first ensures that the final data is exactly what the user wanted it to be
 
-    await clear_user_metadata(user_id)
-    await update_user_metadata(user_id, parsed_data)
+    await clear_user_metadata(user_id, user_context)
+    await update_user_metadata(user_id, parsed_data, user_context)
 
     return UserMetadataPutAPIResponse()

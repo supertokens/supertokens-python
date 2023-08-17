@@ -51,6 +51,7 @@ async def test_should_not_throw_for_empty_array():
         {},  # user_data_in_access_token
         None,
         False,  # access_token_updated
+        "public",
     )
     with patch.object(
         Session,
@@ -88,6 +89,7 @@ async def test_should_call_validate_with_the_same_payload_object():
         payload,  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
+        "public",
     )
 
     class DummyClaimValidator(SessionClaimValidator):
@@ -108,7 +110,7 @@ async def test_should_call_validate_with_the_same_payload_object():
         def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
             return False
 
-    dummy_claim = PrimitiveClaim("st-claim", lambda _, __: "Hello world")
+    dummy_claim = PrimitiveClaim("st-claim", lambda _, __, ___: "Hello world")
 
     dummy_claim_validator = DummyClaimValidator(dummy_claim)
 

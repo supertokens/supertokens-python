@@ -13,40 +13,56 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict
 
-from supertokens_python.recipe.thirdparty.utils import find_right_provider
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
-    from supertokens_python.recipe.thirdparty.provider import Provider
 
-from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
+from supertokens_python.utils import send_200_response
 
 
 async def handle_authorisation_url_api(
-    api_implementation: APIInterface, api_options: APIOptions
+    api_implementation: APIInterface,
+    tenant_id: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
 ):
     if api_implementation.disable_authorisation_url_get:
         return None
+
     third_party_id = api_options.request.get_query_param("thirdPartyId")
+    redirect_uri_on_provider_dashboard = api_options.request.get_query_param(
+        "redirectURIOnProviderDashboard"
+    )
+    client_type = api_options.request.get_query_param("clientType")
 
     if third_party_id is None:
         raise_bad_input_exception("Please provide the thirdPartyId as a GET param")
 
-    provider: Union[None, Provider] = find_right_provider(
-        api_options.providers, third_party_id, None
-    )
-    if provider is None:
+    if redirect_uri_on_provider_dashboard is None:
         raise_bad_input_exception(
-            "The third party provider "
-            + third_party_id
-            + " seems to be missing from the backend configs."
+            "Please provide the redirectURIOnProviderDashboard as a GET param"
         )
-    user_context = default_user_context(api_options.request)
 
+    provider_response = await api_options.recipe_implementation.get_provider(
+        third_party_id=third_party_id,
+        client_type=client_type,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+    if provider_response is None:
+        raise BadInputError(
+            f"the provider {third_party_id} could not be found in the configuration"
+        )
+
+    provider = provider_response
     result = await api_implementation.authorisation_url_get(
-        provider, api_options, user_context
+        provider=provider,
+        redirect_uri_on_provider_dashboard=redirect_uri_on_provider_dashboard,
+        api_options=api_options,
+        user_context=user_context,
     )
     return send_200_response(result.to_json(), api_options.response)

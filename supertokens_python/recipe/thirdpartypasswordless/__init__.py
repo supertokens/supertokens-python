@@ -17,35 +17,35 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty import provider
 from typing_extensions import Literal
 
-from .. import passwordless, thirdparty
+from .. import passwordless
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
 from .recipe import ThirdPartyPasswordlessRecipe
 from .smsdelivery import services as smsdelivery_services
 from .types import EmailTemplateVars, SMSTemplateVars
+from supertokens_python.ingredients.emaildelivery import types as emaildelivery_types
+from supertokens_python.ingredients.smsdelivery import types as smsdelivery_types
 
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 ContactConfig = passwordless.ContactConfig
 PhoneOrEmailInput = passwordless.PhoneOrEmailInput
-Apple = thirdparty.Apple
-Discord = thirdparty.Discord
-Facebook = thirdparty.Facebook
-Github = thirdparty.Github
-Google = thirdparty.Google
-GoogleWorkspaces = thirdparty.GoogleWorkspaces
-Bitbucket = thirdparty.Bitbucket
-GitLab = thirdparty.GitLab
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig
 SMTPService = emaildelivery_services.SMTPService
 TwilioService = smsdelivery_services.TwilioService
 SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
+ProviderInput = provider.ProviderInput
+ProviderConfig = provider.ProviderConfig
+ProviderClientConfig = provider.ProviderClientConfig
+ProviderConfigForClientType = provider.ProviderConfigForClient
+EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
+SMSDeliveryInterface = smsdelivery_types.SMSDeliveryInterface
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -59,12 +59,12 @@ def init(
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
     ],
     get_custom_user_input_code: Union[
-        Callable[[Dict[str, Any]], Awaitable[str]], None
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
     override: Union[InputOverrideConfig, None] = None,
-    providers: Union[List[Provider], None] = None,
+    providers: Union[List[ProviderInput], None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyPasswordlessRecipe.init(
         contact_config,

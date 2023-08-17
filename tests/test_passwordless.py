@@ -62,11 +62,16 @@ async def driver_config_client():
 async def test_passwordless_otp(driver_config_client: TestClient):
     user_input_code = None
 
-    async def send_text_message(
-        param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
+    class CustomSMSService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
     ):
-        nonlocal user_input_code
-        user_input_code = param.user_input_code
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal user_input_code
+            user_input_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -80,9 +85,8 @@ async def test_passwordless_otp(driver_config_client: TestClient):
         recipe_list=[
             passwordless.init(
                 flow_type="USER_INPUT_CODE",
-                contact_config=passwordless.ContactPhoneOnlyConfig(
-                    create_and_send_custom_text_message=send_text_message
-                ),
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
@@ -125,17 +129,27 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
     text_code = None
     email_code = None
 
-    async def send_text_message(
-        param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
+    class CustomEmailService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
     ):
-        nonlocal text_code
-        text_code = param.user_input_code
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email_code
+            email_code = template_vars.user_input_code
 
-    async def send_email(
-        param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]
+    class CustomSMSService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
     ):
-        nonlocal email_code
-        email_code = param.user_input_code
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal text_code
+            text_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -149,10 +163,9 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
         recipe_list=[
             passwordless.init(
                 flow_type="USER_INPUT_CODE",
-                contact_config=passwordless.ContactEmailOrPhoneConfig(
-                    create_and_send_custom_text_message=send_text_message,
-                    create_and_send_custom_email=send_email,
-                ),
+                contact_config=passwordless.ContactEmailOrPhoneConfig(),
+                email_delivery=passwordless.EmailDeliveryConfig(CustomEmailService()),
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
@@ -187,7 +200,7 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
     response = await delete_phone_number_for_user(user_id)
     assert isinstance(response, DeleteUserInfoOkResult)
 
-    user = await get_user_by_phone_number("+919494949494")
+    user = await get_user_by_phone_number("public", "+919494949494")
     assert user is None
 
     user = await get_user_by_id(user_id)
@@ -199,17 +212,27 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
     text_code = None
     email_code = None
 
-    async def send_text_message(
-        param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
+    class CustomEmailService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
     ):
-        nonlocal text_code
-        text_code = param.user_input_code
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email_code
+            email_code = template_vars.user_input_code
 
-    async def send_email(
-        param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]
+    class CustomSMSService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
     ):
-        nonlocal email_code
-        email_code = param.user_input_code
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal text_code
+            text_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -223,10 +246,9 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
         recipe_list=[
             passwordless.init(
                 flow_type="USER_INPUT_CODE",
-                contact_config=passwordless.ContactEmailOrPhoneConfig(
-                    create_and_send_custom_text_message=send_text_message,
-                    create_and_send_custom_email=send_email,
-                ),
+                contact_config=passwordless.ContactEmailOrPhoneConfig(),
+                email_delivery=passwordless.EmailDeliveryConfig(CustomEmailService()),
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
@@ -261,7 +283,7 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
     response = await delete_email_for_user(user_id)
     assert isinstance(response, DeleteUserInfoOkResult)
 
-    user = await get_user_by_email("hello@example.com")
+    user = await get_user_by_email("public", "hello@example.com")
     assert user is None
 
     user = await get_user_by_id(user_id)
@@ -275,17 +297,27 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(
     text_code = None
     email_code = None
 
-    async def send_text_message(
-        param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
+    class CustomEmailService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
     ):
-        nonlocal text_code
-        text_code = param.user_input_code
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email_code
+            email_code = template_vars.user_input_code
 
-    async def send_email(
-        param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]
+    class CustomSMSService(
+        passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
     ):
-        nonlocal email_code
-        email_code = param.user_input_code
+        async def send_sms(
+            self,
+            template_vars: passwordless.SMSTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal text_code
+            text_code = template_vars.user_input_code
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -299,10 +331,9 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(
         recipe_list=[
             passwordless.init(
                 flow_type="USER_INPUT_CODE",
-                contact_config=passwordless.ContactEmailOrPhoneConfig(
-                    create_and_send_custom_text_message=send_text_message,
-                    create_and_send_custom_email=send_email,
-                ),
+                contact_config=passwordless.ContactEmailOrPhoneConfig(),
+                email_delivery=passwordless.EmailDeliveryConfig(CustomEmailService()),
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],

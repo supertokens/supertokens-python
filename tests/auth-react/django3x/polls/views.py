@@ -77,7 +77,7 @@ if mode == "asgi":
         session_: SessionContainer = request.supertokens  # type: ignore
         body = json.loads(request.body)
         await create_new_role_or_add_permissions(body["role"], body["permissions"])
-        await add_role_to_user(session_.get_user_id(), body["role"])
+        await add_role_to_user("public", session_.get_user_id(), body["role"])
         await session_.fetch_and_set_claim(UserRoleClaim)
         await session_.fetch_and_set_claim(PermissionClaim)
         return JsonResponse({"status": "OK"})
@@ -120,7 +120,7 @@ else:
         session_: SessionContainer = request.supertokens  # type: ignore
         body = json.loads(request.body)
         sync_create_new_role_or_add_permissions(body["role"], body["permissions"])
-        sync_add_role_to_user(session_.get_user_id(), body["role"])
+        sync_add_role_to_user("public", session_.get_user_id(), body["role"])
         session_.sync_fetch_and_set_claim(UserRoleClaim)
         session_.sync_fetch_and_set_claim(PermissionClaim)
         return JsonResponse({"status": "OK"})

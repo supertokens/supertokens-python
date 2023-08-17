@@ -13,21 +13,32 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.recipe.thirdparty.providers.config_utils import (
+    find_and_create_provider_instance,
+    merge_providers_from_core_and_static,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
-from .interfaces import RecipeInterface, SignInUpOkResult
-from .types import ThirdPartyInfo, User
+from .interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
+    RecipeInterface,
+    SignInUpOkResult,
+)
+from .types import RawUserInfoFromProvider, ThirdPartyInfo, User
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier):
+    def __init__(self, querier: Querier, providers: List[ProviderInput]):
         super().__init__()
         self.querier = querier
+        self.providers = providers
 
     async def get_user_by_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -41,6 +52,7 @@ class RecipeImplementation(RecipeInterface):
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
@@ -49,10 +61,10 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_users_by_email(
-        self, email: str, user_context: Dict[str, Any]
+        self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/users/by-email"), {"email": email}
+            NormalisedURLPath(f"{tenant_id}/recipe/users/by-email"), {"email": email}
         )
         users: List[User] = []
         users_list: List[Dict[str, Any]] = (
@@ -64,6 +76,7 @@ class RecipeImplementation(RecipeInterface):
                     user["id"],
                     user["email"],
                     user["timeJoined"],
+                    user["tenantIds"],
                     ThirdPartyInfo(
                         user["thirdParty"]["userId"], user["thirdParty"]["id"]
                     ),
@@ -75,6 +88,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         third_party_id: str,
         third_party_user_id: str,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[User, None]:
         params = {
@@ -82,13 +96,14 @@ class RecipeImplementation(RecipeInterface):
             "thirdPartyUserId": third_party_user_id,
         }
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user"), params
         )
         if "status" in response and response["status"] == "OK":
             return User(
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
@@ -101,6 +116,9 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
+        tenant_id: str,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         data = {
@@ -109,13 +127,46 @@ class RecipeImplementation(RecipeInterface):
             "email": {"id": email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/signinup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup"), data
         )
         return SignInUpOkResult(
             User(
                 response["user"]["id"],
                 response["user"]["email"],
                 response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
+                ThirdPartyInfo(
+                    response["user"]["thirdParty"]["userId"],
+                    response["user"]["thirdParty"]["id"],
+                ),
+            ),
+            response["createdNewUser"],
+            oauth_tokens,
+            raw_user_info_from_provider,
+        )
+
+    async def manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> ManuallyCreateOrUpdateUserOkResult:
+        data = {
+            "thirdPartyId": third_party_id,
+            "thirdPartyUserId": third_party_user_id,
+            "email": {"id": email},
+        }
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup"), data
+        )
+        return ManuallyCreateOrUpdateUserOkResult(
+            User(
+                response["user"]["id"],
+                response["user"]["email"],
+                response["user"]["timeJoined"],
+                response["user"]["tenantIds"],
                 ThirdPartyInfo(
                     response["user"]["thirdParty"]["userId"],
                     response["user"]["thirdParty"]["id"],
@@ -123,3 +174,30 @@ class RecipeImplementation(RecipeInterface):
             ),
             response["createdNewUser"],
         )
+
+    async def get_provider(
+        self,
+        third_party_id: str,
+        client_type: Optional[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        mt_recipe = MultitenancyRecipe.get_instance()
+        tenant_config = await mt_recipe.recipe_implementation.get_tenant(
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+        if tenant_config is None:
+            raise Exception("Tenant not found")
+
+        merged_providers = merge_providers_from_core_and_static(
+            provider_configs_from_core=tenant_config.third_party.providers,
+            provider_inputs_from_static=self.providers,
+        )
+
+        provider = await find_and_create_provider_instance(
+            merged_providers, third_party_id, client_type, user_context
+        )
+
+        return provider

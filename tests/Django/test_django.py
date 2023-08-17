@@ -16,6 +16,7 @@ import json
 from urllib.parse import urlencode
 from datetime import datetime
 from inspect import isawaitable
+from base64 import b64encode
 from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -83,7 +84,7 @@ def get_cookies(response: HttpResponse) -> Dict[str, Any]:
 
 
 async def create_new_session_view(request: HttpRequest):
-    await create_new_session(request, "user_id")
+    await create_new_session(request, "public", "user_id")
     return JsonResponse({"foo": "bar"})
 
 
@@ -357,12 +358,15 @@ class SupertokensTest(TestCase):
             original_func = original_implementation.email_exists_get
 
             async def email_exists_get(
-                email: str, api_options: APIOptions, user_context: Dict[str, Any]
+                email: str,
+                tenant_id: str,
+                api_options: APIOptions,
+                user_context: Dict[str, Any],
             ):
                 response_dict = {"custom": True}
                 api_options.response.set_status_code(203)
                 api_options.response.set_json_content(response_dict)
-                return await original_func(email, api_options, user_context)
+                return await original_func(email, tenant_id, api_options, user_context)
 
             original_implementation.email_exists_get = email_exists_get
             return original_implementation
@@ -443,13 +447,22 @@ class SupertokensTest(TestCase):
                 thirdparty.init(
                     sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                         providers=[
-                            thirdparty.Apple(
-                                client_id="4398792-io.supertokens.example.service",
-                                client_key_id="7M48Y4RYDL",
-                                client_team_id="YWQCXGJRJL",
-                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                            )
-                        ]
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="apple",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="4398792-io.supertokens.example.service",
+                                            additional_config={
+                                                "keyId": "7M48Y4RYDL",
+                                                "teamId": "YWQCXGJRJL",
+                                                "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                            },
+                                        ),
+                                    ],
+                                )
+                            ),
+                        ],
                     )
                 ),
             ],
@@ -457,10 +470,12 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        data = {
-            "state": "afc596274293e1587315c",
-            "code": "c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA",
-        }
+        state = b64encode(
+            json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+        ).decode()
+        code = "testing"
+
+        data = {"state": state, "code": code}
 
         request = self.factory.post(
             "/auth/callback/apple",
@@ -472,10 +487,11 @@ class SupertokensTest(TestCase):
             raise Exception("Should never come here")
         response = await temp
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.content, b"")
         self.assertEqual(
-            response.content,
-            b'<html><head><script>window.location.replace("http://supertokens.io/auth/callback/apple?state=afc596274293e1587315c&code=c7685e261f98e4b3b94e34b3a69ff9cf4.0.rvxt.eE8rO__6hGoqaX1B7ODPmA");</script></head></html>',
+            response.headers["location"],
+            f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}",
         )
 
     @pytest.mark.asyncio
@@ -762,21 +778,44 @@ class SupertokensTest(TestCase):
                 thirdparty.init(
                     sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                         providers=[
-                            thirdparty.Apple(
-                                client_id="4398792-io.supertokens.example.service",
-                                client_key_id="7M48Y4RYDL",
-                                client_team_id="YWQCXGJRJL",
-                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="apple",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="4398792-io.supertokens.example.service",
+                                            additional_config={
+                                                "keyId": "7M48Y4RYDL",
+                                                "teamId": "YWQCXGJRJL",
+                                                "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                            },
+                                        ),
+                                    ],
+                                )
                             ),
-                            thirdparty.Google(
-                                client_id="467101b197249757c71f",
-                                client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="google",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="467101b197249757c71f",
+                                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        ),
+                                    ],
+                                )
                             ),
-                            thirdparty.Github(
-                                client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                client_secret="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",
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="github",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            client_secret="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",
+                                        ),
+                                    ],
+                                )
                             ),
-                        ]
+                        ],
                     )
                 ),
                 DashboardRecipe.init(
@@ -833,21 +872,44 @@ class SupertokensTest(TestCase):
                 thirdparty.init(
                     sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                         providers=[
-                            thirdparty.Apple(
-                                client_id="4398792-io.supertokens.example.service",
-                                client_key_id="7M48Y4RYDL",
-                                client_team_id="YWQCXGJRJL",
-                                client_private_key="-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="apple",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="4398792-io.supertokens.example.service",
+                                            additional_config={
+                                                "keyId": "7M48Y4RYDL",
+                                                "teamId": "YWQCXGJRJL",
+                                                "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                            },
+                                        ),
+                                    ],
+                                )
                             ),
-                            thirdparty.Google(
-                                client_id="467101b197249757c71f",
-                                client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="google",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="467101b197249757c71f",
+                                            client_secret="e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        ),
+                                    ],
+                                )
                             ),
-                            thirdparty.Github(
-                                client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                client_secret="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",
+                            thirdparty.ProviderInput(
+                                config=thirdparty.ProviderConfig(
+                                    third_party_id="github",
+                                    clients=[
+                                        thirdparty.ProviderClientConfig(
+                                            client_id="1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            client_secret="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",
+                                        ),
+                                    ],
+                                )
                             ),
-                        ]
+                        ],
                     )
                 ),
                 DashboardRecipe.init(
@@ -909,7 +971,9 @@ class SupertokensTest(TestCase):
         assert json.loads(response.content) == {"message": "unauthorised"}
 
         # Create a session and get access token
-        s = await create_new_session_without_request_response("userId", {}, {})
+        s = await create_new_session_without_request_response(
+            "public", "userId", {}, {}
+        )
         access_token = s.get_access_token()
         headers = {"HTTP_AUTHORIZATION": "Bearer " + access_token}
 

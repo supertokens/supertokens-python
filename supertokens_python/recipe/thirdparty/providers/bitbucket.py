@@ -14,100 +14,96 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+from typing import Dict, Any, Optional
 
-from httpx import AsyncClient
-from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
-    UserInfo,
-    UserInfoEmail,
+from supertokens_python.recipe.thirdparty.provider import (
+    ProviderConfigForClient,
+    ProviderInput,
+    Provider,
 )
+from .custom import GenericProvider, NewProvider
 
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
+from .utils import do_get_request
+from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 
 
-class Bitbucket(Provider):
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        scope: Union[None, List[str]] = None,
-        authorisation_redirect: Union[
-            None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
-        ] = None,
-        is_default: bool = False,
-    ):
-        super().__init__("bitbucket", is_default)
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scopes = ["account", "email"] if scope is None else list(set(scope))
-        self.access_token_api_url = "https://bitbucket.org/site/oauth2/access_token"
-        self.authorisation_redirect_url = "https://bitbucket.org/site/oauth2/authorize"
-        self.authorisation_redirect_params = {}
-        if authorisation_redirect is not None:
-            self.authorisation_redirect_params = authorisation_redirect
+class BitbucketImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -> ProviderConfigForClient:
+        config = await super().get_config_for_client_type(client_type, user_context)
 
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+        if config.scope is None:
+            config.scope = ["account", "email"]
+
+        return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -> UserInfo:
-        access_token: str = auth_code_response["access_token"]
-        headers = {"Authorization": f"Bearer {access_token}"}
-        async with AsyncClient() as client:
-            response = await client.get(  # type: ignore
-                url="https://api.bitbucket.org/2.0/user",
-                headers=headers,
-            )
-            user_info = response.json()
-            user_id = user_info["uuid"]
-            email_res = await client.get(  # type: ignore
-                url="https://api.bitbucket.org/2.0/user/emails",
-                headers=headers,
-            )
-            email_data = email_res.json()
-            email = None
-            is_verified = False
-            for email_info in email_data["values"]:
-                if email_info.get("is_primary"):
-                    email = email_info["email"]
-                    is_verified = email_info["is_confirmed"]
-                    break
+        _ = user_context
+        access_token = oauth_tokens.get("access_token")
+        if access_token is None:
+            raise Exception("Access token not found")
 
-            if email is None:
-                return UserInfo(user_id)
-            return UserInfo(user_id, UserInfoEmail(email, is_verified))
-
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -> AuthorisationRedirectAPI:
-        params = {
-            "scope": " ".join(self.scopes),
-            "response_type": "code",
-            "client_id": self.client_id,
-            "access_type": "offline",
-            **self.authorisation_redirect_params,
+        headers = {
+            "Authorization": f"Bearer {access_token}",
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -> AccessTokenAPI:
-        params = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "grant_type": "authorization_code",
-            "code": auth_code_from_request,
-            "redirect_uri": redirect_uri,
+        raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+
+        user_info_from_access_token = await do_get_request(
+            "https://api.bitbucket.org/2.0/user",
+            query_params=None,
+            headers=headers,
+        )
+
+        raw_user_info_from_provider.from_user_info_api = user_info_from_access_token
+
+        user_info_from_email = await do_get_request(
+            "https://api.bitbucket.org/2.0/user/emails",
+            query_params=None,
+            headers=headers,
+        )
+
+        if raw_user_info_from_provider.from_id_token_payload is None:
+            # Actually this should never happen but python type
+            # checker is not agreeing so doing this:
+            raw_user_info_from_provider.from_id_token_payload = {}
+
+        raw_user_info_from_provider.from_id_token_payload[
+            "email"
+        ] = user_info_from_email
+
+        email = None
+        is_verified = False
+        for email_info in user_info_from_email.values():
+            if email_info["is_primary"]:
+                email = email_info["email"]
+                is_verified = email_info["is_confirmed"]
+
+        return UserInfo(
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api["uuid"],
+            email=None if email is None else UserInfoEmail(email, is_verified),
+            raw_user_info_from_provider=raw_user_info_from_provider,
+        )
+
+
+def Bitbucket(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
+    if input.config.name is None:
+        input.config.name = "Bitbucket"
+
+    if input.config.authorization_endpoint is None:
+        input.config.authorization_endpoint = (
+            "https://bitbucket.org/site/oauth2/authorize"
+        )
+
+    if input.config.token_endpoint is None:
+        input.config.token_endpoint = "https://bitbucket.org/site/oauth2/access_token"
+
+    if input.config.authorization_endpoint_query_params is None:
+        input.config.authorization_endpoint_query_params = {
+            "audience": "api.atlassian.com",
         }
-        return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-        return None
-
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
-        return self.client_id
+    return NewProvider(input, BitbucketImpl)

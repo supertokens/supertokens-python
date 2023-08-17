@@ -35,6 +35,7 @@ from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdpartyemailpassword import (
@@ -151,6 +152,19 @@ def start_st(host: str = "localhost", port: str = "3567"):
         raise Exception("could not start ST process")
 
 
+def setup_multitenancy_feature(host: str = "localhost", port: str = "3567"):
+    OPAQUE_KEY_WITH_MULTITENANCY_FEATURE = "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu"
+
+    import requests
+
+    requests.put(
+        f"http://{host}:{port}/ee/license",
+        json={
+            "licenseKey": OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+        },
+    )
+
+
 def setup_st():
     try:
         run("cd " + INSTALLATION_PATH + " && cp temp/licenseKey ./licenseKey")
@@ -211,6 +225,7 @@ def reset(stop_core: bool = True):
     ThirdPartyPasswordlessRecipe.reset()
     DashboardRecipe.reset()
     PasswordlessRecipe.reset()
+    MultitenancyRecipe.reset()
 
 
 def get_cookie_from_response(response: Response, cookie_name: str):
@@ -413,13 +428,13 @@ def email_verify_token_request(
             environ["SUPERTOKENS_ENV"] = "testing"
 
 
-def setup_function(_: Any):
+def setup_function(_: Any) -> None:
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(_: Any):
+def teardown_function(_: Any) -> None:
     reset()
     clean_st()
 
@@ -558,7 +573,7 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
 
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
-from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 
 
 async def create_users(
@@ -571,21 +586,25 @@ async def create_users(
         users = json.loads(json_data.read())["users"]
     for user in users:
         if user["recipe"] == "emailpassword" and emailpassword:
-            await sign_up(user["email"], user["password"])
+            await sign_up("public", user["email"], user["password"])
         elif user["recipe"] == "passwordless" and passwordless:
             if user.get("email"):
-                coderesponse = await create_code(user["email"])
+                coderesponse = await create_code("public", user["email"])
                 await consume_code(
+                    "public",
                     coderesponse.pre_auth_session_id,
                     coderesponse.user_input_code,
                     coderesponse.device_id,
                 )
             else:
-                coderesponse = await create_code(None, user["phone"])
+                coderesponse = await create_code("public", None, user["phone"])
                 await consume_code(
+                    "public",
                     coderesponse.pre_auth_session_id,
                     coderesponse.user_input_code,
                     coderesponse.device_id,
                 )
         elif user["recipe"] == "thirdparty" and thirdparty:
-            await sign_in_up(user["provider"], user["userId"], user["email"])
+            await manually_create_or_update_user(
+                "public", user["provider"], user["userId"], user["email"]
+            )
