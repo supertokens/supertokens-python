@@ -33,7 +33,6 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
-    regenerate_access_token,
 )
 from supertokens_python.recipe.session.asyncio import (
     revoke_session as asyncio_revoke_session,
@@ -232,7 +231,9 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     regenerated_session_handles: List[str] = []
     # Regenerate access token with new access_token_payload
     for token in access_tokens:
-        result = await regenerate_access_token(token, {"bar": "baz"})
+        result = await s.recipe_implementation.regenerate_access_token(
+            token, {"bar": "baz"}, {}
+        )
         assert result is not None
         regenerated_session_handles.append(result.session.handle)
 
