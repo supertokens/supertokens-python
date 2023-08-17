@@ -11,11 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from typing import Any, Dict, Optional
+from __future__ import annotations
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from supertokens_python.async_to_sync_wrapper import sync
-from ..interfaces import TenantConfig, ProviderConfig
+
+if TYPE_CHECKING:
+    from ..interfaces import TenantConfig, ProviderConfig
 
 
 def create_or_update_tenant(
