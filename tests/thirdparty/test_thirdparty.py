@@ -68,7 +68,7 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
     start_st()
 
     state = b64encode(
-        json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+        json.dumps({"frontendRedirectURI": "http://localhost:3000/redirect"}).encode()
     ).decode()
     code = "testing"
 

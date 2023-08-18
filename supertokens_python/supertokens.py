@@ -263,7 +263,7 @@ class Supertokens:
             include_recipe_ids_str = ",".join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(f"/{tenant_id}{USER_COUNT}"),
+            NormalisedURLPath(f"/{tenant_id or 'public'}{USER_COUNT}"),
             {
                 "includeRecipeIds": include_recipe_ids_str,
                 "includeAllTenants": tenant_id is None,

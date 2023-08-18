@@ -28,7 +28,7 @@ async def test_should_get_the_right_value():
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session("public", dummy_req, "someId")
+    s = await create_new_session(dummy_req, "public", "someId")
 
     res = await s.get_claim_value(TrueClaim)
     assert res is True
@@ -39,7 +39,7 @@ async def test_should_get_the_right_value_using_session_handle():
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s: SessionContainer = await create_new_session("public", dummy_req, "someId")
+    s: SessionContainer = await create_new_session(dummy_req, "public", "someId")
 
     res = await get_claim_value(s.get_handle(), TrueClaim)
     assert isinstance(res, GetClaimValueOkResult)

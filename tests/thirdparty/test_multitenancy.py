@@ -252,14 +252,15 @@ async def test_get_provider_returns_correct_config_from_core():
     assert client.client_id == "core-client-id"
     assert client.client_secret == "core-secret"
     assert thirdparty_info.config.user_info_map is not None
-    assert thirdparty_info.config.user_info_map.from_id_token_payload is not None
-    assert thirdparty_info.config.user_info_map.from_id_token_payload == {
-        "userId": "sub",
-        "email": "email",
-        "emailVerified": "email_verified",
-    }
-    assert thirdparty_info.config.user_info_map.from_user_info_api == {
-        "userId": "sub",
-        "email": "email",
-        "emailVerified": "email_verified",
-    }
+    from_id_token_payload = thirdparty_info.config.user_info_map.from_id_token_payload
+    assert from_id_token_payload is not None
+
+    assert from_id_token_payload.user_id == "sub"
+    assert from_id_token_payload.email == "email"
+    assert from_id_token_payload.email_verified == "email_verified"
+
+    from_user_info_api = thirdparty_info.config.user_info_map.from_user_info_api
+    assert from_user_info_api is not None
+    assert from_user_info_api.user_id == "sub"
+    assert from_user_info_api.email == "email"
+    assert from_user_info_api.email_verified == "email_verified"

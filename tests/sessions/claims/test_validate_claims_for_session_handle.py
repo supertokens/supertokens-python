@@ -31,7 +31,7 @@ async def test_should_return_the_right_validation_errors():
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session("public", dummy_req, "someId")
+    s = await create_new_session(dummy_req, "public", "someId")
 
     failing_validator = NoneClaim.validators.has_value(True)
     res = await validate_claims_for_session_handle(

@@ -56,7 +56,7 @@ async def test_should_clear_previously_set_claim(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s: SessionContainer = await create_new_session("public", dummy_req, "someId")
+    s: SessionContainer = await create_new_session(dummy_req, "public", "someId")
 
     payload = s.get_access_token_payload()
 
@@ -68,7 +68,7 @@ async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s: SessionContainer = await create_new_session("public", dummy_req, "someId")
+    s: SessionContainer = await create_new_session(dummy_req, "public", "someId")
 
     payload = s.get_access_token_payload()
     assert payload["st-true"] == {"v": True, "t": timestamp}

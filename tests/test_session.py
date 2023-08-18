@@ -362,7 +362,7 @@ async def test_should_use_override_functions_in_session_container_methods():
 
     mock_response = MagicMock()
 
-    my_session = await async_create_new_session("public", mock_response, "test_id")
+    my_session = await async_create_new_session(mock_response, "public", "test_id")
     data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
@@ -807,7 +807,7 @@ async def test_expose_access_token_to_frontend_in_cookie_based_auth(
     assert response.status_code == 200
     assert len(response.headers["st-access-token"]) > 0
 
-    reset(stop_core=False)
+    reset(stop_core=True)
 
     args = get_st_init_args([session.init(expose_access_token_to_frontend_in_cookie_based_auth=False, get_token_transfer_method=lambda *_: "cookie")])  # type: ignore
     init(**args)  # type: ignore
