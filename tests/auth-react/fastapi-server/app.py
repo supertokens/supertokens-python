@@ -313,17 +313,6 @@ def custom_init(
         ),
         thirdpartyemailpassword.ProviderInput(
             config=thirdpartyemailpassword.ProviderConfig(
-                third_party_id="facebook",
-                clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
-                        client_id=os.environ["FACEBOOK_CLIENT_ID"],
-                        client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
-                    ),
-                ],
-            ),
-        ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
                 third_party_id="github",
                 clients=[
                     thirdpartyemailpassword.ProviderClientConfig(

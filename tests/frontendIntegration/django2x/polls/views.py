@@ -30,6 +30,7 @@ from supertokens_python.recipe.session import (
     SessionContainer,
     SessionRecipe,
 )
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.django.syncio import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
@@ -529,6 +530,7 @@ def set_anti_csrf(request: HttpRequest):
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
+        MultitenancyRecipe.reset()
         config(enable_csrf, False, None)
     return HttpResponse("success")
 
@@ -546,6 +548,7 @@ def set_enable_jwt(request: HttpRequest):
     if enable_jwt is not None:
         Supertokens.reset()
         SessionRecipe.reset()
+        MultitenancyRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return HttpResponse("success")
 
@@ -571,6 +574,7 @@ def reinitialize(request: HttpRequest):
 
     Supertokens.reset()
     SessionRecipe.reset()
+    MultitenancyRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return HttpResponse("")
 

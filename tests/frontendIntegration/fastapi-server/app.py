@@ -7,10 +7,10 @@
 # obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# distributed under the License is distribu/setAntiCsrfted on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
+# License for the specific language governi/setAntiCsrfng permissions and limitations
+# under the License./setAntiCsrf
 import json
 import os
 import sys
@@ -40,6 +40,7 @@ from supertokens_python.recipe.session.asyncio import (
     revoke_all_sessions_for_user,
     merge_into_access_token_payload,
 )
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
@@ -502,6 +503,7 @@ async def set_anti_csrf(request: Request):
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
+        MultitenancyRecipe.reset()
         config(enable_csrf, False, None)
     return PlainTextResponse(content="success")
 
@@ -520,6 +522,7 @@ async def set_enable_jwt(request: Request):
     if enable_jwt is not None:
         Supertokens.reset()
         SessionRecipe.reset()
+        MultitenancyRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return PlainTextResponse(content="success")
 
@@ -592,6 +595,7 @@ def check_rid(request: Request):
 
 @app.get("/featureFlags")
 def feature_flags(_: Request):
+    # print("Got into feature flags")
     global last_set_enable_jwt  # pylint: disable=global-variable-not-assigned
 
     return JSONResponse(
@@ -615,6 +619,7 @@ async def reinitialize(request: Request):
 
     Supertokens.reset()
     SessionRecipe.reset()
+    MultitenancyRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return PlainTextResponse(content="")
 
