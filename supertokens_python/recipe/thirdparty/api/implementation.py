@@ -123,15 +123,15 @@ class APIImplementation(APIInterface):
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        tenant_id=tenant_id,
                         token=token_response.token,
+                        tenant_id=tenant_id,
                         user_context=user_context,
                     )
 
         user = signinup_response.user
         session = await create_new_session(
-            tenant_id=tenant_id,
             request=api_options.request,
+            tenant_id=tenant_id,
             user_id=user.user_id,
             user_context=user_context,
         )
