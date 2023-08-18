@@ -882,17 +882,6 @@ def custom_init(
                 ],
             )
         ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
-                third_party_id="custom",
-                clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
-                        client_id=os.environ["DISCORD_CLIENT_ID"],
-                        client_secret=os.environ["DISCORD_CLIENT_SECRET"],
-                    ),
-                ],
-            )
-        ),
         thirdparty.ProviderInput(
             config=thirdparty.ProviderConfig(
                 third_party_id="auth0",
