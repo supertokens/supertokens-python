@@ -84,6 +84,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -297,6 +298,7 @@ def custom_init(
     EmailPasswordRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     DashboardRecipe.reset()
+    MultitenancyRecipe.reset()
     Supertokens.reset()
 
     providers_list: List[thirdpartypasswordless.ProviderInput] = [

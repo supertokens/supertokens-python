@@ -79,6 +79,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.multitenancy import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -297,6 +298,7 @@ def custom_init(
     EmailVerificationRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     DashboardRecipe.reset()
+    MultitenancyRecipe.reset()
     Supertokens.reset()
 
     def override_email_verification_apis(
