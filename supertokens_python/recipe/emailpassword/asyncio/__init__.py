@@ -70,7 +70,7 @@ async def get_user_by_email(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(
-        tenant_id, email, user_context
+        email, tenant_id, user_context
     )
 
 
@@ -93,7 +93,7 @@ async def reset_password_using_token(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(
-        new_password, tenant_id, token, user_context
+        token, new_password, tenant_id, user_context
     )
 
 

@@ -11,8 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from typing import Any, Dict, List, Union, Callable, Optional, TypeVar
+from __future__ import annotations
+from typing import Any, Dict, List, Union, Callable, Optional, TypeVar, TYPE_CHECKING
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import (
@@ -37,8 +37,12 @@ from ..interfaces import (
 )
 
 
+if TYPE_CHECKING:
+    from supertokens_python.framework.request import BaseRequest
+
+
 def create_new_session(
-    request: Any,
+    request: BaseRequest,
     tenant_id: str,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,

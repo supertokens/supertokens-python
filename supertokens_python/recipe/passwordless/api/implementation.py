@@ -289,17 +289,17 @@ class APIImplementation(APIInterface):
             ev_instance = EmailVerificationRecipe.get_instance_optional()
             if ev_instance is not None:
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                    tenant_id, user.user_id, user.email, user_context
+                    user.user_id, user.email, tenant_id, user_context
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        tenant_id, token_response.token, user_context
+                        token_response.token, tenant_id, user_context
                     )
 
         session = await create_new_session(
-            tenant_id=tenant_id,
             request=api_options.request,
+            tenant_id=tenant_id,
             user_id=user.user_id,
             access_token_payload={},
             session_data_in_database={},

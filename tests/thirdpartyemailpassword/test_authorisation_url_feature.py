@@ -67,7 +67,9 @@ async def test_calling_authorisation_url_api_with_empty_init(app: TestClient):
         "/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect"
     )
     assert res.status_code == 400
-    assert res.text == "the provider google could not be found in the configuration"
+    assert res.json() == {
+        "message": "the provider google could not be found in the configuration"
+    }
 
 
 async def test_calling_authorisation_url_api_with_empty_init_with_dynamic_thirdparty_provider(

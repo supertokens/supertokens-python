@@ -480,7 +480,7 @@ def test_thirdparty_parsing_works(driver_config_app: Any):
 
     test_client = driver_config_app.test_client()
     state = b64encode(
-        json.dumps({"redirectURI": "http://localhost:3000/redirect"}).encode()
+        json.dumps({"frontendRedirectURI": "http://localhost:3000/redirect"}).encode()
     ).decode()
     code = "testing"
 

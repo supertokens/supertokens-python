@@ -79,6 +79,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -297,6 +298,7 @@ def custom_init(
     EmailVerificationRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     DashboardRecipe.reset()
+    MultitenancyRecipe.reset()
     Supertokens.reset()
 
     def override_email_verification_apis(
@@ -862,33 +864,11 @@ def custom_init(
         ),
         thirdpartyemailpassword.ProviderInput(
             config=thirdpartyemailpassword.ProviderConfig(
-                third_party_id="facebook",
-                clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
-                        client_id=os.environ["FACEBOOK_CLIENT_ID"],
-                        client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
-                    ),
-                ],
-            ),
-        ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
                 third_party_id="github",
                 clients=[
                     thirdpartyemailpassword.ProviderClientConfig(
                         client_id=os.environ["GITHUB_CLIENT_ID"],
                         client_secret=os.environ["GITHUB_CLIENT_SECRET"],
-                    ),
-                ],
-            )
-        ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
-                third_party_id="custom",
-                clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
-                        client_id=os.environ["DISCORD_CLIENT_ID"],
-                        client_secret=os.environ["DISCORD_CLIENT_SECRET"],
                     ),
                 ],
             )
@@ -990,6 +970,7 @@ def custom_init(
             contact_config=ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             providers=providers_list,
+            email_delivery=thirdpartypasswordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(CustomSMSService()),
             override=thirdpartypasswordless.InputOverrideConfig(
                 apis=override_thirdpartypasswordless_apis

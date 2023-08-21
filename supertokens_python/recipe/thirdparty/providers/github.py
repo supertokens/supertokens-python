@@ -55,7 +55,7 @@ class GithubImpl(GenericProvider):
         for info in email_info:
             if info.get("primary"):
                 result.email = UserInfoEmail(
-                    email=info.get("email"), email_verified=info.get("verified")
+                    email=info.get("email"), is_verified=info.get("verified")
                 )
 
         return result

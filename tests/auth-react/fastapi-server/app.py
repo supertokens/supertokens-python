@@ -84,6 +84,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -297,6 +298,7 @@ def custom_init(
     EmailPasswordRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     DashboardRecipe.reset()
+    MultitenancyRecipe.reset()
     Supertokens.reset()
 
     providers_list: List[thirdpartypasswordless.ProviderInput] = [
@@ -313,33 +315,11 @@ def custom_init(
         ),
         thirdpartyemailpassword.ProviderInput(
             config=thirdpartyemailpassword.ProviderConfig(
-                third_party_id="facebook",
-                clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
-                        client_id=os.environ["FACEBOOK_CLIENT_ID"],
-                        client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
-                    ),
-                ],
-            ),
-        ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
                 third_party_id="github",
                 clients=[
                     thirdpartyemailpassword.ProviderClientConfig(
                         client_id=os.environ["GITHUB_CLIENT_ID"],
                         client_secret=os.environ["GITHUB_CLIENT_SECRET"],
-                    ),
-                ],
-            )
-        ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
-                third_party_id="custom",
-                clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
-                        client_id=os.environ["DISCORD_CLIENT_ID"],
-                        client_secret=os.environ["DISCORD_CLIENT_SECRET"],
                     ),
                 ],
             )
@@ -934,7 +914,7 @@ def custom_init(
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type=flow_type,
-                sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
+                email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
                 ),
@@ -943,9 +923,7 @@ def custom_init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type=flow_type,
                 providers=providers_list,
-                sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                    CustomPlessSMSService()
-                ),
+                email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
                 override=thirdpartypasswordless.InputOverrideConfig(
                     apis=override_thirdpartypasswordless_apis
                 ),
@@ -980,6 +958,7 @@ def custom_init(
         passwordless_init = passwordless.init(
             contact_config=ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
         )
@@ -987,6 +966,7 @@ def custom_init(
             contact_config=ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             providers=providers_list,
+            email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
                 CustomPlessSMSService()
             ),
@@ -1159,6 +1139,12 @@ async def check_role_api(
     ),
 ):
     return JSONResponse({"status": "OK"})
+
+
+
+@app.get("/hello")
+async def check_role_api():
+    return JSONResponse({"msg": "hello world!"})
 
 
 @app.exception_handler(405)  # type: ignore

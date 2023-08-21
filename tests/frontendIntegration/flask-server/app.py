@@ -40,6 +40,7 @@ from supertokens_python.recipe.session.syncio import (
     merge_into_access_token_payload,
     revoke_all_sessions_for_user,
 )
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.syncio import get_session_information
@@ -520,6 +521,7 @@ def set_anti_csrf():
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
+        MultitenancyRecipe.reset()
         config(enable_csrf, False, None)
     return "success", 200
 
@@ -538,6 +540,7 @@ def set_enable_jwt():
     if enable_jwt is not None:
         Supertokens.reset()
         SessionRecipe.reset()
+        MultitenancyRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return "success", 200
 
@@ -626,6 +629,7 @@ def reinitialize():
 
     Supertokens.reset()
     SessionRecipe.reset()
+    MultitenancyRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return "", 200
 

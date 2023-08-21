@@ -91,7 +91,7 @@ class APIImplementation(APIInterface):
                     email=await provider.config.generate_fake_email(
                         user_info.third_party_user_id, tenant_id, user_context
                     ),
-                    email_verified=True,
+                    is_verified=True,
                 )
 
         email = user_info.email.id if user_info.email is not None else None
@@ -123,15 +123,15 @@ class APIImplementation(APIInterface):
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        tenant_id=tenant_id,
                         token=token_response.token,
+                        tenant_id=tenant_id,
                         user_context=user_context,
                     )
 
         user = signinup_response.user
         session = await create_new_session(
-            tenant_id=tenant_id,
             request=api_options.request,
+            tenant_id=tenant_id,
             user_id=user.user_id,
             user_context=user_context,
         )

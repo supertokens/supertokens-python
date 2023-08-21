@@ -55,6 +55,7 @@ from supertokens_python.recipe.passwordless.types import (
     CreateAndSendCustomTextMessageParameters,
 )
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
 )
@@ -248,33 +249,11 @@ providers_list: List[thirdparty.ProviderInput] = [
     ),
     thirdparty.ProviderInput(
         config=thirdparty.ProviderConfig(
-            third_party_id="facebook",
-            clients=[
-                thirdparty.ProviderClientConfig(
-                    client_id=os.environ["FACEBOOK_CLIENT_ID"],
-                    client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
-                ),
-            ],
-        ),
-    ),
-    thirdparty.ProviderInput(
-        config=thirdparty.ProviderConfig(
             third_party_id="github",
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ["GITHUB_CLIENT_ID"],
                     client_secret=os.environ["GITHUB_CLIENT_SECRET"],
-                ),
-            ],
-        )
-    ),
-    thirdparty.ProviderInput(
-        config=thirdparty.ProviderConfig(
-            third_party_id="custom",
-            clients=[
-                thirdparty.ProviderClientConfig(
-                    client_id=os.environ["DISCORD_CLIENT_ID"],
-                    client_secret=os.environ["DISCORD_CLIENT_SECRET"],
                 ),
             ],
         )
@@ -315,6 +294,7 @@ def custom_init(
     EmailVerificationRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     DashboardRecipe.reset()
+    MultitenancyRecipe.reset()
     Supertokens.reset()
 
     def override_email_verification_apis(
