@@ -66,9 +66,9 @@ class User:
 
 
 class UserInfoEmail:
-    def __init__(self, email: str, email_verified: bool):
+    def __init__(self, email: str, is_verified: bool):
         self.id: str = email
-        self.is_verified: bool = email_verified
+        self.is_verified: bool = is_verified
 
 
 class UserInfo:

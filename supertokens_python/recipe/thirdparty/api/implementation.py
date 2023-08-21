@@ -91,7 +91,7 @@ class APIImplementation(APIInterface):
                     email=await provider.config.generate_fake_email(
                         user_info.third_party_user_id, tenant_id, user_context
                     ),
-                    email_verified=True,
+                    is_verified=True,
                 )
 
         email = user_info.email.id if user_info.email is not None else None

@@ -79,7 +79,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.multitenancy import MultitenancyRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -970,6 +970,7 @@ def custom_init(
             contact_config=ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             providers=providers_list,
+            email_delivery=thirdpartypasswordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(CustomSMSService()),
             override=thirdpartypasswordless.InputOverrideConfig(
                 apis=override_thirdpartypasswordless_apis

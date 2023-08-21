@@ -55,7 +55,7 @@ from supertokens_python.recipe.passwordless.types import (
     CreateAndSendCustomTextMessageParameters,
 )
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
-from supertokens_python.recipe.multitenancy import MultitenancyRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
 )
