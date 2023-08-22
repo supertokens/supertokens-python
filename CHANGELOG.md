@@ -8,11 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [15.0.1] - 2023-09-22
+## [0.15.1] - 2023-09-22
 
 - Rename function `passwordlessSigninup` as `passwordless_signinup` in thirdpartypasswordless recipe
 
-## [15.0.0] - 2023-09-16
+## [0.15.0] - 2023-09-16
 
 -   Fixes apple redirect
 -   Fixes an issue where the user management dashboard would incorrectly show an email as unverified even if it was verified
