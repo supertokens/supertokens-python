@@ -39,6 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from supertokens_python.recipe.openid.interfaces import (
@@ -568,7 +569,7 @@ async def get_open_id_discovery_configuration(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.asyncio.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, use_static_signing_key: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, use_static_signing_key: Optional[bool] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -592,7 +593,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>request: Any, tenant_id: str, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>request: Any, tenant_id: str, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data_in_database: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -633,7 +634,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.create_new_session_without_request_response"><code class="name flex">
-<span>async def <span class="ident">create_new_session_without_request_response</span></span>(<span>tenant_id: str, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data_in_database: Optional[Dict[str, Any]] = None, disable_anti_csrf: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">create_new_session_without_request_response</span></span>(<span>tenant_id: str, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data_in_database: Union[Dict[str, Any], None] = None, disable_anti_csrf: bool = False, user_context: Union[None, Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -682,7 +683,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.fetch_and_set_claim"><code class="name flex">
-<span>async def <span class="ident">fetch_and_set_claim</span></span>(<span>session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[typing.Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<span>async def <span class="ident">fetch_and_set_claim</span></span>(<span>session_handle: str, claim: SessionClaim[Any], user_context: Union[None, Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -703,7 +704,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, tenant_id: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, tenant_id: Optional[str] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -724,7 +725,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_claim_value"><code class="name flex">
-<span>async def <span class="ident">get_claim_value</span></span>(<span>session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~_T], user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionDoesNotExistError">SessionDoesNotExistError</a>, <a title="supertokens_python.recipe.session.interfaces.GetClaimValueOkResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.GetClaimValueOkResult">GetClaimValueOkResult</a>[~_T]]</span>
+<span>async def <span class="ident">get_claim_value</span></span>(<span>session_handle: str, claim: SessionClaim[_T], user_context: Union[None, Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionDoesNotExistError">SessionDoesNotExistError</a>, <a title="supertokens_python.recipe.session.interfaces.GetClaimValueOkResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.GetClaimValueOkResult">GetClaimValueOkResult</a>[~_T]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -745,7 +746,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_jwks"><code class="name flex">
-<span>async def <span class="ident">get_jwks</span></span>(<span>user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
+<span>async def <span class="ident">get_jwks</span></span>(<span>user_context: Union[None, Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -761,7 +762,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_open_id_discovery_configuration"><code class="name flex">
-<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
+<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Union[None, Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -784,7 +785,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>request: Any, session_required: Optional[bool] = None, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>request: Any, session_required: Optional[bool] = None, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -828,7 +829,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a>]</span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Union[None, Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -847,7 +848,7 @@ async def get_open_id_discovery_configuration(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session_without_request_response"><code class="name flex">
-<span>async def <span class="ident">get_session_without_request_response</span></span>(<span>access_token: str, anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>async def <span class="ident">get_session_without_request_response</span></span>(<span>access_token: str, anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tries to validate an access token and build a Session object from it.</p>
@@ -938,7 +939,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.merge_into_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">merge_into_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<span>async def <span class="ident">merge_into_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -960,7 +961,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>request: Any, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>request: Any, user_context: Union[None, Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1016,7 +1017,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.remove_claim"><code class="name flex">
-<span>async def <span class="ident">remove_claim</span></span>(<span>session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[typing.Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<span>async def <span class="ident">remove_claim</span></span>(<span>session_handle: str, claim: SessionClaim[Any], user_context: Union[None, Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1037,7 +1038,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, tenant_id: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, tenant_id: Optional[str] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1058,7 +1059,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_multiple_sessions"><code class="name flex">
-<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>session_handles: List[str], user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1077,7 +1078,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_session"><code class="name flex">
-<span>async def <span class="ident">revoke_session</span></span>(<span>session_handle: str, user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<span>async def <span class="ident">revoke_session</span></span>(<span>session_handle: str, user_context: Union[None, Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1096,7 +1097,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.set_claim_value"><code class="name flex">
-<span>async def <span class="ident">set_claim_value</span></span>(<span>session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~_T], value: ~_T, user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<span>async def <span class="ident">set_claim_value</span></span>(<span>session_handle: str, claim: SessionClaim[_T], value: _T, user_context: Union[None, Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1118,7 +1119,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.update_session_data_in_database"><code class="name flex">
-<span>async def <span class="ident">update_session_data_in_database</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
+<span>async def <span class="ident">update_session_data_in_database</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1139,7 +1140,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.validate_claims_for_session_handle"><code class="name flex">
-<span>async def <span class="ident">validate_claims_for_session_handle</span></span>(<span>session_handle: str, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionDoesNotExistError">SessionDoesNotExistError</a>, <a title="supertokens_python.recipe.session.interfaces.ClaimsValidationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.ClaimsValidationResult">ClaimsValidationResult</a>]</span>
+<span>async def <span class="ident">validate_claims_for_session_handle</span></span>(<span>session_handle: str, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionInformationResult, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Union[None, Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionDoesNotExistError">SessionDoesNotExistError</a>, <a title="supertokens_python.recipe.session.interfaces.ClaimsValidationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.ClaimsValidationResult">ClaimsValidationResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1213,7 +1214,7 @@ You can send a 401 response to trigger this behaviour if you are using our front
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.validate_claims_in_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">validate_claims_in_jwt_payload</span></span>(<span>tenant_id: str, user_id: str, jwt_payload: Dict[str, Any], override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], str, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">validate_claims_in_jwt_payload</span></span>(<span>tenant_id: str, user_id: str, jwt_payload: JSONObject, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], str, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Union[None, Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

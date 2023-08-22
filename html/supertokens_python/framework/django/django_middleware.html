@@ -99,9 +99,11 @@ def middleware(get_response: Any):
         from django.http import HttpResponse
 
         response = DjangoResponse(HttpResponse())
+        user_context = default_user_context(custom_request)
+
         try:
             result: Union[DjangoResponse, None] = async_to_sync(st.middleware)(
-                custom_request, response
+                custom_request, response, user_context
             )
 
             if result is None:
@@ -195,9 +197,11 @@ def middleware(get_response: Any):
         from django.http import HttpResponse
 
         response = DjangoResponse(HttpResponse())
+        user_context = default_user_context(custom_request)
+
         try:
             result: Union[DjangoResponse, None] = async_to_sync(st.middleware)(
-                custom_request, response
+                custom_request, response, user_context
             )
 
             if result is None:

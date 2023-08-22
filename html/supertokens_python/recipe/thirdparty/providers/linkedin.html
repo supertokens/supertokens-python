@@ -111,7 +111,7 @@ class LinkedinImpl(GenericProvider):
             third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;id&#34;),  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-                email_verified=False,
+                is_verified=False,
             ),
         )
 
@@ -255,7 +255,7 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
             third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;id&#34;),  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-                email_verified=False,
+                is_verified=False,
             ),
         )</code></pre>
 </details>
@@ -332,7 +332,7 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
         third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;id&#34;),  # type: ignore
         email=UserInfoEmail(
             email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-            email_verified=False,
+            is_verified=False,
         ),
     )</code></pre>
 </details>

@@ -73,6 +73,7 @@ if TYPE_CHECKING:
     from .utils import MultitenancyConfig
 
 from supertokens_python.querier import NormalisedURLPath
+from .constants import DEFAULT_TENANT_ID
 
 
 def parse_tenant_config(tenant: Dict[str, Any]) -&gt; TenantConfigResponse:
@@ -189,7 +190,9 @@ class RecipeImplementation(RecipeInterface):
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
     ) -&gt; Optional[GetTenantOkResult]:
         res = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant&#34;
+            ),
         )
 
         if res[&#34;status&#34;] == &#34;TENANT_NOT_FOUND_ERROR&#34;:
@@ -237,7 +240,9 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
         response = await self.querier.send_put_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/config/thirdparty&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty&#34;
+            ),
             {
                 &#34;config&#34;: config.to_json(),
                 &#34;skipValidation&#34;: skip_validation is True,
@@ -256,7 +261,7 @@ class RecipeImplementation(RecipeInterface):
     ) -&gt; DeleteThirdPartyConfigOkResult:
         response = await self.querier.send_post_request(
             NormalisedURLPath(
-                f&#34;{tenant_id}/recipe/multitenancy/config/thirdparty/remove&#34;
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty/remove&#34;
             ),
             {
                 &#34;thirdPartyId&#34;: third_party_id,
@@ -268,7 +273,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def associate_user_to_tenant(
-        self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[
         AssociateUserToTenantOkResult,
         AssociateUserToTenantUnknownUserIdError,
@@ -277,7 +282,9 @@ class RecipeImplementation(RecipeInterface):
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
         response: Dict[str, Any] = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant/user&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
+            ),
             {
                 &#34;userId&#34;: user_id,
             },
@@ -305,10 +312,12 @@ class RecipeImplementation(RecipeInterface):
         raise Exception(&#34;Should never come here&#34;)
 
     async def dissociate_user_from_tenant(
-        self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
     ) -&gt; DisassociateUserFromTenantOkResult:
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant/user/remove&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove&#34;
+            ),
             {
                 &#34;userId&#34;: user_id,
             },
@@ -465,7 +474,9 @@ inheritance.</p></div>
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
     ) -&gt; Optional[GetTenantOkResult]:
         res = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant&#34;
+            ),
         )
 
         if res[&#34;status&#34;] == &#34;TENANT_NOT_FOUND_ERROR&#34;:
@@ -513,7 +524,9 @@ inheritance.</p></div>
         user_context: Dict[str, Any],
     ) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
         response = await self.querier.send_put_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/config/thirdparty&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty&#34;
+            ),
             {
                 &#34;config&#34;: config.to_json(),
                 &#34;skipValidation&#34;: skip_validation is True,
@@ -532,7 +545,7 @@ inheritance.</p></div>
     ) -&gt; DeleteThirdPartyConfigOkResult:
         response = await self.querier.send_post_request(
             NormalisedURLPath(
-                f&#34;{tenant_id}/recipe/multitenancy/config/thirdparty/remove&#34;
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty/remove&#34;
             ),
             {
                 &#34;thirdPartyId&#34;: third_party_id,
@@ -544,7 +557,7 @@ inheritance.</p></div>
         )
 
     async def associate_user_to_tenant(
-        self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[
         AssociateUserToTenantOkResult,
         AssociateUserToTenantUnknownUserIdError,
@@ -553,7 +566,9 @@ inheritance.</p></div>
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
         response: Dict[str, Any] = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant/user&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
+            ),
             {
                 &#34;userId&#34;: user_id,
             },
@@ -581,10 +596,12 @@ inheritance.</p></div>
         raise Exception(&#34;Should never come here&#34;)
 
     async def dissociate_user_from_tenant(
-        self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
     ) -&gt; DisassociateUserFromTenantOkResult:
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant/user/remove&#34;),
+            NormalisedURLPath(
+                f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove&#34;
+            ),
             {
                 &#34;userId&#34;: user_id,
             },
@@ -602,7 +619,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.associate_user_to_tenant"><code class="name flex">
-<span>async def <span class="ident">associate_user_to_tenant</span></span>(<span>self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]) ‑> Union[AssociateUserToTenantOkResult, AssociateUserToTenantUnknownUserIdError, AssociateUserToTenantEmailAlreadyExistsError, AssociateUserToTenantPhoneNumberAlreadyExistsError, AssociateUserToTenantThirdPartyUserAlreadyExistsError]</span>
+<span>async def <span class="ident">associate_user_to_tenant</span></span>(<span>self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult">AssociateUserToTenantOkResult</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError">AssociateUserToTenantUnknownUserIdError</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError">AssociateUserToTenantEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError">AssociateUserToTenantPhoneNumberAlreadyExistsError</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError">AssociateUserToTenantThirdPartyUserAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -611,7 +628,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def associate_user_to_tenant(
-    self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+    self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
 ) -&gt; Union[
     AssociateUserToTenantOkResult,
     AssociateUserToTenantUnknownUserIdError,
@@ -620,7 +637,9 @@ inheritance.</p></div>
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
 ]:
     response: Dict[str, Any] = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant/user&#34;),
+        NormalisedURLPath(
+            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
+        ),
         {
             &#34;userId&#34;: user_id,
         },
@@ -692,7 +711,9 @@ inheritance.</p></div>
     user_context: Dict[str, Any],
 ) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
     response = await self.querier.send_put_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/config/thirdparty&#34;),
+        NormalisedURLPath(
+            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty&#34;
+        ),
         {
             &#34;config&#34;: config.to_json(),
             &#34;skipValidation&#34;: skip_validation is True,
@@ -742,7 +763,7 @@ inheritance.</p></div>
 ) -&gt; DeleteThirdPartyConfigOkResult:
     response = await self.querier.send_post_request(
         NormalisedURLPath(
-            f&#34;{tenant_id}/recipe/multitenancy/config/thirdparty/remove&#34;
+            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty/remove&#34;
         ),
         {
             &#34;thirdPartyId&#34;: third_party_id,
@@ -755,7 +776,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.dissociate_user_from_tenant"><code class="name flex">
-<span>async def <span class="ident">dissociate_user_from_tenant</span></span>(<span>self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]) ‑> DisassociateUserFromTenantOkResult</span>
+<span>async def <span class="ident">dissociate_user_from_tenant</span></span>(<span>self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult">DisassociateUserFromTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -764,10 +785,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def dissociate_user_from_tenant(
-    self, tenant_id: str | None, user_id: str, user_context: Dict[str, Any]
+    self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
 ) -&gt; DisassociateUserFromTenantOkResult:
     response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant/user/remove&#34;),
+        NormalisedURLPath(
+            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove&#34;
+        ),
         {
             &#34;userId&#34;: user_id,
         },
@@ -791,7 +814,9 @@ inheritance.</p></div>
     self, tenant_id: Optional[str], user_context: Dict[str, Any]
 ) -&gt; Optional[GetTenantOkResult]:
     res = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/multitenancy/tenant&#34;),
+        NormalisedURLPath(
+            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant&#34;
+        ),
     )
 
     if res[&#34;status&#34;] == &#34;TENANT_NOT_FOUND_ERROR&#34;:

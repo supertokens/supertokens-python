@@ -291,7 +291,7 @@ class Supertokens:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(f&#34;/{tenant_id}{USER_COUNT}&#34;),
+            NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}{USER_COUNT}&#34;),
             {
                 &#34;includeRecipeIds&#34;: include_recipe_ids_str,
                 &#34;includeAllTenants&#34;: tenant_id is None,
@@ -917,7 +917,7 @@ class Supertokens:
             include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
 
         response = await querier.send_get_request(
-            NormalisedURLPath(f&#34;/{tenant_id}{USER_COUNT}&#34;),
+            NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}{USER_COUNT}&#34;),
             {
                 &#34;includeRecipeIds&#34;: include_recipe_ids_str,
                 &#34;includeAllTenants&#34;: tenant_id is None,
@@ -1508,7 +1508,7 @@ def reset():
         include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
 
     response = await querier.send_get_request(
-        NormalisedURLPath(f&#34;/{tenant_id}{USER_COUNT}&#34;),
+        NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}{USER_COUNT}&#34;),
         {
             &#34;includeRecipeIds&#34;: include_recipe_ids_str,
             &#34;includeAllTenants&#34;: tenant_id is None,

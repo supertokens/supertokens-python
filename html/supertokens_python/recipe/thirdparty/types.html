@@ -94,9 +94,9 @@ class User:
 
 
 class UserInfoEmail:
-    def __init__(self, email: str, email_verified: bool):
+    def __init__(self, email: str, is_verified: bool):
         self.id: str = email
-        self.is_verified: bool = email_verified
+        self.is_verified: bool = is_verified
 
 
 class UserInfo:
@@ -320,7 +320,7 @@ class ThirdPartyIngredients:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.UserInfoEmail"><code class="flex name class">
 <span>class <span class="ident">UserInfoEmail</span></span>
-<span>(</span><span>email: str, email_verified: bool)</span>
+<span>(</span><span>email: str, is_verified: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -329,9 +329,9 @@ class ThirdPartyIngredients:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UserInfoEmail:
-    def __init__(self, email: str, email_verified: bool):
+    def __init__(self, email: str, is_verified: bool):
         self.id: str = email
-        self.is_verified: bool = email_verified</code></pre>
+        self.is_verified: bool = is_verified</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.UsersResponse"><code class="flex name class">
