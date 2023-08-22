@@ -914,7 +914,9 @@ def custom_init(
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type=flow_type,
-                email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
+                email_delivery=passwordless.EmailDeliveryConfig(
+                    CustomPlessEmailService()
+                ),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
                 ),
@@ -923,7 +925,9 @@ def custom_init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type=flow_type,
                 providers=providers_list,
-                email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
+                email_delivery=passwordless.EmailDeliveryConfig(
+                    CustomPlessEmailService()
+                ),
                 override=thirdpartypasswordless.InputOverrideConfig(
                     apis=override_thirdpartypasswordless_apis
                 ),
@@ -1139,12 +1143,6 @@ async def check_role_api(
     ),
 ):
     return JSONResponse({"status": "OK"})
-
-
-
-@app.get("/hello")
-async def check_role_api():
-    return JSONResponse({"msg": "hello world!"})
 
 
 @app.exception_handler(405)  # type: ignore

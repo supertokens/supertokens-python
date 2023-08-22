@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional, Union, TYPE_CHECKING
+from typing import Callable, Optional, Union
 
 from supertokens_python import AppInfo, RecipeModule
 

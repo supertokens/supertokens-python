@@ -970,7 +970,9 @@ def custom_init(
             contact_config=ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             providers=providers_list,
-            email_delivery=thirdpartypasswordless.EmailDeliveryConfig(CustomPlessEmailService()),
+            email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
+                CustomPlessEmailService()
+            ),
             sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(CustomSMSService()),
             override=thirdpartypasswordless.InputOverrideConfig(
                 apis=override_thirdpartypasswordless_apis
