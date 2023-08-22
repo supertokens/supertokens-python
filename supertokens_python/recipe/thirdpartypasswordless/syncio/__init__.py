@@ -282,7 +282,7 @@ def create_magic_link(
     )
 
 
-def passwordlessSigninup(
+def passwordless_signinup(
     tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
