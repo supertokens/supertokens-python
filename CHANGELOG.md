@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.0.1] - 2023-09-22
+
+- Rename function `passwordlessSigninup` as `passwordless_signinup` in thirdpartypasswordless recipe
 
 ## [15.0.0] - 2023-09-16
 
