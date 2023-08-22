@@ -162,7 +162,9 @@ class RecipeImplementation(RecipeInterface):
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
     ) -> Optional[GetTenantOkResult]:
         res = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"),
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
+            ),
         )
 
         if res["status"] == "TENANT_NOT_FOUND_ERROR":
@@ -210,7 +212,9 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateThirdPartyConfigOkResult:
         response = await self.querier.send_put_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty"),
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty"
+            ),
             {
                 "config": config.to_json(),
                 "skipValidation": skip_validation is True,
@@ -250,7 +254,9 @@ class RecipeImplementation(RecipeInterface):
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
         response: Dict[str, Any] = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"),
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"
+            ),
             {
                 "userId": user_id,
             },
@@ -281,7 +287,9 @@ class RecipeImplementation(RecipeInterface):
         self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
     ) -> DisassociateUserFromTenantOkResult:
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove"),
+            NormalisedURLPath(
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove"
+            ),
             {
                 "userId": user_id,
             },
