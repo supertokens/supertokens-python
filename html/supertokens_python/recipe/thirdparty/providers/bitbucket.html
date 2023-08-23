@@ -105,7 +105,7 @@ class BitbucketImpl(GenericProvider):
 
         email = None
         is_verified = False
-        for email_info in user_info_from_email.values():
+        for email_info in user_info_from_email[&#34;values&#34;]:
             if email_info[&#34;is_primary&#34;]:
                 email = email_info[&#34;email&#34;]
                 is_verified = email_info[&#34;is_confirmed&#34;]
@@ -238,7 +238,7 @@ def Bitbucket(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined
 
         email = None
         is_verified = False
-        for email_info in user_info_from_email.values():
+        for email_info in user_info_from_email[&#34;values&#34;]:
             if email_info[&#34;is_primary&#34;]:
                 email = email_info[&#34;email&#34;]
                 is_verified = email_info[&#34;is_confirmed&#34;]
@@ -324,7 +324,7 @@ def Bitbucket(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined
 
     email = None
     is_verified = False
-    for email_info in user_info_from_email.values():
+    for email_info in user_info_from_email[&#34;values&#34;]:
         if email_info[&#34;is_primary&#34;]:
             email = email_info[&#34;email&#34;]
             is_verified = email_info[&#34;is_confirmed&#34;]

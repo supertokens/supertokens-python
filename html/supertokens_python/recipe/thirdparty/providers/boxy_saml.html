@@ -84,14 +84,14 @@ def BoxySAML(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
 
-    if input.config.user_info_map.from_id_token_payload is None:
-        input.config.user_info_map.from_id_token_payload = UserFields()
+    if input.config.user_info_map.from_user_info_api is None:
+        input.config.user_info_map.from_user_info_api = UserFields()
 
-    if input.config.user_info_map.from_id_token_payload.user_id is None:
-        input.config.user_info_map.from_id_token_payload.user_id = &#34;id&#34;
+    if input.config.user_info_map.from_user_info_api.user_id is None:
+        input.config.user_info_map.from_user_info_api.user_id = &#34;id&#34;
 
-    if input.config.user_info_map.from_id_token_payload.email is None:
-        input.config.user_info_map.from_id_token_payload.email = &#34;email&#34;
+    if input.config.user_info_map.from_user_info_api.email is None:
+        input.config.user_info_map.from_user_info_api.email = &#34;email&#34;
 
     return NewProvider(input, BoxySAMLImpl)</code></pre>
 </details>
@@ -119,14 +119,14 @@ def BoxySAML(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
 
-    if input.config.user_info_map.from_id_token_payload is None:
-        input.config.user_info_map.from_id_token_payload = UserFields()
+    if input.config.user_info_map.from_user_info_api is None:
+        input.config.user_info_map.from_user_info_api = UserFields()
 
-    if input.config.user_info_map.from_id_token_payload.user_id is None:
-        input.config.user_info_map.from_id_token_payload.user_id = &#34;id&#34;
+    if input.config.user_info_map.from_user_info_api.user_id is None:
+        input.config.user_info_map.from_user_info_api.user_id = &#34;id&#34;
 
-    if input.config.user_info_map.from_id_token_payload.email is None:
-        input.config.user_info_map.from_id_token_payload.email = &#34;email&#34;
+    if input.config.user_info_map.from_user_info_api.email is None:
+        input.config.user_info_map.from_user_info_api.email = &#34;email&#34;
 
     return NewProvider(input, BoxySAMLImpl)</code></pre>
 </details>
