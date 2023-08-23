@@ -77,7 +77,7 @@ class BitbucketImpl(GenericProvider):
 
         email = None
         is_verified = False
-        for email_info in user_info_from_email.values():
+        for email_info in user_info_from_email["values"]:
             if email_info["is_primary"]:
                 email = email_info["email"]
                 is_verified = email_info["is_confirmed"]

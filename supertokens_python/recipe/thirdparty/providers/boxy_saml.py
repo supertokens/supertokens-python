@@ -56,13 +56,13 @@ def BoxySAML(input: ProviderInput) -> Provider:  # pylint: disable=redefined-bui
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
 
-    if input.config.user_info_map.from_id_token_payload is None:
-        input.config.user_info_map.from_id_token_payload = UserFields()
+    if input.config.user_info_map.from_user_info_api is None:
+        input.config.user_info_map.from_user_info_api = UserFields()
 
-    if input.config.user_info_map.from_id_token_payload.user_id is None:
-        input.config.user_info_map.from_id_token_payload.user_id = "id"
+    if input.config.user_info_map.from_user_info_api.user_id is None:
+        input.config.user_info_map.from_user_info_api.user_id = "id"
 
-    if input.config.user_info_map.from_id_token_payload.email is None:
-        input.config.user_info_map.from_id_token_payload.email = "email"
+    if input.config.user_info_map.from_user_info_api.email is None:
+        input.config.user_info_map.from_user_info_api.email = "email"
 
     return NewProvider(input, BoxySAMLImpl)
