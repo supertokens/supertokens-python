@@ -37,7 +37,7 @@ class FacebookImpl(GenericProvider):
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:
-            config.scope = ["identify", "email"]
+            config.scope = ["email"]
 
         return config
 
