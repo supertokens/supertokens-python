@@ -13,9 +13,11 @@
 # under the License.
 from __future__ import annotations
 
+import asyncio
+
 from json import JSONDecodeError
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
@@ -25,6 +27,7 @@ from .constants import (
     API_VERSION_HEADER,
     RID_KEY_HEADER,
     SUPPORTED_CDI_VERSIONS,
+    RATE_LIMIT_STATUS_CODE,
 )
 from .normalised_url_path import NormalisedURLPath
 
@@ -222,6 +225,7 @@ class Querier:
         method: str,
         http_function: Callable[[str], Awaitable[Response]],
         no_of_tries: int,
+        retry_info_map: Optional[Dict[str, int]] = None,
     ) -> Any:
         if no_of_tries == 0:
             raise_general_exception("No SuperTokens core available to query")
@@ -238,6 +242,14 @@ class Querier:
             Querier.__last_tried_index %= len(self.__hosts)
             url = current_host + path.get_as_string_dangerous()
 
+            max_retries = 5
+
+            if retry_info_map is None:
+                retry_info_map = {}
+
+            if retry_info_map.get(url) is None:
+                retry_info_map[url] = max_retries
+
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER
             )
@@ -246,6 +258,20 @@ class Querier:
                 environ["SUPERTOKENS_ENV"] == "testing"
             ):
                 Querier.__hosts_alive_for_testing.add(current_host)
+
+            if response.status_code == RATE_LIMIT_STATUS_CODE:
+                retries_left = retry_info_map[url]
+
+                if retries_left > 0:
+                    retry_info_map[url] = retries_left - 1
+
+                    attempts_made = max_retries - retries_left
+                    delay = (10 + attempts_made * 250) / 1000
+
+                    await asyncio.sleep(delay)
+                    return await self.__send_request_helper(
+                        path, method, http_function, no_of_tries, retry_info_map
+                    )
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
                 raise_general_exception(
@@ -264,9 +290,9 @@ class Querier:
             except JSONDecodeError:
                 return response.text
 
-        except (ConnectionError, NetworkError, ConnectTimeout):
+        except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
-                path, method, http_function, no_of_tries - 1
+                path, method, http_function, no_of_tries - 1, retry_info_map
             )
         except Exception as e:
             raise_general_exception(e)
