@@ -25,3 +25,4 @@ RID_KEY_HEADER = "rid"
 FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
+RATE_LIMIT_STATUS_CODE = 429
