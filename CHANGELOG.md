@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [0.15.3] - 2023-09-24
+## [0.15.3] - 2023-09-25
 
 - Handle 429 rate limiting from SaaS core instances
+- Add cache control for jwks endpoint
 
 ## [0.15.2] - 2023-09-23
 
