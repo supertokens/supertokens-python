@@ -287,7 +287,7 @@ class Querier:
 
             res: Dict[str, Any] = {"_headers": dict(response.headers)}
 
-            if response.headers.get("content-type").startswith("text"):
+            if response.headers.get("content-type", "").startswith("text"):
                 res["_text"] = response.text
 
             try:
