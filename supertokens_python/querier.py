@@ -38,24 +38,6 @@ from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 
 
-class QuerierResponse:
-    def __init__(
-        self, text: str, json: Dict[str, Any], headers: Dict[str, Any]
-    ) -> None:
-        self.text = text
-        self.headers = headers
-        self.json = json
-
-    def __getitem__(self, index: Any) -> Any:
-        return self.json[index]
-
-    def __contains__(self, item: Any) -> Any:
-        return item in self.json
-
-    def get(self, key: str, __default: Any = None) -> Any:
-        return self.json.get(key, __default)
-
-
 class Querier:
     __init_called = False
     __hosts: List[Host] = []
