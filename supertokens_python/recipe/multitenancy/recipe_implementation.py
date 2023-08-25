@@ -253,7 +253,7 @@ class RecipeImplementation(RecipeInterface):
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
-        response: Dict[str, Any] = await self.querier.send_post_request(
+        response = await self.querier.send_post_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"
             ),

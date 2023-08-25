@@ -40,8 +40,9 @@ class CreateJwtResultUnsupportedAlgorithm:
 
 
 class GetJWKSResult:
-    def __init__(self, keys: List[JsonWebKey]):
+    def __init__(self, keys: List[JsonWebKey], validity_in_secs: Optional[int]):
         self.keys = keys
+        self.validity_in_secs = validity_in_secs
 
 
 class RecipeInterface(ABC):

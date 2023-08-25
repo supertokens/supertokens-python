@@ -122,8 +122,6 @@ async def create_new_session(
         },
     )
 
-    response.pop("status", None)
-
     return CreateOrRefreshAPIResponse(
         CreateOrRefreshAPIResponseSession(
             response["session"]["handle"],
@@ -281,7 +279,6 @@ async def get_session(
         NormalisedURLPath("/recipe/session/verify"), data
     )
     if response["status"] == "OK":
-        response.pop("status", None)
         return GetSessionAPIResponse(
             GetSessionAPIResponseSession(
                 response["session"]["handle"],
@@ -351,7 +348,6 @@ async def refresh_session(
         NormalisedURLPath("/recipe/session/refresh"), data
     )
     if response["status"] == "OK":
-        response.pop("status", None)
         return CreateOrRefreshAPIResponse(
             CreateOrRefreshAPIResponseSession(
                 response["session"]["handle"],

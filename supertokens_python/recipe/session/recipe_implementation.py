@@ -463,7 +463,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     ) -> Union[RegenerateAccessTokenOkResult, None]:
         if new_access_token_payload is None:
             new_access_token_payload = {}
-        response: Dict[str, Any] = await self.querier.send_post_request(
+        response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/session/regenerate"),
             {"accessToken": access_token, "userDataInJWT": new_access_token_payload},
         )

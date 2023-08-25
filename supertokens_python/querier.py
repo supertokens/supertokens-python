@@ -38,6 +38,24 @@ from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 
 
+class QuerierResponse:
+    def __init__(
+        self, text: str, json: Dict[str, Any], headers: Dict[str, Any]
+    ) -> None:
+        self.text = text
+        self.headers = headers
+        self.json = json
+
+    def __getitem__(self, index: Any) -> Any:
+        return self.json[index]
+
+    def __contains__(self, item: Any) -> Any:
+        return item in self.json
+
+    def get(self, key: str, __default: Any = None) -> Any:
+        return self.json.get(key, __default)
+
+
 class Querier:
     __init_called = False
     __hosts: List[Host] = []
@@ -127,7 +145,7 @@ class Querier:
 
     async def send_get_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -> Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -146,7 +164,7 @@ class Querier:
         path: NormalisedURLPath,
         data: Union[Dict[str, Any], None] = None,
         test: bool = False,
-    ):
+    ) -> Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -168,7 +186,7 @@ class Querier:
 
     async def send_delete_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -> Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -184,7 +202,7 @@ class Querier:
 
     async def send_put_request(
         self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
-    ):
+    ) -> Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -222,7 +240,7 @@ class Querier:
         method: str,
         http_function: Callable[[str], Awaitable[Response]],
         no_of_tries: int,
-    ) -> Any:
+    ) -> Dict[str, Any]:
         if no_of_tries == 0:
             raise_general_exception("No SuperTokens core available to query")
 
@@ -259,10 +277,17 @@ class Querier:
                     + response.text  # type: ignore
                 )
 
+            res: Dict[str, Any] = {"_headers": dict(response.headers)}
+
+            if response.headers.get("content-type").startswith("text"):
+                res["_text"] = response.text
+
             try:
-                return response.json()
+                res.update(response.json())
             except JSONDecodeError:
-                return response.text
+                pass
+
+            return res
 
         except (ConnectionError, NetworkError, ConnectTimeout):
             return await self.__send_request_helper(
