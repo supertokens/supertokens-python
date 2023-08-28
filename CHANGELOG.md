@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## unreleased
+
+# [0.11.14] - 2023-09-28
+
+- Add logic to retry network calls if the core returns status 429
+
+
 # [0.11.13] - 2023-01-06
 
 - Add missing `original` attribute to flask response and remove logic for cases where `response` is `None`
@@ -205,7 +211,7 @@ init(
 def verify_email_for_passwordless_users():
     pagination_token = None
     done = False
-    
+
     while not done:
         res = get_users_newest_first(
             limit=100,
@@ -218,7 +224,7 @@ def verify_email_for_passwordless_users():
                 token_res = create_email_verification_token(user.user_id, user.email)
                 if isinstance(token_res, CreateEmailVerificationTokenOkResult):
                     verify_email_using_token(token_res.token)
-        
+
         done = res.next_pagination_token is None
         if not done:
             pagination_token = res.next_pagination_token
@@ -248,7 +254,7 @@ The `UserRoles` recipe now adds role and permission information into the access 
 
 ## [0.10.2] - 2022-07-14
 ### Bug fix
-- Make `user_context` optional in userroles recipe syncio functions. 
+- Make `user_context` optional in userroles recipe syncio functions.
 
 ## [0.10.1] - 2022-07-11
 
@@ -783,4 +789,4 @@ init(
 - Middleware, error handlers and verify session for each framework.
 - Created a wrapper for async to sync for supporting older version of python web frameworks.
 - Base tests for each framework.
-- New requirements in the setup file. 
+- New requirements in the setup file.
