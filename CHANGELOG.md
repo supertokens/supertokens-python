@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.9] - 2023-09-28
+
+- Add logic to retry network calls if the core returns status 429
+
 ## [0.14.8] - 2023-07-07
 ## Fixes
 
@@ -148,7 +152,7 @@ if (accessTokenPayload.sub !== undefined) {
 ```python
 from supertokens_python.recipe.session.interfaces import SessionContainer
 
-session: SessionContainer = ... 
+session: SessionContainer = ...
 access_token_payload = await session.get_access_token_payload()
 
 if access_token_payload.get('sub') is not None:
