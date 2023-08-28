@@ -365,13 +365,13 @@ def email_verify_token_request(
             environ["SUPERTOKENS_ENV"] = "testing"
 
 
-def setup_function(_):
+def setup_function(_: Any):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(_):
+def teardown_function(_: Any):
     reset()
     clean_st()
 
