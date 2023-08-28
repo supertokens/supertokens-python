@@ -68,7 +68,9 @@ class NormalisedURLPath:
 
     def is_a_recipe_path(self) -&gt; bool:
         parts = self.__value.split(&#34;/&#34;)
-        return parts[1] == &#34;recipe&#34; or parts[2] == &#34;recipe&#34;
+        return (len(parts) &gt; 1 and parts[1] == &#34;recipe&#34;) or (
+            len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;
+        )
 
 
 def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
@@ -247,7 +249,9 @@ def domain_given(input_str: str) -&gt; bool:
 
     def is_a_recipe_path(self) -&gt; bool:
         parts = self.__value.split(&#34;/&#34;)
-        return parts[1] == &#34;recipe&#34; or parts[2] == &#34;recipe&#34;</code></pre>
+        return (len(parts) &gt; 1 and parts[1] == &#34;recipe&#34;) or (
+            len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;
+        )</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -301,7 +305,9 @@ def domain_given(input_str: str) -&gt; bool:
 </summary>
 <pre><code class="python">def is_a_recipe_path(self) -&gt; bool:
     parts = self.__value.split(&#34;/&#34;)
-    return parts[1] == &#34;recipe&#34; or parts[2] == &#34;recipe&#34;</code></pre>
+    return (len(parts) &gt; 1 and parts[1] == &#34;recipe&#34;) or (
+        len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.startswith"><code class="name flex">
