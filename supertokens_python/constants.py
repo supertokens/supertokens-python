@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 SUPPORTED_CDI_VERSIONS = ["3.0"]
-VERSION = "0.15.2"
+VERSION = "0.15.3"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
@@ -29,3 +29,4 @@ API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
 DASHBOARD_VERSION = "0.7"
 HUNDRED_YEARS_IN_MS = 3153600000000
+RATE_LIMIT_STATUS_CODE = 429

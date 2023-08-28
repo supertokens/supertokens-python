@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+
+
+## [0.15.3] - 2023-09-24
+
+- Handle 429 rate limiting from SaaS core instances
+
 ## [0.15.2] - 2023-09-23
 
 - Fixed bugs in thirdparty providers: Bitbucket, Boxy-SAML, and Facebook

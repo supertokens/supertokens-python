@@ -40,7 +40,9 @@ class NormalisedURLPath:
 
     def is_a_recipe_path(self) -> bool:
         parts = self.__value.split("/")
-        return parts[1] == "recipe" or parts[2] == "recipe"
+        return (len(parts) > 1 and parts[1] == "recipe") or (
+            len(parts) > 2 and parts[2] == "recipe"
+        )
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
