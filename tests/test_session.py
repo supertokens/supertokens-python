@@ -794,7 +794,7 @@ async def test_expose_access_token_to_frontend_in_cookie_based_auth(
     assert response.status_code == 200
     assert len(response.headers["st-access-token"]) > 0
 
-    reset(stop_core=False)
+    reset()
 
     args = get_st_init_args([session.init(expose_access_token_to_frontend_in_cookie_based_auth=False, get_token_transfer_method=lambda *_: "cookie")])  # type: ignore
     init(**args)  # type: ignore
