@@ -25,7 +25,7 @@ SUPPORTED_CDI_VERSIONS = [
     "2.19",
     "2.20",
 ]
-VERSION = "0.12.9"
+VERSION = "0.12.10"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
@@ -39,3 +39,4 @@ FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
 DASHBOARD_VERSION = "0.6"
+RATE_LIMIT_STATUS_CODE = 429
