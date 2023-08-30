@@ -218,6 +218,7 @@ async def login(request: Request):
     _session = await create_new_session(request, user_id)
     return PlainTextResponse(content=_session.get_user_id())
 
+
 @app.post("/login-2.18")
 async def login_2_18(request: Request):
     body = await request.json()
@@ -225,6 +226,7 @@ async def login_2_18(request: Request):
     payload = body["payload"]
     _session = await create_new_session(request, user_id, payload)
     return PlainTextResponse(content=_session.get_user_id())
+
 
 @app.options("/beforeeach")
 def before_each_options():

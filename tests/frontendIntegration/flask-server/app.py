@@ -245,6 +245,15 @@ def login():
     return _session.get_user_id()
 
 
+@app.route("/login-2.18", methods=["POST"])  # type: ignore
+def login_2_18():
+    body: Dict[str, Any] = request.get_json()  # type: ignore
+    user_id = body["userId"]
+    payload = body["payload"]
+    _session = create_new_session(request, user_id, payload)
+    return _session.get_user_id()
+
+
 @app.route("/beforeeach", methods=["OPTIONS"])  # type: ignore
 def before_each_options():
     return send_options_api_response()
