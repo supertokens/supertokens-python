@@ -15,8 +15,6 @@ from pytest import mark
 from supertokens_python.recipe import (
     session,
     emailpassword,
-    emailverification,
-    dashboard,
 )
 import asyncio
 import respx
@@ -45,8 +43,6 @@ async def test_network_call_is_retried_as_expected():
         [
             session.init(),
             emailpassword.init(),
-            emailverification.init(mode="OPTIONAL"),
-            dashboard.init(),
         ]
     )
     args["supertokens_config"] = SupertokensConfig("http://localhost:6789")
@@ -102,8 +98,6 @@ async def test_parallel_calls_have_independent_counters():
         [
             session.init(),
             emailpassword.init(),
-            emailverification.init(mode="OPTIONAL"),
-            dashboard.init(),
         ]
     )
     init(**args)  # type: ignore

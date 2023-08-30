@@ -24,7 +24,7 @@ from fastapi.testclient import TestClient
 from requests.models import Response
 from yaml import FullLoader, dump, load
 
-from supertokens_python import Supertokens
+from supertokens_python import SupertokensConfig, Supertokens, InputAppInfo
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
@@ -359,3 +359,31 @@ def email_verify_token_request(
     finally:
         if use_server:
             environ["SUPERTOKENS_ENV"] = "testing"
+
+
+def setup_function(_: Any) -> None:
+    reset()
+    clean_st()
+    setup_st()
+
+
+def teardown_function(_: Any) -> None:
+    reset()
+    clean_st()
+
+
+st_init_common_args = {
+    "supertokens_config": SupertokensConfig("http://localhost:3567"),
+    "app_info": InputAppInfo(
+        app_name="ST",
+        api_domain="http://api.supertokens.io",
+        website_domain="http://supertokens.io",
+        api_base_path="/auth",
+    ),
+    "framework": "fastapi",
+    "mode": "asgi",
+}
+
+
+def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
+    return {**st_init_common_args, "recipe_list": recipe_list}
