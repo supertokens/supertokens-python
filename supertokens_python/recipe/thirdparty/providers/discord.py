@@ -49,7 +49,9 @@ class Discord(Provider):
             'Authorization': 'Bearer ' + access_token
         }
         async with AsyncClient() as client:
-            response = await client.get(url=self.base_url + '/api/users/@me', headers=headers)
+            response = await client.get(  # type: ignore
+                url=self.base_url + '/api/users/@me', headers=headers
+            )
             user_info = response.json()
             user_id = user_info['id']
             if 'email' not in user_info or user_info['email'] is None:

@@ -129,7 +129,9 @@ class Apple(Provider):
         if (self.apple_last_fetch + self.APPLE_KEY_CACHE_EXP) < int(time()
                                                                     ) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
-                response = await client.get(self.APPLE_PUBLIC_KEY_URL)
+                response = await client.get(  # type: ignore
+                    self.APPLE_PUBLIC_KEY_URL
+                )
                 key_payload = response.json()
                 for key in key_payload["keys"]:
                     self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore

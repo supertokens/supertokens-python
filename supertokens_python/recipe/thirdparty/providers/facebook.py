@@ -47,7 +47,9 @@ class Facebook(Provider):
             'format': 'json'
         }
         async with AsyncClient() as client:
-            response = await client.get(url='https://graph.facebook.com/me', params=params)
+            response = await client.get(  # type: ignore
+                url='https://graph.facebook.com/me', params=params
+            )
             user_info = response.json()
             user_id = user_info['id']
             if 'email' not in user_info or user_info['email'] is None:

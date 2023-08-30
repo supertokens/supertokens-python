@@ -54,8 +54,12 @@ class Github(Provider):
             'Accept': 'application/vnd.github.v3+json'
         }
         async with AsyncClient() as client:
-            response_user = await client.get(url='https://api.github.com/user', params=params, headers=headers)
-            response_email = await client.get(url='https://api.github.com/user/emails', params=params, headers=headers)
+            response_user = await client.get(  # type: ignore
+                url='https://api.github.com/user', params=params, headers=headers
+            )
+            response_email = await client.get(  # type: ignore
+                url='https://api.github.com/user/emails', params=params, headers=headers
+            )
             user_info = response_user.json()
             emails_info = response_email.json()
             user_id = str(user_info['id'])

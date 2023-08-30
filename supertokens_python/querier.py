@@ -39,7 +39,7 @@ class Querier:
     __init_called = False
     __hosts: List[Host] = []
     __api_key: Union[None, str] = None
-    __api_version = None
+    api_version = None
     __last_tried_index: int = 0
     __hosts_alive_for_testing: Set[str] = set()
 
@@ -67,8 +67,8 @@ class Querier:
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
-        if Querier.__api_version is not None:
-            return Querier.__api_version
+        if Querier.api_version is not None:
+            return Querier.api_version
 
         ProcessState.get_instance().add_state(
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION)
@@ -80,7 +80,7 @@ class Querier:
                     API_KEY_HEADER: Querier.__api_key
                 }
             async with AsyncClient() as client:
-                return await client.get(url, headers=headers)
+                return await client.get(url, headers=headers)  # type: ignore
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), 'GET', f, len(self.__hosts))
@@ -94,8 +94,8 @@ class Querier:
                                     'SDK. Please visit https://supertokens.io/docs/community/compatibility-table '
                                     'to find the right versions')
 
-        Querier.__api_version = api_version
-        return Querier.__api_version
+        Querier.api_version = api_version
+        return Querier.api_version
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
@@ -110,7 +110,7 @@ class Querier:
             Querier.__init_called = True
             Querier.__hosts = hosts
             Querier.__api_key = api_key
-            Querier.__api_version = None
+            Querier.api_version = None
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
 
@@ -136,7 +136,9 @@ class Querier:
 
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
-                return await client.get(url, params=params, headers=await self.__get_headers_with_api_version(path))
+                return await client.get(  # type: ignore
+                    url, params=params, headers=await self.__get_headers_with_api_version(path)
+                )
 
         return await self.__send_request_helper(path, 'GET', f, len(self.__hosts))
 
@@ -161,7 +163,9 @@ class Querier:
 
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
-                return await client.delete(url, headers=await self.__get_headers_with_api_version(path))
+                return await client.delete(  # type: ignore
+                    url, headers=await self.__get_headers_with_api_version(path)
+                )
 
         return await self.__send_request_helper(path, 'DELETE', f, len(self.__hosts))
 
@@ -178,13 +182,14 @@ class Querier:
 
         return await self.__send_request_helper(path, 'PUT', f, len(self.__hosts))
 
-    async def __send_request_helper(self,
-            path: NormalisedURLPath,
-            method: str,
-            http_function: Callable[[str], Awaitable[Response]],
-            no_of_tries: int,
-            retry_info_map: Optional[Dict[str, int]] = None
-        ) -> Any:
+    async def __send_request_helper(
+        self,
+        path: NormalisedURLPath,
+        method: str,
+        http_function: Callable[[str], Awaitable[Response]],
+        no_of_tries: int,
+        retry_info_map: Optional[Dict[str, int]] = None
+    ) -> Any:
         if no_of_tries == 0:
             raise_general_exception('No SuperTokens core available to query')
 

@@ -51,8 +51,10 @@ class Google(Provider):
             'Authorization': 'Bearer ' + access_token
         }
         async with AsyncClient() as client:
-            response = await client.get(url='https://www.googleapis.com/oauth2/v1/userinfo', params=params,
-                                        headers=headers)
+            response = await client.get(   # type: ignore
+                url='https://www.googleapis.com/oauth2/v1/userinfo',
+                params=params, headers=headers
+            )
             user_info = response.json()
             user_id = user_info['id']
             if 'email' not in user_info or user_info['email'] is None:
