@@ -336,6 +336,18 @@ def login(request: HttpRequest):
         return send_options_api_response()
 
 
+def login_2_18(request: HttpRequest):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        user_id = body["userId"]
+        payload = body["payload"]
+
+        session_ = create_new_session(request, user_id, payload)
+        return HttpResponse(session_.get_user_id())
+    else:
+        return send_options_api_response()
+
+
 def before_each(request: HttpRequest):
     if request.method == "POST":
         Test.reset()
