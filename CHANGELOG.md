@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.10.5] - 2023-08-30
+
+- Add logic to retry network calls if the core returns status 429
+
 ## [0.10.4] - 2022-08-30
 ## Features:
 - Add support for User ID Mapping using `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping`, `update_or_delete_user_id_mapping` functions
@@ -20,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.10.2] - 2022-07-14
 ### Bug fix
-- Make `user_context` optional in userroles recipe syncio functions. 
+- Make `user_context` optional in userroles recipe syncio functions.
 
 ## [0.10.1] - 2022-07-11
 
@@ -555,4 +559,4 @@ init(
 - Middleware, error handlers and verify session for each framework.
 - Created a wrapper for async to sync for supporting older version of python web frameworks.
 - Base tests for each framework.
-- New requirements in the setup file. 
+- New requirements in the setup file.
