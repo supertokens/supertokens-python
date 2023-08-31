@@ -111,6 +111,7 @@ setup(
         "phonenumbers==8.12.48",
         "twilio==7.9.1",
         "aiosmtplib==1.1.6",
+        "nest-asyncio==1.5.1",
     ],
     python_requires=">=3.7",
     include_package_data=True,
