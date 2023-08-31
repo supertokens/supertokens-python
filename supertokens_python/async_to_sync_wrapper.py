@@ -25,7 +25,6 @@ def check_event_loop():
     except RuntimeError as ex:
         if "There is no current event loop in thread" in str(ex):
             loop = asyncio.new_event_loop()
-            nest_asyncio.apply(loop)  # type: ignore
             asyncio.set_event_loop(loop)
 
 
