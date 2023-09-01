@@ -382,7 +382,7 @@ async def login_2_18(request: HttpRequest):
             headers={
                 "st-access-token": legacy_access_token,
                 "st-refresh-token": legacy_refresh_token,
-                "front-token": b64encode(front_token.encode()),
+                "front-token": b64encode(front_token.encode()).decode(),
             },
         )
     else:
