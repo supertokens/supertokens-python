@@ -187,16 +187,16 @@ def get_recipe_implementation_with_jwt(
         if decoded_payload is None or decoded_payload.get(&#34;exp&#34;) is None:
             raise Exception(&#34;Error reading JWT from session&#34;)
 
-        jwt_expiry = 1
-        if &#34;exp&#34; in decoded_payload:
-            exp = decoded_payload[&#34;exp&#34;]
-            if exp &gt; current_time_in_seconds:
-                # it can come here if someone calls this function well after
-                # the access token and the jwt payload have expired. In this case,
-                # we still want the jwt payload to update, but the resulting JWT should
-                # not be alive for too long (since it&#39;s expired already). So we set it to
-                # 1 second lifetime.
-                jwt_expiry = exp - current_time_in_seconds
+        jwt_expiry = decoded_payload.get(&#34;exp&#34;, 0) - current_time_in_seconds
+        # pylint: disable=consider-using-max-builtin
+        if jwt_expiry &lt; 1:
+            # it can come here if someone calls this function well after
+            # the access token and the jwt payload have expired. In this case,
+            # we still want the jwt payload to update, but the resulting JWT should
+            # not be alive for too long (since it&#39;s expired already). So we set it to
+            # 1 second lifetime.
+            jwt_expiry = 1
+        # pylint: enable=consider-using-max-builtin
 
         new_access_token_payload = await add_jwt_to_access_token_payload(
             access_token_payload=new_access_token_payload,
@@ -405,16 +405,16 @@ def get_recipe_implementation_with_jwt(
         if decoded_payload is None or decoded_payload.get(&#34;exp&#34;) is None:
             raise Exception(&#34;Error reading JWT from session&#34;)
 
-        jwt_expiry = 1
-        if &#34;exp&#34; in decoded_payload:
-            exp = decoded_payload[&#34;exp&#34;]
-            if exp &gt; current_time_in_seconds:
-                # it can come here if someone calls this function well after
-                # the access token and the jwt payload have expired. In this case,
-                # we still want the jwt payload to update, but the resulting JWT should
-                # not be alive for too long (since it&#39;s expired already). So we set it to
-                # 1 second lifetime.
-                jwt_expiry = exp - current_time_in_seconds
+        jwt_expiry = decoded_payload.get(&#34;exp&#34;, 0) - current_time_in_seconds
+        # pylint: disable=consider-using-max-builtin
+        if jwt_expiry &lt; 1:
+            # it can come here if someone calls this function well after
+            # the access token and the jwt payload have expired. In this case,
+            # we still want the jwt payload to update, but the resulting JWT should
+            # not be alive for too long (since it&#39;s expired already). So we set it to
+            # 1 second lifetime.
+            jwt_expiry = 1
+        # pylint: enable=consider-using-max-builtin
 
         new_access_token_payload = await add_jwt_to_access_token_payload(
             access_token_payload=new_access_token_payload,
