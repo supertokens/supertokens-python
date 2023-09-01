@@ -159,16 +159,14 @@ def get_recipe_implementation_with_jwt(
         if decoded_payload is None or decoded_payload.get("exp") is None:
             raise Exception("Error reading JWT from session")
 
-        jwt_expiry = 1
-        if "exp" in decoded_payload:
-            exp = decoded_payload["exp"]
-            if exp > current_time_in_seconds:
-                # it can come here if someone calls this function well after
-                # the access token and the jwt payload have expired. In this case,
-                # we still want the jwt payload to update, but the resulting JWT should
-                # not be alive for too long (since it's expired already). So we set it to
-                # 1 second lifetime.
-                jwt_expiry = exp - current_time_in_seconds
+        jwt_expiry = decoded_payload.get("exp", 0) - current_time_in_seconds
+        if jwt_expiry < 1:
+            # it can come here if someone calls this function well after
+            # the access token and the jwt payload have expired. In this case,
+            # we still want the jwt payload to update, but the resulting JWT should
+            # not be alive for too long (since it's expired already). So we set it to
+            # 1 second lifetime.
+            jwt_expiry = 1
 
         new_access_token_payload = await add_jwt_to_access_token_payload(
             access_token_payload=new_access_token_payload,
