@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
-## [0.12.10] - 2023-09-28
+## [0.12.10] - 2023-09-01
 
 - Add logic to retry network calls if the core returns status 429
+- Fixes session recipe with jwt where the lifetime of the jwt is set to 1 in case it is `< 1`
 
 ## [0.12.9] - 2023-04-28
 
