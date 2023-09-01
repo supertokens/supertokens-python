@@ -24,6 +24,8 @@ from supertokens_python.recipe.emailverification import EmailVerificationClaim
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.userroles import UserRoleClaim, PermissionClaim
+from supertokens_python.syncio import delete_user
+from supertokens_python.recipe.emailpassword.syncio import get_user_by_email
 
 mode = os.environ.get("APP_MODE", "asgi")
 
@@ -144,6 +146,17 @@ def ping(request: HttpRequest):
 def token(request: HttpRequest):
     latest_url_with_token = get_url_with_token()
     return JsonResponse({"latestURLWithToken": latest_url_with_token})
+
+
+def delete_user_api(request: HttpRequest):
+    body = json.loads(request.body)
+    if body["rid"] != "emailpassword":
+        return JsonResponse({"message": "Not implemented"}, status_code=400)
+
+    user = get_user_by_email(body["email"])
+    assert user is not None
+    delete_user(user.user_id)
+    return HttpResponse("")
 
 
 def test_get_device(request: HttpRequest):

@@ -29,6 +29,9 @@ from django.conf import settings
 from supertokens_python import get_all_cors_headers
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest, BaseResponse
+from base64 import b64encode
+from supertokens_python.utils import get_timestamp_ms
+from supertokens_python.querier import Querier, NormalisedURLPath
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import (
     InputErrorHandlers,
@@ -345,12 +348,43 @@ async def login(request: HttpRequest):
 
 async def login_2_18(request: HttpRequest):
     if request.method == "POST":
+        # This CDI version is no longer supported by this SDK, but
+        # we want to ensure that sessions keep working after the upgrade
+        # We can hard-code the structure of the request&response, since
+        # this is a fixed CDI version and it's not going to change
+
+        Querier.api_version = "2.18"
+
         body = json.loads(request.body)
         user_id = body["userId"]
         payload = body["payload"]
 
-        session_ = await create_new_session(request, user_id, payload)
-        return HttpResponse(session_.get_user_id())
+        legacy_session_res = await Querier.get_instance().send_post_request(
+            NormalisedURLPath("/recipe/session"),
+            {
+                "userId": user_id,
+                "enableAntiCsrf": False,
+                "userDataInJWT": payload,
+                "userDataInDatabase": {},
+            },
+        )
+        Querier.api_version = None
+
+        legacy_access_token = legacy_session_res["accessToken"]["token"]
+        legacy_refresh_token = legacy_session_res["refreshToken"]["token"]
+
+        front_token = json.dumps(
+            {"uid": user_id, "ate": get_timestamp_ms() + 3600000, "up": payload}
+        )
+
+        return JsonResponse(
+            {},
+            headers={
+                "st-access-token": legacy_access_token,
+                "st-refresh-token": legacy_refresh_token,
+                "front-token": b64encode(front_token.encode()),
+            },
+        )
     else:
         return send_options_api_response()
 
