@@ -529,6 +529,11 @@ class Supertokens:
     async def handle_supertokens_error(
         self, request: BaseRequest, err: Exception, response: BaseResponse
     ):
+        import asyncio
+
+        await asyncio.sleep(1)
+        # return send_non_200_response_with_message("err", 400, response)
+
         log_debug_message("errorHandler: Started")
         log_debug_message(
             "errorHandler: Error is from SuperTokens recipe. Message: %s", str(err)
