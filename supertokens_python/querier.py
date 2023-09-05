@@ -77,26 +77,25 @@ class Querier:
         self,
         url: str,
         method: str,  # ["POST", "GET"]
-        headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> Response:
         try:
             async with AsyncClient() as client:
                 if method == "GET":
-                    return await client.get(url, headers=headers, params=params, json=json)  # type: ignore
+                    return await client.get(url, *args, **kwargs)  # type: ignore
                 if method == "POST":
-                    return await client.post(url, headers=headers, params=params, json=json)  # type: ignore
+                    return await client.post(url, *args, **kwargs)  # type: ignore
                 if method == "PUT":
-                    return await client.put(url, headers=headers, params=params, json=json)  # type: ignore
+                    return await client.put(url, *args, **kwargs)  # type: ignore
                 if method == "DELETE":
-                    return await client.delete(url, headers=headers, params=params, json=json)  # type: ignore
+                    return await client.delete(url, *args, **kwargs)  # type: ignore
                 raise Exception("Shouldn't come here")
         except AsyncLibraryNotFoundError:
             # Try one more time
             loop = create_or_get_event_loop()
             return loop.run_until_complete(
-                self.api_request(url, method, headers, params, json)
+                self.api_request(url, method, *args, **kwargs)
             )
 
     async def get_api_version(self):
