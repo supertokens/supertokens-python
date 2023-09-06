@@ -77,10 +77,13 @@ class Querier:
         self,
         url: str,
         method: str,
-        retry: bool,
+        retry_count: int,
         *args: Any,
         **kwargs: Any,
     ) -> Response:
+        if retry_count == 0:
+            raise_general_exception("Retry request failed")
+
         try:
             async with AsyncClient() as client:
                 if method == "GET":
@@ -96,8 +99,9 @@ class Querier:
             # Try one more time
             loop = create_or_get_event_loop()
             return loop.run_until_complete(
-                self.api_request(url, method, False, *args, **kwargs)
+                self.api_request(url, method, retry_count - 1, *args, **kwargs)
             )
+
 
     async def get_api_version(self):
         if Querier.api_version is not None:
@@ -111,7 +115,7 @@ class Querier:
             headers = {}
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
-            return await self.api_request(url, method, True, headers=headers)
+            return await self.api_request(url, method, 1, headers=headers)
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), "GET", f, len(self.__hosts)
@@ -165,7 +169,7 @@ class Querier:
             return await self.api_request(
                 url,
                 method,
-                True,
+                1,
                 headers=await self.__get_headers_with_api_version(path),
                 params=params,
             )
@@ -195,7 +199,7 @@ class Querier:
             return await self.api_request(
                 url,
                 method,
-                True,
+                1,
                 headers=await self.__get_headers_with_api_version(path),
                 json=data,
             )
@@ -212,7 +216,7 @@ class Querier:
             return await self.api_request(
                 url,
                 method,
-                True,
+                1,
                 headers=await self.__get_headers_with_api_version(path),
                 params=params,
             )
@@ -229,7 +233,7 @@ class Querier:
         headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str, method: str) -> Response:
-            return await self.api_request(url, method, True, headers=headers, json=data)
+            return await self.api_request(url, method, 1, headers=headers, json=data)
 
         return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))
 
@@ -323,7 +327,6 @@ class Querier:
             except JSONDecodeError:
                 return response.text
         except (ConnectionError, NetworkError, ConnectTimeout) as _:
-            print("Retryingg!")
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1, retry_info_map
             )
