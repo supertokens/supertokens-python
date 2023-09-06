@@ -102,7 +102,6 @@ class Querier:
                 self.api_request(url, method, retry_count - 1, *args, **kwargs)
             )
 
-
     async def get_api_version(self):
         if Querier.api_version is not None:
             return Querier.api_version
