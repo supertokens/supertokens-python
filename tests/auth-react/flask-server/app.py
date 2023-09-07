@@ -38,6 +38,8 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     userroles,
 )
+from supertokens_python.syncio import delete_user
+from supertokens_python.recipe.emailpassword.syncio import get_user_by_email
 from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -1039,6 +1041,18 @@ def test_get_device():
 def test_feature_flags():
     available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"]
     return jsonify({"available": available})
+
+
+@app.post("/deleteUser")  # type: ignore
+def delete_user_api():
+    body = request.get_json() or {}
+    if body["rid"] != "emailpassword":
+        return jsonify({"message": "Not implemented"}), 400
+
+    user = get_user_by_email(body["email"])
+    assert user is not None
+    delete_user(user.user_id)
+    return ""
 
 
 @app.get("/unverifyEmail")  # type: ignore

@@ -8,6 +8,7 @@ urlpatterns = [  # type: ignore
     path("ping", views.ping, name="ping"),
     path("sessionInfo", views.session_info, name="sessionInfo"),
     path("token", views.token, name="token"),
+    path("deleteUser", views.delete_user_api, name="token"),
     path("test/setFlow", views.test_set_flow, name="setFlow"),
     path("test/getDevice", views.test_get_device, name="getDevice"),
     path("test/featureFlags", views.test_feature_flags, name="featureFlags"),

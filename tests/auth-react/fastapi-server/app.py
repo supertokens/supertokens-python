@@ -46,6 +46,8 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     userroles,
 )
+from supertokens_python.asyncio import delete_user
+from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
 from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -1034,6 +1036,18 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
 async def get_token():
     global latest_url_with_token
     return JSONResponse({"latestURLWithToken": latest_url_with_token})
+
+
+@app.post("/deleteUser")
+async def delete_user_api(request: Request):
+    body = await request.json()
+    if body["rid"] != "emailpassword":
+        return JSONResponse({"message": "Not implemented"}, status_code=400)
+
+    user = await get_user_by_email(body["email"])
+    assert user is not None
+    await delete_user(user.user_id)
+    return PlainTextResponse()
 
 
 @app.get("/unverifyEmail")
