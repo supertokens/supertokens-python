@@ -13,6 +13,7 @@
 # under the License.
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Callable, Optional, Awaitable, Dict, Any
 
 from supertokens_python.framework import BaseResponse
@@ -29,6 +30,8 @@ from supertokens_python.utils import (
     send_non_200_response_with_message,
 )
 
+from ..exceptions import DashboardOperationNotAllowedError
+
 
 async def api_key_protector(
     api_implementation: APIInterface,
@@ -39,9 +42,25 @@ async def api_key_protector(
     ],
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
-    should_allow_access = await api_options.recipe_implementation.should_allow_access(
-        api_options.request, api_options.config, user_context
-    )
+    should_allow_access = False
+
+    try:
+        should_allow_access = (
+            await api_options.recipe_implementation.should_allow_access(
+                api_options.request, api_options.config, user_context
+            )
+        )
+    except DashboardOperationNotAllowedError as _:
+        # api_options.response.set_status_code(403)
+        # api_options.response.set_json_content({
+        #     "message": "You are not permitted to perform this operation"
+        # })
+        # return None
+        return send_non_200_response_with_message(
+            json.dumps({"message": "You are not permitted to perform this operation"}),
+            403,
+            api_options.response,
+        )
 
     if should_allow_access is False:
         return send_non_200_response_with_message(

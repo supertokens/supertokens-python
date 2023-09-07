@@ -43,7 +43,7 @@ from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     get_user_by_id as tppless_get_user_by_id,
 )
 from supertokens_python.types import User
-from supertokens_python.utils import Awaitable
+from supertokens_python.utils import Awaitable, log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
@@ -181,9 +181,14 @@ class OverrideConfig:
 
 class DashboardConfig:
     def __init__(
-        self, api_key: Union[str, None], override: OverrideConfig, auth_mode: str
+        self,
+        api_key: Optional[str],
+        admins: List[str],
+        override: OverrideConfig,
+        auth_mode: str,
     ):
         self.api_key = api_key
+        self.admins = admins
         self.override = override
         self.auth_mode = auth_mode
 
@@ -191,14 +196,23 @@ class DashboardConfig:
 def validate_and_normalise_user_input(
     # app_info: AppInfo,
     api_key: Union[str, None],
+    admins: Optional[List[str]],
     override: Optional[InputOverrideConfig] = None,
 ) -> DashboardConfig:
 
     if override is None:
         override = InputOverrideConfig()
 
+    if api_key is not None and admins is not None:
+        log_debug_message(
+            "User Dashboard: Providing 'admins' has no effect when using an api key."
+        )
+
+    admins = [normalise_email(a) for a in admins] if admins is not None else []
+
     return DashboardConfig(
         api_key,
+        admins,
         OverrideConfig(
             functions=override.functions,
             apis=override.apis,

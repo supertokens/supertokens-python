@@ -87,12 +87,14 @@ class DashboardRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        api_key: Union[str, None],
-        override: Union[InputOverrideConfig, None] = None,
+        api_key: Optional[str],
+        admins: Optional[List[str]],
+        override: Optional[InputOverrideConfig] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             api_key,
+            admins,
             override,
         )
         recipe_implementation = RecipeImplementation()
@@ -349,8 +351,9 @@ class DashboardRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        api_key: Union[str, None],
-        override: Union[InputOverrideConfig, None] = None,
+        api_key: Optional[str],
+        admins: Optional[List[str]],
+        override: Optional[InputOverrideConfig] = None,
     ):
         def func(app_info: AppInfo):
             if DashboardRecipe.__instance is None:
@@ -358,6 +361,7 @@ class DashboardRecipe(RecipeModule):
                     DashboardRecipe.recipe_id,
                     app_info,
                     api_key,
+                    admins,
                     override,
                 )
                 return DashboardRecipe.__instance
