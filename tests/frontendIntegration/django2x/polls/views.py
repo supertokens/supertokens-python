@@ -373,14 +373,11 @@ def login_2_18(request: HttpRequest):
             {"uid": user_id, "ate": get_timestamp_ms() + 3600000, "up": payload}
         )
 
-        return JsonResponse(
-            {},
-            headers={
-                "st-access-token": legacy_access_token,
-                "st-refresh-token": legacy_refresh_token,
-                "front-token": b64encode(front_token.encode()).decode(),
-            },
-        )
+        res = JsonResponse({})
+        res["st-access-token"] = legacy_access_token
+        res["st-refresh-token"] = legacy_refresh_token
+        res["front-token"] = b64encode(front_token.encode()).decode()
+        return res
     else:
         return send_options_api_response()
 
