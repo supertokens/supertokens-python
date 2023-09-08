@@ -41,7 +41,7 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -> bool:
         # For cases where we're not using the API key, the JWT is being used; we allow their access by default
-        if config.api_key is not None:
+        if config.api_key is None:
             auth_header_value = request.get_header("authorization")
             if not auth_header_value:
                 return False
@@ -60,7 +60,7 @@ class RecipeImplementation(RecipeInterface):
             # user is allowed to perform this operation
             if normalise_http_method(request.method()) != "get":
                 # We dont want to block the analytics API
-                if request.get_original_url().startswith(DASHBOARD_ANALYTICS_API):
+                if request.get_original_url().endswith(DASHBOARD_ANALYTICS_API):
                     return True
 
                 # We do not want to block the sign out request
@@ -77,7 +77,7 @@ class RecipeImplementation(RecipeInterface):
 
                 if email_in_headers is None:
                     log_debug_message(
-                        "User Dashboard: Returniing OPERATION_NOT_ALLOWED because no email was provided in headers"
+                        "User Dashboard: Returning UNAUTHORISED_ERROR because no email was provided in headers"
                     )
                     return False
 
@@ -89,4 +89,4 @@ class RecipeImplementation(RecipeInterface):
 
             return True
 
-        return validate_api_key(request, config, user_context)
+        return await validate_api_key(request, config, user_context)
