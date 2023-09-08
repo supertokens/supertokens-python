@@ -49,8 +49,8 @@ from ...normalised_url_path import NormalisedURLPath
 from .constants import (
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
-    EMAIL_PASSSWORD_SIGNOUT,
-    EMAIL_PASSWORD_SIGN_IN,
+    SIGN_OUT_API,
+    SIGN_IN_API,
     SEARCH_TAGS_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
@@ -259,10 +259,10 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return USER_PASSWORD_API
     if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == "post":
         return USER_EMAIL_VERIFY_TOKEN_API
-    if path_str.endswith(EMAIL_PASSWORD_SIGN_IN) and method == "post":
-        return EMAIL_PASSWORD_SIGN_IN
-    if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == "post":
-        return EMAIL_PASSSWORD_SIGNOUT
+    if path_str.endswith(SIGN_IN_API) and method == "post":
+        return SIGN_IN_API
+    if path_str.endswith(SIGN_OUT_API) and method == "post":
+        return SIGN_OUT_API
     if path_str.endswith(SEARCH_TAGS_API) and method == "get":
         return SEARCH_TAGS_API
     if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == "post":

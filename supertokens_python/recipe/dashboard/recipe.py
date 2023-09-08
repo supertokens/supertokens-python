@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union, Dict, Any
+from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
@@ -59,8 +59,8 @@ from supertokens_python.recipe.dashboard.utils import get_api_path_with_dashboar
 from .constants import (
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
-    EMAIL_PASSSWORD_SIGNOUT,
-    EMAIL_PASSWORD_SIGN_IN,
+    SIGN_OUT_API,
+    SIGN_IN_API,
     SEARCH_TAGS_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
@@ -125,11 +125,9 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
-                NormalisedURLPath(
-                    get_api_path_with_dashboard_base(EMAIL_PASSWORD_SIGN_IN)
-                ),
+                NormalisedURLPath(get_api_path_with_dashboard_base(SIGN_IN_API)),
                 "post",
-                EMAIL_PASSWORD_SIGN_IN,
+                SIGN_IN_API,
                 False,
             ),
             APIHandled(
@@ -139,11 +137,9 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
-                NormalisedURLPath(
-                    get_api_path_with_dashboard_base(EMAIL_PASSSWORD_SIGNOUT)
-                ),
+                NormalisedURLPath(get_api_path_with_dashboard_base(SIGN_OUT_API)),
                 "post",
-                EMAIL_PASSSWORD_SIGNOUT,
+                SIGN_OUT_API,
                 False,
             ),
             APIHandled(
@@ -279,7 +275,7 @@ class DashboardRecipe(RecipeModule):
             return await handle_validate_key_api(
                 self.api_implementation, api_options, user_context
             )
-        if request_id == EMAIL_PASSWORD_SIGN_IN:
+        if request_id == SIGN_IN_API:
             return await handle_emailpassword_signin_api(
                 self.api_implementation, api_options, user_context
             )
@@ -320,7 +316,7 @@ class DashboardRecipe(RecipeModule):
             api_function = handle_user_password_put
         elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
             api_function = handle_email_verify_token_post
-        elif request_id == EMAIL_PASSSWORD_SIGNOUT:
+        elif request_id == SIGN_OUT_API:
             api_function = handle_emailpassword_signout_api
         elif request_id == SEARCH_TAGS_API:
             api_function = handle_get_tags
@@ -352,7 +348,7 @@ class DashboardRecipe(RecipeModule):
     @staticmethod
     def init(
         api_key: Optional[str],
-        admins: Optional[List[str]],
+        admins: Optional[List[str]] = None,
         override: Optional[InputOverrideConfig] = None,
     ):
         def func(app_info: AppInfo):

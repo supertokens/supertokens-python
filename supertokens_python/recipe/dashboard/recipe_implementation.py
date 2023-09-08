@@ -18,11 +18,11 @@ from typing import Any, Dict
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import log_debug_message
+from supertokens_python.utils import log_debug_message, normalise_http_method
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.dashboard.constants import (
     DASHBOARD_ANALYTICS_API,
-    EMAIL_PASSSWORD_SIGNOUT,
+    SIGN_OUT_API,
 )
 
 from .interfaces import RecipeInterface
@@ -58,13 +58,13 @@ class RecipeImplementation(RecipeInterface):
 
             # For all non GET requests we also want to check if the
             # user is allowed to perform this operation
-            if request.method() != "GET":  # TODO: Use normalize http method?
+            if normalise_http_method(request.method()) != "get":
                 # We dont want to block the analytics API
                 if request.get_original_url().startswith(DASHBOARD_ANALYTICS_API):
                     return True
 
                 # We do not want to block the sign out request
-                if request.get_original_url().endswith(EMAIL_PASSSWORD_SIGNOUT):
+                if request.get_original_url().endswith(SIGN_OUT_API):
                     return True
 
                 admins = config.admins

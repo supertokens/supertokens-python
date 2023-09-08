@@ -28,6 +28,9 @@ class FastApiRequest(BaseRequest):
         super().__init__()
         self.request = request
 
+    def get_original_url(self) -> str:
+        return self.request.url.components.geturl()
+
     def get_query_param(
         self, key: str, default: Union[str, None] = None
     ) -> Union[str, None]:
