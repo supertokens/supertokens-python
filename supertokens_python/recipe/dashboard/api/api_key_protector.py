@@ -51,11 +51,6 @@ async def api_key_protector(
             )
         )
     except DashboardOperationNotAllowedError as _:
-        # api_options.response.set_status_code(403)
-        # api_options.response.set_json_content({
-        #     "message": "You are not permitted to perform this operation"
-        # })
-        # return None
         return send_non_200_response_with_message(
             json.dumps({"message": "You are not permitted to perform this operation"}),
             403,
