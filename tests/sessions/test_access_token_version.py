@@ -203,27 +203,25 @@ async def test_should_validate_v3_tokens_with_check_database_enabled(app: TestCl
     }
 
 
-async def test_ignore_protected_props_in_create_session(app: TestClient):
-    init(**get_st_init_args([session.init()]))  # type:ignore
+async def test_ignore_protected_props_in_create_session():
+    init(**get_st_init_args([session.init()]))
     start_st()
 
-    create_session_res = app.post("/create", data={"sub": "asdf"})
-
-    assert create_session_res.status_code == 200
-
-    info = extract_info(create_session_res)
-    assert info["accessTokenFromAny"] is not None
-    assert info["refreshTokenFromAny"] is not None
-    assert info["frontToken"] is not None
-
-    parsed_token = parse_jwt_without_signature_verification(info["accessTokenFromAny"])
-    assert parsed_token.payload["sub"] != "asdf"
-
     s = await create_new_session_without_request_response(
-        "public", "user-id", {"sub": "asdf"}
+        "public",
+        "user1",
+        {"foo": "bar"},
     )
     payload = parse_jwt_without_signature_verification(s.access_token).payload
-    assert payload["sub"] != "asdf"
+    assert payload["foo"] == "bar"
+    assert payload["sub"] == "user1"
+
+    s2 = await create_new_session_without_request_response(
+        "public", "user2", s.get_access_token_payload()
+    )
+    payload = parse_jwt_without_signature_verification(s2.access_token).payload
+    assert payload["foo"] == "bar"
+    assert payload["sub"] == "user2"
 
 
 async def test_validation_logic_with_keys_that_can_use_json_nulls_values_in_claims():
