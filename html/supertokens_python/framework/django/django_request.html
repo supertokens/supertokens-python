@@ -57,6 +57,9 @@ class DjangoRequest(BaseRequest):
         super().__init__()
         self.request = request
 
+    def get_original_url(self) -&gt; str:
+        return self.request.get_raw_uri()
+
     def get_query_param(
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
@@ -125,6 +128,9 @@ inheritance.</p></div>
     def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
+
+    def get_original_url(self) -&gt; str:
+        return self.request.get_raw_uri()
 
     def get_query_param(
         self, key: str, default: Union[str, None] = None
@@ -215,6 +221,19 @@ inheritance.</p></div>
     key = key.replace(&#34;-&#34;, &#34;_&#34;)
     key = &#34;HTTP_&#34; + key
     return self.request.META.get(key.upper())</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_original_url"><code class="name flex">
+<span>def <span class="ident">get_original_url</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_original_url(self) -&gt; str:
+    return self.request.get_raw_uri()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_path"><code class="name flex">
@@ -348,6 +367,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.form_data" href="#supertokens_python.framework.django.django_request.DjangoRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_cookie" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_header" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_original_url" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_original_url">get_original_url</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_path" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_query_param" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_query_param">get_query_param</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_query_params" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_query_params">get_query_params</a></code></li>

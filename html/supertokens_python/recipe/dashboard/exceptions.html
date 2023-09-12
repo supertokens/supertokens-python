@@ -30,6 +30,10 @@
 
 
 class SuperTokensDashboardError(SuperTokensError):
+    pass
+
+
+class DashboardOperationNotAllowedError(SuperTokensDashboardError):
     pass</code></pre>
 </details>
 </section>
@@ -42,6 +46,27 @@ class SuperTokensDashboardError(SuperTokensError):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.dashboard.exceptions.DashboardOperationNotAllowedError"><code class="flex name class">
+<span>class <span class="ident">DashboardOperationNotAllowedError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DashboardOperationNotAllowedError(SuperTokensDashboardError):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError" href="#supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError">SuperTokensDashboardError</a></li>
+<li><a title="supertokens_python.exceptions.SuperTokensError" href="../../exceptions.html#supertokens_python.exceptions.SuperTokensError">SuperTokensError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensDashboardError</span></span>
 <span>(</span><span>*args, **kwargs)</span>
@@ -61,6 +86,10 @@ class SuperTokensDashboardError(SuperTokensError):
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.dashboard.exceptions.DashboardOperationNotAllowedError" href="#supertokens_python.recipe.dashboard.exceptions.DashboardOperationNotAllowedError">DashboardOperationNotAllowedError</a></li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -78,6 +107,9 @@ class SuperTokensDashboardError(SuperTokensError):
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.exceptions.DashboardOperationNotAllowedError" href="#supertokens_python.recipe.dashboard.exceptions.DashboardOperationNotAllowedError">DashboardOperationNotAllowedError</a></code></h4>
+</li>
 <li>
 <h4><code><a title="supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError" href="#supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError">SuperTokensDashboardError</a></code></h4>
 </li>
