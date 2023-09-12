@@ -207,7 +207,7 @@ class Session(SessionContainer):
             for k in protected_props:
                 try:
                     del validate_claim_res.access_token_payload_update[k]
-                except ValueError:
+                except KeyError:
                     pass
             await self.merge_into_access_token_payload(
                 validate_claim_res.access_token_payload_update, user_context
