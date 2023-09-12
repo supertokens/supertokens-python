@@ -183,7 +183,7 @@ class DashboardConfig:
     def __init__(
         self,
         api_key: Optional[str],
-        admins: List[str],
+        admins: Optional[List[str]],
         override: OverrideConfig,
         auth_mode: str,
     ):
@@ -208,7 +208,7 @@ def validate_and_normalise_user_input(
             "User Dashboard: Providing 'admins' has no effect when using an api key."
         )
 
-    admins = [normalise_email(a) for a in admins] if admins is not None else []
+    admins = [normalise_email(a) for a in admins] if admins is not None else None
 
     return DashboardConfig(
         api_key,

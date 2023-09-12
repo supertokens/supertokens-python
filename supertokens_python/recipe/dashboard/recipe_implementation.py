@@ -69,19 +69,24 @@ class RecipeImplementation(RecipeInterface):
 
                 admins = config.admins
 
-                # If the user has provided no admins, allow
-                if len(admins) == 0:
+                if admins is None:
                     return True
 
-                email_in_headers = request.get_header("email")
+                if len(admins) == 0:
+                    log_debug_message(
+                        "User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin"
+                    )
+                    raise DashboardOperationNotAllowedError()
 
-                if email_in_headers is None:
+                user_email = session_verification_response.get("email")
+
+                if user_email is None or not isinstance(user_email, str):
                     log_debug_message(
                         "User Dashboard: Returning UNAUTHORISED_ERROR because no email was provided in headers"
                     )
                     return False
 
-                if email_in_headers not in admins:
+                if user_email not in admins:
                     log_debug_message(
                         "User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin"
                     )
