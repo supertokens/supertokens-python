@@ -71,14 +71,14 @@ from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     get_user_by_id as tppless_get_user_by_id,
 )
 from supertokens_python.types import User
-from supertokens_python.utils import Awaitable
+from supertokens_python.utils import Awaitable, log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
-    EMAIL_PASSSWORD_SIGNOUT,
-    EMAIL_PASSWORD_SIGN_IN,
+    SIGN_OUT_API,
+    SIGN_IN_API,
     SEARCH_TAGS_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
@@ -209,9 +209,14 @@ class OverrideConfig:
 
 class DashboardConfig:
     def __init__(
-        self, api_key: Union[str, None], override: OverrideConfig, auth_mode: str
+        self,
+        api_key: Optional[str],
+        admins: Optional[List[str]],
+        override: OverrideConfig,
+        auth_mode: str,
     ):
         self.api_key = api_key
+        self.admins = admins
         self.override = override
         self.auth_mode = auth_mode
 
@@ -219,14 +224,23 @@ class DashboardConfig:
 def validate_and_normalise_user_input(
     # app_info: AppInfo,
     api_key: Union[str, None],
+    admins: Optional[List[str]],
     override: Optional[InputOverrideConfig] = None,
 ) -&gt; DashboardConfig:
 
     if override is None:
         override = InputOverrideConfig()
 
+    if api_key is not None and admins is not None:
+        log_debug_message(
+            &#34;User Dashboard: Providing &#39;admins&#39; has no effect when using an api key.&#34;
+        )
+
+    admins = [normalise_email(a) for a in admins] if admins is not None else None
+
     return DashboardConfig(
         api_key,
+        admins,
         OverrideConfig(
             functions=override.functions,
             apis=override.apis,
@@ -273,10 +287,10 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -&gt; Optional[str]
         return USER_PASSWORD_API
     if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == &#34;post&#34;:
         return USER_EMAIL_VERIFY_TOKEN_API
-    if path_str.endswith(EMAIL_PASSWORD_SIGN_IN) and method == &#34;post&#34;:
-        return EMAIL_PASSWORD_SIGN_IN
-    if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == &#34;post&#34;:
-        return EMAIL_PASSSWORD_SIGNOUT
+    if path_str.endswith(SIGN_IN_API) and method == &#34;post&#34;:
+        return SIGN_IN_API
+    if path_str.endswith(SIGN_OUT_API) and method == &#34;post&#34;:
+        return SIGN_OUT_API
     if path_str.endswith(SEARCH_TAGS_API) and method == &#34;get&#34;:
         return SEARCH_TAGS_API
     if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == &#34;post&#34;:
@@ -438,7 +452,7 @@ def is_recipe_initialised(recipeId: str) -&gt; bool:
     return isRecipeInitialised
 
 
-def validate_api_key(
+async def validate_api_key(
     req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
 ) -&gt; bool:
     api_key_header_value = req.get_header(&#34;authorization&#34;)
@@ -490,10 +504,10 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
         return USER_PASSWORD_API
     if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == &#34;post&#34;:
         return USER_EMAIL_VERIFY_TOKEN_API
-    if path_str.endswith(EMAIL_PASSWORD_SIGN_IN) and method == &#34;post&#34;:
-        return EMAIL_PASSWORD_SIGN_IN
-    if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == &#34;post&#34;:
-        return EMAIL_PASSSWORD_SIGNOUT
+    if path_str.endswith(SIGN_IN_API) and method == &#34;post&#34;:
+        return SIGN_IN_API
+    if path_str.endswith(SIGN_OUT_API) and method == &#34;post&#34;:
+        return SIGN_OUT_API
     if path_str.endswith(SEARCH_TAGS_API) and method == &#34;get&#34;:
         return SEARCH_TAGS_API
     if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == &#34;post&#34;:
@@ -695,7 +709,7 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>api_key: Union[str, None], override: Optional[<a title="supertokens_python.recipe.dashboard.utils.InputOverrideConfig" href="#supertokens_python.recipe.dashboard.utils.InputOverrideConfig">InputOverrideConfig</a>] = None) ‑> <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>api_key: Union[str, None], admins: Optional[List[str]], override: Optional[<a title="supertokens_python.recipe.dashboard.utils.InputOverrideConfig" href="#supertokens_python.recipe.dashboard.utils.InputOverrideConfig">InputOverrideConfig</a>] = None) ‑> <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -706,14 +720,23 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <pre><code class="python">def validate_and_normalise_user_input(
     # app_info: AppInfo,
     api_key: Union[str, None],
+    admins: Optional[List[str]],
     override: Optional[InputOverrideConfig] = None,
 ) -&gt; DashboardConfig:
 
     if override is None:
         override = InputOverrideConfig()
 
+    if api_key is not None and admins is not None:
+        log_debug_message(
+            &#34;User Dashboard: Providing &#39;admins&#39; has no effect when using an api key.&#34;
+        )
+
+    admins = [normalise_email(a) for a in admins] if admins is not None else None
+
     return DashboardConfig(
         api_key,
+        admins,
         OverrideConfig(
             functions=override.functions,
             apis=override.apis,
@@ -723,7 +746,7 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_api_key"><code class="name flex">
-<span>def <span class="ident">validate_api_key</span></span>(<span>req: BaseRequest, config: <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a>, _user_context: Dict[str, Any]) ‑> bool</span>
+<span>async def <span class="ident">validate_api_key</span></span>(<span>req: BaseRequest, config: <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a>, _user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -731,7 +754,7 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_api_key(
+<pre><code class="python">async def validate_api_key(
     req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
 ) -&gt; bool:
     api_key_header_value = req.get_header(&#34;authorization&#34;)
@@ -749,7 +772,7 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <dl>
 <dt id="supertokens_python.recipe.dashboard.utils.DashboardConfig"><code class="flex name class">
 <span>class <span class="ident">DashboardConfig</span></span>
-<span>(</span><span>api_key: Union[str, None], override: <a title="supertokens_python.recipe.dashboard.utils.OverrideConfig" href="#supertokens_python.recipe.dashboard.utils.OverrideConfig">OverrideConfig</a>, auth_mode: str)</span>
+<span>(</span><span>api_key: Optional[str], admins: Optional[List[str]], override: <a title="supertokens_python.recipe.dashboard.utils.OverrideConfig" href="#supertokens_python.recipe.dashboard.utils.OverrideConfig">OverrideConfig</a>, auth_mode: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -759,9 +782,14 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </summary>
 <pre><code class="python">class DashboardConfig:
     def __init__(
-        self, api_key: Union[str, None], override: OverrideConfig, auth_mode: str
+        self,
+        api_key: Optional[str],
+        admins: Optional[List[str]],
+        override: OverrideConfig,
+        auth_mode: str,
     ):
         self.api_key = api_key
+        self.admins = admins
         self.override = override
         self.auth_mode = auth_mode</code></pre>
 </details>

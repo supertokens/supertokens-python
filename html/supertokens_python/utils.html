@@ -387,7 +387,11 @@ class RWLockContext:
             self.mutex.unlock()
 
         if exc_type is not None:
-            raise exc_type(exc_value).with_traceback(traceback)</code></pre>
+            raise exc_type(exc_value).with_traceback(traceback)
+
+
+def normalise_email(email: str) -&gt; str:
+    return email.strip().lower()</code></pre>
 </details>
 </section>
 <section>
@@ -700,6 +704,19 @@ class RWLockContext:
 </summary>
 <pre><code class="python">def is_version_gte(version: str, minimum_version: str) -&gt; bool:
     return _get_max_version(version, minimum_version) == version</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.normalise_email"><code class="name flex">
+<span>def <span class="ident">normalise_email</span></span>(<span>email: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_email(email: str) -&gt; str:
+    return email.strip().lower()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.normalise_http_method"><code class="name flex">
@@ -1036,6 +1053,7 @@ class RWLockContext:
 <li><code><a title="supertokens_python.utils.is_5xx_error" href="#supertokens_python.utils.is_5xx_error">is_5xx_error</a></code></li>
 <li><code><a title="supertokens_python.utils.is_an_ip_address" href="#supertokens_python.utils.is_an_ip_address">is_an_ip_address</a></code></li>
 <li><code><a title="supertokens_python.utils.is_version_gte" href="#supertokens_python.utils.is_version_gte">is_version_gte</a></code></li>
+<li><code><a title="supertokens_python.utils.normalise_email" href="#supertokens_python.utils.normalise_email">normalise_email</a></code></li>
 <li><code><a title="supertokens_python.utils.normalise_http_method" href="#supertokens_python.utils.normalise_http_method">normalise_http_method</a></code></li>
 <li><code><a title="supertokens_python.utils.resolve" href="#supertokens_python.utils.resolve">resolve</a></code></li>
 <li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>

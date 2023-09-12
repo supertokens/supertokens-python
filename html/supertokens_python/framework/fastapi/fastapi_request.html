@@ -56,6 +56,9 @@ class FastApiRequest(BaseRequest):
         super().__init__()
         self.request = request
 
+    def get_original_url(self) -&gt; str:
+        return self.request.url.components.geturl()
+
     def get_query_param(
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
@@ -125,6 +128,9 @@ inheritance.</p></div>
     def __init__(self, request: Request):
         super().__init__()
         self.request = request
+
+    def get_original_url(self) -&gt; str:
+        return self.request.url.components.geturl()
 
     def get_query_param(
         self, key: str, default: Union[str, None] = None
@@ -216,6 +222,19 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def get_header(self, key: str) -&gt; Union[str, None]:
     return self.request.headers.get(key, None)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_original_url"><code class="name flex">
+<span>def <span class="ident">get_original_url</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_original_url(self) -&gt; str:
+    return self.request.url.components.geturl()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_path"><code class="name flex">
@@ -350,6 +369,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_original_url" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_original_url">get_original_url</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_path" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param">get_query_param</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_params" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_params">get_query_params</a></code></li>

@@ -158,9 +158,20 @@ __all__ = [
     ],
     user_context: Dict[str, Any],
 ) -&gt; Optional[BaseResponse]:
-    should_allow_access = await api_options.recipe_implementation.should_allow_access(
-        api_options.request, api_options.config, user_context
-    )
+    should_allow_access = False
+
+    try:
+        should_allow_access = (
+            await api_options.recipe_implementation.should_allow_access(
+                api_options.request, api_options.config, user_context
+            )
+        )
+    except DashboardOperationNotAllowedError as _:
+        return send_non_200_response_with_message(
+            &#34;You are not permitted to perform this operation&#34;,
+            403,
+            api_options.response,
+        )
 
     if should_allow_access is False:
         return send_non_200_response_with_message(
@@ -1113,7 +1124,7 @@ __all__ = [
     user_context: Dict[str, Any],
 ):
 
-    is_valid_key = validate_api_key(
+    is_valid_key = await validate_api_key(
         api_options.request, api_options.config, user_context
     )
 

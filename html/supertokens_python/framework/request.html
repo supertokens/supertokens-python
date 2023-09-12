@@ -54,6 +54,10 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
+    def get_original_url(self) -&gt; str:
+        pass
+
+    @abstractmethod
     def get_query_param(
         self, key: str, default: Union[str, None] = None
     ) -&gt; Union[str, None]:
@@ -126,6 +130,10 @@ inheritance.</p></div>
     def __init__(self):
         self.wrapper_used = True
         self.request = None
+
+    @abstractmethod
+    def get_original_url(self) -&gt; str:
+        pass
 
     @abstractmethod
     def get_query_param(
@@ -227,6 +235,20 @@ def get_cookie(self, key: str) -&gt; Union[str, None]:
 </summary>
 <pre><code class="python">@abstractmethod
 def get_header(self, key: str) -&gt; Union[None, str]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.request.BaseRequest.get_original_url"><code class="name flex">
+<span>def <span class="ident">get_original_url</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def get_original_url(self) -&gt; str:
     pass</code></pre>
 </details>
 </dd>
@@ -372,6 +394,7 @@ def set_session_as_none(self):
 <li><code><a title="supertokens_python.framework.request.BaseRequest.form_data" href="#supertokens_python.framework.request.BaseRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_cookie" href="#supertokens_python.framework.request.BaseRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_header" href="#supertokens_python.framework.request.BaseRequest.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.request.BaseRequest.get_original_url" href="#supertokens_python.framework.request.BaseRequest.get_original_url">get_original_url</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_path" href="#supertokens_python.framework.request.BaseRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_query_param" href="#supertokens_python.framework.request.BaseRequest.get_query_param">get_query_param</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_query_params" href="#supertokens_python.framework.request.BaseRequest.get_query_params">get_query_params</a></code></li>
