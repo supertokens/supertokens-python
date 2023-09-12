@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from supertokens_python import AppInfo
 
 from .interfaces import SessionContainer
+from .constants import protected_props
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
@@ -378,8 +379,13 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         if session_info is None:
             return False
 
+        new_access_token_payload = session_info.custom_claims_in_access_token_payload
+        for k in protected_props:
+            if k in new_access_token_payload:
+                del new_access_token_payload[k]
+
         new_access_token_payload = {
-            **session_info.custom_claims_in_access_token_payload,
+            **new_access_token_payload,
             **access_token_payload_update,
         }
         for k in access_token_payload_update.keys():
