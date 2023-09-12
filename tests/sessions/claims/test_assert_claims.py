@@ -16,7 +16,9 @@ from supertokens_python.recipe.session.interfaces import (
 )
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python import init
-from tests.utils import setup_function, teardown_function, start_st, st_init_common_args
+from tests.utils import get_st_init_args, setup_function, teardown_function, start_st, st_init_common_args
+from supertokens_python.recipe.session.asyncio import create_new_session_without_request_response
+from .utils import TrueClaim
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -125,3 +127,12 @@ async def test_should_call_validate_with_the_same_payload_object():
 
         assert dummy_claim_validator.validate_calls == {json.dumps(payload): 1}
         mock.assert_not_called()
+
+
+async def test_assert_claims_should_work():
+    init(**get_st_init_args([session.init()]))
+    start_st()
+
+    validator = TrueClaim.validators.is_true(1)
+    s = await create_new_session_without_request_response("public", "userid", {})
+    await s.assert_claims([validator])
