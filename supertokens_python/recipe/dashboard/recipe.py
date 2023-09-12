@@ -213,6 +213,12 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USER_SESSION_API)),
+                "post",
+                USER_SESSION_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base(USER_PASSWORD_API)),
                 "put",
                 USER_PASSWORD_API,
