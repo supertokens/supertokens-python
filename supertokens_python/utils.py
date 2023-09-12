@@ -360,3 +360,7 @@ class RWLockContext:
 
         if exc_type is not None:
             raise exc_type(exc_value).with_traceback(traceback)
+
+
+def normalise_email(email: str) -> str:
+    return email.strip().lower()

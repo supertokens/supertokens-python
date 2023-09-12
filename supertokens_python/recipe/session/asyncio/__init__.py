@@ -41,6 +41,7 @@ from ..session_request_functions import (
     get_session_from_request,
     refresh_session_in_request,
 )
+from ..constants import protected_props
 from ..utils import get_required_claim_validators
 
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
@@ -105,6 +106,10 @@ async def create_new_session_without_request_response(
     )
 
     final_access_token_payload = {**access_token_payload, "iss": issuer}
+
+    for prop in protected_props:
+        if prop in final_access_token_payload:
+            del final_access_token_payload[prop]
 
     for claim in claims_added_by_other_recipes:
         update = await claim.build(user_id, tenant_id, user_context)

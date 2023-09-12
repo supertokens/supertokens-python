@@ -29,6 +29,8 @@ from supertokens_python.utils import (
     send_non_200_response_with_message,
 )
 
+from ..exceptions import DashboardOperationNotAllowedError
+
 
 async def api_key_protector(
     api_implementation: APIInterface,
@@ -39,9 +41,20 @@ async def api_key_protector(
     ],
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
-    should_allow_access = await api_options.recipe_implementation.should_allow_access(
-        api_options.request, api_options.config, user_context
-    )
+    should_allow_access = False
+
+    try:
+        should_allow_access = (
+            await api_options.recipe_implementation.should_allow_access(
+                api_options.request, api_options.config, user_context
+            )
+        )
+    except DashboardOperationNotAllowedError as _:
+        return send_non_200_response_with_message(
+            "You are not permitted to perform this operation",
+            403,
+            api_options.response,
+        )
 
     if should_allow_access is False:
         return send_non_200_response_with_message(

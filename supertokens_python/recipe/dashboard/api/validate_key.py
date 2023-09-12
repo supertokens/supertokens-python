@@ -35,7 +35,7 @@ async def handle_validate_key_api(
     user_context: Dict[str, Any],
 ):
 
-    is_valid_key = validate_api_key(
+    is_valid_key = await validate_api_key(
         api_options.request, api_options.config, user_context
     )
 

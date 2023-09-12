@@ -43,14 +43,14 @@ from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     get_user_by_id as tppless_get_user_by_id,
 )
 from supertokens_python.types import User
-from supertokens_python.utils import Awaitable
+from supertokens_python.utils import Awaitable, log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
-    EMAIL_PASSSWORD_SIGNOUT,
-    EMAIL_PASSWORD_SIGN_IN,
+    SIGN_OUT_API,
+    SIGN_IN_API,
     SEARCH_TAGS_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
@@ -181,9 +181,14 @@ class OverrideConfig:
 
 class DashboardConfig:
     def __init__(
-        self, api_key: Union[str, None], override: OverrideConfig, auth_mode: str
+        self,
+        api_key: Optional[str],
+        admins: Optional[List[str]],
+        override: OverrideConfig,
+        auth_mode: str,
     ):
         self.api_key = api_key
+        self.admins = admins
         self.override = override
         self.auth_mode = auth_mode
 
@@ -191,14 +196,23 @@ class DashboardConfig:
 def validate_and_normalise_user_input(
     # app_info: AppInfo,
     api_key: Union[str, None],
+    admins: Optional[List[str]],
     override: Optional[InputOverrideConfig] = None,
 ) -> DashboardConfig:
 
     if override is None:
         override = InputOverrideConfig()
 
+    if api_key is not None and admins is not None:
+        log_debug_message(
+            "User Dashboard: Providing 'admins' has no effect when using an api key."
+        )
+
+    admins = [normalise_email(a) for a in admins] if admins is not None else None
+
     return DashboardConfig(
         api_key,
+        admins,
         OverrideConfig(
             functions=override.functions,
             apis=override.apis,
@@ -245,10 +259,10 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return USER_PASSWORD_API
     if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == "post":
         return USER_EMAIL_VERIFY_TOKEN_API
-    if path_str.endswith(EMAIL_PASSWORD_SIGN_IN) and method == "post":
-        return EMAIL_PASSWORD_SIGN_IN
-    if path_str.endswith(EMAIL_PASSSWORD_SIGNOUT) and method == "post":
-        return EMAIL_PASSSWORD_SIGNOUT
+    if path_str.endswith(SIGN_IN_API) and method == "post":
+        return SIGN_IN_API
+    if path_str.endswith(SIGN_OUT_API) and method == "post":
+        return SIGN_OUT_API
     if path_str.endswith(SEARCH_TAGS_API) and method == "get":
         return SEARCH_TAGS_API
     if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == "post":
@@ -410,7 +424,7 @@ def is_recipe_initialised(recipeId: str) -> bool:
     return isRecipeInitialised
 
 
-def validate_api_key(
+async def validate_api_key(
     req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
 ) -> bool:
     api_key_header_value = req.get_header("authorization")

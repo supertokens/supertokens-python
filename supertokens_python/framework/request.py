@@ -26,6 +26,10 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
+    def get_original_url(self) -> str:
+        pass
+
+    @abstractmethod
     def get_query_param(
         self, key: str, default: Union[str, None] = None
     ) -> Union[str, None]:
