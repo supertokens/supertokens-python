@@ -162,7 +162,7 @@ async def verify_id_token_from_jwks_endpoint_and_get_payload(
     err = Exception("id token verification failed")
     for key in public_keys:
         try:
-            return decode(jwt=id_token, key=key, audience=[audience], algorithms=["RS256"])  # type: ignore
+            return decode(jwt=id_token, key=key, audience=[audience], algorithms=["RS256"], leeway=2)  # type: ignore
         except Exception as e:
             err = e
     raise err
