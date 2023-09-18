@@ -736,3 +736,67 @@ async def test_samesite_invalid_config():
             )
         else:
             assert False, "Exception not raised"
+
+
+@mark.asyncio
+async def test_cookie_samesite_with_ec2_public_url():
+    start_st()
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
+            website_domain="https://blog.supertokens.com",
+            api_base_path="/",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
+    )
+
+    # domain name isn't provided so browser decides to use the same host
+    # which will be ec2-xx-yyy-zzz-0.compute-1.amazonaws.com
+    assert SessionRecipe.get_instance().config.cookie_domain is None
+    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.cookie_secure is True
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
+            website_domain="http://ec2-aa-bbb-ccc-0.compute-1.amazonaws.com:3000",
+            api_base_path="/",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_domain is None
+    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.cookie_secure is False
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
+            website_domain="http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3000",
+            api_base_path="/",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_domain is None
+    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert SessionRecipe.get_instance().config.cookie_secure is False

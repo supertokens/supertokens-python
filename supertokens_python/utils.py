@@ -299,8 +299,13 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
 
     if hostname.startswith("localhost") or is_an_ip_address(hostname):
         return "localhost"
+
     parsed_url: Any = extract(hostname, include_psl_private_domains=True)
     if parsed_url.domain == "":  # type: ignore
+        # We need to do this because of https://github.com/supertokens/supertokens-python/issues/394
+        if hostname.endswith(".amazonaws.com") and parsed_url.suffix == hostname:
+            return hostname
+
         raise Exception(
             "Please make sure that the apiDomain and websiteDomain have correct values"
         )
