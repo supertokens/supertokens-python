@@ -39,7 +39,7 @@ from urllib.parse import urlparse
 from httpx import HTTPStatusError, Response
 from tldextract import extract  # type: ignore
 
-from supertokens_python.async_to_sync_wrapper import check_event_loop
+from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
@@ -212,8 +212,7 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if real_mode == "wsgi":
         asyncio.run(func())
     else:
-        check_event_loop()
-        loop = asyncio.get_event_loop()
+        loop = create_or_get_event_loop()
         loop.create_task(func())
 
 
