@@ -3,7 +3,11 @@ from typing import Union, List, Any, Dict
 import pytest
 import threading
 
-from supertokens_python.utils import humanize_time, is_version_gte
+from supertokens_python.utils import (
+    humanize_time,
+    is_version_gte,
+    get_top_level_domain_for_same_site_resolution,
+)
 from supertokens_python.utils import RWMutex
 
 from tests.utils import is_subset
@@ -171,3 +175,25 @@ def test_rw_mutex_writes():
     expected_balance -= 10 * 5  # 10 threads withdrawing 5 each
     actual_balance, _ = account.get_stats()
     assert actual_balance == expected_balance, "Incorrect account balance"
+
+
+@pytest.mark.parametrize(
+    "url,res",
+    [
+        ("http://localhost:3001", "localhost"),
+        (
+            "https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com",
+            "ec2-xx-yyy-zzz-0.compute-1.amazonaws.com",
+        ),
+        (
+            "https://foo.vercel.com",
+            "vercel.com",
+        ),
+        (
+            "https://blog.supertokens.com",
+            "supertokens.com",
+        ),
+    ],
+)
+def test_tld_for_same_site(url: str, res: str):
+    assert get_top_level_domain_for_same_site_resolution(url) == res
