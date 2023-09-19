@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.16.1] - 2023-09-19
+
+- Uses `nest_asyncio` patch in event loop - sync to async
+- Retry Querier request on `AsyncLibraryNotFoundError`
 
 ## [0.16.0] - 2023-09-13
 
@@ -534,6 +538,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             }
         }
         ```
+
+## [0.14.10] - 2023-09-31
+
+- Uses nest_asyncio patch in event loop - sync to async
+
+## [0.14.9] - 2023-09-28
+
+- Add logic to retry network calls if the core returns status 429
 
 ## [0.14.8] - 2023-07-07
 ## Fixes
