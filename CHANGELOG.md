@@ -537,6 +537,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             }
         }
         ```
+### SDK and core compatibility
+
+- Compatible with Core>=6.0.0 (CDI 4.0)
+- Compatible with frontend SDKs:
+    - supertokens-auth-react@0.34.0
+    - supertokens-web-js@0.7.0
+    - supertokens-website@17.0.2
+
 
 ## [0.14.8] - 2023-07-07
 ## Fixes
