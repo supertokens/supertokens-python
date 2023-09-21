@@ -85,7 +85,7 @@ class APIImplementation(APIInterface):
             user_context=user_context,
         )
 
-        if user_info.email is None and not provider.config.require_email:
+        if user_info.email is None and provider.config.require_email is False:
             if provider.config.generate_fake_email is not None:
                 user_info.email = UserInfoEmail(
                     email=await provider.config.generate_fake_email(

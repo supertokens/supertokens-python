@@ -89,7 +89,7 @@ class ProviderClientConfig:
         client_secret: Optional[str] = None,
         client_type: Optional[str] = None,
         scope: Optional[List[str]] = None,
-        force_pkce: bool = False,
+        force_pkce: Optional[bool] = None,
         additional_config: Optional[Dict[str, Any]] = None,
     ):
         self.client_id = client_id
@@ -166,7 +166,7 @@ class CommonProviderConfig:
         jwks_uri: Optional[str] = None,
         oidc_discovery_endpoint: Optional[str] = None,
         user_info_map: Optional[UserInfoMap] = None,
-        require_email: bool = True,
+        require_email: Optional[bool] = None,
         validate_id_token_payload: Optional[
             Callable[
                 [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
@@ -223,7 +223,7 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
         client_secret: Optional[str] = None,
         client_type: Optional[str] = None,
         scope: Optional[List[str]] = None,
-        force_pkce: bool = False,
+        force_pkce: Optional[bool] = None,
         additional_config: Optional[Dict[str, Any]] = None,
         # CommonProviderConfig:
         third_party_id: str = "temp",
@@ -240,7 +240,7 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
         jwks_uri: Optional[str] = None,
         oidc_discovery_endpoint: Optional[str] = None,
         user_info_map: Optional[UserInfoMap] = None,
-        require_email: bool = True,
+        require_email: Optional[bool] = None,
         validate_id_token_payload: Optional[
             Callable[
                 [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
@@ -303,7 +303,7 @@ class ProviderConfig(CommonProviderConfig):
         jwks_uri: Optional[str] = None,
         oidc_discovery_endpoint: Optional[str] = None,
         user_info_map: Optional[UserInfoMap] = None,
-        require_email: bool = True,
+        require_email: Optional[bool] = None,
         validate_id_token_payload: Optional[
             Callable[
                 [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],

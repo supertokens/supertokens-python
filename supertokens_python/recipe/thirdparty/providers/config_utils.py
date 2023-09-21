@@ -82,11 +82,7 @@ def merge_config(
             if config_from_core.oidc_discovery_endpoint is None
             else config_from_core.oidc_discovery_endpoint
         ),
-        require_email=(
-            config_from_static.require_email
-            if config_from_core.require_email is None
-            else config_from_core.require_email
-        ),
+        require_email=config_from_static.require_email,
         user_info_map=config_from_static.user_info_map,
         generate_fake_email=config_from_static.generate_fake_email,
         validate_id_token_payload=config_from_static.validate_id_token_payload,
