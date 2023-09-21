@@ -79,6 +79,22 @@ jobs:
       - run: make with-django2x
       - run: (cd .circleci/ && ./websiteDjango2x.sh)
       - slack/status
+  test-website-flask-nest-asyncio:
+    docker:
+      - image: rishabhpoddar/supertokens_python_driver_testing
+    resource_class: large
+    environment:
+      SUPERTOKENS_NEST_ASYNCIO: "1"
+    steps:
+      - checkout
+      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
+      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: make with-flask
+      - run: python -m pip install nest-asyncio
+      - run: (cd .circleci/ && ./websiteFlask.sh)
+      - slack/status
   test-authreact-fastapi:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
