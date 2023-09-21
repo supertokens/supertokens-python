@@ -19,13 +19,8 @@ from os import getenv
 _T = TypeVar("_T")
 
 
-def is_nest_asyncio_enabled():
-    try:
-        import nest_asyncio as _  # type: ignore
-
-        return getenv("SUPERTOKENS_NEST_ASYNCIO", "") == "1"
-    except Exception:
-        return False
+def nest_asyncio_enabled():
+    return getenv("SUPERTOKENS_NEST_ASYNCIO", "") == "1"
 
 
 def create_or_get_event_loop() -> asyncio.AbstractEventLoop:
@@ -35,7 +30,7 @@ def create_or_get_event_loop() -> asyncio.AbstractEventLoop:
         if "There is no current event loop in thread" in str(ex):
             loop = asyncio.new_event_loop()
 
-            if is_nest_asyncio_enabled():
+            if nest_asyncio_enabled():
                 import nest_asyncio  # type: ignore
 
                 nest_asyncio.apply(loop)  # type: ignore
