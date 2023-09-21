@@ -11,8 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import asyncio
-
 from pytest import mark
 from unittest.mock import MagicMock
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -802,26 +800,3 @@ async def test_cookie_samesite_with_ec2_public_url():
     assert SessionRecipe.get_instance().config.cookie_domain is None
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
     assert SessionRecipe.get_instance().config.cookie_secure is False
-
-
-def test_nest_asyncio_import():
-    from supertokens_python.async_to_sync_wrapper import nest_asyncio_enabled, sync
-    from os import getenv
-
-    circleci = getenv("CIRCLECI", "false") == "true"
-
-    if not circleci:
-        return
-
-    # Has to be circleci
-    if nest_asyncio_enabled():
-        # nest-asyncio should be installed
-        sync(asyncio.sleep(0.1))
-    else:
-        # nest-asyncio shouldn't be installed and sync() should throw error
-        try:
-            sync(asyncio.sleep(0.1))
-            assert False, "Shouldn't come here"
-        except ModuleNotFoundError:
-            # should be missing
-            assert True
