@@ -13,6 +13,7 @@ from .gitlab import Gitlab
 from .google_workspaces import GoogleWorkspaces
 from .google import Google
 from .linkedin import Linkedin
+from .twitter import Twitter
 from .okta import Okta
 from .custom import NewProvider
 from .utils import do_get_request
@@ -202,6 +203,8 @@ def create_provider(provider_input: ProviderInput) -> Provider:
         return Okta(provider_input)
     if provider_input.config.third_party_id.startswith("linkedin"):
         return Linkedin(provider_input)
+    if provider_input.config.third_party_id.startswith("twitter"):
+        return Twitter(provider_input)
     if provider_input.config.third_party_id.startswith("boxy-saml"):
         return BoxySAML(provider_input)
 
