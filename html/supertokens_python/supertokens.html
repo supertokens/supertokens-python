@@ -176,8 +176,8 @@ class Supertokens:
         framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
-        mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
-        telemetry: Union[bool, None],
+        mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]],
+        telemetry: Optional[bool],
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError(&#34;app_info must be an instance of InputAppInfo&#34;)
@@ -243,12 +243,17 @@ class Supertokens:
         framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
-        mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
-        telemetry: Union[bool, None],
+        mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]],
+        telemetry: Optional[bool],
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
-                app_info, framework, supertokens_config, recipe_list, mode, telemetry
+                app_info,
+                framework,
+                supertokens_config,
+                recipe_list,
+                mode,
+                telemetry,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 
@@ -785,7 +790,7 @@ class Supertokens:
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens"><code class="flex name class">
 <span>class <span class="ident">Supertokens</span></span>
-<span>(</span><span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal['fastapi', 'flask', 'django']", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal['asgi', 'wsgi'], None]", telemetry: Union[bool, None])</span>
+<span>(</span><span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal['fastapi', 'flask', 'django']", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Optional[Literal['asgi', 'wsgi']]", telemetry: Optional[bool])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -802,8 +807,8 @@ class Supertokens:
         framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
-        mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
-        telemetry: Union[bool, None],
+        mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]],
+        telemetry: Optional[bool],
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError(&#34;app_info must be an instance of InputAppInfo&#34;)
@@ -869,12 +874,17 @@ class Supertokens:
         framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
-        mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
-        telemetry: Union[bool, None],
+        mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]],
+        telemetry: Optional[bool],
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
-                app_info, framework, supertokens_config, recipe_list, mode, telemetry
+                app_info,
+                framework,
+                supertokens_config,
+                recipe_list,
+                mode,
+                telemetry,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 
@@ -1283,7 +1293,7 @@ def get_instance() -&gt; Supertokens:
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal['fastapi', 'flask', 'django']", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal['asgi', 'wsgi'], None]", telemetry: Union[bool, None])</span>
+<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal['fastapi', 'flask', 'django']", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Optional[Literal['asgi', 'wsgi']]", telemetry: Optional[bool])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1297,12 +1307,17 @@ def init(
     framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[AppInfo], RecipeModule]],
-    mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
-    telemetry: Union[bool, None],
+    mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]],
+    telemetry: Optional[bool],
 ):
     if Supertokens.__instance is None:
         Supertokens.__instance = Supertokens(
-            app_info, framework, supertokens_config, recipe_list, mode, telemetry
+            app_info,
+            framework,
+            supertokens_config,
+            recipe_list,
+            mode,
+            telemetry,
         )
         PostSTInitCallbacks.run_post_init_callbacks()</code></pre>
 </details>
