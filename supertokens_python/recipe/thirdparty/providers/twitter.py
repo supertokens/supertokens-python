@@ -87,7 +87,7 @@ def Twitter(input: ProviderInput) -> Provider:  # pylint: disable=redefined-buil
         input.config.user_info_endpoint = "https://api.twitter.com/2/users/me"
 
     if input.config.require_email is None:
-        input.config.require_email = True
+        input.config.require_email = False
 
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())

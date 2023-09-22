@@ -86,6 +86,8 @@ class APIImplementation(APIInterface):
         )
 
         if user_info.email is None and provider.config.require_email is False:
+            # We don't expect to get an email from this provider.
+            # So we generate a fake one
             if provider.config.generate_fake_email is not None:
                 user_info.email = UserInfoEmail(
                     email=await provider.config.generate_fake_email(
