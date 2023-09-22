@@ -115,7 +115,9 @@ async def test_that_default_getJWKS_works_fine(driver_config_client: TestClient)
     # Default:
     assert response.status_code == 200
     data = response.json()
+    assert data.keys() == {"keys"}
     assert len(data["keys"]) > 0
+    assert data["keys"][0].keys() == {'kty', 'kid', 'n', 'e', 'alg', 'use'}
 
     assert response.headers["cache-control"] == "max-age=60, must-revalidate"
 
