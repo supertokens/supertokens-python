@@ -287,13 +287,10 @@ class Querier:
 
             res: Dict[str, Any] = {"_headers": dict(response.headers)}
 
-            if response.headers.get("content-type", "").startswith("text"):
-                res["_text"] = response.text
-
             try:
                 res.update(response.json())
             except JSONDecodeError:
-                pass
+                res["_text"] = response.text
 
             return res
 
