@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
@@ -32,11 +32,16 @@ def init(
     framework: Literal["fastapi", "flask", "django"],
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
-    mode: Union[Literal["asgi", "wsgi"], None] = None,
-    telemetry: Union[bool, None] = None,
+    mode: Optional[Literal["asgi", "wsgi"]] = None,
+    telemetry: Optional[bool] = None,
 ):
     return Supertokens.init(
-        app_info, framework, supertokens_config, recipe_list, mode, telemetry
+        app_info,
+        framework,
+        supertokens_config,
+        recipe_list,
+        mode,
+        telemetry,
     )
 
 

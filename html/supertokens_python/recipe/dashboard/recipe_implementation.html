@@ -46,10 +46,16 @@ from typing import Any, Dict
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.utils import log_debug_message, normalise_http_method
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.dashboard.constants import (
+    DASHBOARD_ANALYTICS_API,
+    SIGN_OUT_API,
+)
 
 from .interfaces import RecipeInterface
 from .utils import DashboardConfig, validate_api_key
+from .exceptions import DashboardOperationNotAllowedError
 
 
 class RecipeImplementation(RecipeInterface):
@@ -62,9 +68,9 @@ class RecipeImplementation(RecipeInterface):
         config: DashboardConfig,
         user_context: Dict[str, Any],
     ) -&gt; bool:
-        if config.auth_mode == &#34;email-password&#34;:
+        # For cases where we&#39;re not using the API key, the JWT is being used; we allow their access by default
+        if config.api_key is None:
             auth_header_value = request.get_header(&#34;authorization&#34;)
-
             if not auth_header_value:
                 return False
 
@@ -75,11 +81,48 @@ class RecipeImplementation(RecipeInterface):
                     {&#34;sessionId&#34;: auth_header_value},
                 )
             )
-            return (
-                &#34;status&#34; in session_verification_response
-                and session_verification_response[&#34;status&#34;] == &#34;OK&#34;
-            )
-        return validate_api_key(request, config, user_context)</code></pre>
+            if session_verification_response.get(&#34;status&#34;) != &#34;OK&#34;:
+                return False
+
+            # For all non GET requests we also want to check if the
+            # user is allowed to perform this operation
+            if normalise_http_method(request.method()) != &#34;get&#34;:
+                # We dont want to block the analytics API
+                if request.get_original_url().endswith(DASHBOARD_ANALYTICS_API):
+                    return True
+
+                # We do not want to block the sign out request
+                if request.get_original_url().endswith(SIGN_OUT_API):
+                    return True
+
+                admins = config.admins
+
+                if admins is None:
+                    return True
+
+                if len(admins) == 0:
+                    log_debug_message(
+                        &#34;User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin&#34;
+                    )
+                    raise DashboardOperationNotAllowedError()
+
+                user_email = session_verification_response.get(&#34;email&#34;)
+
+                if user_email is None or not isinstance(user_email, str):
+                    log_debug_message(
+                        &#34;User Dashboard: Returning UNAUTHORISED_ERROR because no email was provided in headers&#34;
+                    )
+                    return False
+
+                if user_email not in admins:
+                    log_debug_message(
+                        &#34;User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin&#34;
+                    )
+                    raise DashboardOperationNotAllowedError()
+
+            return True
+
+        return await validate_api_key(request, config, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -111,9 +154,9 @@ inheritance.</p></div>
         config: DashboardConfig,
         user_context: Dict[str, Any],
     ) -&gt; bool:
-        if config.auth_mode == &#34;email-password&#34;:
+        # For cases where we&#39;re not using the API key, the JWT is being used; we allow their access by default
+        if config.api_key is None:
             auth_header_value = request.get_header(&#34;authorization&#34;)
-
             if not auth_header_value:
                 return False
 
@@ -124,11 +167,48 @@ inheritance.</p></div>
                     {&#34;sessionId&#34;: auth_header_value},
                 )
             )
-            return (
-                &#34;status&#34; in session_verification_response
-                and session_verification_response[&#34;status&#34;] == &#34;OK&#34;
-            )
-        return validate_api_key(request, config, user_context)</code></pre>
+            if session_verification_response.get(&#34;status&#34;) != &#34;OK&#34;:
+                return False
+
+            # For all non GET requests we also want to check if the
+            # user is allowed to perform this operation
+            if normalise_http_method(request.method()) != &#34;get&#34;:
+                # We dont want to block the analytics API
+                if request.get_original_url().endswith(DASHBOARD_ANALYTICS_API):
+                    return True
+
+                # We do not want to block the sign out request
+                if request.get_original_url().endswith(SIGN_OUT_API):
+                    return True
+
+                admins = config.admins
+
+                if admins is None:
+                    return True
+
+                if len(admins) == 0:
+                    log_debug_message(
+                        &#34;User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin&#34;
+                    )
+                    raise DashboardOperationNotAllowedError()
+
+                user_email = session_verification_response.get(&#34;email&#34;)
+
+                if user_email is None or not isinstance(user_email, str):
+                    log_debug_message(
+                        &#34;User Dashboard: Returning UNAUTHORISED_ERROR because no email was provided in headers&#34;
+                    )
+                    return False
+
+                if user_email not in admins:
+                    log_debug_message(
+                        &#34;User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin&#34;
+                    )
+                    raise DashboardOperationNotAllowedError()
+
+            return True
+
+        return await validate_api_key(request, config, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -165,9 +245,9 @@ inheritance.</p></div>
     config: DashboardConfig,
     user_context: Dict[str, Any],
 ) -&gt; bool:
-    if config.auth_mode == &#34;email-password&#34;:
+    # For cases where we&#39;re not using the API key, the JWT is being used; we allow their access by default
+    if config.api_key is None:
         auth_header_value = request.get_header(&#34;authorization&#34;)
-
         if not auth_header_value:
             return False
 
@@ -178,11 +258,48 @@ inheritance.</p></div>
                 {&#34;sessionId&#34;: auth_header_value},
             )
         )
-        return (
-            &#34;status&#34; in session_verification_response
-            and session_verification_response[&#34;status&#34;] == &#34;OK&#34;
-        )
-    return validate_api_key(request, config, user_context)</code></pre>
+        if session_verification_response.get(&#34;status&#34;) != &#34;OK&#34;:
+            return False
+
+        # For all non GET requests we also want to check if the
+        # user is allowed to perform this operation
+        if normalise_http_method(request.method()) != &#34;get&#34;:
+            # We dont want to block the analytics API
+            if request.get_original_url().endswith(DASHBOARD_ANALYTICS_API):
+                return True
+
+            # We do not want to block the sign out request
+            if request.get_original_url().endswith(SIGN_OUT_API):
+                return True
+
+            admins = config.admins
+
+            if admins is None:
+                return True
+
+            if len(admins) == 0:
+                log_debug_message(
+                    &#34;User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin&#34;
+                )
+                raise DashboardOperationNotAllowedError()
+
+            user_email = session_verification_response.get(&#34;email&#34;)
+
+            if user_email is None or not isinstance(user_email, str):
+                log_debug_message(
+                    &#34;User Dashboard: Returning UNAUTHORISED_ERROR because no email was provided in headers&#34;
+                )
+                return False
+
+            if user_email not in admins:
+                log_debug_message(
+                    &#34;User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin&#34;
+                )
+                raise DashboardOperationNotAllowedError()
+
+        return True
+
+    return await validate_api_key(request, config, user_context)</code></pre>
 </details>
 </dd>
 </dl>

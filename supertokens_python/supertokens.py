@@ -148,8 +148,8 @@ class Supertokens:
         framework: Literal["fastapi", "flask", "django"],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
-        mode: Union[Literal["asgi", "wsgi"], None],
-        telemetry: Union[bool, None],
+        mode: Optional[Literal["asgi", "wsgi"]],
+        telemetry: Optional[bool],
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
@@ -215,12 +215,17 @@ class Supertokens:
         framework: Literal["fastapi", "flask", "django"],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
-        mode: Union[Literal["asgi", "wsgi"], None],
-        telemetry: Union[bool, None],
+        mode: Optional[Literal["asgi", "wsgi"]],
+        telemetry: Optional[bool],
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
-                app_info, framework, supertokens_config, recipe_list, mode, telemetry
+                app_info,
+                framework,
+                supertokens_config,
+                recipe_list,
+                mode,
+                telemetry,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 

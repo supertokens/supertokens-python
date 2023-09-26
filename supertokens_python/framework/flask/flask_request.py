@@ -27,6 +27,9 @@ class FlaskRequest(BaseRequest):
         super().__init__()
         self.request = req
 
+    def get_original_url(self) -> str:
+        return self.request.url
+
     def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
 

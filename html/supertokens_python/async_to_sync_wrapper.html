@@ -42,22 +42,34 @@
 
 import asyncio
 from typing import Any, Coroutine, TypeVar
+from os import getenv
 
 _T = TypeVar(&#34;_T&#34;)
 
 
-def check_event_loop():
+def nest_asyncio_enabled():
+    return getenv(&#34;SUPERTOKENS_NEST_ASYNCIO&#34;, &#34;&#34;) == &#34;1&#34;
+
+
+def create_or_get_event_loop() -&gt; asyncio.AbstractEventLoop:
     try:
-        asyncio.get_event_loop()
-    except RuntimeError as ex:
+        return asyncio.get_event_loop()
+    except Exception as ex:
         if &#34;There is no current event loop in thread&#34; in str(ex):
             loop = asyncio.new_event_loop()
+
+            if nest_asyncio_enabled():
+                import nest_asyncio  # type: ignore
+
+                nest_asyncio.apply(loop)  # type: ignore
+
             asyncio.set_event_loop(loop)
+            return loop
+        raise ex
 
 
 def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
-    check_event_loop()
-    loop = asyncio.get_event_loop()
+    loop = create_or_get_event_loop()
     return loop.run_until_complete(co)</code></pre>
 </details>
 </section>
@@ -68,8 +80,8 @@ def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.async_to_sync_wrapper.check_event_loop"><code class="name flex">
-<span>def <span class="ident">check_event_loop</span></span>(<span>)</span>
+<dt id="supertokens_python.async_to_sync_wrapper.create_or_get_event_loop"><code class="name flex">
+<span>def <span class="ident">create_or_get_event_loop</span></span>(<span>) ‑> asyncio.events.AbstractEventLoop</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -77,13 +89,34 @@ def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def check_event_loop():
+<pre><code class="python">def create_or_get_event_loop() -&gt; asyncio.AbstractEventLoop:
     try:
-        asyncio.get_event_loop()
-    except RuntimeError as ex:
+        return asyncio.get_event_loop()
+    except Exception as ex:
         if &#34;There is no current event loop in thread&#34; in str(ex):
             loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)</code></pre>
+
+            if nest_asyncio_enabled():
+                import nest_asyncio  # type: ignore
+
+                nest_asyncio.apply(loop)  # type: ignore
+
+            asyncio.set_event_loop(loop)
+            return loop
+        raise ex</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.async_to_sync_wrapper.nest_asyncio_enabled"><code class="name flex">
+<span>def <span class="ident">nest_asyncio_enabled</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nest_asyncio_enabled():
+    return getenv(&#34;SUPERTOKENS_NEST_ASYNCIO&#34;, &#34;&#34;) == &#34;1&#34;</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.async_to_sync_wrapper.sync"><code class="name flex">
@@ -96,8 +129,7 @@ def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
-    check_event_loop()
-    loop = asyncio.get_event_loop()
+    loop = create_or_get_event_loop()
     return loop.run_until_complete(co)</code></pre>
 </details>
 </dd>
@@ -119,7 +151,8 @@ def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.async_to_sync_wrapper.check_event_loop" href="#supertokens_python.async_to_sync_wrapper.check_event_loop">check_event_loop</a></code></li>
+<li><code><a title="supertokens_python.async_to_sync_wrapper.create_or_get_event_loop" href="#supertokens_python.async_to_sync_wrapper.create_or_get_event_loop">create_or_get_event_loop</a></code></li>
+<li><code><a title="supertokens_python.async_to_sync_wrapper.nest_asyncio_enabled" href="#supertokens_python.async_to_sync_wrapper.nest_asyncio_enabled">nest_asyncio_enabled</a></code></li>
 <li><code><a title="supertokens_python.async_to_sync_wrapper.sync" href="#supertokens_python.async_to_sync_wrapper.sync">sync</a></code></li>
 </ul>
 </li>

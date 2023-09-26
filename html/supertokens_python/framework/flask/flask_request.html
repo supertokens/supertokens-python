@@ -55,6 +55,9 @@ class FlaskRequest(BaseRequest):
         super().__init__()
         self.request = req
 
+    def get_original_url(self) -&gt; str:
+        return self.request.url
+
     def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
 
@@ -132,6 +135,9 @@ inheritance.</p></div>
     def __init__(self, req: Request):
         super().__init__()
         self.request = req
+
+    def get_original_url(self) -&gt; str:
+        return self.request.url
 
     def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
@@ -231,6 +237,19 @@ inheritance.</p></div>
     if isinstance(self.request, dict):
         return self.request.get(key, None)  # type: ignore
     return self.request.headers.get(key)  # type: ignore</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.get_original_url"><code class="name flex">
+<span>def <span class="ident">get_original_url</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_original_url(self) -&gt; str:
+    return self.request.url</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.get_path"><code class="name flex">
@@ -371,6 +390,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.form_data" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_header" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_original_url" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_original_url">get_original_url</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_path" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_path">get_path</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_param" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_param">get_query_param</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_params" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_query_params">get_query_params</a></code></li>

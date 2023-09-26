@@ -41,9 +41,11 @@
 # under the License.
 from __future__ import annotations
 
+import asyncio
+
 from json import JSONDecodeError
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
@@ -53,6 +55,7 @@ from .constants import (
     API_VERSION_HEADER,
     RID_KEY_HEADER,
     SUPPORTED_CDI_VERSIONS,
+    RATE_LIMIT_STATUS_CODE,
 )
 from .normalised_url_path import NormalisedURLPath
 
@@ -64,6 +67,8 @@ from typing import List, Set, Union
 from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
+from sniffio import AsyncLibraryNotFoundError
+from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
 
 
 class Querier:
@@ -96,6 +101,35 @@ class Querier:
             raise_general_exception(&#34;calling testing function in non testing env&#34;)
         return Querier.__hosts_alive_for_testing
 
+    async def api_request(
+        self,
+        url: str,
+        method: str,
+        attempts_remaining: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -&gt; Response:
+        if attempts_remaining == 0:
+            raise_general_exception(&#34;Retry request failed&#34;)
+
+        try:
+            async with AsyncClient() as client:
+                if method == &#34;GET&#34;:
+                    return await client.get(url, *args, **kwargs)  # type: ignore
+                if method == &#34;POST&#34;:
+                    return await client.post(url, *args, **kwargs)  # type: ignore
+                if method == &#34;PUT&#34;:
+                    return await client.put(url, *args, **kwargs)  # type: ignore
+                if method == &#34;DELETE&#34;:
+                    return await client.delete(url, *args, **kwargs)  # type: ignore
+                raise Exception(&#34;Shouldn&#39;t come here&#34;)
+        except AsyncLibraryNotFoundError:
+            # Retry
+            loop = create_or_get_event_loop()
+            return loop.run_until_complete(
+                self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
+            )
+
     async def get_api_version(self):
         if Querier.api_version is not None:
             return Querier.api_version
@@ -104,12 +138,11 @@ class Querier:
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
         )
 
-        async def f(url: str) -&gt; Response:
+        async def f(url: str, method: str) -&gt; Response:
             headers = {}
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
-            async with AsyncClient() as client:
-                return await client.get(url, headers=headers)  # type:ignore
+            return await self.api_request(url, method, 2, headers=headers)
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), &#34;GET&#34;, f, len(self.__hosts)
@@ -159,13 +192,14 @@ class Querier:
         if params is None:
             params = {}
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.get(  # type:ignore
-                    url,
-                    params=params,
-                    headers=await self.__get_headers_with_api_version(path),
-                )
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                params=params,
+            )
 
         return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))
 
@@ -188,9 +222,14 @@ class Querier:
         headers = await self.__get_headers_with_api_version(path)
         headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.post(url, json=data, headers=headers)  # type: ignore
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                json=data,
+            )
 
         return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))
 
@@ -200,13 +239,14 @@ class Querier:
         if params is None:
             params = {}
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.delete(  # type:ignore
-                    url,
-                    params=params,
-                    headers=await self.__get_headers_with_api_version(path),
-                )
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                params=params,
+            )
 
         return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))
 
@@ -219,9 +259,8 @@ class Querier:
         headers = await self.__get_headers_with_api_version(path)
         headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.put(url, json=data, headers=headers)  # type: ignore
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(url, method, 2, headers=headers, json=data)
 
         return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))
 
@@ -248,8 +287,9 @@ class Querier:
         self,
         path: NormalisedURLPath,
         method: str,
-        http_function: Callable[[str], Awaitable[Response]],
+        http_function: Callable[[str, str], Awaitable[Response]],
         no_of_tries: int,
+        retry_info_map: Optional[Dict[str, int]] = None,
     ) -&gt; Any:
         if no_of_tries == 0:
             raise_general_exception(&#34;No SuperTokens core available to query&#34;)
@@ -266,14 +306,36 @@ class Querier:
             Querier.__last_tried_index %= len(self.__hosts)
             url = current_host + path.get_as_string_dangerous()
 
+            max_retries = 5
+
+            if retry_info_map is None:
+                retry_info_map = {}
+
+            if retry_info_map.get(url) is None:
+                retry_info_map[url] = max_retries
+
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER
             )
-            response = await http_function(url)
+            response = await http_function(url, method)
             if (&#34;SUPERTOKENS_ENV&#34; in environ) and (
                 environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
             ):
                 Querier.__hosts_alive_for_testing.add(current_host)
+
+            if response.status_code == RATE_LIMIT_STATUS_CODE:
+                retries_left = retry_info_map[url]
+
+                if retries_left &gt; 0:
+                    retry_info_map[url] = retries_left - 1
+
+                    attempts_made = max_retries - retries_left
+                    delay = (10 + attempts_made * 250) / 1000
+
+                    await asyncio.sleep(delay)
+                    return await self.__send_request_helper(
+                        path, method, http_function, no_of_tries, retry_info_map
+                    )
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
                 raise_general_exception(
@@ -292,9 +354,9 @@ class Querier:
             except JSONDecodeError:
                 return response.text
 
-        except (ConnectionError, NetworkError, ConnectTimeout):
+        except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
-                path, method, http_function, no_of_tries - 1
+                path, method, http_function, no_of_tries - 1, retry_info_map
             )
         except Exception as e:
             raise_general_exception(e)</code></pre>
@@ -349,6 +411,35 @@ class Querier:
             raise_general_exception(&#34;calling testing function in non testing env&#34;)
         return Querier.__hosts_alive_for_testing
 
+    async def api_request(
+        self,
+        url: str,
+        method: str,
+        attempts_remaining: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -&gt; Response:
+        if attempts_remaining == 0:
+            raise_general_exception(&#34;Retry request failed&#34;)
+
+        try:
+            async with AsyncClient() as client:
+                if method == &#34;GET&#34;:
+                    return await client.get(url, *args, **kwargs)  # type: ignore
+                if method == &#34;POST&#34;:
+                    return await client.post(url, *args, **kwargs)  # type: ignore
+                if method == &#34;PUT&#34;:
+                    return await client.put(url, *args, **kwargs)  # type: ignore
+                if method == &#34;DELETE&#34;:
+                    return await client.delete(url, *args, **kwargs)  # type: ignore
+                raise Exception(&#34;Shouldn&#39;t come here&#34;)
+        except AsyncLibraryNotFoundError:
+            # Retry
+            loop = create_or_get_event_loop()
+            return loop.run_until_complete(
+                self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
+            )
+
     async def get_api_version(self):
         if Querier.api_version is not None:
             return Querier.api_version
@@ -357,12 +448,11 @@ class Querier:
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
         )
 
-        async def f(url: str) -&gt; Response:
+        async def f(url: str, method: str) -&gt; Response:
             headers = {}
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
-            async with AsyncClient() as client:
-                return await client.get(url, headers=headers)  # type:ignore
+            return await self.api_request(url, method, 2, headers=headers)
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), &#34;GET&#34;, f, len(self.__hosts)
@@ -412,13 +502,14 @@ class Querier:
         if params is None:
             params = {}
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.get(  # type:ignore
-                    url,
-                    params=params,
-                    headers=await self.__get_headers_with_api_version(path),
-                )
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                params=params,
+            )
 
         return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))
 
@@ -441,9 +532,14 @@ class Querier:
         headers = await self.__get_headers_with_api_version(path)
         headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.post(url, json=data, headers=headers)  # type: ignore
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                json=data,
+            )
 
         return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))
 
@@ -453,13 +549,14 @@ class Querier:
         if params is None:
             params = {}
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.delete(  # type:ignore
-                    url,
-                    params=params,
-                    headers=await self.__get_headers_with_api_version(path),
-                )
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                params=params,
+            )
 
         return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))
 
@@ -472,9 +569,8 @@ class Querier:
         headers = await self.__get_headers_with_api_version(path)
         headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
 
-        async def f(url: str) -&gt; Response:
-            async with AsyncClient() as client:
-                return await client.put(url, json=data, headers=headers)  # type: ignore
+        async def f(url: str, method: str) -&gt; Response:
+            return await self.api_request(url, method, 2, headers=headers, json=data)
 
         return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))
 
@@ -501,8 +597,9 @@ class Querier:
         self,
         path: NormalisedURLPath,
         method: str,
-        http_function: Callable[[str], Awaitable[Response]],
+        http_function: Callable[[str, str], Awaitable[Response]],
         no_of_tries: int,
+        retry_info_map: Optional[Dict[str, int]] = None,
     ) -&gt; Any:
         if no_of_tries == 0:
             raise_general_exception(&#34;No SuperTokens core available to query&#34;)
@@ -519,14 +616,36 @@ class Querier:
             Querier.__last_tried_index %= len(self.__hosts)
             url = current_host + path.get_as_string_dangerous()
 
+            max_retries = 5
+
+            if retry_info_map is None:
+                retry_info_map = {}
+
+            if retry_info_map.get(url) is None:
+                retry_info_map[url] = max_retries
+
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER
             )
-            response = await http_function(url)
+            response = await http_function(url, method)
             if (&#34;SUPERTOKENS_ENV&#34; in environ) and (
                 environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
             ):
                 Querier.__hosts_alive_for_testing.add(current_host)
+
+            if response.status_code == RATE_LIMIT_STATUS_CODE:
+                retries_left = retry_info_map[url]
+
+                if retries_left &gt; 0:
+                    retry_info_map[url] = retries_left - 1
+
+                    attempts_made = max_retries - retries_left
+                    delay = (10 + attempts_made * 250) / 1000
+
+                    await asyncio.sleep(delay)
+                    return await self.__send_request_helper(
+                        path, method, http_function, no_of_tries, retry_info_map
+                    )
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
                 raise_general_exception(
@@ -545,9 +664,9 @@ class Querier:
             except JSONDecodeError:
                 return response.text
 
-        except (ConnectionError, NetworkError, ConnectTimeout):
+        except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
-                path, method, http_function, no_of_tries - 1
+                path, method, http_function, no_of_tries - 1, retry_info_map
             )
         except Exception as e:
             raise_general_exception(e)</code></pre>
@@ -638,6 +757,45 @@ def reset():
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.querier.Querier.api_request"><code class="name flex">
+<span>async def <span class="ident">api_request</span></span>(<span>self, url: str, method: str, attempts_remaining: int, *args: Any, **kwargs: Any) ‑> httpx.Response</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def api_request(
+    self,
+    url: str,
+    method: str,
+    attempts_remaining: int,
+    *args: Any,
+    **kwargs: Any,
+) -&gt; Response:
+    if attempts_remaining == 0:
+        raise_general_exception(&#34;Retry request failed&#34;)
+
+    try:
+        async with AsyncClient() as client:
+            if method == &#34;GET&#34;:
+                return await client.get(url, *args, **kwargs)  # type: ignore
+            if method == &#34;POST&#34;:
+                return await client.post(url, *args, **kwargs)  # type: ignore
+            if method == &#34;PUT&#34;:
+                return await client.put(url, *args, **kwargs)  # type: ignore
+            if method == &#34;DELETE&#34;:
+                return await client.delete(url, *args, **kwargs)  # type: ignore
+            raise Exception(&#34;Shouldn&#39;t come here&#34;)
+    except AsyncLibraryNotFoundError:
+        # Retry
+        loop = create_or_get_event_loop()
+        return loop.run_until_complete(
+            self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
+        )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.querier.Querier.get_all_core_urls_for_path"><code class="name flex">
 <span>def <span class="ident">get_all_core_urls_for_path</span></span>(<span>self, path: str) ‑> List[str]</span>
 </code></dt>
@@ -684,12 +842,11 @@ def reset():
         AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
     )
 
-    async def f(url: str) -&gt; Response:
+    async def f(url: str, method: str) -&gt; Response:
         headers = {}
         if Querier.__api_key is not None:
             headers = {API_KEY_HEADER: Querier.__api_key}
-        async with AsyncClient() as client:
-            return await client.get(url, headers=headers)  # type:ignore
+        return await self.api_request(url, method, 2, headers=headers)
 
     response = await self.__send_request_helper(
         NormalisedURLPath(API_VERSION), &#34;GET&#34;, f, len(self.__hosts)
@@ -723,13 +880,14 @@ def reset():
     if params is None:
         params = {}
 
-    async def f(url: str) -&gt; Response:
-        async with AsyncClient() as client:
-            return await client.delete(  # type:ignore
-                url,
-                params=params,
-                headers=await self.__get_headers_with_api_version(path),
-            )
+    async def f(url: str, method: str) -&gt; Response:
+        return await self.api_request(
+            url,
+            method,
+            2,
+            headers=await self.__get_headers_with_api_version(path),
+            params=params,
+        )
 
     return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))</code></pre>
 </details>
@@ -749,13 +907,14 @@ def reset():
     if params is None:
         params = {}
 
-    async def f(url: str) -&gt; Response:
-        async with AsyncClient() as client:
-            return await client.get(  # type:ignore
-                url,
-                params=params,
-                headers=await self.__get_headers_with_api_version(path),
-            )
+    async def f(url: str, method: str) -&gt; Response:
+        return await self.api_request(
+            url,
+            method,
+            2,
+            headers=await self.__get_headers_with_api_version(path),
+            params=params,
+        )
 
     return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))</code></pre>
 </details>
@@ -788,9 +947,14 @@ def reset():
     headers = await self.__get_headers_with_api_version(path)
     headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
 
-    async def f(url: str) -&gt; Response:
-        async with AsyncClient() as client:
-            return await client.post(url, json=data, headers=headers)  # type: ignore
+    async def f(url: str, method: str) -&gt; Response:
+        return await self.api_request(
+            url,
+            method,
+            2,
+            headers=await self.__get_headers_with_api_version(path),
+            json=data,
+        )
 
     return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))</code></pre>
 </details>
@@ -813,9 +977,8 @@ def reset():
     headers = await self.__get_headers_with_api_version(path)
     headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
 
-    async def f(url: str) -&gt; Response:
-        async with AsyncClient() as client:
-            return await client.put(url, json=data, headers=headers)  # type: ignore
+    async def f(url: str, method: str) -&gt; Response:
+        return await self.api_request(url, method, 2, headers=headers, json=data)
 
     return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))</code></pre>
 </details>
@@ -841,6 +1004,7 @@ def reset():
 <li>
 <h4><code><a title="supertokens_python.querier.Querier" href="#supertokens_python.querier.Querier">Querier</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.querier.Querier.api_request" href="#supertokens_python.querier.Querier.api_request">api_request</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.api_version" href="#supertokens_python.querier.Querier.api_version">api_version</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.get_all_core_urls_for_path" href="#supertokens_python.querier.Querier.get_all_core_urls_for_path">get_all_core_urls_for_path</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.get_api_version" href="#supertokens_python.querier.Querier.get_api_version">get_api_version</a></code></li>

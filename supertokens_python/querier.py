@@ -39,6 +39,8 @@ from typing import List, Set, Union
 from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
+from sniffio import AsyncLibraryNotFoundError
+from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
 
 
 class Querier:
@@ -71,6 +73,35 @@ class Querier:
             raise_general_exception("calling testing function in non testing env")
         return Querier.__hosts_alive_for_testing
 
+    async def api_request(
+        self,
+        url: str,
+        method: str,
+        attempts_remaining: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        if attempts_remaining == 0:
+            raise_general_exception("Retry request failed")
+
+        try:
+            async with AsyncClient() as client:
+                if method == "GET":
+                    return await client.get(url, *args, **kwargs)  # type: ignore
+                if method == "POST":
+                    return await client.post(url, *args, **kwargs)  # type: ignore
+                if method == "PUT":
+                    return await client.put(url, *args, **kwargs)  # type: ignore
+                if method == "DELETE":
+                    return await client.delete(url, *args, **kwargs)  # type: ignore
+                raise Exception("Shouldn't come here")
+        except AsyncLibraryNotFoundError:
+            # Retry
+            loop = create_or_get_event_loop()
+            return loop.run_until_complete(
+                self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
+            )
+
     async def get_api_version(self):
         if Querier.api_version is not None:
             return Querier.api_version
@@ -79,12 +110,11 @@ class Querier:
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
         )
 
-        async def f(url: str) -> Response:
+        async def f(url: str, method: str) -> Response:
             headers = {}
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
-            async with AsyncClient() as client:
-                return await client.get(url, headers=headers)  # type:ignore
+            return await self.api_request(url, method, 2, headers=headers)
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), "GET", f, len(self.__hosts)
@@ -134,13 +164,14 @@ class Querier:
         if params is None:
             params = {}
 
-        async def f(url: str) -> Response:
-            async with AsyncClient() as client:
-                return await client.get(  # type:ignore
-                    url,
-                    params=params,
-                    headers=await self.__get_headers_with_api_version(path),
-                )
+        async def f(url: str, method: str) -> Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                params=params,
+            )
 
         return await self.__send_request_helper(path, "GET", f, len(self.__hosts))
 
@@ -163,9 +194,14 @@ class Querier:
         headers = await self.__get_headers_with_api_version(path)
         headers["content-type"] = "application/json; charset=utf-8"
 
-        async def f(url: str) -> Response:
-            async with AsyncClient() as client:
-                return await client.post(url, json=data, headers=headers)  # type: ignore
+        async def f(url: str, method: str) -> Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                json=data,
+            )
 
         return await self.__send_request_helper(path, "POST", f, len(self.__hosts))
 
@@ -175,13 +211,14 @@ class Querier:
         if params is None:
             params = {}
 
-        async def f(url: str) -> Response:
-            async with AsyncClient() as client:
-                return await client.delete(  # type:ignore
-                    url,
-                    params=params,
-                    headers=await self.__get_headers_with_api_version(path),
-                )
+        async def f(url: str, method: str) -> Response:
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=await self.__get_headers_with_api_version(path),
+                params=params,
+            )
 
         return await self.__send_request_helper(path, "DELETE", f, len(self.__hosts))
 
@@ -194,9 +231,8 @@ class Querier:
         headers = await self.__get_headers_with_api_version(path)
         headers["content-type"] = "application/json; charset=utf-8"
 
-        async def f(url: str) -> Response:
-            async with AsyncClient() as client:
-                return await client.put(url, json=data, headers=headers)  # type: ignore
+        async def f(url: str, method: str) -> Response:
+            return await self.api_request(url, method, 2, headers=headers, json=data)
 
         return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))
 
@@ -223,7 +259,7 @@ class Querier:
         self,
         path: NormalisedURLPath,
         method: str,
-        http_function: Callable[[str], Awaitable[Response]],
+        http_function: Callable[[str, str], Awaitable[Response]],
         no_of_tries: int,
         retry_info_map: Optional[Dict[str, int]] = None,
     ) -> Dict[str, Any]:
@@ -253,7 +289,7 @@ class Querier:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER
             )
-            response = await http_function(url)
+            response = await http_function(url, method)
             if ("SUPERTOKENS_ENV" in environ) and (
                 environ["SUPERTOKENS_ENV"] == "testing"
             ):

@@ -42,7 +42,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import threading
 import warnings
@@ -55,7 +54,6 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Coroutine,
     Dict,
     List,
     TypeVar,
@@ -67,7 +65,6 @@ from urllib.parse import urlparse
 from httpx import HTTPStatusError, Response
 from tldextract import extract  # type: ignore
 
-from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
@@ -223,28 +220,6 @@ def find_first_occurrence_in_list(
     return None
 
 
-def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    real_mode = None
-    try:
-        asyncio.get_running_loop()
-        real_mode = &#34;asgi&#34;
-    except RuntimeError:
-        real_mode = &#34;wsgi&#34;
-
-    if mode != real_mode:
-        warnings.warn(
-            &#34;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#34;,
-            category=RuntimeWarning,
-        )
-
-    if real_mode == &#34;wsgi&#34;:
-        asyncio.run(func())
-    else:
-        check_event_loop()
-        loop = asyncio.get_event_loop()
-        loop.create_task(func())
-
-
 def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
     return get_rid_from_header(request) is not None
 
@@ -327,8 +302,13 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 
     if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
         return &#34;localhost&#34;
+
     parsed_url: Any = extract(hostname, include_psl_private_domains=True)
     if parsed_url.domain == &#34;&#34;:  # type: ignore
+        # We need to do this because of https://github.com/supertokens/supertokens-python/issues/394
+        if hostname.endswith(&#34;.amazonaws.com&#34;) and parsed_url.suffix == hostname:
+            return hostname
+
         raise Exception(
             &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
         )
@@ -387,7 +367,11 @@ class RWLockContext:
             self.mutex.unlock()
 
         if exc_type is not None:
-            raise exc_type(exc_value).with_traceback(traceback)</code></pre>
+            raise exc_type(exc_value).with_traceback(traceback)
+
+
+def normalise_email(email: str) -&gt; str:
+    return email.strip().lower()</code></pre>
 </details>
 </section>
 <section>
@@ -421,37 +405,6 @@ class RWLockContext:
 </summary>
 <pre><code class="python">def deprecated_warn(msg: str):
     warnings.warn(msg, DeprecationWarning, stacklevel=2)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.utils.execute_async"><code class="name flex">
-<span>def <span class="ident">execute_async</span></span>(<span>mode: str, func: Callable[[], Coroutine[Any, Any, None]])</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    real_mode = None
-    try:
-        asyncio.get_running_loop()
-        real_mode = &#34;asgi&#34;
-    except RuntimeError:
-        real_mode = &#34;wsgi&#34;
-
-    if mode != real_mode:
-        warnings.warn(
-            &#34;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#34;,
-            category=RuntimeWarning,
-        )
-
-    if real_mode == &#34;wsgi&#34;:
-        asyncio.run(func())
-    else:
-        check_event_loop()
-        loop = asyncio.get_event_loop()
-        loop.create_task(func())</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.find_first_occurrence_in_list"><code class="name flex">
@@ -577,8 +530,13 @@ class RWLockContext:
 
     if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
         return &#34;localhost&#34;
+
     parsed_url: Any = extract(hostname, include_psl_private_domains=True)
     if parsed_url.domain == &#34;&#34;:  # type: ignore
+        # We need to do this because of https://github.com/supertokens/supertokens-python/issues/394
+        if hostname.endswith(&#34;.amazonaws.com&#34;) and parsed_url.suffix == hostname:
+            return hostname
+
         raise Exception(
             &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
         )
@@ -700,6 +658,19 @@ class RWLockContext:
 </summary>
 <pre><code class="python">def is_version_gte(version: str, minimum_version: str) -&gt; bool:
     return _get_max_version(version, minimum_version) == version</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.normalise_email"><code class="name flex">
+<span>def <span class="ident">normalise_email</span></span>(<span>email: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalise_email(email: str) -&gt; str:
+    return email.strip().lower()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.normalise_http_method"><code class="name flex">
@@ -1021,7 +992,6 @@ class RWLockContext:
 <ul class="">
 <li><code><a title="supertokens_python.utils.default_user_context" href="#supertokens_python.utils.default_user_context">default_user_context</a></code></li>
 <li><code><a title="supertokens_python.utils.deprecated_warn" href="#supertokens_python.utils.deprecated_warn">deprecated_warn</a></code></li>
-<li><code><a title="supertokens_python.utils.execute_async" href="#supertokens_python.utils.execute_async">execute_async</a></code></li>
 <li><code><a title="supertokens_python.utils.find_first_occurrence_in_list" href="#supertokens_python.utils.find_first_occurrence_in_list">find_first_occurrence_in_list</a></code></li>
 <li><code><a title="supertokens_python.utils.find_max_version" href="#supertokens_python.utils.find_max_version">find_max_version</a></code></li>
 <li><code><a title="supertokens_python.utils.frontend_has_interceptor" href="#supertokens_python.utils.frontend_has_interceptor">frontend_has_interceptor</a></code></li>
@@ -1036,6 +1006,7 @@ class RWLockContext:
 <li><code><a title="supertokens_python.utils.is_5xx_error" href="#supertokens_python.utils.is_5xx_error">is_5xx_error</a></code></li>
 <li><code><a title="supertokens_python.utils.is_an_ip_address" href="#supertokens_python.utils.is_an_ip_address">is_an_ip_address</a></code></li>
 <li><code><a title="supertokens_python.utils.is_version_gte" href="#supertokens_python.utils.is_version_gte">is_version_gte</a></code></li>
+<li><code><a title="supertokens_python.utils.normalise_email" href="#supertokens_python.utils.normalise_email">normalise_email</a></code></li>
 <li><code><a title="supertokens_python.utils.normalise_http_method" href="#supertokens_python.utils.normalise_http_method">normalise_http_method</a></code></li>
 <li><code><a title="supertokens_python.utils.resolve" href="#supertokens_python.utils.resolve">resolve</a></code></li>
 <li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>

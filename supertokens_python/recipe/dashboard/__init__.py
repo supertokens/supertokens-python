@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, List
 
 from supertokens_python import AppInfo, RecipeModule
 
@@ -26,10 +26,12 @@ InputOverrideConfig = utils.InputOverrideConfig
 
 
 def init(
-    api_key: Union[str, None] = None,
+    api_key: Optional[str] = None,
+    admins: Optional[List[str]] = None,
     override: Optional[InputOverrideConfig] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return DashboardRecipe.init(
         api_key,
+        admins,
         override,
     )

@@ -29,6 +29,9 @@ class DjangoRequest(BaseRequest):
         super().__init__()
         self.request = request
 
+    def get_original_url(self) -> str:
+        return self.request.get_raw_uri()
+
     def get_query_param(
         self, key: str, default: Union[str, None] = None
     ) -> Union[str, None]:

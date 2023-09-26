@@ -8,7 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.16.2] - 2023-09-20
 
+- Allow use of [nest-asyncio](https://pypi.org/project/nest-asyncio/) when env var `SUPERTOKENS_NEST_ASYNCIO=1`.
+- Retry Querier request on `AsyncLibraryNotFoundError`
+
+## [0.16.1] - 2023-09-19
+- Handle AWS Public URLs (ending with `.amazonaws.com`) separately while extracting TLDs for SameSite attribute.
+
+
+## [0.16.0] - 2023-09-13
+
+
+### Added
+
+-   The Dashboard recipe now accepts a new `admins` property which can be used to give Dashboard Users write privileges for the user dashboard.
+
+### Changes
+
+-   Dashboard APIs now return a status code `403` for all non-GET requests if the currently logged in Dashboard User is not listed in the `admins` array
+- Now ignoring protected props in the payload in `create_new_session` and `create_new_session_without_request_response`
 
 ## [0.15.3] - 2023-09-25
 
@@ -529,6 +548,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             }
         }
         ```
+### SDK and core compatibility
+
+- Compatible with Core>=6.0.0 (CDI 4.0)
+- Compatible with frontend SDKs:
+    - supertokens-auth-react@0.34.0
+    - supertokens-web-js@0.7.0
+    - supertokens-website@17.0.2
+
 
 ## [0.14.8] - 2023-07-07
 ## Fixes
