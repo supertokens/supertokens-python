@@ -29,9 +29,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Dashboard APIs now return a status code `403` for all non-GET requests if the currently logged in Dashboard User is not listed in the `admins` array
 - Now ignoring protected props in the payload in `create_new_session` and `create_new_session_without_request_response`
 
-## [0.15.3] - 2023-09-24
+## [0.15.3] - 2023-09-25
 
 - Handle 429 rate limiting from SaaS core instances
+- Add `Cache-Control` header for jwks endpoint `/jwt/jwks.json`
+- Add `validity_in_secs` to the return value of overridable `get_jwks` recipe function.
+    - This can be used to control the `Cache-Control` header mentioned above.
+    - It defaults to `60` or the value set in the cache-control header returned by the core
+    - This is optional (so you are not required to update your overrides). Returning `None` means that the header won't be set
+
 
 ## [0.15.2] - 2023-09-23
 

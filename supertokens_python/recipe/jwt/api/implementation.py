@@ -25,4 +25,10 @@ class APIImplementation(APIInterface):
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -> JWKSGetResponse:
         response = await api_options.recipe_implementation.get_jwks(user_context)
+
+        if response.validity_in_secs is not None:
+            api_options.response.set_header(
+                "Cache-Control", f"max-age={response.validity_in_secs}, must-revalidate"
+            )
+
         return JWKSGetResponse(response.keys)

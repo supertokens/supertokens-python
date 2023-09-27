@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+import re
 
 if TYPE_CHECKING:
     from .utils import JWTConfig
@@ -30,6 +31,10 @@ from supertokens_python.recipe.jwt.interfaces import (
 )
 
 from .interfaces import JsonWebKey
+
+
+# This corresponds to the dynamicSigningKeyOverlapMS in the core
+DEFAULT_JWKS_MAX_AGE = 60
 
 
 class RecipeImplementation(RecipeInterface):
@@ -69,6 +74,19 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath("/.well-known/jwks.json"), {}
         )
 
+        validity_in_secs = DEFAULT_JWKS_MAX_AGE
+        cache_control = response["_headers"].get("Cache-Control")
+
+        if cache_control is not None:
+            pattern = r",?\s*max-age=(\d+)(?:,|$)"
+            max_age_header = re.match(pattern, cache_control)
+            if max_age_header is not None:
+                validity_in_secs = int(max_age_header.group(1))
+                try:
+                    validity_in_secs = int(validity_in_secs)
+                except Exception:
+                    validity_in_secs = DEFAULT_JWKS_MAX_AGE
+
         keys: List[JsonWebKey] = []
         for key in response["keys"]:
             keys.append(
@@ -76,4 +94,5 @@ class RecipeImplementation(RecipeInterface):
                     key["kty"], key["kid"], key["n"], key["e"], key["alg"], key["use"]
                 )
             )
-        return GetJWKSResult(keys)
+
+        return GetJWKSResult(keys, validity_in_secs)

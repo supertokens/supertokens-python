@@ -160,7 +160,7 @@ class Querier:
 
     async def send_get_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -> Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -180,7 +180,7 @@ class Querier:
         path: NormalisedURLPath,
         data: Union[Dict[str, Any], None] = None,
         test: bool = False,
-    ):
+    ) -> Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -207,7 +207,7 @@ class Querier:
 
     async def send_delete_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -> Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -224,7 +224,7 @@ class Querier:
 
     async def send_put_request(
         self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
-    ):
+    ) -> Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -262,7 +262,7 @@ class Querier:
         http_function: Callable[[str, str], Awaitable[Response]],
         no_of_tries: int,
         retry_info_map: Optional[Dict[str, int]] = None,
-    ) -> Any:
+    ) -> Dict[str, Any]:
         if no_of_tries == 0:
             raise_general_exception("No SuperTokens core available to query")
 
@@ -321,10 +321,14 @@ class Querier:
                     + response.text  # type: ignore
                 )
 
+            res: Dict[str, Any] = {"_headers": dict(response.headers)}
+
             try:
-                return response.json()
+                res.update(response.json())
             except JSONDecodeError:
-                return response.text
+                res["_text"] = response.text
+
+            return res
 
         except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
