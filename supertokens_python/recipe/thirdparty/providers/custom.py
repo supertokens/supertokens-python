@@ -59,6 +59,7 @@ def get_provider_config_for_client(
         user_info_map=config.user_info_map,
         require_email=config.require_email,
         validate_id_token_payload=config.validate_id_token_payload,
+        validate_access_token=config.validate_access_token,
         generate_fake_email=config.generate_fake_email,
     )
 
@@ -420,6 +421,13 @@ class GenericProvider(Provider):
                 raw_user_info_from_provider.from_user_info_api = await do_get_request(
                     self.config.user_info_endpoint, query_params, headers
                 )
+
+        if self.config.validate_access_token is not None:
+            await self.config.validate_access_token(
+                access_token,
+                self.config,
+                user_context
+            )
 
         user_info_result = get_supertokens_user_info_result_from_raw_user_info(
             self.config, raw_user_info_from_provider
