@@ -14,7 +14,9 @@ from supertokens_python.recipe.thirdparty.providers.utils import (
     do_get_request,
     do_post_request,
     get_actual_client_id_from_development_client_id,
-    is_using_oauth_development_client_id, DEV_KEY_IDENTIFIER, DEV_OAUTH_CLIENT_IDS,
+    is_using_oauth_development_client_id,
+    DEV_KEY_IDENTIFIER,
+    DEV_OAUTH_CLIENT_IDS,
 )
 
 from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
@@ -180,9 +182,8 @@ def merge_into_dict(src: Dict[str, Any], dest: Dict[str, Any]) -> Dict[str, Any]
     return res
 
 
-def is_using_development_client_id(client_id):
+def is_using_development_client_id(client_id: str) -> bool:
     return client_id.startswith(DEV_KEY_IDENTIFIER) or client_id in DEV_OAUTH_CLIENT_IDS
-
 
 
 class GenericProvider(Provider):

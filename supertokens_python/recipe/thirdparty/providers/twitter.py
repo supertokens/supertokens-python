@@ -16,8 +16,11 @@ from __future__ import annotations
 from base64 import b64encode
 from typing import Any, Dict, Optional
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
-from supertokens_python.recipe.thirdparty.providers.utils import do_post_request, DEV_OAUTH_REDIRECT_URL, \
-    get_actual_client_id_from_development_client_id
+from supertokens_python.recipe.thirdparty.providers.utils import (
+    do_post_request,
+    DEV_OAUTH_REDIRECT_URL,
+    get_actual_client_id_from_development_client_id,
+)
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -28,7 +31,8 @@ from ..provider import (
 
 from .custom import (
     GenericProvider,
-    NewProvider, is_using_development_client_id,
+    NewProvider,
+    is_using_development_client_id,
 )
 
 
@@ -56,7 +60,9 @@ class TwitterImpl(GenericProvider):
         # We need to do this because we don't call the original implementation
         # Transformation needed for dev keys BEGIN
         if is_using_development_client_id(self.config.client_id):
-            client_id = get_actual_client_id_from_development_client_id(self.config.client_id)
+            client_id = get_actual_client_id_from_development_client_id(
+                self.config.client_id
+            )
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         # Transformation needed for dev keys END
 
