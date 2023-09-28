@@ -16,7 +16,8 @@ from __future__ import annotations
 from base64 import b64encode
 from typing import Any, Dict, Optional
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
-from supertokens_python.recipe.thirdparty.providers.utils import do_post_request
+from supertokens_python.recipe.thirdparty.providers.utils import do_post_request, DEV_OAUTH_REDIRECT_URL, \
+    get_actual_client_id_from_development_client_id
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -27,7 +28,7 @@ from ..provider import (
 
 from .custom import (
     GenericProvider,
-    NewProvider,
+    NewProvider, is_using_development_client_id,
 )
 
 
@@ -48,14 +49,25 @@ class TwitterImpl(GenericProvider):
     async def exchange_auth_code_for_oauth_tokens(
         self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
     ) -> Dict[str, Any]:
-        credentials = self.config.client_id + ":" + (self.config.client_secret or "")
+
+        client_id = self.config.client_id
+        redirect_uri = redirect_uri_info.redirect_uri_on_provider_dashboard
+
+        # We need to do this because we don't call the original implementation
+        # Transformation needed for dev keys BEGIN
+        if is_using_development_client_id(self.config.client_id):
+            client_id = get_actual_client_id_from_development_client_id(self.config.client_id)
+            redirect_uri = DEV_OAUTH_REDIRECT_URL
+        # Transformation needed for dev keys END
+
+        credentials = client_id + ":" + (self.config.client_secret or "")
         auth_token = b64encode(credentials.encode()).decode()
 
         twitter_oauth_tokens_params: Dict[str, Any] = {
             "grant_type": "authorization_code",
-            "client_id": self.config.client_id,
+            "client_id": client_id,
             "code_verifier": redirect_uri_info.pkce_code_verifier,
-            "redirect_uri": redirect_uri_info.redirect_uri_on_provider_dashboard,
+            "redirect_uri": redirect_uri,
             "code": redirect_uri_info.redirect_uri_query_params["code"],
         }
 
