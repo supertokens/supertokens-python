@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Add Twitter provider for thirdparty login
 - Add `Cache-Control` header for jwks endpoint `/jwt/jwks.json`
 - Add `validity_in_secs` to the return value of overridable `get_jwks` recipe function.
     - This can be used to control the `Cache-Control` header mentioned above.

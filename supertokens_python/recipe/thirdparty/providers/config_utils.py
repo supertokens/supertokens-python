@@ -13,6 +13,7 @@ from .gitlab import Gitlab
 from .google_workspaces import GoogleWorkspaces
 from .google import Google
 from .linkedin import Linkedin
+from .twitter import Twitter
 from .okta import Okta
 from .custom import NewProvider
 from .utils import do_get_request
@@ -82,11 +83,7 @@ def merge_config(
             if config_from_core.oidc_discovery_endpoint is None
             else config_from_core.oidc_discovery_endpoint
         ),
-        require_email=(
-            config_from_static.require_email
-            if config_from_core.require_email is None
-            else config_from_core.require_email
-        ),
+        require_email=config_from_static.require_email,
         user_info_map=config_from_static.user_info_map,
         generate_fake_email=config_from_static.generate_fake_email,
         validate_id_token_payload=config_from_static.validate_id_token_payload,
@@ -206,6 +203,8 @@ def create_provider(provider_input: ProviderInput) -> Provider:
         return Okta(provider_input)
     if provider_input.config.third_party_id.startswith("linkedin"):
         return Linkedin(provider_input)
+    if provider_input.config.third_party_id.startswith("twitter"):
+        return Twitter(provider_input)
     if provider_input.config.third_party_id.startswith("boxy-saml"):
         return BoxySAML(provider_input)
 
