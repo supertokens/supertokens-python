@@ -40,7 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
@@ -60,11 +60,16 @@ def init(
     framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
-    mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None] = None,
-    telemetry: Union[bool, None] = None,
+    mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]] = None,
+    telemetry: Optional[bool] = None,
 ):
     return Supertokens.init(
-        app_info, framework, supertokens_config, recipe_list, mode, telemetry
+        app_info,
+        framework,
+        supertokens_config,
+        recipe_list,
+        mode,
+        telemetry,
     )
 
 
@@ -206,11 +211,16 @@ def get_request_from_user_context(
     framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
-    mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None] = None,
-    telemetry: Union[bool, None] = None,
+    mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]] = None,
+    telemetry: Optional[bool] = None,
 ):
     return Supertokens.init(
-        app_info, framework, supertokens_config, recipe_list, mode, telemetry
+        app_info,
+        framework,
+        supertokens_config,
+        recipe_list,
+        mode,
+        telemetry,
     )</code></pre>
 </details>
 </dd>

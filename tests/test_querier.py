@@ -21,6 +21,7 @@ from supertokens_python.recipe import (
 import asyncio
 import respx
 import httpx
+import json
 from supertokens_python import init, SupertokensConfig
 from supertokens_python.querier import Querier, NormalisedURLPath
 
@@ -148,3 +149,44 @@ async def test_parallel_calls_have_independent_counters():
         assert call_count2 == 6
 
         assert api.call_count == 12
+
+
+async def test_querier_text_and_headers():
+    args = get_st_init_args([session.init()])
+    args["supertokens_config"] = SupertokensConfig("http://localhost:6789")
+    init(**args)  # type: ignore
+    start_st()
+
+    Querier.api_version = "3.0"
+    q = Querier.get_instance()
+
+    with respx_mock() as mocker:
+        text = "foo"
+        mocker.get("http://localhost:6789/text-api").mock(
+            httpx.Response(200, text=text, headers={"greet": "hello"})
+        )
+
+        res = await q.send_get_request(NormalisedURLPath("/text-api"), {})
+        assert res == {
+            "_text": "foo",
+            "_headers": {
+                "greet": "hello",
+                "content-type": "text/plain; charset=utf-8",
+                "content-length": str(len("foo")),
+            },
+        }
+
+        body = {"bar": "baz"}
+        mocker.get("http://localhost:6789/json-api").mock(
+            httpx.Response(200, json=body, headers={"greet": "hi"})
+        )
+
+        res = await q.send_get_request(NormalisedURLPath("/json-api"), {})
+        assert res == {
+            "bar": "baz",
+            "_headers": {
+                "greet": "hi",
+                "content-type": "application/json",
+                "content-length": str(len(json.dumps(body))),
+            },
+        }

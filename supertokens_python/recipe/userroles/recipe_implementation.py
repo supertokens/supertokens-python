@@ -51,7 +51,7 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(f"{tenant_id}/recipe/user/role"),
             params,
         )
-        if response.get("status") == "OK":
+        if response["status"] == "OK":
             return AddRoleToUserOkResult(
                 did_user_already_have_role=response["didUserAlreadyHaveRole"]
             )
@@ -93,7 +93,7 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(f"{tenant_id}/recipe/role/users"),
             params,
         )
-        if response.get("status") == "OK":
+        if response["status"] == "OK":
             return GetUsersThatHaveRoleOkResult(users=response["users"])
         return UnknownRoleError()
 
@@ -115,7 +115,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/role/permissions"), params
         )
-        if response.get("status") == "OK":
+        if response["status"] == "OK":
             return GetPermissionsForRoleOkResult(permissions=response["permissions"])
         return UnknownRoleError()
 
@@ -126,7 +126,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/role/permissions/remove"), params
         )
-        if response.get("status") == "OK":
+        if response["status"] == "OK":
             return RemovePermissionsFromRoleOkResult()
         return UnknownRoleError()
 

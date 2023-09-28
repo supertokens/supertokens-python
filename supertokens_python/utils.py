@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import threading
 import warnings
@@ -27,7 +26,6 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Coroutine,
     Dict,
     List,
     TypeVar,
@@ -39,7 +37,6 @@ from urllib.parse import urlparse
 from httpx import HTTPStatusError, Response
 from tldextract import extract  # type: ignore
 
-from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
@@ -193,28 +190,6 @@ def find_first_occurrence_in_list(
         if condition(item):
             return item
     return None
-
-
-def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    real_mode = None
-    try:
-        asyncio.get_running_loop()
-        real_mode = "asgi"
-    except RuntimeError:
-        real_mode = "wsgi"
-
-    if mode != real_mode:
-        warnings.warn(
-            "Inconsistent mode detected, check if you are using the right asgi / wsgi mode",
-            category=RuntimeWarning,
-        )
-
-    if real_mode == "wsgi":
-        asyncio.run(func())
-    else:
-        check_event_loop()
-        loop = asyncio.get_event_loop()
-        loop.create_task(func())
 
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
