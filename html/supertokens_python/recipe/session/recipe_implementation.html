@@ -497,7 +497,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
         if new_access_token_payload is None:
             new_access_token_payload = {}
-        response: Dict[str, Any] = await self.querier.send_post_request(
+        response = await self.querier.send_post_request(
             NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
             {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
         )
@@ -956,7 +956,7 @@ inheritance.</p></div>
     ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
         if new_access_token_payload is None:
             new_access_token_payload = {}
-        response: Dict[str, Any] = await self.querier.send_post_request(
+        response = await self.querier.send_post_request(
             NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
             {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
         )
@@ -1377,7 +1377,7 @@ inheritance.</p></div>
 ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
     if new_access_token_payload is None:
         new_access_token_payload = {}
-    response: Dict[str, Any] = await self.querier.send_post_request(
+    response = await self.querier.send_post_request(
         NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
         {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
     )

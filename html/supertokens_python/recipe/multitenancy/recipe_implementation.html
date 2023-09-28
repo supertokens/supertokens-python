@@ -281,7 +281,7 @@ class RecipeImplementation(RecipeInterface):
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
-        response: Dict[str, Any] = await self.querier.send_post_request(
+        response = await self.querier.send_post_request(
             NormalisedURLPath(
                 f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
             ),
@@ -565,7 +565,7 @@ inheritance.</p></div>
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     ]:
-        response: Dict[str, Any] = await self.querier.send_post_request(
+        response = await self.querier.send_post_request(
             NormalisedURLPath(
                 f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
             ),
@@ -636,7 +636,7 @@ inheritance.</p></div>
     AssociateUserToTenantPhoneNumberAlreadyExistsError,
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
 ]:
-    response: Dict[str, Any] = await self.querier.send_post_request(
+    response = await self.querier.send_post_request(
         NormalisedURLPath(
             f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
         ),

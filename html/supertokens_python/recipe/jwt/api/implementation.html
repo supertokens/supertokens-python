@@ -53,6 +53,12 @@ class APIImplementation(APIInterface):
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -&gt; JWKSGetResponse:
         response = await api_options.recipe_implementation.get_jwks(user_context)
+
+        if response.validity_in_secs is not None:
+            api_options.response.set_header(
+                &#34;Cache-Control&#34;, f&#34;max-age={response.validity_in_secs}, must-revalidate&#34;
+            )
+
         return JWKSGetResponse(response.keys)</code></pre>
 </details>
 </section>
@@ -79,6 +85,12 @@ class APIImplementation(APIInterface):
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -&gt; JWKSGetResponse:
         response = await api_options.recipe_implementation.get_jwks(user_context)
+
+        if response.validity_in_secs is not None:
+            api_options.response.set_header(
+                &#34;Cache-Control&#34;, f&#34;max-age={response.validity_in_secs}, must-revalidate&#34;
+            )
+
         return JWKSGetResponse(response.keys)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -100,6 +112,12 @@ class APIImplementation(APIInterface):
     self, api_options: APIOptions, user_context: Dict[str, Any]
 ) -&gt; JWKSGetResponse:
     response = await api_options.recipe_implementation.get_jwks(user_context)
+
+    if response.validity_in_secs is not None:
+        api_options.response.set_header(
+            &#34;Cache-Control&#34;, f&#34;max-age={response.validity_in_secs}, must-revalidate&#34;
+        )
+
     return JWKSGetResponse(response.keys)</code></pre>
 </details>
 </dd>

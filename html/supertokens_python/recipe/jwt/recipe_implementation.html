@@ -45,6 +45,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+import re
 
 if TYPE_CHECKING:
     from .utils import JWTConfig
@@ -58,6 +59,10 @@ from supertokens_python.recipe.jwt.interfaces import (
 )
 
 from .interfaces import JsonWebKey
+
+
+# This corresponds to the dynamicSigningKeyOverlapMS in the core
+DEFAULT_JWKS_MAX_AGE = 60
 
 
 class RecipeImplementation(RecipeInterface):
@@ -97,6 +102,19 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(&#34;/.well-known/jwks.json&#34;), {}
         )
 
+        validity_in_secs = DEFAULT_JWKS_MAX_AGE
+        cache_control = response[&#34;_headers&#34;].get(&#34;Cache-Control&#34;)
+
+        if cache_control is not None:
+            pattern = r&#34;,?\s*max-age=(\d+)(?:,|$)&#34;
+            max_age_header = re.match(pattern, cache_control)
+            if max_age_header is not None:
+                validity_in_secs = int(max_age_header.group(1))
+                try:
+                    validity_in_secs = int(validity_in_secs)
+                except Exception:
+                    validity_in_secs = DEFAULT_JWKS_MAX_AGE
+
         keys: List[JsonWebKey] = []
         for key in response[&#34;keys&#34;]:
             keys.append(
@@ -104,7 +122,8 @@ class RecipeImplementation(RecipeInterface):
                     key[&#34;kty&#34;], key[&#34;kid&#34;], key[&#34;n&#34;], key[&#34;e&#34;], key[&#34;alg&#34;], key[&#34;use&#34;]
                 )
             )
-        return GetJWKSResult(keys)</code></pre>
+
+        return GetJWKSResult(keys, validity_in_secs)</code></pre>
 </details>
 </section>
 <section>
@@ -164,6 +183,19 @@ inheritance.</p></div>
             NormalisedURLPath(&#34;/.well-known/jwks.json&#34;), {}
         )
 
+        validity_in_secs = DEFAULT_JWKS_MAX_AGE
+        cache_control = response[&#34;_headers&#34;].get(&#34;Cache-Control&#34;)
+
+        if cache_control is not None:
+            pattern = r&#34;,?\s*max-age=(\d+)(?:,|$)&#34;
+            max_age_header = re.match(pattern, cache_control)
+            if max_age_header is not None:
+                validity_in_secs = int(max_age_header.group(1))
+                try:
+                    validity_in_secs = int(validity_in_secs)
+                except Exception:
+                    validity_in_secs = DEFAULT_JWKS_MAX_AGE
+
         keys: List[JsonWebKey] = []
         for key in response[&#34;keys&#34;]:
             keys.append(
@@ -171,7 +203,8 @@ inheritance.</p></div>
                     key[&#34;kty&#34;], key[&#34;kid&#34;], key[&#34;n&#34;], key[&#34;e&#34;], key[&#34;alg&#34;], key[&#34;use&#34;]
                 )
             )
-        return GetJWKSResult(keys)</code></pre>
+
+        return GetJWKSResult(keys, validity_in_secs)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -229,6 +262,19 @@ inheritance.</p></div>
         NormalisedURLPath(&#34;/.well-known/jwks.json&#34;), {}
     )
 
+    validity_in_secs = DEFAULT_JWKS_MAX_AGE
+    cache_control = response[&#34;_headers&#34;].get(&#34;Cache-Control&#34;)
+
+    if cache_control is not None:
+        pattern = r&#34;,?\s*max-age=(\d+)(?:,|$)&#34;
+        max_age_header = re.match(pattern, cache_control)
+        if max_age_header is not None:
+            validity_in_secs = int(max_age_header.group(1))
+            try:
+                validity_in_secs = int(validity_in_secs)
+            except Exception:
+                validity_in_secs = DEFAULT_JWKS_MAX_AGE
+
     keys: List[JsonWebKey] = []
     for key in response[&#34;keys&#34;]:
         keys.append(
@@ -236,7 +282,8 @@ inheritance.</p></div>
                 key[&#34;kty&#34;], key[&#34;kid&#34;], key[&#34;n&#34;], key[&#34;e&#34;], key[&#34;alg&#34;], key[&#34;use&#34;]
             )
         )
-    return GetJWKSResult(keys)</code></pre>
+
+    return GetJWKSResult(keys, validity_in_secs)</code></pre>
 </details>
 </dd>
 </dl>

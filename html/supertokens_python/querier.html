@@ -188,7 +188,7 @@ class Querier:
 
     async def send_get_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -&gt; Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -208,7 +208,7 @@ class Querier:
         path: NormalisedURLPath,
         data: Union[Dict[str, Any], None] = None,
         test: bool = False,
-    ):
+    ) -&gt; Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -235,7 +235,7 @@ class Querier:
 
     async def send_delete_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -&gt; Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -252,7 +252,7 @@ class Querier:
 
     async def send_put_request(
         self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
-    ):
+    ) -&gt; Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -290,7 +290,7 @@ class Querier:
         http_function: Callable[[str, str], Awaitable[Response]],
         no_of_tries: int,
         retry_info_map: Optional[Dict[str, int]] = None,
-    ) -&gt; Any:
+    ) -&gt; Dict[str, Any]:
         if no_of_tries == 0:
             raise_general_exception(&#34;No SuperTokens core available to query&#34;)
 
@@ -349,10 +349,14 @@ class Querier:
                     + response.text  # type: ignore
                 )
 
+            res: Dict[str, Any] = {&#34;_headers&#34;: dict(response.headers)}
+
             try:
-                return response.json()
+                res.update(response.json())
             except JSONDecodeError:
-                return response.text
+                res[&#34;_text&#34;] = response.text
+
+            return res
 
         except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
@@ -498,7 +502,7 @@ class Querier:
 
     async def send_get_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -&gt; Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -518,7 +522,7 @@ class Querier:
         path: NormalisedURLPath,
         data: Union[Dict[str, Any], None] = None,
         test: bool = False,
-    ):
+    ) -&gt; Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -545,7 +549,7 @@ class Querier:
 
     async def send_delete_request(
         self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-    ):
+    ) -&gt; Dict[str, Any]:
         if params is None:
             params = {}
 
@@ -562,7 +566,7 @@ class Querier:
 
     async def send_put_request(
         self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
-    ):
+    ) -&gt; Dict[str, Any]:
         if data is None:
             data = {}
 
@@ -600,7 +604,7 @@ class Querier:
         http_function: Callable[[str, str], Awaitable[Response]],
         no_of_tries: int,
         retry_info_map: Optional[Dict[str, int]] = None,
-    ) -&gt; Any:
+    ) -&gt; Dict[str, Any]:
         if no_of_tries == 0:
             raise_general_exception(&#34;No SuperTokens core available to query&#34;)
 
@@ -659,10 +663,14 @@ class Querier:
                     + response.text  # type: ignore
                 )
 
+            res: Dict[str, Any] = {&#34;_headers&#34;: dict(response.headers)}
+
             try:
-                return response.json()
+                res.update(response.json())
             except JSONDecodeError:
-                return response.text
+                res[&#34;_text&#34;] = response.text
+
+            return res
 
         except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
@@ -866,7 +874,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_delete_request"><code class="name flex">
-<span>async def <span class="ident">send_delete_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None)</span>
+<span>async def <span class="ident">send_delete_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -876,7 +884,7 @@ def reset():
 </summary>
 <pre><code class="python">async def send_delete_request(
     self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-):
+) -&gt; Dict[str, Any]:
     if params is None:
         params = {}
 
@@ -893,7 +901,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_get_request"><code class="name flex">
-<span>async def <span class="ident">send_get_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None)</span>
+<span>async def <span class="ident">send_get_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -903,7 +911,7 @@ def reset():
 </summary>
 <pre><code class="python">async def send_get_request(
     self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
-):
+) -&gt; Dict[str, Any]:
     if params is None:
         params = {}
 
@@ -920,7 +928,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_post_request"><code class="name flex">
-<span>async def <span class="ident">send_post_request</span></span>(<span>self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None, test: bool = False)</span>
+<span>async def <span class="ident">send_post_request</span></span>(<span>self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None, test: bool = False) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -933,7 +941,7 @@ def reset():
     path: NormalisedURLPath,
     data: Union[Dict[str, Any], None] = None,
     test: bool = False,
-):
+) -&gt; Dict[str, Any]:
     if data is None:
         data = {}
 
@@ -960,7 +968,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_put_request"><code class="name flex">
-<span>async def <span class="ident">send_put_request</span></span>(<span>self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None)</span>
+<span>async def <span class="ident">send_put_request</span></span>(<span>self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -970,7 +978,7 @@ def reset():
 </summary>
 <pre><code class="python">async def send_put_request(
     self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
-):
+) -&gt; Dict[str, Any]:
     if data is None:
         data = {}
 

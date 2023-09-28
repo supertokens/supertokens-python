@@ -79,7 +79,7 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
             params,
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return AddRoleToUserOkResult(
                 did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;]
             )
@@ -121,7 +121,7 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(f&#34;{tenant_id}/recipe/role/users&#34;),
             params,
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
         return UnknownRoleError()
 
@@ -143,7 +143,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(
             NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return GetPermissionsForRoleOkResult(permissions=response[&#34;permissions&#34;])
         return UnknownRoleError()
 
@@ -154,7 +154,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return RemovePermissionsFromRoleOkResult()
         return UnknownRoleError()
 
@@ -221,7 +221,7 @@ inheritance.</p></div>
             NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
             params,
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return AddRoleToUserOkResult(
                 did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;]
             )
@@ -263,7 +263,7 @@ inheritance.</p></div>
             NormalisedURLPath(f&#34;{tenant_id}/recipe/role/users&#34;),
             params,
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
         return UnknownRoleError()
 
@@ -285,7 +285,7 @@ inheritance.</p></div>
         response = await self.querier.send_get_request(
             NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return GetPermissionsForRoleOkResult(permissions=response[&#34;permissions&#34;])
         return UnknownRoleError()
 
@@ -296,7 +296,7 @@ inheritance.</p></div>
         response = await self.querier.send_post_request(
             NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params
         )
-        if response.get(&#34;status&#34;) == &#34;OK&#34;:
+        if response[&#34;status&#34;] == &#34;OK&#34;:
             return RemovePermissionsFromRoleOkResult()
         return UnknownRoleError()
 
@@ -353,7 +353,7 @@ inheritance.</p></div>
         NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
         params,
     )
-    if response.get(&#34;status&#34;) == &#34;OK&#34;:
+    if response[&#34;status&#34;] == &#34;OK&#34;:
         return AddRoleToUserOkResult(
             did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;]
         )
@@ -433,7 +433,7 @@ inheritance.</p></div>
     response = await self.querier.send_get_request(
         NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params
     )
-    if response.get(&#34;status&#34;) == &#34;OK&#34;:
+    if response[&#34;status&#34;] == &#34;OK&#34;:
         return GetPermissionsForRoleOkResult(permissions=response[&#34;permissions&#34;])
     return UnknownRoleError()</code></pre>
 </details>
@@ -494,7 +494,7 @@ inheritance.</p></div>
         NormalisedURLPath(f&#34;{tenant_id}/recipe/role/users&#34;),
         params,
     )
-    if response.get(&#34;status&#34;) == &#34;OK&#34;:
+    if response[&#34;status&#34;] == &#34;OK&#34;:
         return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
     return UnknownRoleError()</code></pre>
 </details>
@@ -515,7 +515,7 @@ inheritance.</p></div>
     response = await self.querier.send_post_request(
         NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params
     )
-    if response.get(&#34;status&#34;) == &#34;OK&#34;:
+    if response[&#34;status&#34;] == &#34;OK&#34;:
         return RemovePermissionsFromRoleOkResult()
     return UnknownRoleError()</code></pre>
 </details>

@@ -68,8 +68,9 @@ class CreateJwtResultUnsupportedAlgorithm:
 
 
 class GetJWKSResult:
-    def __init__(self, keys: List[JsonWebKey]):
+    def __init__(self, keys: List[JsonWebKey], validity_in_secs: Optional[int]):
         self.keys = keys
+        self.validity_in_secs = validity_in_secs
 
 
 class RecipeInterface(ABC):
@@ -247,7 +248,7 @@ async def jwks_get(
 </dd>
 <dt id="supertokens_python.recipe.jwt.interfaces.GetJWKSResult"><code class="flex name class">
 <span>class <span class="ident">GetJWKSResult</span></span>
-<span>(</span><span>keys: List[<a title="supertokens_python.recipe.jwt.interfaces.JsonWebKey" href="#supertokens_python.recipe.jwt.interfaces.JsonWebKey">JsonWebKey</a>])</span>
+<span>(</span><span>keys: List[<a title="supertokens_python.recipe.jwt.interfaces.JsonWebKey" href="#supertokens_python.recipe.jwt.interfaces.JsonWebKey">JsonWebKey</a>], validity_in_secs: Optional[int])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -256,8 +257,9 @@ async def jwks_get(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class GetJWKSResult:
-    def __init__(self, keys: List[JsonWebKey]):
-        self.keys = keys</code></pre>
+    def __init__(self, keys: List[JsonWebKey], validity_in_secs: Optional[int]):
+        self.keys = keys
+        self.validity_in_secs = validity_in_secs</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse"><code class="flex name class">

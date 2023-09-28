@@ -150,8 +150,6 @@ async def create_new_session(
         },
     )
 
-    response.pop(&#34;status&#34;, None)
-
     return CreateOrRefreshAPIResponse(
         CreateOrRefreshAPIResponseSession(
             response[&#34;session&#34;][&#34;handle&#34;],
@@ -309,7 +307,6 @@ async def get_session(
         NormalisedURLPath(&#34;/recipe/session/verify&#34;), data
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
-        response.pop(&#34;status&#34;, None)
         return GetSessionAPIResponse(
             GetSessionAPIResponseSession(
                 response[&#34;session&#34;][&#34;handle&#34;],
@@ -379,7 +376,6 @@ async def refresh_session(
         NormalisedURLPath(&#34;/recipe/session/refresh&#34;), data
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
-        response.pop(&#34;status&#34;, None)
         return CreateOrRefreshAPIResponse(
             CreateOrRefreshAPIResponseSession(
                 response[&#34;session&#34;][&#34;handle&#34;],
@@ -554,8 +550,6 @@ async def get_session_information(
             &#34;enableAntiCsrf&#34;: enable_anti_csrf,
         },
     )
-
-    response.pop(&#34;status&#34;, None)
 
     return CreateOrRefreshAPIResponse(
         CreateOrRefreshAPIResponseSession(
@@ -748,7 +742,6 @@ async def get_session_information(
         NormalisedURLPath(&#34;/recipe/session/verify&#34;), data
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
-        response.pop(&#34;status&#34;, None)
         return GetSessionAPIResponse(
             GetSessionAPIResponseSession(
                 response[&#34;session&#34;][&#34;handle&#34;],
@@ -855,7 +848,6 @@ async def get_session_information(
         NormalisedURLPath(&#34;/recipe/session/refresh&#34;), data
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
-        response.pop(&#34;status&#34;, None)
         return CreateOrRefreshAPIResponse(
             CreateOrRefreshAPIResponseSession(
                 response[&#34;session&#34;][&#34;handle&#34;],
