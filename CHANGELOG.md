@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `validate_access_token` function to providers
     - This can be used to verify the access token received from providers.
+    - Implemented `validate_access_token` for the Github provider.
 
 ## [0.16.3] - 2023-09-28
 

@@ -90,7 +90,6 @@ async def validate_access_token(
         f"{config.client_id}:{client_secret}".encode()
     ).decode()
 
-    # POST request to get applications response
     url = f"https://api.github.com/applications/{config.client_id}/token"
     headers = {
         "Authorization": f"Basic {basic_auth_token}",
@@ -100,7 +99,6 @@ async def validate_access_token(
 
     resp = requests.post(url, headers=headers, data=payload)
 
-    # Error handling and validation
     if resp.status_code != 200:
         raise ValueError("Invalid access token")
 
