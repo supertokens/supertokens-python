@@ -104,6 +104,7 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
                 user_info_map=user_info_map,
                 require_email=p.get("requireEmail", True),
                 validate_id_token_payload=None,
+                validate_access_token=None,
                 generate_fake_email=None,
             )
         )

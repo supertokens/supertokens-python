@@ -289,9 +289,9 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
             user_info_map,
             require_email,
             validate_id_token_payload,
+            validate_access_token,
             generate_fake_email,
         )
-        self.validate_access_token = validate_access_token
 
     def to_json(self) -> Dict[str, Any]:
         d1 = ProviderClientConfig.to_json(self)
@@ -324,6 +324,12 @@ class ProviderConfig(CommonProviderConfig):
                 Awaitable[None],
             ]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
@@ -343,6 +349,7 @@ class ProviderConfig(CommonProviderConfig):
             user_info_map,
             require_email,
             validate_id_token_payload,
+            validate_access_token,
             generate_fake_email,
         )
         self.clients = clients

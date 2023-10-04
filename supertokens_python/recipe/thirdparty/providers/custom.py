@@ -422,11 +422,9 @@ class GenericProvider(Provider):
                     self.config.user_info_endpoint, query_params, headers
                 )
 
-        if self.config.validate_access_token is not None:
+        if self.config.validate_access_token is not None and access_token is not None:
             await self.config.validate_access_token(
-                access_token,
-                self.config,
-                user_context
+                access_token, self.config, user_context
             )
 
         user_info_result = get_supertokens_user_info_result_from_raw_user_info(

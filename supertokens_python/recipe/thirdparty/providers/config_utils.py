@@ -87,6 +87,7 @@ def merge_config(
         user_info_map=config_from_static.user_info_map,
         generate_fake_email=config_from_static.generate_fake_email,
         validate_id_token_payload=config_from_static.validate_id_token_payload,
+        validate_access_token=config_from_static.validate_access_token,
     )
 
     if result.user_info_map is None:
