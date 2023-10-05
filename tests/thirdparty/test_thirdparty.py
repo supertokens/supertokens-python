@@ -41,6 +41,8 @@ pytestmark = mark.asyncio
 
 respx_mock = respx.MockRouter
 
+access_token_validated: bool = False
+
 
 @fixture(scope="function")
 async def fastapi_client():
@@ -145,7 +147,9 @@ async def valid_access_token(  # pylint: disable=unused-argument
     config: ProviderConfigForClient,
     user_context: Optional[Dict[str, Any]],
 ):
+    global access_token_validated
     if access_token == "accesstoken":
+        access_token_validated = True
         return
     raise Exception("Unexpected access token")
 
@@ -262,4 +266,5 @@ async def test_signinup_works_when_validate_access_token_does_not_throw(
     )
 
     assert res.status_code == 200
+    assert access_token_validated is True
     assert res.json()["status"] == "OK"
