@@ -59,8 +59,8 @@ def get_provider_config_for_client(
         user_info_map=config.user_info_map,
         require_email=config.require_email,
         validate_id_token_payload=config.validate_id_token_payload,
-        validate_access_token=config.validate_access_token,
         generate_fake_email=config.generate_fake_email,
+        validate_access_token=config.validate_access_token,
     )
 
 

@@ -197,8 +197,8 @@ class CommonProviderConfig:
         self.user_info_map = user_info_map
         self.require_email = require_email
         self.validate_id_token_payload = validate_id_token_payload
-        self.validate_access_token = validate_access_token
         self.generate_fake_email = generate_fake_email
+        self.validate_access_token = validate_access_token
 
     def to_json(self) -> Dict[str, Any]:
         res = {
@@ -254,14 +254,14 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
                 Awaitable[None],
             ]
         ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
         validate_access_token: Optional[
             Callable[
                 [str, ProviderConfigForClient, Dict[str, Any]],
                 Awaitable[None],
             ]
-        ] = None,
-        generate_fake_email: Optional[
-            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
     ):
         ProviderClientConfig.__init__(
@@ -324,14 +324,14 @@ class ProviderConfig(CommonProviderConfig):
                 Awaitable[None],
             ]
         ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
         validate_access_token: Optional[
             Callable[
                 [str, ProviderConfigForClient, Dict[str, Any]],
                 Awaitable[None],
             ]
-        ] = None,
-        generate_fake_email: Optional[
-            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
     ):
         super().__init__(
