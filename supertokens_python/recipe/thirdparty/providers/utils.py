@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from httpx import AsyncClient
 
@@ -48,7 +48,7 @@ async def do_post_request(
     url: str,
     body_params: Optional[Dict[str, str]] = None,
     headers: Optional[Dict[str, str]] = None,
-) -> Dict[str, Any]:
+) -> Tuple[int, Dict[str, Any]]:
     if body_params is None:
         body_params = {}
     if headers is None:
@@ -62,4 +62,4 @@ async def do_post_request(
         log_debug_message(
             "Received response with status %s and body %s", res.status_code, res.text
         )
-        return res.json()
+        return res.status_code, res.json()

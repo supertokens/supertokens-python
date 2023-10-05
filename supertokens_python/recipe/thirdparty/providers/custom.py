@@ -60,6 +60,7 @@ def get_provider_config_for_client(
         require_email=config.require_email,
         validate_id_token_payload=config.validate_id_token_payload,
         generate_fake_email=config.generate_fake_email,
+        validate_access_token=config.validate_access_token,
     )
 
 
@@ -375,7 +376,8 @@ class GenericProvider(Provider):
             access_token_params["redirect_uri"] = DEV_OAUTH_REDIRECT_URL
         # Transformation needed for dev keys END
 
-        return await do_post_request(token_api_url, access_token_params)
+        _, body = await do_post_request(token_api_url, access_token_params)
+        return body
 
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
@@ -402,24 +404,28 @@ class GenericProvider(Provider):
                     user_context,
                 )
 
-        if access_token is not None and self.config.token_endpoint is not None:
+        if self.config.validate_access_token is not None and access_token is not None:
+            await self.config.validate_access_token(
+                access_token, self.config, user_context
+            )
+
+        if access_token is not None and self.config.user_info_endpoint is not None:
             headers: Dict[str, str] = {"Authorization": f"Bearer {access_token}"}
             query_params: Dict[str, str] = {}
 
-            if self.config.user_info_endpoint is not None:
-                if self.config.user_info_endpoint_headers is not None:
-                    headers = merge_into_dict(
-                        self.config.user_info_endpoint_headers, headers
-                    )
-
-                if self.config.user_info_endpoint_query_params is not None:
-                    query_params = merge_into_dict(
-                        self.config.user_info_endpoint_query_params, query_params
-                    )
-
-                raw_user_info_from_provider.from_user_info_api = await do_get_request(
-                    self.config.user_info_endpoint, query_params, headers
+            if self.config.user_info_endpoint_headers is not None:
+                headers = merge_into_dict(
+                    self.config.user_info_endpoint_headers, headers
                 )
+
+            if self.config.user_info_endpoint_query_params is not None:
+                query_params = merge_into_dict(
+                    self.config.user_info_endpoint_query_params, query_params
+                )
+
+            raw_user_info_from_provider.from_user_info_api = await do_get_request(
+                self.config.user_info_endpoint, query_params, headers
+            )
 
         user_info_result = get_supertokens_user_info_result_from_raw_user_info(
             self.config, raw_user_info_from_provider

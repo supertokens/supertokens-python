@@ -176,6 +176,12 @@ class CommonProviderConfig:
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         self.third_party_id = third_party_id
         self.name = name
@@ -192,6 +198,7 @@ class CommonProviderConfig:
         self.require_email = require_email
         self.validate_id_token_payload = validate_id_token_payload
         self.generate_fake_email = generate_fake_email
+        self.validate_access_token = validate_access_token
 
     def to_json(self) -> Dict[str, Any]:
         res = {
@@ -250,6 +257,12 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         ProviderClientConfig.__init__(
             self,
@@ -277,6 +290,7 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
             require_email,
             validate_id_token_payload,
             generate_fake_email,
+            validate_access_token,
         )
 
     def to_json(self) -> Dict[str, Any]:
@@ -313,6 +327,12 @@ class ProviderConfig(CommonProviderConfig):
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         super().__init__(
             third_party_id,
@@ -330,6 +350,7 @@ class ProviderConfig(CommonProviderConfig):
             require_email,
             validate_id_token_payload,
             generate_fake_email,
+            validate_access_token,
         )
         self.clients = clients
 

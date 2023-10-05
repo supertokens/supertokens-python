@@ -12,9 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+import base64
 from typing import Any, Dict, List, Optional
 
-from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
+from supertokens_python.recipe.thirdparty.providers.utils import (
+    do_get_request,
+    do_post_request,
+)
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 from .custom import GenericProvider, NewProvider
@@ -71,4 +76,29 @@ def Github(input: ProviderInput) -> Provider:  # pylint: disable=redefined-built
     if input.config.token_endpoint is None:
         input.config.token_endpoint = "https://github.com/login/oauth/access_token"
 
+    if input.config.validate_access_token is None:
+        input.config.validate_access_token = validate_access_token
+
     return NewProvider(input, GithubImpl)
+
+
+async def validate_access_token(
+    access_token: str, config: ProviderConfigForClient, _: Dict[str, Any]
+):
+    client_secret = "" if config.client_secret is None else config.client_secret
+    basic_auth_token = base64.b64encode(
+        f"{config.client_id}:{client_secret}".encode()
+    ).decode()
+
+    url = f"https://api.github.com/applications/{config.client_id}/token"
+    headers = {
+        "Authorization": f"Basic {basic_auth_token}",
+        "Content-Type": "application/json",
+    }
+
+    status, body = await do_post_request(url, {"access_token": access_token}, headers)
+    if status != 200:
+        raise ValueError("Invalid access token")
+
+    if "app" not in body or body["app"].get("client_id") != config.client_id:
+        raise ValueError("Access token does not belong to your application")
