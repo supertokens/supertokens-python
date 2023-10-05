@@ -84,11 +84,12 @@ class TwitterImpl(GenericProvider):
 
         assert self.config.token_endpoint is not None
 
-        return await do_post_request(
+        _, body = await do_post_request(
             self.config.token_endpoint,
             body_params=twitter_oauth_tokens_params,
             headers={"Authorization": f"Basic {auth_token}"},
         )
+        return body
 
 
 def Twitter(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin

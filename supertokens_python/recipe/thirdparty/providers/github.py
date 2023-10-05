@@ -96,9 +96,8 @@ async def validate_access_token(
         "Content-Type": "application/json",
     }
 
-    try:
-        body = await do_post_request(url, {"access_token": access_token}, headers)
-    except Exception:
+    status, body = await do_post_request(url, {"access_token": access_token}, headers)
+    if status != 200:
         raise ValueError("Invalid access token")
 
     if "app" not in body or body["app"].get("client_id") != config.client_id:
