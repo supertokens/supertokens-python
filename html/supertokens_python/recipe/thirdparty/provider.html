@@ -204,6 +204,12 @@ class CommonProviderConfig:
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         self.third_party_id = third_party_id
         self.name = name
@@ -220,6 +226,7 @@ class CommonProviderConfig:
         self.require_email = require_email
         self.validate_id_token_payload = validate_id_token_payload
         self.generate_fake_email = generate_fake_email
+        self.validate_access_token = validate_access_token
 
     def to_json(self) -&gt; Dict[str, Any]:
         res = {
@@ -278,6 +285,12 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         ProviderClientConfig.__init__(
             self,
@@ -305,6 +318,7 @@ class ProviderConfigForClient(ProviderClientConfig, CommonProviderConfig):
             require_email,
             validate_id_token_payload,
             generate_fake_email,
+            validate_access_token,
         )
 
     def to_json(self) -&gt; Dict[str, Any]:
@@ -341,6 +355,12 @@ class ProviderConfig(CommonProviderConfig):
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         super().__init__(
             third_party_id,
@@ -358,6 +378,7 @@ class ProviderConfig(CommonProviderConfig):
             require_email,
             validate_id_token_payload,
             generate_fake_email,
+            validate_access_token,
         )
         self.clients = clients
 
@@ -409,7 +430,7 @@ class ProviderInput:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig"><code class="flex name class">
 <span>class <span class="ident">CommonProviderConfig</span></span>
-<span>(</span><span>third_party_id: str, name: Optional[str] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Any]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None)</span>
+<span>(</span><span>third_party_id: str, name: Optional[str] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Any]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None, validate_access_token: Optional[Callable[[str, <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -442,6 +463,12 @@ class ProviderInput:
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         self.third_party_id = third_party_id
         self.name = name
@@ -458,6 +485,7 @@ class ProviderInput:
         self.require_email = require_email
         self.validate_id_token_payload = validate_id_token_payload
         self.generate_fake_email = generate_fake_email
+        self.validate_access_token = validate_access_token
 
     def to_json(self) -&gt; Dict[str, Any]:
         res = {
@@ -724,7 +752,7 @@ class ProviderInput:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.ProviderConfig"><code class="flex name class">
 <span>class <span class="ident">ProviderConfig</span></span>
-<span>(</span><span>third_party_id: str, name: Optional[str] = None, clients: Optional[List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a>]] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None)</span>
+<span>(</span><span>third_party_id: str, name: Optional[str] = None, clients: Optional[List[<a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a>]] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None, validate_access_token: Optional[Callable[[str, <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -760,6 +788,12 @@ class ProviderInput:
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         super().__init__(
             third_party_id,
@@ -777,6 +811,7 @@ class ProviderInput:
             require_email,
             validate_id_token_payload,
             generate_fake_email,
+            validate_access_token,
         )
         self.clients = clients
 
@@ -816,7 +851,7 @@ class ProviderInput:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient"><code class="flex name class">
 <span>class <span class="ident">ProviderConfigForClient</span></span>
-<span>(</span><span>client_id: str, client_secret: Optional[str] = None, client_type: Optional[str] = None, scope: Optional[List[str]] = None, force_pkce: Optional[bool] = None, additional_config: Optional[Dict[str, Any]] = None, third_party_id: str = 'temp', name: Optional[str] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None)</span>
+<span>(</span><span>client_id: str, client_secret: Optional[str] = None, client_type: Optional[str] = None, scope: Optional[List[str]] = None, force_pkce: Optional[bool] = None, additional_config: Optional[Dict[str, Any]] = None, third_party_id: str = 'temp', name: Optional[str] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[<a title="supertokens_python.recipe.thirdparty.provider.UserInfoMap" href="#supertokens_python.recipe.thirdparty.provider.UserInfoMap">UserInfoMap</a>] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None, validate_access_token: Optional[Callable[[str, <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, Dict[str, Any]], Awaitable[None]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -859,6 +894,12 @@ class ProviderInput:
         generate_fake_email: Optional[
             Callable[[str, str, Dict[str, Any]], Awaitable[str]]
         ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
     ):
         ProviderClientConfig.__init__(
             self,
@@ -886,6 +927,7 @@ class ProviderInput:
             require_email,
             validate_id_token_payload,
             generate_fake_email,
+            validate_access_token,
         )
 
     def to_json(self) -&gt; Dict[str, Any]:

@@ -133,6 +133,7 @@ def parse_tenant_config(tenant: Dict[str, Any]) -&gt; TenantConfigResponse:
                 require_email=p.get(&#34;requireEmail&#34;, True),
                 validate_id_token_payload=None,
                 generate_fake_email=None,
+                validate_access_token=None,
             )
         )
 
@@ -401,6 +402,7 @@ class RecipeImplementation(RecipeInterface):
                 require_email=p.get(&#34;requireEmail&#34;, True),
                 validate_id_token_payload=None,
                 generate_fake_email=None,
+                validate_access_token=None,
             )
         )
 

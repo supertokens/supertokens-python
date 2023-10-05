@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, Optional
+<pre><code class="python">from typing import Any, Dict, Optional, Tuple
 
 from httpx import AsyncClient
 
@@ -76,7 +76,7 @@ async def do_post_request(
     url: str,
     body_params: Optional[Dict[str, str]] = None,
     headers: Optional[Dict[str, str]] = None,
-) -&gt; Dict[str, Any]:
+) -&gt; Tuple[int, Dict[str, Any]]:
     if body_params is None:
         body_params = {}
     if headers is None:
@@ -90,7 +90,7 @@ async def do_post_request(
         log_debug_message(
             &#34;Received response with status %s and body %s&#34;, res.status_code, res.text
         )
-        return res.json()</code></pre>
+        return res.status_code, res.json()</code></pre>
 </details>
 </section>
 <section>
@@ -130,7 +130,7 @@ async def do_post_request(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.utils.do_post_request"><code class="name flex">
-<span>async def <span class="ident">do_post_request</span></span>(<span>url: str, body_params: Optional[Dict[str, str]] = None, headers: Optional[Dict[str, str]] = None) ‑> Dict[str, Any]</span>
+<span>async def <span class="ident">do_post_request</span></span>(<span>url: str, body_params: Optional[Dict[str, str]] = None, headers: Optional[Dict[str, str]] = None) ‑> Tuple[int, Dict[str, Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -142,7 +142,7 @@ async def do_post_request(
     url: str,
     body_params: Optional[Dict[str, str]] = None,
     headers: Optional[Dict[str, str]] = None,
-) -&gt; Dict[str, Any]:
+) -&gt; Tuple[int, Dict[str, Any]]:
     if body_params is None:
         body_params = {}
     if headers is None:
@@ -156,7 +156,7 @@ async def do_post_request(
         log_debug_message(
             &#34;Received response with status %s and body %s&#34;, res.status_code, res.text
         )
-        return res.json()</code></pre>
+        return res.status_code, res.json()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.utils.get_actual_client_id_from_development_client_id"><code class="name flex">

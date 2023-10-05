@@ -40,9 +40,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+import base64
 from typing import Any, Dict, List, Optional
 
-from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
+from supertokens_python.recipe.thirdparty.providers.utils import (
+    do_get_request,
+    do_post_request,
+)
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 from .custom import GenericProvider, NewProvider
@@ -99,7 +104,32 @@ def Github(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bu
     if input.config.token_endpoint is None:
         input.config.token_endpoint = &#34;https://github.com/login/oauth/access_token&#34;
 
-    return NewProvider(input, GithubImpl)</code></pre>
+    if input.config.validate_access_token is None:
+        input.config.validate_access_token = validate_access_token
+
+    return NewProvider(input, GithubImpl)
+
+
+async def validate_access_token(
+    access_token: str, config: ProviderConfigForClient, _: Dict[str, Any]
+):
+    client_secret = &#34;&#34; if config.client_secret is None else config.client_secret
+    basic_auth_token = base64.b64encode(
+        f&#34;{config.client_id}:{client_secret}&#34;.encode()
+    ).decode()
+
+    url = f&#34;https://api.github.com/applications/{config.client_id}/token&#34;
+    headers = {
+        &#34;Authorization&#34;: f&#34;Basic {basic_auth_token}&#34;,
+        &#34;Content-Type&#34;: &#34;application/json&#34;,
+    }
+
+    status, body = await do_post_request(url, {&#34;access_token&#34;: access_token}, headers)
+    if status != 200:
+        raise ValueError(&#34;Invalid access token&#34;)
+
+    if &#34;app&#34; not in body or body[&#34;app&#34;].get(&#34;client_id&#34;) != config.client_id:
+        raise ValueError(&#34;Access token does not belong to your application&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -128,7 +158,41 @@ def Github(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bu
     if input.config.token_endpoint is None:
         input.config.token_endpoint = &#34;https://github.com/login/oauth/access_token&#34;
 
+    if input.config.validate_access_token is None:
+        input.config.validate_access_token = validate_access_token
+
     return NewProvider(input, GithubImpl)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.github.validate_access_token"><code class="name flex">
+<span>async def <span class="ident">validate_access_token</span></span>(<span>access_token: str, config: ProviderConfigForClient, _: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def validate_access_token(
+    access_token: str, config: ProviderConfigForClient, _: Dict[str, Any]
+):
+    client_secret = &#34;&#34; if config.client_secret is None else config.client_secret
+    basic_auth_token = base64.b64encode(
+        f&#34;{config.client_id}:{client_secret}&#34;.encode()
+    ).decode()
+
+    url = f&#34;https://api.github.com/applications/{config.client_id}/token&#34;
+    headers = {
+        &#34;Authorization&#34;: f&#34;Basic {basic_auth_token}&#34;,
+        &#34;Content-Type&#34;: &#34;application/json&#34;,
+    }
+
+    status, body = await do_post_request(url, {&#34;access_token&#34;: access_token}, headers)
+    if status != 200:
+        raise ValueError(&#34;Invalid access token&#34;)
+
+    if &#34;app&#34; not in body or body[&#34;app&#34;].get(&#34;client_id&#34;) != config.client_id:
+        raise ValueError(&#34;Access token does not belong to your application&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -269,6 +333,7 @@ def Github(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bu
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.github.Github" href="#supertokens_python.recipe.thirdparty.providers.github.Github">Github</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.github.validate_access_token" href="#supertokens_python.recipe.thirdparty.providers.github.validate_access_token">validate_access_token</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

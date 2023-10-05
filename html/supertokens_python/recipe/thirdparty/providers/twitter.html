@@ -112,11 +112,12 @@ class TwitterImpl(GenericProvider):
 
         assert self.config.token_endpoint is not None
 
-        return await do_post_request(
+        _, body = await do_post_request(
             self.config.token_endpoint,
             body_params=twitter_oauth_tokens_params,
             headers={&#34;Authorization&#34;: f&#34;Basic {auth_token}&#34;},
         )
+        return body
 
 
 def Twitter(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
@@ -254,11 +255,12 @@ def Twitter(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-b
 
         assert self.config.token_endpoint is not None
 
-        return await do_post_request(
+        _, body = await do_post_request(
             self.config.token_endpoint,
             body_params=twitter_oauth_tokens_params,
             headers={&#34;Authorization&#34;: f&#34;Basic {auth_token}&#34;},
-        )</code></pre>
+        )
+        return body</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -310,11 +312,12 @@ def Twitter(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-b
 
     assert self.config.token_endpoint is not None
 
-    return await do_post_request(
+    _, body = await do_post_request(
         self.config.token_endpoint,
         body_params=twitter_oauth_tokens_params,
         headers={&#34;Authorization&#34;: f&#34;Basic {auth_token}&#34;},
-    )</code></pre>
+    )
+    return body</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.twitter.TwitterImpl.get_config_for_client_type"><code class="name flex">
