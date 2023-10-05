@@ -14,12 +14,12 @@
 from __future__ import annotations
 
 import base64
-import json
 from typing import Any, Dict, List, Optional
 
-import requests
-
-from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
+from supertokens_python.recipe.thirdparty.providers.utils import (
+    do_get_request,
+    do_post_request,
+)
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 from .custom import GenericProvider, NewProvider
@@ -95,14 +95,11 @@ async def validate_access_token(
         "Authorization": f"Basic {basic_auth_token}",
         "Content-Type": "application/json",
     }
-    payload = json.dumps({"access_token": access_token})
 
-    resp = requests.post(url, headers=headers, data=payload)
-
-    if resp.status_code != 200:
+    try:
+        body = await do_post_request(url, {"access_token": access_token}, headers)
+    except Exception:
         raise ValueError("Invalid access token")
 
-    body = resp.json()
-
-    if "app" not in body or body["app"]["client_id"] != config.client_id:
+    if "app" not in body or body["app"].get("client_id") != config.client_id:
         raise ValueError("Access token does not belong to your application")

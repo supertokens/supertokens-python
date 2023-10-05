@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional
 import respx
 from fastapi import FastAPI
 from pytest import fixture, mark
+from pytest_mock import MockerFixture
 from starlette.testclient import TestClient
 
 from supertokens_python import init
@@ -106,18 +107,6 @@ async def exchange_auth_code_for_valid_oauth_tokens(  # pylint: disable=unused-a
     }
 
 
-async def get_user_info(  # pylint: disable=unused-argument
-    oauth_tokens: Dict[str, Any],
-    user_context: Dict[str, Any],
-) -> UserInfo:
-    time = str(datetime.datetime.now())
-    return UserInfo(
-        "" + time,
-        UserInfoEmail(f"johndoeprovidertest+{time}@supertokens.com", True),
-        RawUserInfoFromProvider({}, {}),
-    )
-
-
 async def exchange_auth_code_for_invalid_oauth_tokens(  # pylint: disable=unused-argument
     redirect_uri_info: RedirectUriInfo,
     user_context: Dict[str, Any],
@@ -139,7 +128,6 @@ def get_custom_valid_token_provider(provider: Provider) -> Provider:
     provider.exchange_auth_code_for_oauth_tokens = (
         exchange_auth_code_for_valid_oauth_tokens
     )
-    provider.get_user_info = get_user_info
     return provider
 
 
@@ -153,7 +141,9 @@ async def invalid_access_token(  # pylint: disable=unused-argument
 
 
 async def valid_access_token(  # pylint: disable=unused-argument
-    access_token: str, config: ProviderConfig, user_context: Optional[Dict[str, Any]]
+    access_token: str,
+    config: ProviderConfigForClient,
+    user_context: Optional[Dict[str, Any]],
 ):
     if access_token == "accesstoken":
         return
@@ -210,53 +200,66 @@ async def test_signinup_when_validate_access_token_throws(fastapi_client: TestCl
     assert res.status_code == 500
 
 
-# async def test_signinup_works_when_validate_access_token_does_not_throw(fastapi_client: TestClient):
-#     st_init_args = {
-#         **st_init_common_args,
-#         "recipe_list": [
-#             session.init(),
-#             thirdpartyemailpassword.init(
-#                 providers=[
-#                     ProviderInput(
-#                         config=ProviderConfig(
-#                             third_party_id="custom",
-#                             clients=[
-#                                 ProviderClientConfig(
-#                                     client_id="test",
-#                                     client_secret="test-secret",
-#                                     scope=["profile", "email"],
-#                                 ),
-#                             ],
-#                             authorization_endpoint="https://example.com/oauth/authorize",
-#                             validate_access_token=valid_access_token,
-#                             authorization_endpoint_query_params={
-#                                 "response_type": "token",  # Changing an existing parameter
-#                                 "response_mode": "form",  # Adding a new parameter
-#                                 "scope": None,  # Removing a parameter
-#                             },
-#                             token_endpoint="https://example.com/oauth/token",
-#                         ),
-#                         override=get_custom_valid_token_provider
-#                     )
-#                 ]
-#             ),
-#         ],
-#     }
-#
-#     init(**st_init_args)  # type: ignore
-#     start_st()
-#
-#     res = fastapi_client.post(
-#         "/auth/signinup",
-#         json={
-#             "thirdPartyId": "custom",
-#             "redirectURIInfo": {
-#                 "redirectURIOnProviderDashboard": "http://127.0.0.1/callback",
-#                 "redirectURIQueryParams": {
-#                     "code": "abcdefghj",
-#                 },
-#             },
-#         }
-#     )
-#     assert res.status_code == 200
-#     assert res.json()["status"] == "OK"
+async def test_signinup_works_when_validate_access_token_does_not_throw(
+    fastapi_client: TestClient, mocker: MockerFixture
+):
+    time = str(datetime.datetime.now())
+    mocker.patch(
+        "supertokens_python.recipe.thirdparty.providers.custom.get_supertokens_user_info_result_from_raw_user_info",
+        return_value=UserInfo(
+            "" + time,
+            UserInfoEmail(f"johndoeprovidertest+{time}@supertokens.com", True),
+            RawUserInfoFromProvider({}, {}),
+        ),
+    )
+
+    st_init_args = {
+        **st_init_common_args,
+        "recipe_list": [
+            session.init(),
+            thirdpartyemailpassword.init(
+                providers=[
+                    ProviderInput(
+                        config=ProviderConfig(
+                            third_party_id="custom",
+                            clients=[
+                                ProviderClientConfig(
+                                    client_id="test",
+                                    client_secret="test-secret",
+                                    scope=["profile", "email"],
+                                ),
+                            ],
+                            authorization_endpoint="https://example.com/oauth/authorize",
+                            validate_access_token=valid_access_token,
+                            authorization_endpoint_query_params={
+                                "response_type": "token",  # Changing an existing parameter
+                                "response_mode": "form",  # Adding a new parameter
+                                "scope": None,  # Removing a parameter
+                            },
+                            token_endpoint="https://example.com/oauth/token",
+                        ),
+                        override=get_custom_valid_token_provider,
+                    )
+                ]
+            ),
+        ],
+    }
+
+    init(**st_init_args)  # type: ignore
+    start_st()
+
+    res = fastapi_client.post(
+        "/auth/signinup",
+        json={
+            "thirdPartyId": "custom",
+            "redirectURIInfo": {
+                "redirectURIOnProviderDashboard": "http://127.0.0.1/callback",
+                "redirectURIQueryParams": {
+                    "code": "abcdefghj",
+                },
+            },
+        },
+    )
+
+    assert res.status_code == 200
+    assert res.json()["status"] == "OK"

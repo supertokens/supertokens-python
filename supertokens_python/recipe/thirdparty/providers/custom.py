@@ -403,7 +403,12 @@ class GenericProvider(Provider):
                     user_context,
                 )
 
-        if access_token is not None and self.config.token_endpoint is not None:
+        if self.config.validate_access_token is not None and access_token is not None:
+            await self.config.validate_access_token(
+                access_token, self.config, user_context
+            )
+
+        if access_token is not None and self.config.user_info_endpoint is not None:
             headers: Dict[str, str] = {"Authorization": f"Bearer {access_token}"}
             query_params: Dict[str, str] = {}
 
@@ -421,11 +426,6 @@ class GenericProvider(Provider):
                 raw_user_info_from_provider.from_user_info_api = await do_get_request(
                     self.config.user_info_endpoint, query_params, headers
                 )
-
-        if self.config.validate_access_token is not None and access_token is not None:
-            await self.config.validate_access_token(
-                access_token, self.config, user_context
-            )
 
         user_info_result = get_supertokens_user_info_result_from_raw_user_info(
             self.config, raw_user_info_from_provider
