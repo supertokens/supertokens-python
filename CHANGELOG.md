@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.16.5] - 2023-10-23
 
 - Relaxed constraint on `pyJWT` dependency.
-  - This is done because some users face `InvalidSignatureError` when decoding the access token with the latest `pyJWT` version.
+  - This is done because some users face `InvalidSignatureError` when decoding the id token with the latest `pyJWT` version.
 
 ## [0.16.4] - 2023-10-05
 
