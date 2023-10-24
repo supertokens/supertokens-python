@@ -42,16 +42,16 @@ async def handle_sign_in_up_api(
     if third_party_id is None or not isinstance(third_party_id, str):
         raise_bad_input_exception("Please provide the thirdPartyId in request body")
 
-    redirect_uri_info = body.get("redirectURIInfo")
-    oauth_tokens = body.get("oAuthTokens")
-
-    if redirect_uri_info is not None:
-        if redirect_uri_info.get("redirectURIOnProviderDashboard") is None:
+    oauth_tokens = None
+    redirect_uri_info = None
+    if body.get("redirectURIInfo") is not None:
+        if body.get("redirectURIInfo").get("redirectURIOnProviderDashboard") is None:
             raise_bad_input_exception(
                 "Please provide the redirectURIOnProviderDashboard in request body"
             )
-    elif oauth_tokens is not None:
-        pass  # Nothing to do here
+        redirect_uri_info = body.get("redirectURIInfo")
+    elif body.get("oAuthTokens") is not None:
+        oauth_tokens = body.get("oAuthTokens")
     else:
         raise_bad_input_exception(
             "Please provide one of redirectURIInfo or oAuthTokens in the request body"
@@ -71,15 +71,18 @@ async def handle_sign_in_up_api(
 
     provider = provider_response
 
-    result = await api_implementation.sign_in_up_post(
-        provider=provider,
-        redirect_uri_info=RedirectUriInfo(
+    if redirect_uri_info is not None:
+        redirect_uri_info = RedirectUriInfo(
             redirect_uri_on_provider_dashboard=redirect_uri_info.get(
                 "redirectURIOnProviderDashboard"
             ),
             redirect_uri_query_params=redirect_uri_info.get("redirectURIQueryParams"),
             pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
-        ),
+        )
+
+    result = await api_implementation.sign_in_up_post(
+        provider=provider,
+        redirect_uri_info=redirect_uri_info,
         oauth_tokens=oauth_tokens,
         tenant_id=tenant_id,
         api_options=api_options,

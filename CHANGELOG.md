@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.16.6] - 2023-10-24
+
+- Fixed server error in `sign_in_up` API
+    - There was a bug in case where the API was called with just oAuth tokens without passing the `redirect_uri_info`.
+
 ## [0.16.5] - 2023-10-23
 
 - Relaxed constraint on `pyJWT` dependency.
