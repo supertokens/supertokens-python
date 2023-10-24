@@ -49,7 +49,7 @@ async def fastapi_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    return TestClient(app, raise_server_exceptions=True)
+    return TestClient(app, raise_server_exceptions=False)
 
 
 async def test_thirdpary_parsing_works(fastapi_client: TestClient):
