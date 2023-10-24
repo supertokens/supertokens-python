@@ -185,16 +185,16 @@ __all__ = [
     if third_party_id is None or not isinstance(third_party_id, str):
         raise_bad_input_exception(&#34;Please provide the thirdPartyId in request body&#34;)
 
-    redirect_uri_info = body.get(&#34;redirectURIInfo&#34;)
-    oauth_tokens = body.get(&#34;oAuthTokens&#34;)
-
-    if redirect_uri_info is not None:
-        if redirect_uri_info.get(&#34;redirectURIOnProviderDashboard&#34;) is None:
+    oauth_tokens = None
+    redirect_uri_info = None
+    if body.get(&#34;redirectURIInfo&#34;) is not None:
+        if body.get(&#34;redirectURIInfo&#34;).get(&#34;redirectURIOnProviderDashboard&#34;) is None:
             raise_bad_input_exception(
                 &#34;Please provide the redirectURIOnProviderDashboard in request body&#34;
             )
-    elif oauth_tokens is not None:
-        pass  # Nothing to do here
+        redirect_uri_info = body.get(&#34;redirectURIInfo&#34;)
+    elif body.get(&#34;oAuthTokens&#34;) is not None:
+        oauth_tokens = body.get(&#34;oAuthTokens&#34;)
     else:
         raise_bad_input_exception(
             &#34;Please provide one of redirectURIInfo or oAuthTokens in the request body&#34;
@@ -214,15 +214,18 @@ __all__ = [
 
     provider = provider_response
 
-    result = await api_implementation.sign_in_up_post(
-        provider=provider,
-        redirect_uri_info=RedirectUriInfo(
+    if redirect_uri_info is not None:
+        redirect_uri_info = RedirectUriInfo(
             redirect_uri_on_provider_dashboard=redirect_uri_info.get(
                 &#34;redirectURIOnProviderDashboard&#34;
             ),
             redirect_uri_query_params=redirect_uri_info.get(&#34;redirectURIQueryParams&#34;),
             pkce_code_verifier=redirect_uri_info.get(&#34;pkceCodeVerifier&#34;),
-        ),
+        )
+
+    result = await api_implementation.sign_in_up_post(
+        provider=provider,
+        redirect_uri_info=redirect_uri_info,
         oauth_tokens=oauth_tokens,
         tenant_id=tenant_id,
         api_options=api_options,
