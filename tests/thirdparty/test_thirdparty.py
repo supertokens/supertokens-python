@@ -49,7 +49,7 @@ async def fastapi_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app, raise_server_exceptions=True)
 
 
 async def test_thirdpary_parsing_works(fastapi_client: TestClient):
@@ -267,4 +267,64 @@ async def test_signinup_works_when_validate_access_token_does_not_throw(
 
     assert res.status_code == 200
     assert access_token_validated is True
+    assert res.json()["status"] == "OK"
+
+
+async def test_signinup_android_without_redirect_uri(
+    fastapi_client: TestClient, mocker: MockerFixture
+):
+    time = str(datetime.datetime.now())
+    mocker.patch(
+        "supertokens_python.recipe.thirdparty.providers.custom.get_supertokens_user_info_result_from_raw_user_info",
+        return_value=UserInfo(
+            "" + time,
+            UserInfoEmail(f"johndoeprovidertest+{time}@supertokens.com", True),
+            RawUserInfoFromProvider({}, {}),
+        ),
+    )
+    st_init_args = {
+        **st_init_common_args,
+        "recipe_list": [
+            session.init(),
+            thirdpartyemailpassword.init(
+                providers=[
+                    ProviderInput(
+                        config=ProviderConfig(
+                            third_party_id="custom",
+                            clients=[
+                                ProviderClientConfig(
+                                    client_id="test",
+                                    client_secret="test-secret",
+                                    scope=["profile", "email"],
+                                    client_type="android",
+                                ),
+                            ],
+                            authorization_endpoint="https://example.com/oauth/authorize",
+                            authorization_endpoint_query_params={
+                                "response_type": "token",  # Changing an existing parameter
+                                "response_mode": "form",  # Adding a new parameter
+                                "scope": None,  # Removing a parameter
+                            },
+                            token_endpoint="https://example.com/oauth/token",
+                        ),
+                    )
+                ]
+            ),
+        ],
+    }
+    init(**st_init_args)  # type: ignore
+    start_st()
+
+    res = fastapi_client.post(
+        "/auth/signinup",
+        json={
+            "thirdPartyId": "custom",
+            "clientType": "android",
+            "oAuthTokens": {
+                "access_token": "accesstoken",
+                "id_token": "idtoken",
+            },
+        },
+    )
+    assert res.status_code == 200
     assert res.json()["status"] == "OK"
