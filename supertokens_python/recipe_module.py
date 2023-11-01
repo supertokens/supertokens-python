@@ -121,7 +121,7 @@ class RecipeModule(abc.ABC):
 
     @abc.abstractmethod
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
     ) -> BaseResponse:
         pass
 

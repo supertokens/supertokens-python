@@ -15,9 +15,21 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Union,
+    Awaitable,
+)
 
 from typing_extensions import Literal
+
+from flask import app
 
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
@@ -76,7 +88,10 @@ class InputAppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
+        website_domain: Optional[str],
+        origin: Optional[
+            Union[str, Callable[[BaseRequest, Optional[Dict[str, Any]]], str]]
+        ],
         api_gateway_path: str = "",
         api_base_path: str = "/auth",
         website_base_path: str = "/auth",
@@ -85,6 +100,7 @@ class InputAppInfo:
         self.api_gateway_path = api_gateway_path
         self.api_domain = api_domain
         self.website_domain = website_domain
+        self.origin = origin
         self.api_base_path = api_base_path
         self.website_base_path = website_base_path
 
@@ -94,7 +110,10 @@ class AppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
+        website_domain: Optional[str],
+        origin: Optional[
+            Union[str, Callable[[BaseRequest, Optional[Dict[str, Any]]], str]]
+        ],
         framework: Literal["fastapi", "flask", "django"],
         api_gateway_path: str,
         api_base_path: str,
@@ -104,13 +123,16 @@ class AppInfo:
         self.app_name = app_name
         self.api_gateway_path = NormalisedURLPath(api_gateway_path)
         self.api_domain = NormalisedURLDomain(api_domain)
-        self.website_domain = NormalisedURLDomain(website_domain)
         self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
             self.api_domain.get_as_string_dangerous()
         )
-        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-            self.website_domain.get_as_string_dangerous()
-        )
+        if website_domain is None and origin is None:
+            raise_general_exception(
+                "Please provide at least one of website_domain or origin"
+            )
+        self.origin = origin
+        self.website_domain = website_domain
+        self.get_top_level_website_domain = self.top_level_website_domain
         self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )
@@ -123,6 +145,29 @@ class AppInfo:
             mode = "wsgi"
         self.framework = framework
         self.mode = mode
+
+    def top_level_website_domain(
+        self, request: BaseRequest, userContext: Optional[Dict[str, Any]]
+    ) -> str:
+        return get_top_level_domain_for_same_site_resolution(
+            self.get_website_domain(request, userContext).get_as_string_dangerous()
+        )
+
+    def get_website_domain(
+        self, request: BaseRequest, userContext: Optional[Dict[str, Any]]
+    ):
+        origin = self.origin
+        if origin is None:
+            origin = self.website_domain
+
+        # This should not be possible because we check for either origin or websiteDomain above
+        if origin is None:
+            raise_general_exception("should never come here")
+
+        if callable(origin):
+            origin = origin(request, userContext)
+
+        return NormalisedURLDomain(origin)
 
     def toJSON(self):
         def defaultImpl(o: Any):
@@ -158,6 +203,7 @@ class Supertokens:
             app_info.app_name,
             app_info.api_domain,
             app_info.website_domain,
+            app_info.origin,
             framework,
             app_info.api_gateway_path,
             app_info.api_base_path,
@@ -572,7 +618,7 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(
-        self, request: BaseRequest, err: Exception, response: BaseResponse
+        self, request: BaseRequest, err: Exception, response: BaseResponse, user_context: Dict[str, Any]
     ):
         log_debug_message("errorHandler: Started")
         log_debug_message(
@@ -595,7 +641,7 @@ class Supertokens:
                 log_debug_message(
                     "errorHandler: Matched with recipeID: %s", recipe.get_recipe_id()
                 )
-                return await recipe.handle_error(request, err, response)
+                return await recipe.handle_error(request, err, response, user_context)
         raise err
 
     def get_request_from_user_context(  # pylint: disable=no-self-use
