@@ -19,7 +19,11 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Unio
 
 from typing_extensions import Literal
 
-from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
+from supertokens_python.logger import (
+    get_maybe_none_as_str,
+    log_debug_message,
+    enable_debug_logging,
+)
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, USER_DELETE, USERS
 from .exceptions import SuperTokensError
@@ -150,6 +154,7 @@ class Supertokens:
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
+        debug: Optional[bool],
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
@@ -165,6 +170,9 @@ class Supertokens:
             mode,
         )
         self.supertokens_config = supertokens_config
+        self.debug = debug
+        if debug is True:
+            enable_debug_logging()
         self._telemetry_status: str = "NONE"
         log_debug_message(
             "Started SuperTokens with debug logging (supertokens.init called)"
@@ -217,6 +225,7 @@ class Supertokens:
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
+        debug: Optional[bool],
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
@@ -226,6 +235,7 @@ class Supertokens:
                 recipe_list,
                 mode,
                 telemetry,
+                debug,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 
