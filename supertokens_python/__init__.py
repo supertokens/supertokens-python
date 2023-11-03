@@ -34,14 +34,10 @@ def init(
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
     mode: Optional[Literal["asgi", "wsgi"]] = None,
     telemetry: Optional[bool] = None,
+    debug: Optional[bool] = None,
 ):
     return Supertokens.init(
-        app_info,
-        framework,
-        supertokens_config,
-        recipe_list,
-        mode,
-        telemetry,
+        app_info, framework, supertokens_config, recipe_list, mode, telemetry, debug
     )
 
 

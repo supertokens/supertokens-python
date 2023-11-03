@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import json
 import logging
 from datetime import datetime
@@ -25,11 +24,16 @@ DEBUG_ENV_VAR = "SUPERTOKENS_DEBUG"
 
 supertokens_dir = path.dirname(__file__)
 
+
+def enable_debug_logging():
+    _logger.setLevel(logging.DEBUG)
+
+
 # Configure logger
 _logger = logging.getLogger(NAMESPACE)
 debug_env = getenv(DEBUG_ENV_VAR, "").lower()
 if debug_env == "1":
-    _logger.setLevel(logging.DEBUG)
+    enable_debug_logging()
 
 
 def _get_log_timestamp() -> str:
