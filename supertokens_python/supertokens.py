@@ -170,7 +170,6 @@ class Supertokens:
             mode,
         )
         self.supertokens_config = supertokens_config
-        self.debug = debug
         if debug is True:
             enable_debug_logging()
         self._telemetry_status: str = "NONE"
