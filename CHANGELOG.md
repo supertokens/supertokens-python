@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `network_interceptor` to the `supertokens_config` in `init`.
   - This can be used to capture/modify all the HTTP requests sent to the core.
+  - Added optional parameter `user_context` to session functions `get_session()`, `refresh_session()`, `revoke_all_sessions_for_user()`, `get_all_session_handles_for_user()`, `revoke_session()`, `revoke_multiple_sessions()`, `update_session_data_in_database()` and `get_session_information()`
   - Solves the issue - https://github.com/supertokens/supertokens-core/issues/865
 - Fixed the dependencies in the example apps
   - Example apps will now fetch the latest version of the frameworks
