@@ -16,6 +16,6 @@ async def handle_user_delete(
     if user_id is None:
         raise_bad_input_exception("Missing required parameter 'userId'")
 
-    await Supertokens.get_instance().delete_user(user_id)
+    await Supertokens.get_instance().delete_user(user_id, _user_context)
 
     return UserDeleteAPIResponse()

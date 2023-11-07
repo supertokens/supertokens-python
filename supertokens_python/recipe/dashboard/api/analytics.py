@@ -57,7 +57,8 @@ async def handle_analytics_post(
 
     try:
         response = await Querier.get_instance().send_get_request(
-            NormalisedURLPath("/telemetry")
+            NormalisedURLPath("/telemetry"),
+            _user_context,
         )
         if response is not None:
             if (

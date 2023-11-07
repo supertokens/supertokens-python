@@ -143,6 +143,7 @@ class RecipeImplementation(RecipeInterface):
                 "tenantId": tenant_id,
                 **(config.to_json() if config is not None else {}),
             },
+            user_context=user_context,
         )
         return CreateOrUpdateTenantOkResult(
             created_new=response["createdNew"],
@@ -154,6 +155,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/multitenancy/tenant/remove"),
             {"tenantId": tenant_id},
+            user_context=user_context,
         )
         return DeleteTenantOkResult(
             did_exist=response["didExist"],
@@ -166,6 +168,7 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
             ),
+            user_context=user_context,
         )
 
         if res["status"] == "TENANT_NOT_FOUND_ERROR":
@@ -186,6 +189,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/multitenancy/tenant/list"),
             {},
+            user_context=user_context,
         )
 
         tenant_items: List[ListAllTenantsItem] = []
@@ -220,6 +224,7 @@ class RecipeImplementation(RecipeInterface):
                 "config": config.to_json(),
                 "skipValidation": skip_validation is True,
             },
+            user_context=user_context,
         )
 
         return CreateOrUpdateThirdPartyConfigOkResult(
@@ -239,6 +244,7 @@ class RecipeImplementation(RecipeInterface):
             {
                 "thirdPartyId": third_party_id,
             },
+            user_context=user_context,
         )
 
         return DeleteThirdPartyConfigOkResult(
@@ -261,6 +267,7 @@ class RecipeImplementation(RecipeInterface):
             {
                 "userId": user_id,
             },
+            user_context=user_context,
         )
 
         if response["status"] == "OK":
@@ -294,6 +301,7 @@ class RecipeImplementation(RecipeInterface):
             {
                 "userId": user_id,
             },
+            user_context=user_context,
         )
 
         return DisassociateUserFromTenantOkResult(

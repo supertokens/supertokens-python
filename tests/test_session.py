@@ -166,7 +166,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert response4.session is not None
     assert response4.accessToken is None
 
-    response5 = await revoke_session(s.recipe_implementation, response4.session.handle)
+    response5 = await revoke_session(
+        s.recipe_implementation, response4.session.handle, {}
+    )
 
     assert response5 is True
 

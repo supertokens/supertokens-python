@@ -42,5 +42,6 @@ async def handle_emailpassword_signout_api(
     await Querier.get_instance().send_delete_request(
         NormalisedURLPath("/recipe/dashboard/session"),
         {"sessionId": session_id_form_auth_header},
+        user_context=_user_context,
     )
     return SignOutOK()

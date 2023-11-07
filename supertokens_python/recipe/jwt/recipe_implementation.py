@@ -62,7 +62,9 @@ class RecipeImplementation(RecipeInterface):
             "jwksDomain": self.app_info.api_domain.get_as_string_dangerous(),
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/jwt"), data
+            NormalisedURLPath("/recipe/jwt"),
+            data,
+            user_context=user_context,
         )
 
         if response["status"] == "OK":
@@ -71,7 +73,9 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/.well-known/jwks.json"), {}
+            NormalisedURLPath("/.well-known/jwks.json"),
+            {},
+            user_context=user_context,
         )
 
         validity_in_secs = DEFAULT_JWKS_MAX_AGE

@@ -45,7 +45,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user"), params
+            NormalisedURLPath("/recipe/user"),
+            params,
+            user_context=user_context,
         )
         if "status" in response and response["status"] == "OK":
             return User(
@@ -64,7 +66,9 @@ class RecipeImplementation(RecipeInterface):
         self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> List[User]:
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/users/by-email"), {"email": email}
+            NormalisedURLPath(f"{tenant_id}/recipe/users/by-email"),
+            {"email": email},
+            user_context=user_context,
         )
         users: List[User] = []
         users_list: List[Dict[str, Any]] = (
@@ -96,7 +100,9 @@ class RecipeImplementation(RecipeInterface):
             "thirdPartyUserId": third_party_user_id,
         }
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user"),
+            params,
+            user_context=user_context,
         )
         if "status" in response and response["status"] == "OK":
             return User(
@@ -127,7 +133,9 @@ class RecipeImplementation(RecipeInterface):
             "email": {"id": email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup"),
+            data,
+            user_context=user_context,
         )
         return SignInUpOkResult(
             User(
@@ -159,7 +167,9 @@ class RecipeImplementation(RecipeInterface):
             "email": {"id": email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup"),
+            data,
+            user_context=user_context,
         )
         return ManuallyCreateOrUpdateUserOkResult(
             User(

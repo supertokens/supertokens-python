@@ -51,6 +51,7 @@ class RecipeImplementation(RecipeInterface):
                 await Querier.get_instance().send_post_request(
                     NormalisedURLPath("/recipe/dashboard/session/verify"),
                     {"sessionId": auth_header_value},
+                    user_context=user_context,
                 )
             )
             if session_verification_response.get("status") != "OK":

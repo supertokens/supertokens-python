@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.16.8] - 2023-11-7
+
+- Added `network_interceptor` hook
+
 ## [0.16.7] - 2023-11-2
 
 - Added `debug` flag in `init()`. If set to `True`, debug logs will be printed.
