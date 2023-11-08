@@ -255,8 +255,6 @@ class Querier:
         async def f(url: str, method: str) -> Response:
             nonlocal headers, data
             if Querier.network_interceptor is not None:
-                print(Querier.network_interceptor)
-                print(url, method, headers, {}, data, user_context)
                 (
                     url,
                     method,
