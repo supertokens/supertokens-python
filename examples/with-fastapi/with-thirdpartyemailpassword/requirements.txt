@@ -1,1 +1,4 @@
-supertokens-python[fastapi]
+fastapi
+uvicorn
+python-dotenv
+supertokens-python

@@ -55,12 +55,12 @@ async def get_user_count(
     include_recipe_ids: Union[None, List[str]] = None, tenant_id: Optional[str] = None
 ) -> int:
     return await Supertokens.get_instance().get_user_count(
-        include_recipe_ids, tenant_id
+        include_recipe_ids, user_context=None, tenant_id=tenant_id
     )
 
 
 async def delete_user(user_id: str) -> None:
-    return await Supertokens.get_instance().delete_user(user_id)
+    return await Supertokens.get_instance().delete_user(user_id, user_context=None)
 
 
 async def create_user_id_mapping(
@@ -74,7 +74,7 @@ async def create_user_id_mapping(
     UserIdMappingAlreadyExistsError,
 ]:
     return await Supertokens.get_instance().create_user_id_mapping(
-        supertokens_user_id, external_user_id, external_user_id_info, force
+        supertokens_user_id, external_user_id, None, external_user_id_info, force
     )
 
 
@@ -82,7 +82,9 @@ async def get_user_id_mapping(
     user_id: str,
     user_id_type: Optional[UserIDTypes] = None,
 ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
-    return await Supertokens.get_instance().get_user_id_mapping(user_id, user_id_type)
+    return await Supertokens.get_instance().get_user_id_mapping(
+        user_id, None, user_id_type
+    )
 
 
 async def delete_user_id_mapping(
@@ -91,7 +93,7 @@ async def delete_user_id_mapping(
     force: Optional[bool] = None,
 ) -> DeleteUserIdMappingOkResult:
     return await Supertokens.get_instance().delete_user_id_mapping(
-        user_id, user_id_type, force
+        user_id, None, user_id_type, force
     )
 
 
@@ -101,5 +103,5 @@ async def update_or_delete_user_id_mapping_info(
     external_user_id_info: Optional[str] = None,
 ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
     return await Supertokens.get_instance().update_or_delete_user_id_mapping_info(
-        user_id, user_id_type, external_user_id_info
+        user_id, None, user_id_type, external_user_id_info
     )

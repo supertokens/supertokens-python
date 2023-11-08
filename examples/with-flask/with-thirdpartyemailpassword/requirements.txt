@@ -1,1 +1,4 @@
-supertokens-python[flask]
+flask
+flask_cors
+python-dotenv
+supertokens-python

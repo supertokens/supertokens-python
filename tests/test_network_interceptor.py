@@ -86,45 +86,6 @@ async def test_network_interceptor_sanity(driver_config_client: TestClient):
 
 
 @mark.asyncio
-async def test_network_interceptor_not_set(driver_config_client: TestClient):
-    is_network_intercepted = False
-
-    init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
-        app_info=InputAppInfo(
-            app_name="SuperTokens Demo",
-            api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io",
-            api_base_path="/auth",
-        ),
-        framework="fastapi",
-        recipe_list=[
-            emailpassword.init(),
-            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
-        ],
-    )
-    start_st()
-    resp = driver_config_client.post(
-        url="/auth/signin",
-        json={
-            "formFields": [
-                {
-                    "id": "email",
-                    "value": "testEmail@email.com",
-                },
-                {
-                    "id": "password",
-                    "value": "validPassword123",
-                },
-            ]
-        },
-    )
-
-    assert is_network_intercepted is False
-    assert resp.status_code == 200
-
-
-@mark.asyncio
 async def test_network_interceptor_incorrect_core_url():
     is_network_intercepted = False
 

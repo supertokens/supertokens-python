@@ -1,1 +1,3 @@
-supertokens-python[django]
+django-cors-headers
+python-dotenv
+supertokens-python

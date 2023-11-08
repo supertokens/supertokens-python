@@ -102,6 +102,7 @@ async def create_new_session(
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
+    user_context: Optional[Dict[str, Any]],
 ) -> CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
@@ -120,6 +121,7 @@ async def create_new_session(
             "useDynamicSigningKey": recipe_implementation.config.use_dynamic_access_token_signing_key,
             "enableAntiCsrf": enable_anti_csrf,
         },
+        user_context=user_context,
     )
 
     return CreateOrRefreshAPIResponse(
@@ -149,7 +151,7 @@ async def get_session(
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     always_check_core: bool,
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> GetSessionAPIResponse:
     config = recipe_implementation.config
     access_token_info: Optional[Dict[str, Any]] = None
@@ -325,7 +327,7 @@ async def refresh_session(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> CreateOrRefreshAPIResponse:
     data = {
         "refreshToken": refresh_token,
@@ -391,7 +393,7 @@ async def revoke_all_sessions_for_user(
     user_id: str,
     tenant_id: Optional[str],
     revoke_across_all_tenants: bool,
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -409,7 +411,7 @@ async def get_all_session_handles_for_user(
     user_id: str,
     tenant_id: Optional[str],
     fetch_across_all_tenants: bool,
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -425,7 +427,7 @@ async def get_all_session_handles_for_user(
 async def revoke_session(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> bool:
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session/remove"),
@@ -438,7 +440,7 @@ async def revoke_session(
 async def revoke_multiple_sessions(
     recipe_implementation: RecipeImplementation,
     session_handles: List[str],
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> List[str]:
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath("/recipe/session/remove"),
@@ -452,7 +454,7 @@ async def update_session_data_in_database(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_session_data: Dict[str, Any],
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath("/recipe/session/data"),
@@ -469,7 +471,7 @@ async def update_access_token_payload(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath("/recipe/jwt/data"),
@@ -485,7 +487,7 @@ async def update_access_token_payload(
 async def get_session_information(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
-    user_context: Optional[Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]],
 ) -> Union[SessionInformationResult, None]:
     response = await recipe_implementation.querier.send_get_request(
         NormalisedURLPath("/recipe/session"),

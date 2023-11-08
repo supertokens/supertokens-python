@@ -58,6 +58,7 @@ async def handle_analytics_post(
     try:
         response = await Querier.get_instance().send_get_request(
             NormalisedURLPath("/telemetry"),
+            None,
             _user_context,
         )
         if response is not None:
@@ -69,7 +70,7 @@ async def handle_analytics_post(
                 telemetry_id = response["telemetryId"]
 
         number_of_users = await Supertokens.get_instance().get_user_count(
-            include_recipe_ids=None
+            include_recipe_ids=None, user_context=None
         )
 
     except Exception as __:

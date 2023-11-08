@@ -202,8 +202,8 @@ class Querier:
     async def send_get_request(
         self,
         path: NormalisedURLPath,
-        params: Union[Dict[str, Any], None] = None,
-        user_context: Union[Dict[str, Any], None] = None,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         if params is None:
             params = {}
@@ -235,8 +235,8 @@ class Querier:
     async def send_post_request(
         self,
         path: NormalisedURLPath,
-        data: Union[Dict[str, Any], None] = None,
-        user_context: Union[Dict[str, Any], None] = None,
+        data: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
         test: bool = False,
     ) -> Dict[str, Any]:
         if data is None:
@@ -279,8 +279,8 @@ class Querier:
     async def send_delete_request(
         self,
         path: NormalisedURLPath,
-        params: Union[Dict[str, Any], None] = None,
-        user_context: Union[Dict[str, Any], None] = None,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         if params is None:
             params = {}
@@ -311,8 +311,8 @@ class Querier:
     async def send_put_request(
         self,
         path: NormalisedURLPath,
-        data: Union[Dict[str, Any], None] = None,
-        user_context: Union[Dict[str, Any], None] = None,
+        data: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         if data is None:
             data = {}

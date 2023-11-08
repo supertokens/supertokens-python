@@ -77,6 +77,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
+            user_context=user_context,
         )
         log_debug_message("createNewSession: Finished")
 
@@ -480,6 +481,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/session/regenerate"),
             {"accessToken": access_token, "userDataInJWT": new_access_token_payload},
+            user_context=user_context,
         )
         if response["status"] == "UNAUTHORISED":
             return None

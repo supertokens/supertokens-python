@@ -168,6 +168,7 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
             ),
+            None,
             user_context=user_context,
         )
 
