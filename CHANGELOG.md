@@ -10,9 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.16.8] - 2023-11-7
 
+### Added
+
 - Added `network_interceptor` to the `supertokens_config` in `init`.
   - This can be used to capture/modify all the HTTP requests sent to the core.
   - Solves the issue - https://github.com/supertokens/supertokens-core/issues/865
+
+### Fixes
+- The sync functions `create_user_id_mapping` and `delete_user_id_mapping` now take the `force` parameter as an optional argument, just like their async counterparts.
 - Functions `get_users_oldest_first`, `get_users_newest_first`, `get_user_count`, `delete_user`, `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping` and `update_or_delete_user_id_mapping_info` now accept `user_context` as an optional argument.
 - Fixed the dependencies in the example apps
   - Example apps will now fetch the latest version of the frameworks

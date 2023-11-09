@@ -90,6 +90,7 @@ def create_user_id_mapping(
     supertokens_user_id: str,
     external_user_id: str,
     external_user_id_info: Optional[str] = None,
+    force: Optional[bool] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     CreateUserIdMappingOkResult,
@@ -101,6 +102,7 @@ def create_user_id_mapping(
             supertokens_user_id,
             external_user_id,
             external_user_id_info,
+            force=force,
             user_context=user_context,
         )
     )
@@ -121,11 +123,12 @@ def get_user_id_mapping(
 def delete_user_id_mapping(
     user_id: str,
     user_id_type: Optional[UserIDTypes] = None,
+    force: Optional[bool] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> DeleteUserIdMappingOkResult:
     return sync(
         Supertokens.get_instance().delete_user_id_mapping(
-            user_id, user_id_type, user_context=user_context
+            user_id, user_id_type, force=force, user_context=user_context
         )
     )
 

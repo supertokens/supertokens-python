@@ -314,7 +314,7 @@ class Supertokens:
     async def delete_user(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Optional[Dict[str, Any]],
     ) -> None:
         querier = Querier.get_instance(None)
 
@@ -337,8 +337,8 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
-        query: Union[Dict[str, str], None] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        query: Union[Dict[str, str], None],
+        user_context: Optional[Dict[str, Any]],
     ) -> UsersResponse:
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
@@ -400,9 +400,9 @@ class Supertokens:
         self,
         supertokens_user_id: str,
         external_user_id: str,
-        external_user_id_info: Optional[str] = None,
-        force: Optional[bool] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        external_user_id_info: Optional[str],
+        force: Optional[bool],
+        user_context: Optional[Dict[str, Any]],
     ) -> Union[
         CreateUserIdMappingOkResult,
         UnknownSupertokensUserIDError,
@@ -441,8 +441,8 @@ class Supertokens:
     async def get_user_id_mapping(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_id_type: Optional[UserIDTypes] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_id_type: Optional[UserIDTypes],
+        user_context: Optional[Dict[str, Any]],
     ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -475,9 +475,9 @@ class Supertokens:
     async def delete_user_id_mapping(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_id_type: Optional[UserIDTypes] = None,
-        force: Optional[bool] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_id_type: Optional[UserIDTypes],
+        force: Optional[bool],
+        user_context: Optional[Dict[str, Any]],
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 
@@ -507,9 +507,9 @@ class Supertokens:
     async def update_or_delete_user_id_mapping_info(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_id_type: Optional[UserIDTypes] = None,
-        external_user_id_info: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_id_type: Optional[UserIDTypes],
+        external_user_id_info: Optional[str],
+        user_context: Optional[Dict[str, Any]],
     ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
