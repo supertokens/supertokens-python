@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
@@ -34,10 +34,17 @@ def get_users_oldest_first(
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            tenant_id, "ASC", limit, pagination_token, include_recipe_ids, query
+            tenant_id,
+            "ASC",
+            limit,
+            pagination_token,
+            include_recipe_ids,
+            query,
+            user_context,
         )
     )
 
@@ -48,10 +55,17 @@ def get_users_newest_first(
     pagination_token: Union[str, None] = None,
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> UsersResponse:
     return sync(
         Supertokens.get_instance().get_users(
-            tenant_id, "DESC", limit, pagination_token, include_recipe_ids, query
+            tenant_id,
+            "DESC",
+            limit,
+            pagination_token,
+            include_recipe_ids,
+            query,
+            user_context,
         )
     )
 
@@ -59,20 +73,24 @@ def get_users_newest_first(
 def get_user_count(
     include_recipe_ids: Union[None, List[str]] = None,
     tenant_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> int:
     return sync(
-        Supertokens.get_instance().get_user_count(include_recipe_ids, tenant_id)
+        Supertokens.get_instance().get_user_count(
+            include_recipe_ids, tenant_id, user_context
+        )
     )
 
 
-def delete_user(user_id: str) -> None:
-    return sync(Supertokens.get_instance().delete_user(user_id))
+def delete_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> None:
+    return sync(Supertokens.get_instance().delete_user(user_id, user_context))
 
 
 def create_user_id_mapping(
     supertokens_user_id: str,
     external_user_id: str,
     external_user_id_info: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     CreateUserIdMappingOkResult,
     UnknownSupertokensUserIDError,
@@ -80,7 +98,10 @@ def create_user_id_mapping(
 ]:
     return sync(
         Supertokens.get_instance().create_user_id_mapping(
-            supertokens_user_id, external_user_id, external_user_id_info
+            supertokens_user_id,
+            external_user_id,
+            external_user_id_info,
+            user_context=user_context,
         )
     )
 
@@ -88,15 +109,24 @@ def create_user_id_mapping(
 def get_user_id_mapping(
     user_id: str,
     user_id_type: Optional[UserIDTypes] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
-    return sync(Supertokens.get_instance().get_user_id_mapping(user_id, user_id_type))
+    return sync(
+        Supertokens.get_instance().get_user_id_mapping(
+            user_id, user_id_type, user_context
+        )
+    )
 
 
 def delete_user_id_mapping(
-    user_id: str, user_id_type: Optional[UserIDTypes] = None
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> DeleteUserIdMappingOkResult:
     return sync(
-        Supertokens.get_instance().delete_user_id_mapping(user_id, user_id_type)
+        Supertokens.get_instance().delete_user_id_mapping(
+            user_id, user_id_type, user_context=user_context
+        )
     )
 
 
@@ -104,9 +134,10 @@ def update_or_delete_user_id_mapping_info(
     user_id: str,
     user_id_type: Optional[UserIDTypes] = None,
     external_user_id_info: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
     return sync(
         Supertokens.get_instance().update_or_delete_user_id_mapping_info(
-            user_id, user_id_type, external_user_id_info
+            user_id, user_id_type, external_user_id_info, user_context
         )
     )
