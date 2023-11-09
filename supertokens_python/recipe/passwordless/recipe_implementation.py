@@ -63,7 +63,9 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {**data, "phoneNumber": phone_number}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code"),
+            data,
+            user_context=user_context,
         )
         return CreateCodeOkResult(
             pre_auth_session_id=result["preAuthSessionId"],
@@ -90,7 +92,9 @@ class RecipeImplementation(RecipeInterface):
         if user_input_code is not None:
             data = {**data, "userInputCode": user_input_code}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code"),
+            data,
+            user_context=user_context,
         )
         if result["status"] == "RESTART_FLOW_ERROR":
             return CreateNewCodeForDeviceRestartFlowError()
@@ -126,7 +130,9 @@ class RecipeImplementation(RecipeInterface):
         else:
             data = {**data, "linkCode": link_code}
         result = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code/consume"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code/consume"),
+            data,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             email = None
@@ -160,7 +166,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         param = {"userId": user_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user"), param
+            NormalisedURLPath("/recipe/user"),
+            param,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             email = None
@@ -183,7 +191,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         param = {"email": email}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/user"),
+            param,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             email_resp = None
@@ -206,7 +216,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         param = {"phoneNumber": phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/user"),
+            param,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             email_resp = None
@@ -242,7 +254,9 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {**data, "phoneNumber": phone_number}
         result = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/user"), data
+            NormalisedURLPath("/recipe/user"),
+            data,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             return UpdateUserOkResult()
@@ -257,7 +271,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         data = {"userId": user_id, "email": None}
         result = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/user"), data
+            NormalisedURLPath("/recipe/user"),
+            data,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             return DeleteUserInfoOkResult()
@@ -272,7 +288,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         data = {"userId": user_id, "phoneNumber": None}
         result = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/user"), data
+            NormalisedURLPath("/recipe/user"),
+            data,
+            user_context=user_context,
         )
         if result["status"] == "OK":
             return DeleteUserInfoOkResult()
@@ -295,7 +313,9 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {**data, "email": phone_number}
         await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes/remove"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes/remove"),
+            data,
+            user_context=user_context,
         )
         return RevokeAllCodesOkResult()
 
@@ -304,7 +324,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> RevokeCodeOkResult:
         data = {"codeId": code_id}
         await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code/remove"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/code/remove"),
+            data,
+            user_context=user_context,
         )
         return RevokeCodeOkResult()
 
@@ -313,7 +335,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> List[DeviceType]:
         param = {"email": email}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"),
+            param,
+            user_context=user_context,
         )
         devices: List[DeviceType] = []
         if "devices" in result:
@@ -352,7 +376,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> List[DeviceType]:
         param = {"phoneNumber": phone_number}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"),
+            param,
+            user_context=user_context,
         )
         devices: List[DeviceType] = []
         if "devices" in result:
@@ -391,7 +417,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[DeviceType, None]:
         param = {"deviceId": device_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"),
+            param,
+            user_context=user_context,
         )
         if "devices" in result and len(result["devices"]) == 1:
             codes: List[DeviceCode] = []
@@ -426,7 +454,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[DeviceType, None]:
         param = {"preAuthSessionId": pre_auth_session_id}
         result = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"), param
+            NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes"),
+            param,
+            user_context=user_context,
         )
         if "devices" in result and len(result["devices"]) == 1:
             codes: List[DeviceCode] = []

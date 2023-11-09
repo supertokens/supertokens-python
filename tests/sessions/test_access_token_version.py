@@ -137,6 +137,7 @@ async def test_should_validate_v2_tokens_with_check_database_enabled(app: TestCl
             "userDataInJWT": {},
             "userDataInDatabase": {},
         },
+        None,
     )
     Querier.api_version = None
 

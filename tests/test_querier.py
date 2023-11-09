@@ -78,7 +78,7 @@ async def test_network_call_is_retried_as_expected():
         api3 = mocker.get("http://localhost:6789/api3").mock(httpx.Response(200))
 
         try:
-            await q.send_get_request(NormalisedURLPath("/api1"), {})
+            await q.send_get_request(NormalisedURLPath("/api1"), None, None)
         except Exception as e:
             if "with status code: 429" in str(
                 e
@@ -87,8 +87,8 @@ async def test_network_call_is_retried_as_expected():
             else:
                 raise e
 
-        await q.send_get_request(NormalisedURLPath("/api2"), {})
-        await q.send_get_request(NormalisedURLPath("/api3"), {})
+        await q.send_get_request(NormalisedURLPath("/api2"), None, None)
+        await q.send_get_request(NormalisedURLPath("/api3"), None, None)
 
         # 1 initial request + 5 retries
         assert api1.call_count == 6
@@ -132,7 +132,7 @@ async def test_parallel_calls_have_independent_counters():
 
         async def call_api(id_: int):
             try:
-                await q.send_get_request(NormalisedURLPath("/api"), {"id": id_})
+                await q.send_get_request(NormalisedURLPath("/api"), {"id": id_}, None)
             except Exception as e:
                 if "with status code: 429" in str(e):
                     pass
@@ -166,7 +166,7 @@ async def test_querier_text_and_headers():
             httpx.Response(200, text=text, headers={"greet": "hello"})
         )
 
-        res = await q.send_get_request(NormalisedURLPath("/text-api"), {})
+        res = await q.send_get_request(NormalisedURLPath("/text-api"), None, None)
         assert res == {
             "_text": "foo",
             "_headers": {
@@ -181,7 +181,7 @@ async def test_querier_text_and_headers():
             httpx.Response(200, json=body, headers={"greet": "hi"})
         )
 
-        res = await q.send_get_request(NormalisedURLPath("/json-api"), {})
+        res = await q.send_get_request(NormalisedURLPath("/json-api"), None, None)
         assert res == {
             "bar": "baz",
             "_headers": {

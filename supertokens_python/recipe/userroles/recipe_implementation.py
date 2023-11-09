@@ -50,6 +50,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/role"),
             params,
+            user_context=user_context,
         )
         if response["status"] == "OK":
             return AddRoleToUserOkResult(
@@ -68,6 +69,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/role/remove"),
             params,
+            user_context=user_context,
         )
         if response["status"] == "OK":
             return RemoveUserRoleOkResult(
@@ -82,6 +84,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/roles"),
             params,
+            user_context=user_context,
         )
         return GetRolesForUserOkResult(roles=response["roles"])
 
@@ -92,6 +95,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(
             NormalisedURLPath(f"{tenant_id}/recipe/role/users"),
             params,
+            user_context=user_context,
         )
         if response["status"] == "OK":
             return GetUsersThatHaveRoleOkResult(users=response["users"])
@@ -102,7 +106,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> CreateNewRoleOrAddPermissionsOkResult:
         params = {"role": role, "permissions": permissions}
         response = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/role"), params
+            NormalisedURLPath("/recipe/role"),
+            params,
+            user_context=user_context,
         )
         return CreateNewRoleOrAddPermissionsOkResult(
             created_new_role=response["createdNewRole"]
@@ -113,7 +119,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
         params = {"role": role}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/role/permissions"), params
+            NormalisedURLPath("/recipe/role/permissions"),
+            params,
+            user_context=user_context,
         )
         if response["status"] == "OK":
             return GetPermissionsForRoleOkResult(permissions=response["permissions"])
@@ -124,7 +132,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
         params = {"role": role, "permissions": permissions}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/role/permissions/remove"), params
+            NormalisedURLPath("/recipe/role/permissions/remove"),
+            params,
+            user_context=user_context,
         )
         if response["status"] == "OK":
             return RemovePermissionsFromRoleOkResult()
@@ -135,7 +145,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> GetRolesThatHavePermissionOkResult:
         params = {"permission": permission}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/permission/roles"), params
+            NormalisedURLPath("/recipe/permission/roles"),
+            params,
+            user_context=user_context,
         )
         return GetRolesThatHavePermissionOkResult(roles=response["roles"])
 
@@ -144,13 +156,17 @@ class RecipeImplementation(RecipeInterface):
     ) -> DeleteRoleOkResult:
         params = {"role": role}
         response = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/role/remove"), params
+            NormalisedURLPath("/recipe/role/remove"),
+            params,
+            user_context=user_context,
         )
         return DeleteRoleOkResult(did_role_exist=response["didRoleExist"])
 
     async def get_all_roles(self, user_context: Dict[str, Any]) -> GetAllRolesOkResult:
         params = {}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/roles"), params
+            NormalisedURLPath("/recipe/roles"),
+            params,
+            user_context=user_context,
         )
         return GetAllRolesOkResult(roles=response["roles"])

@@ -40,6 +40,7 @@ async def handle_emailpassword_signin_api(
     response = await Querier.get_instance().send_post_request(
         NormalisedURLPath("/recipe/dashboard/signin"),
         {"email": email, "password": password},
+        user_context=_user_context,
     )
 
     if "status" in response and response["status"] == "OK":

@@ -55,7 +55,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user"), params
+            NormalisedURLPath("/recipe/user"), params, user_context
         )
         if "status" in response and response["status"] == "OK":
             return User(
@@ -71,7 +71,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[User, None]:
         params = {"email": email}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user"), params
+            NormalisedURLPath(f"{tenant_id}/recipe/user"), params, user_context
         )
         if "status" in response and response["status"] == "OK":
             return User(
@@ -87,7 +87,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         data = {"userId": user_id}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user/password/reset/token"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/password/reset/token"),
+            data,
+            user_context=user_context,
         )
         if "status" in response and response["status"] == "OK":
             return CreateResetPasswordOkResult(response["token"])
@@ -104,7 +106,9 @@ class RecipeImplementation(RecipeInterface):
     ]:
         data = {"method": "token", "token": token, "newPassword": new_password}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user/password/reset"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/password/reset"),
+            data,
+            user_context=user_context,
         )
         if "status" not in response or response["status"] != "OK":
             return ResetPasswordUsingTokenInvalidTokenError()
@@ -118,7 +122,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         data = {"password": password, "email": email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signin"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signin"),
+            data,
+            user_context=user_context,
         )
         if "status" in response and response["status"] == "OK":
             return SignInOkResult(
@@ -136,7 +142,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         data = {"password": password, "email": email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/signup"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/signup"),
+            data,
+            user_context=user_context,
         )
         if "status" in response and response["status"] == "OK":
             return SignUpOkResult(
@@ -181,7 +189,9 @@ class RecipeImplementation(RecipeInterface):
                     return UpdateEmailOrPasswordPasswordPolicyViolationError(error)
             data = {"password": password, **data}
         response = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/user"), data
+            NormalisedURLPath("/recipe/user"),
+            data,
+            user_context=user_context,
         )
         if "status" in response and response["status"] == "OK":
             return UpdateEmailOrPasswordOkResult()

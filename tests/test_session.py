@@ -95,7 +95,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         raise Exception("Should never come here")
 
     response = await create_new_session(
-        s.recipe_implementation, "public", "", False, {}, {}
+        s.recipe_implementation, "public", "", False, {}, {}, None
     )
 
     assert response.session is not None
@@ -106,7 +106,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     access_token = parse_jwt_without_signature_verification(response.accessToken.token)
 
     await get_session(
-        s.recipe_implementation, access_token, response.antiCsrfToken, True, False
+        s.recipe_implementation, access_token, response.antiCsrfToken, True, False, None
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -118,6 +118,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response.refreshToken.token,
         response.antiCsrfToken,
         False,
+        None,
     )
 
     assert response2.session is not None
@@ -135,6 +136,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response2.antiCsrfToken,
         True,
         False,
+        None,
     )
 
     assert (
@@ -157,6 +159,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response2.antiCsrfToken,
         True,
         False,
+        None,
     )
     assert (
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
@@ -166,7 +169,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert response4.session is not None
     assert response4.accessToken is None
 
-    response5 = await revoke_session(s.recipe_implementation, response4.session.handle)
+    response5 = await revoke_session(
+        s.recipe_implementation, response4.session.handle, {}
+    )
 
     assert response5 is True
 
@@ -199,6 +204,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
             False,
             {"someKey": "someValue"},
             {},
+            None,
         )
         access_tokens.append(new_session.accessToken.token)
 
@@ -297,7 +303,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
     user_id = "user_id"
 
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, False, {}, {}
+        s.recipe_implementation, "public", user_id, False, {}, {}, None
     )
 
     session_handle = response.session.handle
