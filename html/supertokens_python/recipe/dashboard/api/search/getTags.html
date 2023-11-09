@@ -55,7 +55,7 @@ async def handle_get_tags(
     _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
 ) -&gt; SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
-        NormalisedURLPath(&#34;/user/search/tags&#34;)
+        NormalisedURLPath(&#34;/user/search/tags&#34;), None, _user_context
     )
     return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>
@@ -80,7 +80,7 @@ async def handle_get_tags(
     _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
 ) -&gt; SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
-        NormalisedURLPath(&#34;/user/search/tags&#34;)
+        NormalisedURLPath(&#34;/user/search/tags&#34;), None, _user_context
     )
     return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>

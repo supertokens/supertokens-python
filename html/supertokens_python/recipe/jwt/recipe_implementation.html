@@ -90,7 +90,9 @@ class RecipeImplementation(RecipeInterface):
             &#34;jwksDomain&#34;: self.app_info.api_domain.get_as_string_dangerous(),
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/jwt&#34;), data
+            NormalisedURLPath(&#34;/recipe/jwt&#34;),
+            data,
+            user_context=user_context,
         )
 
         if response[&#34;status&#34;] == &#34;OK&#34;:
@@ -99,7 +101,9 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/.well-known/jwks.json&#34;), {}
+            NormalisedURLPath(&#34;/.well-known/jwks.json&#34;),
+            {},
+            user_context=user_context,
         )
 
         validity_in_secs = DEFAULT_JWKS_MAX_AGE
@@ -171,7 +175,9 @@ inheritance.</p></div>
             &#34;jwksDomain&#34;: self.app_info.api_domain.get_as_string_dangerous(),
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/jwt&#34;), data
+            NormalisedURLPath(&#34;/recipe/jwt&#34;),
+            data,
+            user_context=user_context,
         )
 
         if response[&#34;status&#34;] == &#34;OK&#34;:
@@ -180,7 +186,9 @@ inheritance.</p></div>
 
     async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/.well-known/jwks.json&#34;), {}
+            NormalisedURLPath(&#34;/.well-known/jwks.json&#34;),
+            {},
+            user_context=user_context,
         )
 
         validity_in_secs = DEFAULT_JWKS_MAX_AGE
@@ -240,7 +248,9 @@ inheritance.</p></div>
         &#34;jwksDomain&#34;: self.app_info.api_domain.get_as_string_dangerous(),
     }
     response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/jwt&#34;), data
+        NormalisedURLPath(&#34;/recipe/jwt&#34;),
+        data,
+        user_context=user_context,
     )
 
     if response[&#34;status&#34;] == &#34;OK&#34;:
@@ -259,7 +269,9 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
     response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/.well-known/jwks.json&#34;), {}
+        NormalisedURLPath(&#34;/.well-known/jwks.json&#34;),
+        {},
+        user_context=user_context,
     )
 
     validity_in_secs = DEFAULT_JWKS_MAX_AGE

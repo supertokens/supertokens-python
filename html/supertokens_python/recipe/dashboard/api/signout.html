@@ -70,6 +70,7 @@ async def handle_emailpassword_signout_api(
     await Querier.get_instance().send_delete_request(
         NormalisedURLPath(&#34;/recipe/dashboard/session&#34;),
         {&#34;sessionId&#34;: session_id_form_auth_header},
+        user_context=_user_context,
     )
     return SignOutOK()</code></pre>
 </details>
@@ -107,6 +108,7 @@ async def handle_emailpassword_signout_api(
     await Querier.get_instance().send_delete_request(
         NormalisedURLPath(&#34;/recipe/dashboard/session&#34;),
         {&#34;sessionId&#34;: session_id_form_auth_header},
+        user_context=_user_context,
     )
     return SignOutOK()</code></pre>
 </details>

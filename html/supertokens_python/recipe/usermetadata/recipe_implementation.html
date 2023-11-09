@@ -59,7 +59,9 @@ class RecipeImplementation(RecipeInterface):
     ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
+            params,
+            user_context=user_context,
         )
         return MetadataResult(metadata=response[&#34;metadata&#34;])
 
@@ -71,7 +73,9 @@ class RecipeImplementation(RecipeInterface):
     ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id, &#34;metadataUpdate&#34;: metadata_update}
         response = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
+            params,
+            user_context=user_context,
         )
         return MetadataResult(metadata=response[&#34;metadata&#34;])
 
@@ -80,7 +84,9 @@ class RecipeImplementation(RecipeInterface):
     ) -&gt; ClearUserMetadataResult:
         params = {&#34;userId&#34;: user_id}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params
+            NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;),
+            params,
+            user_context=user_context,
         )
         return ClearUserMetadataResult()</code></pre>
 </details>
@@ -115,7 +121,9 @@ inheritance.</p></div>
     ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
+            params,
+            user_context=user_context,
         )
         return MetadataResult(metadata=response[&#34;metadata&#34;])
 
@@ -127,7 +135,9 @@ inheritance.</p></div>
     ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id, &#34;metadataUpdate&#34;: metadata_update}
         response = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
+            params,
+            user_context=user_context,
         )
         return MetadataResult(metadata=response[&#34;metadata&#34;])
 
@@ -136,7 +146,9 @@ inheritance.</p></div>
     ) -&gt; ClearUserMetadataResult:
         params = {&#34;userId&#34;: user_id}
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params
+            NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;),
+            params,
+            user_context=user_context,
         )
         return ClearUserMetadataResult()</code></pre>
 </details>
@@ -161,7 +173,9 @@ inheritance.</p></div>
 ) -&gt; ClearUserMetadataResult:
     params = {&#34;userId&#34;: user_id}
     await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params
+        NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;),
+        params,
+        user_context=user_context,
     )
     return ClearUserMetadataResult()</code></pre>
 </details>
@@ -180,7 +194,9 @@ inheritance.</p></div>
 ) -&gt; MetadataResult:
     params = {&#34;userId&#34;: user_id}
     response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+        NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
+        params,
+        user_context=user_context,
     )
     return MetadataResult(metadata=response[&#34;metadata&#34;])</code></pre>
 </details>
@@ -202,7 +218,9 @@ inheritance.</p></div>
 ) -&gt; MetadataResult:
     params = {&#34;userId&#34;: user_id, &#34;metadataUpdate&#34;: metadata_update}
     response = await self.querier.send_put_request(
-        NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+        NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
+        params,
+        user_context=user_context,
     )
     return MetadataResult(metadata=response[&#34;metadata&#34;])</code></pre>
 </details>
