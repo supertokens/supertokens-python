@@ -70,7 +70,7 @@ async def handle_analytics_post(
                 telemetry_id = response["telemetryId"]
 
         number_of_users = await Supertokens.get_instance().get_user_count(
-            include_recipe_ids=None, user_context=None
+            include_recipe_ids=None
         )
 
     except Exception as __:

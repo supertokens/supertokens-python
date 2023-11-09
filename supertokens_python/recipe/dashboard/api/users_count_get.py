@@ -33,7 +33,6 @@ async def handle_users_count_get_api(
 ) -> UserCountGetAPIResponse:
     count = await Supertokens.get_instance().get_user_count(
         None,
-        _user_context,
         tenant_id,
     )
     return UserCountGetAPIResponse(count=count)

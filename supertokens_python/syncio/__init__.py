@@ -61,12 +61,12 @@ def get_user_count(
     tenant_id: Optional[str] = None,
 ) -> int:
     return sync(
-        Supertokens.get_instance().get_user_count(include_recipe_ids, None, tenant_id)
+        Supertokens.get_instance().get_user_count(include_recipe_ids, tenant_id)
     )
 
 
 def delete_user(user_id: str) -> None:
-    return sync(Supertokens.get_instance().delete_user(user_id, None))
+    return sync(Supertokens.get_instance().delete_user(user_id))
 
 
 def create_user_id_mapping(
@@ -80,7 +80,7 @@ def create_user_id_mapping(
 ]:
     return sync(
         Supertokens.get_instance().create_user_id_mapping(
-            supertokens_user_id, external_user_id, None, external_user_id_info
+            supertokens_user_id, external_user_id, external_user_id_info
         )
     )
 
@@ -89,16 +89,14 @@ def get_user_id_mapping(
     user_id: str,
     user_id_type: Optional[UserIDTypes] = None,
 ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
-    return sync(
-        Supertokens.get_instance().get_user_id_mapping(user_id, None, user_id_type)
-    )
+    return sync(Supertokens.get_instance().get_user_id_mapping(user_id, user_id_type))
 
 
 def delete_user_id_mapping(
     user_id: str, user_id_type: Optional[UserIDTypes] = None
 ) -> DeleteUserIdMappingOkResult:
     return sync(
-        Supertokens.get_instance().delete_user_id_mapping(user_id, None, user_id_type)
+        Supertokens.get_instance().delete_user_id_mapping(user_id, user_id_type)
     )
 
 
@@ -109,6 +107,6 @@ def update_or_delete_user_id_mapping_info(
 ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
     return sync(
         Supertokens.get_instance().update_or_delete_user_id_mapping_info(
-            user_id, None, user_id_type, external_user_id_info
+            user_id, user_id_type, external_user_id_info
         )
     )
