@@ -148,7 +148,7 @@ async def test_email_verify_default_backward_compatibility(
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}
+        s.recipe_implementation, "public", user_id, True, {}, {}, None
     )
 
     def api_side_effect(request: httpx.Request):
@@ -222,7 +222,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}
+        s.recipe_implementation, "public", user_id, True, {}, {}, None
     )
 
     def api_side_effect(request: httpx.Request):
@@ -312,7 +312,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     assert isinstance(resp, ManuallyCreateOrUpdateUserOkResult)
     user_id = resp.user.user_id
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}
+        s.recipe_implementation, "public", user_id, True, {}, {}, None
     )
 
     resp = email_verify_token_request(
@@ -391,7 +391,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}
+        s.recipe_implementation, "public", user_id, True, {}, {}, None
     )
 
     def api_side_effect(request: httpx.Request):
@@ -531,7 +531,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     user_id = resp.user.user_id
     assert isinstance(user_id, str)
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}
+        s.recipe_implementation, "public", user_id, True, {}, {}, None
     )
 
     resp = email_verify_token_request(

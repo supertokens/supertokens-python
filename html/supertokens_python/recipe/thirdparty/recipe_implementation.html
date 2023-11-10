@@ -73,7 +73,9 @@ class RecipeImplementation(RecipeInterface):
     ) -&gt; Union[User, None]:
         params = {&#34;userId&#34;: user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), params
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            params,
+            user_context=user_context,
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
@@ -92,7 +94,9 @@ class RecipeImplementation(RecipeInterface):
         self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[User]:
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/users/by-email&#34;), {&#34;email&#34;: email}
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/users/by-email&#34;),
+            {&#34;email&#34;: email},
+            user_context=user_context,
         )
         users: List[User] = []
         users_list: List[Dict[str, Any]] = (
@@ -124,7 +128,9 @@ class RecipeImplementation(RecipeInterface):
             &#34;thirdPartyUserId&#34;: third_party_user_id,
         }
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
+            params,
+            user_context=user_context,
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
@@ -155,7 +161,9 @@ class RecipeImplementation(RecipeInterface):
             &#34;email&#34;: {&#34;id&#34;: email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
+            data,
+            user_context=user_context,
         )
         return SignInUpOkResult(
             User(
@@ -187,7 +195,9 @@ class RecipeImplementation(RecipeInterface):
             &#34;email&#34;: {&#34;id&#34;: email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
+            data,
+            user_context=user_context,
         )
         return ManuallyCreateOrUpdateUserOkResult(
             User(
@@ -262,7 +272,9 @@ inheritance.</p></div>
     ) -&gt; Union[User, None]:
         params = {&#34;userId&#34;: user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;), params
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            params,
+            user_context=user_context,
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
@@ -281,7 +293,9 @@ inheritance.</p></div>
         self, email: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; List[User]:
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/users/by-email&#34;), {&#34;email&#34;: email}
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/users/by-email&#34;),
+            {&#34;email&#34;: email},
+            user_context=user_context,
         )
         users: List[User] = []
         users_list: List[Dict[str, Any]] = (
@@ -313,7 +327,9 @@ inheritance.</p></div>
             &#34;thirdPartyUserId&#34;: third_party_user_id,
         }
         response = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), params
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
+            params,
+            user_context=user_context,
         )
         if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
@@ -344,7 +360,9 @@ inheritance.</p></div>
             &#34;email&#34;: {&#34;id&#34;: email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
+            data,
+            user_context=user_context,
         )
         return SignInUpOkResult(
             User(
@@ -376,7 +394,9 @@ inheritance.</p></div>
             &#34;email&#34;: {&#34;id&#34;: email},
         }
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;), data
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
+            data,
+            user_context=user_context,
         )
         return ManuallyCreateOrUpdateUserOkResult(
             User(
@@ -477,7 +497,9 @@ inheritance.</p></div>
 ) -&gt; Union[User, None]:
     params = {&#34;userId&#34;: user_id}
     response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user&#34;), params
+        NormalisedURLPath(&#34;/recipe/user&#34;),
+        params,
+        user_context=user_context,
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return User(
@@ -514,7 +536,9 @@ inheritance.</p></div>
         &#34;thirdPartyUserId&#34;: third_party_user_id,
     }
     response = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;), params
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
+        params,
+        user_context=user_context,
     )
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return User(
@@ -543,7 +567,9 @@ inheritance.</p></div>
     self, email: str, tenant_id: str, user_context: Dict[str, Any]
 ) -&gt; List[User]:
     response = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/users/by-email&#34;), {&#34;email&#34;: email}
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/users/by-email&#34;),
+        {&#34;email&#34;: email},
+        user_context=user_context,
     )
     users: List[User] = []
     users_list: List[Dict[str, Any]] = (
@@ -587,7 +613,9 @@ inheritance.</p></div>
         &#34;email&#34;: {&#34;id&#34;: email},
     }
     response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
+        data,
+        user_context=user_context,
     )
     return ManuallyCreateOrUpdateUserOkResult(
         User(
@@ -629,7 +657,9 @@ inheritance.</p></div>
         &#34;email&#34;: {&#34;id&#34;: email},
     }
     response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;), data
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
+        data,
+        user_context=user_context,
     )
     return SignInUpOkResult(
         User(

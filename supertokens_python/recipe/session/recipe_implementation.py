@@ -77,6 +77,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
+            user_context=user_context,
         )
         log_debug_message("createNewSession: Finished")
 
@@ -231,6 +232,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             anti_csrf_token,
             (anti_csrf_check is not False),
             (check_database is True),
+            user_context,
         )
 
         log_debug_message("getSession: Success!")
@@ -293,6 +295,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             refresh_token,
             anti_csrf_token,
             disable_anti_csrf,
+            user_context=user_context,
         )
 
         log_debug_message("refreshSession: Success!")
@@ -325,7 +328,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]
     ) -> bool:
-        return await session_functions.revoke_session(self, session_handle)
+        return await session_functions.revoke_session(
+            self, session_handle, user_context
+        )
 
     async def revoke_all_sessions_for_user(
         self,
@@ -335,7 +340,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         user_context: Dict[str, Any],
     ) -> List[str]:
         return await session_functions.revoke_all_sessions_for_user(
-            self, user_id, tenant_id, revoke_across_all_tenants
+            self, user_id, tenant_id, revoke_across_all_tenants, user_context
         )
 
     async def get_all_session_handles_for_user(
@@ -346,18 +351,22 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         user_context: Dict[str, Any],
     ) -> List[str]:
         return await session_functions.get_all_session_handles_for_user(
-            self, user_id, tenant_id, fetch_across_all_tenants
+            self, user_id, tenant_id, fetch_across_all_tenants, user_context
         )
 
     async def revoke_multiple_sessions(
         self, session_handles: List[str], user_context: Dict[str, Any]
     ) -> List[str]:
-        return await session_functions.revoke_multiple_sessions(self, session_handles)
+        return await session_functions.revoke_multiple_sessions(
+            self, session_handles, user_context
+        )
 
     async def get_session_information(
         self, session_handle: str, user_context: Dict[str, Any]
     ) -> Union[SessionInformationResult, None]:
-        return await session_functions.get_session_information(self, session_handle)
+        return await session_functions.get_session_information(
+            self, session_handle, user_context
+        )
 
     async def update_session_data_in_database(
         self,
@@ -366,7 +375,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         user_context: Dict[str, Any],
     ) -> bool:
         return await session_functions.update_session_data_in_database(
-            self, session_handle, new_session_data
+            self, session_handle, new_session_data, user_context
         )
 
     async def merge_into_access_token_payload(
@@ -393,7 +402,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 del new_access_token_payload[k]
 
         return await session_functions.update_access_token_payload(
-            self, session_handle, new_access_token_payload
+            self, session_handle, new_access_token_payload, user_context
         )
 
     async def fetch_and_set_claim(
@@ -472,6 +481,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/session/regenerate"),
             {"accessToken": access_token, "userDataInJWT": new_access_token_payload},
+            user_context=user_context,
         )
         if response["status"] == "UNAUTHORISED":
             return None

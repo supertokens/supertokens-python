@@ -62,14 +62,10 @@ def init(
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
     mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]] = None,
     telemetry: Optional[bool] = None,
+    debug: Optional[bool] = None,
 ):
     return Supertokens.init(
-        app_info,
-        framework,
-        supertokens_config,
-        recipe_list,
-        mode,
-        telemetry,
+        app_info, framework, supertokens_config, recipe_list, mode, telemetry, debug
     )
 
 
@@ -198,7 +194,7 @@ def get_request_from_user_context(
 </details>
 </dd>
 <dt id="supertokens_python.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="supertokens.html#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: Literal['fastapi', 'flask', 'django'], supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="supertokens.html#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>], <a title="supertokens_python.recipe_module.RecipeModule" href="recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a>]], mode: Optional[Literal['asgi', 'wsgi']] = None, telemetry: Optional[bool] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="supertokens.html#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: Literal['fastapi', 'flask', 'django'], supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="supertokens.html#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>], <a title="supertokens_python.recipe_module.RecipeModule" href="recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a>]], mode: Optional[Literal['asgi', 'wsgi']] = None, telemetry: Optional[bool] = None, debug: Optional[bool] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -213,14 +209,10 @@ def get_request_from_user_context(
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
     mode: Optional[Literal[&#34;asgi&#34;, &#34;wsgi&#34;]] = None,
     telemetry: Optional[bool] = None,
+    debug: Optional[bool] = None,
 ):
     return Supertokens.init(
-        app_info,
-        framework,
-        supertokens_config,
-        recipe_list,
-        mode,
-        telemetry,
+        app_info, framework, supertokens_config, recipe_list, mode, telemetry, debug
     )</code></pre>
 </details>
 </dd>

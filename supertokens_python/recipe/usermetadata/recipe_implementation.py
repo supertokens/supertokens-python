@@ -31,7 +31,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> MetadataResult:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user/metadata"), params
+            NormalisedURLPath("/recipe/user/metadata"),
+            params,
+            user_context=user_context,
         )
         return MetadataResult(metadata=response["metadata"])
 
@@ -43,7 +45,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> MetadataResult:
         params = {"userId": user_id, "metadataUpdate": metadata_update}
         response = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/user/metadata"), params
+            NormalisedURLPath("/recipe/user/metadata"),
+            params,
+            user_context=user_context,
         )
         return MetadataResult(metadata=response["metadata"])
 
@@ -52,6 +56,8 @@ class RecipeImplementation(RecipeInterface):
     ) -> ClearUserMetadataResult:
         params = {"userId": user_id}
         await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/metadata/remove"), params
+            NormalisedURLPath("/recipe/user/metadata/remove"),
+            params,
+            user_context=user_context,
         )
         return ClearUserMetadataResult()

@@ -216,7 +216,9 @@ __all__ = [
 
     try:
         response = await Querier.get_instance().send_get_request(
-            NormalisedURLPath(&#34;/telemetry&#34;)
+            NormalisedURLPath(&#34;/telemetry&#34;),
+            None,
+            _user_context,
         )
         if response is not None:
             if (
@@ -352,6 +354,7 @@ __all__ = [
     response = await Querier.get_instance().send_post_request(
         NormalisedURLPath(&#34;/recipe/dashboard/signin&#34;),
         {&#34;email&#34;: email, &#34;password&#34;: password},
+        user_context=_user_context,
     )
 
     if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
@@ -396,6 +399,7 @@ __all__ = [
     await Querier.get_instance().send_delete_request(
         NormalisedURLPath(&#34;/recipe/dashboard/session&#34;),
         {&#34;sessionId&#34;: session_id_form_auth_header},
+        user_context=_user_context,
     )
     return SignOutOK()</code></pre>
 </details>
@@ -413,7 +417,7 @@ __all__ = [
     _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
 ) -&gt; SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
-        NormalisedURLPath(&#34;/user/search/tags&#34;)
+        NormalisedURLPath(&#34;/user/search/tags&#34;), None, _user_context
     )
     return SearchTagsOK(tags=response[&#34;tags&#34;])</code></pre>
 </details>
@@ -601,7 +605,7 @@ __all__ = [
     if user_id is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
 
-    await Supertokens.get_instance().delete_user(user_id)
+    await Supertokens.get_instance().delete_user(user_id, _user_context)
 
     return UserDeleteAPIResponse()</code></pre>
 </details>
@@ -1014,7 +1018,10 @@ __all__ = [
     _api_options: APIOptions,
     _user_context: Dict[str, Any],
 ) -&gt; UserCountGetAPIResponse:
-    count = await Supertokens.get_instance().get_user_count(None, tenant_id)
+    count = await Supertokens.get_instance().get_user_count(
+        None,
+        tenant_id,
+    )
     return UserCountGetAPIResponse(count=count)</code></pre>
 </details>
 </dd>
@@ -1054,6 +1061,7 @@ __all__ = [
         pagination_token=pagination_token,
         include_recipe_ids=None,
         query=api_options.request.get_query_params(),
+        user_context=user_context,
     )
 
     # user metadata bulk fetch with batches:

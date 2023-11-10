@@ -27,6 +27,6 @@ async def handle_get_tags(
     _: APIInterface, _tenant_id: str, __: APIOptions, _user_context: Dict[str, Any]
 ) -> SearchTagsOK:
     response = await Querier.get_instance().send_get_request(
-        NormalisedURLPath("/user/search/tags")
+        NormalisedURLPath("/user/search/tags"), None, _user_context
     )
     return SearchTagsOK(tags=response["tags"])

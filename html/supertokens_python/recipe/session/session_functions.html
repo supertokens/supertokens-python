@@ -130,6 +130,7 @@ async def create_new_session(
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
@@ -148,6 +149,7 @@ async def create_new_session(
             &#34;useDynamicSigningKey&#34;: recipe_implementation.config.use_dynamic_access_token_signing_key,
             &#34;enableAntiCsrf&#34;: enable_anti_csrf,
         },
+        user_context=user_context,
     )
 
     return CreateOrRefreshAPIResponse(
@@ -177,6 +179,7 @@ async def get_session(
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     always_check_core: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; GetSessionAPIResponse:
     config = recipe_implementation.config
     access_token_info: Optional[Dict[str, Any]] = None
@@ -304,7 +307,9 @@ async def get_session(
         data[&#34;antiCsrfToken&#34;] = anti_csrf_token
 
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/verify&#34;), data
+        NormalisedURLPath(&#34;/recipe/session/verify&#34;),
+        data,
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return GetSessionAPIResponse(
@@ -350,6 +355,7 @@ async def refresh_session(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; CreateOrRefreshAPIResponse:
     data = {
         &#34;refreshToken&#34;: refresh_token,
@@ -373,7 +379,9 @@ async def refresh_session(
         )
 
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/refresh&#34;), data
+        NormalisedURLPath(&#34;/recipe/session/refresh&#34;),
+        data,
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return CreateOrRefreshAPIResponse(
@@ -413,6 +421,7 @@ async def revoke_all_sessions_for_user(
     user_id: str,
     tenant_id: Optional[str],
     revoke_across_all_tenants: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -420,6 +429,7 @@ async def revoke_all_sessions_for_user(
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath(f&#34;{tenant_id}/recipe/session/remove&#34;),
         {&#34;userId&#34;: user_id, &#34;revokeAcrossAllTenants&#34;: revoke_across_all_tenants},
+        user_context=user_context,
     )
     return response[&#34;sessionHandlesRevoked&#34;]
 
@@ -429,6 +439,7 @@ async def get_all_session_handles_for_user(
     user_id: str,
     tenant_id: Optional[str],
     fetch_across_all_tenants: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -436,25 +447,33 @@ async def get_all_session_handles_for_user(
     response = await recipe_implementation.querier.send_get_request(
         NormalisedURLPath(f&#34;{tenant_id}/recipe/session/user&#34;),
         {&#34;userId&#34;: user_id, &#34;fetchAcrossAllTenants&#34;: fetch_across_all_tenants},
+        user_context=user_context,
     )
     return response[&#34;sessionHandles&#34;]
 
 
 async def revoke_session(
-    recipe_implementation: RecipeImplementation, session_handle: str
+    recipe_implementation: RecipeImplementation,
+    session_handle: str,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; bool:
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath(&#34;/recipe/session/remove&#34;),
         {&#34;sessionHandles&#34;: [session_handle]},
+        user_context=user_context,
     )
     return len(response[&#34;sessionHandlesRevoked&#34;]) == 1
 
 
 async def revoke_multiple_sessions(
-    recipe_implementation: RecipeImplementation, session_handles: List[str]
+    recipe_implementation: RecipeImplementation,
+    session_handles: List[str],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; List[str]:
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/remove&#34;), {&#34;sessionHandles&#34;: session_handles}
+        NormalisedURLPath(&#34;/recipe/session/remove&#34;),
+        {&#34;sessionHandles&#34;: session_handles},
+        user_context=user_context,
     )
     return response[&#34;sessionHandlesRevoked&#34;]
 
@@ -463,10 +482,12 @@ async def update_session_data_in_database(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_session_data: Dict[str, Any],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/session/data&#34;),
         {&#34;sessionHandle&#34;: session_handle, &#34;userDataInDatabase&#34;: new_session_data},
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
         return False
@@ -478,10 +499,12 @@ async def update_access_token_payload(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/jwt/data&#34;),
         {&#34;sessionHandle&#34;: session_handle, &#34;userDataInJWT&#34;: new_access_token_payload},
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
         return False
@@ -490,10 +513,14 @@ async def update_access_token_payload(
 
 
 async def get_session_information(
-    recipe_implementation: RecipeImplementation, session_handle: str
+    recipe_implementation: RecipeImplementation,
+    session_handle: str,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; Union[SessionInformationResult, None]:
     response = await recipe_implementation.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/session&#34;), {&#34;sessionHandle&#34;: session_handle}
+        NormalisedURLPath(&#34;/recipe/session&#34;),
+        {&#34;sessionHandle&#34;: session_handle},
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return SessionInformationResult(
@@ -516,7 +543,7 @@ async def get_session_information(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.session_functions.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, tenant_id: str, user_id: str, disable_anti_csrf: bool, access_token_payload: Union[None, Dict[str, Any]], session_data_in_database: Union[None, Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, tenant_id: str, user_id: str, disable_anti_csrf: bool, access_token_payload: Union[None, Dict[str, Any]], session_data_in_database: Union[None, Dict[str, Any]], user_context: Optional[Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -531,6 +558,7 @@ async def get_session_information(
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; CreateOrRefreshAPIResponse:
     if session_data_in_database is None:
         session_data_in_database = {}
@@ -549,6 +577,7 @@ async def get_session_information(
             &#34;useDynamicSigningKey&#34;: recipe_implementation.config.use_dynamic_access_token_signing_key,
             &#34;enableAntiCsrf&#34;: enable_anti_csrf,
         },
+        user_context=user_context,
     )
 
     return CreateOrRefreshAPIResponse(
@@ -573,7 +602,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, tenant_id: Optional[str], fetch_across_all_tenants: bool) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, tenant_id: Optional[str], fetch_across_all_tenants: bool, user_context: Optional[Dict[str, Any]]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -586,6 +615,7 @@ async def get_session_information(
     user_id: str,
     tenant_id: Optional[str],
     fetch_across_all_tenants: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -593,12 +623,13 @@ async def get_session_information(
     response = await recipe_implementation.querier.send_get_request(
         NormalisedURLPath(f&#34;{tenant_id}/recipe/session/user&#34;),
         {&#34;userId&#34;: user_id, &#34;fetchAcrossAllTenants&#34;: fetch_across_all_tenants},
+        user_context=user_context,
     )
     return response[&#34;sessionHandles&#34;]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>recipe_implementation: RecipeImplementation, parsed_access_token: ParsedJWTInfo, anti_csrf_token: Union[str, None], do_anti_csrf_check: bool, always_check_core: bool) ‑> <a title="supertokens_python.recipe.session.session_functions.GetSessionAPIResponse" href="#supertokens_python.recipe.session.session_functions.GetSessionAPIResponse">GetSessionAPIResponse</a></span>
+<span>async def <span class="ident">get_session</span></span>(<span>recipe_implementation: RecipeImplementation, parsed_access_token: ParsedJWTInfo, anti_csrf_token: Union[str, None], do_anti_csrf_check: bool, always_check_core: bool, user_context: Optional[Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.GetSessionAPIResponse" href="#supertokens_python.recipe.session.session_functions.GetSessionAPIResponse">GetSessionAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -612,6 +643,7 @@ async def get_session_information(
     anti_csrf_token: Union[str, None],
     do_anti_csrf_check: bool,
     always_check_core: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; GetSessionAPIResponse:
     config = recipe_implementation.config
     access_token_info: Optional[Dict[str, Any]] = None
@@ -739,7 +771,9 @@ async def get_session_information(
         data[&#34;antiCsrfToken&#34;] = anti_csrf_token
 
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/verify&#34;), data
+        NormalisedURLPath(&#34;/recipe/session/verify&#34;),
+        data,
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return GetSessionAPIResponse(
@@ -781,7 +815,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str) ‑> Union[SessionInformationResult, None]</span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, user_context: Optional[Dict[str, Any]]) ‑> Union[SessionInformationResult, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -790,10 +824,14 @@ async def get_session_information(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_session_information(
-    recipe_implementation: RecipeImplementation, session_handle: str
+    recipe_implementation: RecipeImplementation,
+    session_handle: str,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; Union[SessionInformationResult, None]:
     response = await recipe_implementation.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/session&#34;), {&#34;sessionHandle&#34;: session_handle}
+        NormalisedURLPath(&#34;/recipe/session&#34;),
+        {&#34;sessionHandle&#34;: session_handle},
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return SessionInformationResult(
@@ -809,7 +847,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>recipe_implementation: RecipeImplementation, refresh_token: str, anti_csrf_token: Union[str, None], disable_anti_csrf: bool) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>recipe_implementation: RecipeImplementation, refresh_token: str, anti_csrf_token: Union[str, None], disable_anti_csrf: bool, user_context: Optional[Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -822,6 +860,7 @@ async def get_session_information(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; CreateOrRefreshAPIResponse:
     data = {
         &#34;refreshToken&#34;: refresh_token,
@@ -845,7 +884,9 @@ async def get_session_information(
         )
 
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/refresh&#34;), data
+        NormalisedURLPath(&#34;/recipe/session/refresh&#34;),
+        data,
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;OK&#34;:
         return CreateOrRefreshAPIResponse(
@@ -881,7 +922,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, tenant_id: Optional[str], revoke_across_all_tenants: bool) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, tenant_id: Optional[str], revoke_across_all_tenants: bool, user_context: Optional[Dict[str, Any]]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -894,6 +935,7 @@ async def get_session_information(
     user_id: str,
     tenant_id: Optional[str],
     revoke_across_all_tenants: bool,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; List[str]:
     if tenant_id is None:
         tenant_id = DEFAULT_TENANT_ID
@@ -901,12 +943,13 @@ async def get_session_information(
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath(f&#34;{tenant_id}/recipe/session/remove&#34;),
         {&#34;userId&#34;: user_id, &#34;revokeAcrossAllTenants&#34;: revoke_across_all_tenants},
+        user_context=user_context,
     )
     return response[&#34;sessionHandlesRevoked&#34;]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.revoke_multiple_sessions"><code class="name flex">
-<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>recipe_implementation: RecipeImplementation, session_handles: List[str]) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>recipe_implementation: RecipeImplementation, session_handles: List[str], user_context: Optional[Dict[str, Any]]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -915,16 +958,20 @@ async def get_session_information(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_multiple_sessions(
-    recipe_implementation: RecipeImplementation, session_handles: List[str]
+    recipe_implementation: RecipeImplementation,
+    session_handles: List[str],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; List[str]:
     response = await recipe_implementation.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/remove&#34;), {&#34;sessionHandles&#34;: session_handles}
+        NormalisedURLPath(&#34;/recipe/session/remove&#34;),
+        {&#34;sessionHandles&#34;: session_handles},
+        user_context=user_context,
     )
     return response[&#34;sessionHandlesRevoked&#34;]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.revoke_session"><code class="name flex">
-<span>async def <span class="ident">revoke_session</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str) ‑> bool</span>
+<span>async def <span class="ident">revoke_session</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, user_context: Optional[Dict[str, Any]]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -933,17 +980,20 @@ async def get_session_information(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_session(
-    recipe_implementation: RecipeImplementation, session_handle: str
+    recipe_implementation: RecipeImplementation,
+    session_handle: str,
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; bool:
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath(&#34;/recipe/session/remove&#34;),
         {&#34;sessionHandles&#34;: [session_handle]},
+        user_context=user_context,
     )
     return len(response[&#34;sessionHandlesRevoked&#34;]) == 1</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any]) ‑> bool</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -955,10 +1005,12 @@ async def get_session_information(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/jwt/data&#34;),
         {&#34;sessionHandle&#34;: session_handle, &#34;userDataInJWT&#34;: new_access_token_payload},
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
         return False
@@ -967,7 +1019,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.update_session_data_in_database"><code class="name flex">
-<span>async def <span class="ident">update_session_data_in_database</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any]) ‑> bool</span>
+<span>async def <span class="ident">update_session_data_in_database</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -979,10 +1031,12 @@ async def get_session_information(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_session_data: Dict[str, Any],
+    user_context: Optional[Dict[str, Any]],
 ) -&gt; bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/session/data&#34;),
         {&#34;sessionHandle&#34;: session_handle, &#34;userDataInDatabase&#34;: new_session_data},
+        user_context=user_context,
     )
     if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
         return False

@@ -14,10 +14,9 @@
 from __future__ import annotations
 
 import asyncio
-
 from json import JSONDecodeError
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Tuple
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
@@ -50,6 +49,25 @@ class Querier:
     api_version = None
     __last_tried_index: int = 0
     __hosts_alive_for_testing: Set[str] = set()
+    network_interceptor: Optional[
+        Callable[
+            [
+                str,
+                str,
+                Dict[str, Any],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+            ],
+            Tuple[
+                str,
+                str,
+                Dict[str, Any],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+            ],
+        ]
+    ] = None
 
     def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
@@ -141,7 +159,29 @@ class Querier:
         return Querier(Querier.__hosts, rid_to_core)
 
     @staticmethod
-    def init(hosts: List[Host], api_key: Union[str, None] = None):
+    def init(
+        hosts: List[Host],
+        api_key: Union[str, None] = None,
+        network_interceptor: Optional[
+            Callable[
+                [
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+                Tuple[
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+            ]
+        ] = None,
+    ):
         if not Querier.__init_called:
             Querier.__init_called = True
             Querier.__hosts = hosts
@@ -149,6 +189,7 @@ class Querier:
             Querier.api_version = None
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
+            Querier.network_interceptor = network_interceptor
 
     async def __get_headers_with_api_version(self, path: NormalisedURLPath):
         headers = {API_VERSION_HEADER: await self.get_api_version()}
@@ -159,17 +200,33 @@ class Querier:
         return headers
 
     async def send_get_request(
-        self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+        self,
+        path: NormalisedURLPath,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         if params is None:
             params = {}
 
         async def f(url: str, method: str) -> Response:
+            headers = await self.__get_headers_with_api_version(path)
+            nonlocal params
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, params, {}, user_context
+                )
+
             return await self.api_request(
                 url,
                 method,
                 2,
-                headers=await self.__get_headers_with_api_version(path),
+                headers=headers,
                 params=params,
             )
 
@@ -178,7 +235,8 @@ class Querier:
     async def send_post_request(
         self,
         path: NormalisedURLPath,
-        data: Union[Dict[str, Any], None] = None,
+        data: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
         test: bool = False,
     ) -> Dict[str, Any]:
         if data is None:
@@ -195,35 +253,64 @@ class Querier:
         headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str, method: str) -> Response:
+            nonlocal headers, data
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    _,
+                    data,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, {}, data, user_context
+                )
             return await self.api_request(
                 url,
                 method,
                 2,
-                headers=await self.__get_headers_with_api_version(path),
+                headers=headers,
                 json=data,
             )
 
         return await self.__send_request_helper(path, "POST", f, len(self.__hosts))
 
     async def send_delete_request(
-        self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+        self,
+        path: NormalisedURLPath,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         if params is None:
             params = {}
 
         async def f(url: str, method: str) -> Response:
+            headers = await self.__get_headers_with_api_version(path)
+            nonlocal params
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, params, {}, user_context
+                )
             return await self.api_request(
                 url,
                 method,
                 2,
-                headers=await self.__get_headers_with_api_version(path),
+                headers=headers,
                 params=params,
             )
 
         return await self.__send_request_helper(path, "DELETE", f, len(self.__hosts))
 
     async def send_put_request(
-        self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
+        self,
+        path: NormalisedURLPath,
+        data: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         if data is None:
             data = {}
@@ -232,6 +319,17 @@ class Querier:
         headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str, method: str) -> Response:
+            nonlocal headers, data
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    _,
+                    data,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, {}, data, user_context
+                )
             return await self.api_request(url, method, 2, headers=headers, json=data)
 
         return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))

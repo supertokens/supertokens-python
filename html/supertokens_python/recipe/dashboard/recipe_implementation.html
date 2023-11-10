@@ -79,6 +79,7 @@ class RecipeImplementation(RecipeInterface):
                 await Querier.get_instance().send_post_request(
                     NormalisedURLPath(&#34;/recipe/dashboard/session/verify&#34;),
                     {&#34;sessionId&#34;: auth_header_value},
+                    user_context=user_context,
                 )
             )
             if session_verification_response.get(&#34;status&#34;) != &#34;OK&#34;:
@@ -165,6 +166,7 @@ inheritance.</p></div>
                 await Querier.get_instance().send_post_request(
                     NormalisedURLPath(&#34;/recipe/dashboard/session/verify&#34;),
                     {&#34;sessionId&#34;: auth_header_value},
+                    user_context=user_context,
                 )
             )
             if session_verification_response.get(&#34;status&#34;) != &#34;OK&#34;:
@@ -256,6 +258,7 @@ inheritance.</p></div>
             await Querier.get_instance().send_post_request(
                 NormalisedURLPath(&#34;/recipe/dashboard/session/verify&#34;),
                 {&#34;sessionId&#34;: auth_header_value},
+                user_context=user_context,
             )
         )
         if session_verification_response.get(&#34;status&#34;) != &#34;OK&#34;:

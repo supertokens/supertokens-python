@@ -15,21 +15,16 @@
 from __future__ import annotations
 
 from os import environ
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union, Tuple
 
 from typing_extensions import Literal
 
+from supertokens_python.logger import (
+    get_maybe_none_as_str,
+    log_debug_message,
+    enable_debug_logging,
+)
 
-from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, USER_DELETE, USERS
 from .exceptions import SuperTokensError
@@ -69,10 +64,32 @@ from .exceptions import BadInputError, GeneralError, raise_general_exception
 
 class SupertokensConfig:
     def __init__(
-        self, connection_uri: str, api_key: Union[str, None] = None
+        self,
+        connection_uri: str,
+        api_key: Union[str, None] = None,
+        network_interceptor: Optional[
+            Callable[
+                [
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+                Tuple[
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+            ]
+        ] = None,
     ):  # We keep this = None here because this is directly used by the user.
         self.connection_uri = connection_uri
         self.api_key = api_key
+        self.network_interceptor = network_interceptor
 
 
 class Host:
@@ -193,6 +210,7 @@ class Supertokens:
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
+        debug: Optional[bool],
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
@@ -209,6 +227,8 @@ class Supertokens:
             mode,
         )
         self.supertokens_config = supertokens_config
+        if debug is True:
+            enable_debug_logging()
         self._telemetry_status: str = "NONE"
         log_debug_message(
             "Started SuperTokens with debug logging (supertokens.init called)"
@@ -223,7 +243,9 @@ class Supertokens:
                 filter(lambda x: x != "", supertokens_config.connection_uri.split(";")),
             )
         )
-        Querier.init(hosts, supertokens_config.api_key)
+        Querier.init(
+            hosts, supertokens_config.api_key, supertokens_config.network_interceptor
+        )
 
         if len(recipe_list) == 0:
             raise_general_exception(
@@ -261,6 +283,7 @@ class Supertokens:
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
+        debug: Optional[bool],
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
@@ -270,6 +293,7 @@ class Supertokens:
                 recipe_list,
                 mode,
                 telemetry,
+                debug,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 
@@ -305,6 +329,7 @@ class Supertokens:
         self,
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
@@ -317,18 +342,25 @@ class Supertokens:
                 "includeRecipeIds": include_recipe_ids_str,
                 "includeAllTenants": tenant_id is None,
             },
+            user_context=user_context,
         )
 
         return int(response["count"])
 
-    async def delete_user(self, user_id: str) -> None:  # pylint: disable=no-self-use
+    async def delete_user(  # pylint: disable=no-self-use
+        self,
+        user_id: str,
+        user_context: Optional[Dict[str, Any]],
+    ) -> None:
         querier = Querier.get_instance(None)
 
         cdi_version = await querier.get_api_version()
 
         if is_version_gte(cdi_version, "2.10"):
             await querier.send_post_request(
-                NormalisedURLPath(USER_DELETE), {"userId": user_id}
+                NormalisedURLPath(USER_DELETE),
+                {"userId": user_id},
+                user_context=user_context,
             )
 
             return None
@@ -341,7 +373,8 @@ class Supertokens:
         limit: Union[int, None],
         pagination_token: Union[str, None],
         include_recipe_ids: Union[None, List[str]],
-        query: Union[Dict[str, str], None] = None,
+        query: Union[Dict[str, str], None],
+        user_context: Optional[Dict[str, Any]],
     ) -> UsersResponse:
         from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
@@ -364,7 +397,7 @@ class Supertokens:
             tenant_id = DEFAULT_TENANT_ID
 
         response = await querier.send_get_request(
-            NormalisedURLPath(f"/{tenant_id}{USERS}"), params
+            NormalisedURLPath(f"/{tenant_id}{USERS}"), params, user_context=user_context
         )
         next_pagination_token = None
         if "nextPaginationToken" in response:
@@ -403,8 +436,9 @@ class Supertokens:
         self,
         supertokens_user_id: str,
         external_user_id: str,
-        external_user_id_info: Optional[str] = None,
-        force: Optional[bool] = None,
+        external_user_id_info: Optional[str],
+        force: Optional[bool],
+        user_context: Optional[Dict[str, Any]],
     ) -> Union[
         CreateUserIdMappingOkResult,
         UnknownSupertokensUserIDError,
@@ -424,7 +458,7 @@ class Supertokens:
                 body["force"] = force
 
             res = await querier.send_post_request(
-                NormalisedURLPath("/recipe/userid/map"), body
+                NormalisedURLPath("/recipe/userid/map"), body, user_context=user_context
             )
             if res["status"] == "OK":
                 return CreateUserIdMappingOkResult()
@@ -443,7 +477,8 @@ class Supertokens:
     async def get_user_id_mapping(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_id_type: Optional[UserIDTypes] = None,
+        user_id_type: Optional[UserIDTypes],
+        user_context: Optional[Dict[str, Any]],
     ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -458,6 +493,7 @@ class Supertokens:
             res = await querier.send_get_request(
                 NormalisedURLPath("/recipe/userid/map"),
                 body,
+                user_context=user_context,
             )
             if res["status"] == "OK":
                 return GetUserIdMappingOkResult(
@@ -475,8 +511,9 @@ class Supertokens:
     async def delete_user_id_mapping(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_id_type: Optional[UserIDTypes] = None,
-        force: Optional[bool] = None,
+        user_id_type: Optional[UserIDTypes],
+        force: Optional[bool],
+        user_context: Optional[Dict[str, Any]],
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 
@@ -490,7 +527,9 @@ class Supertokens:
             if force:
                 body["force"] = force
             res = await querier.send_post_request(
-                NormalisedURLPath("/recipe/userid/map/remove"), body
+                NormalisedURLPath("/recipe/userid/map/remove"),
+                body,
+                user_context=user_context,
             )
             if res["status"] == "OK":
                 return DeleteUserIdMappingOkResult(
@@ -504,8 +543,9 @@ class Supertokens:
     async def update_or_delete_user_id_mapping_info(  # pylint: disable=no-self-use
         self,
         user_id: str,
-        user_id_type: Optional[UserIDTypes] = None,
-        external_user_id_info: Optional[str] = None,
+        user_id_type: Optional[UserIDTypes],
+        external_user_id_info: Optional[str],
+        user_context: Optional[Dict[str, Any]],
     ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -519,6 +559,7 @@ class Supertokens:
                     "userIdType": user_id_type,
                     "externalUserIdInfo": external_user_id_info,
                 },
+                user_context=user_context,
             )
             if res["status"] == "OK":
                 return UpdateOrDeleteUserIdMappingInfoOkResult()
@@ -616,7 +657,11 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(
-        self, request: BaseRequest, err: Exception, response: BaseResponse, user_context: Dict[str, Any]
+        self,
+        request: BaseRequest,
+        err: Exception,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         log_debug_message("errorHandler: Started")
         log_debug_message(

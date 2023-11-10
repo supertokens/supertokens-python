@@ -48,7 +48,9 @@ class RecipeImplementation(RecipeInterface):
     ]:
         data = {"userId": user_id, "email": email}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token"),
+            data,
+            user_context,
         )
         if "status" in response and response["status"] == "OK":
             return CreateEmailVerificationTokenOkResult(response["token"])
@@ -59,7 +61,9 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         data = {"method": "token", "token": token}
         response = await self.querier.send_post_request(
-            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify"), data
+            NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify"),
+            data,
+            user_context,
         )
         if "status" in response and response["status"] == "OK":
             return VerifyEmailUsingTokenOkResult(
@@ -72,7 +76,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> bool:
         params = {"userId": user_id, "email": email}
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/user/email/verify"), params
+            NormalisedURLPath("/recipe/user/email/verify"), params, user_context
         )
         return response["isVerified"]
 
@@ -83,6 +87,7 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token/remove"),
             data,
+            user_context,
         )
         return RevokeEmailVerificationTokensOkResult()
 
@@ -91,6 +96,6 @@ class RecipeImplementation(RecipeInterface):
     ) -> UnverifyEmailOkResult:
         data = {"userId": user_id, "email": email}
         await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/user/email/verify/remove"), data
+            NormalisedURLPath("/recipe/user/email/verify/remove"), data, user_context
         )
         return UnverifyEmailOkResult()

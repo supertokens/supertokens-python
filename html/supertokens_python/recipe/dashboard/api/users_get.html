@@ -89,6 +89,7 @@ async def handle_users_get_api(
         pagination_token=pagination_token,
         include_recipe_ids=None,
         query=api_options.request.get_query_params(),
+        user_context=user_context,
     )
 
     # user metadata bulk fetch with batches:
@@ -187,6 +188,7 @@ async def handle_users_get_api(
         pagination_token=pagination_token,
         include_recipe_ids=None,
         query=api_options.request.get_query_params(),
+        user_context=user_context,
     )
 
     # user metadata bulk fetch with batches:
