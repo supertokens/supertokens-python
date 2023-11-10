@@ -24,12 +24,10 @@ from typing import (
     Optional,
     Set,
     Union,
-    Awaitable,
 )
 
 from typing_extensions import Literal
 
-from flask import app
 
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
