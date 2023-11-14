@@ -449,7 +449,7 @@ def validate_and_normalise_user_input(
         website_domain_scheme = get_url_scheme(
             app_info.get_website_domain(request, user_context).get_as_string_dangerous()
         )
-        nonlocal cookie_same_site
+        nonlocal cookie_same_site # TODO: check this
         if cookie_same_site is not None:
             cookie_same_site = normalise_same_site(cookie_same_site)
         elif (top_level_api_domain != top_level_website_domain) or (
