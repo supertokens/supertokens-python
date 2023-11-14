@@ -157,7 +157,7 @@ class APIImplementation(APIInterface):
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         return await self.pless_create_code_post(
-            email, phone_number, tenant_id, api_options, user_context
+            email, phone_number, tenant_id, api_options, api_options.request, user_context
         )
 
     async def resend_code_post(
@@ -171,7 +171,7 @@ class APIImplementation(APIInterface):
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
     ]:
         return await self.pless_resend_code_post(
-            device_id, pre_auth_session_id, tenant_id, api_options, user_context
+            device_id, pre_auth_session_id, tenant_id, api_options, api_options.request, user_context
         )
 
     async def consume_code_post(

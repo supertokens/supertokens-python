@@ -56,7 +56,7 @@ def middleware(get_response: Any):
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
                 result = await st.handle_supertokens_error(
-                    DjangoRequest(request), e, response, {}  # TODO: check if this is the right way to make user_context
+                    DjangoRequest(request), e, response, user_context
                 )
                 if isinstance(result, DjangoResponse):
                     return result.response
@@ -93,7 +93,7 @@ def middleware(get_response: Any):
             response = DjangoResponse(HttpResponse())
             result: Union[DjangoResponse, None] = async_to_sync(
                 st.handle_supertokens_error
-            )(DjangoRequest(request), e, response)
+            )(DjangoRequest(request), e, response, user_context)
             if result is not None:
                 return result.response
         raise Exception("Should never come here")

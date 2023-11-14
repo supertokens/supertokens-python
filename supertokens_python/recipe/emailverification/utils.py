@@ -14,7 +14,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
+from supertokens_python.framework import BaseRequest
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -103,10 +104,10 @@ def validate_and_normalise_user_input(
 
 
 def get_email_verify_link(
-    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str
+    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str, request: BaseRequest, user_context: Dict[str, Any]
 ) -> str:
     return (
-        app_info.website_domain.get_as_string_dangerous()
+        app_info.get_website_domain(request, user_context).get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
         + "/verify-email"
         + "?token="

@@ -12,6 +12,9 @@
 # under the License.
 from typing import Any, Dict, Union, Optional
 
+from supertokens_python import get_request_from_user_context
+from supertokens_python.exceptions import raise_general_exception
+
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     EmailDoesNotExistError,
@@ -176,12 +179,17 @@ async def create_email_verification_link(
     ):
         return CreateEmailVerificationLinkEmailAlreadyVerifiedError()
 
+    request = get_request_from_user_context(user_context)
+    if request is None:
+        raise_general_exception("should never reach here: missing request in user_context")
     return CreateEmailVerificationLinkOkResult(
         link=get_email_verify_link(
             app_info,
             email_verification_token.token,
             recipe_instance.get_recipe_id(),
             tenant_id,
+            request,
+            user_context
         )
     )
 

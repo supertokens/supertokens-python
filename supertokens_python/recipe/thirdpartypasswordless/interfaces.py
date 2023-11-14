@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
+from supertokens_python.framework import BaseRequest
 
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfaces
@@ -363,6 +364,7 @@ class APIInterface(ABC):
         phone_number: Union[str, None],
         tenant_id: str,
         api_options: PasswordlessAPIOptions,
+        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         pass
@@ -374,6 +376,7 @@ class APIInterface(ABC):
         pre_auth_session_id: str,
         tenant_id: str,
         api_options: PasswordlessAPIOptions,
+        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse

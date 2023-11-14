@@ -154,7 +154,7 @@ class ThirdPartyRecipe(RecipeModule):
         return None
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
     ) -> BaseResponse:  # type: ignore
         if isinstance(err, SuperTokensThirdPartyError):
             raise err

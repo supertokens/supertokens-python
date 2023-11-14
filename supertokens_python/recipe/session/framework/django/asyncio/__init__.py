@@ -72,8 +72,11 @@ def verify_session(
                 return await f(baseRequest.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(JsonResponse({}))
+                user_context = set_request_in_user_context_if_not_defined(
+                    user_context, DjangoRequest(request)
+                )
                 result = await Supertokens.get_instance().handle_supertokens_error(
-                    DjangoRequest(request), e, response
+                    DjangoRequest(request), e, response, user_context
                 )
                 if isinstance(result, DjangoResponse):
                     return result.response

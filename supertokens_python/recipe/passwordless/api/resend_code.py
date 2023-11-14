@@ -40,6 +40,6 @@ async def resend_code(
     device_id = body["deviceId"]
 
     result = await api_implementation.resend_code_post(
-        device_id, pre_auth_session_id, tenant_id, api_options, user_context
+        device_id, pre_auth_session_id, tenant_id, api_options, api_options.request,user_context
     )
     return send_200_response(result.to_json(), api_options.response)

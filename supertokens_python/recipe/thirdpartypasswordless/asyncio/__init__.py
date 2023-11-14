@@ -12,7 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
 from typing import Any, Dict, List, Optional, Union
+from supertokens_python import get_request_from_user_context
+from supertokens_python.exceptions import raise_general_exception
 
 from supertokens_python.recipe.passwordless.interfaces import (
     DeleteUserInfoOkResult,
@@ -291,10 +294,14 @@ async def create_magic_link(
 ) -> str:
     if user_context is None:
         user_context = {}
+    request = get_request_from_user_context(user_context)
+    if request is None:
+        raise_general_exception("should never reach here: missing request in user_context")
     return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
         tenant_id=tenant_id,
         email=email,
         phone_number=phone_number,
+        request=request,
         user_context=user_context,
     )
 

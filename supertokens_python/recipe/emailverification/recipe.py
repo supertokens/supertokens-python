@@ -185,7 +185,7 @@ class EmailVerificationRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
     ) -> BaseResponse:
         if isinstance(err, EmailVerificationInvalidTokenError):
             response.set_json_content(

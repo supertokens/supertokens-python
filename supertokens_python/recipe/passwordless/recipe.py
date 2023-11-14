@@ -223,7 +223,7 @@ class PasswordlessRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
     ) -> BaseResponse:  # type: ignore
         raise err
 
@@ -295,6 +295,7 @@ class PasswordlessRecipe(RecipeModule):
         email: Union[str, None],
         phone_number: Union[str, None],
         tenant_id: str,
+        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> str:
         user_input_code = None
@@ -314,7 +315,7 @@ class PasswordlessRecipe(RecipeModule):
         app_info = self.get_app_info()
 
         magic_link = (
-            app_info.website_domain.get_as_string_dangerous()
+            app_info.get_website_domain(request, user_context).get_as_string_dangerous()
             + app_info.website_base_path.get_as_string_dangerous()
             + "/verify"
             + "?rid="

@@ -79,7 +79,7 @@ async def handle_analytics_post(
 
     apiDomain, websiteDomain, appName = (
         api_options.app_info.api_domain,
-        api_options.app_info.website_domain,
+        api_options.app_info.get_website_domain(api_options.request, _user_context),
         api_options.app_info.app_name,
     )
 

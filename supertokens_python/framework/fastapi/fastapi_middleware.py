@@ -64,7 +64,7 @@ def get_middleware():
             except SuperTokensError as e:
                 response = FastApiResponse(Response())
                 result: Union[BaseResponse, None] = await st.handle_supertokens_error(
-                    FastApiRequest(request), e, response
+                    FastApiRequest(request), e, response, {}
                 )
                 if isinstance(result, FastApiResponse):
                     return result.response

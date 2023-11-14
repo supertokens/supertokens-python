@@ -92,7 +92,7 @@ class Middleware:
 
             result: BaseResponse = sync(
                 st.handle_supertokens_error(
-                    FlaskRequest(request), error, FlaskResponse(response)
+                    FlaskRequest(request), error, FlaskResponse(response), user_context={} #TODO: check
                 )
             )
             if isinstance(result, FlaskResponse):

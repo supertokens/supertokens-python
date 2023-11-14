@@ -13,6 +13,7 @@
 # under the License.
 
 from typing import Any, Dict, List, Optional, Union
+from supertokens_python import get_request_from_user_context
 
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import (
     ThirdPartyEmailPasswordRecipe,
@@ -196,11 +197,16 @@ async def create_reset_password_link(
     user = await get_user_by_id(user_id, user_context)
     assert user is not None
 
+    request = get_request_from_user_context(user_context)
+    if request is None:
+        raise_general_exception("should never reach here: missing request in user_context")
+
     return CreateResetPasswordLinkOkResult(
         link=get_password_reset_link(
             recipe_instance.get_app_info(),
             token.token,
             recipe_instance.get_recipe_id(),
+            request,
             tenant_id,
         )
     )
