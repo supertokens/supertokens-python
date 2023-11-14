@@ -48,7 +48,7 @@ from ...multitenancy.constants import DEFAULT_TENANT_ID
 
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordWrongUserIdError,
-    CreateResetPasswordLinkUknownUserIdError,
+    CreateResetPasswordLinkUnknownUserIdError,
     CreateResetPasswordLinkOkResult,
     SendResetPasswordEmailOkResult,
     SendResetPasswordEmailUnknownUserIdError,
@@ -167,14 +167,14 @@ async def create_reset_password_link(
 ):
     token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
-        return CreateResetPasswordLinkUknownUserIdError()
+        return CreateResetPasswordLinkUnknownUserIdError()
 
     recipe_instance = EmailPasswordRecipe.get_instance()
     return CreateResetPasswordLinkOkResult(
         link=get_password_reset_link(
             recipe_instance.get_app_info(),
-            recipe_instance.get_recipe_id(),
             token.token,
+            recipe_instance.get_recipe_id(),
             tenant_id,
         )
     )
@@ -184,7 +184,7 @@ async def send_reset_password_email(
     tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
     link = await create_reset_password_link(tenant_id, user_id, user_context)
-    if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
+    if isinstance(link, CreateResetPasswordLinkUnknownUserIdError):
         return SendResetPasswordEmailUnknownUserIdError()
 
     user = await get_user_by_id(user_id, user_context)
@@ -223,14 +223,14 @@ async def send_reset_password_email(
 ):
     token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
-        return CreateResetPasswordLinkUknownUserIdError()
+        return CreateResetPasswordLinkUnknownUserIdError()
 
     recipe_instance = EmailPasswordRecipe.get_instance()
     return CreateResetPasswordLinkOkResult(
         link=get_password_reset_link(
             recipe_instance.get_app_info(),
-            recipe_instance.get_recipe_id(),
             token.token,
+            recipe_instance.get_recipe_id(),
             tenant_id,
         )
     )</code></pre>
@@ -350,7 +350,7 @@ async def send_reset_password_email(
     tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
     link = await create_reset_password_link(tenant_id, user_id, user_context)
-    if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
+    if isinstance(link, CreateResetPasswordLinkUnknownUserIdError):
         return SendResetPasswordEmailUnknownUserIdError()
 
     user = await get_user_by_id(user_id, user_context)
