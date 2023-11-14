@@ -62,7 +62,7 @@ class CreateResetPasswordLinkOkResult:
         self.link = link
 
 
-class CreateResetPasswordLinkUknownUserIdError:
+class CreateResetPasswordLinkUnknownUserIdError:
     pass
 
 

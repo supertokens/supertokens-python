@@ -23,7 +23,7 @@ from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     CreateResetPasswordWrongUserIdError,
-    CreateResetPasswordLinkUknownUserIdError,
+    CreateResetPasswordLinkUnknownUserIdError,
     CreateResetPasswordLinkOkResult,
     SendResetPasswordEmailUnknownUserIdError,
     SendResetPasswordEmailEmailOkResult,
@@ -189,7 +189,7 @@ async def create_reset_password_link(
 ):
     token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
-        return CreateResetPasswordLinkUknownUserIdError()
+        return CreateResetPasswordLinkUnknownUserIdError()
 
     recipe_instance = ThirdPartyEmailPasswordRecipe.get_instance()
 
@@ -212,7 +212,7 @@ async def send_reset_password_email(
     user_context: Optional[Dict[str, Any]] = None,
 ):
     link = await create_reset_password_link(tenant_id, user_id, user_context)
-    if isinstance(link, CreateResetPasswordLinkUknownUserIdError):
+    if isinstance(link, CreateResetPasswordLinkUnknownUserIdError):
         return SendResetPasswordEmailUnknownUserIdError()
 
     user = await get_user_by_id(user_id, user_context)

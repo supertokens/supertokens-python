@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.17.0] - 2023-11-14
+- Fixes `create_reset_password_link` in the emailpassword recipe wherein we passed the `rid` instead of the token in the link
+
+### Breaking fix
+- Fixed spelling of `CreateResetPasswordLinkUnknownUserIdError` in `create_reset_password_link`. It used to be `CreateResetPasswordLinkUknownUserIdError`
+
 ## [0.16.8] - 2023-11-7
 
 ### Added
