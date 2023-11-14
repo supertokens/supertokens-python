@@ -131,9 +131,12 @@ class ErrorHandlers:
         session_handle: str,
         user_id: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
-        clear_session_from_all_token_transfer_methods(response, recipe)
+        clear_session_from_all_token_transfer_methods(
+            response, recipe, request, user_context
+        )
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -151,10 +154,13 @@ class ErrorHandlers:
         request: BaseRequest,
         message: str,
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if do_clear_cookies:
             log_debug_message("Clearing tokens because of UNAUTHORISED response")
-            clear_session_from_all_token_transfer_methods(response, recipe)
+            clear_session_from_all_token_transfer_methods(
+                response, recipe, request, user_context
+            )
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
@@ -322,11 +328,19 @@ class SessionConfig:
         self,
         refresh_token_path: NormalisedURLPath,
         cookie_domain: Union[None, str],
-        cookie_same_site: Literal["lax", "strict", "none"],
+        # cookie_same_site: Literal["lax", "strict", "none"],
+        get_cookie_same_site: Callable[[BaseRequest, Dict[str, Any]], Literal["lax", "strict", "none"]],
         cookie_secure: bool,
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
-        anti_csrf: str,
+        # anti_csrf: str,
+        anti_csrf_function_or_string: Union[
+            Callable[
+                [BaseRequest, Dict[str, Any]],
+                Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
+            ],
+            Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
+        ],
         get_token_transfer_method: Callable[
             [BaseRequest, bool, Dict[str, Any]],
             Union[TokenTransferMethod, Literal["any"]],
@@ -347,10 +361,10 @@ class SessionConfig:
 
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
-        self.cookie_same_site = cookie_same_site
+        self.get_cookie_same_site = get_cookie_same_site
         self.cookie_secure = cookie_secure
         self.error_handlers = error_handlers
-        self.anti_csrf = anti_csrf
+        self.anti_csrf_function_or_string = anti_csrf_function_or_string
         self.get_token_transfer_method = get_token_transfer_method
         self.override = override
         self.framework = framework
@@ -391,21 +405,6 @@ def validate_and_normalise_user_input(
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
     )
-    top_level_api_domain = app_info.top_level_api_domain
-    top_level_website_domain = app_info.top_level_website_domain
-
-    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
-    website_domain_scheme = get_url_scheme(
-        app_info.website_domain.get_as_string_dangerous()
-    )
-    if cookie_same_site is not None:
-        cookie_same_site = normalise_same_site(cookie_same_site)
-    elif (top_level_api_domain != top_level_website_domain) or (
-        api_domain_scheme != website_domain_scheme
-    ):
-        cookie_same_site = "none"
-    else:
-        cookie_same_site = "lax"
 
     cookie_secure = (
         cookie_secure
@@ -427,9 +426,6 @@ def validate_and_normalise_user_input(
             f"({invalid_claim_status_code})"
         )
 
-    if anti_csrf is None:
-        anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
-
     if get_token_transfer_method is None:
         get_token_transfer_method = get_token_transfer_method_default
 
@@ -445,14 +441,40 @@ def validate_and_normalise_user_input(
     if expose_access_token_to_frontend_in_cookie_based_auth is None:
         expose_access_token_to_frontend_in_cookie_based_auth = False
 
+    def cookie_same_site_function(request: BaseRequest, user_context: Dict[str, Any]) -> Literal["lax", "strict", "none"]:
+        top_level_api_domain = app_info.top_level_api_domain
+        top_level_website_domain = app_info.top_level_website_domain(request, user_context)
+
+        api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
+        website_domain_scheme = get_url_scheme(
+            app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+        )
+        nonlocal cookie_same_site
+        if cookie_same_site is not None:
+            cookie_same_site = normalise_same_site(cookie_same_site)
+        elif (top_level_api_domain != top_level_website_domain) or (
+            api_domain_scheme != website_domain_scheme
+        ):
+            cookie_same_site = "none"
+        else:
+            cookie_same_site = "lax"
+        return "lax"
+
+
+    def anti_csrf_function(request: BaseRequest, user_context: Dict[str, Any]) -> Literal["NONE", "VIA_CUSTOM_HEADER", "VIA_TOKEN"]:
+        nonlocal anti_csrf
+        if anti_csrf is None:
+            anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
+        return anti_csrf
+    
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
-        cookie_same_site,
+        cookie_same_site_function,
         cookie_secure,
         session_expired_status_code,
         error_handlers,
-        anti_csrf,
+        anti_csrf_function,
         get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,

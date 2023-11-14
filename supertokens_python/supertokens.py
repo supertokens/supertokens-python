@@ -162,14 +162,14 @@ class AppInfo:
         self.mode = mode
 
     def top_level_website_domain(
-        self, request: BaseRequest, userContext: Optional[Dict[str, Any]]
+        self, request: BaseRequest, user_context: Optional[Dict[str, Any]]
     ) -> str:
         return get_top_level_domain_for_same_site_resolution(
-            self.get_website_domain(request, userContext).get_as_string_dangerous()
+            self.get_website_domain(request, user_context).get_as_string_dangerous()
         )
 
     def get_website_domain(
-        self, request: BaseRequest, userContext: Optional[Dict[str, Any]]
+        self, request: BaseRequest, user_context: Optional[Dict[str, Any]]
     ):
         origin = self.origin
         if origin is None:
@@ -180,7 +180,7 @@ class AppInfo:
             raise_general_exception("should never come here")
 
         if callable(origin):
-            origin = origin(request, userContext)
+            origin = origin(request, user_context)
 
         return NormalisedURLDomain(origin)
 

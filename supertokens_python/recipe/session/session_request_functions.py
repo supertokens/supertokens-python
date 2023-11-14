@@ -205,7 +205,7 @@ async def get_session_from_request(
 
         await session.attach_to_request_response(
             request,
-            final_transfer_method,
+            final_transfer_method, user_context
         )
 
     return session
@@ -270,8 +270,8 @@ async def create_new_session_in_request(
                 or is_an_ip_address(app_info.top_level_api_domain)
             )
             and (
-                app_info.top_level_website_domain == "localhost"
-                or is_an_ip_address(app_info.top_level_website_domain)
+                app_info.top_level_website_domain(request, user_context) == "localhost"
+                or is_an_ip_address(app_info.top_level_website_domain(request, user_context))
             )
         )
     ):
@@ -299,12 +299,12 @@ async def create_new_session_in_request(
             and get_token(request, "access", transfer_method) is not None
         ):
             session.response_mutators.append(
-                clear_session_mutator(config, transfer_method)
+                clear_session_mutator(config, transfer_method, request, user_context)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
 
-    await session.attach_to_request_response(request, output_transfer_method)
+    await session.attach_to_request_response(request, output_transfer_method, user_context)
     log_debug_message("createNewSession: Attached new tokens to res")
 
     return session
@@ -445,9 +445,9 @@ async def refresh_session_in_request(
             transfer_method != request_transfer_method
             and refresh_tokens[transfer_method] is not None
         ):
-            response_mutators.append(clear_session_mutator(config, transfer_method))
+            response_mutators.append(clear_session_mutator(config, transfer_method, request, user_context))
 
-    await session.attach_to_request_response(request, request_transfer_method)
+    await session.attach_to_request_response(request, request_transfer_method, user_context)
     log_debug_message("refreshSession: Success!")
 
     # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code

@@ -56,7 +56,7 @@ def middleware(get_response: Any):
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
                 result = await st.handle_supertokens_error(
-                    DjangoRequest(request), e, response
+                    DjangoRequest(request), e, response, {}  # TODO: check if this is the right way to make user_context
                 )
                 if isinstance(result, DjangoResponse):
                     return result.response
