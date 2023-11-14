@@ -112,7 +112,7 @@ class SessionRecipe(RecipeModule):
             None,
             override.openid_feature if override is not None else None,
         )
-        log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
+        log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf_function_or_string)
         if self.config.cookie_domain is not None:
             log_debug_message(
                 "session init: cookie_domain: %s", self.config.cookie_domain
@@ -120,7 +120,7 @@ class SessionRecipe(RecipeModule):
         else:
             log_debug_message("session init: cookie_domain: None")
         log_debug_message(
-            "session init: cookie_same_site: %s", self.config.cookie_same_site
+            "session init: cookie_same_site: %s", self.config.get_cookie_same_site
         )
         log_debug_message(
             "session init: cookie_secure: %s", str(self.config.cookie_secure)

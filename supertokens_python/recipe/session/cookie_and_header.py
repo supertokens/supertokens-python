@@ -18,8 +18,6 @@ from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
 
-from django import conf
-
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
     ACCESS_TOKEN_COOKIE_KEY,
@@ -117,8 +115,7 @@ def _set_cookie(
 ):
     domain = config.cookie_domain
     secure = config.cookie_secure
-    same_site = config.cookie_same_site  # TODO: this will become a function
-    # same_site = config.get_cookie_same_site(request, user_context)
+    same_site = config.get_cookie_same_site(request, user_context)
     path = ""
     if path_type == "refresh_token_path":
         path = config.refresh_token_path.get_as_string_dangerous()
@@ -143,11 +140,13 @@ def set_cookie_response_mutator(
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     def mutator(
         response: BaseResponse,
     ):
-        return _set_cookie(response, config, key, value, expires, path_type)
+        return _set_cookie(response, config, key, value, expires, path_type, request, user_context)
 
     return mutator
 
@@ -301,6 +300,8 @@ def token_response_mutator(
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     def mutator(response: BaseResponse):
         _set_token(
@@ -310,6 +311,8 @@ def token_response_mutator(
             value,
             expires,
             transfer_method,
+            request,
+            user_context
         )
 
     return mutator
@@ -374,4 +377,6 @@ def _set_access_token_in_response(
             access_token,
             get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
             "header",
+            request,
+            user_context
         )

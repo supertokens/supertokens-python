@@ -157,8 +157,10 @@ async def get_session_from_request(
     if request_access_token is None:
         do_anti_csrf_check = False
 
-    if do_anti_csrf_check and config.anti_csrf == "VIA_CUSTOM_HEADER":
-        if config.anti_csrf == "VIA_CUSTOM_HEADER":
+    #  TODO: anti_csrf can be a function
+
+    if do_anti_csrf_check and config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER":
+        if config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER":
             if get_rid_from_header(request) is None:
                 log_debug_message(
                     "getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed"
@@ -262,7 +264,7 @@ async def create_new_session_in_request(
 
     if (
         output_transfer_method == "cookie"
-        and config.cookie_same_site == "none"
+        and config.get_cookie_same_site(request, user_context) == "none"
         and not config.cookie_secure
         and not (
             (
@@ -377,6 +379,8 @@ async def refresh_session_in_request(
                     "",
                     0,
                     "access_token_path",
+                    request,
+                    user_context
                 )
             )
 
@@ -394,7 +398,7 @@ async def refresh_session_in_request(
     disable_anti_csrf = request_transfer_method == "header"
     anti_csrf_token = get_anti_csrf_header(request)
 
-    if config.anti_csrf == "VIA_CUSTOM_HEADER" and not disable_anti_csrf:
+    if config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER" and not disable_anti_csrf: #TODO: can be function
         if get_rid_from_header(request) is None:
             log_debug_message(
                 "refreshSession: Returning UNAUTHORISED because anti-csrf token is undefined"
@@ -428,6 +432,8 @@ async def refresh_session_in_request(
                         "",
                         0,
                         "access_token_path",
+                        request,
+                        user_context
                     )
                 )
 
@@ -462,6 +468,8 @@ async def refresh_session_in_request(
                 "",
                 0,
                 "access_token_path",
+                request,
+                user_context
             )
         )
 
