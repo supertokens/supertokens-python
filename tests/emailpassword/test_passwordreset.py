@@ -19,11 +19,15 @@ from urllib.parse import urlparse
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import create_reset_password_link
+from supertokens_python.recipe.emailpassword.interfaces import (
+    CreateResetPasswordLinkUnknownUserIdError,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -376,3 +380,10 @@ async def test_create_reset_password_link(
     assert url.path == "/auth/reset-password"
     assert "tenantId=public" in queries
     assert "rid=emailpassword" in queries
+
+    link = await create_reset_password_link("public", "invalidUserId")
+    assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
+
+    with raises(GeneralError) as err:
+        await create_reset_password_link("invalidTenantId", user_info["id"])
+    assert "status code: 400" in str(err.value)
