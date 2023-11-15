@@ -14,6 +14,7 @@
 import asyncio
 import json
 from typing import Any, Dict, Union
+from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -22,6 +23,7 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.asyncio import create_reset_password_link
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -339,3 +341,38 @@ async def test_valid_token_input_and_passoword_has_changed(
     assert dict_response["status"] == "OK"
     assert dict_response["user"]["id"] == user_info["id"]
     assert dict_response["user"]["email"] == user_info["email"]
+
+
+@mark.asyncio
+async def test_create_reset_password_link(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+    assert dict_response["status"] == "OK"
+    link = await create_reset_password_link("public", user_info["id"])
+    url = urlparse(link.link)  # type: ignore
+    queries = url.query.strip("&").split("&")
+    assert url.path == "/auth/reset-password"
+    assert "tenantId=public" in queries
+    assert "rid=emailpassword" in queries
