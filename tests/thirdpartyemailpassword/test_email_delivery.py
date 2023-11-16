@@ -41,9 +41,11 @@ from supertokens_python.recipe import (
 )
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
     create_reset_password_link,
+    send_reset_password_email,
 )
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     CreateResetPasswordLinkUnknownUserIdError,
+    SendResetPasswordEmailEmailOkResult,
 )
 from supertokens_python.recipe.emailverification.emaildelivery.services import (
     SMTPService as EVSMTPService,
@@ -1079,6 +1081,44 @@ async def test_create_reset_password_link(
     assert url.path == "/auth/reset-password"
     assert "tenantId=public" in queries
     assert "rid=thirdpartyemailpassword" in queries
+
+    link = await create_reset_password_link("public", "invalidUserId")
+    assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
+
+    with raises(GeneralError) as err:
+        await create_reset_password_link("invalidTenantId", user_info["id"])
+    assert "status code: 400" in str(err.value)
+
+
+@mark.asyncio
+async def test_send_reset_password_email(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            thirdpartyemailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+    assert dict_response["status"] == "OK"
+    resp = await send_reset_password_email("public", user_info["id"])
+    assert isinstance(resp, SendResetPasswordEmailEmailOkResult)
 
     link = await create_reset_password_link("public", "invalidUserId")
     assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)

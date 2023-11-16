@@ -130,6 +130,7 @@ async def test_that_generated_password_link_is_correct(
     reset_url = None
     token_info: Union[None, str] = None
     rid_info: Union[None, str] = None
+    tenant_info: Union[None, str] = None
 
     class CustomEmailService(
         emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
@@ -139,11 +140,12 @@ async def test_that_generated_password_link_is_correct(
             template_vars: emailpassword.EmailTemplateVars,
             user_context: Dict[str, Any],
         ) -> None:
-            nonlocal reset_url, token_info, rid_info
+            nonlocal reset_url, token_info, rid_info, tenant_info
             password_reset_url_with_token = template_vars.password_reset_link
             reset_url = password_reset_url_with_token.split("?")[0]
             token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
             rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
+            tenant_info = password_reset_url_with_token.split("?")[1].split("&")[2]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -178,6 +180,7 @@ async def test_that_generated_password_link_is_correct(
     assert reset_url == "http://supertokens.io/auth/reset-password"
     assert token_info is not None and "token=" in token_info  # type: ignore pylint: disable=unsupported-membership-test
     assert rid_info is not None and "rid=emailpassword" in rid_info  # type: ignore pylint: disable=unsupported-membership-test
+    assert tenant_info is not None and "tenantId=" in tenant_info  # type: ignore pylint: disable=unsupported-membership-test
 
 
 @mark.asyncio
@@ -263,6 +266,14 @@ async def test_valid_token_input_and_passoword_has_changed(
             password_reset_url_with_token = template_vars.password_reset_link
             token_info = (
                 password_reset_url_with_token.split("?")[1].split("&")[0].split("=")[1]
+            )
+            assert (
+                password_reset_url_with_token.split("?")[1].split("&")[2].split("=")[1]
+                == "public"
+            )
+            assert (
+                password_reset_url_with_token.split("?")[1].split("&")[1].split("=")[1]
+                == "emailpassword"
             )
 
     init(
