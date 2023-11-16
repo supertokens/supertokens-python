@@ -46,6 +46,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     CreateResetPasswordLinkUnknownUserIdError,
     SendResetPasswordEmailEmailOkResult,
+    SendResetPasswordEmailUnknownUserIdError,
 )
 from supertokens_python.recipe.emailverification.emaildelivery.services import (
     SMTPService as EVSMTPService,
@@ -1120,9 +1121,9 @@ async def test_send_reset_password_email(
     resp = await send_reset_password_email("public", user_info["id"])
     assert isinstance(resp, SendResetPasswordEmailEmailOkResult)
 
-    link = await create_reset_password_link("public", "invalidUserId")
-    assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
+    link = await send_reset_password_email("public", "invalidUserId")
+    assert isinstance(link, SendResetPasswordEmailUnknownUserIdError)
 
     with raises(GeneralError) as err:
-        await create_reset_password_link("invalidTenantId", user_info["id"])
+        await send_reset_password_email("invalidTenantId", user_info["id"])
     assert "status code: 400" in str(err.value)
