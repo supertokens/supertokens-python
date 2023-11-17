@@ -20,9 +20,11 @@ import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
+from urllib.parse import urlparse
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -36,6 +38,15 @@ from supertokens_python.recipe import (
     emailverification,
     session,
     thirdpartyemailpassword,
+)
+from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
+    create_reset_password_link,
+    send_reset_password_email,
+)
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
+    CreateResetPasswordLinkUnknownUserIdError,
+    SendResetPasswordEmailEmailOkResult,
+    SendResetPasswordEmailUnknownUserIdError,
 )
 from supertokens_python.recipe.emailverification.emaildelivery.services import (
     SMTPService as EVSMTPService,
@@ -1036,3 +1047,139 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
 
     assert email == "test@example.com"
     assert email_verify_url != ""
+
+
+@mark.asyncio
+async def test_create_reset_password_link(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            thirdpartyemailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+    assert dict_response["status"] == "OK"
+    link = await create_reset_password_link("public", user_info["id"])
+    url = urlparse(link.link)  # type: ignore
+    queries = url.query.strip("&").split("&")
+    assert url.path == "/auth/reset-password"
+    assert "tenantId=public" in queries
+    assert "rid=thirdpartyemailpassword" in queries
+
+    link = await create_reset_password_link("public", "invalidUserId")
+    assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
+
+    with raises(GeneralError) as err:
+        await create_reset_password_link("invalidTenantId", user_info["id"])
+    assert "status code: 400" in str(err.value)
+
+
+@mark.asyncio
+async def test_send_reset_password_email(
+    driver_config_client: TestClient,
+):
+
+    tenant_info, token_info, rid_info, reset_url = "", "", "", ""
+
+    class CustomEmailDeliveryService(
+        thirdpartyemailpassword.EmailDeliveryInterface[PasswordResetEmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: PasswordResetEmailTemplateVars,
+            user_context: Dict[str, Any],
+        ):
+            nonlocal reset_url, token_info, rid_info, tenant_info
+            password_reset_url = template_vars.password_reset_link
+            reset_url = password_reset_url.split("?")[0]
+            token_info = password_reset_url.split("?")[1].split("&")[0]
+            rid_info = password_reset_url.split("?")[1].split("&")[1]
+            tenant_info = password_reset_url.split("?")[1].split("&")[2]
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            thirdpartyemailpassword.init(
+                email_delivery=thirdpartyemailpassword.EmailDeliveryConfig(
+                    CustomEmailDeliveryService()
+                )
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+    assert dict_response["status"] == "OK"
+    resp = await send_reset_password_email("public", user_info["id"])
+    assert isinstance(resp, SendResetPasswordEmailEmailOkResult)
+
+    assert reset_url == "http://supertokens.io/auth/reset-password"
+    assert token_info is not None and "token=" in token_info
+    assert rid_info is not None and "rid=thirdpartyemailpassword" in rid_info
+    assert tenant_info is not None and "tenantId=public" in tenant_info
+
+
+@mark.asyncio
+async def test_send_reset_password_email_invalid_input(
+    driver_config_client: TestClient,
+):
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            thirdpartyemailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+
+    link = await send_reset_password_email("public", "invalidUserId")
+    assert isinstance(link, SendResetPasswordEmailUnknownUserIdError)
+
+    with raises(GeneralError) as err:
+        await send_reset_password_email("invalidTenantId", user_info["id"])
+    assert "status code: 400" in str(err.value)
