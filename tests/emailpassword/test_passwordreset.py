@@ -180,7 +180,7 @@ async def test_that_generated_password_link_is_correct(
     assert reset_url == "http://supertokens.io/auth/reset-password"
     assert token_info is not None and "token=" in token_info  # type: ignore pylint: disable=unsupported-membership-test
     assert rid_info is not None and "rid=emailpassword" in rid_info  # type: ignore pylint: disable=unsupported-membership-test
-    assert tenant_info is not None and "tenantId=" in tenant_info  # type: ignore pylint: disable=unsupported-membership-test
+    assert tenant_info is not None and "tenantId=public" in tenant_info  # type: ignore pylint: disable=unsupported-membership-test
 
 
 @mark.asyncio
