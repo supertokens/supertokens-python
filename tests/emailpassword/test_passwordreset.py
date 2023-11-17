@@ -389,6 +389,7 @@ async def test_create_reset_password_link(
     url = urlparse(link.link)  # type: ignore
     queries = url.query.strip("&").split("&")
     assert url.path == "/auth/reset-password"
+    assert "token=" in queries[0]
     assert "tenantId=public" in queries
     assert "rid=emailpassword" in queries
 
