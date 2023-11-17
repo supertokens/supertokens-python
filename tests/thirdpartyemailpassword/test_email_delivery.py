@@ -1148,13 +1148,6 @@ async def test_send_reset_password_email(
     assert rid_info is not None and "rid=thirdpartyemailpassword" in rid_info
     assert tenant_info is not None and "tenantId=public" in tenant_info
 
-    link = await send_reset_password_email("public", "invalidUserId")
-    assert isinstance(link, SendResetPasswordEmailUnknownUserIdError)
-
-    with raises(GeneralError) as err:
-        await send_reset_password_email("invalidTenantId", user_info["id"])
-    assert "status code: 400" in str(err.value)
-
 
 @mark.asyncio
 async def test_send_reset_password_email_invalid_input(
