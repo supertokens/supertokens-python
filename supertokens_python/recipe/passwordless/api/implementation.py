@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, Union
-from supertokens_python.framework import BaseRequest
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.interfaces import (
@@ -55,7 +54,6 @@ class APIImplementation(APIInterface):
         phone_number: Union[str, None],
         tenant_id: str,
         api_options: APIOptions,
-        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         user_input_code = None
@@ -71,7 +69,7 @@ class APIImplementation(APIInterface):
         flow_type = api_options.config.flow_type
         if flow_type in ("MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"):
             magic_link = (
-                api_options.app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+                api_options.app_info.get_website_domain(api_options.request, user_context).get_as_string_dangerous()
                 + api_options.app_info.website_base_path.get_as_string_dangerous()
                 + "/verify"
                 + "?rid="
@@ -134,7 +132,6 @@ class APIImplementation(APIInterface):
         pre_auth_session_id: str,
         tenant_id: str,
         api_options: APIOptions,
-        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
@@ -183,7 +180,7 @@ class APIImplementation(APIInterface):
                 flow_type = api_options.config.flow_type
                 if flow_type in ("MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"):
                     magic_link = (
-                        api_options.app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+                        api_options.app_info.get_website_domain(api_options.request, user_context).get_as_string_dangerous()
                         + api_options.app_info.website_base_path.get_as_string_dangerous()
                         + "/verify"
                         + "?rid="

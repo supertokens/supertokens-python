@@ -431,7 +431,6 @@ class APIInterface:
         phone_number: Union[str, None],
         tenant_id: str,
         api_options: APIOptions,
-        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         pass
@@ -443,7 +442,6 @@ class APIInterface:
         pre_auth_session_id: str,
         tenant_id: str,
         api_options: APIOptions,
-        request: BaseRequest,
         user_context: Dict[str, Any],
     ) -> Union[
         ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse

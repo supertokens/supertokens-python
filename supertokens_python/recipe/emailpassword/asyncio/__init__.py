@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import re
 from typing import Any, Dict, Union, Optional
 from supertokens_python import get_request_from_user_context
 from supertokens_python.exceptions import raise_general_exception

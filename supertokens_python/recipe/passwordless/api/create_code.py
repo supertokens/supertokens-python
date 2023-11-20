@@ -114,7 +114,6 @@ async def create_code(
         phone_number=phone_number,
         tenant_id=tenant_id,
         api_options=api_options,
-        api_options.request,
         user_context=user_context,
     )
     return send_200_response(result.to_json(), api_options.response)

@@ -444,7 +444,7 @@ class APIImplementation(APIInterface):
                 await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
 
             email_verify_link = get_email_verify_link(
-                api_options.app_info, response.token, api_options.recipe_id, tenant_id
+                api_options.app_info, response.token, api_options.recipe_id, tenant_id, api_options.request, user_context
             )
 
             log_debug_message("Sending email verification email to %s", email_info)

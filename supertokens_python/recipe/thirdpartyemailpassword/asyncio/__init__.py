@@ -14,6 +14,7 @@
 
 from typing import Any, Dict, List, Optional, Union
 from supertokens_python import get_request_from_user_context
+from supertokens_python.exceptions import raise_general_exception
 
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import (
     ThirdPartyEmailPasswordRecipe,
@@ -206,8 +207,9 @@ async def create_reset_password_link(
             recipe_instance.get_app_info(),
             token.token,
             recipe_instance.get_recipe_id(),
-            request,
             tenant_id,
+            request,
+            user_context
         )
     )
 

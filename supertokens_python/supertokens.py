@@ -103,10 +103,10 @@ class InputAppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: Optional[str],
         api_gateway_path: str = "",
         api_base_path: str = "/auth",
         website_base_path: str = "/auth",
+        website_domain: Optional[str] = None,
         origin: Optional[
             Union[str, Callable[[BaseRequest, Optional[Dict[str, Any]]], str]]
         ] = None,

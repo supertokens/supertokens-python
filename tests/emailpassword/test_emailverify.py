@@ -14,6 +14,7 @@
 import asyncio
 import base64
 import json
+from urllib.parse import urlparse
 from typing import Any, Dict, Optional, Union
 
 from fastapi import FastAPI
@@ -24,14 +25,17 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import delete_user
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.framework.request import BaseRequest
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, emailverification, session
+from supertokens_python.recipe.emailpassword import emaildelivery
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
     revoke_email_verification_tokens,
     unverify_email,
     verify_email_using_token,
+    send_email_verification_email
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
@@ -51,7 +55,7 @@ from supertokens_python.recipe.session.asyncio import (
     refresh_session,
 )
 from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
-from supertokens_python.utils import is_version_gte
+from supertokens_python.utils import is_version_gte, set_request_in_user_context_if_not_defined
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     email_verify_token_request,
@@ -1302,3 +1306,61 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     assert res.status_code == 200
     assert res.json() == {"status": "OK"}
     assert "front-token" not in res.headers
+
+
+async def test_generate_email_verification_uses_correct_origin(
+    driver_config_client: TestClient,
+):
+    email_verify_link = None
+    class CustomEmailService(
+        emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: emailverification.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal email_verify_link
+            email_verify_link = template_vars.email_verify_link
+
+    def get_origin(req: BaseRequest, user_context: Optional[Dict[str, Any]]) -> str:
+        set_request_in_user_context_if_not_defined(user_context, req)
+        return user_context["url"]
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain=None,
+            origin=get_origin,
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(),
+            emailverification.init("OPTIONAL", email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService())),
+            emailpassword.init(),
+        ],
+    )
+    start_st()
+
+    # version = await Querier.get_instance().get_api_version()
+    # if not is_version_gte(version, "2.9"):
+    #     # If the version less than 2.9, the recipe doesn't exist. So skip the test
+    #     skip()
+
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+    user_id = dict_response["user"]["id"]
+    email = dict_response["user"]["email"]
+
+    await send_email_verification_email("public", user_id, email, {"url": "localhost:3000"})
+    url = urlparse(email_verify_link)
+    assert url.hostname == "localhost:3000"
+
+    await send_email_verification_email("public", user_id, email, {"url": "localhost:3002"})
+    url = urlparse(email_verify_link)
+    assert url.hostname == "localhost:3002"
