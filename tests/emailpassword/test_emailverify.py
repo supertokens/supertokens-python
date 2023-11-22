@@ -1345,10 +1345,10 @@ async def test_generate_email_verification_uses_correct_origin(
     )
     start_st()
 
-    # version = await Querier.get_instance().get_api_version()
-    # if not is_version_gte(version, "2.9"):
-    #     # If the version less than 2.9, the recipe doesn't exist. So skip the test
-    #     skip()
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.9"):
+        # If the version less than 2.9, the recipe doesn't exist. So skip the test
+        skip()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
@@ -1359,8 +1359,8 @@ async def test_generate_email_verification_uses_correct_origin(
 
     await send_email_verification_email("public", user_id, email, {"url": "localhost:3000"})
     url = urlparse(email_verify_link)
-    assert url.hostname == "localhost:3000"
+    assert url.netloc == "localhost:3000"
 
     await send_email_verification_email("public", user_id, email, {"url": "localhost:3002"})
     url = urlparse(email_verify_link)
-    assert url.hostname == "localhost:3002"
+    assert url.netloc == "localhost:3002"

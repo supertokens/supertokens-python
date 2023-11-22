@@ -181,7 +181,7 @@ async def create_email_verification_link(
 
     request = get_request_from_user_context(user_context)
     if request is None:
-        raise_general_exception("should never reach here: missing request in user_context")
+        pass
     return CreateEmailVerificationLinkOkResult(
         link=get_email_verify_link(
             app_info,
