@@ -97,7 +97,12 @@ class APIImplementation(APIInterface):
             return GeneratePasswordResetTokenPostOkResult()
 
         password_reset_link = get_password_reset_link(
-            api_options.app_info, token_result.token, api_options.recipe_id, tenant_id, api_options.request, user_context
+            api_options.app_info,
+            token_result.token,
+            api_options.recipe_id,
+            tenant_id,
+            api_options.request,
+            user_context,
         )
 
         log_debug_message("Sending password reset email to %s", email)

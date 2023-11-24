@@ -94,7 +94,11 @@ class UserRolesRecipe(RecipeModule):
         raise Exception("Should never come here")
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         raise err
 

@@ -13,7 +13,6 @@
 from typing import Any, Dict, Union, Optional
 
 from supertokens_python import get_request_from_user_context
-from supertokens_python.exceptions import raise_general_exception
 
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
@@ -189,7 +188,7 @@ async def create_email_verification_link(
             recipe_instance.get_recipe_id(),
             tenant_id,
             request,
-            user_context
+            user_context,
         )
     )
 

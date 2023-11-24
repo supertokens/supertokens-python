@@ -146,7 +146,9 @@ def set_cookie_response_mutator(
     def mutator(
         response: BaseResponse,
     ):
-        return _set_cookie(response, config, key, value, expires, path_type, request, user_context)
+        return _set_cookie(
+            response, config, key, value, expires, path_type, request, user_context
+        )
 
     return mutator
 
@@ -174,7 +176,10 @@ def get_rid_header(request: BaseRequest):
 
 
 def clear_session_from_all_token_transfer_methods(
-    response: BaseResponse, recipe: SessionRecipe, request: BaseRequest, user_context: Dict[str, Any]
+    response: BaseResponse,
+    recipe: SessionRecipe,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     # We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     # This is done to handle the following use-case:
@@ -186,7 +191,12 @@ def clear_session_from_all_token_transfer_methods(
         _clear_session(response, recipe.config, transfer_method, request, user_context)
 
 
-def clear_session_mutator(config: SessionConfig, transfer_method: TokenTransferMethod, request: BaseRequest, user_context: Dict[str, Any]):
+def clear_session_mutator(
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
+):
     def mutator(
         response: BaseResponse,
     ):
@@ -199,13 +209,15 @@ def _clear_session(
     response: BaseResponse,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
-    request: BaseRequest, 
-    user_context: Dict[str, Any]
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     # If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        _set_token(response, config, token_type, "", 0, transfer_method, request, user_context)
+        _set_token(
+            response, config, token_type, "", 0, transfer_method, request, user_context
+        )
 
     remove_header(
         response, ANTI_CSRF_HEADER_KEY
@@ -312,7 +324,7 @@ def token_response_mutator(
             expires,
             transfer_method,
             request,
-            user_context
+            user_context,
         )
 
     return mutator
@@ -335,7 +347,13 @@ def access_token_mutator(
         response: BaseResponse,
     ):
         _set_access_token_in_response(
-            response, access_token, front_token, config, transfer_method, request, user_context
+            response,
+            access_token,
+            front_token,
+            config,
+            transfer_method,
+            request,
+            user_context,
         )
 
     return mutator
@@ -378,5 +396,5 @@ def _set_access_token_in_response(
             get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
             "header",
             request,
-            user_context
+            user_context,
         )

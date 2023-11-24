@@ -114,7 +114,11 @@ class OpenIdRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if isinstance(err, SuperTokensOpenIdError):
             raise err

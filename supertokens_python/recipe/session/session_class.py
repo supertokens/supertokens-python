@@ -36,14 +36,20 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
-from supertokens_python.utils import log_debug_message, set_request_in_user_context_if_not_defined
+from supertokens_python.utils import (
+    log_debug_message,
+    set_request_in_user_context_if_not_defined,
+)
 
 _T = TypeVar("_T")
 
 
 class Session(SessionContainer):
     async def attach_to_request_response(
-        self, request: BaseRequest, transfer_method: TokenTransferMethod, user_context: Optional[Dict[str, Any]]
+        self,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
+        user_context: Optional[Dict[str, Any]],
     ) -> None:
         self.req_res_info = ReqResInfo(request, transfer_method)
 
@@ -57,7 +63,7 @@ class Session(SessionContainer):
                     self.config,
                     transfer_method,
                     request,
-                    user_context
+                    user_context,
                 )
             )
             if self.refresh_token is not None:
@@ -69,7 +75,7 @@ class Session(SessionContainer):
                         self.refresh_token.expiry,
                         transfer_method,
                         request,
-                        user_context
+                        user_context,
                     )
                 )
             if self.anti_csrf_token is not None:
@@ -102,7 +108,7 @@ class Session(SessionContainer):
                     self.config,
                     transfer_method,
                     self.req_res_info.request,
-                    user_context
+                    user_context,
                 )
             )
 
@@ -325,7 +331,7 @@ class Session(SessionContainer):
                         self.config,
                         transfer_method,
                         self.req_res_info.request,
-                        user_context
+                        user_context,
                     )
                 )
         else:

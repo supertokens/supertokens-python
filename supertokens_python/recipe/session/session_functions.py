@@ -333,7 +333,7 @@ async def refresh_session(
         "refreshToken": refresh_token,
         "enableAntiCsrf": (
             not disable_anti_csrf
-            and recipe_implementation.config.anti_csrf_function_or_string== "VIA_TOKEN"
+            and recipe_implementation.config.anti_csrf_function_or_string == "VIA_TOKEN"
         ),
     }
 
@@ -341,7 +341,8 @@ async def refresh_session(
         data["antiCsrfToken"] = anti_csrf_token
 
     if (
-        recipe_implementation.config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER" # TODO: can be function
+        recipe_implementation.config.anti_csrf_function_or_string
+        == "VIA_CUSTOM_HEADER"  # TODO: can be function
         and not disable_anti_csrf
     ):
         # The function should never be called by this (we check this outside the function as well)

@@ -346,10 +346,11 @@ async def test_valid_token_input_and_passoword_has_changed(
 async def test_reset_password_link_uses_correct_origin(
     driver_config_client: TestClient,
 ):
-    password_reset_url, token_info = ""
-    def get_origin(req: BaseRequest, user_context: Optional[Dict[str, Any]]) -> str:
-        if req.get_header("origin") is not None:
-            return req.get_header("origin")
+    password_reset_url = ""
+
+    def get_origin(req: Optional[BaseRequest], _: Optional[Dict[str, Any]]) -> str:
+        if req is not None and req.get_header("origin") is not None:
+            return req.get_header("origin")  # type: ignore
         return "localhost:3000"
 
     class CustomEmailService(
@@ -368,7 +369,7 @@ async def test_reset_password_link_uses_correct_origin(
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            origin=get_origin,            
+            origin=get_origin,
             api_base_path="/auth",
         ),
         framework="fastapi",
@@ -386,60 +387,13 @@ async def test_reset_password_link_uses_correct_origin(
     )
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
-    user_info = dict_response["user"]
     assert dict_response["status"] == "OK"
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset/token",
+        headers={"origin": "http://localhost:5050"},
         json={"formFields": [{"id": "email", "value": "random@gmail.com"}]},
     )
     await asyncio.sleep(1)
 
     assert response_1.status_code == 200
-
-    response_2 = driver_config_client.post(
-        url="/auth/user/password/reset",
-        json={
-            "formFields": [{"id": "password", "value": "validpass12345"}],
-            "token": token_info,
-        },
-    )
-    await asyncio.sleep(1)
-    assert response_2.status_code == 200
-
-    response_3 = driver_config_client.post(
-        url="/auth/signin",
-        json={
-            "formFields": [
-                {"id": "password", "value": "validpass123"},
-                {"id": "email", "value": "random@gmail.com"},
-            ]
-        },
-    )
-
-    assert response_3.status_code == 200
-
-    dict_response = json.loads(response_3.text)
-    assert dict_response["status"] == "WRONG_CREDENTIALS_ERROR"
-
-    response_4 = driver_config_client.post(
-        url="/auth/signin",
-        json={
-            "formFields": [
-                {
-                    "id": "password",
-                    "value": "validpass12345",
-                },
-                {
-                    "id": "email",
-                    "value": "random@gmail.com",
-                },
-            ]
-        },
-    )
-
-    assert response_4.status_code == 200
-
-    dict_response = json.loads(response_4.text)
-    assert dict_response["status"] == "OK"
-    assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert "http://localhost:5050/auth/reset-password" in password_reset_url

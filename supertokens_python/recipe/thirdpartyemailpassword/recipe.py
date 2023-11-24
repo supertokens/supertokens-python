@@ -226,12 +226,20 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         return None
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         if self.email_password_recipe.is_error_from_this_recipe_based_on_instance(err):
-            return await self.email_password_recipe.handle_error(request, err, response, user_context)
+            return await self.email_password_recipe.handle_error(
+                request, err, response, user_context
+            )
         if self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err):
-            return await self.third_party_recipe.handle_error(request, err, response, user_context)
+            return await self.third_party_recipe.handle_error(
+                request, err, response, user_context
+            )
         raise err
 
     def get_all_cors_headers(self) -> List[str]:

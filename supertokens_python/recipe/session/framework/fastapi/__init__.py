@@ -80,7 +80,7 @@ async def session_exception_handler(
     base_req = FastApiRequest(request)
     base_res = FastApiResponse(JSONResponse())
     result = await Supertokens.get_instance().handle_supertokens_error(
-        base_req, exc, base_res, user_context={} # TODO: check
+        base_req, exc, base_res, user_context={}  # TODO: check
     )
     if isinstance(result, FastApiResponse):
         body = json.loads(result.response.body)

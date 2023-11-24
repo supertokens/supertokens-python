@@ -104,7 +104,12 @@ def validate_and_normalise_user_input(
 
 
 def get_email_verify_link(
-    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str, request: BaseRequest, user_context: Dict[str, Any]
+    app_info: AppInfo,
+    token: str,
+    recipe_id: str,
+    tenant_id: str,
+    request: Optional[BaseRequest],
+    user_context: Optional[Dict[str, Any]],
 ) -> str:
     return (
         app_info.get_website_domain(request, user_context).get_as_string_dangerous()

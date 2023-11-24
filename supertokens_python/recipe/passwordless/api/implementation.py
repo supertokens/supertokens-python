@@ -69,7 +69,9 @@ class APIImplementation(APIInterface):
         flow_type = api_options.config.flow_type
         if flow_type in ("MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"):
             magic_link = (
-                api_options.app_info.get_website_domain(api_options.request, user_context).get_as_string_dangerous()
+                api_options.app_info.get_website_domain(
+                    api_options.request, user_context
+                ).get_as_string_dangerous()
                 + api_options.app_info.website_base_path.get_as_string_dangerous()
                 + "/verify"
                 + "?rid="
@@ -180,7 +182,9 @@ class APIImplementation(APIInterface):
                 flow_type = api_options.config.flow_type
                 if flow_type in ("MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"):
                     magic_link = (
-                        api_options.app_info.get_website_domain(api_options.request, user_context).get_as_string_dangerous()
+                        api_options.app_info.get_website_domain(
+                            api_options.request, user_context
+                        ).get_as_string_dangerous()
                         + api_options.app_info.website_base_path.get_as_string_dangerous()
                         + "/verify"
                         + "?rid="

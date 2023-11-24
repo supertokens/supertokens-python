@@ -270,7 +270,9 @@ async def create_magic_link(
         user_context = {}
     request = get_request_from_user_context(user_context)
     if request is None:
-        raise_general_exception("should never come here: missing request in user_context")
+        raise_general_exception(
+            "should never come here: missing request in user_context"
+        )
     return await PasswordlessRecipe.get_instance().create_magic_link(
         email=email,
         phone_number=phone_number,

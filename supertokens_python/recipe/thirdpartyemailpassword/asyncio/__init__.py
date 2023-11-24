@@ -200,7 +200,9 @@ async def create_reset_password_link(
 
     request = get_request_from_user_context(user_context)
     if request is None:
-        raise_general_exception("should never reach here: missing request in user_context")
+        raise_general_exception(
+            "should never reach here: missing request in user_context"
+        )
 
     return CreateResetPasswordLinkOkResult(
         link=get_password_reset_link(
@@ -209,7 +211,7 @@ async def create_reset_password_link(
             recipe_instance.get_recipe_id(),
             tenant_id,
             request,
-            user_context
+            user_context,
         )
     )
 

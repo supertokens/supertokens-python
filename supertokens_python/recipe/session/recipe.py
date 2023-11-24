@@ -112,7 +112,9 @@ class SessionRecipe(RecipeModule):
             None,
             override.openid_feature if override is not None else None,
         )
-        log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf_function_or_string)
+        log_debug_message(
+            "session init: anti_csrf: %s", self.config.anti_csrf_function_or_string
+        )
         if self.config.cookie_domain is not None:
             log_debug_message(
                 "session init: cookie_domain: %s", self.config.cookie_domain
@@ -218,7 +220,11 @@ class SessionRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         if (
             isinstance(err, SuperTokensSessionError)

@@ -28,14 +28,13 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, emailverification, session
-from supertokens_python.recipe.emailpassword import emaildelivery
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
     revoke_email_verification_tokens,
     unverify_email,
     verify_email_using_token,
-    send_email_verification_email
+    send_email_verification_email,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
@@ -55,7 +54,10 @@ from supertokens_python.recipe.session.asyncio import (
     refresh_session,
 )
 from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
-from supertokens_python.utils import is_version_gte, set_request_in_user_context_if_not_defined
+from supertokens_python.utils import (
+    is_version_gte,
+    set_request_in_user_context_if_not_defined,
+)
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     email_verify_token_request,
@@ -1312,6 +1314,7 @@ async def test_generate_email_verification_uses_correct_origin(
     driver_config_client: TestClient,
 ):
     email_verify_link = None
+
     class CustomEmailService(
         emailverification.EmailDeliveryInterface[emailverification.EmailTemplateVars]
     ):
@@ -1323,9 +1326,12 @@ async def test_generate_email_verification_uses_correct_origin(
             nonlocal email_verify_link
             email_verify_link = template_vars.email_verify_link
 
-    def get_origin(req: BaseRequest, user_context: Optional[Dict[str, Any]]) -> str:
-        set_request_in_user_context_if_not_defined(user_context, req)
-        return user_context["url"]
+    def get_origin(
+        req: Optional[BaseRequest], user_context: Optional[Dict[str, Any]]
+    ) -> str:
+        if req is not None:
+            set_request_in_user_context_if_not_defined(user_context, req)
+        return user_context["url"]  # type: ignore
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -1339,7 +1345,10 @@ async def test_generate_email_verification_uses_correct_origin(
         framework="fastapi",
         recipe_list=[
             session.init(),
-            emailverification.init("OPTIONAL", email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService())),
+            emailverification.init(
+                "OPTIONAL",
+                email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService()),
+            ),
             emailpassword.init(),
         ],
     )
@@ -1357,10 +1366,14 @@ async def test_generate_email_verification_uses_correct_origin(
     user_id = dict_response["user"]["id"]
     email = dict_response["user"]["email"]
 
-    await send_email_verification_email("public", user_id, email, {"url": "localhost:3000"})
+    await send_email_verification_email(
+        "public", user_id, email, {"url": "localhost:3000"}
+    )
     url = urlparse(email_verify_link)
     assert url.netloc == "localhost:3000"
 
-    await send_email_verification_email("public", user_id, email, {"url": "localhost:3002"})
+    await send_email_verification_email(
+        "public", user_id, email, {"url": "localhost:3002"}
+    )
     url = urlparse(email_verify_link)
     assert url.netloc == "localhost:3002"

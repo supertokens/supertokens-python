@@ -108,7 +108,7 @@ class InputAppInfo:
         website_base_path: str = "/auth",
         website_domain: Optional[str] = None,
         origin: Optional[
-            Union[str, Callable[[BaseRequest, Optional[Dict[str, Any]]], str]]
+            Union[str, Callable[[Optional[BaseRequest], Optional[Dict[str, Any]]], str]]
         ] = None,
     ):
         self.app_name = app_name
@@ -132,7 +132,7 @@ class AppInfo:
         website_base_path: str,
         mode: Union[Literal["asgi", "wsgi"], None],
         origin: Optional[
-            Union[str, Callable[[BaseRequest, Optional[Dict[str, Any]]], str]]
+            Union[str, Callable[[Optional[BaseRequest], Optional[Dict[str, Any]]], str]]
         ],
     ):
         self.app_name = app_name
