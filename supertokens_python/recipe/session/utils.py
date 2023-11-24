@@ -328,7 +328,6 @@ class SessionConfig:
         self,
         refresh_token_path: NormalisedURLPath,
         cookie_domain: Union[None, str],
-        # cookie_same_site: Literal["lax", "strict", "none"],
         get_cookie_same_site: Callable[
             [Optional[BaseRequest], Optional[Dict[str, Any]]],
             Literal["lax", "strict", "none"],
@@ -336,7 +335,6 @@ class SessionConfig:
         cookie_secure: bool,
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
-        # anti_csrf: str,
         anti_csrf_function_or_string: Union[
             Callable[
                 [Optional[BaseRequest], Optional[Dict[str, Any]]],
