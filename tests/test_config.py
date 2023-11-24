@@ -266,7 +266,7 @@ async def test_same_site_values():
         recipe_list=[session.init(cookie_same_site="lax")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
 
     reset()
 
@@ -281,7 +281,7 @@ async def test_same_site_values():
         recipe_list=[session.init(cookie_same_site="none")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
 
     reset()
 
@@ -296,7 +296,7 @@ async def test_same_site_values():
         recipe_list=[session.init(cookie_same_site="strict")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "strict"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "strict"
 
     reset()
 
@@ -351,7 +351,7 @@ async def test_same_site_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
 
     reset()
 
@@ -368,7 +368,7 @@ async def test_same_site_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
 
     reset()
 
@@ -389,8 +389,8 @@ async def test_config_values():
         recipe_list=[session.init(anti_csrf="VIA_CUSTOM_HEADER")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -410,8 +410,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -431,8 +431,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -452,8 +452,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -473,8 +473,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -492,8 +492,8 @@ async def test_config_values():
         recipe_list=[session.init(anti_csrf="VIA_CUSTOM_HEADER")],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -513,8 +513,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
-    assert SessionRecipe.get_instance().config.anti_csrf == "VIA_CUSTOM_HEADER"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -534,8 +534,8 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf == "NONE"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
+    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -555,7 +555,7 @@ async def test_config_values():
         ],
     )
 
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -758,7 +758,7 @@ async def test_cookie_samesite_with_ec2_public_url():
     # domain name isn't provided so browser decides to use the same host
     # which will be ec2-xx-yyy-zzz-0.compute-1.amazonaws.com
     assert SessionRecipe.get_instance().config.cookie_domain is None
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
     assert SessionRecipe.get_instance().config.cookie_secure is True
 
     reset()
@@ -778,7 +778,7 @@ async def test_cookie_samesite_with_ec2_public_url():
     )
 
     assert SessionRecipe.get_instance().config.cookie_domain is None
-    assert SessionRecipe.get_instance().config.cookie_same_site == "none"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "none"
     assert SessionRecipe.get_instance().config.cookie_secure is False
 
     reset()
@@ -798,5 +798,5 @@ async def test_cookie_samesite_with_ec2_public_url():
     )
 
     assert SessionRecipe.get_instance().config.cookie_domain is None
-    assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
+    assert SessionRecipe.get_instance().config.get_cookie_same_site(None, None) == "lax"
     assert SessionRecipe.get_instance().config.cookie_secure is False
