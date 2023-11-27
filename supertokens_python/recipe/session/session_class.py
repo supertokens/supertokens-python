@@ -38,7 +38,7 @@ from .constants import protected_props
 from ...framework import BaseRequest
 from supertokens_python.utils import (
     log_debug_message,
-    set_request_in_user_context_if_not_defined,
+    default_user_context
 )
 
 _T = TypeVar("_T")
@@ -55,7 +55,7 @@ class Session(SessionContainer):
 
         if self.access_token_updated:
             if user_context is None:
-                user_context = set_request_in_user_context_if_not_defined({}, request)
+                user_context = default_user_context(request)
             self.response_mutators.append(
                 access_token_mutator(
                     self.access_token,
@@ -63,7 +63,6 @@ class Session(SessionContainer):
                     self.config,
                     transfer_method,
                     request,
-                    user_context,
                 )
             )
             if self.refresh_token is not None:
@@ -75,7 +74,6 @@ class Session(SessionContainer):
                         self.refresh_token.expiry,
                         transfer_method,
                         request,
-                        user_context,
                     )
                 )
             if self.anti_csrf_token is not None:
@@ -108,7 +106,6 @@ class Session(SessionContainer):
                     self.config,
                     transfer_method,
                     self.req_res_info.request,
-                    user_context,
                 )
             )
 
@@ -330,8 +327,7 @@ class Session(SessionContainer):
                         self.front_token,
                         self.config,
                         transfer_method,
-                        self.req_res_info.request,
-                        user_context,
+                        self.req_res_info.request
                     )
                 )
         else:

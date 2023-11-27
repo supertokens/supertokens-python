@@ -141,10 +141,10 @@ def set_cookie_response_mutator(
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
     request: BaseRequest,
-    user_context: Dict[str, Any],
 ):
     def mutator(
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         return _set_cookie(
             response, config, key, value, expires, path_type, request, user_context
@@ -161,6 +161,7 @@ def _attach_anti_csrf_header(response: BaseResponse, value: str):
 def anti_csrf_response_mutator(value: str):
     def mutator(
         response: BaseResponse,
+        _: Dict[str, Any],
     ):
         return _attach_anti_csrf_header(response, value)
 
@@ -195,10 +196,10 @@ def clear_session_mutator(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
-    user_context: Dict[str, Any],
 ):
     def mutator(
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         return _clear_session(response, config, transfer_method, request, user_context)
 
@@ -232,10 +233,10 @@ def clear_session_response_mutator(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
-    user_context: Dict[str, Any],
 ):
     def mutator(
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         return _clear_session(response, config, transfer_method, request, user_context)
 
@@ -313,9 +314,8 @@ def token_response_mutator(
     expires: int,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
-    user_context: Dict[str, Any],
 ):
-    def mutator(response: BaseResponse):
+    def mutator(response: BaseResponse, user_context: Dict[str, Any],):
         _set_token(
             response,
             config,
@@ -341,10 +341,9 @@ def access_token_mutator(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
-    user_context: Dict[str, Any],
 ):
     def mutator(
-        response: BaseResponse,
+        response: BaseResponse, user_context: Dict[str, Any],
     ):
         _set_access_token_in_response(
             response,
