@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.0] - 2023-11-25
+
+### Added
+
+-   Adds support for configuring multiple frontend domains to be used with the same backend
+-   Added new `origin` property to `InputAppInfo`, this can be configured to allow you to conditionally return the value of the frontend domain. This property will replace `website_domain`
+-   `website_domain` inside `InputAppInfo` is now optional. Using `origin` recommended over using `website_domain`. Using `website_domain` will continue to work.
+
+### Breaking Change
+- The order or arguments in the `InputAppInfo`
+
 ## [0.17.0] - 2023-11-14
 - Fixes `create_reset_password_link` in the emailpassword recipe wherein we passed the `rid` instead of the token in the link
 
