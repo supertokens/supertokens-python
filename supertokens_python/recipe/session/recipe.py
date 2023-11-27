@@ -60,6 +60,7 @@ from .utils import (
     TokenTransferMethod,
     validate_and_normalise_user_input,
 )
+from .cookie_and_header import clear_session_from_all_token_transfer_methods
 
 
 class SessionRecipe(RecipeModule):
@@ -235,13 +236,22 @@ class SessionRecipe(RecipeModule):
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
+            if err.clear_tokens:
+                log_debug_message("Clearing tokens because of UNAUTHORISED response")
+                clear_session_from_all_token_transfer_methods(
+                    response, self, request, user_context
+                )
             return await self.config.error_handlers.on_unauthorised(
-                self, err.clear_tokens, request, str(err), response, user_context
+                request, str(err), response
             )
         if isinstance(err, TokenTheftError):
             log_debug_message("errorHandler: returning TOKEN_THEFT_DETECTED")
+            log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
+            clear_session_from_all_token_transfer_methods(
+                response, self, request, user_context
+            )
             return await self.config.error_handlers.on_token_theft_detected(
-                self, request, err.session_handle, err.user_id, response, user_context
+                request, err.session_handle, err.user_id, response
             )
         if isinstance(err, InvalidClaimsError):
             log_debug_message("errorHandler: returning INVALID_CLAIMS")
