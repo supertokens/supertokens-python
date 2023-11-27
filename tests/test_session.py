@@ -23,6 +23,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
@@ -822,3 +823,44 @@ async def test_expose_access_token_to_frontend_in_cookie_based_auth(
     response = driver_config_client.post("/create")
     assert response.status_code == 200
     assert "st-access-token" not in response.headers
+
+
+async def test_token_transfer_method_works_when_using_origin_function(
+    driver_config_client: TestClient,
+):
+    def get_origin(req: Optional[BaseRequest], _: Optional[Dict[str, Any]]) -> str:
+        if req is not None and req.get_header("origin") is not None:
+            return req.get_header("origin")  # type: ignore
+        return "localhost:3000"
+
+    def token_transfer_method(req: BaseRequest, _: bool, __: Dict[str, Any]):
+        if req.get_header("origin") == "localhost:3002":
+            return "cookie"
+        return "header"
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://localhost:8000",
+            origin=get_origin,
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[session.init(get_token_transfer_method=token_transfer_method)],
+    )
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+    assert len(response.headers["st-access-token"]) > 0
+    assert len(response.headers["st-refresh-token"]) > 0
+    assert len(response.headers.get("set-cookie", [])) == 0
+
+    response = driver_config_client.post(
+        "/create", headers={"origin": "localhost:3002"}
+    )
+    assert response.status_code == 200
+    assert len(response.headers.get("st-access-token", [])) == 0
+    assert len(response.headers.get("st-refresh-token", [])) == 0
+    assert len(response.headers.get("set-cookie", [])) > 0
