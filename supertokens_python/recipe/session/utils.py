@@ -31,7 +31,6 @@ from supertokens_python.utils import (
 
 from ...types import MaybeAwaitable
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
-from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .exceptions import ClaimValidationError
 
 if TYPE_CHECKING:
