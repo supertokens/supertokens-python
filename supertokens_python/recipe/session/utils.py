@@ -442,7 +442,7 @@ def validate_and_normalise_user_input(
     if expose_access_token_to_frontend_in_cookie_based_auth is None:
         expose_access_token_to_frontend_in_cookie_based_auth = False
 
-    def cookie_same_site_function(
+    def get_cookie_same_site(
         request: Optional[BaseRequest], user_context: Dict[str, Any]
     ) -> Literal["lax", "strict", "none"]:
         nonlocal cookie_same_site
@@ -470,7 +470,7 @@ def validate_and_normalise_user_input(
     def anti_csrf_function(
         request: Optional[BaseRequest], user_context: Dict[str, Any]
     ) -> Literal["NONE", "VIA_CUSTOM_HEADER"]:
-        same_site = cookie_same_site_function(request, user_context)
+        same_site = get_cookie_same_site(request, user_context)
         if same_site == "none":
             return "VIA_CUSTOM_HEADER"
         return "NONE"
@@ -488,7 +488,7 @@ def validate_and_normalise_user_input(
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
-        cookie_same_site_function,
+        get_cookie_same_site,
         cookie_secure,
         session_expired_status_code,
         error_handlers,
