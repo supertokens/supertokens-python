@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, List, Optional, Union
 from supertokens_python import get_request_from_user_context
-from supertokens_python.exceptions import raise_general_exception
 
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import (
     ThirdPartyEmailPasswordRecipe,
@@ -189,6 +188,8 @@ async def send_email(
 async def create_reset_password_link(
     tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
+    if user_context is None:
+        user_context = {}
     token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
         return CreateResetPasswordLinkUnknownUserIdError()
@@ -199,11 +200,6 @@ async def create_reset_password_link(
     assert user is not None
 
     request = get_request_from_user_context(user_context)
-    if request is None:
-        raise_general_exception(
-            "should never reach here: missing request in user_context"
-        )
-
     return CreateResetPasswordLinkOkResult(
         link=get_password_reset_link(
             recipe_instance.get_app_info(),
