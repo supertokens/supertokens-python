@@ -179,8 +179,6 @@ async def create_email_verification_link(
         return CreateEmailVerificationLinkEmailAlreadyVerifiedError()
 
     request = get_request_from_user_context(user_context)
-    if request is None:
-        pass
     return CreateEmailVerificationLinkOkResult(
         link=get_email_verify_link(
             app_info,

@@ -109,10 +109,10 @@ def get_email_verify_link(
     recipe_id: str,
     tenant_id: str,
     request: Optional[BaseRequest],
-    user_context: Optional[Dict[str, Any]],
+    user_context: Dict[str, Any],
 ) -> str:
     return (
-        app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+        app_info.get_origin(request, user_context).get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
         + "/verify-email"
         + "?token="
