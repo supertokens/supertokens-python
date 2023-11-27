@@ -36,10 +36,7 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
-from supertokens_python.utils import (
-    log_debug_message,
-    default_user_context
-)
+from supertokens_python.utils import log_debug_message, default_user_context
 
 _T = TypeVar("_T")
 
@@ -327,7 +324,7 @@ class Session(SessionContainer):
                         self.front_token,
                         self.config,
                         transfer_method,
-                        self.req_res_info.request
+                        self.req_res_info.request,
                     )
                 )
         else:

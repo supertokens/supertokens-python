@@ -142,10 +142,7 @@ def set_cookie_response_mutator(
     path_type: Literal["refresh_token_path", "access_token_path"],
     request: BaseRequest,
 ):
-    def mutator(
-        response: BaseResponse,
-        user_context: Dict[str, Any],
-    ):
+    def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return _set_cookie(
             response, config, key, value, expires, path_type, request, user_context
         )
@@ -315,7 +312,10 @@ def token_response_mutator(
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
 ):
-    def mutator(response: BaseResponse, user_context: Dict[str, Any],):
+    def mutator(
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ):
         _set_token(
             response,
             config,
@@ -343,7 +343,8 @@ def access_token_mutator(
     request: BaseRequest,
 ):
     def mutator(
-        response: BaseResponse, user_context: Dict[str, Any],
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         _set_access_token_in_response(
             response,

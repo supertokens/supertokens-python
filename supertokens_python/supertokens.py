@@ -167,9 +167,7 @@ class AppInfo:
             self.get_origin(request, user_context).get_as_string_dangerous()
         )
 
-    def get_origin(
-        self, request: Optional[BaseRequest], user_context: Dict[str, Any]
-    ):
+    def get_origin(self, request: Optional[BaseRequest], user_context: Dict[str, Any]):
         origin = self.__origin
         if origin is None:
             origin = self.__website_domain
@@ -192,7 +190,9 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_session_post_response(session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]):
+def manage_session_post_response(
+    session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]
+):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
         mutator(response, user_context)

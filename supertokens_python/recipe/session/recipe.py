@@ -232,7 +232,7 @@ class SessionRecipe(RecipeModule):
             and err.response_mutators is not None
         ):
             for mutator in err.response_mutators:
-                mutator(response)
+                mutator(response, user_context)
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
@@ -246,7 +246,9 @@ class SessionRecipe(RecipeModule):
             )
         if isinstance(err, TokenTheftError):
             log_debug_message("errorHandler: returning TOKEN_THEFT_DETECTED")
-            log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
+            log_debug_message(
+                "Clearing tokens because of TOKEN_THEFT_DETECTED response"
+            )
             clear_session_from_all_token_transfer_methods(
                 response, self, request, user_context
             )

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union, Optional
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -24,7 +24,7 @@ from supertokens_python.recipe.passwordless.types import (
     PasswordlessIngredients,
     PasswordlessLoginSMSTemplateVars,
 )
-from typing_extensions import Literal, Optional
+from typing_extensions import Literal
 
 from .api import (
     consume_code,

@@ -59,7 +59,9 @@ def get_middleware():
                 if hasattr(request.state, "supertokens") and isinstance(
                     request.state.supertokens, SessionContainer
                 ):
-                    manage_session_post_response(request.state.supertokens, result, user_context)
+                    manage_session_post_response(
+                        request.state.supertokens, result, user_context
+                    )
                 if isinstance(result, FastApiResponse):
                     return result.response
             except SuperTokensError as e:

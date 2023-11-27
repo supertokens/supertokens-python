@@ -65,6 +65,7 @@ from .constants import protected_props
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.recipe import SessionRecipe
     from supertokens_python.supertokens import AppInfo
+    from .interfaces import ResponseMutator
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
@@ -274,7 +275,8 @@ async def create_new_session_in_request(
                 or is_an_ip_address(app_info.top_level_api_domain)
             )
             and (
-                app_info.get_top_level_website_domain(request, user_context) == "localhost"
+                app_info.get_top_level_website_domain(request, user_context)
+                == "localhost"
                 or is_an_ip_address(
                     app_info.get_top_level_website_domain(request, user_context)
                 )
@@ -305,7 +307,7 @@ async def create_new_session_in_request(
             and get_token(request, "access", transfer_method) is not None
         ):
             session.response_mutators.append(
-                clear_session_mutator(config, transfer_method, request, user_context)
+                clear_session_mutator(config, transfer_method, request)
             )
 
     log_debug_message("createNewSession: Cleared old tokens")
@@ -330,7 +332,7 @@ async def refresh_session_in_request(
 ) -> SessionContainer:
     log_debug_message("refreshSession: Started")
 
-    response_mutators: List[Callable[[Any], None]] = []
+    response_mutators: List[ResponseMutator] = []
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
@@ -386,7 +388,6 @@ async def refresh_session_in_request(
                     0,
                     "access_token_path",
                     request,
-                    user_context,
                 )
             )
 
@@ -408,10 +409,7 @@ async def refresh_session_in_request(
     if callable(anti_csrf):
         anti_csrf = anti_csrf(request, user_context)
 
-    if (
-        anti_csrf == "VIA_CUSTOM_HEADER"
-        and not disable_anti_csrf
-    ):
+    if anti_csrf == "VIA_CUSTOM_HEADER" and not disable_anti_csrf:
         if get_rid_from_header(request) is None:
             log_debug_message(
                 "refreshSession: Returning UNAUTHORISED because anti-csrf token is undefined"
@@ -446,7 +444,6 @@ async def refresh_session_in_request(
                         0,
                         "access_token_path",
                         request,
-                        user_context,
                     )
                 )
 
@@ -465,7 +462,7 @@ async def refresh_session_in_request(
             and refresh_tokens[transfer_method] is not None
         ):
             response_mutators.append(
-                clear_session_mutator(config, transfer_method, request, user_context)
+                clear_session_mutator(config, transfer_method, request)
             )
 
     await session.attach_to_request_response(
@@ -486,7 +483,6 @@ async def refresh_session_in_request(
                 0,
                 "access_token_path",
                 request,
-                user_context,
             )
         )
 

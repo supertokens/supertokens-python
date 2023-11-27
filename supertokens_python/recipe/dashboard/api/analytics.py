@@ -61,11 +61,7 @@ async def handle_analytics_post(
             None,
             _user_context,
         )
-        if (
-            "exists" in response
-            and response["exists"]
-            and "telemetryId" in response
-        ):
+        if "exists" in response and response["exists"] and "telemetryId" in response:
             telemetry_id = response["telemetryId"]
 
         number_of_users = await Supertokens.get_instance().get_user_count(

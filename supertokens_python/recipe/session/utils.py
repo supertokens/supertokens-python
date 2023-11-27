@@ -459,14 +459,14 @@ def validate_and_normalise_user_input(
         if same_site == "none":
             return "VIA_CUSTOM_HEADER"
         return "NONE"
-    
+
     anti_csrf_function_or_string: Union[
-            Callable[
-                [Optional[BaseRequest], Dict[str, Any]],
-                Literal["VIA_CUSTOM_HEADER", "NONE"],
-            ],
-            Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
-        ] = anti_csrf_function
+        Callable[
+            [Optional[BaseRequest], Dict[str, Any]],
+            Literal["VIA_CUSTOM_HEADER", "NONE"],
+        ],
+        Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
+    ] = anti_csrf_function
     if anti_csrf is not None:
         anti_csrf_function_or_string = anti_csrf
 

@@ -24,7 +24,10 @@ from supertokens_python.types import MaybeAwaitable
 from fastapi.responses import JSONResponse
 
 from ...interfaces import SessionContainer, SessionClaimValidator
-from supertokens_python.utils import set_request_in_user_context_if_not_defined, default_user_context
+from supertokens_python.utils import (
+    set_request_in_user_context_if_not_defined,
+    default_user_context,
+)
 
 from fastapi import Request
 

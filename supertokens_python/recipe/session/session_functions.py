@@ -244,7 +244,10 @@ async def get_session(
                         )
                         raise_try_refresh_token_exception("anti-csrf check failed")
 
-        elif (isinstance(config.anti_csrf_function_or_string, str) and config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"):
+        elif (
+            isinstance(config.anti_csrf_function_or_string, str)
+            and config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
+        ):
             # The function should never be called by this (we check this outside the function as well)
             # There we can add a bit more information to the error, so that's the primary check, this is just making sure.
             raise Exception(
@@ -342,7 +345,9 @@ async def refresh_session(
         data["antiCsrfToken"] = anti_csrf_token
 
     if (
-        isinstance(recipe_implementation.config.anti_csrf_function_or_string, str) and recipe_implementation.config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
+        isinstance(recipe_implementation.config.anti_csrf_function_or_string, str)
+        and recipe_implementation.config.anti_csrf_function_or_string
+        == "VIA_CUSTOM_HEADER"
         and not disable_anti_csrf
     ):
         # The function should never be called by this (we check this outside the function as well)
