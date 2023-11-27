@@ -329,7 +329,7 @@ class SessionConfig:
         refresh_token_path: NormalisedURLPath,
         cookie_domain: Union[None, str],
         get_cookie_same_site: Callable[
-            [Optional[BaseRequest], Optional[Dict[str, Any]]],
+            [Optional[BaseRequest], Dict[str, Any]],
             Literal["lax", "strict", "none"],
         ],
         cookie_secure: bool,
@@ -337,8 +337,8 @@ class SessionConfig:
         error_handlers: ErrorHandlers,
         anti_csrf_function_or_string: Union[
             Callable[
-                [Optional[BaseRequest], Optional[Dict[str, Any]]],
-                Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
+                [Optional[BaseRequest], Dict[str, Any]],
+                Literal["VIA_CUSTOM_HEADER", "NONE"],
             ],
             Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
         ],
@@ -443,13 +443,13 @@ def validate_and_normalise_user_input(
         expose_access_token_to_frontend_in_cookie_based_auth = False
 
     def cookie_same_site_function(
-        request: Optional[BaseRequest], user_context: Optional[Dict[str, Any]]
+        request: Optional[BaseRequest], user_context: Dict[str, Any]
     ) -> Literal["lax", "strict", "none"]:
         nonlocal cookie_same_site
         if cookie_same_site is not None:
             return normalise_same_site(cookie_same_site)
         top_level_api_domain = app_info.top_level_api_domain
-        top_level_website_domain = app_info.top_level_website_domain(
+        top_level_website_domain = app_info.get_top_level_website_domain(
             request, user_context
         )
 
@@ -457,7 +457,7 @@ def validate_and_normalise_user_input(
             app_info.api_domain.get_as_string_dangerous()
         )
         website_domain_scheme = get_url_scheme(
-            app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+            app_info.get_origin(request, user_context).get_as_string_dangerous()
         )
         if (top_level_api_domain != top_level_website_domain) or (
             api_domain_scheme != website_domain_scheme
@@ -468,12 +468,22 @@ def validate_and_normalise_user_input(
         return cookie_same_site
 
     def anti_csrf_function(
-        request: Optional[BaseRequest], user_context: Optional[Dict[str, Any]]
-    ) -> Literal["NONE", "VIA_CUSTOM_HEADER", "VIA_TOKEN"]:
+        request: Optional[BaseRequest], user_context: Dict[str, Any]
+    ) -> Literal["NONE", "VIA_CUSTOM_HEADER"]:
         same_site = cookie_same_site_function(request, user_context)
         if same_site == "none":
             return "VIA_CUSTOM_HEADER"
         return "NONE"
+    
+    anti_csrf_function_or_string: Union[
+            Callable[
+                [Optional[BaseRequest], Dict[str, Any]],
+                Literal["VIA_CUSTOM_HEADER", "NONE"],
+            ],
+            Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
+        ] = anti_csrf_function
+    if anti_csrf is not None:
+        anti_csrf_function_or_string = anti_csrf
 
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
@@ -482,7 +492,7 @@ def validate_and_normalise_user_input(
         cookie_secure,
         session_expired_status_code,
         error_handlers,
-        anti_csrf_function,
+        anti_csrf_function_or_string,
         get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,
