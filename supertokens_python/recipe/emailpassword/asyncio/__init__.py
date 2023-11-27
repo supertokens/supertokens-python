@@ -13,7 +13,6 @@
 # under the License.
 from typing import Any, Dict, Union, Optional
 from supertokens_python import get_request_from_user_context
-from supertokens_python.exceptions import raise_general_exception
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 
@@ -145,10 +144,6 @@ async def create_reset_password_link(
 
     recipe_instance = EmailPasswordRecipe.get_instance()
     request = get_request_from_user_context(user_context)
-    if request is None:
-        raise_general_exception(
-            "should never reach here: missing request in user_context"
-        )
     return CreateResetPasswordLinkOkResult(
         link=get_password_reset_link(
             recipe_instance.get_app_info(),
@@ -156,7 +151,7 @@ async def create_reset_password_link(
             recipe_instance.get_recipe_id(),
             tenant_id,
             request,
-            user_context,
+            user_context=user_context or {},
         )
     )
 

@@ -305,11 +305,11 @@ def get_password_reset_link(
     token: str,
     recipe_id: str,
     tenant_id: str,
-    request: BaseRequest,
-    user_context: Optional[Dict[str, Any]],
+    request: Optional[BaseRequest],
+    user_context: Dict[str, Any],
 ) -> str:
     return (
-        app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+        app_info.get_origin(request, user_context).get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
         + "/reset-password?token="
         + token
