@@ -24,7 +24,7 @@ from supertokens_python.recipe.passwordless.types import (
     PasswordlessIngredients,
     PasswordlessLoginSMSTemplateVars,
 )
-from typing_extensions import Literal
+from typing_extensions import Literal, Optional
 
 from .api import (
     consume_code,
@@ -299,7 +299,7 @@ class PasswordlessRecipe(RecipeModule):
         email: Union[str, None],
         phone_number: Union[str, None],
         tenant_id: str,
-        request: BaseRequest,
+        request: Optional[BaseRequest],
         user_context: Dict[str, Any],
     ) -> str:
         user_input_code = None
@@ -319,7 +319,7 @@ class PasswordlessRecipe(RecipeModule):
         app_info = self.get_app_info()
 
         magic_link = (
-            app_info.get_website_domain(request, user_context).get_as_string_dangerous()
+            app_info.get_origin(request, user_context).get_as_string_dangerous()
             + app_info.website_base_path.get_as_string_dangerous()
             + "/verify"
             + "?rid="
