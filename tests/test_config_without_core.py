@@ -52,7 +52,7 @@ def test_same_site_cookie_values(
     )
 
     s = SessionRecipe.get_instance()
-    assert s.config.get_cookie_same_site(None, None) == cookie_same_site
+    assert s.config.get_cookie_same_site(None, {}) == cookie_same_site
     SessionRecipe.reset()
     MultitenancyRecipe.reset()
     Supertokens.reset()

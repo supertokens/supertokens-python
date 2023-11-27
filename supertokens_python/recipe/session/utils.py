@@ -377,6 +377,7 @@ def validate_and_normalise_user_input(
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
 ):
+    _ = cookie_same_site  # we have this otherwise pylint complains that cookie_same_site is unused, but it is being used in the get_cookie_same_site function.
     if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
         raise ValueError(
             "anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None"
