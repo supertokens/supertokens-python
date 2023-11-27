@@ -61,13 +61,12 @@ async def handle_analytics_post(
             None,
             _user_context,
         )
-        if response is not None:
-            if (
-                "exists" in response
-                and response["exists"]
-                and "telemetryId" in response
-            ):
-                telemetry_id = response["telemetryId"]
+        if (
+            "exists" in response
+            and response["exists"]
+            and "telemetryId" in response
+        ):
+            telemetry_id = response["telemetryId"]
 
         number_of_users = await Supertokens.get_instance().get_user_count(
             include_recipe_ids=None
@@ -79,7 +78,7 @@ async def handle_analytics_post(
 
     apiDomain, websiteDomain, appName = (
         api_options.app_info.api_domain,
-        api_options.app_info.get_website_domain(api_options.request, _user_context),
+        api_options.app_info.get_origin(api_options.request, {}),
         api_options.app_info.app_name,
     )
 
