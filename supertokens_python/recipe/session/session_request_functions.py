@@ -274,9 +274,9 @@ async def create_new_session_in_request(
                 or is_an_ip_address(app_info.top_level_api_domain)
             )
             and (
-                app_info.top_level_website_domain(request, user_context) == "localhost"
+                app_info.get_top_level_website_domain(request, user_context) == "localhost"
                 or is_an_ip_address(
-                    app_info.top_level_website_domain(request, user_context)
+                    app_info.get_top_level_website_domain(request, user_context)
                 )
             )
         )
@@ -404,10 +404,14 @@ async def refresh_session_in_request(
     disable_anti_csrf = request_transfer_method == "header"
     anti_csrf_token = get_anti_csrf_header(request)
 
+    anti_csrf = config.anti_csrf_function_or_string
+    if callable(anti_csrf):
+        anti_csrf = anti_csrf(request, user_context)
+
     if (
-        config.anti_csrf_function_or_string == "VIA_CUSTOM_HEADER"
+        anti_csrf == "VIA_CUSTOM_HEADER"
         and not disable_anti_csrf
-    ):  # TODO: can be function
+    ):
         if get_rid_from_header(request) is None:
             log_debug_message(
                 "refreshSession: Returning UNAUTHORISED because anti-csrf token is undefined"
