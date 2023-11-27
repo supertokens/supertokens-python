@@ -138,6 +138,8 @@ async def send_email(
 async def create_reset_password_link(
     tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None
 ):
+    if user_context is None:
+        user_context = {}
     token = await create_reset_password_token(tenant_id, user_id, user_context)
     if isinstance(token, CreateResetPasswordWrongUserIdError):
         return CreateResetPasswordLinkUnknownUserIdError()
@@ -151,7 +153,7 @@ async def create_reset_password_link(
             recipe_instance.get_recipe_id(),
             tenant_id,
             request,
-            user_context=user_context or {},
+            user_context,
         )
     )
 
