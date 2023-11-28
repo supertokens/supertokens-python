@@ -122,9 +122,14 @@ class SessionRecipe(RecipeModule):
             )
         else:
             log_debug_message("session init: cookie_domain: None")
-        log_debug_message(
-            "session init: cookie_same_site: %s", self.config.get_cookie_same_site
-        )
+
+        # we check the input cookie_same_site because the normalised version is
+        # always a function.
+        if cookie_same_site is not None:
+            log_debug_message("session init: cookie_same_site: %s", cookie_same_site)
+        else:
+            log_debug_message("session init: cookie_same_site: function")
+
         log_debug_message(
             "session init: cookie_secure: %s", str(self.config.cookie_secure)
         )
