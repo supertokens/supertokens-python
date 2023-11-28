@@ -428,6 +428,12 @@ def validate_and_normalise_user_input(
     if expose_access_token_to_frontend_in_cookie_based_auth is None:
         expose_access_token_to_frontend_in_cookie_based_auth = False
 
+    if cookie_same_site is not None:
+        # this is just so that we check that the user has provided the right
+        # values, since normalise_same_site throws an error if the user
+        # as provided an empty string.
+        _ = normalise_same_site(cookie_same_site)
+
     def get_cookie_same_site(
         request: Optional[BaseRequest], user_context: Dict[str, Any]
     ) -> Literal["lax", "strict", "none"]:

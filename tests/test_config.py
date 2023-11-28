@@ -418,7 +418,8 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
+    anti_csrf = SessionRecipe.get_instance().config.anti_csrf_function_or_string
+    assert not isinstance(anti_csrf, str) and anti_csrf(None, {}) == "NONE"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -439,10 +440,8 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "none"
-    assert (
-        SessionRecipe.get_instance().config.anti_csrf_function_or_string
-        == "VIA_CUSTOM_HEADER"
-    )
+    anti_csrf = SessionRecipe.get_instance().config.anti_csrf_function_or_string
+    assert not isinstance(anti_csrf, str) and anti_csrf(None, {}) == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -463,7 +462,8 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
+    anti_csrf = SessionRecipe.get_instance().config.anti_csrf_function_or_string
+    assert not isinstance(anti_csrf, str) and anti_csrf(None, {}) == "NONE"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -484,7 +484,8 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
+    anti_csrf = SessionRecipe.get_instance().config.anti_csrf_function_or_string
+    assert not isinstance(anti_csrf, str) and anti_csrf(None, {}) == "NONE"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -527,10 +528,8 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "none"
-    assert (
-        SessionRecipe.get_instance().config.anti_csrf_function_or_string
-        == "VIA_CUSTOM_HEADER"
-    )
+    anti_csrf = SessionRecipe.get_instance().config.anti_csrf_function_or_string
+    assert not isinstance(anti_csrf, str) and anti_csrf(None, {}) == "VIA_CUSTOM_HEADER"
     assert SessionRecipe.get_instance().config.cookie_secure
 
     reset()
@@ -551,7 +550,8 @@ async def test_config_values():
     )
 
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "lax"
-    assert SessionRecipe.get_instance().config.anti_csrf_function_or_string == "NONE"
+    anti_csrf = SessionRecipe.get_instance().config.anti_csrf_function_or_string
+    assert not isinstance(anti_csrf, str) and anti_csrf(None, {}) == "NONE"
     assert not SessionRecipe.get_instance().config.cookie_secure
 
     reset()

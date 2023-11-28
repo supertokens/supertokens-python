@@ -47,7 +47,7 @@ You will need to setup the [supertokens-core](https://github.com/supertokens/sup
 3. Open a new terminal and navigate to the `supertokens-python` respositry.
 4. Use `export SUPERTOKENS_PATH=path/to/supertokens-root` (**MANDATORY**)
 4. To run all tests, while ensuring the test environment is running on a different terminal, use `make test`.
-5. To run individual tests, use `pytest ./tests/path/to/test/file.py  -k test_function_name` OR use your IDE's in-built UI for running python tests. You may read [VSCode Python Testing](https://code.visualstudio.com/docs/python/testing) and [PyCharm Testing](https://www.jetbrains.com/help/pycharm/testing-your-first-python-application.html#debug-test) for more info.
+5. To run individual tests, use `INSTALL_DIR=../supertokens-root pytest ./tests/path/to/test/file.py::test_function_name` OR use your IDE's in-built UI for running python tests. You may read [VSCode Python Testing](https://code.visualstudio.com/docs/python/testing) and [PyCharm Testing](https://www.jetbrains.com/help/pycharm/testing-your-first-python-application.html#debug-test) for more info.
 
 ## Pull Request
 
