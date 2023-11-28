@@ -60,6 +60,7 @@ from .utils import (
     TokenTransferMethod,
     validate_and_normalise_user_input,
 )
+from .cookie_and_header import clear_session_from_all_token_transfer_methods
 
 
 class SessionRecipe(RecipeModule):
@@ -112,16 +113,23 @@ class SessionRecipe(RecipeModule):
             None,
             override.openid_feature if override is not None else None,
         )
-        log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
+        log_debug_message(
+            "session init: anti_csrf: %s", self.config.anti_csrf_function_or_string
+        )
         if self.config.cookie_domain is not None:
             log_debug_message(
                 "session init: cookie_domain: %s", self.config.cookie_domain
             )
         else:
             log_debug_message("session init: cookie_domain: None")
-        log_debug_message(
-            "session init: cookie_same_site: %s", self.config.cookie_same_site
-        )
+
+        # we check the input cookie_same_site because the normalised version is
+        # always a function.
+        if cookie_same_site is not None:
+            log_debug_message("session init: cookie_same_site: %s", cookie_same_site)
+        else:
+            log_debug_message("session init: cookie_same_site: function")
+
         log_debug_message(
             "session init: cookie_secure: %s", str(self.config.cookie_secure)
         )
@@ -218,24 +226,39 @@ class SessionRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:
         if (
             isinstance(err, SuperTokensSessionError)
             and err.response_mutators is not None
         ):
             for mutator in err.response_mutators:
-                mutator(response)
+                mutator(response, user_context)
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
+            if err.clear_tokens:
+                log_debug_message("Clearing tokens because of UNAUTHORISED response")
+                clear_session_from_all_token_transfer_methods(
+                    response, self, request, user_context
+                )
             return await self.config.error_handlers.on_unauthorised(
-                self, err.clear_tokens, request, str(err), response
+                request, str(err), response
             )
         if isinstance(err, TokenTheftError):
             log_debug_message("errorHandler: returning TOKEN_THEFT_DETECTED")
+            log_debug_message(
+                "Clearing tokens because of TOKEN_THEFT_DETECTED response"
+            )
+            clear_session_from_all_token_transfer_methods(
+                response, self, request, user_context
+            )
             return await self.config.error_handlers.on_token_theft_detected(
-                self, request, err.session_handle, err.user_id, response
+                request, err.session_handle, err.user_id, response
             )
         if isinstance(err, InvalidClaimsError):
             log_debug_message("errorHandler: returning INVALID_CLAIMS")

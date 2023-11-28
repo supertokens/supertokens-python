@@ -49,14 +49,14 @@ def middleware(get_response: Any):
                     request.supertokens, SessionContainer  # type: ignore
                 ):
                     manage_session_post_response(
-                        request.supertokens, result  # type: ignore
+                        request.supertokens, result, user_context  # type: ignore
                     )
                 if isinstance(result, DjangoResponse):
                     return result.response
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
                 result = await st.handle_supertokens_error(
-                    DjangoRequest(request), e, response
+                    DjangoRequest(request), e, response, user_context
                 )
                 if isinstance(result, DjangoResponse):
                     return result.response
@@ -85,7 +85,7 @@ def middleware(get_response: Any):
                 request.supertokens, SessionContainer  # type: ignore
             ):
                 manage_session_post_response(
-                    request.supertokens, result  # type: ignore
+                    request.supertokens, result, user_context  # type: ignore
                 )
             return result.response
 
@@ -93,7 +93,7 @@ def middleware(get_response: Any):
             response = DjangoResponse(HttpResponse())
             result: Union[DjangoResponse, None] = async_to_sync(
                 st.handle_supertokens_error
-            )(DjangoRequest(request), e, response)
+            )(DjangoRequest(request), e, response, user_context)
             if result is not None:
                 return result.response
         raise Exception("Should never come here")

@@ -78,7 +78,7 @@ def verify_session(
                 response = FlaskResponse(make_response())
                 result = sync(
                     Supertokens.get_instance().handle_supertokens_error(
-                        base_req, e, response
+                        base_req, e, response, user_context
                     )
                 )
                 if isinstance(result, FlaskResponse):

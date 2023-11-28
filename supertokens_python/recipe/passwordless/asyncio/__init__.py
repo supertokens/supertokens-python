@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, List, Union
+from supertokens_python import get_request_from_user_context
 
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
@@ -266,10 +267,12 @@ async def create_magic_link(
 ) -> str:
     if user_context is None:
         user_context = {}
+    request = get_request_from_user_context(user_context)
     return await PasswordlessRecipe.get_instance().create_magic_link(
         email=email,
         phone_number=phone_number,
         tenant_id=tenant_id,
+        request=request,
         user_context=user_context,
     )
 

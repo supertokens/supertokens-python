@@ -110,10 +110,12 @@ def _set_cookie(
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     domain = config.cookie_domain
     secure = config.cookie_secure
-    same_site = config.cookie_same_site
+    same_site = config.get_cookie_same_site(request, user_context)
     path = ""
     if path_type == "refresh_token_path":
         path = config.refresh_token_path.get_as_string_dangerous()
@@ -138,11 +140,12 @@ def set_cookie_response_mutator(
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
+    request: BaseRequest,
 ):
-    def mutator(
-        response: BaseResponse,
-    ):
-        return _set_cookie(response, config, key, value, expires, path_type)
+    def mutator(response: BaseResponse, user_context: Dict[str, Any]):
+        return _set_cookie(
+            response, config, key, value, expires, path_type, request, user_context
+        )
 
     return mutator
 
@@ -155,6 +158,7 @@ def _attach_anti_csrf_header(response: BaseResponse, value: str):
 def anti_csrf_response_mutator(value: str):
     def mutator(
         response: BaseResponse,
+        _: Dict[str, Any],
     ):
         return _attach_anti_csrf_header(response, value)
 
@@ -170,7 +174,10 @@ def get_rid_header(request: BaseRequest):
 
 
 def clear_session_from_all_token_transfer_methods(
-    response: BaseResponse, recipe: SessionRecipe
+    response: BaseResponse,
+    recipe: SessionRecipe,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     # We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     # This is done to handle the following use-case:
@@ -179,14 +186,19 @@ def clear_session_from_all_token_transfer_methods(
     # We can't know which to clear since we can't reliably query or remove the set-cookie header added to the response (causes issues in some frameworks, i.e.: hapi)
     # The safe solution in this case is to overwrite all the response cookies/headers with an empty value, which is what we are doing here.
     for transfer_method in available_token_transfer_methods:
-        _clear_session(response, recipe.config, transfer_method)
+        _clear_session(response, recipe.config, transfer_method, request, user_context)
 
 
-def clear_session_mutator(config: SessionConfig, transfer_method: TokenTransferMethod):
+def clear_session_mutator(
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+    request: BaseRequest,
+):
     def mutator(
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
-        return _clear_session(response, config, transfer_method)
+        return _clear_session(response, config, transfer_method, request, user_context)
 
     return mutator
 
@@ -195,11 +207,15 @@ def _clear_session(
     response: BaseResponse,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     # If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        _set_token(response, config, token_type, "", 0, transfer_method)
+        _set_token(
+            response, config, token_type, "", 0, transfer_method, request, user_context
+        )
 
     remove_header(
         response, ANTI_CSRF_HEADER_KEY
@@ -213,11 +229,13 @@ def _clear_session(
 def clear_session_response_mutator(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
 ):
     def mutator(
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
-        return _clear_session(response, config, transfer_method)
+        return _clear_session(response, config, transfer_method, request, user_context)
 
     return mutator
 
@@ -263,6 +281,8 @@ def _set_token(
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     log_debug_message("Setting %s token as %s", token_type, transfer_method)
     if transfer_method == "cookie":
@@ -273,6 +293,8 @@ def _set_token(
             value,
             expires,
             "refresh_token_path" if token_type == "refresh" else "access_token_path",
+            request,
+            user_context,
         )
     elif transfer_method == "header":
         set_token_in_header(
@@ -288,8 +310,12 @@ def token_response_mutator(
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
 ):
-    def mutator(response: BaseResponse):
+    def mutator(
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ):
         _set_token(
             response,
             config,
@@ -297,6 +323,8 @@ def token_response_mutator(
             value,
             expires,
             transfer_method,
+            request,
+            user_context,
         )
 
     return mutator
@@ -312,12 +340,20 @@ def access_token_mutator(
     front_token: str,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
 ):
     def mutator(
         response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         _set_access_token_in_response(
-            response, access_token, front_token, config, transfer_method
+            response,
+            access_token,
+            front_token,
+            config,
+            transfer_method,
+            request,
+            user_context,
         )
 
     return mutator
@@ -329,6 +365,8 @@ def _set_access_token_in_response(
     front_token: str,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
+    request: BaseRequest,
+    user_context: Dict[str, Any],
 ):
     _set_front_token_in_headers(res, front_token)
     _set_token(
@@ -342,6 +380,8 @@ def _set_access_token_in_response(
         # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
         get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
         transfer_method,
+        request,
+        user_context,
     )
 
     if (
@@ -355,4 +395,6 @@ def _set_access_token_in_response(
             access_token,
             get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
             "header",
+            request,
+            user_context,
         )

@@ -49,8 +49,8 @@ def verify_session(
             nonlocal user_context
             from django.http import JsonResponse
 
+            baseRequest = DjangoRequest(request)
             try:
-                baseRequest = DjangoRequest(request)
                 user_context = set_request_in_user_context_if_not_defined(
                     user_context, baseRequest
                 )
@@ -75,9 +75,12 @@ def verify_session(
                 return f(baseRequest.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(JsonResponse({}))
+                user_context = set_request_in_user_context_if_not_defined(
+                    user_context, baseRequest
+                )
                 result = sync(
                     Supertokens.get_instance().handle_supertokens_error(
-                        DjangoRequest(request), e, response
+                        DjangoRequest(request), e, response, user_context
                     )
                 )
                 if isinstance(result, DjangoResponse):

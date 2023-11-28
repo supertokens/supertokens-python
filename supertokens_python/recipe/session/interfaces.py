@@ -378,7 +378,7 @@ class APIInterface(ABC):
         pass
 
 
-ResponseMutator = Callable[[BaseResponse], None]
+ResponseMutator = Callable[[BaseResponse, Dict[str, Any]], None]
 
 
 class TokenInfo:
@@ -441,7 +441,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def attach_to_request_response(
-        self, request: BaseRequest, transfer_method: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
+        user_context: Dict[str, Any],
     ):
         pass
 
@@ -596,9 +599,14 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         return sync(self.remove_claim(claim, user_context))
 
     def sync_attach_to_request_response(
-        self, request: BaseRequest, token_transfer: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        token_transfer: TokenTransferMethod,
+        user_context: Dict[str, Any],
     ) -> None:
-        return sync(self.attach_to_request_response(request, token_transfer))
+        return sync(
+            self.attach_to_request_response(request, token_transfer, user_context)
+        )
 
     # This is there so that we can do session["..."] to access some of the members of this class
     def __getitem__(self, item: str):

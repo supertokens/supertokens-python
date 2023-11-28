@@ -114,11 +114,15 @@ class OpenIdRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if isinstance(err, SuperTokensOpenIdError):
             raise err
-        return await self.jwt_recipe.handle_error(request, err, response)
+        return await self.jwt_recipe.handle_error(request, err, response, user_context)
 
     def get_all_cors_headers(self) -> List[str]:
         return self.jwt_recipe.get_all_cors_headers()

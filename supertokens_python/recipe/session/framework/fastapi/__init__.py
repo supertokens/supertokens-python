@@ -24,7 +24,10 @@ from supertokens_python.types import MaybeAwaitable
 from fastapi.responses import JSONResponse
 
 from ...interfaces import SessionContainer, SessionClaimValidator
-from supertokens_python.utils import set_request_in_user_context_if_not_defined
+from supertokens_python.utils import (
+    set_request_in_user_context_if_not_defined,
+    default_user_context,
+)
 
 from fastapi import Request
 
@@ -79,8 +82,9 @@ async def session_exception_handler(
     """
     base_req = FastApiRequest(request)
     base_res = FastApiResponse(JSONResponse())
+    user_context = default_user_context(base_req)
     result = await Supertokens.get_instance().handle_supertokens_error(
-        base_req, exc, base_res
+        base_req, exc, base_res, user_context
     )
     if isinstance(result, FastApiResponse):
         body = json.loads(result.response.body)

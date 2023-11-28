@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
@@ -36,24 +36,30 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
-from supertokens_python.utils import log_debug_message
+from supertokens_python.utils import log_debug_message, default_user_context
 
 _T = TypeVar("_T")
 
 
 class Session(SessionContainer):
     async def attach_to_request_response(
-        self, request: BaseRequest, transfer_method: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
+        user_context: Optional[Dict[str, Any]],
     ) -> None:
         self.req_res_info = ReqResInfo(request, transfer_method)
 
         if self.access_token_updated:
+            if user_context is None:
+                user_context = default_user_context(request)
             self.response_mutators.append(
                 access_token_mutator(
                     self.access_token,
                     self.front_token,
                     self.config,
                     transfer_method,
+                    request,
                 )
             )
             if self.refresh_token is not None:
@@ -64,6 +70,7 @@ class Session(SessionContainer):
                         self.refresh_token.token,
                         self.refresh_token.expiry,
                         transfer_method,
+                        request,
                     )
                 )
             if self.anti_csrf_token is not None:
@@ -95,6 +102,7 @@ class Session(SessionContainer):
                 clear_session_response_mutator(
                     self.config,
                     transfer_method,
+                    self.req_res_info.request,
                 )
             )
 
@@ -316,6 +324,7 @@ class Session(SessionContainer):
                         self.front_token,
                         self.config,
                         transfer_method,
+                        self.req_res_info.request,
                     )
                 )
         else:

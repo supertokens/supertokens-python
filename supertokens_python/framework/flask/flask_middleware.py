@@ -69,7 +69,7 @@ class Middleware:
 
             response_ = FlaskResponse(response)
             if hasattr(g, "supertokens") and g.supertokens is not None:
-                manage_session_post_response(g.supertokens, response_)
+                manage_session_post_response(g.supertokens, response_, {})
 
             return response_.response
 
@@ -84,15 +84,21 @@ class Middleware:
             from supertokens_python import Supertokens
             from supertokens_python.framework.flask.flask_request import FlaskRequest
             from supertokens_python.framework.flask.flask_response import FlaskResponse
+            from supertokens_python.utils import default_user_context
 
             from flask.wrappers import Response
 
             st = Supertokens.get_instance()
             response = Response(json.dumps({}), mimetype="application/json", status=200)
+            base_request = FlaskRequest(request)
+            user_context = default_user_context(base_request)
 
             result: BaseResponse = sync(
                 st.handle_supertokens_error(
-                    FlaskRequest(request), error, FlaskResponse(response)
+                    base_request,
+                    error,
+                    FlaskResponse(response),
+                    user_context,
                 )
             )
             if isinstance(result, FlaskResponse):

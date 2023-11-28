@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union, Optional
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -223,7 +223,11 @@ class PasswordlessRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -> BaseResponse:  # type: ignore
         raise err
 
@@ -295,6 +299,7 @@ class PasswordlessRecipe(RecipeModule):
         email: Union[str, None],
         phone_number: Union[str, None],
         tenant_id: str,
+        request: Optional[BaseRequest],
         user_context: Dict[str, Any],
     ) -> str:
         user_input_code = None
@@ -314,7 +319,7 @@ class PasswordlessRecipe(RecipeModule):
         app_info = self.get_app_info()
 
         magic_link = (
-            app_info.website_domain.get_as_string_dangerous()
+            app_info.get_origin(request, user_context).get_as_string_dangerous()
             + app_info.website_base_path.get_as_string_dangerous()
             + "/verify"
             + "?rid="

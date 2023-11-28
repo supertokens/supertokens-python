@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import asyncio
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import httpx
 import respx
@@ -22,6 +23,7 @@ from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailContent,
@@ -535,3 +537,62 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     assert email == "test@example.com"
     assert all([outer_override_called, get_content_called, send_raw_email_called])
     assert code_lifetime > 0
+
+
+@mark.asyncio
+async def test_magic_link_uses_correct_origin(
+    driver_config_client: TestClient,
+):
+    login_url = ""
+
+    def get_origin(req: Optional[BaseRequest], _: Dict[str, Any]) -> str:
+        if req is not None:
+            value = req.get_header("origin")
+            if value is not None:
+                return value
+        return "localhost:3000"
+
+    class CustomEmailService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal login_url
+            login_url = template_vars.url_with_link_code
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            origin=get_origin,
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            passwordless.init(
+                contact_config=passwordless.ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                email_delivery=passwordless.EmailDeliveryConfig(CustomEmailService()),
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_in_up_request(driver_config_client, "random@gmail.com", True)
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+    response_1 = driver_config_client.post(
+        url="/auth/signinup/code",
+        headers={"origin": "http://localhost:5050"},
+        json={"email": "random@gmail.com"},
+    )
+    await asyncio.sleep(1)
+
+    assert response_1.status_code == 200
+    assert "http://localhost:5050" in login_url

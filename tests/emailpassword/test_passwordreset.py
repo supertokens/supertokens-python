@@ -13,7 +13,7 @@
 # under the License.
 import asyncio
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
 
 from fastapi import FastAPI
@@ -22,6 +22,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark, raises
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import GeneralError
+from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import create_reset_password_link
@@ -399,3 +400,62 @@ async def test_create_reset_password_link(
     with raises(GeneralError) as err:
         await create_reset_password_link("invalidTenantId", user_info["id"])
     assert "status code: 400" in str(err.value)
+
+
+@mark.asyncio
+async def test_reset_password_link_uses_correct_origin(
+    driver_config_client: TestClient,
+):
+    password_reset_url = ""
+
+    def get_origin(req: Optional[BaseRequest], _: Optional[Dict[str, Any]]) -> str:
+        if req is not None:
+            value = req.get_header("origin")
+            if value is not None:
+                return value
+        return "localhost:3000"
+
+    class CustomEmailService(
+        emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: emailpassword.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            nonlocal password_reset_url
+            password_reset_url = template_vars.password_reset_link
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            origin=get_origin,
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                email_delivery=emailpassword.EmailDeliveryConfig(CustomEmailService())
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+    response_1 = driver_config_client.post(
+        url="/auth/user/password/reset/token",
+        headers={"origin": "http://localhost:5050"},
+        json={"formFields": [{"id": "email", "value": "random@gmail.com"}]},
+    )
+    await asyncio.sleep(1)
+
+    assert response_1.status_code == 200
+    assert "http://localhost:5050/auth/reset-password" in password_reset_url
