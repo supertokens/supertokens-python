@@ -52,6 +52,8 @@ from supertokens_python.logger import (
     log_debug_message,
     enable_debug_logging,
 )
+
+
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, USER_DELETE, USERS
 from .exceptions import SuperTokensError
 from .interfaces import (
@@ -129,15 +131,19 @@ class InputAppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
         api_gateway_path: str = &#34;&#34;,
         api_base_path: str = &#34;/auth&#34;,
         website_base_path: str = &#34;/auth&#34;,
+        website_domain: Optional[str] = None,
+        origin: Optional[
+            Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]
+        ] = None,
     ):
         self.app_name = app_name
         self.api_gateway_path = api_gateway_path
         self.api_domain = api_domain
         self.website_domain = website_domain
+        self.origin = origin
         self.api_base_path = api_base_path
         self.website_base_path = website_base_path
 
@@ -147,23 +153,28 @@ class AppInfo:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
+        website_domain: Optional[str],
         framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
         api_gateway_path: str,
         api_base_path: str,
         website_base_path: str,
         mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
+        origin: Optional[
+            Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]
+        ],
     ):
         self.app_name = app_name
         self.api_gateway_path = NormalisedURLPath(api_gateway_path)
         self.api_domain = NormalisedURLDomain(api_domain)
-        self.website_domain = NormalisedURLDomain(website_domain)
         self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
             self.api_domain.get_as_string_dangerous()
         )
-        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-            self.website_domain.get_as_string_dangerous()
-        )
+        if website_domain is None and origin is None:
+            raise_general_exception(
+                &#34;Please provide at least one of website_domain or origin&#34;
+            )
+        self.__origin = origin
+        self.__website_domain = website_domain
         self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )
@@ -177,6 +188,27 @@ class AppInfo:
         self.framework = framework
         self.mode = mode
 
+    def get_top_level_website_domain(
+        self, request: Optional[BaseRequest], user_context: Dict[str, Any]
+    ) -&gt; str:
+        return get_top_level_domain_for_same_site_resolution(
+            self.get_origin(request, user_context).get_as_string_dangerous()
+        )
+
+    def get_origin(self, request: Optional[BaseRequest], user_context: Dict[str, Any]):
+        origin = self.__origin
+        if origin is None:
+            origin = self.__website_domain
+
+        # This should not be possible because we check for either origin or websiteDomain above
+        if origin is None:
+            raise_general_exception(&#34;should never come here&#34;)
+
+        if callable(origin):
+            origin = origin(request, user_context)
+
+        return NormalisedURLDomain(origin)
+
     def toJSON(self):
         def defaultImpl(o: Any):
             if isinstance(o, (NormalisedURLDomain, NormalisedURLPath)):
@@ -186,10 +218,12 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+def manage_session_post_response(
+    session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]
+):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
-        mutator(response=response)  # type: ignore
+        mutator(response, user_context)
 
 
 class Supertokens:
@@ -217,6 +251,7 @@ class Supertokens:
             app_info.api_base_path,
             app_info.website_base_path,
             mode,
+            app_info.origin,
         )
         self.supertokens_config = supertokens_config
         if debug is True:
@@ -368,7 +403,6 @@ class Supertokens:
         query: Union[Dict[str, str], None],
         user_context: Optional[Dict[str, Any]],
     ) -&gt; UsersResponse:
-        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -384,9 +418,6 @@ class Supertokens:
 
         if query is not None:
             params = {**params, **query}
-
-        if tenant_id is None:
-            tenant_id = DEFAULT_TENANT_ID
 
         response = await querier.send_get_request(
             NormalisedURLPath(f&#34;/{tenant_id}{USERS}&#34;), params, user_context=user_context
@@ -649,7 +680,11 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(
-        self, request: BaseRequest, err: Exception, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: Exception,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         log_debug_message(&#34;errorHandler: Started&#34;)
         log_debug_message(
@@ -672,7 +707,7 @@ class Supertokens:
                 log_debug_message(
                     &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
                 )
-                return await recipe.handle_error(request, err, response)
+                return await recipe.handle_error(request, err, response, user_context)
         raise err
 
     def get_request_from_user_context(  # pylint: disable=no-self-use
@@ -699,7 +734,7 @@ class Supertokens:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.supertokens.manage_session_post_response"><code class="name flex">
-<span>def <span class="ident">manage_session_post_response</span></span>(<span>session: SessionContainer, response: BaseResponse)</span>
+<span>def <span class="ident">manage_session_post_response</span></span>(<span>session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -707,10 +742,12 @@ class Supertokens:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+<pre><code class="python">def manage_session_post_response(
+    session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]
+):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
-        mutator(response=response)  # type: ignore</code></pre>
+        mutator(response, user_context)</code></pre>
 </details>
 </dd>
 </dl>
@@ -720,7 +757,7 @@ class Supertokens:
 <dl>
 <dt id="supertokens_python.supertokens.AppInfo"><code class="flex name class">
 <span>class <span class="ident">AppInfo</span></span>
-<span>(</span><span>app_name: str, api_domain: str, website_domain: str, framework: "Literal['fastapi', 'flask', 'django']", api_gateway_path: str, api_base_path: str, website_base_path: str, mode: "Union[Literal['asgi', 'wsgi'], None]")</span>
+<span>(</span><span>app_name: str, api_domain: str, website_domain: Optional[str], framework: "Literal['fastapi', 'flask', 'django']", api_gateway_path: str, api_base_path: str, website_base_path: str, mode: "Union[Literal['asgi', 'wsgi'], None]", origin: Optional[Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -733,23 +770,28 @@ class Supertokens:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
+        website_domain: Optional[str],
         framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
         api_gateway_path: str,
         api_base_path: str,
         website_base_path: str,
         mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
+        origin: Optional[
+            Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]
+        ],
     ):
         self.app_name = app_name
         self.api_gateway_path = NormalisedURLPath(api_gateway_path)
         self.api_domain = NormalisedURLDomain(api_domain)
-        self.website_domain = NormalisedURLDomain(website_domain)
         self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
             self.api_domain.get_as_string_dangerous()
         )
-        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-            self.website_domain.get_as_string_dangerous()
-        )
+        if website_domain is None and origin is None:
+            raise_general_exception(
+                &#34;Please provide at least one of website_domain or origin&#34;
+            )
+        self.__origin = origin
+        self.__website_domain = website_domain
         self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )
@@ -763,6 +805,27 @@ class Supertokens:
         self.framework = framework
         self.mode = mode
 
+    def get_top_level_website_domain(
+        self, request: Optional[BaseRequest], user_context: Dict[str, Any]
+    ) -&gt; str:
+        return get_top_level_domain_for_same_site_resolution(
+            self.get_origin(request, user_context).get_as_string_dangerous()
+        )
+
+    def get_origin(self, request: Optional[BaseRequest], user_context: Dict[str, Any]):
+        origin = self.__origin
+        if origin is None:
+            origin = self.__website_domain
+
+        # This should not be possible because we check for either origin or websiteDomain above
+        if origin is None:
+            raise_general_exception(&#34;should never come here&#34;)
+
+        if callable(origin):
+            origin = origin(request, user_context)
+
+        return NormalisedURLDomain(origin)
+
     def toJSON(self):
         def defaultImpl(o: Any):
             if isinstance(o, (NormalisedURLDomain, NormalisedURLPath)):
@@ -773,6 +836,47 @@ class Supertokens:
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.supertokens.AppInfo.get_origin"><code class="name flex">
+<span>def <span class="ident">get_origin</span></span>(<span>self, request: Optional[BaseRequest], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_origin(self, request: Optional[BaseRequest], user_context: Dict[str, Any]):
+    origin = self.__origin
+    if origin is None:
+        origin = self.__website_domain
+
+    # This should not be possible because we check for either origin or websiteDomain above
+    if origin is None:
+        raise_general_exception(&#34;should never come here&#34;)
+
+    if callable(origin):
+        origin = origin(request, user_context)
+
+    return NormalisedURLDomain(origin)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.supertokens.AppInfo.get_top_level_website_domain"><code class="name flex">
+<span>def <span class="ident">get_top_level_website_domain</span></span>(<span>self, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_top_level_website_domain(
+    self, request: Optional[BaseRequest], user_context: Dict[str, Any]
+) -&gt; str:
+    return get_top_level_domain_for_same_site_resolution(
+        self.get_origin(request, user_context).get_as_string_dangerous()
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.supertokens.AppInfo.toJSON"><code class="name flex">
 <span>def <span class="ident">toJSON</span></span>(<span>self)</span>
 </code></dt>
@@ -811,7 +915,7 @@ class Supertokens:
 </dd>
 <dt id="supertokens_python.supertokens.InputAppInfo"><code class="flex name class">
 <span>class <span class="ident">InputAppInfo</span></span>
-<span>(</span><span>app_name: str, api_domain: str, website_domain: str, api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth')</span>
+<span>(</span><span>app_name: str, api_domain: str, api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth', website_domain: Optional[str] = None, origin: Optional[Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -824,15 +928,19 @@ class Supertokens:
         self,
         app_name: str,
         api_domain: str,
-        website_domain: str,
         api_gateway_path: str = &#34;&#34;,
         api_base_path: str = &#34;/auth&#34;,
         website_base_path: str = &#34;/auth&#34;,
+        website_domain: Optional[str] = None,
+        origin: Optional[
+            Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]
+        ] = None,
     ):
         self.app_name = app_name
         self.api_gateway_path = api_gateway_path
         self.api_domain = api_domain
         self.website_domain = website_domain
+        self.origin = origin
         self.api_base_path = api_base_path
         self.website_base_path = website_base_path</code></pre>
 </details>
@@ -872,6 +980,7 @@ class Supertokens:
             app_info.api_base_path,
             app_info.website_base_path,
             mode,
+            app_info.origin,
         )
         self.supertokens_config = supertokens_config
         if debug is True:
@@ -1023,7 +1132,6 @@ class Supertokens:
         query: Union[Dict[str, str], None],
         user_context: Optional[Dict[str, Any]],
     ) -&gt; UsersResponse:
-        from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
         querier = Querier.get_instance(None)
         params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -1039,9 +1147,6 @@ class Supertokens:
 
         if query is not None:
             params = {**params, **query}
-
-        if tenant_id is None:
-            tenant_id = DEFAULT_TENANT_ID
 
         response = await querier.send_get_request(
             NormalisedURLPath(f&#34;/{tenant_id}{USERS}&#34;), params, user_context=user_context
@@ -1304,7 +1409,11 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(
-        self, request: BaseRequest, err: Exception, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: Exception,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         log_debug_message(&#34;errorHandler: Started&#34;)
         log_debug_message(
@@ -1327,7 +1436,7 @@ class Supertokens:
                 log_debug_message(
                     &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
                 )
-                return await recipe.handle_error(request, err, response)
+                return await recipe.handle_error(request, err, response, user_context)
         raise err
 
     def get_request_from_user_context(  # pylint: disable=no-self-use
@@ -1683,7 +1792,6 @@ def reset():
     query: Union[Dict[str, str], None],
     user_context: Optional[Dict[str, Any]],
 ) -&gt; UsersResponse:
-    from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
     querier = Querier.get_instance(None)
     params = {&#34;timeJoinedOrder&#34;: time_joined_order}
@@ -1699,9 +1807,6 @@ def reset():
 
     if query is not None:
         params = {**params, **query}
-
-    if tenant_id is None:
-        tenant_id = DEFAULT_TENANT_ID
 
     response = await querier.send_get_request(
         NormalisedURLPath(f&#34;/{tenant_id}{USERS}&#34;), params, user_context=user_context
@@ -1741,7 +1846,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.handle_supertokens_error"><code class="name flex">
-<span>async def <span class="ident">handle_supertokens_error</span></span>(<span>self, request: BaseRequest, err: Exception, response: BaseResponse)</span>
+<span>async def <span class="ident">handle_supertokens_error</span></span>(<span>self, request: BaseRequest, err: Exception, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1750,7 +1855,11 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_supertokens_error(
-    self, request: BaseRequest, err: Exception, response: BaseResponse
+    self,
+    request: BaseRequest,
+    err: Exception,
+    response: BaseResponse,
+    user_context: Dict[str, Any],
 ):
     log_debug_message(&#34;errorHandler: Started&#34;)
     log_debug_message(
@@ -1773,7 +1882,7 @@ def reset():
             log_debug_message(
                 &#34;errorHandler: Matched with recipeID: %s&#34;, recipe.get_recipe_id()
             )
-            return await recipe.handle_error(request, err, response)
+            return await recipe.handle_error(request, err, response, user_context)
     raise err</code></pre>
 </details>
 </dd>
@@ -1979,6 +2088,8 @@ def reset():
 <li>
 <h4><code><a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.supertokens.AppInfo.get_origin" href="#supertokens_python.supertokens.AppInfo.get_origin">get_origin</a></code></li>
+<li><code><a title="supertokens_python.supertokens.AppInfo.get_top_level_website_domain" href="#supertokens_python.supertokens.AppInfo.get_top_level_website_domain">get_top_level_website_domain</a></code></li>
 <li><code><a title="supertokens_python.supertokens.AppInfo.toJSON" href="#supertokens_python.supertokens.AppInfo.toJSON">toJSON</a></code></li>
 </ul>
 </li>

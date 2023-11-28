@@ -129,7 +129,11 @@ class JWTRecipe(RecipeModule):
         return None
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         raise err
 
@@ -259,7 +263,11 @@ inheritance.</p></div>
         return None
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         raise err
 
@@ -457,7 +465,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.jwt.recipe.JWTRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse)</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -466,7 +474,11 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_error(
-    self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+    self,
+    request: BaseRequest,
+    err: SuperTokensError,
+    response: BaseResponse,
+    user_context: Dict[str, Any],
 ):
     raise err</code></pre>
 </details>

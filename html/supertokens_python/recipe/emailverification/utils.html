@@ -42,7 +42,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
+from supertokens_python.framework import BaseRequest
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -131,10 +132,15 @@ def validate_and_normalise_user_input(
 
 
 def get_email_verify_link(
-    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str
+    app_info: AppInfo,
+    token: str,
+    recipe_id: str,
+    tenant_id: str,
+    request: Optional[BaseRequest],
+    user_context: Dict[str, Any],
 ) -&gt; str:
     return (
-        app_info.website_domain.get_as_string_dangerous()
+        app_info.get_origin(request, user_context).get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
         + &#34;/verify-email&#34;
         + &#34;?token=&#34;
@@ -154,7 +160,7 @@ def get_email_verify_link(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.utils.get_email_verify_link"><code class="name flex">
-<span>def <span class="ident">get_email_verify_link</span></span>(<span>app_info: AppInfo, token: str, recipe_id: str, tenant_id: str) ‑> str</span>
+<span>def <span class="ident">get_email_verify_link</span></span>(<span>app_info: AppInfo, token: str, recipe_id: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -163,10 +169,15 @@ def get_email_verify_link(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_email_verify_link(
-    app_info: AppInfo, token: str, recipe_id: str, tenant_id: str
+    app_info: AppInfo,
+    token: str,
+    recipe_id: str,
+    tenant_id: str,
+    request: Optional[BaseRequest],
+    user_context: Dict[str, Any],
 ) -&gt; str:
     return (
-        app_info.website_domain.get_as_string_dangerous()
+        app_info.get_origin(request, user_context).get_as_string_dangerous()
         + app_info.website_base_path.get_as_string_dangerous()
         + &#34;/verify-email&#34;
         + &#34;?token=&#34;

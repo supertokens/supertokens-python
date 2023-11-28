@@ -220,13 +220,8 @@ __all__ = [
             None,
             _user_context,
         )
-        if response is not None:
-            if (
-                &#34;exists&#34; in response
-                and response[&#34;exists&#34;]
-                and &#34;telemetryId&#34; in response
-            ):
-                telemetry_id = response[&#34;telemetryId&#34;]
+        if &#34;exists&#34; in response and response[&#34;exists&#34;] and &#34;telemetryId&#34; in response:
+            telemetry_id = response[&#34;telemetryId&#34;]
 
         number_of_users = await Supertokens.get_instance().get_user_count(
             include_recipe_ids=None
@@ -238,7 +233,7 @@ __all__ = [
 
     apiDomain, websiteDomain, appName = (
         api_options.app_info.api_domain,
-        api_options.app_info.website_domain,
+        api_options.app_info.get_origin(api_options.request, {}),
         api_options.app_info.app_name,
     )
 

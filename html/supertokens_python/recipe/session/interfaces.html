@@ -406,7 +406,7 @@ class APIInterface(ABC):
         pass
 
 
-ResponseMutator = Callable[[BaseResponse], None]
+ResponseMutator = Callable[[BaseResponse, Dict[str, Any]], None]
 
 
 class TokenInfo:
@@ -469,7 +469,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def attach_to_request_response(
-        self, request: BaseRequest, transfer_method: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
+        user_context: Dict[str, Any],
     ):
         pass
 
@@ -624,9 +627,14 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         return sync(self.remove_claim(claim, user_context))
 
     def sync_attach_to_request_response(
-        self, request: BaseRequest, token_transfer: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        token_transfer: TokenTransferMethod,
+        user_context: Dict[str, Any],
     ) -&gt; None:
-        return sync(self.attach_to_request_response(request, token_transfer))
+        return sync(
+            self.attach_to_request_response(request, token_transfer, user_context)
+        )
 
     # This is there so that we can do session[&#34;...&#34;] to access some of the members of this class
     def __getitem__(self, item: str):
@@ -1939,7 +1947,10 @@ inheritance.</p></div>
 
     @abstractmethod
     async def attach_to_request_response(
-        self, request: BaseRequest, transfer_method: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        transfer_method: TokenTransferMethod,
+        user_context: Dict[str, Any],
     ):
         pass
 
@@ -2094,9 +2105,14 @@ inheritance.</p></div>
         return sync(self.remove_claim(claim, user_context))
 
     def sync_attach_to_request_response(
-        self, request: BaseRequest, token_transfer: TokenTransferMethod
+        self,
+        request: BaseRequest,
+        token_transfer: TokenTransferMethod,
+        user_context: Dict[str, Any],
     ) -&gt; None:
-        return sync(self.attach_to_request_response(request, token_transfer))
+        return sync(
+            self.attach_to_request_response(request, token_transfer, user_context)
+        )
 
     # This is there so that we can do session[&#34;...&#34;] to access some of the members of this class
     def __getitem__(self, item: str):
@@ -2131,7 +2147,7 @@ async def assert_claims(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.attach_to_request_response"><code class="name flex">
-<span>async def <span class="ident">attach_to_request_response</span></span>(<span>self, request: BaseRequest, transfer_method: TokenTransferMethod)</span>
+<span>async def <span class="ident">attach_to_request_response</span></span>(<span>self, request: BaseRequest, transfer_method: TokenTransferMethod, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2141,7 +2157,10 @@ async def assert_claims(
 </summary>
 <pre><code class="python">@abstractmethod
 async def attach_to_request_response(
-    self, request: BaseRequest, transfer_method: TokenTransferMethod
+    self,
+    request: BaseRequest,
+    transfer_method: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ):
     pass</code></pre>
 </details>
@@ -2399,7 +2418,7 @@ async def set_claim_value(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_attach_to_request_response"><code class="name flex">
-<span>def <span class="ident">sync_attach_to_request_response</span></span>(<span>self, request: BaseRequest, token_transfer: TokenTransferMethod) ‑> None</span>
+<span>def <span class="ident">sync_attach_to_request_response</span></span>(<span>self, request: BaseRequest, token_transfer: TokenTransferMethod, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2408,9 +2427,14 @@ async def set_claim_value(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_attach_to_request_response(
-    self, request: BaseRequest, token_transfer: TokenTransferMethod
+    self,
+    request: BaseRequest,
+    token_transfer: TokenTransferMethod,
+    user_context: Dict[str, Any],
 ) -&gt; None:
-    return sync(self.attach_to_request_response(request, token_transfer))</code></pre>
+    return sync(
+        self.attach_to_request_response(request, token_transfer, user_context)
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_fetch_and_set_claim"><code class="name flex">

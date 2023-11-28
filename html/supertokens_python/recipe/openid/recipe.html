@@ -142,11 +142,15 @@ class OpenIdRecipe(RecipeModule):
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if isinstance(err, SuperTokensOpenIdError):
             raise err
-        return await self.jwt_recipe.handle_error(request, err, response)
+        return await self.jwt_recipe.handle_error(request, err, response, user_context)
 
     def get_all_cors_headers(self) -&gt; List[str]:
         return self.jwt_recipe.get_all_cors_headers()
@@ -294,11 +298,15 @@ inheritance.</p></div>
         )
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ):
         if isinstance(err, SuperTokensOpenIdError):
             raise err
-        return await self.jwt_recipe.handle_error(request, err, response)
+        return await self.jwt_recipe.handle_error(request, err, response, user_context)
 
     def get_all_cors_headers(self) -&gt; List[str]:
         return self.jwt_recipe.get_all_cors_headers()
@@ -506,7 +514,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.recipe.OpenIdRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse)</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -515,11 +523,15 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_error(
-    self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+    self,
+    request: BaseRequest,
+    err: SuperTokensError,
+    response: BaseResponse,
+    user_context: Dict[str, Any],
 ):
     if isinstance(err, SuperTokensOpenIdError):
         raise err
-    return await self.jwt_recipe.handle_error(request, err, response)</code></pre>
+    return await self.jwt_recipe.handle_error(request, err, response, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.recipe.OpenIdRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">

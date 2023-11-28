@@ -104,7 +104,11 @@ class UserMetadataRecipe(RecipeModule):
         raise Exception(&#34;Should never come here&#34;)
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -&gt; BaseResponse:
         raise err
 
@@ -203,7 +207,11 @@ inheritance.</p></div>
         raise Exception(&#34;Should never come here&#34;)
 
     async def handle_error(
-        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
     ) -&gt; BaseResponse:
         raise err
 
@@ -372,7 +380,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.recipe.usermetadata.recipe.UserMetadataRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -381,7 +389,11 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_error(
-    self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+    self,
+    request: BaseRequest,
+    err: SuperTokensError,
+    response: BaseResponse,
+    user_context: Dict[str, Any],
 ) -&gt; BaseResponse:
     raise err</code></pre>
 </details>
