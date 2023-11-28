@@ -64,7 +64,7 @@ from .interfaces import (
 )
 from .constants import protected_props
 from ...framework import BaseRequest
-from supertokens_python.utils import log_debug_message, default_user_context
+from supertokens_python.utils import log_debug_message
 
 _T = TypeVar(&#34;_T&#34;)
 
@@ -79,8 +79,6 @@ class Session(SessionContainer):
         self.req_res_info = ReqResInfo(request, transfer_method)
 
         if self.access_token_updated:
-            if user_context is None:
-                user_context = default_user_context(request)
             self.response_mutators.append(
                 access_token_mutator(
                     self.access_token,
@@ -395,8 +393,6 @@ inheritance.</p></div>
         self.req_res_info = ReqResInfo(request, transfer_method)
 
         if self.access_token_updated:
-            if user_context is None:
-                user_context = default_user_context(request)
             self.response_mutators.append(
                 access_token_mutator(
                     self.access_token,
@@ -744,8 +740,6 @@ inheritance.</p></div>
     self.req_res_info = ReqResInfo(request, transfer_method)
 
     if self.access_token_updated:
-        if user_context is None:
-            user_context = default_user_context(request)
         self.response_mutators.append(
             access_token_mutator(
                 self.access_token,
