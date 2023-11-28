@@ -409,8 +409,10 @@ async def test_reset_password_link_uses_correct_origin(
     password_reset_url = ""
 
     def get_origin(req: Optional[BaseRequest], _: Optional[Dict[str, Any]]) -> str:
-        if req is not None and req.get_header("origin") is not None:
-            return req.get_header("origin")  # type: ignore
+        if req is not None:
+            value = req.get_header("origin")
+            if value is not None:
+                return value
         return "localhost:3000"
 
     class CustomEmailService(

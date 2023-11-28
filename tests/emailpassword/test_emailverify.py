@@ -56,7 +56,6 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
 from supertokens_python.utils import (
     is_version_gte,
-    set_request_in_user_context_if_not_defined,
 )
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
@@ -1326,19 +1325,14 @@ async def test_generate_email_verification_uses_correct_origin(
             nonlocal email_verify_link
             email_verify_link = template_vars.email_verify_link
 
-    def get_origin(
-        req: Optional[BaseRequest], user_context: Optional[Dict[str, Any]]
-    ) -> str:
-        if req is not None:
-            set_request_in_user_context_if_not_defined(user_context, req)
-        return user_context["url"]  # type: ignore
+    def get_origin(_: Optional[BaseRequest], user_context: Dict[str, Any]) -> str:
+        return user_context["url"]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain=None,
             origin=get_origin,
             api_base_path="/auth",
         ),
@@ -1353,11 +1347,6 @@ async def test_generate_email_verification_uses_correct_origin(
         ],
     )
     start_st()
-
-    version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, "2.9"):
-        # If the version less than 2.9, the recipe doesn't exist. So skip the test
-        skip()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200

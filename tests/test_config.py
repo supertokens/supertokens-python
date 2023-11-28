@@ -13,12 +13,14 @@
 # under the License.
 from pytest import mark
 from unittest.mock import MagicMock
-from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python import InputAppInfo, SupertokensConfig, init, Supertokens
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session
+from typing import Optional, Dict, Any
+from supertokens_python.framework import BaseRequest
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -814,3 +816,139 @@ async def test_cookie_samesite_with_ec2_public_url():
     assert SessionRecipe.get_instance().config.cookie_domain is None
     assert SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "lax"
     assert SessionRecipe.get_instance().config.cookie_secure is False
+
+
+@mark.asyncio
+async def test_samesite_explicit_config():
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            origin="http://localhost:3000",
+            api_domain="http://localhost:3001",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(
+                cookie_same_site="strict",
+            )
+        ],
+    )
+    assert (
+        SessionRecipe.get_instance().config.get_cookie_same_site(None, {}) == "strict"
+    )
+
+
+@mark.asyncio
+async def test_that_exception_is_thrown_if_website_domain_and_origin_are_not_passed():
+    try:
+        init(
+            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://localhost:3001",
+            ),
+            framework="fastapi",
+            recipe_list=[session.init()],
+        )
+    except Exception as e:
+        assert str(e) == "Please provide at least one of website_domain or origin"
+    else:
+        assert False, "Exception not thrown"
+
+
+@mark.asyncio
+async def test_that_init_works_fine_when_using_origin_string():
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://localhost:3001",
+            origin="localhost:3000",
+        ),
+        framework="fastapi",
+        recipe_list=[session.init()],
+    )
+
+    assert (
+        Supertokens.get_instance()
+        .app_info.get_origin(None, {})
+        .get_as_string_dangerous()
+        == "http://localhost:3000"
+    )
+
+
+@mark.asyncio
+async def test_that_init_works_fine_when_using_website_domain_string():
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://localhost:3001",
+            website_domain="localhost:3000",
+        ),
+        framework="fastapi",
+        recipe_list=[session.init()],
+    )
+
+    assert (
+        Supertokens.get_instance()
+        .app_info.get_origin(None, {})
+        .get_as_string_dangerous()
+        == "http://localhost:3000"
+    )
+
+
+@mark.asyncio
+async def test_that_init_works_fine_when_using_origin_function():
+    def get_origin(_: Optional[BaseRequest], user_context: Dict[str, Any]) -> str:
+        if "input" in user_context:
+            return user_context["input"]
+        return "localhost:3000"
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://localhost:3001",
+            origin=get_origin,
+        ),
+        framework="fastapi",
+        recipe_list=[session.init()],
+    )
+
+    assert (
+        Supertokens.get_instance()
+        .app_info.get_origin(None, {"input": "localhost:1000"})
+        .get_as_string_dangerous()
+        == "http://localhost:1000"
+    )
+
+    assert (
+        Supertokens.get_instance()
+        .app_info.get_origin(None, {})
+        .get_as_string_dangerous()
+        == "http://localhost:3000"
+    )
+
+
+@mark.asyncio
+async def test_that_init_chooses_origin_over_website_domain():
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://localhost:3001",
+            website_domain="localhost:3000",
+            origin="supertokens.io",
+        ),
+        framework="fastapi",
+        recipe_list=[session.init()],
+    )
+
+    assert (
+        Supertokens.get_instance()
+        .app_info.get_origin(None, {})
+        .get_as_string_dangerous()
+        == "https://supertokens.io"
+    )

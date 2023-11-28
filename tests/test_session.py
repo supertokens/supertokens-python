@@ -828,9 +828,11 @@ async def test_expose_access_token_to_frontend_in_cookie_based_auth(
 async def test_token_transfer_method_works_when_using_origin_function(
     driver_config_client: TestClient,
 ):
-    def get_origin(req: Optional[BaseRequest], _: Optional[Dict[str, Any]]) -> str:
-        if req is not None and req.get_header("origin") is not None:
-            return req.get_header("origin")  # type: ignore
+    def get_origin(req: Optional[BaseRequest], _: Dict[str, Any]) -> str:
+        if req is not None:
+            value = req.get_header("origin")
+            if value is not None:
+                return value
         return "localhost:3000"
 
     def token_transfer_method(req: BaseRequest, _: bool, __: Dict[str, Any]):

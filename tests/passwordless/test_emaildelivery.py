@@ -540,14 +540,16 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
 
 @mark.asyncio
-async def test_reset_password_link_uses_correct_origin(
+async def test_magic_link_uses_correct_origin(
     driver_config_client: TestClient,
 ):
     login_url = ""
 
-    def get_origin(req: Optional[BaseRequest], _: Optional[Dict[str, Any]]) -> str:
-        if req is not None and req.get_header("origin") is not None:
-            return req.get_header("origin")  # type: ignore
+    def get_origin(req: Optional[BaseRequest], _: Dict[str, Any]) -> str:
+        if req is not None:
+            value = req.get_header("origin")
+            if value is not None:
+                return value
         return "localhost:3000"
 
     class CustomEmailService(
