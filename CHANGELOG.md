@@ -17,7 +17,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `website_domain` inside `InputAppInfo` is now optional. Using `origin` recommended over using `website_domain`. Using `website_domain` will continue to work.
 
 ### Breaking Change
-- The order or arguments in the `InputAppInfo`
+- The order or arguments in the `InputAppInfo` has changed. If NOT using keyword arguments for `app_info` in `supertokens.init`, then you will have to move `website_domain` like so:
+
+    Before:
+    ```python
+    init(
+        app_info=InputAppInfo(
+            "app_name",
+            "api_domain",
+            "website_domain",
+            None, # api_gateway_path
+            None, # api_base_path
+            None, # website_base_path
+        ),
+        # other configs..
+    )
+    ```
+
+    After:
+    ```python
+    init(
+        app_info=InputAppInfo(
+            "app_name",
+            "api_domain",
+            None, # api_gateway_path
+            None, # api_base_path
+            None, # website_base_path
+            "website_domain"
+        ),
+        # other configs..
+    )
+    ```
+
+- In the session recipe, if there is an `UNAUTHORISED` or `TOKEN_THEFT_DETECTED` error, the session tokens are cleared in the response regardless of if you have provided your own `error_handlers` in `session.init` 
 
 ## [0.17.0] - 2023-11-14
 - Fixes `create_reset_password_link` in the emailpassword recipe wherein we passed the `rid` instead of the token in the link
