@@ -430,7 +430,7 @@ async def test_reset_password_link_uses_correct_origin(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
-            api_domain="http://api.supertokens.io",
+            api_domain="localhost:3001",
             origin=get_origin,
             api_base_path="/auth",
         ),

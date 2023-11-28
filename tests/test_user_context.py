@@ -426,20 +426,23 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
     )
 
 
+@mark.asyncio
 async def test_default_user_context_func_calls():
     # Tests run in the root directory of the repo
     root_dir = Path("supertokens_python")
     file_occurences: List[str] = []
     for path in root_dir.rglob("*.py"):
         with open(path) as f:
+            lines = f.readlines()
             file_occurences.extend(
                 [str(path)]
-                * f.read().count(
-                    "user_context = set_request_in_user_context_if_not_defined("
+                * sum(
+                    "set_request_in_user_context_if_not_defined(" in line
+                    for line in lines
                 )
             )
             file_occurences.extend(
-                [str(path)] * f.read().count("user_context = default_user_context(")
+                [str(path)] * sum("default_user_context(" in line for line in lines)
             )
 
-    assert len(file_occurences) == 7
+    assert len(file_occurences) == 18
