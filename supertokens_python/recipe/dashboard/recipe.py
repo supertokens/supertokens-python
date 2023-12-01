@@ -226,10 +226,10 @@ class DashboardRecipe(RecipeModule):
             ),
             APIHandled(
                 NormalisedURLPath(
-                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
+                    get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_TOKEN_API)
                 ),
                 "post",
-                USER_EMAIL_VERIFY_API,
+                USER_EMAIL_VERIFY_TOKEN_API,
                 False,
             ),
             APIHandled(

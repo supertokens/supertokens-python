@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.1] - 2023-12-01
+
+- Fixes bug in dashboard recipe where we did not expose `USER_EMAIL_VERIFY_TOKEN_API` API.
+
 ## [0.18.0] - 2023-11-25
 
 ### Added
