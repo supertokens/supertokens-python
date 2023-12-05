@@ -42,7 +42,8 @@ class LinkedinImpl(GenericProvider):
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:
-            config.scope = ["r_emailaddress", "r_liteprofile"]
+            # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#authenticating-members
+            config.scope = ["openid", "profile", "email"]
 
         return config
 
@@ -59,31 +60,17 @@ class LinkedinImpl(GenericProvider):
         }
 
         raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+        # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#sample-api-response
         user_info = await do_get_request(
-            "https://api.linkedin.com/v2/me", headers=headers
+            "https://api.linkedin.com/v2/userinfo", headers=headers
         )
         raw_user_info_from_provider.from_user_info_api = user_info
 
-        email_api_url = "https://api.linkedin.com/v2/emailAddress"
-        email_info: Dict[str, Any] = await do_get_request(
-            email_api_url,
-            query_params={"q": "members", "projection": "(elements*(handle~))"},
-            headers=headers,
-        )
-
-        if email_info.get("elements") is not None and len(email_info.get("elements")) > 0:  # type: ignore
-            raw_user_info_from_provider.from_user_info_api["email"] = email_info.get("elements")[0].get("handle~").get("emailAddress")  # type: ignore
-
-        raw_user_info_from_provider.from_user_info_api = {
-            **raw_user_info_from_provider.from_user_info_api,
-            **email_info,
-        }
-
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get("id"),  # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get("sub"),  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get("email"),  # type: ignore
-                is_verified=False,
+                is_verified=raw_user_info_from_provider.from_user_info_api.get("email_verified"),  # type: ignore
             ),
         )
 
