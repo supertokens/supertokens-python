@@ -70,7 +70,8 @@ class LinkedinImpl(GenericProvider):
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:
-            config.scope = [&#34;r_emailaddress&#34;, &#34;r_liteprofile&#34;]
+            # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#authenticating-members
+            config.scope = [&#34;openid&#34;, &#34;profile&#34;, &#34;email&#34;]
 
         return config
 
@@ -87,31 +88,17 @@ class LinkedinImpl(GenericProvider):
         }
 
         raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+        # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#sample-api-response
         user_info = await do_get_request(
-            &#34;https://api.linkedin.com/v2/me&#34;, headers=headers
+            &#34;https://api.linkedin.com/v2/userinfo&#34;, headers=headers
         )
         raw_user_info_from_provider.from_user_info_api = user_info
 
-        email_api_url = &#34;https://api.linkedin.com/v2/emailAddress&#34;
-        email_info: Dict[str, Any] = await do_get_request(
-            email_api_url,
-            query_params={&#34;q&#34;: &#34;members&#34;, &#34;projection&#34;: &#34;(elements*(handle~))&#34;},
-            headers=headers,
-        )
-
-        if email_info.get(&#34;elements&#34;) is not None and len(email_info.get(&#34;elements&#34;)) &gt; 0:  # type: ignore
-            raw_user_info_from_provider.from_user_info_api[&#34;email&#34;] = email_info.get(&#34;elements&#34;)[0].get(&#34;handle~&#34;).get(&#34;emailAddress&#34;)  # type: ignore
-
-        raw_user_info_from_provider.from_user_info_api = {
-            **raw_user_info_from_provider.from_user_info_api,
-            **email_info,
-        }
-
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;id&#34;),  # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;sub&#34;),  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-                is_verified=False,
+                is_verified=raw_user_info_from_provider.from_user_info_api.get(&#34;email_verified&#34;),  # type: ignore
             ),
         )
 
@@ -214,7 +201,8 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if config.scope is None:
-            config.scope = [&#34;r_emailaddress&#34;, &#34;r_liteprofile&#34;]
+            # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#authenticating-members
+            config.scope = [&#34;openid&#34;, &#34;profile&#34;, &#34;email&#34;]
 
         return config
 
@@ -231,31 +219,17 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
         }
 
         raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+        # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#sample-api-response
         user_info = await do_get_request(
-            &#34;https://api.linkedin.com/v2/me&#34;, headers=headers
+            &#34;https://api.linkedin.com/v2/userinfo&#34;, headers=headers
         )
         raw_user_info_from_provider.from_user_info_api = user_info
 
-        email_api_url = &#34;https://api.linkedin.com/v2/emailAddress&#34;
-        email_info: Dict[str, Any] = await do_get_request(
-            email_api_url,
-            query_params={&#34;q&#34;: &#34;members&#34;, &#34;projection&#34;: &#34;(elements*(handle~))&#34;},
-            headers=headers,
-        )
-
-        if email_info.get(&#34;elements&#34;) is not None and len(email_info.get(&#34;elements&#34;)) &gt; 0:  # type: ignore
-            raw_user_info_from_provider.from_user_info_api[&#34;email&#34;] = email_info.get(&#34;elements&#34;)[0].get(&#34;handle~&#34;).get(&#34;emailAddress&#34;)  # type: ignore
-
-        raw_user_info_from_provider.from_user_info_api = {
-            **raw_user_info_from_provider.from_user_info_api,
-            **email_info,
-        }
-
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;id&#34;),  # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;sub&#34;),  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-                is_verified=False,
+                is_verified=raw_user_info_from_provider.from_user_info_api.get(&#34;email_verified&#34;),  # type: ignore
             ),
         )</code></pre>
 </details>
@@ -281,7 +255,8 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
     config = await super().get_config_for_client_type(client_type, user_context)
 
     if config.scope is None:
-        config.scope = [&#34;r_emailaddress&#34;, &#34;r_liteprofile&#34;]
+        # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#authenticating-members
+        config.scope = [&#34;openid&#34;, &#34;profile&#34;, &#34;email&#34;]
 
     return config</code></pre>
 </details>
@@ -308,31 +283,17 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
     }
 
     raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+    # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#sample-api-response
     user_info = await do_get_request(
-        &#34;https://api.linkedin.com/v2/me&#34;, headers=headers
+        &#34;https://api.linkedin.com/v2/userinfo&#34;, headers=headers
     )
     raw_user_info_from_provider.from_user_info_api = user_info
 
-    email_api_url = &#34;https://api.linkedin.com/v2/emailAddress&#34;
-    email_info: Dict[str, Any] = await do_get_request(
-        email_api_url,
-        query_params={&#34;q&#34;: &#34;members&#34;, &#34;projection&#34;: &#34;(elements*(handle~))&#34;},
-        headers=headers,
-    )
-
-    if email_info.get(&#34;elements&#34;) is not None and len(email_info.get(&#34;elements&#34;)) &gt; 0:  # type: ignore
-        raw_user_info_from_provider.from_user_info_api[&#34;email&#34;] = email_info.get(&#34;elements&#34;)[0].get(&#34;handle~&#34;).get(&#34;emailAddress&#34;)  # type: ignore
-
-    raw_user_info_from_provider.from_user_info_api = {
-        **raw_user_info_from_provider.from_user_info_api,
-        **email_info,
-    }
-
     return UserInfo(
-        third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;id&#34;),  # type: ignore
+        third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;sub&#34;),  # type: ignore
         email=UserInfoEmail(
             email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-            is_verified=False,
+            is_verified=raw_user_info_from_provider.from_user_info_api.get(&#34;email_verified&#34;),  # type: ignore
         ),
     )</code></pre>
 </details>
