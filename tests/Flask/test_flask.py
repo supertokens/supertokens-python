@@ -848,3 +848,53 @@ def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middlewa
         "/verify", headers={"Authorization": "Bearer " + s.get_access_token()}
     )
     assert res.status_code == 200
+
+
+@fixture(scope="function")
+def flask_app_that_checks_for_supertokens_in_g():
+    app = Flask(__name__)
+
+    app.testing = True
+
+    @app.teardown_request
+    def _(_):
+        from flask import g
+
+        assert hasattr(g, "supertokens") is False
+
+    Middleware(app)
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="flask",
+        recipe_list=[
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+        ],
+    )
+
+    @app.route("/create-session")  # type: ignore
+    def create_session_api():  # type: ignore
+        create_new_session(request, "public", "userId", {}, {})
+        return jsonify({})
+
+    return app
+
+
+def test_that_supertokens_is_not_in_g_if_middleware_is_not_added(
+    flask_app_that_checks_for_supertokens_in_g: Any,
+):
+    start_st()
+
+    client = flask_app_that_checks_for_supertokens_in_g.test_client()
+
+    assert client.get("/create-session").status_code == 200

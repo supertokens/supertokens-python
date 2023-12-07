@@ -73,6 +73,16 @@ class Middleware:
 
             return response_.response
 
+        @app.teardown_request
+        def _(_):
+            from flask import g
+
+            if hasattr(g, "supertokens"):
+                # this is to ensure there are no shared objects between requests.
+                # calling any other API with a shared request causes a security issue, resulting in unintentional
+                # sign-ins. More on this here - https://github.com/supertokens/supertokens-python/issues/463
+                g.pop("supertokens")
+
     def set_error_handler(self):
         app = self.app
         from supertokens_python.exceptions import SuperTokensError
