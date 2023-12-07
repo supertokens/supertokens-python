@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.18.3] - 2023-12-07
 
-- Fixes security issue with shared `g` objects from gunicorn
+- Fixes security issue with shared `g` objects from gunicorn: https://github.com/supertokens/supertokens-python/issues/463
 
 ## [0.18.2] - 2023-12-05
 
