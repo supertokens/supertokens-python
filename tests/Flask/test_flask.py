@@ -858,8 +858,6 @@ def flask_app_that_checks_for_supertokens_in_g():
 
     @app.teardown_request
     def _(_):
-        from flask import g
-
         assert hasattr(g, "supertokens") is False
 
     Middleware(app)
