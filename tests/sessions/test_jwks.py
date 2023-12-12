@@ -503,6 +503,7 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     payload = s.get_access_token_payload()
     del payload["iat"]
     del payload["exp"]
+    payload["rsub"] = "userId"
 
     now = get_timestamp_ms()
     jwt_expiry = now + 10 * 1000  # expiry jwt after 10sec
