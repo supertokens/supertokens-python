@@ -21,10 +21,12 @@ if mode == "asgi":
         path("unverifyEmail", views.unverify_email_api, name="unverifyEmail"),  # type: ignore
         path("setRole", views.set_role_api, name="setRole"),  # type: ignore
         path("checkRole", views.check_role_api, name="checkRole"),  # type: ignore
+        path("deleteUser", views.delete_user, name="deleteUser"),  # type: ignore
     ]
 else:
     urlpatterns += [
         path("unverifyEmail", views.sync_unverify_email_api, name="unverifyEmail"),
         path("setRole", views.sync_set_role_api, name="setRole"),
         path("checkRole", views.sync_check_role_api, name="checkRole"),
+        path("deleteUser", views.sync_delete_user, name="deleteUser"),
     ]

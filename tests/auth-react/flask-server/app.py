@@ -117,6 +117,8 @@ from supertokens_python.recipe.userroles.syncio import (
     create_new_role_or_add_permissions,
 )
 from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.recipe.emailpassword.syncio import get_user_by_email
+from supertokens_python.syncio import delete_user
 
 load_dotenv()
 
@@ -1124,6 +1126,16 @@ def verify_email_api():
     add_role_to_user("public", session_.get_user_id(), body["role"])
     session_.sync_fetch_and_set_claim(UserRoleClaim)
     session_.sync_fetch_and_set_claim(PermissionClaim)
+    return jsonify({"status": "OK"})
+
+
+@app.route("/deleteUser", methods=["POST"])  # type: ignore
+def delete_user_api():
+    body: Dict[str, Any] = request.get_json()  # type: ignore
+    user = get_user_by_email("public", body["email"])
+    if user is None:
+        raise Exception("Should not come here")
+    delete_user(user.user_id)
     return jsonify({"status": "OK"})
 
 

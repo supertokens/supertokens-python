@@ -93,6 +93,17 @@ if mode == "asgi":
     async def check_role_api():  # type: ignore
         return JsonResponse({"status": "OK"})
 
+    async def delete_user(request: HttpRequest):
+        from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
+        from supertokens_python.asyncio import delete_user
+
+        body = json.loads(request.body)
+        user = await get_user_by_email("public", body["email"])
+        if user is None:
+            raise Exception("Should not come here")
+        await delete_user(user.user_id)
+        return JsonResponse({"status": "OK"})
+
 else:
     from supertokens_python.recipe.session.framework.django.syncio import verify_session
     from supertokens_python.recipe.userroles.syncio import (
@@ -130,6 +141,17 @@ else:
         session_: SessionContainer = request.supertokens  # type: ignore
         sync_unverify_email(session_.get_user_id())
         session_.sync_fetch_and_set_claim(EmailVerificationClaim)
+        return JsonResponse({"status": "OK"})
+
+    def sync_delete_user(request: HttpRequest):
+        from supertokens_python.recipe.emailpassword.syncio import get_user_by_email
+        from supertokens_python.syncio import delete_user
+
+        body = json.loads(request.body)
+        user = get_user_by_email("public", body["email"])
+        if user is None:
+            raise Exception("Should not come here")
+        delete_user(user.user_id)
         return JsonResponse({"status": "OK"})
 
     @verify_session(override_global_claim_validators=override_global_claim_validators)

@@ -121,6 +121,8 @@ from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
 )
 from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
+from supertokens_python.asyncio import delete_user
 
 load_dotenv()
 
@@ -1109,6 +1111,16 @@ async def set_role_api(
     await add_role_to_user("public", session_.get_user_id(), body["role"])
     await session_.fetch_and_set_claim(UserRoleClaim)
     await session_.fetch_and_set_claim(PermissionClaim)
+    return JSONResponse({"status": "OK"})
+
+
+@app.post("/deleteUser")
+async def delete_user_api(request: Request):
+    body = await request.json()
+    user = await get_user_by_email("public", body["email"])
+    if user is None:
+        raise Exception("Should not come here")
+    await delete_user(user.user_id)
     return JSONResponse({"status": "OK"})
 
 
