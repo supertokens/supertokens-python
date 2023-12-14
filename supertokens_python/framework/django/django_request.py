@@ -30,7 +30,7 @@ class DjangoRequest(BaseRequest):
         self.request = request
 
     def get_original_url(self) -> str:
-        return self.request.get_raw_uri()
+        return self.request.build_absolute_uri()
 
     def get_query_param(
         self, key: str, default: Union[str, None] = None
