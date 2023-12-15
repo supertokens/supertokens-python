@@ -58,7 +58,7 @@ class DjangoRequest(BaseRequest):
         self.request = request
 
     def get_original_url(self) -&gt; str:
-        return self.request.get_raw_uri()
+        return self.request.build_absolute_uri()
 
     def get_query_param(
         self, key: str, default: Union[str, None] = None
@@ -130,7 +130,7 @@ inheritance.</p></div>
         self.request = request
 
     def get_original_url(self) -&gt; str:
-        return self.request.get_raw_uri()
+        return self.request.build_absolute_uri()
 
     def get_query_param(
         self, key: str, default: Union[str, None] = None
@@ -233,7 +233,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_original_url(self) -&gt; str:
-    return self.request.get_raw_uri()</code></pre>
+    return self.request.build_absolute_uri()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_path"><code class="name flex">
