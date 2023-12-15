@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+from unittest.mock import Mock
 from urllib.parse import urlencode
 from datetime import datetime
 from inspect import isawaitable
@@ -20,10 +21,11 @@ from base64 import b64encode
 from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
+from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import (
     DjangoResponse as SuperTokensDjangoWrapper,
 )
@@ -1000,3 +1002,164 @@ def test_remove_header_works():
     assert st_response.get_header("foo") == "bar"
     st_response.remove_header("foo")
     assert st_response.get_header("foo") is None
+
+
+class DjangoRequestTest(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_original_url(self):
+        request = self.factory.get("/some/url/path")
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_original_url() == "http://testserver/some/url/path"
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_query_param(self):
+        request = self.factory.get(
+            "/some/url/path", data={"key1": "value1", "key2": "value2"}
+        )
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_query_param("key1") == "value1"
+        assert (
+            custom_request.get_query_param("key3", default="default_value")
+            == "default_value"
+        )
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_query_params(self):
+        request = self.factory.get(
+            "/some/url/path", data={"key1": "value1", "key2": "value2"}
+        )
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_query_params() == {"key1": "value1", "key2": "value2"}
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    async def test_json(self):
+        request = self.factory.post(
+            "/some/url/path",
+            data=json.dumps({"key": "value"}),
+            content_type="application/json",
+        )
+        custom_request = DjangoRequest(request)
+        assert await custom_request.json() == {"key": "value"}
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_method(self):
+        request = self.factory.get("/some/url/path")
+        custom_request = DjangoRequest(request)
+        assert custom_request.method() == "GET"
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_cookie(self):
+        request = self.factory.get("/some/url/path")
+        request.COOKIES["cookie_key"] = "cookie_value"
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_cookie("cookie_key") == "cookie_value"
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_header(self):
+        request = self.factory.get("/some/url/path", HTTP_CUSTOM_HEADER="header_value")
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_header("custom-header") == "header_value"
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_session(self):
+        request = self.factory.get("/some/url/path")
+        session = Mock()
+        request.supertokens = session  # type: ignore
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_session() == session
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_set_session(self):
+        request = self.factory.get("/some/url/path")
+        custom_request = DjangoRequest(request)
+        session = Mock()
+        custom_request.set_session(session)
+        assert custom_request.get_session() == session
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_set_session_as_none(self):
+        request = self.factory.get("/some/url/path")
+        custom_request = DjangoRequest(request)
+        session = Mock()
+        custom_request.set_session(session)
+        custom_request.set_session_as_none()
+        assert custom_request.get_session() is None
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_get_path(self):
+        request = self.factory.get("/some/url/path")
+        custom_request = DjangoRequest(request)
+        assert custom_request.get_path() == "/some/url/path"
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    async def test_form_data(self):
+        data = {"key": "value"}
+        request = self.factory.post(
+            "/some/url/path",
+            data=urlencode(data),
+            content_type="application/x-www-form-urlencoded",
+        )
+        custom_request = DjangoRequest(request)
+        assert await custom_request.form_data() == data
+
+
+class DjangoResponseTest(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_set_html_content(self):
+        response = HttpResponse()
+        custom_response = SuperTokensDjangoWrapper(response)
+        custom_response.set_html_content("<html><body>Hello, World!</body></html>")
+
+        self.assertEqual(response["Content-Type"], "text/html")
+        self.assertEqual(response.content, b"<html><body>Hello, World!</body></html>")
+
+    def test_set_cookie(self):
+        response = HttpResponse()
+        custom_response = SuperTokensDjangoWrapper(response)
+        custom_response.set_cookie("cookie_key", "cookie_value", expires=1000)
+
+        self.assertIn("cookie_key", response.cookies)
+        self.assertEqual(response.cookies["cookie_key"].value, "cookie_value")
+        self.assertIsNotNone(response.cookies["cookie_key"]["expires"])
+
+    def test_set_status_code(self):
+        response = HttpResponse()
+        custom_response = SuperTokensDjangoWrapper(response)
+        custom_response.set_status_code(404)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_set_header(self):
+        response = HttpResponse()
+        custom_response = SuperTokensDjangoWrapper(response)
+        custom_response.set_header("Custom-Header", "Custom-Value")
+
+        self.assertEqual(response["Custom-Header"], "Custom-Value")
+
+    def test_get_header(self):
+        response = HttpResponse()
+        response["Custom-Header"] = "Custom-Value"
+        custom_response = SuperTokensDjangoWrapper(response)
+
+        self.assertEqual(custom_response.get_header("Custom-Header"), "Custom-Value")
+
+    def test_remove_header(self):
+        response = HttpResponse()
+        response["Custom-Header"] = "Custom-Value"
+        custom_response = SuperTokensDjangoWrapper(response)
+
+        custom_response.remove_header("Custom-Header")
+        self.assertNotIn("Custom-Header", response)
+
+    def test_set_json_content(self):
+        response = HttpResponse()
+        custom_response = SuperTokensDjangoWrapper(response)
+        custom_response.set_json_content({"key": "value"})
+
+        self.assertEqual(response["Content-Type"], "application/json; charset=utf-8")
+        self.assertEqual(response.content, b'{"key":"value"}')
