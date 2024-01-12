@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.6] - 2024-01-12
+
+- Relax constraints on `httpx` dependency version.
+
 ## [0.18.5] - 2023-12-14
 
 - Fixes an incompatibility issue with Django version 4.0 and above.
