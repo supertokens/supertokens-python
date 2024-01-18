@@ -127,3 +127,73 @@ async def test_dashboard_users_get(app: TestClient):
     assert body["users"][0]["user"]["firstName"] == "User2"
     assert body["users"][1]["user"]["lastName"] == "Foo"
     assert body["users"][1]["user"]["firstName"] == "User1"
+
+
+async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
+    connection_uri = start_st()
+    connection_uri_without_protocol = connection_uri.replace("http://", "")
+
+    st_args = get_st_init_args(
+        [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+            dashboard.init(api_key="someKey"),
+        ]
+    )
+
+    st_config = st_args.get("supertokens_config")
+    if st_config:
+        st_config.connection_uri = connection_uri_without_protocol
+
+    init(**st_args)
+
+    res = app.get(url="/auth/dashboard")
+    assert res.status_code == 200
+    assert f'window.connectionURI = "{connection_uri}"' in str(res.text)
+
+
+async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient):
+    start_st()
+    connection_uri = "https://try.supertokens.com"
+    connection_uri_without_protocol = connection_uri.replace("https://", "")
+
+    st_args = get_st_init_args(
+        [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+            dashboard.init(api_key="someKey"),
+        ]
+    )
+
+    st_config = st_args.get("supertokens_config")
+    if st_config:
+        st_config.connection_uri = connection_uri_without_protocol
+
+    init(**st_args)
+
+    res = app.get(url="/auth/dashboard")
+    assert res.status_code == 200
+    assert f'window.connectionURI = "{connection_uri}"' in str(res.text)
+
+
+async def test_that_first_connection_uri_is_selected_among_multiple_uris(
+    app: TestClient,
+):
+    first_connection_uri = start_st()
+    second_connection_uri = "https://try.supertokens.com"
+    multiple_connection_uris = f"{first_connection_uri};{second_connection_uri}"
+
+    st_args = get_st_init_args(
+        [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+            dashboard.init(api_key="someKey"),
+        ]
+    )
+
+    st_config = st_args.get("supertokens_config")
+    if st_config:
+        st_config.connection_uri = multiple_connection_uris
+
+    init(**st_args)
+
+    res = app.get(url="/auth/dashboard")
+    assert res.status_code == 200
+    assert f'window.connectionURI = "{first_connection_uri}"' in str(res.text)

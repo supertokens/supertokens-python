@@ -150,6 +150,7 @@ def start_st(host: str = "localhost", port: str = "3567"):
         sleep(0.5)
     if len(pid_after) == len(pid_before):
         raise Exception("could not start ST process")
+    return f"http://{host}:{port}"
 
 
 def setup_multitenancy_feature(host: str = "localhost", port: str = "3567"):

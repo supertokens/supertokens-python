@@ -50,7 +50,9 @@ class APIImplementation(APIInterface):
             connection_uri = ""
             super_tokens_instance = Supertokens.get_instance()
             auth_mode = options.config.auth_mode
-            connection_uri = super_tokens_instance.supertokens_config.connection_uri
+            connection_uri = NormalisedURLDomain(
+                super_tokens_instance.supertokens_config.connection_uri.split(";")[0]
+            ).get_as_string_dangerous()
 
             dashboard_path = options.app_info.api_base_path.append(
                 NormalisedURLPath(DASHBOARD_API)
