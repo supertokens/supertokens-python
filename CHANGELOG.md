@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.7] - 2024-01-17
+
+- Fixes `connection_uri` normalisation in the dashboard recipe.
+
 ## [0.18.6] - 2024-01-12
 
 - Relax constraints on `httpx` dependency version.
