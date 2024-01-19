@@ -149,6 +149,8 @@ async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
     res = app.get(url="/auth/dashboard")
     assert res.status_code == 200
     assert f'window.connectionURI = "{connection_uri}"' in str(res.text)
+    if st_config:
+        st_config.connection_uri = "http://localhost:3567"
 
 
 async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient):
@@ -172,6 +174,8 @@ async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient)
     res = app.get(url="/auth/dashboard")
     assert res.status_code == 200
     assert f'window.connectionURI = "{connection_uri}"' in str(res.text)
+    if st_config:
+        st_config.connection_uri = "http://localhost:3567"
 
 
 async def test_that_first_connection_uri_is_selected_among_multiple_uris(
@@ -197,3 +201,5 @@ async def test_that_first_connection_uri_is_selected_among_multiple_uris(
     res = app.get(url="/auth/dashboard")
     assert res.status_code == 200
     assert f'window.connectionURI = "{first_connection_uri}"' in str(res.text)
+    if st_config:
+        st_config.connection_uri = "http://localhost:3567"
