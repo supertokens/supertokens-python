@@ -7,12 +7,20 @@ from supertokens_python import init
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe import dashboard, emailpassword, session, usermetadata
+from supertokens_python.recipe import (
+    dashboard,
+    emailpassword,
+    session,
+    usermetadata,
+    thirdpartypasswordless,
+)
+import supertokens_python.recipe.thirdpartypasswordless.asyncio as tplasync
 from supertokens_python.recipe.dashboard import InputOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import (
     RecipeInterface as DashboardRI,
 )
 from supertokens_python.recipe.dashboard.utils import DashboardConfig
+from supertokens_python.recipe.passwordless import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from tests.utils import (
     clean_st,
@@ -203,3 +211,60 @@ async def test_that_first_connection_uri_is_selected_among_multiple_uris(
     assert f'window.connectionURI = "{first_connection_uri}"' in str(res.text)
     if st_config:
         st_config.connection_uri = "http://localhost:3567"
+
+
+async def test_that_get_user_works_with_combination_recipes(app: TestClient):
+    def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
+        async def should_allow_access(
+            _request: BaseRequest,
+            _config: DashboardConfig,
+            _user_context: Dict[str, Any],
+        ) -> bool:
+            return True
+
+        oi.should_allow_access = should_allow_access
+        return oi
+
+    st_args = get_st_init_args(
+        [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOrPhoneConfig(),
+                flow_type="USER_INPUT_CODE",
+            ),
+            usermetadata.init(),
+            dashboard.init(
+                api_key="someKey",
+                override=InputOverrideConfig(
+                    functions=override_dashboard_functions,
+                ),
+            ),
+        ]
+    )
+    init(**st_args)
+    start_st()
+
+    pluser = await tplasync.thirdparty_manually_create_or_update_user(
+        "public", "google", "googleid", "test@example.com"
+    )
+
+    res = app.get(
+        url="/auth/dashboard/api/user",
+        params={
+            "userId": "randomid",
+            "recipeId": "thirdparty",
+        },
+    )
+    res_json = res.json()
+    assert res_json["status"] == "NO_USER_FOUND_ERROR"
+
+    res = app.get(
+        url="/auth/dashboard/api/user",
+        params={
+            "userId": pluser.user.user_id,
+            "recipeId": "thirdparty",
+        },
+    )
+    res_json = res.json()
+    assert res_json["status"] == "OK"
+    assert res_json["user"]["id"] == pluser.user.user_id

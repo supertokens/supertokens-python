@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.18.7] - 2024-01-17
 
 - Fixes `connection_uri` normalisation in the dashboard recipe.
+- Fixes issue with fetching of thirdparty passwordless user in dashboard: https://github.com/supertokens/supertokens-python/issues/472
 
 ## [0.18.6] - 2024-01-12
 
