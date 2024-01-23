@@ -309,58 +309,40 @@ async def get_user_for_recipe_id(
     recipe: Optional[str] = None
 
     async def update_user_dict(
-        get_user_func1: Callable[[str], Awaitable[GetUserResult]],
-        get_user_func2: Callable[[str], Awaitable[GetUserResult]],
-        recipe1: str,
-        recipe2: str,
+        get_user_funcs: List[Callable[[str], Awaitable[GetUserResult]]],
+        recipes: List[str],
     ):
         nonlocal user, user_id, recipe
 
-        try:
-            recipe_user = await get_user_func1(user_id)  # type: ignore
-
-            if recipe_user is not None:
-                user = UserWithMetadata().from_dict(
-                    recipe_user.__dict__, first_name="", last_name=""
-                )
-                recipe = recipe1
-        except Exception:
-            pass
-
-        if user is None:
+        for get_user_func, recipe_id in zip(get_user_funcs, recipes):
             try:
-                recipe_user = await get_user_func2(user_id)
+                recipe_user = await get_user_func(user_id)  # type: ignore
 
                 if recipe_user is not None:
                     user = UserWithMetadata().from_dict(
                         recipe_user.__dict__, first_name="", last_name=""
                     )
-                    recipe = recipe2
+                    recipe = recipe_id
+                    break
             except Exception:
                 pass
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
         await update_user_dict(
-            ep_get_user_by_id,
-            tpep_get_user_by_id,
-            "emailpassword",
-            "thirdpartyemailpassword",
+            [ep_get_user_by_id, tpep_get_user_by_id],
+            ["emailpassword", "thirdpartyemailpassword"],
         )
 
     elif recipe_id == ThirdPartyRecipe.recipe_id:
         await update_user_dict(
-            tp_get_user_by_idx,
-            tpep_get_user_by_id,
-            "thirdparty",
-            "thirdpartyemailpassword",
+            [tp_get_user_by_idx, tpep_get_user_by_id, tppless_get_user_by_id],
+            ["thirdparty", "thirdpartyemailpassword", "thirdpartypasswordless"],
         )
 
     elif recipe_id == PasswordlessRecipe.recipe_id:
         await update_user_dict(
-            pless_get_user_by_id,
-            tppless_get_user_by_id,
-            "passwordless",
-            "thirdpartypasswordless",
+            [pless_get_user_by_id, tppless_get_user_by_id],
+            ["passwordless", "thirdpartypasswordless"],
         )
 
     if user is not None and recipe is not None:
