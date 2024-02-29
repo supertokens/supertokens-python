@@ -163,7 +163,7 @@ async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
 
 async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient):
     start_st()
-    connection_uri = "https://try.supertokens.com"
+    connection_uri = "https://try.supertokens.com/appid-public"
     connection_uri_without_protocol = connection_uri.replace("https://", "")
 
     st_args = get_st_init_args(
@@ -189,8 +189,9 @@ async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient)
 async def test_that_first_connection_uri_is_selected_among_multiple_uris(
     app: TestClient,
 ):
-    first_connection_uri = start_st()
-    second_connection_uri = "https://try.supertokens.com"
+    start_st()
+    first_connection_uri = "https://try.supertokens.com/appid-public"
+    second_connection_uri = "https://test.supertokens.com/"
     multiple_connection_uris = f"{first_connection_uri};{second_connection_uri}"
 
     st_args = get_st_init_args(

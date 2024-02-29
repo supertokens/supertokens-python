@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.8] - 2024-02-29
+
+- Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
+
 ## [0.18.7] - 2024-01-17
 
 - Fixes `connection_uri` normalisation in the dashboard recipe.
