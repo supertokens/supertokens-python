@@ -434,7 +434,7 @@ async def revoke_all_sessions_for_user(
 
     if revoke_across_all_tenants:
         response = await recipe_implementation.querier.send_post_request(
-            NormalisedURLPath(f&#34;/recipe/session/remove&#34;),
+            NormalisedURLPath(&#34;/recipe/session/remove&#34;),
             {&#34;userId&#34;: user_id, &#34;revokeAcrossAllTenants&#34;: revoke_across_all_tenants},
             user_context=user_context,
         )
@@ -459,7 +459,7 @@ async def get_all_session_handles_for_user(
 
     if fetch_across_all_tenants:
         response = await recipe_implementation.querier.send_get_request(
-            NormalisedURLPath(f&#34;/recipe/session/user&#34;),
+            NormalisedURLPath(&#34;/recipe/session/user&#34;),
             {&#34;userId&#34;: user_id, &#34;fetchAcrossAllTenants&#34;: fetch_across_all_tenants},
             user_context=user_context,
         )
@@ -643,7 +643,7 @@ async def get_session_information(
 
     if fetch_across_all_tenants:
         response = await recipe_implementation.querier.send_get_request(
-            NormalisedURLPath(f&#34;/recipe/session/user&#34;),
+            NormalisedURLPath(&#34;/recipe/session/user&#34;),
             {&#34;userId&#34;: user_id, &#34;fetchAcrossAllTenants&#34;: fetch_across_all_tenants},
             user_context=user_context,
         )
@@ -975,7 +975,7 @@ async def get_session_information(
 
     if revoke_across_all_tenants:
         response = await recipe_implementation.querier.send_post_request(
-            NormalisedURLPath(f&#34;/recipe/session/remove&#34;),
+            NormalisedURLPath(&#34;/recipe/session/remove&#34;),
             {&#34;userId&#34;: user_id, &#34;revokeAcrossAllTenants&#34;: revoke_across_all_tenants},
             user_context=user_context,
         )
