@@ -289,7 +289,7 @@ class GenericProvider(Provider):
                 _tenant_id: str, third_party_user_id: str, _: Dict[str, Any]
             ) -&gt; str:
                 return (
-                    f&#34;{third_party_user_id}@{input_config.third_party_id}.fakeemail.com&#34;
+                    f&#34;{third_party_user_id}.{input_config.third_party_id}@stfakeemail.supertokens.com&#34;
                 )
 
             input_config.generate_fake_email = default_generate_fake_email
@@ -801,7 +801,7 @@ def NewProvider(
                 _tenant_id: str, third_party_user_id: str, _: Dict[str, Any]
             ) -&gt; str:
                 return (
-                    f&#34;{third_party_user_id}@{input_config.third_party_id}.fakeemail.com&#34;
+                    f&#34;{third_party_user_id}.{input_config.third_party_id}@stfakeemail.supertokens.com&#34;
                 )
 
             input_config.generate_fake_email = default_generate_fake_email

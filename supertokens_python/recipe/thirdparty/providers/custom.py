@@ -260,9 +260,7 @@ class GenericProvider(Provider):
             async def default_generate_fake_email(
                 _tenant_id: str, third_party_user_id: str, _: Dict[str, Any]
             ) -> str:
-                return (
-                    f"{third_party_user_id}.{input_config.third_party_id}@stfakeemail.supertokens.com"
-                )
+                return f"{third_party_user_id}.{input_config.third_party_id}@stfakeemail.supertokens.com"
 
             input_config.generate_fake_email = default_generate_fake_email
 

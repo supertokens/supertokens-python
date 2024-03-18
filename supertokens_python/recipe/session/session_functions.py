@@ -406,7 +406,7 @@ async def revoke_all_sessions_for_user(
 
     if revoke_across_all_tenants:
         response = await recipe_implementation.querier.send_post_request(
-            NormalisedURLPath(f"/recipe/session/remove"),
+            NormalisedURLPath("/recipe/session/remove"),
             {"userId": user_id, "revokeAcrossAllTenants": revoke_across_all_tenants},
             user_context=user_context,
         )
@@ -431,7 +431,7 @@ async def get_all_session_handles_for_user(
 
     if fetch_across_all_tenants:
         response = await recipe_implementation.querier.send_get_request(
-            NormalisedURLPath(f"/recipe/session/user"),
+            NormalisedURLPath("/recipe/session/user"),
             {"userId": user_id, "fetchAcrossAllTenants": fetch_across_all_tenants},
             user_context=user_context,
         )
