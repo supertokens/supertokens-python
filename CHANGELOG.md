@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+
 ## [0.18.9] - 2024-03-14
+
 - Updates version for CICD testing
+- Fixes session recipe to not pass tenant id when `revoke_across_all_tenants` or `fetch_across_all_tenants` is set to `True`
+- Updated fake email generation
 
 ## [0.18.8] - 2024-02-29
 
