@@ -436,14 +436,13 @@ def login_218(request: HttpRequest):
             ).encode("utf8")
         ).decode("utf-8")
 
-        return HttpResponse(
-            "",
-            headers={
-                "st-access-token": legacy_session_resp["accessToken"]["token"],
-                "st-refresh-token": legacy_session_resp["refreshToken"]["token"],
-                "front-token": front_token,
-            },
-        )
+        final_response = HttpResponse("")
+        final_response["st-access-token"] = legacy_session_resp["accessToken"]["token"]
+        final_response["st-refresh-token"] = legacy_session_resp["refreshToken"][
+            "token"
+        ]
+        final_response["front-token"] = front_token
+        return final_response
     else:
         return send_options_api_response()
 
