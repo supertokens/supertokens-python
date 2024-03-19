@@ -15,6 +15,8 @@ import json
 import os
 import sys
 from typing import Any, Dict, Union
+from base64 import b64encode
+import time
 
 import uvicorn  # type: ignore
 from fastapi import Depends, FastAPI
@@ -52,6 +54,8 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.asyncio import get_session_information
+from supertokens_python.querier import Querier
+from supertokens_python.normalised_url_path import NormalisedURLPath
 
 protected_prop_name = {
     "sub",
@@ -268,6 +272,42 @@ async def login(request: Request):
     user_id = (await request.json())["userId"]
     _session = await create_new_session(request, "public", user_id)
     return PlainTextResponse(content=_session.get_user_id())
+
+
+@app.post("/login-2.18")
+async def login_218(request: Request):
+    request_json = await request.json()
+    user_id = request_json["userId"]
+    payload = request_json["payload"]
+
+    querier = Querier.get_instance()
+    Querier.api_version = "2.18"
+    legacy_session_resp = await querier.send_post_request(
+        NormalisedURLPath("/recipe/session"),
+        {
+            "userId": user_id,
+            "enableAntiCsrf": False,
+            "userDataInJWT": payload,
+            "userDataInDatabase": {},
+        },
+        {},
+    )
+    Querier.api_version = None
+
+    front_token = b64encode(
+        json.dumps(
+            {"uid": user_id, "up": payload, "ate": time.time() * 1000 + 3600000}
+        ).encode("utf8")
+    ).decode("utf-8")
+
+    return PlainTextResponse(
+        content="",
+        headers={
+            "st-access-token": legacy_session_resp["accessToken"]["token"],
+            "st-refresh-token": legacy_session_resp["refreshToken"]["token"],
+            "front-token": front_token,
+        },
+    )
 
 
 @app.options("/beforeeach")
