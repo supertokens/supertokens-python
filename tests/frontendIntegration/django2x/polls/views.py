@@ -17,6 +17,8 @@ import os
 import sys
 from functools import wraps
 from typing import Any, Dict, Union
+from base64 import b64encode
+import time
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -48,6 +50,9 @@ from supertokens_python.recipe.session.syncio import (
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.syncio import get_session_information
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+from supertokens_python.async_to_sync_wrapper import sync
 
 protected_prop_name = {
     "sub",
@@ -399,6 +404,46 @@ def login(request: HttpRequest):
 
         session_ = create_new_session(request, "public", user_id)
         return HttpResponse(session_.get_user_id())
+    else:
+        return send_options_api_response()
+
+
+def login_218(request: HttpRequest):
+    if request.method == "POST":
+        request_json = json.loads(request.body)
+        user_id = request_json["userId"]
+        payload = request_json["payload"]
+
+        querier = Querier.get_instance()
+        Querier.api_version = "2.18"
+
+        legacy_session_resp = sync(
+            querier.send_post_request(
+                NormalisedURLPath("/recipe/session"),
+                {
+                    "userId": user_id,
+                    "enableAntiCsrf": False,
+                    "userDataInJWT": payload,
+                    "userDataInDatabase": {},
+                },
+                {},
+            )
+        )
+        Querier.api_version = None
+        front_token = b64encode(
+            json.dumps(
+                {"uid": user_id, "up": payload, "ate": time.time() * 1000 + 3600000}
+            ).encode("utf8")
+        ).decode("utf-8")
+
+        return HttpResponse(
+            "",
+            headers={
+                "st-access-token": legacy_session_resp["accessToken"]["token"],
+                "st-refresh-token": legacy_session_resp["refreshToken"]["token"],
+                "front-token": front_token,
+            },
+        )
     else:
         return send_options_api_response()
 
