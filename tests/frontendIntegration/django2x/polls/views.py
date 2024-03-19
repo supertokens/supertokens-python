@@ -438,7 +438,9 @@ def login_218(request: HttpRequest):
 
         final_response = HttpResponse("")
         final_response["st-access-token"] = legacy_session_resp["accessToken"]["token"]
-        final_response["st-refresh-token"] = legacy_session_resp["refreshToken"]["token"]
+        final_response["st-refresh-token"] = legacy_session_resp["refreshToken"][
+            "token"
+        ]
         final_response["front-token"] = front_token
         return final_response
     else:
