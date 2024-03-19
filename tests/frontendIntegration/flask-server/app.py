@@ -299,9 +299,9 @@ def login():
 
 @app.route("/login-2.18", methods=["POST"])  # type: ignore
 def login_218():
-    request_json = request.get_json()
-    user_id = request_json["userId"]
-    payload = request_json["payload"]
+    request_json = request.get_json()  # type: ignore
+    user_id = request_json["userId"]  # type: ignore
+    payload = request_json["payload"]  # type: ignore
 
     querier = Querier.get_instance()
     Querier.api_version = "2.18"
