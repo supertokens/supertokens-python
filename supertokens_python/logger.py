@@ -35,6 +35,7 @@ debug_env = getenv(DEBUG_ENV_VAR, "").lower()
 if debug_env == "1":
     enable_debug_logging()
 
+enable_debug_logging()
 
 def _get_log_timestamp() -> str:
     return datetime.utcnow().isoformat()[:-3] + "Z"
