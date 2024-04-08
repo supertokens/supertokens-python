@@ -37,5 +37,8 @@ with-django2x:
 with-flask:
 	pip3 install -e .[flask]
 
+with-litestar:
+	pip3 install -e .[litestar]
+
 build-docs:
 	rm -rf html && pdoc --html supertokens_python --template-dir docs-templates
