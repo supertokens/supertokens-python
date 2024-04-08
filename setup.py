@@ -110,7 +110,7 @@ setup(
         "Deprecated==1.2.13",
         "phonenumbers==8.12.48",
         "twilio==7.9.1",
-        "aiosmtplib>=1.1.6,<=3.0.1",
+        "aiosmtplib>=1.1.6,<4.0.0",
         "pkce==1.0.3",
     ],
     python_requires=">=3.7",

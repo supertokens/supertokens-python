@@ -1,4 +1,4 @@
-aiosmtplib>=1.1.6,<=3.0.1
+aiosmtplib>=1.1.6,<4.0.0
 anyio==3.5.0
 asgiref==3.5.2
 astroid==2.9.3
