@@ -37,15 +37,17 @@ class Transporter:
             if self.smtp_settings.secure:
                 # Use TLS from the beginning
                 mail = aiosmtplib.SMTP(
-                    self.smtp_settings.host,
-                    self.smtp_settings.port,
+                    hostname=self.smtp_settings.host,
+                    port=self.smtp_settings.port,
                     use_tls=True,
                     tls_context=tls_context,
                 )
             else:
                 # Start without TLS (but later try upgrading)
                 mail = aiosmtplib.SMTP(
-                    self.smtp_settings.host, self.smtp_settings.port, use_tls=False
+                    hostname=self.smtp_settings.host,
+                    port=self.smtp_settings.port,
+                    use_tls=False,
                 )
 
             await mail.connect()  # type: ignore
