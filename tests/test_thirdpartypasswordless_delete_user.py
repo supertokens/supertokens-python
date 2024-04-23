@@ -32,7 +32,7 @@ from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
 from supertokens_python.utils import is_version_gte
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 

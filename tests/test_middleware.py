@@ -18,7 +18,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 

@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 
 from supertokens_python import (

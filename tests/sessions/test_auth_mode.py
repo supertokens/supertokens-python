@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Union
 from typing_extensions import Literal
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
