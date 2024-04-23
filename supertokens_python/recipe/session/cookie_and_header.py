@@ -417,24 +417,19 @@ def _set_access_token_in_response(
         )
 
 
-"""
-This function addresses an edge case where changing the cookie_domain config on the server can
-lead to session integrity issues. For instance, if the API server URL is 'api.example.com'
-with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com',
-the client may retain cookies with both '.example.com' and 'api.example.com' domains.
+# This function addresses an edge case where changing the cookie_domain config on the server can
+# lead to session integrity issues. For instance, if the API server URL is 'api.example.com'
+# with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com',
+# the client may retain cookies with both '.example.com' and 'api.example.com' domains.
 
-Consequently, if the server chooses the older cookie, session invalidation occurs, potentially
-resulting in an infinite refresh loop. To fix this, users are asked to specify "older_cookie_domain" in
-the config.
+# Consequently, if the server chooses the older cookie, session invalidation occurs, potentially
+# resulting in an infinite refresh loop. To fix this, users are asked to specify "older_cookie_domain" in
+# the config.
 
-This function checks for multiple cookies with the same name and clears the cookies for the older domain.
-"""
-
-
+# This function checks for multiple cookies with the same name and clears the cookies for the older domain.
 def clear_session_cookies_from_older_cookie_domain(
     request: BaseRequest,
     config: SessionConfig,
-    user_context: Dict[str, Any],
 ) -> bool:
     did_clear_cookies = False
     if config.older_cookie_domain is None:
@@ -446,7 +441,9 @@ def clear_session_cookies_from_older_cookie_domain(
     for token_type in token_types:
         if has_multiple_cookies_for_token_type(request, token_type):
             log_debug_message(
-                f"Clearing duplicate {token_type} cookie with domain {config.older_cookie_domain}"
+                "Clearing duplicate %s cookie with domain %s",
+                token_type,
+                config.cookie_domain,
             )
             response_mutators.append(
                 set_cookie_response_mutator(
@@ -488,7 +485,10 @@ def parse_cookie_string_from_request_header_allow_duplicates(
     cookies: Dict[str, List[str]] = {}
     cookie_pairs = cookie_string.split(";")
     for cookie_pair in cookie_pairs:
-        name, value = map(lambda part: unquote(part), cookie_pair.strip().split("="))
+        name, value = map(
+            lambda part: unquote(part),  # pylint:disable=unnecessary-lambda
+            cookie_pair.strip().split("="),
+        )
         if name in cookies:
             cookies[name].append(value)
         else:

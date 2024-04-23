@@ -58,7 +58,7 @@ class APIImplementation(APIInterface):
             )
 
         clear_session_cookies_from_older_cookie_domain(
-            api_options.request, api_options.config, user_context
+            api_options.request, api_options.config
         )
 
         return await refresh_session_in_request(
