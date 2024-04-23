@@ -348,7 +348,7 @@ class APIInterface(ABC):
     @abstractmethod
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -> SessionContainer:
+    ) -> Optional[SessionContainer]:
         pass
 
     @abstractmethod

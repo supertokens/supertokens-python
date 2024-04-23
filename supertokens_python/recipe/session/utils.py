@@ -25,6 +25,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import (
     is_an_ip_address,
     resolve,
+    send_200_response,
     send_non_200_response,
     send_non_200_response_with_message,
 )
@@ -117,11 +118,16 @@ class ErrorHandlers:
             [BaseRequest, List[ClaimValidationError], BaseResponse],
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
+        on_clear_duplicate_session_cookies: Callable[
+            [BaseRequest, str, BaseResponse],
+            Union[BaseResponse, Awaitable[BaseResponse]],
+        ],
     ):
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
         self.__on_unauthorised = on_unauthorised
         self.__on_invalid_claim = on_invalid_claim
+        self.__on_clear_duplicate_session_cookies = on_clear_duplicate_session_cookies
 
     async def on_token_theft_detected(
         self,
@@ -161,6 +167,17 @@ class ErrorHandlers:
         )
         return result
 
+    async def on_clear_duplicate_session_cookies(
+        self,
+        request: BaseRequest,
+        message: str,
+        response: BaseResponse,
+    ):
+        result = await resolve(
+            self.__on_clear_duplicate_session_cookies(request, message, response)
+        )
+        return result
+
 
 class InputErrorHandlers(ErrorHandlers):
     def __init__(
@@ -186,6 +203,13 @@ class InputErrorHandlers(ErrorHandlers):
             ],
             None,
         ] = None,
+        on_clear_duplicate_session_cookies: Union[
+            None,
+            Callable[
+                [BaseRequest, str, BaseResponse],
+                Union[BaseResponse, Awaitable[BaseResponse]],
+            ],
+        ] = None,
     ):
         if on_token_theft_detected is None:
             on_token_theft_detected = default_token_theft_detected_callback
@@ -193,11 +217,16 @@ class InputErrorHandlers(ErrorHandlers):
             on_unauthorised = default_unauthorised_callback
         if on_invalid_claim is None:
             on_invalid_claim = default_invalid_claim_callback
+        if on_clear_duplicate_session_cookies is None:
+            on_clear_duplicate_session_cookies = (
+                default_clear_duplicate_session_cookies_callback
+            )
         super().__init__(
             on_token_theft_detected,
             default_try_refresh_token_callback,
             on_unauthorised,
             on_invalid_claim,
+            on_clear_duplicate_session_cookies,
         )
 
 
@@ -257,6 +286,16 @@ async def default_invalid_claim_callback(
     )
 
 
+async def default_clear_duplicate_session_cookies_callback(
+    _: BaseRequest, message: str, response: BaseResponse
+) -> BaseResponse:
+    # This error occurs in the `refresh_post` API when multiple session
+    # cookies are found in the request and the user has set `older_cookie_domain`.
+    # We remove session cookies from the older_cookie_domain. The response must return `200 OK`
+    # to avoid logging out the user, allowing the session to continue with the valid cookie.
+    return send_200_response({"message": message}, response)
+
+
 def get_auth_mode_from_header(request: BaseRequest) -> Optional[str]:
     auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
     if auth_mode is None:
@@ -313,6 +352,7 @@ class SessionConfig:
         self,
         refresh_token_path: NormalisedURLPath,
         cookie_domain: Union[None, str],
+        older_cookie_domain: Union[None, str],
         get_cookie_same_site: Callable[
             [Optional[BaseRequest], Dict[str, Any]],
             Literal["lax", "strict", "none"],
@@ -347,6 +387,7 @@ class SessionConfig:
 
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
+        self.older_cookie_domain = older_cookie_domain
         self.get_cookie_same_site = get_cookie_same_site
         self.cookie_secure = cookie_secure
         self.error_handlers = error_handlers
@@ -360,6 +401,7 @@ class SessionConfig:
 def validate_and_normalise_user_input(
     app_info: AppInfo,
     cookie_domain: Union[str, None] = None,
+    older_cookie_domain: Union[str, None] = None,
     cookie_secure: Union[bool, None] = None,
     cookie_same_site: Union[Literal["lax", "strict", "none"], None] = None,
     session_expired_status_code: Union[int, None] = None,
@@ -391,6 +433,12 @@ def validate_and_normalise_user_input(
 
     cookie_domain = (
         normalise_session_scope(cookie_domain) if cookie_domain is not None else None
+    )
+
+    older_cookie_domain = (
+        older_cookie_domain
+        if older_cookie_domain is None or older_cookie_domain == ""
+        else normalise_session_scope(older_cookie_domain)
     )
 
     cookie_secure = (
@@ -480,6 +528,7 @@ def validate_and_normalise_user_input(
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
+        older_cookie_domain,
         get_cookie_same_site,
         cookie_secure,
         session_expired_status_code,

@@ -16,6 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.session.cookie_and_header import (
+    clear_session_cookies_from_older_cookie_domain,
+    has_multiple_cookies_for_token_type,
+)
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
     SessionClaimValidator,
@@ -40,6 +44,23 @@ class APIImplementation(APIInterface):
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -> SessionContainer:
+
+        # If a request has multiple session cookies and 'older_cookie_domain' is
+        # unset, we can't identify the correct cookie for refreshing the session.
+        # Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+        # we throw a 500 error asking the user to set 'older_cookie_domain'.
+        if (
+            has_multiple_cookies_for_token_type(api_options.request, "access")
+            or has_multiple_cookies_for_token_type(api_options.request, "refresh")
+        ) and api_options.config.older_cookie_domain is None:
+            raise Exception(
+                "The request contains multiple session cookies. This may happen if you've changed the 'cookie_domain' setting in your configuration. To clear tokens from the previous domain, set 'older_cookie_domain' in your config."
+            )
+
+        clear_session_cookies_from_older_cookie_domain(
+            api_options.request, api_options.config, user_context
+        )
+
         return await refresh_session_in_request(
             api_options.request,
             user_context,

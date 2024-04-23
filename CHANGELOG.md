@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.19.0] - 2024-04-22
+
+-   Added `older_cookie_domain` config option in the session recipe. This will allow users to clear cookies from older domain when the cookieDomain is changed.
+-   Fixed an issue where the access token wasn't cleared if refresh token API was called without a refresh token.
+-   `verify_session` now returns 401 if there are multiple access tokens are present in the request.
+-   `refresh_post` API returns 500 error if multiple access tokens are present in the request and `config.older_cookie_domain` is not set.
+
 ## [0.18.10] - 2024-04-05
 
 - Relax constraints on `aiosmtplib` dependency version.

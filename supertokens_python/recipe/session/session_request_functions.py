@@ -23,7 +23,9 @@ from supertokens_python.recipe.session.constants import available_token_transfer
 from supertokens_python.recipe.session.cookie_and_header import (
     clear_session_mutator,
     get_anti_csrf_header,
+    get_cookie_name_from_token_type,
     get_token,
+    has_multiple_cookies_for_token_type,
     set_cookie_response_mutator,
 )
 from supertokens_python.recipe.session.exceptions import (
@@ -86,6 +88,17 @@ async def get_session_from_request(
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Optional[SessionContainer]:
     log_debug_message("getSession: Started")
+
+    # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+    # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
+    # ensuring outdated token payload isn't used.
+    if has_multiple_cookies_for_token_type(request, "access"):
+        log_debug_message(
+            "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+        )
+        raise_try_refresh_token_exception(
+            "Multiple access tokens present in the request cookies."
+        )
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
@@ -391,9 +404,22 @@ async def refresh_session_in_request(
                 )
             )
 
-        log_debug_message(
-            "refreshSession: UNAUTHORISED because refresh_token in request is None"
-        )
+        # We need to clear the access token cookie if refresh token is not found, provided the allowedTransferMethod is 'cookie' or 'any'
+        # See: https://github.com/supertokens/supertokens-node/issues/790
+        if allowed_transfer_method == "cookie" or allowed_transfer_method == "any":
+            response_mutators.append(
+                set_cookie_response_mutator(
+                    config,
+                    get_cookie_name_from_token_type("access"),
+                    "",
+                    0,
+                    "access_token_path",
+                    request,
+                )
+            )
+            log_debug_message(
+                "refreshSession: cleared access token and returning UNAUTHORISED because refresh_token in request is None"
+            )
         return raise_unauthorised_exception(
             "Refresh token not found. Are you sending the refresh token in the request?",
             clear_tokens=False,

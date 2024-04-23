@@ -18,6 +18,11 @@ from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
 
+from supertokens_python.recipe.session.exceptions import (
+    raise_clear_duplicate_session_cookies_exception,
+)
+from supertokens_python.recipe.session.interfaces import ResponseMutator
+
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
     ACCESS_TOKEN_COOKIE_KEY,
@@ -111,9 +116,9 @@ def _set_cookie(
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
     request: BaseRequest,
+    domain: Optional[str],
     user_context: Dict[str, Any],
 ):
-    domain = config.cookie_domain
     secure = config.cookie_secure
     same_site = config.get_cookie_same_site(request, user_context)
     path = ""
@@ -141,10 +146,21 @@ def set_cookie_response_mutator(
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
     request: BaseRequest,
+    domain: Optional[str] = None,
 ):
+    domain = domain if domain is not None else config.cookie_domain
+
     def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return _set_cookie(
-            response, config, key, value, expires, path_type, request, user_context
+            response,
+            config,
+            key,
+            value,
+            expires,
+            path_type,
+            request,
+            domain,
+            user_context,
         )
 
     return mutator
@@ -294,6 +310,7 @@ def _set_token(
             expires,
             "refresh_token_path" if token_type == "refresh" else "access_token_path",
             request,
+            config.cookie_domain,
             user_context,
         )
     elif transfer_method == "header":
@@ -398,3 +415,82 @@ def _set_access_token_in_response(
             request,
             user_context,
         )
+
+
+"""
+This function addresses an edge case where changing the cookie_domain config on the server can
+lead to session integrity issues. For instance, if the API server URL is 'api.example.com'
+with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com',
+the client may retain cookies with both '.example.com' and 'api.example.com' domains.
+
+Consequently, if the server chooses the older cookie, session invalidation occurs, potentially
+resulting in an infinite refresh loop. To fix this, users are asked to specify "older_cookie_domain" in
+the config.
+
+This function checks for multiple cookies with the same name and clears the cookies for the older domain.
+"""
+
+
+def clear_session_cookies_from_older_cookie_domain(
+    request: BaseRequest,
+    config: SessionConfig,
+    user_context: Dict[str, Any],
+) -> bool:
+    did_clear_cookies = False
+    if config.older_cookie_domain is None:
+        return did_clear_cookies
+
+    response_mutators: List[ResponseMutator] = []
+
+    token_types: List[TokenType] = ["access", "refresh"]
+    for token_type in token_types:
+        if has_multiple_cookies_for_token_type(request, token_type):
+            log_debug_message(
+                f"Clearing duplicate {token_type} cookie with domain {config.older_cookie_domain}"
+            )
+            response_mutators.append(
+                set_cookie_response_mutator(
+                    config,
+                    get_cookie_name_from_token_type(token_type),
+                    "",
+                    0,
+                    "refresh_token_path"
+                    if token_type == "refresh"
+                    else "access_token_path",
+                    request,
+                    domain=config.older_cookie_domain,
+                )
+            )
+            did_clear_cookies = True
+    if did_clear_cookies:
+        return raise_clear_duplicate_session_cookies_exception(
+            "The request contains multiple session cookies. We are clearing the cookie from older_cookie_domain. Session will be refreshed in the next refresh call.",
+            response_mutators=response_mutators,
+        )
+    return did_clear_cookies
+
+
+def has_multiple_cookies_for_token_type(
+    request: BaseRequest, token_type: TokenType
+) -> bool:
+    cookie_string = request.get_header("cookie")
+    if cookie_string is None:
+        return False
+
+    cookies = parse_cookie_string_from_request_header_allow_duplicates(cookie_string)
+    cookie_name = get_cookie_name_from_token_type(token_type)
+    return cookie_name in cookies and len(cookies[cookie_name]) > 1
+
+
+def parse_cookie_string_from_request_header_allow_duplicates(
+    cookie_string: str,
+) -> Dict[str, List[str]]:
+    cookies: Dict[str, List[str]] = {}
+    cookie_pairs = cookie_string.split(";")
+    for cookie_pair in cookie_pairs:
+        name, value = map(lambda part: unquote(part), cookie_pair.strip().split("="))
+        if name in cookies:
+            cookies[name].append(value)
+        else:
+            cookies[name] = [value]
+    return cookies
