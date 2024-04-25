@@ -474,21 +474,21 @@ def has_multiple_cookies_for_token_type(
     if cookie_string is None:
         return False
 
-    cookies = parse_cookie_string_from_request_header_allow_duplicates(cookie_string)
+    cookies = _parse_cookie_string_from_request_header_allow_duplicates(cookie_string)
     cookie_name = get_cookie_name_from_token_type(token_type)
     return cookie_name in cookies and len(cookies[cookie_name]) > 1
 
 
-def parse_cookie_string_from_request_header_allow_duplicates(
+def _parse_cookie_string_from_request_header_allow_duplicates(
     cookie_string: str,
 ) -> Dict[str, List[str]]:
     cookies: Dict[str, List[str]] = {}
     cookie_pairs = cookie_string.split(";")
     for cookie_pair in cookie_pairs:
-        name, value = map(
-            lambda part: unquote(part),  # pylint:disable=unnecessary-lambda
-            cookie_pair.strip().split("="),
-        )
+        name_value = cookie_pair.split("=")
+        if len(name_value) != 2:
+            raise Exception("Invalid cookie string in request header")
+        name, value = unquote(name_value[0].strip()), unquote(name_value[1].strip())
         if name in cookies:
             cookies[name].append(value)
         else:

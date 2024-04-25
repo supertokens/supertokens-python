@@ -404,9 +404,15 @@ async def refresh_session_in_request(
                 )
             )
 
-        # We need to clear the access token cookie if refresh token is not found, provided the allowedTransferMethod is 'cookie' or 'any'
+        # We need to clear the access token cookie if
+        # - the refresh token is not found, and
+        # - the allowed_transfer_method is 'cookie' or 'any', and
+        # - an access token cookie exists (otherwise it'd be a no-op)
         # See: https://github.com/supertokens/supertokens-node/issues/790
-        if allowed_transfer_method in ("cookie", "any"):
+        if (
+            allowed_transfer_method in ("cookie", "any")
+            and get_token(request, "access", "cookie") is not None
+        ):
             response_mutators.append(
                 set_cookie_response_mutator(
                     config,

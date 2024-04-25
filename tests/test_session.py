@@ -895,7 +895,15 @@ async def test_access_token_cookie_is_cleared_if_refresh_is_called_without_refre
     init(**init_args)
     start_st()
 
-    response = driver_config_client.post("/auth/session/refresh")
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={"sAccessToken ": cookies["sAccessToken"]["value"]},
+    )
 
     assert response.status_code == 401
     response_cookies = extract_all_cookies(response)
@@ -932,7 +940,7 @@ async def test_access_and_refresh_tokens_are_cleared_if_multiple_tokens_are_pass
 
     cookiejar = cookiejar_from_dict({})  # type: ignore
     cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"])  # type: ignore
-    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"])  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], path="/auth/session/refresh")  # type: ignore
     cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"], domain="testserver.local")  # type: ignore
     cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
 
@@ -983,7 +991,7 @@ async def test_refresh_endpoint_throws_500_if_multiple_tokens_are_passed_and_old
 
     cookiejar = cookiejar_from_dict({})  # type: ignore
     cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"])  # type: ignore
-    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"])  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], path="/auth/session/refresh")  # type: ignore
     cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"], domain="testserver.local")  # type: ignore
     cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
 
