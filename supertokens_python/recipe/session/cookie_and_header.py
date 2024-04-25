@@ -438,6 +438,10 @@ def clear_session_cookies_from_older_cookie_domain(
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
         if has_multiple_cookies_for_token_type(request, token_type):
+            # If a request has multiple session cookies and 'older_cookie_domain' is
+            # unset, we can't identify the correct cookie for refreshing the session.
+            # Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+            # we throw a 500 error asking the user to set 'older_cookie_domain''.
             if config.older_cookie_domain is None:
                 raise Exception(
                     "The request contains multiple session cookies. This may happen if you've changed the 'cookie_domain' setting in your configuration. To clear tokens from the previous domain, set 'older_cookie_domain' in your config."
