@@ -432,14 +432,17 @@ def clear_session_cookies_from_older_cookie_domain(
     config: SessionConfig,
 ) -> bool:
     did_clear_cookies = False
-    if config.older_cookie_domain is None:
-        return did_clear_cookies
 
     response_mutators: List[ResponseMutator] = []
 
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
         if has_multiple_cookies_for_token_type(request, token_type):
+            if config.older_cookie_domain is None:
+                raise Exception(
+                    "The request contains multiple session cookies. This may happen if you've changed the 'cookie_domain' setting in your configuration. To clear tokens from the previous domain, set 'older_cookie_domain' in your config."
+                )
+
             log_debug_message(
                 "Clearing duplicate %s cookie with domain %s",
                 token_type,
