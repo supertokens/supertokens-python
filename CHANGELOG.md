@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.11] - 2024-04-26
+
+- Fixes session issues with django-rest-framework.
+
 ## [0.18.10] - 2024-04-05
 
 - Relax constraints on `aiosmtplib` dependency version.
