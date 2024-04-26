@@ -11,14 +11,11 @@ from supertokens_python.recipe import (
     passwordless,
     session,
     thirdparty,
-    thirdpartyemailpassword,
-    thirdpartypasswordless,
     usermetadata,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
 )
-from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
 
 
 @pytest.mark.asyncio
@@ -199,6 +196,16 @@ async def test_init_validation_passwordless():
         ) -> None:
             pass
 
+    class CustomEmailDeliveryService(
+        passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
+    ):
+        async def send_email(
+            self,
+            template_vars: passwordless.EmailTemplateVars,
+            user_context: Dict[str, Any],
+        ) -> None:
+            pass
+
     with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -208,6 +215,9 @@ async def test_init_validation_passwordless():
                 passwordless.init(
                     flow_type="USER_INPUT_CODE",
                     contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    email_delivery=passwordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
                     sms_delivery=passwordless.SMSDeliveryConfig(
                         CustomSMSDeliveryService()
                     ),
@@ -230,6 +240,9 @@ async def test_init_validation_passwordless():
                 passwordless.init(
                     flow_type="SOME_OTHER_CODE",  # type: ignore
                     contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    email_delivery=passwordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
                     sms_delivery=passwordless.SMSDeliveryConfig(
                         CustomSMSDeliveryService()
                     ),
@@ -274,6 +287,9 @@ async def test_init_validation_passwordless():
                 passwordless.init(
                     flow_type="USER_INPUT_CODE",
                     contact_config=passwordless.ContactPhoneOnlyConfig(),
+                    email_delivery=passwordless.EmailDeliveryConfig(
+                        CustomEmailDeliveryService()
+                    ),
                     sms_delivery=passwordless.SMSDeliveryConfig(
                         CustomSMSDeliveryService()
                     ),
@@ -414,290 +430,6 @@ async def test_init_validation_thirdparty():
     assert "override must be an instance of InputOverrideConfig or None" == str(
         ex.value
     )
-
-
-@pytest.mark.asyncio
-async def test_init_validation_thirdpartyemailpassword():
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartyemailpassword.init(sign_up_feature="sign up")  # type: ignore
-            ],
-        )
-    assert "sign_up_feature must be of type InputSignUpFeature or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                emailverification.init("email verification"),  # type: ignore
-                thirdpartyemailpassword.init(),
-            ],
-        )
-    assert (
-        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
-        == str(ex.value)
-    )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartyemailpassword.init(override="override")  # type: ignore
-            ],
-        )
-    assert "override must be of type InputOverrideConfig or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartyemailpassword.init(providers="providers")  # type: ignore
-            ],
-        )
-    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartyemailpassword.init(providers=["providers"])  # type: ignore
-            ],
-        )
-    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
-
-
-async def save_code_text(
-    _param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
-):
-    pass
-
-
-async def save_code_email(
-    _param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]
-):
-    pass
-
-
-@pytest.mark.asyncio
-async def test_init_validation_thirdpartypasswordless():
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartypasswordless.init(
-                    contact_config="contact config",  # type: ignore
-                    flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                )
-            ],
-        )
-    assert "contact_config must be an instance of ContactConfig" == str(ex.value)
-
-    class CustomEmailDeliveryService(
-        thirdpartypasswordless.EmailDeliveryInterface[
-            thirdpartypasswordless.EmailTemplateVars
-        ]
-    ):
-        async def send_email(
-            self,
-            template_vars: thirdpartypasswordless.EmailTemplateVars,
-            user_context: Dict[str, Any],
-        ) -> None:
-            pass
-
-    class CustomSMSDeliveryService(
-        thirdpartypasswordless.SMSDeliveryInterface[
-            thirdpartypasswordless.SMSTemplateVars
-        ]
-    ):
-        async def send_sms(
-            self,
-            template_vars: thirdpartypasswordless.SMSTemplateVars,
-            user_context: Dict[str, Any],
-        ) -> None:
-            pass
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(),
-                    flow_type="CUSTOM",  # type: ignore
-                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                        CustomEmailDeliveryService()
-                    ),
-                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                        CustomSMSDeliveryService()
-                    ),
-                )
-            ],
-        )
-    assert (
-        "flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK"
-        == str(ex.value)
-    )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                emailverification.init(
-                    "email verify",  # type: ignore
-                ),
-                thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(),
-                    flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                        CustomEmailDeliveryService()
-                    ),
-                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                        CustomSMSDeliveryService()
-                    ),
-                ),
-            ],
-        )
-    assert (
-        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
-        == str(ex.value)
-    )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(),
-                    flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                        CustomEmailDeliveryService()
-                    ),
-                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                        CustomSMSDeliveryService()
-                    ),
-                    override="override",  # type: ignore
-                )
-            ],
-        )
-    assert "override must be an instance of InputOverrideConfig or None" == str(
-        ex.value
-    )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(),
-                    flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                        CustomEmailDeliveryService()
-                    ),
-                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                        CustomSMSDeliveryService()
-                    ),
-                    providers="providers",  # type: ignore
-                )
-            ],
-        )
-    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                thirdpartypasswordless.init(
-                    contact_config=ContactEmailOrPhoneConfig(),
-                    flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers=["providers"],  # type: ignore
-                    email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                        CustomEmailDeliveryService()
-                    ),
-                    sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                        CustomSMSDeliveryService()
-                    ),
-                )
-            ],
-        )
-    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
 
 @pytest.mark.asyncio
