@@ -30,8 +30,7 @@ import time
 from django.shortcuts import render
 from django.conf import settings
 from rest_framework import status  # type: ignore
-from rest_framework.decorators import api_view as api_view_sync, renderer_classes  # type: ignore
-from adrf.decorators import api_view  # type: ignore
+from rest_framework.decorators import api_view, renderer_classes  # type: ignore
 from rest_framework.renderers import JSONRenderer, StaticHTMLRenderer, BaseRenderer  # type: ignore
 from rest_framework.request import Request  # type: ignore
 from rest_framework.response import Response  # type: ignore
@@ -45,17 +44,18 @@ from supertokens_python.recipe.session import (
     SessionRecipe,
 )
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.recipe.session.asyncio import (
+from supertokens_python.recipe.session.syncio import (
     create_new_session,
     get_session,
     revoke_all_sessions_for_user,
 )
-from supertokens_python.recipe.session.framework.django.asyncio import verify_session
-from supertokens_python.recipe.session.asyncio import merge_into_access_token_payload
+from supertokens_python.recipe.session.framework.django.syncio import verify_session
+from supertokens_python.recipe.session.syncio import merge_into_access_token_payload
+from supertokens_python.async_to_sync_wrapper import sync
 
 from supertokens_python.constants import VERSION
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.session.asyncio import get_session_information
+from supertokens_python.recipe.session.syncio import get_session_information
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 
@@ -84,10 +84,10 @@ last_set_enable_jwt = False
 def custom_decorator_for_test():  # type: ignore
     def session_verify_custom_test(f):  # type: ignore
         @wraps(f)  # type: ignore
-        async def wrapped_function(request: Request, *args: Any, **kwargs: Any):  # type: ignore
+        def wrapped_function(request: Request, *args: Any, **kwargs: Any):  # type: ignore
             Test.increment_attempted_refresh()
             try:
-                value: Response = await f(request, *args, **kwargs)  # type: ignore
+                value: Response = f(request, *args, **kwargs)  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 if request.headers.get("rid") is None:  # type: ignore
@@ -105,10 +105,10 @@ def custom_decorator_for_test():  # type: ignore
 def custom_decorator_for_update_jwt():  # type: ignore
     def session_verify_custom_test(f):  # type: ignore
         @wraps(f)  # type: ignore
-        async def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
+        def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
             if request.method == "GET":  # type: ignore
                 Test.increment_get_session()
-                value: Response = await f(request, *args, **kwargs)  # type: ignore
+                value: Response = f(request, *args, **kwargs)  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
@@ -117,7 +117,7 @@ def custom_decorator_for_update_jwt():  # type: ignore
                 return resp  # type: ignore
             else:
                 if request.method == "POST":  # type: ignore
-                    value: Response = await f(request, *args, **kwargs)  # type: ignore
+                    value: Response = f(request, *args, **kwargs)  # type: ignore
                     if value is not None and value.status_code != 200:  # type: ignore
                         return value  # type: ignore
                     session_: SessionContainer = request.supertokens  # type: ignore
@@ -128,7 +128,7 @@ def custom_decorator_for_update_jwt():  # type: ignore
                             clearing[k] = None
 
                     body = request.data  # type: ignore
-                    await session_.merge_into_access_token_payload(
+                    session_.merge_into_access_token_payload(
                         {**clearing, **body}, {}  # type: ignore
                     )
 
@@ -146,14 +146,14 @@ def custom_decorator_for_update_jwt():  # type: ignore
 def custom_decorator_for_update_jwt_with_handle():  # type: ignore
     def session_verify_custom_test(f):  # type: ignore
         @wraps(f)  # type: ignore
-        async def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
+        def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
             if request.method == "POST":  # type: ignore
-                value: Response = await f(request, *args, **kwargs)  # type: ignore
+                value: Response = f(request, *args, **kwargs)  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 session_: SessionContainer = request.supertokens  # type: ignore
 
-                info = await get_session_information(session_.get_handle())
+                info = get_session_information(session_.get_handle())
                 assert info is not None
                 clearing = {}
                 for k in info.custom_claims_in_access_token_payload:
@@ -161,7 +161,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                         clearing[k] = None
 
                 body = request.data  # type: ignore
-                await merge_into_access_token_payload(
+                merge_into_access_token_payload(
                     session_.get_handle(), {**clearing, **body}  # type: ignore
                 )
 
@@ -178,9 +178,9 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
 def custom_decorator_for_get_info():  # type: ignore
     def session_verify_custom_test(f):  # type: ignore
         @wraps(f)  # type: ignore
-        async def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
+        def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
             if request.method == "GET":  # type: ignore
-                value: Response = await f(request, *args, **kwargs)  # type: ignore
+                value: Response = f(request, *args, **kwargs)  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 Test.increment_get_session()
@@ -201,13 +201,13 @@ def custom_decorator_for_get_info():  # type: ignore
 def custom_decorator_for_logout():  # type: ignore
     def session_verify_custom_test(f):  # type: ignore
         @wraps(f)  # type: ignore
-        async def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
+        def wrapped_function(request: Request, *args, **kwargs):  # type: ignore
             if request.method == "POST":  # type: ignore
-                value: Response = await f(request, *args, **kwargs)  # type: ignore
+                value: Response = f(request, *args, **kwargs)  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
-                await session.revoke_session()
+                session.sync_revoke_session()
                 return Response("success")  # type: ignore
             return send_options_api_response()  # type: ignore
 
@@ -216,7 +216,7 @@ def custom_decorator_for_logout():  # type: ignore
     return session_verify_custom_test  # type: ignore
 
 
-@api_view_sync(["GET", "POST"])
+@api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
 def try_refresh_token(_):  # type: ignore
     return Response(
@@ -225,7 +225,7 @@ def try_refresh_token(_):  # type: ignore
     )  # type: ignore
 
 
-@api_view_sync(["GET", "POST"])
+@api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
 def unauthorised(_):  # type: ignore
     return Response(
@@ -277,7 +277,7 @@ class Test:
         return Test.no_of_times_refresh_attempted_during_test
 
 
-async def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
+def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
     res.set_status_code(401)
     res.set_json_content({})
     return res
@@ -291,7 +291,7 @@ def apis_override_session(param: APIInterface):
 def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(
+    def create_new_session_custom(
         user_id: str,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
@@ -302,7 +302,7 @@ def functions_override_session(param: RecipeInterface):
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
-        return await original_create_new_session(
+        return original_create_new_session(
             user_id,
             access_token_payload,
             session_data_in_database,
@@ -404,7 +404,7 @@ def config(
 config(True, False, None)
 
 
-async def send_file(request: HttpRequest):
+def send_file(request: HttpRequest):
     return render(request, file_path)
 
 
@@ -421,11 +421,11 @@ class JsonTextRenderer(BaseRenderer):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JsonTextRenderer])  # type: ignore
-async def login(request: Request):  # type: ignore
+def login(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         user_id = request.data["userId"]  # type: ignore
 
-        session_ = await create_new_session(request, "public", user_id)  # type: ignore
+        session_ = create_new_session(request, "public", user_id)  # type: ignore
         return Response(session_.get_user_id())  # type: ignore
     else:
         return send_options_api_response()  # type: ignore
@@ -433,7 +433,7 @@ async def login(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JsonTextRenderer])  # type: ignore
-async def login_218(request: Request):  # type: ignore
+def login_218(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         request_json = request.data  # type: ignore
         user_id = request_json["userId"]  # type: ignore
@@ -442,7 +442,7 @@ async def login_218(request: Request):  # type: ignore
         querier = Querier.get_instance()
         Querier.api_version = "2.18"
 
-        legacy_session_resp = await (
+        legacy_session_resp = sync(
             querier.send_post_request(
                 NormalisedURLPath("/recipe/session"),
                 {
@@ -475,7 +475,7 @@ async def login_218(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def before_each(request: Request):  # type: ignore
+def before_each(request: Request):  # type: ignore
     config(True, False, None)  # type: ignore
     if request.method == "POST":  # type: ignore
         Test.reset()
@@ -486,7 +486,7 @@ async def before_each(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def test_config(request: Request):  # type: ignore
+def test_config(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         return Response("")  # type: ignore
     else:
@@ -495,7 +495,7 @@ async def test_config(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def multiple_interceptors(request: Request):  # type: ignore
+def multiple_interceptors(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         result_bool = (
             "success"
@@ -512,7 +512,7 @@ async def multiple_interceptors(request: Request):  # type: ignore
 @renderer_classes([JsonTextRenderer])  # type: ignore
 @custom_decorator_for_get_info()
 @verify_session()
-async def get_info(request: Request):  # type: ignore
+def get_info(request: Request):  # type: ignore
     return Response("")  # type: ignore
 
 
@@ -527,7 +527,7 @@ def check_rid_no_session(request: Request):  # type: ignore
 @renderer_classes([JSONRenderer])  # type: ignore
 @custom_decorator_for_update_jwt()
 @verify_session()
-async def update_jwt(request: Request):  # type: ignore
+def update_jwt(request: Request):  # type: ignore
     return Response("")  # type: ignore
 
 
@@ -535,7 +535,7 @@ async def update_jwt(request: Request):  # type: ignore
 @renderer_classes([JSONRenderer])  # type: ignore
 @custom_decorator_for_update_jwt_with_handle()
 @verify_session()
-async def update_jwt_with_handle(request: Request):  # type: ignore
+def update_jwt_with_handle(request: Request):  # type: ignore
     return Response("")  # type: ignore
 
 
@@ -553,20 +553,20 @@ def gcv_for_session_claim_err(*_):  # type: ignore
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
 @verify_session(override_global_claim_validators=gcv_for_session_claim_err)  # type: ignore
-async def session_claim_error_api(request: Request):  # type: ignore
+def session_claim_error_api(request: Request):  # type: ignore
     return Response({})  # type: ignore
 
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def without_body_403(request: Request):  # type: ignore
+def without_body_403(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         return Response("", status=403)  # type: ignore
 
 
 @api_view(["GET", "POST", "PUT", "DELETE"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def testing(request: Request):  # type: ignore
+def testing(request: Request):  # type: ignore
     if request.method in ["GET", "PUT", "POST", "DELETE"]:  # type: ignore
         if "testing" in request.headers:  # type: ignore
             resp = Response("success")  # type: ignore
@@ -582,19 +582,19 @@ async def testing(request: Request):  # type: ignore
 @renderer_classes([JsonTextRenderer])  # type: ignore
 @custom_decorator_for_logout()
 @verify_session()
-async def logout(request: Request):  # type: ignore
+def logout(request: Request):  # type: ignore
     return Response("")  # type: ignore
 
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
 @verify_session()
-async def revoke_all(request: Request):  # type: ignore
+def revoke_all(request: Request):  # type: ignore
     if request.method:  # type: ignore
-        session: Union[None, SessionContainer] = await get_session(request)
+        session: Union[None, SessionContainer] = get_session(request)
         if session is None:
             raise Exception("Should never come here")
-        await revoke_all_sessions_for_user(session.get_user_id())
+        revoke_all_sessions_for_user(session.get_user_id())
         return Response("success")  # type: ignore
     else:
         return send_options_api_response()  # type: ignore
@@ -613,7 +613,7 @@ def refresh_attempted_time(request: Request):  # type: ignore
 @renderer_classes([JSONRenderer])  # type: ignore
 @custom_decorator_for_test()
 @verify_session()
-async def refresh(request: Request):  # type: ignore
+def refresh(request: Request):  # type: ignore
     return Response("refresh success")  # type: ignore
 
 
@@ -671,7 +671,7 @@ def feature_flags(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def reinitialize(request: Request):  # type: ignore
+def reinitialize(request: Request):  # type: ignore
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
     data = request.data  # type: ignore
@@ -688,7 +688,7 @@ async def reinitialize(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([StaticHTMLRenderer])  # type: ignore
-async def refresh_called_time(request: Request):  # type: ignore
+def refresh_called_time(request: Request):  # type: ignore
     if request.method == "GET":  # type: ignore
         return Response(str(Test.get_refresh_called_count()))  # type: ignore
     else:
@@ -697,7 +697,7 @@ async def refresh_called_time(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([StaticHTMLRenderer])  # type: ignore
-async def get_session_called_time(request: Request):  # type: ignore
+def get_session_called_time(request: Request):  # type: ignore
     if request.method == "GET":  # type: ignore
         return Response(str(Test.get_session_called_count()))  # type: ignore
     else:
@@ -706,7 +706,7 @@ async def get_session_called_time(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def ping(request: Request):  # type: ignore
+def ping(request: Request):  # type: ignore
     if request.method == "GET":  # type: ignore
         return Response("success")  # type: ignore
     else:
@@ -715,7 +715,7 @@ async def ping(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def test_header(request: Request):  # type: ignore
+def test_header(request: Request):  # type: ignore
     if request.method == "GET":  # type: ignore
         success_info = request.headers.get("st-custom-header")  # type: ignore
         return Response({"success": success_info})  # type: ignore
@@ -725,7 +725,7 @@ async def test_header(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def check_device_info(request: Request):  # type: ignore
+def check_device_info(request: Request):  # type: ignore
     if request.method == "GET":  # type: ignore
         sdk_name = request.headers.get("supertokens-sdk-name")  # type: ignore
         sdk_version = request.headers.get("supertokens-sdk-version")  # type: ignore
@@ -740,14 +740,14 @@ async def check_device_info(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def check_rid(request: Request):  # type: ignore
+def check_rid(request: Request):  # type: ignore
     rid = request.headers.get("rid")  # type: ignore
     return Response("fail" if rid is None else "success")  # type: ignore
 
 
 @api_view(["GET", "POST"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def check_allow_credentials(request: Request):  # type: ignore
+def check_allow_credentials(request: Request):  # type: ignore
     if request.method == "GET":  # type: ignore
         return Response("allow-credentials" in request.headers)  # type: ignore
     else:
@@ -756,7 +756,7 @@ async def check_allow_credentials(request: Request):  # type: ignore
 
 @api_view(["GET", "POST", "OPTIONS"])
 @renderer_classes([JSONRenderer])  # type: ignore
-async def test_error(request: Request):  # type: ignore
+def test_error(request: Request):  # type: ignore
     if request.method == "OPTIONS":  # type: ignore
         return send_options_api_response()  # type: ignore
 
