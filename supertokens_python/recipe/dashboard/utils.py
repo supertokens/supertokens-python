@@ -30,18 +30,6 @@ from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.asyncio import (
     get_user_by_id as tp_get_user_by_idx,
 )
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    ThirdPartyEmailPasswordRecipe,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    get_user_by_id as tpep_get_user_by_id,
-)
-from supertokens_python.recipe.thirdpartypasswordless import (
-    ThirdPartyPasswordlessRecipe,
-)
-from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    get_user_by_id as tppless_get_user_by_id,
-)
 from supertokens_python.types import User
 from supertokens_python.utils import Awaitable, log_debug_message, normalise_email
 
@@ -285,20 +273,12 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.types import User as EmailPasswordUser
     from supertokens_python.recipe.passwordless.types import User as PasswordlessUser
     from supertokens_python.recipe.thirdparty.types import User as ThirdPartyUser
-    from supertokens_python.recipe.thirdpartyemailpassword.types import (
-        User as ThirdPartyEmailPasswordUser,
-    )
-    from supertokens_python.recipe.thirdpartypasswordless.types import (
-        User as ThirdPartyPasswordlessUser,
-    )
 
     GetUserResult = Union[
         EmailPasswordUser,
         ThirdPartyUser,
         PasswordlessUser,
         None,
-        ThirdPartyEmailPasswordUser,
-        ThirdPartyPasswordlessUser,
     ]
 
 
@@ -329,20 +309,20 @@ async def get_user_for_recipe_id(
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
         await update_user_dict(
-            [ep_get_user_by_id, tpep_get_user_by_id],
-            ["emailpassword", "thirdpartyemailpassword"],
+            [ep_get_user_by_id],
+            ["emailpassword"],
         )
 
     elif recipe_id == ThirdPartyRecipe.recipe_id:
         await update_user_dict(
-            [tp_get_user_by_idx, tpep_get_user_by_id, tppless_get_user_by_id],
-            ["thirdparty", "thirdpartyemailpassword", "thirdpartypasswordless"],
+            [tp_get_user_by_idx],
+            ["thirdparty"],
         )
 
     elif recipe_id == PasswordlessRecipe.recipe_id:
         await update_user_dict(
-            [pless_get_user_by_id, tppless_get_user_by_id],
-            ["passwordless", "thirdpartypasswordless"],
+            [pless_get_user_by_id],
+            ["passwordless"],
         )
 
     if user is not None and recipe is not None:
@@ -361,13 +341,6 @@ def is_recipe_initialised(recipeId: str) -> bool:
         except Exception:
             pass
 
-        if not isRecipeInitialised:
-            try:
-                ThirdPartyEmailPasswordRecipe.get_instance()
-                isRecipeInitialised = True
-            except Exception:
-                pass
-
     elif recipeId == PasswordlessRecipe.recipe_id:
         try:
             PasswordlessRecipe.get_instance()
@@ -375,33 +348,12 @@ def is_recipe_initialised(recipeId: str) -> bool:
         except Exception:
             pass
 
-        if not isRecipeInitialised:
-            try:
-                ThirdPartyPasswordlessRecipe.get_instance()
-                isRecipeInitialised = True
-            except Exception:
-                pass
-
     elif recipeId == ThirdPartyRecipe.recipe_id:
         try:
             ThirdPartyRecipe.get_instance()
             isRecipeInitialised = True
         except Exception:
             pass
-
-        if not isRecipeInitialised:
-            try:
-                ThirdPartyEmailPasswordRecipe.get_instance()
-                isRecipeInitialised = True
-            except Exception:
-                pass
-
-        if not isRecipeInitialised:
-            try:
-                ThirdPartyPasswordlessRecipe.get_instance()
-                isRecipeInitialised = True
-            except Exception:
-                pass
 
     return isRecipeInitialised
 
