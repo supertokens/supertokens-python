@@ -15,9 +15,6 @@ from typing import List
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
-from supertokens_python import get_all_cors_headers
-
-from .utils import custom_init, get_website_domain
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,15 +27,19 @@ SECRET_KEY = "f_d6ar@t2n+e@&7b^i^**kzo68w^e*1kn9%40#sp@0v2t#=vs2"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-custom_init("PHONE", "USER_INPUT_CODE_AND_MAGIC_LINK")
+ALLOWED_HOSTS = ["localhost.org", "0.0.0.0"]
 
-ALLOWED_HOSTS = ["localhost"]
-
-CORS_ORIGIN_WHITELIST = [get_website_domain()]
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost.org:8080",
+]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [get_website_domain()]
-CORS_ALLOWED_ORIGIN_REGEXES = [get_website_domain()]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost.org:8080",
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    "http://localhost.org:8080",
+]
 
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -49,9 +50,13 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-CORS_ALLOW_HEADERS: List[str] = (
-    list(default_headers) + ["Content-Type"] + get_all_cors_headers()  # type: ignore
-)
+CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [
+    "Content-Type",
+    "rid",
+    "fdi-version",
+    "anti-csrf",
+    "st-auth-mode",
+]
 
 # Application definition
 
@@ -67,7 +72,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "mysite.middleware.custom_cors_middleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -82,7 +86,7 @@ SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(os.path.dirname(__file__), "../", "templates")],
+        "DIRS": [os.path.join(os.path.dirname(__file__), "../")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -142,3 +146,71 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = "/static/"
+
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
+from typing import Dict, Union, Any
+import sys
+
+
+def get_app_port():
+    argvv = sys.argv
+    for i in range(0, len(argvv)):
+        if argvv[i] == "--port":
+            return argvv[i + 1]
+
+    return "8080"
+
+
+def apis_override_session(param: APIInterface):
+    param.disable_refresh_post = True
+    return param
+
+
+def functions_override_session(param: RecipeInterface):
+    original_create_new_session = param.create_new_session
+
+    async def create_new_session_custom(
+        user_id: str,
+        access_token_payload: Union[Dict[str, Any], None],
+        session_data_in_database: Union[Dict[str, Any], None],
+        disable_anti_csrf: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        if access_token_payload is None:
+            access_token_payload = {}
+        access_token_payload = {**access_token_payload, "customClaim": "customValue"}
+        return await original_create_new_session(
+            user_id,
+            access_token_payload,
+            session_data_in_database,
+            disable_anti_csrf,
+            tenant_id,
+            user_context,
+        )
+
+    param.create_new_session = create_new_session_custom
+
+    return param
+
+
+init(
+    supertokens_config=SupertokensConfig("http://localhost:9000"),
+    app_info=InputAppInfo(
+        app_name="SuperTokens Python SDK",
+        api_domain="0.0.0.0:" + get_app_port(),
+        website_domain="http://localhost.org:8080",
+    ),
+    framework="django",
+    recipe_list=[
+        session.init(
+            override=session.InputOverrideConfig(
+                apis=apis_override_session,
+                functions=functions_override_session,
+            ),
+        )
+    ],
+    telemetry=False,
+)
