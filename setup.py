@@ -46,6 +46,17 @@ extras_require = {
             "python-dotenv==0.19.2",
         ]
     ),
+    "drf": (
+        [
+            "adrf",
+            "django-cors-headers==3.11.0",
+            "django>=3",
+            "django-stubs==1.9.0",
+            "djangorestframework",
+            "uvicorn==0.18.2",
+            "python-dotenv==0.19.2",
+        ]
+    ),
 }
 
 exclude_list = [
