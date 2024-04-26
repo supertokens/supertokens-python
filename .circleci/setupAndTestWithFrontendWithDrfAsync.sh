@@ -30,7 +30,7 @@ fi
 pluginInterfaceTag=$(echo $pluginInterfaceInfo | jq .tag | tr -d '"')
 pluginInterfaceVersion=$(echo $pluginInterfaceInfo | jq .version | tr -d '"')
 
-echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
+echo "Testing with frontend website: $2, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
@@ -45,34 +45,32 @@ cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../
-git clone git@github.com:supertokens/supertokens-auth-react.git
-cd supertokens-auth-react
+git clone git@github.com:supertokens/supertokens-website.git
+cd supertokens-website
 git checkout $2
-npm run init > /dev/null
-(cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
-cd ./test/server/
+cd ../project/tests/frontendIntegration/drf_async
+export PYTHONPATH="${PYTHONPATH}:/root/project"
+uvicorn mysite.asgi:application --port 8080 &
+pid=$!
+uvicorn mysite.asgi:application --port 8082 &
+pid2=$!
+cd ../../../../supertokens-website/test/server
 npm i git+https://github.com:supertokens/supertokens-node.git#$3  
 npm i
-cd ../../../project/tests/auth-react/drf
-export PYTHONPATH="${PYTHONPATH}:/root/project"
-uvicorn mysite.asgi:application --port 8083 &
-pid=$!
-cd ../../../../supertokens-auth-react/
-
-# When testing with supertokens-auth-react for version >= 0.18 the SKIP_OAUTH 
-# flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably. 
-# In versions lower than 0.18 Github is used as the provider.
-
-SKIP_OAUTH=true npm run test-with-non-node
+cd ../../
+npm i
+SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 if [[ $? -ne 0 ]]
 then
-    echo "test failed... killing $pid and exiting!"
+    echo "test failed... killing $pid, $pid2 and exiting!"
     kill -9 $pid
+    kill -9 $pid2
     rm -rf ./test/server/node_modules/supertokens-node
     git checkout HEAD -- ./test/server/package.json
     exit 1
 fi
-echo "all tests passed, killing processes: $pid"
+echo "all tests passed, killing processes: $pid and $pid2"
 kill -9 $pid
+kill -9 $pid2
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json
