@@ -112,8 +112,10 @@ def custom_decorator_for_update_jwt():  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
-                resp = Response(session.get_access_token_payload())  # type: ignore
-                resp["Cache-Control"] = "no-cache, private"
+                resp = Response(  # type: ignore
+                    session.get_access_token_payload(),
+                    headers={"Cache-Control": "no-cache, private"},  # type: ignore
+                )  # type: ignore
                 return resp  # type: ignore
             else:
                 if request.method == "POST":  # type: ignore
@@ -128,13 +130,15 @@ def custom_decorator_for_update_jwt():  # type: ignore
                             clearing[k] = None
 
                     body = request.data  # type: ignore
-                    session_.merge_into_access_token_payload(
+                    session_.sync_merge_into_access_token_payload(
                         {**clearing, **body}, {}  # type: ignore
                     )
 
                     Test.increment_get_session()
-                    resp = Response(session_.get_access_token_payload())  # type: ignore
-                    resp["Cache-Control"] = "no-cache, private"
+                    resp = Response(  # type: ignore
+                        session_.get_access_token_payload(),
+                        headers={"Cache-Control": "no-cache, private"},  # type: ignore
+                    )  # type: ignore
                     return resp  # type: ignore
             return send_options_api_response()  # type: ignore
 
@@ -416,6 +420,8 @@ class JsonTextRenderer(BaseRenderer):  # type: ignore
     media_type = "application/json"
 
     def render(self, data, media_type=None, renderer_context=None):  # type: ignore
+        if isinstance(data, dict):
+            return json.dumps(data).encode("utf-8")
         return data.encode("utf-8")  # type: ignore
 
 
@@ -524,7 +530,7 @@ def check_rid_no_session(request: Request):  # type: ignore
 
 
 @api_view(["GET", "POST"])
-@renderer_classes([JSONRenderer])  # type: ignore
+@renderer_classes([JsonTextRenderer])  # type: ignore
 @custom_decorator_for_update_jwt()
 @verify_session()
 def update_jwt(request: Request):  # type: ignore
@@ -637,7 +643,7 @@ def set_anti_csrf(request: Request):  # type: ignore
 
 
 @api_view(["GET", "POST"])
-@renderer_classes([JSONRenderer])  # type: ignore
+@renderer_classes([JsonTextRenderer])  # type: ignore
 def set_enable_jwt(request: Request):  # type: ignore
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
