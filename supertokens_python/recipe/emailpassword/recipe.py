@@ -58,6 +58,7 @@ from .constants import (
     SIGNUP_EMAIL_EXISTS,
     USER_PASSWORD_RESET,
     USER_PASSWORD_RESET_TOKEN,
+    SIGNUP_EMAIL_EXISTS_OLD,
 )
 from .utils import (
     InputOverrideConfig,
@@ -155,6 +156,12 @@ class EmailPasswordRecipe(RecipeModule):
                 self.api_implementation.disable_password_reset_post,
             ),
             APIHandled(
+                NormalisedURLPath(SIGNUP_EMAIL_EXISTS_OLD),
+                "get",
+                SIGNUP_EMAIL_EXISTS_OLD,
+                self.api_implementation.disable_email_exists_get,
+            ),
+            APIHandled(
                 NormalisedURLPath(SIGNUP_EMAIL_EXISTS),
                 "get",
                 SIGNUP_EMAIL_EXISTS,
@@ -189,7 +196,7 @@ class EmailPasswordRecipe(RecipeModule):
             return await handle_sign_in_api(
                 tenant_id, self.api_implementation, api_options, user_context
             )
-        if request_id == SIGNUP_EMAIL_EXISTS:
+        if request_id in (SIGNUP_EMAIL_EXISTS, SIGNUP_EMAIL_EXISTS_OLD):
             return await handle_email_exists_api(
                 tenant_id, self.api_implementation, api_options, user_context
             )

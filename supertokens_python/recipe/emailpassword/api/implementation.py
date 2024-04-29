@@ -99,7 +99,6 @@ class APIImplementation(APIInterface):
         password_reset_link = get_password_reset_link(
             api_options.app_info,
             token_result.token,
-            api_options.recipe_id,
             tenant_id,
             api_options.request,
             user_context,
