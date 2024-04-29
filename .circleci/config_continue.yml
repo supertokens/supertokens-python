@@ -78,7 +78,7 @@ jobs:
       - run: echo "unalias pip" >> ~/.bashrc
       - run: echo "unalias python" >> ~/.bashrc
       - run: apt update && apt install -y python3.8-minimal
-      - run: update-alternatives --set python /usr/bin/python3.8
+      - run: update-alternatives --install "/usr/bin/python" python /usr/bin/python3.8 2
       - run: python -m pip --upgrade pip
       - run: echo "alias pip3 python -m pip" >> ~/.bashrc
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
@@ -97,7 +97,7 @@ jobs:
       - run: echo "unalias pip" >> ~/.bashrc
       - run: echo "unalias python" >> ~/.bashrc
       - run: apt update && apt install -y python3.8-minimal
-      - run: update-alternatives --set python /usr/bin/python3.8
+      - run: update-alternatives --install "/usr/bin/python" python /usr/bin/python3.8 2
       - run: python -m pip --upgrade pip
       - run: echo "alias pip3 python -m pip" >> ~/.bashrc
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
