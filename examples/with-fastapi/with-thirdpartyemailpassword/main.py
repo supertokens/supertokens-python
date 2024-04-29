@@ -18,8 +18,8 @@ from supertokens_python.recipe import (
     dashboard,
     emailverification,
     session,
-    thirdpartyemailpassword,
     usermetadata,
+    thirdparty,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
@@ -56,92 +56,98 @@ init(
         dashboard.init(),
         emailverification.init("REQUIRED"),
         usermetadata.init(),
-        thirdpartyemailpassword.init(
-            providers=[
-                thirdpartyemailpassword.ProviderInput(
-                    config=thirdpartyemailpassword.ProviderConfig(
-                        third_party_id="google",
-                        clients=[
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["GOOGLE_CLIENT_ID"],
-                                client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
-                                client_type="web",
-                            ),
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["GOOGLE_CLIENT_ID_MOBILE"],
-                                client_secret=os.environ["GOOGLE_CLIENT_SECRET_MOBILE"],
-                                client_type="mobile",
-                            ),
-                        ],
+        thirdparty.init(
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                providers=[
+                    thirdparty.ProviderInput(
+                        config=thirdparty.ProviderConfig(
+                            third_party_id="google",
+                            clients=[
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["GOOGLE_CLIENT_ID"],
+                                    client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+                                    client_type="web",
+                                ),
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["GOOGLE_CLIENT_ID_MOBILE"],
+                                    client_secret=os.environ[
+                                        "GOOGLE_CLIENT_SECRET_MOBILE"
+                                    ],
+                                    client_type="mobile",
+                                ),
+                            ],
+                        ),
                     ),
-                ),
-                thirdpartyemailpassword.ProviderInput(
-                    config=thirdpartyemailpassword.ProviderConfig(
-                        third_party_id="github",
-                        clients=[
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["GITHUB_CLIENT_ID"],
-                                client_secret=os.environ["GITHUB_CLIENT_SECRET"],
-                                client_type="web",
-                            ),
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["GITHUB_CLIENT_ID_MOBILE"],
-                                client_secret=os.environ["GITHUB_CLIENT_SECRET_MOBILE"],
-                                client_type="mobile",
-                            ),
-                        ],
-                    )
-                ),
-                thirdpartyemailpassword.ProviderInput(
-                    config=thirdpartyemailpassword.ProviderConfig(
-                        third_party_id="apple",
-                        clients=[
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["APPLE_CLIENT_ID"],
-                                client_type="web",
-                                additional_config={
-                                    "keyId": os.environ["APPLE_KEY_ID"],
-                                    "teamId": os.environ["APPLE_TEAM_ID"],
-                                    "privateKey": os.environ["APPLE_PRIVATE_KEY"],
-                                },
-                            ),
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["APPLE_CLIENT_ID_MOBILE"],
-                                client_type="mobile",
-                                additional_config={
-                                    "keyId": os.environ["APPLE_KEY_ID"],
-                                    "teamId": os.environ["APPLE_TEAM_ID"],
-                                    "privateKey": os.environ["APPLE_PRIVATE_KEY"],
-                                },
-                            ),
-                        ],
-                    )
-                ),
-                thirdpartyemailpassword.ProviderInput(
-                    config=thirdpartyemailpassword.ProviderConfig(
-                        third_party_id="google-workspaces",
-                        clients=[
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["GOOGLE_WORKSPACES_CLIENT_ID"],
-                                client_secret=os.environ[
-                                    "GOOGLE_WORKSPACES_CLIENT_SECRET"
-                                ],
-                            ),
-                        ],
-                    )
-                ),
-                thirdpartyemailpassword.ProviderInput(
-                    config=thirdpartyemailpassword.ProviderConfig(
-                        third_party_id="discord",
-                        clients=[
-                            thirdpartyemailpassword.ProviderClientConfig(
-                                client_id=os.environ["DISCORD_CLIENT_ID"],
-                                client_secret=os.environ["DISCORD_CLIENT_SECRET"],
-                            ),
-                        ],
-                    )
-                ),
-            ]
+                    thirdparty.ProviderInput(
+                        config=thirdparty.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["GITHUB_CLIENT_ID"],
+                                    client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+                                    client_type="web",
+                                ),
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["GITHUB_CLIENT_ID_MOBILE"],
+                                    client_secret=os.environ[
+                                        "GITHUB_CLIENT_SECRET_MOBILE"
+                                    ],
+                                    client_type="mobile",
+                                ),
+                            ],
+                        )
+                    ),
+                    thirdparty.ProviderInput(
+                        config=thirdparty.ProviderConfig(
+                            third_party_id="apple",
+                            clients=[
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["APPLE_CLIENT_ID"],
+                                    client_type="web",
+                                    additional_config={
+                                        "keyId": os.environ["APPLE_KEY_ID"],
+                                        "teamId": os.environ["APPLE_TEAM_ID"],
+                                        "privateKey": os.environ["APPLE_PRIVATE_KEY"],
+                                    },
+                                ),
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["APPLE_CLIENT_ID_MOBILE"],
+                                    client_type="mobile",
+                                    additional_config={
+                                        "keyId": os.environ["APPLE_KEY_ID"],
+                                        "teamId": os.environ["APPLE_TEAM_ID"],
+                                        "privateKey": os.environ["APPLE_PRIVATE_KEY"],
+                                    },
+                                ),
+                            ],
+                        )
+                    ),
+                    thirdparty.ProviderInput(
+                        config=thirdparty.ProviderConfig(
+                            third_party_id="google-workspaces",
+                            clients=[
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["GOOGLE_WORKSPACES_CLIENT_ID"],
+                                    client_secret=os.environ[
+                                        "GOOGLE_WORKSPACES_CLIENT_SECRET"
+                                    ],
+                                ),
+                            ],
+                        )
+                    ),
+                    thirdparty.ProviderInput(
+                        config=thirdparty.ProviderConfig(
+                            third_party_id="discord",
+                            clients=[
+                                thirdparty.ProviderClientConfig(
+                                    client_id=os.environ["DISCORD_CLIENT_ID"],
+                                    client_secret=os.environ["DISCORD_CLIENT_SECRET"],
+                                ),
+                            ],
+                        )
+                    ),
+                ]
+            )
         ),
     ],
     telemetry=False,

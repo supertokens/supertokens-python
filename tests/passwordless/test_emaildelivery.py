@@ -102,13 +102,13 @@ async def test_email_verify_for_pless_user_no_callback():
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
         async def send_raw_email_override(
-            content: EmailContent, user_context: Dict[str, Any]
+            _content: EmailContent, _user_context: Dict[str, Any]
         ):
             nonlocal send_raw_email_called
             send_raw_email_called = True
 
         async def get_content_override(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
         ) -> EmailContent:
             nonlocal get_content_called
             get_content_called = True
@@ -541,7 +541,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
         async def send_raw_email_override(
-            content: EmailContent, user_context: Dict[str, Any]
+            content: EmailContent, _user_context: Dict[str, Any]
         ):
             nonlocal send_raw_email_called, email, user_input_code
             send_raw_email_called = True
@@ -553,7 +553,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
         ) -> EmailContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
