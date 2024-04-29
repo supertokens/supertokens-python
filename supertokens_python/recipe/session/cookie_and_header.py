@@ -428,11 +428,16 @@ def _set_access_token_in_response(
 
 # This function checks for multiple cookies with the same name and clears the cookies for the older domain.
 def clear_session_cookies_from_older_cookie_domain(
-    request: BaseRequest,
-    config: SessionConfig,
-) -> bool:
-    did_clear_cookies = False
+    request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any]
+):
+    allowed_transfer_method = config.get_token_transfer_method(
+        request, False, user_context
+    )
+    # If the transfer method is 'header', there's no need to clear cookies immediately, even if there are multiple in the request.
+    if allowed_transfer_method == "header":
+        return
 
+    did_clear_cookies = False
     response_mutators: List[ResponseMutator] = []
 
     token_types: List[TokenType] = ["access", "refresh"]
@@ -467,11 +472,10 @@ def clear_session_cookies_from_older_cookie_domain(
             )
             did_clear_cookies = True
     if did_clear_cookies:
-        return raise_clear_duplicate_session_cookies_exception(
+        raise_clear_duplicate_session_cookies_exception(
             "The request contains multiple session cookies. We are clearing the cookie from older_cookie_domain. Session will be refreshed in the next refresh call.",
             response_mutators=response_mutators,
         )
-    return did_clear_cookies
 
 
 def has_multiple_cookies_for_token_type(

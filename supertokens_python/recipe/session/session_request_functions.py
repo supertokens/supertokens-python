@@ -89,17 +89,6 @@ async def get_session_from_request(
 ) -> Optional[SessionContainer]:
     log_debug_message("getSession: Started")
 
-    # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
-    # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
-    # ensuring outdated token payload isn't used.
-    if has_multiple_cookies_for_token_type(request, "access"):
-        log_debug_message(
-            "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
-        )
-        raise_try_refresh_token_exception(
-            "Multiple access tokens present in the request cookies."
-        )
-
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
             Supertokens.get_instance().app_info.framework
@@ -158,6 +147,18 @@ async def get_session_from_request(
         "cookie"
     ) is not None:
         log_debug_message("getSession: using cookie transfer method")
+
+        # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
+        # ensuring outdated token payload isn't used.
+        if has_multiple_cookies_for_token_type(request, "access"):
+            log_debug_message(
+                "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+            )
+            raise_try_refresh_token_exception(
+                "Multiple access tokens present in the request cookies."
+            )
+
         request_transfer_method = "cookie"
         request_access_token = access_tokens["cookie"]
 
