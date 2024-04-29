@@ -47,7 +47,8 @@ With this update, verify_session will return a 401 error if it detects multiple 
 
 ## [0.18.11] - 2024-04-26
 
-- Fixes session issues with django-rest-framework.
+- Fixes issues with the propagation of session creation/updates with django-rest-framework because the django-rest-framework wrapped the original request with it's own request object. Updates on that object were not reflecting on the original request object.
+- Fixes type mismatch for FastAPI middleware.
 
 ## [0.19.0] - 2024-04-25
 
