@@ -50,7 +50,7 @@ extras_require = {
         [
             "adrf",
             "django-cors-headers==3.11.0",
-            "django>=3",
+            "django>=4",
             "django-stubs==1.9.0",
             "djangorestframework",
             "uvicorn==0.18.2",
