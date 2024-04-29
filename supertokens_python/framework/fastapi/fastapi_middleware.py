@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Union
 from supertokens_python.framework import BaseResponse
 
 if TYPE_CHECKING:
-    from fastapi import FastAPI, Request
+    from fastapi import Request
 
 
 def get_middleware():
@@ -26,9 +26,6 @@ def get_middleware():
     from supertokens_python.utils import default_user_context
 
     class Middleware(BaseHTTPMiddleware):
-        def __init__(self, app: FastAPI):
-            super().__init__(app)
-
         async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
             from supertokens_python import Supertokens
             from supertokens_python.exceptions import SuperTokensError

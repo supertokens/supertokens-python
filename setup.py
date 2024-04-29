@@ -46,6 +46,17 @@ extras_require = {
             "python-dotenv==0.19.2",
         ]
     ),
+    "drf": (
+        [
+            "adrf",
+            "django-cors-headers==3.11.0",
+            "django>=4",
+            "django-stubs==1.9.0",
+            "djangorestframework",
+            "uvicorn==0.18.2",
+            "python-dotenv==0.19.2",
+        ]
+    ),
 }
 
 exclude_list = [
@@ -70,7 +81,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.18.10",
+    version="0.18.11",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
