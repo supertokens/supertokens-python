@@ -34,6 +34,9 @@ with-django:
 with-django2x:
 	pip3 install -e .[django2x]
 
+with-drf:
+	pip3 install -e .[drf]
+
 with-flask:
 	pip3 install -e .[flask]
 

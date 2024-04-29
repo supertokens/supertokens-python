@@ -44,6 +44,47 @@ With this update, verify_session will return a 401 error if it detects multiple 
     - If `older_cookie_domain` is set, the refresh clears the older cookie, returning a 200 response.
         - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
+
+## [0.18.11] - 2024-04-26
+
+- Fixes session issues with django-rest-framework.
+
+## [0.19.0] - 2024-04-25
+
+-   Added `older_cookie_domain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookie_domain` is changed.
+-   If `verify_session` detects multiple access tokens in the request, it will return a 401 error, prompting a refresh, even if one of the tokens is valid.
+-   `refresh_post` (`/auth/session/refresh` by default) API changes:
+    -   now returns 500 error if multiple access tokens are present in the request and `config.older_cookie_domain` is not set.
+    -   now clears the access token cookie if it was called without a refresh token (if an access token cookie exists and if using cookie-based sessions).
+    -   now clears cookies from the old domain if `older_cookie_domain` is specified and multiple refresh/access token cookies exist, without updating the front-token or any of the tokens.
+    -   now a 200 response may not include new session tokens.
+
+### Rationale
+
+This update addresses an edge case where changing the `cookie_domain` config on the server can lead to session integrity issues. For instance, if the API server URL is 'api.example.com' with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com', the client may retain cookies with both '.example.com' and 'api.example.com' domains, resulting in multiple sets of session token cookies existing.
+
+Previously, verify_session would select one of the access tokens from the incoming request. If it chose the older cookie, it would return a 401 status code, prompting a refresh request. However, the `refresh_post` API would then set new session token cookies with the updated `cookie_domain`, but older cookies will persist, leading to repeated 401 errors and refresh loops.
+
+With this update, verify_session will return a 401 error if it detects multiple access tokens in the request, prompting a refresh request. The `refresh_post` API will clear cookies from the old domain if `older_cookie_domain` is specified in the configuration, then return a 200 status. If `older_cookie_domain` is not configured, the `refresh_post` API will return a 500 error with a message instructing to set `older_cookie_domain`.
+
+**Example:**
+
+-   `apiDomain`: 'api.example.com'
+-   `cookie_domain`: 'api.example.com'
+
+**Flow:**
+
+1. After authentication, the frontend has cookies set with `domain=api.example.com`, but the access token has expired.
+2. The server updates `cookie_domain` to `.example.com`.
+3. An API call requiring session with an expired access token (cookie with `domain=api.example.com`) results in a 401 response.
+4. The frontend attempts to refresh the session, generating a new access token saved with `domain=.example.com`.
+5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
+6. The frontend tries to refresh the session with multiple access tokens:
+    - If `older_cookie_domain` is not set, the refresh fails with a 500 error.
+        - The user remains stuck until they clear cookies manually or `older_cookie_domain` is set.
+    - If `older_cookie_domain` is set, the refresh clears the older cookie, returning a 200 response.
+        - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
+
 ## [0.18.10] - 2024-04-05
 
 - Relax constraints on `aiosmtplib` dependency version.

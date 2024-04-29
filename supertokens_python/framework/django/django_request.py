@@ -65,9 +65,25 @@ class DjangoRequest(BaseRequest):
 
     def set_session(self, session: SessionContainer):
         self.request.supertokens = session  # type: ignore
+        if hasattr(self.request, "_request"):
+            # this is there because in Django reset framework, the request object
+            # in the API is the one from reset framework, however, the
+            # one from the middleware is the original one. So we need to set
+            # this so that the middleware also gets the token updates which can then be
+            # used to update the response.
+            # pylint: disable=protected-access
+            self.request._request.supertokens = session  # type: ignore
 
     def set_session_as_none(self):
         self.request.supertokens = None  # type: ignore
+        if hasattr(self.request, "_request"):
+            # this is there because in Django reset framework, the request object
+            # in the API is the one from reset framework, however, the
+            # one from the middleware is the original one. So we need to set
+            # this so that the middleware also gets the token updates which can then be
+            # used to update the response.
+            # pylint: disable=protected-access
+            self.request._request.supertokens = None  # type: ignore
 
     def get_path(self) -> str:
         return self.request.path
