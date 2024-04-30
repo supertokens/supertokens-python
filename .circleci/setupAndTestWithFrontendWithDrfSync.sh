@@ -50,9 +50,9 @@ cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/drf_sync
 export PYTHONPATH="${PYTHONPATH}:/root/project"
-python manage.py runserver 8080 &
+gunicorn mysite.wsgi --bind 0.0.0.0:8080 &
 pid=$!
-python manage.py runserver 8082 &
+gunicorn mysite.wsgi --bind 0.0.0.0:8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
 npm i git+https://github.com:supertokens/supertokens-node.git#$3  

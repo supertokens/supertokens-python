@@ -53,6 +53,7 @@ extras_require = {
             "django>=4",
             "django-stubs==1.9.0",
             "djangorestframework",
+            "gunicorn==20.1.0",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
         ]
