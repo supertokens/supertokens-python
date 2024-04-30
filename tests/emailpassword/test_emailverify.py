@@ -400,7 +400,9 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -480,7 +482,9 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -560,7 +564,9 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -642,7 +648,9 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -752,7 +760,9 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -873,7 +883,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -979,7 +991,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         ) -> None:
             nonlocal token
             email_verification_url_token = template_vars.email_verify_link
-            token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
+            token = email_verification_url_token.split("?token=")[1].split(
+                "&tenantId="
+            )[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post

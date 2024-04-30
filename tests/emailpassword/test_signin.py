@@ -182,6 +182,96 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
 
 
 @mark.asyncio
+async def test_singinAPI_works_when_input_is_fine_when_rid_is_tpep(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+    assert dict_response["status"] == "OK"
+
+    response_2 = driver_config_client.post(
+        url="/auth/signin",
+        headers={"rid": "thirdpartyemailpassword"},
+        json={
+            "formFields": [
+                {"id": "password", "value": "validpass123"},
+                {"id": "email", "value": "random@gmail.com"},
+            ]
+        },
+    )
+
+    assert response_2.status_code == 200
+    dict_response = json.loads(response_2.text)
+    assert dict_response["user"]["id"] == user_info["id"]
+    assert dict_response["user"]["email"] == user_info["email"]
+
+
+@mark.asyncio
+async def test_singinAPI_works_when_input_is_fine_when_rid_is_emailpassword(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpass123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response["user"]
+    assert dict_response["status"] == "OK"
+
+    response_2 = driver_config_client.post(
+        url="/auth/signin",
+        headers={"rid": "emailpassword"},
+        json={
+            "formFields": [
+                {"id": "password", "value": "validpass123"},
+                {"id": "email", "value": "random@gmail.com"},
+            ]
+        },
+    )
+
+    assert response_2.status_code == 200
+    dict_response = json.loads(response_2.text)
+    assert dict_response["user"]["id"] == user_info["id"]
+    assert dict_response["user"]["email"] == user_info["email"]
+
+
+@mark.asyncio
 async def test_singinAPI_throws_an_error_when_email_does_not_match(
     driver_config_client: TestClient,
 ):
