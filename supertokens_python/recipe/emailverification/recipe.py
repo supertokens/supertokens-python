@@ -370,8 +370,6 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> IsEmailVerifiedGetOkResult:
-        if session is None:
-            raise Exception("Session is undefined. Should not come here.")
         try:
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
@@ -450,7 +448,6 @@ class APIImplementation(APIInterface):
             email_verify_link = get_email_verify_link(
                 api_options.app_info,
                 response.token,
-                api_options.recipe_id,
                 tenant_id,
                 api_options.request,
                 user_context,

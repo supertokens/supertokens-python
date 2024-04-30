@@ -183,7 +183,6 @@ async def create_email_verification_link(
         link=get_email_verify_link(
             app_info,
             email_verification_token.token,
-            recipe_instance.get_recipe_id(),
             tenant_id,
             request,
             user_context,

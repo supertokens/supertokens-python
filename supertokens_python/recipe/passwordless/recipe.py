@@ -39,6 +39,8 @@ from .constants import (
     CREATE_CODE_API,
     DOES_EMAIL_EXIST_API,
     DOES_PHONE_NUMBER_EXIST_API,
+    DOES_EMAIL_EXIST_API_OLD,
+    DOES_PHONE_NUMBER_EXIST_API_OLD,
     RESEND_CODE_API,
 )
 from .exceptions import SuperTokensPasswordlessError
@@ -175,6 +177,20 @@ class PasswordlessRecipe(RecipeModule):
                 disabled=self.api_implementation.disable_phone_number_exists_get,
             ),
             APIHandled(
+                method="get",
+                path_without_api_base_path=NormalisedURLPath(DOES_EMAIL_EXIST_API_OLD),
+                request_id=DOES_EMAIL_EXIST_API_OLD,
+                disabled=self.api_implementation.disable_email_exists_get,
+            ),
+            APIHandled(
+                method="get",
+                path_without_api_base_path=NormalisedURLPath(
+                    DOES_PHONE_NUMBER_EXIST_API_OLD
+                ),
+                request_id=DOES_PHONE_NUMBER_EXIST_API_OLD,
+                disabled=self.api_implementation.disable_phone_number_exists_get,
+            ),
+            APIHandled(
                 method="post",
                 path_without_api_base_path=NormalisedURLPath(RESEND_CODE_API),
                 request_id=RESEND_CODE_API,
@@ -210,11 +226,11 @@ class PasswordlessRecipe(RecipeModule):
             return await create_code(
                 self.api_implementation, tenant_id, options, user_context
             )
-        if request_id == DOES_EMAIL_EXIST_API:
+        if request_id in (DOES_EMAIL_EXIST_API, DOES_EMAIL_EXIST_API_OLD):
             return await email_exists(
                 self.api_implementation, tenant_id, options, user_context
             )
-        if request_id == DOES_PHONE_NUMBER_EXIST_API:
+        if request_id in (DOES_PHONE_NUMBER_EXIST_API, DOES_PHONE_NUMBER_EXIST_API_OLD):
             return await phone_number_exists(
                 self.api_implementation, tenant_id, options, user_context
             )
@@ -322,9 +338,7 @@ class PasswordlessRecipe(RecipeModule):
             app_info.get_origin(request, user_context).get_as_string_dangerous()
             + app_info.website_base_path.get_as_string_dangerous()
             + "/verify"
-            + "?rid="
-            + self.get_recipe_id()
-            + "&preAuthSessionId="
+            + "?preAuthSessionId="
             + code_info.pre_auth_session_id
             + "&tenantId="
             + tenant_id

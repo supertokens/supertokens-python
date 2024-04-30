@@ -18,7 +18,7 @@ from pytest import mark, fixture
 
 from supertokens_python.framework.fastapi import get_middleware
 from fastapi.testclient import TestClient
-from supertokens_python.recipe import session, thirdparty
+from supertokens_python.recipe import session, thirdparty, emailpassword, passwordless
 from supertokens_python import init
 from supertokens_python.recipe.multitenancy.asyncio import (
     create_or_update_third_party_config,
@@ -103,6 +103,94 @@ async def test_calling_authorisation_url_api_with_empty_init_with_dynamic_thirdp
 
     res = app.get(
         "/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect"
+    )
+    body = json.loads(res.text)
+    assert body["status"] == "OK"
+    assert (
+        body["urlWithQueryParams"]
+        == "https://accounts.google.com/o/oauth2/v2/auth?client_id=google-client-id&redirect_uri=redirect&response_type=code&scope=openid+email&included_grant_scopes=true&access_type=offline"
+    )
+
+
+async def test_using_thirdpartyemailpassword_still_works(
+    app: TestClient,
+):
+    args = get_st_init_args(
+        [
+            session.init(
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+                anti_csrf="VIA_TOKEN",
+            ),
+            thirdparty.init(),
+            emailpassword.init(),
+        ]
+    )
+    init(**args)  # type: ignore
+    start_st()
+
+    await create_or_update_third_party_config(
+        "public",
+        ProviderConfig(
+            third_party_id="google",
+            name="Google",
+            clients=[
+                ProviderClientConfig(
+                    client_id="google-client-id",
+                    client_secret="google-client-secret",
+                )
+            ],
+        ),
+    )
+
+    res = app.get(
+        "/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect",
+        headers={"rid": "thirdpartyemailpassword"},
+    )
+    body = json.loads(res.text)
+    assert body["status"] == "OK"
+    assert (
+        body["urlWithQueryParams"]
+        == "https://accounts.google.com/o/oauth2/v2/auth?client_id=google-client-id&redirect_uri=redirect&response_type=code&scope=openid+email&included_grant_scopes=true&access_type=offline"
+    )
+
+
+async def test_using_thirdpartypasswordless_still_works(
+    app: TestClient,
+):
+    args = get_st_init_args(
+        [
+            session.init(
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+                anti_csrf="VIA_TOKEN",
+            ),
+            thirdparty.init(),
+            emailpassword.init(),
+            passwordless.init(
+                contact_config=passwordless.ContactConfig("EMAIL_OR_PHONE"),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            ),
+        ]
+    )
+    init(**args)  # type: ignore
+    start_st()
+
+    await create_or_update_third_party_config(
+        "public",
+        ProviderConfig(
+            third_party_id="google",
+            name="Google",
+            clients=[
+                ProviderClientConfig(
+                    client_id="google-client-id",
+                    client_secret="google-client-secret",
+                )
+            ],
+        ),
+    )
+
+    res = app.get(
+        "/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect",
+        headers={"rid": "thirdpartypasswordless"},
     )
     body = json.loads(res.text)
     assert body["status"] == "OK"

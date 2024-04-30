@@ -29,6 +29,7 @@ from supertokens_python.recipe.passwordless.asyncio import (
     get_user_by_id,
     get_user_by_phone_number,
     update_user,
+    create_magic_link,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
     DeleteUserInfoOkResult,
@@ -122,6 +123,34 @@ async def test_passwordless_otp(driver_config_client: TestClient):
         "createdNewUser": True,
         "user": {"phoneNumber": "+919494949494"},
     }
+
+
+@mark.asyncio
+async def test_passwordless_create_magic_link(_: TestClient):
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            passwordless.init(
+                flow_type="USER_INPUT_CODE",
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    magic_link = await create_magic_link("public", "test@example.com", None)
+
+    assert "rid=" not in magic_link
+    assert "tenantId=public" in magic_link
 
 
 @mark.asyncio
