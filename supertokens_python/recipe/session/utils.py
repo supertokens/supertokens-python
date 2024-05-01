@@ -67,19 +67,16 @@ def normalise_session_scope(session_scope: str) -> str:
                 raise Exception("Should not come here")
             scope = url_obj.hostname
 
-            if scope.startswith("."):
-                scope = scope[1:]
-
             return scope
         except Exception:
-            raise_general_exception("Please provide a valid sessionScope")
+            raise_general_exception("Please provide a valid session_scope")
 
     no_dot_normalised = helper(session_scope)
     if no_dot_normalised == "localhost" or is_an_ip_address(no_dot_normalised):
         return no_dot_normalised
 
-    if no_dot_normalised[0] == ".":
-        return no_dot_normalised[1:]
+    if session_scope.startswith("."):
+        return "." + no_dot_normalised
 
     return no_dot_normalised
 

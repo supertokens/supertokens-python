@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.12] - 2024-05-01
+
+- Fixed a bug in the `normalise_session_scope` util function that caused it to remove leading dots from the scope string.
+
 ## [0.18.11] - 2024-04-26
 
 - Fixes issues with the propagation of session creation/updates with django-rest-framework because the django-rest-framework wrapped the original request with it's own request object. Updates on that object were not reflecting on the original request object.
