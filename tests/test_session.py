@@ -879,7 +879,7 @@ async def test_token_transfer_method_works_when_using_origin_function(
     assert len(response.headers.get("set-cookie", [])) > 0
 
 
-async def test_access_token_cookie_is_cleared_if_refresh_is_called_without_refresh_token(
+async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_but_with_access_token(
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
@@ -908,6 +908,10 @@ async def test_access_token_cookie_is_cleared_if_refresh_is_called_without_refre
     assert response_cookies["sAccessToken"]["value"] == ""
     assert (
         response_cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+    assert response_cookies["sRefreshToken"]["value"] == ""
+    assert (
+        response_cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     )
 
 

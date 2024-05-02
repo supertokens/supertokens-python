@@ -16,9 +16,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.session.cookie_and_header import (
-    clear_session_cookies_from_older_cookie_domain,
-)
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
     SessionClaimValidator,
@@ -43,11 +40,6 @@ class APIImplementation(APIInterface):
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -> SessionContainer:
-
-        clear_session_cookies_from_older_cookie_domain(
-            api_options.request, api_options.config, user_context
-        )
-
         return await refresh_session_in_request(
             api_options.request,
             user_context,

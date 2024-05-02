@@ -68,19 +68,16 @@ def normalise_session_scope(session_scope: str) -> str:
                 raise Exception("Should not come here")
             scope = url_obj.hostname
 
-            if scope.startswith("."):
-                scope = scope[1:]
-
             return scope
         except Exception:
-            raise_general_exception("Please provide a valid sessionScope")
+            raise_general_exception("Please provide a valid session_scope")
 
     no_dot_normalised = helper(session_scope)
     if no_dot_normalised == "localhost" or is_an_ip_address(no_dot_normalised):
         return no_dot_normalised
 
-    if no_dot_normalised[0] == ".":
-        return no_dot_normalised[1:]
+    if session_scope.startswith("."):
+        return "." + no_dot_normalised
 
     return no_dot_normalised
 
@@ -189,6 +186,13 @@ class InputErrorHandlers(ErrorHandlers):
                 Union[BaseResponse, Awaitable[BaseResponse]],
             ],
         ] = None,
+        on_try_refresh_token: Union[
+            None,
+            Callable[
+                [BaseRequest, str, BaseResponse],
+                Union[BaseResponse, Awaitable[BaseResponse]],
+            ],
+        ] = None,
         on_unauthorised: Union[
             Callable[
                 [BaseRequest, str, BaseResponse],
@@ -213,6 +217,8 @@ class InputErrorHandlers(ErrorHandlers):
     ):
         if on_token_theft_detected is None:
             on_token_theft_detected = default_token_theft_detected_callback
+        if on_try_refresh_token is None:
+            on_try_refresh_token = default_try_refresh_token_callback
         if on_unauthorised is None:
             on_unauthorised = default_unauthorised_callback
         if on_invalid_claim is None:

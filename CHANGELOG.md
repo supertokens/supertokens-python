@@ -17,6 +17,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   now clears the access token cookie if it was called without a refresh token (if an access token cookie exists and if using cookie-based sessions).
     -   now clears cookies from the old domain if `older_cookie_domain` is specified and multiple refresh/access token cookies exist, without updating the front-token or any of the tokens.
     -   now a 200 response may not include new session tokens.
+-   Fixed a bug in the `normalise_session_scope` util function that caused it to remove leading dots from the scope string.
+
+### Migration
+
+With this update, the second argument in the `session.init` function changes from `cookie_secure` to `older_cookie_domain`. If you're using positional arguments, you need to insert `None` for `older_cookie_domain` as the second argument to maintain the correct order of parameters.
+
+Before:
+```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import session
+
+init(
+    supertokens_config=SupertokensConfig("..."),
+    app_info=InputAppInfo("..."),
+    framework="...",
+    recipe_list=[
+        session.init(
+            "example.com" # cookie_domain
+            True, # cookie_secure
+            "strict" # cookie_same_site
+        ),
+    ],
+)
+```
+
+After the update:
+
+```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import session
+
+init(
+    supertokens_config=SupertokensConfig("..."),
+    app_info=InputAppInfo("..."),
+    framework="...",
+    recipe_list=[
+        session.init(
+            "example.com" # cookie_domain
+            None, # older_cookie_domain
+            True, # cookie_secure
+            "strict" # cookie_same_site
+        ),
+    ],
+)
+```
 
 ### Rationale
 

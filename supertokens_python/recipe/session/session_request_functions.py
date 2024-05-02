@@ -21,6 +21,7 @@ from supertokens_python.recipe.session.access_token import (
 )
 from supertokens_python.recipe.session.constants import available_token_transfer_methods
 from supertokens_python.recipe.session.cookie_and_header import (
+    clear_session_cookies_from_older_cookie_domain,
     clear_session_mutator,
     get_anti_csrf_header,
     get_cookie_name_from_token_type,
@@ -356,6 +357,8 @@ async def refresh_session_in_request(
     log_debug_message("refreshSession: Wrapping done")
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
+    clear_session_cookies_from_older_cookie_domain(request, config, user_context)
+
     refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
 
     for transfer_method in available_token_transfer_methods:
@@ -414,19 +417,19 @@ async def refresh_session_in_request(
             allowed_transfer_method in ("cookie", "any")
             and get_token(request, "access", "cookie") is not None
         ):
-            response_mutators.append(
-                set_cookie_response_mutator(
-                    config,
-                    get_cookie_name_from_token_type("access"),
-                    "",
-                    0,
-                    "access_token_path",
-                    request,
-                )
-            )
             log_debug_message(
-                "refreshSession: cleared access token and returning UNAUTHORISED because refresh_token in request is None"
+                "refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh_token in request is None"
             )
+
+            # We're clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            # error with `clear_tokens: False`. This approach avoids confusion and we don't want to retain session
+            # tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            return raise_unauthorised_exception(
+                "Refresh token not found but access token is present. Clearing all tokens.",
+                clear_tokens=True,
+                response_mutators=response_mutators,
+            )
+
         return raise_unauthorised_exception(
             "Refresh token not found. Are you sending the refresh token in the request?",
             clear_tokens=False,
