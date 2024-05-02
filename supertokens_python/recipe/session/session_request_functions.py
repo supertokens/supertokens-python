@@ -24,7 +24,6 @@ from supertokens_python.recipe.session.cookie_and_header import (
     clear_session_cookies_from_older_cookie_domain,
     clear_session_mutator,
     get_anti_csrf_header,
-    get_cookie_name_from_token_type,
     get_token,
     has_multiple_cookies_for_token_type,
     set_cookie_response_mutator,
