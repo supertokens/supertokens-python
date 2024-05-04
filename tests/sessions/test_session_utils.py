@@ -16,6 +16,13 @@ from supertokens_python.recipe.session.utils import normalise_session_scope
 
 
 class TestNormaliseSessionScope:
+    def test_empty_string(self):
+        try:
+            normalise_session_scope("")
+            assert False
+        except Exception as e:
+            assert str(e) == "Please provide a valid session_scope"
+
     def test_with_leading_dot(self):
         result = normalise_session_scope(".example.com")
         assert result == ".example.com"
