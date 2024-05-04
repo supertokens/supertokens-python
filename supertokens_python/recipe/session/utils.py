@@ -229,7 +229,7 @@ class InputErrorHandlers(ErrorHandlers):
             )
         super().__init__(
             on_token_theft_detected,
-            default_try_refresh_token_callback,
+            on_try_refresh_token,
             on_unauthorised,
             on_invalid_claim,
             on_clear_duplicate_session_cookies,
