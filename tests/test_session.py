@@ -119,6 +119,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         response.refreshToken.token,
         response.antiCsrfToken,
         False,
+        True,
         None,
     )
 
