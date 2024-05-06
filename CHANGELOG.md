@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -  `create_new_session` now defaults to the value of the `st-auth-mode` header (if available) if the configured `get_token_transfer_method` returns `any`.
 - Enable smooth switching between `use_dynamic_access_token_signing_key` settings by allowing refresh calls to change the signing key type of a session.
 
+### Breaking change:
+- A session is not required when calling the sign out API. Otherwise the API will return a 401 error.
+
 ## [0.18.11] - 2024-04-26
 
 - Fixes issues with the propagation of session creation/updates with django-rest-framework because the django-rest-framework wrapped the original request with it's own request object. Updates on that object were not reflecting on the original request object.
