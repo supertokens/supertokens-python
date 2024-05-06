@@ -329,6 +329,28 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
     )
 
 
+async def test_signout_api_returns_401_without_session_tokens(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
+        ),
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+    )
+    start_st()
+
+    signout_response = driver_config_client.post(
+        url="/auth/signout",
+    )
+
+    assert signout_response.status_code == 401
+
+
 async def test_should_use_override_functions_in_session_container_methods():
     def override_session_functions(oi: RecipeInterface) -> RecipeInterface:
         oi_get_session_information = oi.get_session_information
