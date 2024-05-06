@@ -297,6 +297,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             refresh_token,
             anti_csrf_token,
             disable_anti_csrf,
+            self.config.use_dynamic_access_token_signing_key,
             user_context=user_context,
         )
 

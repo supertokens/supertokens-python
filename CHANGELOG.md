@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.19.0] - 2024-05-06
 
 -  `create_new_session` now defaults to the value of the `st-auth-mode` header (if available) if the configured `get_token_transfer_method` returns `any`.
+- Enable smooth switching between `use_dynamic_access_token_signing_key` settings by allowing refresh calls to change the signing key type of a session.
 
 ## [0.18.11] - 2024-04-26
 
