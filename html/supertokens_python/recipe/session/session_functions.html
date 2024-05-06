@@ -246,7 +246,7 @@ async def get_session(
             )
 
             raise_try_refresh_token_exception(
-                &#34;The access token doesn&#39;t match the useDynamicAccessTokenSigningKey setting&#34;
+                &#34;The access token doesn&#39;t match the use_dynamic_access_token_signing_key setting&#34;
             )
 
     # If we get here we either have a V2 token that doesn&#39;t pass verification or a valid V3&gt; token
@@ -336,13 +336,15 @@ async def get_session(
                 response[&#34;session&#34;].get(&#34;tenantId&#34;)
                 or (access_token_info or {}).get(&#34;tenantId&#34;),
             ),
-            GetSessionAPIResponseAccessToken(
-                response[&#34;accessToken&#34;][&#34;token&#34;],
-                response[&#34;accessToken&#34;][&#34;expiry&#34;],
-                response[&#34;accessToken&#34;][&#34;createdTime&#34;],
-            )
-            if &#34;accessToken&#34; in response
-            else None,
+            (
+                GetSessionAPIResponseAccessToken(
+                    response[&#34;accessToken&#34;][&#34;token&#34;],
+                    response[&#34;accessToken&#34;][&#34;expiry&#34;],
+                    response[&#34;accessToken&#34;][&#34;createdTime&#34;],
+                )
+                if &#34;accessToken&#34; in response
+                else None
+            ),
         )
     if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
         log_debug_message(&#34;getSession: Returning UNAUTHORISED because of core response&#34;)
@@ -359,6 +361,7 @@ async def refresh_session(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
+    use_dynamic_access_token_signing_key: bool,
     user_context: Optional[Dict[str, Any]],
 ) -&gt; CreateOrRefreshAPIResponse:
     data = {
@@ -367,6 +370,7 @@ async def refresh_session(
             not disable_anti_csrf
             and recipe_implementation.config.anti_csrf_function_or_string == &#34;VIA_TOKEN&#34;
         ),
+        &#34;useDynamicSigningKey&#34;: use_dynamic_access_token_signing_key,
     }
 
     if anti_csrf_token is not None:
@@ -737,7 +741,7 @@ async def get_session_information(
             )
 
             raise_try_refresh_token_exception(
-                &#34;The access token doesn&#39;t match the useDynamicAccessTokenSigningKey setting&#34;
+                &#34;The access token doesn&#39;t match the use_dynamic_access_token_signing_key setting&#34;
             )
 
     # If we get here we either have a V2 token that doesn&#39;t pass verification or a valid V3&gt; token
@@ -827,13 +831,15 @@ async def get_session_information(
                 response[&#34;session&#34;].get(&#34;tenantId&#34;)
                 or (access_token_info or {}).get(&#34;tenantId&#34;),
             ),
-            GetSessionAPIResponseAccessToken(
-                response[&#34;accessToken&#34;][&#34;token&#34;],
-                response[&#34;accessToken&#34;][&#34;expiry&#34;],
-                response[&#34;accessToken&#34;][&#34;createdTime&#34;],
-            )
-            if &#34;accessToken&#34; in response
-            else None,
+            (
+                GetSessionAPIResponseAccessToken(
+                    response[&#34;accessToken&#34;][&#34;token&#34;],
+                    response[&#34;accessToken&#34;][&#34;expiry&#34;],
+                    response[&#34;accessToken&#34;][&#34;createdTime&#34;],
+                )
+                if &#34;accessToken&#34; in response
+                else None
+            ),
         )
     if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
         log_debug_message(&#34;getSession: Returning UNAUTHORISED because of core response&#34;)
@@ -878,7 +884,7 @@ async def get_session_information(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>recipe_implementation: RecipeImplementation, refresh_token: str, anti_csrf_token: Union[str, None], disable_anti_csrf: bool, user_context: Optional[Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>recipe_implementation: RecipeImplementation, refresh_token: str, anti_csrf_token: Union[str, None], disable_anti_csrf: bool, use_dynamic_access_token_signing_key: bool, user_context: Optional[Dict[str, Any]]) ‑> <a title="supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse" href="#supertokens_python.recipe.session.session_functions.CreateOrRefreshAPIResponse">CreateOrRefreshAPIResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -891,6 +897,7 @@ async def get_session_information(
     refresh_token: str,
     anti_csrf_token: Union[str, None],
     disable_anti_csrf: bool,
+    use_dynamic_access_token_signing_key: bool,
     user_context: Optional[Dict[str, Any]],
 ) -&gt; CreateOrRefreshAPIResponse:
     data = {
@@ -899,6 +906,7 @@ async def get_session_information(
             not disable_anti_csrf
             and recipe_implementation.config.anti_csrf_function_or_string == &#34;VIA_TOKEN&#34;
         ),
+        &#34;useDynamicSigningKey&#34;: use_dynamic_access_token_signing_key,
     }
 
     if anti_csrf_token is not None:
