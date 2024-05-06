@@ -162,6 +162,91 @@ def check_extracted_info(
         assert False, "Invalid expected_transfer_method"
 
 
+@mark.asyncio
+async def test_use_headers_if_get_token_transfer_method_returns_any_and_no_st_auth_mode_header(
+    app: TestClient,
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "any",  # Always return "any"
+                )
+            ]
+        )
+    )
+    start_st()
+
+    # Create session without specifying st-auth-mode
+    res = create_session(app)
+
+    # Assert that no tokens are set in the cookies
+    assert res.get("accessToken") is None
+    assert res.get("refreshToken") is None
+    assert res.get("antiCsrf") is None
+
+    # Assert that tokens are set in the headers
+    assert res.get("accessTokenFromHeader") is not None
+    assert res.get("refreshTokenFromHeader") is not None
+
+
+@mark.asyncio
+async def test_should_use_cookies_if_get_token_transfer_method_returns_any_and_st_auth_mode_is_set_to_cookie(
+    app: TestClient,
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "any",  # Always returns "any"
+                )
+            ]
+        )
+    )
+    start_st()
+
+    # Creating session with st-auth-mode set to 'cookie'
+    res = create_session(app, auth_mode_header="cookie")
+
+    # Checking that the tokens are not set in headers
+    assert res.get("accessToken") is not None
+    assert res.get("refreshToken") is not None
+    assert res.get("antiCsrf") is not None
+    assert res.get("accessTokenFromHeader") is None
+    assert res.get("refreshTokenFromHeader") is None
+
+
+@mark.asyncio
+async def test_use_headers_if_get_token_transfer_method_returns_any_and_st_auth_mode_is_set_to_header(
+    app: TestClient,
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "any",  # Always returns "any"
+                )
+            ]
+        )
+    )
+    start_st()
+
+    # Creating session with st-auth-mode set to 'header'
+    res = create_session(app, auth_mode_header="header")
+
+    # Assert that no tokens are set in the cookies
+    assert res.get("accessToken") is None
+    assert res.get("refreshToken") is None
+    assert res.get("antiCsrf") is None
+
+    # Assert that tokens are set in the headers
+    assert res.get("accessTokenFromHeader") is not None
+    assert res.get("refreshTokenFromHeader") is not None
+
+
 @mark.parametrize(
     "auth_mode_header, expected_transfer_method",
     [
