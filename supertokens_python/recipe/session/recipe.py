@@ -23,6 +23,7 @@ from .cookie_and_header import (
     get_cors_allowed_headers,
 )
 from .exceptions import (
+    ClearDuplicateSessionCookiesError,
     SuperTokensSessionError,
     TokenTheftError,
     UnauthorisedError,
@@ -72,6 +73,7 @@ class SessionRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         cookie_domain: Union[str, None] = None,
+        older_cookie_domain: Union[str, None] = None,
         cookie_secure: Union[bool, None] = None,
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
         session_expired_status_code: Union[int, None] = None,
@@ -95,6 +97,7 @@ class SessionRecipe(RecipeModule):
         self.config = validate_and_normalise_user_input(
             app_info,
             cookie_domain,
+            older_cookie_domain,
             cookie_secure,
             cookie_same_site,
             session_expired_status_code,
@@ -265,6 +268,11 @@ class SessionRecipe(RecipeModule):
             return await self.config.error_handlers.on_invalid_claim(
                 self, request, err.payload, response
             )
+        if isinstance(err, ClearDuplicateSessionCookiesError):
+            log_debug_message("errorHandler: returning CLEAR_DUPLICATE_SESSION_COOKIES")
+            return await self.config.error_handlers.on_clear_duplicate_session_cookies(
+                request, str(err), response
+            )
 
         log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
         return await self.config.error_handlers.on_try_refresh_token(
@@ -280,6 +288,7 @@ class SessionRecipe(RecipeModule):
     @staticmethod
     def init(
         cookie_domain: Union[str, None] = None,
+        older_cookie_domain: Union[str, None] = None,
         cookie_secure: Union[bool, None] = None,
         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
         session_expired_status_code: Union[int, None] = None,
@@ -305,6 +314,7 @@ class SessionRecipe(RecipeModule):
                     SessionRecipe.recipe_id,
                     app_info,
                     cookie_domain,
+                    older_cookie_domain,
                     cookie_secure,
                     cookie_same_site,
                     session_expired_status_code,

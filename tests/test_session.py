@@ -19,8 +19,9 @@ from unittest.mock import MagicMock
 from fastapi import FastAPI, Depends
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
-from fastapi.testclient import TestClient
 from pytest import fixture, mark
+from tests.testclient import TestClientWithNoCookieJar as TestClient
+from requests.cookies import cookiejar_from_dict  # type: ignore
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
@@ -790,15 +791,25 @@ async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access
     response = driver_config_client.post("/create")
     assert response.status_code == 200
 
+    cookies = extract_all_cookies(response)
+
     # With access token:
     # without RID:
-    response = driver_config_client.post("/sessioninfo-optional")
+    response = driver_config_client.post(
+        "/sessioninfo-optional",
+        cookies={
+            "sAccessToken": cookies["sAccessToken"]["value"],
+        },
+    )
     assert response.status_code == 401
     assert response.json() == {"message": "try refresh token"}
 
     # with RID:
     response = driver_config_client.post(
         "/sessioninfo-optional",
+        cookies={
+            "sAccessToken": cookies["sAccessToken"]["value"],
+        },
         headers={
             "rid": "session",
         },
@@ -889,3 +900,246 @@ async def test_token_transfer_method_works_when_using_origin_function(
     assert len(response.headers.get("st-access-token", [])) == 0
     assert len(response.headers.get("st-refresh-token", [])) == 0
     assert len(response.headers.get("set-cookie", [])) > 0
+
+
+async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_but_with_access_token(
+    driver_config_client: TestClient,
+):
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={"sAccessToken ": cookies["sAccessToken"]["value"]},
+    )
+
+    assert response.status_code == 401
+    response_cookies = extract_all_cookies(response)
+    assert response_cookies["sAccessToken"]["value"] == ""
+    assert (
+        response_cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+    assert response_cookies["sRefreshToken"]["value"] == ""
+    assert (
+        response_cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+
+
+async def test_access_and_refresh_tokens_are_cleared_if_multiple_tokens_are_passed_to_refresh_endpoint(
+    driver_config_client: TestClient,
+):
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+                older_cookie_domain="example.com",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "front-token" in response.headers
+
+    cookiejar = cookiejar_from_dict({})  # type: ignore
+    cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"])  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], path="/auth/session/refresh")  # type: ignore
+    cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"], domain="testserver.local")  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies=cookiejar,  # type: ignore
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 200
+    response_cookies = extract_all_cookies(response)
+
+    assert response_cookies["sAccessToken"]["value"] == ""
+    assert (
+        response_cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+    assert response_cookies["sAccessToken"]["domain"] == "example.com"
+    assert response_cookies["sRefreshToken"]["value"] == ""
+    assert (
+        response_cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+    assert response_cookies["sRefreshToken"]["domain"] == "example.com"
+
+
+async def test_refresh_endpoint_throws_500_if_multiple_tokens_are_passed_and_older_cookie_domain_is_not_set(
+    driver_config_client: TestClient,
+):
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "front-token" in response.headers
+
+    cookiejar = cookiejar_from_dict({})  # type: ignore
+    cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"])  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], path="/auth/session/refresh")  # type: ignore
+    cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"], domain="testserver.local")  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
+
+    try:
+        response = driver_config_client.post(
+            "/auth/session/refresh",
+            cookies=cookiejar,  # type: ignore
+            headers={"anti-csrf": response.headers["anti-csrf"]},
+        )
+    except Exception as e:
+        assert (
+            str(e)
+            == "The request contains multiple session cookies. This may happen if you've changed the 'cookie_domain' setting in your configuration. To clear tokens from the previous domain, set 'older_cookie_domain' in your config."
+        )
+
+
+async def test_verify_session_returns_401_if_multiple_tokens_are_passed_in_the_request(
+    driver_config_client: TestClient,
+):
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "front-token" in response.headers
+
+    cookiejar = cookiejar_from_dict({})  # type: ignore
+    cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"])  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], path="/auth/session/refresh")  # type: ignore
+    cookiejar.set("sAccessToken", cookies["sAccessToken"]["value"], domain="testserver.local")  # type: ignore
+    cookiejar.set("sRefreshToken", cookies["sRefreshToken"]["value"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
+
+    response = driver_config_client.post(
+        "/sessioninfo-optional",
+        cookies=cookiejar,  # type: ignore
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+    assert response.status_code == 401
+    assert response.json() == {"message": "try refresh token"}
+
+
+async def test_verify_session_returns_200_in_header_based_auth_even_if_multiple_tokens_are_present_in_cookie(
+    driver_config_client: TestClient,
+):
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                get_token_transfer_method=lambda _, __, ___: "header",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    info = extract_info(response)
+
+    assert "accessTokenFromHeader" in info
+    assert "refreshTokenFromHeader" in info
+
+    cookiejar = cookiejar_from_dict({})  # type: ignore
+    cookiejar.set("sAccessToken", info["accessTokenFromHeader"])  # type: ignore
+    cookiejar.set("sRefreshToken", info["refreshTokenFromHeader"], path="/auth/session/refresh")  # type: ignore
+    cookiejar.set("sAccessToken", info["accessTokenFromHeader"], domain="testserver.local")  # type: ignore
+    cookiejar.set("sRefreshToken", info["refreshTokenFromHeader"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
+
+    response = driver_config_client.post(
+        "/sessioninfo-optional",
+        cookies=cookiejar,  # type: ignore
+        headers={"Authorization": f"Bearer {info['accessTokenFromHeader']}"},
+    )
+    assert response.status_code == 200
+    assert list(response.json()) == ["session", "user_id"]
+
+
+async def test_refresh_endpoint_refreshes_the_token_in_header_based_auth_if_multiple_tokens_are_present_in_cookie(
+    driver_config_client: TestClient,
+):
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                get_token_transfer_method=lambda _, __, ___: "header",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    info = extract_info(response)
+
+    assert "accessTokenFromHeader" in info
+    assert "refreshTokenFromHeader" in info
+
+    cookiejar = cookiejar_from_dict({})  # type: ignore
+    cookiejar.set("sAccessToken", info["accessTokenFromHeader"])  # type: ignore
+    cookiejar.set("sRefreshToken", info["refreshTokenFromHeader"], path="/auth/session/refresh")  # type: ignore
+    cookiejar.set("sAccessToken", info["accessTokenFromHeader"], domain="testserver.local")  # type: ignore
+    cookiejar.set("sRefreshToken", info["refreshTokenFromHeader"], domain="testserver.local", path="/auth/session/refresh")  # type: ignore
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies=cookiejar,  # type: ignore
+        headers={"Authorization": f"Bearer {info['refreshTokenFromHeader']}"},
+    )
+    assert response.status_code == 200
+    response_info = extract_info(response)
+
+    assert "accessTokenFromHeader" in response_info
+    assert "refreshTokenFromHeader" in response_info

@@ -13,7 +13,7 @@
 # under the License.
 from fastapi import FastAPI
 import json
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware

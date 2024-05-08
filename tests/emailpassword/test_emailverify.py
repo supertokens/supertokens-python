@@ -19,7 +19,7 @@ from typing import Any, Dict, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.requests import Request
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import delete_user

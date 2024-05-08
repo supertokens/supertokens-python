@@ -45,6 +45,14 @@ def raise_unauthorised_exception(
     raise err
 
 
+def raise_clear_duplicate_session_cookies_exception(
+    msg: str, response_mutators: List[ResponseMutator]
+) -> NoReturn:
+    err = ClearDuplicateSessionCookiesError(msg)
+    err.response_mutators.extend(response_mutators)
+    raise err
+
+
 class SuperTokensSessionError(SuperTokensError):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -89,3 +97,7 @@ class ClaimValidationError:
 
 def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]):
     raise InvalidClaimsError(msg, payload)
+
+
+class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
+    pass
