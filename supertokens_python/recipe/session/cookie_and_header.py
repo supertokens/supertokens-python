@@ -426,6 +426,7 @@ def _set_access_token_in_response(
 # resulting in an infinite refresh loop. To fix this, users are asked to specify "older_cookie_domain" in
 # the config.
 
+
 # This function checks for multiple cookies with the same name and clears the cookies for the older domain.
 def clear_session_cookies_from_older_cookie_domain(
     request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any]
@@ -463,9 +464,11 @@ def clear_session_cookies_from_older_cookie_domain(
                     get_cookie_name_from_token_type(token_type),
                     "",
                     0,
-                    "refresh_token_path"
-                    if token_type == "refresh"
-                    else "access_token_path",
+                    (
+                        "refresh_token_path"
+                        if token_type == "refresh"
+                        else "access_token_path"
+                    ),
                     request,
                     domain=config.older_cookie_domain,
                 )
@@ -498,7 +501,7 @@ def _parse_cookie_string_from_request_header_allow_duplicates(
     for cookie_pair in cookie_pairs:
         name_value = cookie_pair.split("=")
         if len(name_value) != 2:
-            raise Exception("Invalid cookie string in request header")
+            continue
         name, value = unquote(name_value[0].strip()), unquote(name_value[1].strip())
         if name in cookies:
             cookies[name].append(value)

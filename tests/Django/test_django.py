@@ -177,6 +177,9 @@ class SupertokensTest(TestCase):
 
         request.COOKIES["sRefreshToken"] = cookies["sRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
+        request.META["HTTP_COOKIE"] = (
+            "sRefreshToken=" + cookies["sRefreshToken"]["value"]
+        )
         temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
@@ -247,6 +250,7 @@ class SupertokensTest(TestCase):
 
         request.COOKIES["sAccessToken"] = cookies["sAccessToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
+        request.META["HTTP_COOKIE"] = "sAccessToken=" + cookies["sAccessToken"]["value"]
         temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
@@ -301,13 +305,12 @@ class SupertokensTest(TestCase):
 
         request.COOKIES["sAccessToken"] = cookies["sAccessToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
+        request.META["HTTP_COOKIE"] = "sAccessToken=" + cookies["sAccessToken"]["value"]
         temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
-        assert "s" in json.loads(
-            response.content
-        )  # FIXME: Getting Unauthorized in body. Why?
+        assert "s" in json.loads(response.content)
         handle_cookies = get_cookies(response)
 
         assert not handle_cookies
