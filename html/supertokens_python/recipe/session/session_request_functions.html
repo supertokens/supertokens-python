@@ -49,9 +49,11 @@ from supertokens_python.recipe.session.access_token import (
 )
 from supertokens_python.recipe.session.constants import available_token_transfer_methods
 from supertokens_python.recipe.session.cookie_and_header import (
+    clear_session_cookies_from_older_cookie_domain,
     clear_session_mutator,
     get_anti_csrf_header,
     get_token,
+    has_multiple_cookies_for_token_type,
     set_cookie_response_mutator,
 )
 from supertokens_python.recipe.session.exceptions import (
@@ -174,6 +176,18 @@ async def get_session_from_request(
         &#34;cookie&#34;
     ) is not None:
         log_debug_message(&#34;getSession: using cookie transfer method&#34;)
+
+        # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
+        # ensuring outdated token payload isn&#39;t used.
+        if has_multiple_cookies_for_token_type(request, &#34;access&#34;):
+            log_debug_message(
+                &#34;getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies&#34;
+            )
+            raise_try_refresh_token_exception(
+                &#34;Multiple access tokens present in the request cookies.&#34;
+            )
+
         request_transfer_method = &#34;cookie&#34;
         request_access_token = access_tokens[&#34;cookie&#34;]
 
@@ -378,6 +392,8 @@ async def refresh_session_in_request(
     log_debug_message(&#34;refreshSession: Wrapping done&#34;)
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
+    clear_session_cookies_from_older_cookie_domain(request, config, user_context)
+
     refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
 
     for transfer_method in available_token_transfer_methods:
@@ -427,9 +443,28 @@ async def refresh_session_in_request(
                 )
             )
 
-        log_debug_message(
-            &#34;refreshSession: UNAUTHORISED because refresh_token in request is None&#34;
-        )
+        # We need to clear the access token cookie if
+        # - the refresh token is not found, and
+        # - the allowed_transfer_method is &#39;cookie&#39; or &#39;any&#39;, and
+        # - an access token cookie exists (otherwise it&#39;d be a no-op)
+        # See: https://github.com/supertokens/supertokens-node/issues/790
+        if (
+            allowed_transfer_method in (&#34;cookie&#34;, &#34;any&#34;)
+            and get_token(request, &#34;access&#34;, &#34;cookie&#34;) is not None
+        ):
+            log_debug_message(
+                &#34;refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh_token in request is None&#34;
+            )
+
+            # We&#39;re clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            # error with `clear_tokens: False`. This approach avoids confusion and we don&#39;t want to retain session
+            # tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            return raise_unauthorised_exception(
+                &#34;Refresh token not found but access token is present. Clearing all tokens.&#34;,
+                clear_tokens=True,
+                response_mutators=response_mutators,
+            )
+
         return raise_unauthorised_exception(
             &#34;Refresh token not found. Are you sending the refresh token in the request?&#34;,
             clear_tokens=False,
@@ -735,6 +770,18 @@ async def refresh_session_in_request(
         &#34;cookie&#34;
     ) is not None:
         log_debug_message(&#34;getSession: using cookie transfer method&#34;)
+
+        # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
+        # ensuring outdated token payload isn&#39;t used.
+        if has_multiple_cookies_for_token_type(request, &#34;access&#34;):
+            log_debug_message(
+                &#34;getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies&#34;
+            )
+            raise_try_refresh_token_exception(
+                &#34;Multiple access tokens present in the request cookies.&#34;
+            )
+
         request_transfer_method = &#34;cookie&#34;
         request_access_token = access_tokens[&#34;cookie&#34;]
 
@@ -835,6 +882,8 @@ async def refresh_session_in_request(
     log_debug_message(&#34;refreshSession: Wrapping done&#34;)
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
+    clear_session_cookies_from_older_cookie_domain(request, config, user_context)
+
     refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
 
     for transfer_method in available_token_transfer_methods:
@@ -884,9 +933,28 @@ async def refresh_session_in_request(
                 )
             )
 
-        log_debug_message(
-            &#34;refreshSession: UNAUTHORISED because refresh_token in request is None&#34;
-        )
+        # We need to clear the access token cookie if
+        # - the refresh token is not found, and
+        # - the allowed_transfer_method is &#39;cookie&#39; or &#39;any&#39;, and
+        # - an access token cookie exists (otherwise it&#39;d be a no-op)
+        # See: https://github.com/supertokens/supertokens-node/issues/790
+        if (
+            allowed_transfer_method in (&#34;cookie&#34;, &#34;any&#34;)
+            and get_token(request, &#34;access&#34;, &#34;cookie&#34;) is not None
+        ):
+            log_debug_message(
+                &#34;refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh_token in request is None&#34;
+            )
+
+            # We&#39;re clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            # error with `clear_tokens: False`. This approach avoids confusion and we don&#39;t want to retain session
+            # tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            return raise_unauthorised_exception(
+                &#34;Refresh token not found but access token is present. Clearing all tokens.&#34;,
+                clear_tokens=True,
+                response_mutators=response_mutators,
+            )
+
         return raise_unauthorised_exception(
             &#34;Refresh token not found. Are you sending the refresh token in the request?&#34;,
             clear_tokens=False,
