@@ -454,6 +454,7 @@ def _set_access_token_in_response(
 # resulting in an infinite refresh loop. To fix this, users are asked to specify &#34;older_cookie_domain&#34; in
 # the config.
 
+
 # This function checks for multiple cookies with the same name and clears the cookies for the older domain.
 def clear_session_cookies_from_older_cookie_domain(
     request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any]
@@ -491,9 +492,11 @@ def clear_session_cookies_from_older_cookie_domain(
                     get_cookie_name_from_token_type(token_type),
                     &#34;&#34;,
                     0,
-                    &#34;refresh_token_path&#34;
-                    if token_type == &#34;refresh&#34;
-                    else &#34;access_token_path&#34;,
+                    (
+                        &#34;refresh_token_path&#34;
+                        if token_type == &#34;refresh&#34;
+                        else &#34;access_token_path&#34;
+                    ),
                     request,
                     domain=config.older_cookie_domain,
                 )
@@ -526,7 +529,7 @@ def _parse_cookie_string_from_request_header_allow_duplicates(
     for cookie_pair in cookie_pairs:
         name_value = cookie_pair.split(&#34;=&#34;)
         if len(name_value) != 2:
-            raise Exception(&#34;Invalid cookie string in request header&#34;)
+            continue
         name, value = unquote(name_value[0].strip()), unquote(name_value[1].strip())
         if name in cookies:
             cookies[name].append(value)
@@ -659,9 +662,11 @@ def _parse_cookie_string_from_request_header_allow_duplicates(
                     get_cookie_name_from_token_type(token_type),
                     &#34;&#34;,
                     0,
-                    &#34;refresh_token_path&#34;
-                    if token_type == &#34;refresh&#34;
-                    else &#34;access_token_path&#34;,
+                    (
+                        &#34;refresh_token_path&#34;
+                        if token_type == &#34;refresh&#34;
+                        else &#34;access_token_path&#34;
+                    ),
                     request,
                     domain=config.older_cookie_domain,
                 )
