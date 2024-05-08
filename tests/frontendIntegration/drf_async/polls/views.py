@@ -448,17 +448,15 @@ async def login_218(request: Request):  # type: ignore
         querier = Querier.get_instance()
         Querier.api_version = "2.18"
 
-        legacy_session_resp = await (
-            querier.send_post_request(
-                NormalisedURLPath("/recipe/session"),
-                {
-                    "userId": user_id,
-                    "enableAntiCsrf": False,
-                    "userDataInJWT": payload,
-                    "userDataInDatabase": {},
-                },
-                {},
-            )
+        legacy_session_resp = await querier.send_post_request(
+            NormalisedURLPath("/recipe/session"),
+            {
+                "userId": user_id,
+                "enableAntiCsrf": False,
+                "userDataInJWT": payload,
+                "userDataInDatabase": {},
+            },
+            {},
         )
         Querier.api_version = None
         front_token = b64encode(
@@ -671,6 +669,7 @@ def feature_flags(request: Request):  # type: ignore
             "sessionJwt": last_set_enable_jwt,
             "sessionClaims": is_version_gte(VERSION, "0.11.0"),
             "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+            "duplicateCookieHandling": is_version_gte(VERSION, "0.20.0"),
         }
     )  # type: ignore
 

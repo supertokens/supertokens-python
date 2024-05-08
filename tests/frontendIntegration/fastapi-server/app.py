@@ -520,7 +520,7 @@ def refresh_attempted_time():
 async def refresh(request: Request):
     Test.increment_attempted_refresh()
     try:
-        await (verify_session()(request))
+        await verify_session()(request)
     except Exception as e:
         raise e
 
@@ -643,6 +643,7 @@ def feature_flags(_: Request):
             "sessionJwt": last_set_enable_jwt,
             "sessionClaims": is_version_gte(VERSION, "0.11.0"),
             "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+            "duplicateCookieHandling": is_version_gte(VERSION, "0.20.0"),
         }
     )
 
