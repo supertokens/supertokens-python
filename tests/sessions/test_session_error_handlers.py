@@ -82,33 +82,33 @@ async def driver_config_client():
 async def test_session_error_handlers_are_getting_overridden(
     driver_config_client: TestClient,
 ):
-    def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
+    def unauthorised_f(_req: BaseRequest, _message: str, res: BaseResponse):
         res.set_status_code(401)
         res.set_json_content({"message": "unauthorized from errorHandler"})
         return res
 
     def token_theft_f(
-        req: BaseRequest, session_handle: str, user_id: str, res: BaseResponse
+        _req: BaseRequest, _session_handle: str, _user_id: str, res: BaseResponse
     ):
         res.set_status_code(403)
         res.set_json_content({"message": "token theft detected from errorHandler"})
         return res
 
-    def try_refresh_f(req: BaseRequest, message: str, res: BaseResponse):
+    def try_refresh_f(_req: BaseRequest, _message: str, res: BaseResponse):
         res.set_status_code(401)
         res.set_json_content({"message": "try refresh session from errorHandler"})
         return res
 
     def invalid_claim_f(
-        req: BaseRequest,
-        claim_validation_errors: List[ClaimValidationError],
+        _req: BaseRequest,
+        _claim_validation_errors: List[ClaimValidationError],
         res: BaseResponse,
     ):
         res.set_status_code(403)
         res.set_json_content({"message": "invalid claim from errorHandler"})
         return res
 
-    def clear_duplicate_session_f(req: BaseRequest, message: str, res: BaseResponse):
+    def clear_duplicate_session_f(_req: BaseRequest, _message: str, res: BaseResponse):
         res.set_status_code(200)
         res.set_json_content(
             {"message": "clear duplicate session cookies from errorHandler"}

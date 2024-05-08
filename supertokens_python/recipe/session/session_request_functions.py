@@ -52,6 +52,7 @@ from supertokens_python.recipe.session.utils import (
     SessionConfig,
     TokenTransferMethod,
     get_required_claim_validators,
+    get_auth_mode_from_header,
 )
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
@@ -193,9 +194,11 @@ async def get_session_from_request(
     log_debug_message("getSession: Value of antiCsrfToken is: %s", do_anti_csrf_check)
 
     session = await recipe_interface_impl.get_session(
-        access_token=request_access_token.raw_token_string
-        if request_access_token is not None
-        else None,
+        access_token=(
+            request_access_token.raw_token_string
+            if request_access_token is not None
+            else None
+        ),
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
         session_required=session_required,
@@ -243,6 +246,7 @@ async def create_new_session_in_request(
 ) -> SessionContainer:
     log_debug_message("createNewSession: Started")
 
+    # Handling framework specific request/response wrapping
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
             Supertokens.get_instance().app_info.framework
@@ -252,7 +256,6 @@ async def create_new_session_in_request(
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
     claims_added_by_other_recipes = recipe_instance.get_claims_added_by_other_recipes()
-    app_info = recipe_instance.app_info
     issuer = (
         app_info.api_domain.get_as_string_dangerous()
         + app_info.api_base_path.get_as_string_dangerous()
@@ -266,7 +269,7 @@ async def create_new_session_in_request(
 
     for claim in claims_added_by_other_recipes:
         update = await claim.build(user_id, tenant_id, user_context)
-        final_access_token_payload = {**final_access_token_payload, **update}
+        final_access_token_payload.update(update)
 
     log_debug_message("createNewSession: Access token payload built")
 
@@ -274,7 +277,12 @@ async def create_new_session_in_request(
         request, True, user_context
     )
     if output_transfer_method == "any":
-        output_transfer_method = "header"
+        auth_mode_header = get_auth_mode_from_header(request)
+        if auth_mode_header == "cookie":
+            output_transfer_method = auth_mode_header
+        else:
+            output_transfer_method = "header"
+
     log_debug_message(
         "createNewSession: using transfer method %s", output_transfer_method
     )

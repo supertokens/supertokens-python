@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.19.0] - 2024-04-25
+## [0.20.0] - 2024-05-08
 
 -   Added `older_cookie_domain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookie_domain` is changed.
 -   If `verify_session` detects multiple access tokens in the request, it will return a 401 error, prompting a refresh, even if one of the tokens is valid.
@@ -89,6 +89,13 @@ With this update, verify_session will return a 401 error if it detects multiple 
     - If `older_cookie_domain` is set, the refresh clears the older cookie, returning a 200 response.
         - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
+## [0.19.0] - 2024-05-06
+
+-  `create_new_session` now defaults to the value of the `st-auth-mode` header (if available) if the configured `get_token_transfer_method` returns `any`.
+- Enable smooth switching between `use_dynamic_access_token_signing_key` settings by allowing refresh calls to change the signing key type of a session.
+
+### Breaking change:
+- A session is not required when calling the sign out API. Otherwise the API will return a 401 error.
 
 ## [0.18.11] - 2024-04-26
 

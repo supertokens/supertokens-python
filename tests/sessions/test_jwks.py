@@ -698,5 +698,5 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_a
     except TryRefreshTokenError as e:
         assert (
             str(e)
-            == "The access token doesn't match the useDynamicAccessTokenSigningKey setting"
+            == "The access token doesn't match the use_dynamic_access_token_signing_key setting"
         )
