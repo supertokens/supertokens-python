@@ -49,6 +49,7 @@ from supertokens_python.recipe.session.syncio import get_session_information
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.async_to_sync_wrapper import sync
+from werkzeug.exceptions import NotFound
 
 
 protected_prop_name = {
@@ -697,6 +698,8 @@ def test_error():
 
 @app.errorhandler(Exception)  # type: ignore
 def handle_exception(e):  # type: ignore
+    if isinstance(e, NotFound):
+        return Response(str(e), status=404)
     return Response(str(e), status=500)  # type: ignore
 
 

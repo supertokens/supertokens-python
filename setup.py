@@ -56,6 +56,7 @@ extras_require = {
             "gunicorn==20.1.0",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
+            "tzdata==2021.5",
         ]
     ),
 }
