@@ -328,3 +328,65 @@ async def test_signinup_android_without_redirect_uri(
     )
     assert res.status_code == 200
     assert res.json()["status"] == "OK"
+
+
+async def test_signinup_generating_fake_email(
+    fastapi_client: TestClient, mocker: MockerFixture
+):
+    mocker.patch(
+        "supertokens_python.recipe.thirdparty.providers.custom.get_supertokens_user_info_result_from_raw_user_info",
+        return_value=UserInfo(
+            "customid",
+            None,
+            RawUserInfoFromProvider({}, {}),
+        ),
+    )
+    st_init_args = {
+        **st_init_common_args,
+        "recipe_list": [
+            session.init(),
+            thirdpartyemailpassword.init(
+                providers=[
+                    ProviderInput(
+                        config=ProviderConfig(
+                            third_party_id="custom",
+                            clients=[
+                                ProviderClientConfig(
+                                    client_id="test",
+                                    client_secret="test-secret",
+                                    scope=["profile", "email"],
+                                    client_type="android",
+                                ),
+                            ],
+                            authorization_endpoint="https://example.com/oauth/authorize",
+                            authorization_endpoint_query_params={
+                                "response_type": "token",  # Changing an existing parameter
+                                "response_mode": "form",  # Adding a new parameter
+                                "scope": None,  # Removing a parameter
+                            },
+                            token_endpoint="https://example.com/oauth/token",
+                            require_email=False,
+                        ),
+                    )
+                ]
+            ),
+        ],
+    }
+    init(**st_init_args)  # type: ignore
+    start_st()
+
+    res = fastapi_client.post(
+        "/auth/signinup",
+        json={
+            "thirdPartyId": "custom",
+            "clientType": "android",
+            "oAuthTokens": {
+                "access_token": "accesstoken",
+                "id_token": "idtoken",
+            },
+        },
+    )
+    assert res.status_code == 200
+    res_json = res.json()
+    assert res_json["status"] == "OK"
+    assert res_json["user"]["email"] == "customid.custom@stfakeemail.supertokens.com"
