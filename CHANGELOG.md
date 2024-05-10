@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.20.1] - 2024-05-10
+
+-   Fixes parameter mismatch in generating fake email
+
 ## [0.20.0] - 2024-05-08
 
 -   Added `older_cookie_domain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookie_domain` is changed.
