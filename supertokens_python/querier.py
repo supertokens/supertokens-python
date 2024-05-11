@@ -39,7 +39,7 @@ from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 from sniffio import AsyncLibraryNotFoundError
-from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
+from supertokens_python.async_to_sync_wrapper import close_loop, get_or_create_event_loop
 
 
 class Querier:
@@ -115,10 +115,12 @@ class Querier:
                 raise Exception("Shouldn't come here")
         except AsyncLibraryNotFoundError:
             # Retry
-            loop = create_or_get_event_loop()
-            return loop.run_until_complete(
+            loop, _cur_event_loop_policy, new_loop = get_or_create_event_loop()
+            result = loop.run_until_complete(
                 self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
             )
+            close_loop(loop, _cur_event_loop_policy, new_loop)
+            return result
 
     async def get_api_version(self):
         if Querier.api_version is not None:

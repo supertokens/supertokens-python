@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
+-   Handle sync wrapper when uvloop is present and runnning
 
 ## [0.20.1] - 2024-05-10
 
@@ -190,7 +191,7 @@ With this update, verify_session will return a 401 error if it detects multiple 
     )
     ```
 
-- In the session recipe, if there is an `UNAUTHORISED` or `TOKEN_THEFT_DETECTED` error, the session tokens are cleared in the response regardless of if you have provided your own `error_handlers` in `session.init` 
+- In the session recipe, if there is an `UNAUTHORISED` or `TOKEN_THEFT_DETECTED` error, the session tokens are cleared in the response regardless of if you have provided your own `error_handlers` in `session.init`
 
 ## [0.17.0] - 2023-11-14
 - Fixes `create_reset_password_link` in the emailpassword recipe wherein we passed the `rid` instead of the token in the link
