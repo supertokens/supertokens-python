@@ -83,7 +83,7 @@ def get_or_create_event_loop() -> (
         raise ex
 
 
-def close_loop(
+def close_event_loop(
     loop: asyncio.AbstractEventLoop,
     _cur_event_loop_policy: Optional[asyncio.AbstractEventLoopPolicy],
     new_loop: bool
@@ -100,6 +100,6 @@ def sync(co: Coroutine[Any, Any, _T]) -> _T:
 
     result = loop.run_until_complete(co)
 
-    close_loop(loop, _cur_event_loop_policy, new_loop)
+    close_event_loop(loop, _cur_event_loop_policy, new_loop)
 
     return result
