@@ -43,7 +43,7 @@ async def handle_signout_api(
         api_options.request,
         api_options.config,
         api_options.recipe_implementation,
-        session_required=False,
+        session_required=True,
         override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )

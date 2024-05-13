@@ -53,8 +53,10 @@ extras_require = {
             "django>=4",
             "django-stubs==1.9.0",
             "djangorestframework",
+            "gunicorn==20.1.0",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
+            "tzdata==2021.5",
         ]
     ),
 }
@@ -81,7 +83,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.18.11",
+    version="0.20.1",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",

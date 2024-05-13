@@ -62,6 +62,7 @@ exceptions = ex
 
 def init(
     cookie_domain: Union[str, None] = None,
+    older_cookie_domain: Union[str, None] = None,
     cookie_secure: Union[bool, None] = None,
     cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
     session_expired_status_code: Union[int, None] = None,
@@ -81,6 +82,7 @@ def init(
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
+        older_cookie_domain,
         cookie_secure,
         cookie_same_site,
         session_expired_status_code,
@@ -181,7 +183,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal[('lax', 'none', 'strict')], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal[('VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE')], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal[('lax', 'none', 'strict')], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal[('VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE')], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -191,6 +193,7 @@ def init(
 </summary>
 <pre><code class="python">def init(
     cookie_domain: Union[str, None] = None,
+    older_cookie_domain: Union[str, None] = None,
     cookie_secure: Union[bool, None] = None,
     cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
     session_expired_status_code: Union[int, None] = None,
@@ -210,6 +213,7 @@ def init(
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
+        older_cookie_domain,
         cookie_secure,
         cookie_same_site,
         session_expired_status_code,

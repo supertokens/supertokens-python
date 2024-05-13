@@ -17,7 +17,7 @@ from fastapi import FastAPI
 from pytest import mark, fixture
 
 from supertokens_python.framework.fastapi import get_middleware
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from supertokens_python.recipe import session, thirdparty, emailpassword, passwordless
 from supertokens_python import init
 from supertokens_python.recipe.multitenancy.asyncio import (

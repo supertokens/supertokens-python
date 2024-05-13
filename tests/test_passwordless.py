@@ -15,7 +15,7 @@
 from typing import Any, Dict
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import GeneralError

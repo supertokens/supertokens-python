@@ -629,7 +629,7 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
 
 from pytest import fixture
 from fastapi import FastAPI, Request, Depends
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.asyncio import create_new_session
@@ -698,5 +698,5 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_a
     except TryRefreshTokenError as e:
         assert (
             str(e)
-            == "The access token doesn't match the useDynamicAccessTokenSigningKey setting"
+            == "The access token doesn't match the use_dynamic_access_token_signing_key setting"
         )

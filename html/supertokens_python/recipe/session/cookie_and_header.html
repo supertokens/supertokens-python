@@ -46,6 +46,11 @@ from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
 
+from supertokens_python.recipe.session.exceptions import (
+    raise_clear_duplicate_session_cookies_exception,
+)
+from supertokens_python.recipe.session.interfaces import ResponseMutator
+
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
     ACCESS_TOKEN_COOKIE_KEY,
@@ -139,9 +144,9 @@ def _set_cookie(
     expires: int,
     path_type: Literal[&#34;refresh_token_path&#34;, &#34;access_token_path&#34;],
     request: BaseRequest,
+    domain: Optional[str],
     user_context: Dict[str, Any],
 ):
-    domain = config.cookie_domain
     secure = config.cookie_secure
     same_site = config.get_cookie_same_site(request, user_context)
     path = &#34;&#34;
@@ -169,10 +174,21 @@ def set_cookie_response_mutator(
     expires: int,
     path_type: Literal[&#34;refresh_token_path&#34;, &#34;access_token_path&#34;],
     request: BaseRequest,
+    domain: Optional[str] = None,
 ):
+    domain = domain if domain is not None else config.cookie_domain
+
     def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return _set_cookie(
-            response, config, key, value, expires, path_type, request, user_context
+            response,
+            config,
+            key,
+            value,
+            expires,
+            path_type,
+            request,
+            domain,
+            user_context,
         )
 
     return mutator
@@ -322,6 +338,7 @@ def _set_token(
             expires,
             &#34;refresh_token_path&#34; if token_type == &#34;refresh&#34; else &#34;access_token_path&#34;,
             request,
+            config.cookie_domain,
             user_context,
         )
     elif transfer_method == &#34;header&#34;:
@@ -425,7 +442,100 @@ def _set_access_token_in_response(
             &#34;header&#34;,
             request,
             user_context,
-        )</code></pre>
+        )
+
+
+# This function addresses an edge case where changing the cookie_domain config on the server can
+# lead to session integrity issues. For instance, if the API server URL is &#39;api.example.com&#39;
+# with a cookie domain of &#39;.example.com&#39;, and the server updates the cookie domain to &#39;api.example.com&#39;,
+# the client may retain cookies with both &#39;.example.com&#39; and &#39;api.example.com&#39; domains.
+
+# Consequently, if the server chooses the older cookie, session invalidation occurs, potentially
+# resulting in an infinite refresh loop. To fix this, users are asked to specify &#34;older_cookie_domain&#34; in
+# the config.
+
+
+# This function checks for multiple cookies with the same name and clears the cookies for the older domain.
+def clear_session_cookies_from_older_cookie_domain(
+    request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any]
+):
+    allowed_transfer_method = config.get_token_transfer_method(
+        request, False, user_context
+    )
+    # If the transfer method is &#39;header&#39;, there&#39;s no need to clear cookies immediately, even if there are multiple in the request.
+    if allowed_transfer_method == &#34;header&#34;:
+        return
+
+    did_clear_cookies = False
+    response_mutators: List[ResponseMutator] = []
+
+    token_types: List[TokenType] = [&#34;access&#34;, &#34;refresh&#34;]
+    for token_type in token_types:
+        if has_multiple_cookies_for_token_type(request, token_type):
+            # If a request has multiple session cookies and &#39;older_cookie_domain&#39; is
+            # unset, we can&#39;t identify the correct cookie for refreshing the session.
+            # Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+            # we throw a 500 error asking the user to set &#39;older_cookie_domain&#39;&#39;.
+            if config.older_cookie_domain is None:
+                raise Exception(
+                    &#34;The request contains multiple session cookies. This may happen if you&#39;ve changed the &#39;cookie_domain&#39; setting in your configuration. To clear tokens from the previous domain, set &#39;older_cookie_domain&#39; in your config.&#34;
+                )
+
+            log_debug_message(
+                &#34;Clearing duplicate %s cookie with domain %s&#34;,
+                token_type,
+                config.cookie_domain,
+            )
+            response_mutators.append(
+                set_cookie_response_mutator(
+                    config,
+                    get_cookie_name_from_token_type(token_type),
+                    &#34;&#34;,
+                    0,
+                    (
+                        &#34;refresh_token_path&#34;
+                        if token_type == &#34;refresh&#34;
+                        else &#34;access_token_path&#34;
+                    ),
+                    request,
+                    domain=config.older_cookie_domain,
+                )
+            )
+            did_clear_cookies = True
+    if did_clear_cookies:
+        raise_clear_duplicate_session_cookies_exception(
+            &#34;The request contains multiple session cookies. We are clearing the cookie from older_cookie_domain. Session will be refreshed in the next refresh call.&#34;,
+            response_mutators=response_mutators,
+        )
+
+
+def has_multiple_cookies_for_token_type(
+    request: BaseRequest, token_type: TokenType
+) -&gt; bool:
+    cookie_string = request.get_header(&#34;cookie&#34;)
+    if cookie_string is None:
+        return False
+
+    cookies = _parse_cookie_string_from_request_header_allow_duplicates(cookie_string)
+    cookie_name = get_cookie_name_from_token_type(token_type)
+    return cookie_name in cookies and len(cookies[cookie_name]) &gt; 1
+
+
+def _parse_cookie_string_from_request_header_allow_duplicates(
+    cookie_string: str,
+) -&gt; Dict[str, List[str]]:
+    cookies: Dict[str, List[str]] = {}
+    cookie_pairs = cookie_string.split(&#34;;&#34;)
+    for cookie_pair in cookie_pairs:
+        name_value = cookie_pair.split(&#34;=&#34;)
+        if len(name_value) != 2:
+            continue
+        name, value = unquote(name_value[0].strip()), unquote(name_value[1].strip())
+        if name in cookies:
+            cookies[name].append(value)
+        else:
+            cookies[name] = [value]
+    return cookies</code></pre>
 </details>
 </section>
 <section>
@@ -505,6 +615,68 @@ def _set_access_token_in_response(
     return utf_base64encode(
         dumps(token_info, separators=(&#34;,&#34;, &#34;:&#34;), sort_keys=True), urlsafe=False
     )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.cookie_and_header.clear_session_cookies_from_older_cookie_domain"><code class="name flex">
+<span>def <span class="ident">clear_session_cookies_from_older_cookie_domain</span></span>(<span>request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_session_cookies_from_older_cookie_domain(
+    request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any]
+):
+    allowed_transfer_method = config.get_token_transfer_method(
+        request, False, user_context
+    )
+    # If the transfer method is &#39;header&#39;, there&#39;s no need to clear cookies immediately, even if there are multiple in the request.
+    if allowed_transfer_method == &#34;header&#34;:
+        return
+
+    did_clear_cookies = False
+    response_mutators: List[ResponseMutator] = []
+
+    token_types: List[TokenType] = [&#34;access&#34;, &#34;refresh&#34;]
+    for token_type in token_types:
+        if has_multiple_cookies_for_token_type(request, token_type):
+            # If a request has multiple session cookies and &#39;older_cookie_domain&#39; is
+            # unset, we can&#39;t identify the correct cookie for refreshing the session.
+            # Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+            # we throw a 500 error asking the user to set &#39;older_cookie_domain&#39;&#39;.
+            if config.older_cookie_domain is None:
+                raise Exception(
+                    &#34;The request contains multiple session cookies. This may happen if you&#39;ve changed the &#39;cookie_domain&#39; setting in your configuration. To clear tokens from the previous domain, set &#39;older_cookie_domain&#39; in your config.&#34;
+                )
+
+            log_debug_message(
+                &#34;Clearing duplicate %s cookie with domain %s&#34;,
+                token_type,
+                config.cookie_domain,
+            )
+            response_mutators.append(
+                set_cookie_response_mutator(
+                    config,
+                    get_cookie_name_from_token_type(token_type),
+                    &#34;&#34;,
+                    0,
+                    (
+                        &#34;refresh_token_path&#34;
+                        if token_type == &#34;refresh&#34;
+                        else &#34;access_token_path&#34;
+                    ),
+                    request,
+                    domain=config.older_cookie_domain,
+                )
+            )
+            did_clear_cookies = True
+    if did_clear_cookies:
+        raise_clear_duplicate_session_cookies_exception(
+            &#34;The request contains multiple session cookies. We are clearing the cookie from older_cookie_domain. Session will be refreshed in the next refresh call.&#34;,
+            response_mutators=response_mutators,
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.clear_session_from_all_token_transfer_methods"><code class="name flex">
@@ -699,6 +871,27 @@ def _set_access_token_in_response(
     raise Exception(&#34;Should never happen: Unknown transferMethod: &#34; + transfer_method)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.cookie_and_header.has_multiple_cookies_for_token_type"><code class="name flex">
+<span>def <span class="ident">has_multiple_cookies_for_token_type</span></span>(<span>request: BaseRequest, token_type: TokenType) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def has_multiple_cookies_for_token_type(
+    request: BaseRequest, token_type: TokenType
+) -&gt; bool:
+    cookie_string = request.get_header(&#34;cookie&#34;)
+    if cookie_string is None:
+        return False
+
+    cookies = _parse_cookie_string_from_request_header_allow_duplicates(cookie_string)
+    cookie_name = get_cookie_name_from_token_type(token_type)
+    return cookie_name in cookies and len(cookies[cookie_name]) &gt; 1</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.remove_header"><code class="name flex">
 <span>def <span class="ident">remove_header</span></span>(<span>response: BaseResponse, key: str)</span>
 </code></dt>
@@ -714,7 +907,7 @@ def _set_access_token_in_response(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.set_cookie_response_mutator"><code class="name flex">
-<span>def <span class="ident">set_cookie_response_mutator</span></span>(<span>config: SessionConfig, key: str, value: str, expires: int, path_type: "Literal[('refresh_token_path', 'access_token_path')]", request: BaseRequest)</span>
+<span>def <span class="ident">set_cookie_response_mutator</span></span>(<span>config: SessionConfig, key: str, value: str, expires: int, path_type: "Literal[('refresh_token_path', 'access_token_path')]", request: BaseRequest, domain: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -729,10 +922,21 @@ def _set_access_token_in_response(
     expires: int,
     path_type: Literal[&#34;refresh_token_path&#34;, &#34;access_token_path&#34;],
     request: BaseRequest,
+    domain: Optional[str] = None,
 ):
+    domain = domain if domain is not None else config.cookie_domain
+
     def mutator(response: BaseResponse, user_context: Dict[str, Any]):
         return _set_cookie(
-            response, config, key, value, expires, path_type, request, user_context
+            response,
+            config,
+            key,
+            value,
+            expires,
+            path_type,
+            request,
+            domain,
+            user_context,
         )
 
     return mutator</code></pre>
@@ -828,6 +1032,7 @@ def _set_access_token_in_response(
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.access_token_mutator" href="#supertokens_python.recipe.session.cookie_and_header.access_token_mutator">access_token_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.anti_csrf_response_mutator" href="#supertokens_python.recipe.session.cookie_and_header.anti_csrf_response_mutator">anti_csrf_response_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.build_front_token" href="#supertokens_python.recipe.session.cookie_and_header.build_front_token">build_front_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_cookies_from_older_cookie_domain" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_cookies_from_older_cookie_domain">clear_session_cookies_from_older_cookie_domain</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_from_all_token_transfer_methods" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_from_all_token_transfer_methods">clear_session_from_all_token_transfer_methods</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_mutator" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_mutator">clear_session_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.clear_session_response_mutator" href="#supertokens_python.recipe.session.cookie_and_header.clear_session_response_mutator">clear_session_response_mutator</a></code></li>
@@ -838,6 +1043,7 @@ def _set_access_token_in_response(
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.get_response_header_name_for_token_type" href="#supertokens_python.recipe.session.cookie_and_header.get_response_header_name_for_token_type">get_response_header_name_for_token_type</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.get_rid_header" href="#supertokens_python.recipe.session.cookie_and_header.get_rid_header">get_rid_header</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.get_token" href="#supertokens_python.recipe.session.cookie_and_header.get_token">get_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.cookie_and_header.has_multiple_cookies_for_token_type" href="#supertokens_python.recipe.session.cookie_and_header.has_multiple_cookies_for_token_type">has_multiple_cookies_for_token_type</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.remove_header" href="#supertokens_python.recipe.session.cookie_and_header.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.set_cookie_response_mutator" href="#supertokens_python.recipe.session.cookie_and_header.set_cookie_response_mutator">set_cookie_response_mutator</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header.set_header" href="#supertokens_python.recipe.session.cookie_and_header.set_header">set_header</a></code></li>

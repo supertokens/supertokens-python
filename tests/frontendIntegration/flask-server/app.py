@@ -49,6 +49,8 @@ from supertokens_python.recipe.session.syncio import get_session_information
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.async_to_sync_wrapper import sync
+from werkzeug.exceptions import NotFound
+
 
 protected_prop_name = {
     "sub",
@@ -654,6 +656,7 @@ def feature_flags():
             "sessionJwt": last_set_enable_jwt,
             "sessionClaims": is_version_gte(VERSION, "0.11.0"),
             "v3AccessToken": is_version_gte(VERSION, "0.13.0"),
+            "duplicateCookieHandling": is_version_gte(VERSION, "0.20.0"),
         }
     )
 
@@ -691,6 +694,13 @@ def test_error():
 
     status_code = int(request.args.get("code", "500"))
     return Response("test error message", status=status_code)
+
+
+@app.errorhandler(Exception)  # type: ignore
+def handle_exception(e):  # type: ignore
+    if isinstance(e, NotFound):
+        return Response(str(e), status=404)
+    return Response(str(e), status=500)  # type: ignore
 
 
 if __name__ == "__main__":

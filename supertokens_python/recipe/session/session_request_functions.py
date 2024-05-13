@@ -21,9 +21,11 @@ from supertokens_python.recipe.session.access_token import (
 )
 from supertokens_python.recipe.session.constants import available_token_transfer_methods
 from supertokens_python.recipe.session.cookie_and_header import (
+    clear_session_cookies_from_older_cookie_domain,
     clear_session_mutator,
     get_anti_csrf_header,
     get_token,
+    has_multiple_cookies_for_token_type,
     set_cookie_response_mutator,
 )
 from supertokens_python.recipe.session.exceptions import (
@@ -50,6 +52,7 @@ from supertokens_python.recipe.session.utils import (
     SessionConfig,
     TokenTransferMethod,
     get_required_claim_validators,
+    get_auth_mode_from_header,
 )
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
@@ -145,6 +148,18 @@ async def get_session_from_request(
         "cookie"
     ) is not None:
         log_debug_message("getSession: using cookie transfer method")
+
+        # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
+        # ensuring outdated token payload isn't used.
+        if has_multiple_cookies_for_token_type(request, "access"):
+            log_debug_message(
+                "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+            )
+            raise_try_refresh_token_exception(
+                "Multiple access tokens present in the request cookies."
+            )
+
         request_transfer_method = "cookie"
         request_access_token = access_tokens["cookie"]
 
@@ -179,9 +194,11 @@ async def get_session_from_request(
     log_debug_message("getSession: Value of antiCsrfToken is: %s", do_anti_csrf_check)
 
     session = await recipe_interface_impl.get_session(
-        access_token=request_access_token.raw_token_string
-        if request_access_token is not None
-        else None,
+        access_token=(
+            request_access_token.raw_token_string
+            if request_access_token is not None
+            else None
+        ),
         anti_csrf_token=anti_csrf_token,
         anti_csrf_check=do_anti_csrf_check,
         session_required=session_required,
@@ -229,6 +246,7 @@ async def create_new_session_in_request(
 ) -> SessionContainer:
     log_debug_message("createNewSession: Started")
 
+    # Handling framework specific request/response wrapping
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
             Supertokens.get_instance().app_info.framework
@@ -238,7 +256,6 @@ async def create_new_session_in_request(
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
     claims_added_by_other_recipes = recipe_instance.get_claims_added_by_other_recipes()
-    app_info = recipe_instance.app_info
     issuer = (
         app_info.api_domain.get_as_string_dangerous()
         + app_info.api_base_path.get_as_string_dangerous()
@@ -252,7 +269,7 @@ async def create_new_session_in_request(
 
     for claim in claims_added_by_other_recipes:
         update = await claim.build(user_id, tenant_id, user_context)
-        final_access_token_payload = {**final_access_token_payload, **update}
+        final_access_token_payload.update(update)
 
     log_debug_message("createNewSession: Access token payload built")
 
@@ -260,7 +277,12 @@ async def create_new_session_in_request(
         request, True, user_context
     )
     if output_transfer_method == "any":
-        output_transfer_method = "header"
+        auth_mode_header = get_auth_mode_from_header(request)
+        if auth_mode_header == "cookie":
+            output_transfer_method = auth_mode_header
+        else:
+            output_transfer_method = "header"
+
     log_debug_message(
         "createNewSession: using transfer method %s", output_transfer_method
     )
@@ -342,6 +364,8 @@ async def refresh_session_in_request(
     log_debug_message("refreshSession: Wrapping done")
     user_context = set_request_in_user_context_if_not_defined(user_context, request)
 
+    clear_session_cookies_from_older_cookie_domain(request, config, user_context)
+
     refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
 
     for transfer_method in available_token_transfer_methods:
@@ -391,9 +415,28 @@ async def refresh_session_in_request(
                 )
             )
 
-        log_debug_message(
-            "refreshSession: UNAUTHORISED because refresh_token in request is None"
-        )
+        # We need to clear the access token cookie if
+        # - the refresh token is not found, and
+        # - the allowed_transfer_method is 'cookie' or 'any', and
+        # - an access token cookie exists (otherwise it'd be a no-op)
+        # See: https://github.com/supertokens/supertokens-node/issues/790
+        if (
+            allowed_transfer_method in ("cookie", "any")
+            and get_token(request, "access", "cookie") is not None
+        ):
+            log_debug_message(
+                "refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh_token in request is None"
+            )
+
+            # We're clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            # error with `clear_tokens: False`. This approach avoids confusion and we don't want to retain session
+            # tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            return raise_unauthorised_exception(
+                "Refresh token not found but access token is present. Clearing all tokens.",
+                clear_tokens=True,
+                response_mutators=response_mutators,
+            )
+
         return raise_unauthorised_exception(
             "Refresh token not found. Are you sending the refresh token in the request?",
             clear_tokens=False,

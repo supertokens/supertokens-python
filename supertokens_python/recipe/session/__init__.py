@@ -34,6 +34,7 @@ exceptions = ex
 
 def init(
     cookie_domain: Union[str, None] = None,
+    older_cookie_domain: Union[str, None] = None,
     cookie_secure: Union[bool, None] = None,
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
     session_expired_status_code: Union[int, None] = None,
@@ -53,6 +54,7 @@ def init(
 ) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
+        older_cookie_domain,
         cookie_secure,
         cookie_same_site,
         session_expired_status_code,

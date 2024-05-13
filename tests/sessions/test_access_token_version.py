@@ -55,7 +55,7 @@ async def test_parsing_access_token_v2():
     assert parsed_info.payload["userId"] == "6fb4ddce-8911-4058-92ac-c76057fdaae8"
 
 
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.asyncio import create_new_session

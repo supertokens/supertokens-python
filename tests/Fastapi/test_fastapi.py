@@ -16,7 +16,7 @@ from typing import Any, Dict, Union
 
 from fastapi import Depends, FastAPI
 from fastapi.requests import Request
-from fastapi.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware

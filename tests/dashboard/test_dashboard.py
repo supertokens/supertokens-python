@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 from fastapi import FastAPI
 from pytest import fixture, mark
-from starlette.testclient import TestClient
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from supertokens_python import init
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
