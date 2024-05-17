@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.20.2] - 2024-05-17
+
+-   Improves FastAPI middleware performance using recommended ASGI middleware implementation.
+
 ## [0.20.1] - 2024-05-10
 
 -   Fixes parameter mismatch in generating fake email
