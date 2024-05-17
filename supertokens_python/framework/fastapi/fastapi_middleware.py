@@ -38,7 +38,7 @@ def get_middleware():
             self.app = app
 
         async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-            if scope["type"] != "http":
+            if scope["type"] != "http":  # we pass through the non-http requests, if any
                 await self.app(scope, receive, send)
                 return
 
@@ -54,9 +54,15 @@ def get_middleware():
                     custom_request, response, user_context
                 )
                 if result is None:
-
+                    # This means that the supertokens middleware did not handle the request,
+                    # however, we may need to handle the header changes in the response,
+                    # based on response mutators used by the session.
                     async def send_wrapper(message: Message):
                         if message["type"] == "http.response.start":
+                            # Start message has the headers, so we update the headers here
+                            # by using `manage_session_post_response` function, which will
+                            # apply all the Response Mutators. In the end, we just replace
+                            # the updated headers in the message.
                             if hasattr(request.state, "supertokens") and isinstance(
                                 request.state.supertokens, SessionContainer
                             ):
@@ -68,11 +74,15 @@ def get_middleware():
                                 )
                                 message["headers"] = fapi_response.raw_headers
 
+                        # For `http.response.start` message, we might have the headers updated,
+                        # otherwise, we just send all the messages as is
                         await send(message)
 
                     await self.app(scope, receive, send_wrapper)
                     return
 
+                # This means that the request was handled by the supertokens middleware
+                # and hence we respond using the response object returned by the middleware.
                 if hasattr(request.state, "supertokens") and isinstance(
                     request.state.supertokens, SessionContainer
                 ):
