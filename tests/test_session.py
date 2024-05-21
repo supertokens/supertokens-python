@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
@@ -58,7 +59,14 @@ from supertokens_python.recipe.session.session_functions import (
     revoke_session,
 )
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from tests.utils import clean_st, reset, setup_st, start_st
+from tests.utils import (
+    TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
+    clean_st,
+    reset,
+    set_key_value_in_config,
+    setup_st,
+    start_st,
+)
 
 pytestmark = mark.asyncio
 
@@ -920,10 +928,61 @@ async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_
     cookies = extract_all_cookies(response)
 
     assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "front-token" in response.headers
 
     response = driver_config_client.post(
         "/auth/session/refresh",
         cookies={"sAccessToken ": cookies["sAccessToken"]["value"]},
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 401
+    response_cookies = extract_all_cookies(response)
+    assert response_cookies["sAccessToken"]["value"] == ""
+    assert (
+        response_cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+    assert response_cookies["sRefreshToken"]["value"] == ""
+    assert (
+        response_cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    )
+
+
+async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_but_with_an_expired_access_token(
+    driver_config_client: TestClient,
+):
+    set_key_value_in_config(TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, "1")
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "front-token" in response.headers
+
+    # Wait for the access token to expire
+    await asyncio.sleep(1)
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={"sAccessToken ": cookies["sAccessToken"]["value"]},
+        headers={"anti-csrf": response.headers["anti-csrf"]},
     )
 
     assert response.status_code == 401
