@@ -977,7 +977,7 @@ async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_
     assert "front-token" in response.headers
 
     # Wait for the access token to expire
-    await asyncio.sleep(1)
+    await asyncio.sleep(2)
 
     response = driver_config_client.post(
         "/auth/session/refresh",
