@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.21.0] - 2024-05-23
+
 ### Breaking change
 
 -   Removed ThirdPartyEmailPassword and ThirdPartyPasswordless recipes. Instead, you should use ThirdParty + EmailPassword or ThirdParty + Passwordless recipes separately in your recipe list.
@@ -31,6 +33,114 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   If you were using `ThirdPartyPasswordless`, you should now init `ThirdParty` and `Passwordless` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [Passwordless](https://supertokens.com/docs/passwordless/introduction) for more information.
 
+- The way to get user information has changed:
+    - If you are using `get_users_by_email` from `thirdpartyemailpassword` recipe:
+    
+        Before:
+        ```python
+        from supertokens_python.recipe.thirdpartyemailpassword.syncio import get_users_by_email
+
+        user_info = get_users_by_email("public", "test@example.com")
+        ```
+
+        After:
+        ```python
+        from supertokens_python.recipe.thirdparty.syncio import get_users_by_email as get_users_by_email_third_party
+        from supertokens_python.recipe.emailpassword.syncio import get_user_by_email as get_user_by_email_emailpassword
+        
+        third_party_user_info = get_users_by_email_third_party("public", "test@example.com")
+
+        email_password_user_info = get_user_by_email_emailpassword("public", "test@example.com")
+
+        if email_password_user_info is not None:
+            print(email_password_user_info)
+        
+        if len(third_party_user_info) > 0:
+            print(third_party_user_info)
+        ```
+
+    - If you are using `get_user_id` from `thirdpartyemailpassword` recipe:
+    
+        Before:
+        ```python
+        from supertokens_python.recipe.thirdpartyemailpassword.syncio import get_user_by_id
+
+        _ = get_user_by_id(user_id)
+        ```
+
+        After:
+        ```python
+        from supertokens_python.recipe.thirdparty.syncio import (
+            get_user_by_id as get_user_by_id_thirdparty,
+        )
+        from supertokens_python.recipe.emailpassword.syncio import (
+            get_user_by_id as get_user_by_id_emailpassword,
+        )
+
+        thirdparty_user = get_user_by_id_thirdparty(user_id)
+        if thirdparty_user is None:
+            email_password_user = get_user_by_id_emailpassword(user_id)
+            if email_password_user is not None:
+                print(email_password_user)
+        else:
+            print(thirdparty_user)
+        ```
+    
+    - If you are using `get_users_by_email` from `thirdpartypasswordless` recipe:
+    
+        Before:
+        ```python
+        from supertokens_python.recipe.thirdpartypasswordless.syncio import get_users_by_email
+
+        user_info = get_users_by_email("public", "test@example.com")
+        ```
+
+        After:
+        ```python
+        from supertokens_python.recipe.thirdparty.syncio import get_users_by_email as get_users_by_email_third_party
+        from supertokens_python.recipe.passwordless.syncio import get_user_by_email as get_user_by_email_passwordless
+        
+        third_party_user_info = get_users_by_email_third_party("public", "test@example.com")
+
+        passwordless_user_info = get_user_by_email_passwordless("public", "test@example.com")
+
+        if passwordless_user_info is not None:
+            print(passwordless_user_info)
+        
+        if len(third_party_user_info) > 0:
+            print(third_party_user_info)
+        ```
+
+    - If you are using `get_user_id` from `thirdpartypasswordless` recipe:
+    
+        Before:
+        ```python
+        from supertokens_python.recipe.thirdpartypasswordless.syncio import get_user_by_id
+
+        _ = get_user_by_id(user_id)
+        ```
+
+        After:
+        ```python
+        from supertokens_python.recipe.thirdparty.syncio import (
+            get_user_by_id as get_user_by_id_thirdparty,
+        )
+        from supertokens_python.recipe.passwordless.syncio import (
+            get_user_by_id as get_user_by_id_passwordless,
+        )
+
+        thirdparty_user = get_user_by_id_thirdparty(user_id)
+        if thirdparty_user is None:
+            passwordless_user = get_user_by_id_passwordless(user_id)
+            if passwordless_user is not None:
+                print(passwordless_user)
+        else:
+            print(thirdparty_user)
+        ```
+
+## [0.20.2] - 2024-05-17
+
+-   Improves FastAPI middleware performance using recommended ASGI middleware implementation.
 
 ## [0.20.1] - 2024-05-10
 
