@@ -42,7 +42,7 @@ async def driver_config_client():
 
 
 @mark.asyncio
-async def test_rid_with_session_and_non_existent_api_in_session_recipe_gives_404(
+async def test_rid_with_session_and_non_existent_api_in_session_recipe_still_hits_api(
     driver_config_client: TestClient,
 ):
     init(
@@ -61,7 +61,7 @@ async def test_rid_with_session_and_non_existent_api_in_session_recipe_gives_404
     start_st()
 
     response = driver_config_client.post(url="/auth/signin", headers={"rid": "session"})
-    assert response.status_code == 404
+    assert response.status_code == 400
 
 
 @mark.asyncio
@@ -113,7 +113,7 @@ async def test_rid_as_anticsrf_with_existent_API_does_not_give_404(
 
 
 @mark.asyncio
-async def test_random_rid_with_existent_API_does_gives_404(
+async def test_random_rid_with_existent_API_does_hits_api(
     driver_config_client: TestClient,
 ):
     init(
@@ -132,7 +132,7 @@ async def test_random_rid_with_existent_API_does_gives_404(
     start_st()
 
     response = driver_config_client.post(url="/auth/signin", headers={"rid": "random"})
-    assert response.status_code == 404
+    assert response.status_code == 400
 
 
 @mark.asyncio

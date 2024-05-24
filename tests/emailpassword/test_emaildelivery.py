@@ -1041,7 +1041,8 @@ async def test_send_reset_password_email(
     driver_config_client: TestClient,
 ):
 
-    tenant_info, token_info, rid_info, reset_url = "", "", "", ""
+    tenant_info, token_info, reset_url = "", "", ""
+    query_length = -1
 
     class CustomEmailDeliveryService(
         emailpassword.EmailDeliveryInterface[PasswordResetEmailTemplateVars]
@@ -1051,12 +1052,12 @@ async def test_send_reset_password_email(
             template_vars: PasswordResetEmailTemplateVars,
             user_context: Dict[str, Any],
         ):
-            nonlocal reset_url, token_info, rid_info, tenant_info
+            nonlocal reset_url, token_info, tenant_info, query_length
             password_reset_url = template_vars.password_reset_link
             reset_url = password_reset_url.split("?")[0]
             token_info = password_reset_url.split("?")[1].split("&")[0]
-            rid_info = password_reset_url.split("?")[1].split("&")[1]
-            tenant_info = password_reset_url.split("?")[1].split("&")[2]
+            tenant_info = password_reset_url.split("?")[1].split("&")[1]
+            query_length = len(password_reset_url.split("?")[1].split("&"))
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -1090,7 +1091,7 @@ async def test_send_reset_password_email(
 
     assert reset_url == "http://supertokens.io/auth/reset-password"
     assert token_info is not None and "token=" in token_info
-    assert rid_info is not None and "rid=emailpassword" in rid_info
+    assert query_length == 2
     assert tenant_info is not None and "tenantId=public" in tenant_info
 
 

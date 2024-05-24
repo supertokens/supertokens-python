@@ -130,7 +130,7 @@ async def test_that_generated_password_link_is_correct(
 ):
     reset_url = None
     token_info: Union[None, str] = None
-    rid_info: Union[None, str] = None
+    query_length = -1
     tenant_info: Union[None, str] = None
 
     class CustomEmailService(
@@ -141,12 +141,12 @@ async def test_that_generated_password_link_is_correct(
             template_vars: emailpassword.EmailTemplateVars,
             user_context: Dict[str, Any],
         ) -> None:
-            nonlocal reset_url, token_info, rid_info, tenant_info
+            nonlocal reset_url, token_info, tenant_info, query_length
             password_reset_url_with_token = template_vars.password_reset_link
             reset_url = password_reset_url_with_token.split("?")[0]
             token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
-            rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
-            tenant_info = password_reset_url_with_token.split("?")[1].split("&")[2]
+            tenant_info = password_reset_url_with_token.split("?")[1].split("&")[1]
+            query_length = len(password_reset_url_with_token.split("?")[1].split("&"))
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -180,7 +180,7 @@ async def test_that_generated_password_link_is_correct(
     assert response_1.status_code == 200
     assert reset_url == "http://supertokens.io/auth/reset-password"
     assert token_info is not None and "token=" in token_info  # type: ignore pylint: disable=unsupported-membership-test
-    assert rid_info is not None and "rid=emailpassword" in rid_info  # type: ignore pylint: disable=unsupported-membership-test
+    assert query_length == 2
     assert tenant_info is not None and "tenantId=public" in tenant_info  # type: ignore pylint: disable=unsupported-membership-test
 
 
@@ -389,7 +389,7 @@ async def test_create_reset_password_link(
     assert url.path == "/auth/reset-password"
     assert "token=" in queries[0]
     assert "tenantId=public" in queries
-    assert "rid=emailpassword" in queries
+    assert "rid=emailpassword" not in queries
 
     link = await create_reset_password_link("public", "invalidUserId")
     assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)

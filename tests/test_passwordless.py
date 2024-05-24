@@ -126,7 +126,9 @@ async def test_passwordless_otp(driver_config_client: TestClient):
 
 
 @mark.asyncio
-async def test_passwordless_create_magic_link(_: TestClient):
+async def test_passwordless_create_magic_link(
+    driver_config_client: TestClient,  # pylint: disable=unused-argument
+):
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
