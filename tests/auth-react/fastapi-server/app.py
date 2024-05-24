@@ -131,6 +131,10 @@ class CustomPlessEmailService(
         codes = code_store.get(template_vars.pre_auth_session_id)
         if codes is None:
             codes = []
+        if template_vars.url_with_link_code:
+            template_vars.url_with_link_code = template_vars.url_with_link_code.replace(
+                "?preAuthSessionId", "?test=fix&preAuthSessionId"
+            )
         codes.append(
             {
                 "urlWithLinkCode": template_vars.url_with_link_code,
@@ -149,6 +153,10 @@ class CustomPlessSMSService(
         codes = code_store.get(template_vars.pre_auth_session_id)
         if codes is None:
             codes = []
+        if template_vars.url_with_link_code:
+            template_vars.url_with_link_code = template_vars.url_with_link_code.replace(
+                "?preAuthSessionId", "?test=fix&preAuthSessionId"
+            )
         codes.append(
             {
                 "urlWithLinkCode": template_vars.url_with_link_code,

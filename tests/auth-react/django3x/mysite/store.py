@@ -22,6 +22,11 @@ def save_code(
 ):
     global _CODE_STORE
     codes = _CODE_STORE.get(pre_auth_session_id, [])
+    # replace sub string in url_with_link_code
+    if url_with_link_code:
+        url_with_link_code = url_with_link_code.replace(
+            "?preAuthSessionId", "?test=fix&preAuthSessionId"
+        )
     codes.append(
         {"urlWithLinkCode": url_with_link_code, "userInputCode": user_input_code}
     )
