@@ -771,26 +771,6 @@ __all__ = [
     if new_password is None or not isinstance(new_password, str):
         raise_bad_input_exception(&#34;Missing required parameter &#39;newPassword&#39;&#34;)
 
-    recipe_to_use: Union[
-        Literal[&#34;emailpassword&#34;, &#34;thirdpartyemailpassword&#34;], None
-    ] = None
-
-    try:
-        EmailPasswordRecipe.get_instance()
-        recipe_to_use = &#34;emailpassword&#34;
-    except Exception:
-        pass
-
-    if recipe_to_use is None:
-        try:
-            ThirdPartyEmailPasswordRecipe.get_instance()
-            recipe_to_use = &#34;thirdpartyemailpassword&#34;
-        except Exception:
-            pass
-
-    if recipe_to_use is None:
-        raise Exception(&#34;Should not come here&#34;)
-
     async def reset_password(
         form_fields: List[NormalisedFormField],
         create_reset_password_token: Callable[
@@ -845,19 +825,11 @@ __all__ = [
 
         return UserPasswordPutAPIResponse()
 
-    if recipe_to_use == &#34;emailpassword&#34;:
-        return await reset_password(
-            EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
-            ep_create_reset_password_token,
-            ep_reset_password_using_token,
-        )
-
-    if recipe_to_use == &#34;thirdpartyemailpassword&#34;:
-        return await reset_password(
-            ThirdPartyEmailPasswordRecipe.get_instance().email_password_recipe.config.sign_up_feature.form_fields,
-            tpep_create_reset_password_token,
-            tpep_reset_password_using_token,
-        )</code></pre>
+    return await reset_password(
+        EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
+        ep_create_reset_password_token,
+        ep_reset_password_using_token,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_user_put"><code class="name flex">
@@ -942,7 +914,7 @@ __all__ = [
             pass
 
         if is_recipe_initialized:
-            metadata_update = {}
+            metadata_update: Dict[str, Any] = {}
 
             if first_name != &#34;&#34;:
                 metadata_update[&#34;first_name&#34;] = first_name

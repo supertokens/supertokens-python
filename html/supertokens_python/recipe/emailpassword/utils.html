@@ -331,7 +331,6 @@ def validate_and_normalise_user_input(
 def get_password_reset_link(
     app_info: AppInfo,
     token: str,
-    recipe_id: str,
     tenant_id: str,
     request: Optional[BaseRequest],
     user_context: Dict[str, Any],
@@ -341,8 +340,6 @@ def get_password_reset_link(
         + app_info.website_base_path.get_as_string_dangerous()
         + &#34;/reset-password?token=&#34;
         + token
-        + &#34;&amp;rid=&#34;
-        + recipe_id
         + &#34;&amp;tenantId=&#34;
         + tenant_id
     )</code></pre>
@@ -424,7 +421,7 @@ def get_password_reset_link(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.utils.get_password_reset_link"><code class="name flex">
-<span>def <span class="ident">get_password_reset_link</span></span>(<span>app_info: AppInfo, token: str, recipe_id: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
+<span>def <span class="ident">get_password_reset_link</span></span>(<span>app_info: AppInfo, token: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -435,7 +432,6 @@ def get_password_reset_link(
 <pre><code class="python">def get_password_reset_link(
     app_info: AppInfo,
     token: str,
-    recipe_id: str,
     tenant_id: str,
     request: Optional[BaseRequest],
     user_context: Dict[str, Any],
@@ -445,8 +441,6 @@ def get_password_reset_link(
         + app_info.website_base_path.get_as_string_dangerous()
         + &#34;/reset-password?token=&#34;
         + token
-        + &#34;&amp;rid=&#34;
-        + recipe_id
         + &#34;&amp;tenantId=&#34;
         + tenant_id
     )</code></pre>

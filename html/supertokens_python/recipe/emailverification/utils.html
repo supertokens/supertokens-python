@@ -104,9 +104,9 @@ def validate_and_normalise_user_input(
             &#34;Email Verification recipe mode must be one of &#39;REQUIRED&#39; or &#39;OPTIONAL&#39;&#34;
         )
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
-        VerificationEmailTemplateVars
-    ]:
+    def get_email_delivery_config() -&gt; (
+        EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+    ):
         email_service = email_delivery.service if email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
@@ -134,7 +134,6 @@ def validate_and_normalise_user_input(
 def get_email_verify_link(
     app_info: AppInfo,
     token: str,
-    recipe_id: str,
     tenant_id: str,
     request: Optional[BaseRequest],
     user_context: Dict[str, Any],
@@ -145,8 +144,6 @@ def get_email_verify_link(
         + &#34;/verify-email&#34;
         + &#34;?token=&#34;
         + token
-        + &#34;&amp;rid=&#34;
-        + recipe_id
         + &#34;&amp;tenantId=&#34;
         + tenant_id
     )</code></pre>
@@ -160,7 +157,7 @@ def get_email_verify_link(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.utils.get_email_verify_link"><code class="name flex">
-<span>def <span class="ident">get_email_verify_link</span></span>(<span>app_info: AppInfo, token: str, recipe_id: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
+<span>def <span class="ident">get_email_verify_link</span></span>(<span>app_info: AppInfo, token: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -171,7 +168,6 @@ def get_email_verify_link(
 <pre><code class="python">def get_email_verify_link(
     app_info: AppInfo,
     token: str,
-    recipe_id: str,
     tenant_id: str,
     request: Optional[BaseRequest],
     user_context: Dict[str, Any],
@@ -182,8 +178,6 @@ def get_email_verify_link(
         + &#34;/verify-email&#34;
         + &#34;?token=&#34;
         + token
-        + &#34;&amp;rid=&#34;
-        + recipe_id
         + &#34;&amp;tenantId=&#34;
         + tenant_id
     )</code></pre>
@@ -210,9 +204,9 @@ def get_email_verify_link(
             &#34;Email Verification recipe mode must be one of &#39;REQUIRED&#39; or &#39;OPTIONAL&#39;&#34;
         )
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
-        VerificationEmailTemplateVars
-    ]:
+    def get_email_delivery_config() -&gt; (
+        EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+    ):
         email_service = email_delivery.service if email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
