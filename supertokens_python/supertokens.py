@@ -585,71 +585,108 @@ class Supertokens:
             "middleware: requestRID is: %s", get_maybe_none_as_str(request_rid)
         )
         if request_rid is not None and request_rid == "anti-csrf":
-            # see
-            # https://github.com/supertokens/supertokens-python/issues/54
+            # see https://github.com/supertokens/supertokens-python/issues/54
             request_rid = None
-        api_and_tenant_id = None
-        matched_recipe = None
-        if request_rid is not None:
-            for recipe in Supertokens.get_instance().recipe_modules:
+
+        async def handle_without_rid():
+            for recipe in self.recipe_modules:
                 log_debug_message(
-                    "middleware: Checking recipe ID for match: %s",
+                    "middleware: Checking recipe ID for match: %s with path: %s and method: %s",
                     recipe.get_recipe_id(),
-                )
-                if recipe.get_recipe_id() == request_rid:
-                    matched_recipe = recipe
-                    break
-            if matched_recipe is not None:
-                api_and_tenant_id = (
-                    await matched_recipe.return_api_id_if_can_handle_request(
-                        path, method, user_context
-                    )
-                )
-        else:
-            for recipe in Supertokens.get_instance().recipe_modules:
-                log_debug_message(
-                    "middleware: Checking recipe ID for match: %s",
-                    recipe.get_recipe_id(),
+                    path.get_as_string_dangerous(),
+                    method,
                 )
                 api_and_tenant_id = await recipe.return_api_id_if_can_handle_request(
                     path, method, user_context
                 )
                 if api_and_tenant_id is not None:
-                    matched_recipe = recipe
-                    break
-        if matched_recipe is not None:
-            log_debug_message(
-                "middleware: Matched with recipe ID: %s", matched_recipe.get_recipe_id()
-            )
-        else:
+                    log_debug_message(
+                        "middleware: Request being handled by recipe. ID is: %s",
+                        api_and_tenant_id.api_id,
+                    )
+                    api_resp = await recipe.handle_api_request(
+                        api_and_tenant_id.api_id,
+                        api_and_tenant_id.tenant_id,
+                        request,
+                        path,
+                        method,
+                        response,
+                        user_context,
+                    )
+                    if api_resp is None:
+                        log_debug_message(
+                            "middleware: Not handled because API returned None"
+                        )
+                        return None
+                    log_debug_message("middleware: Ended")
+                    return api_resp
             log_debug_message("middleware: Not handling because no recipe matched")
+            return None
 
-        if matched_recipe is not None and api_and_tenant_id is None:
-            log_debug_message(
-                "middleware: Not handling because recipe doesn't handle request path or method. Request path: %s, request method: %s",
-                path.get_as_string_dangerous(),
-                method,
-            )
-        if api_and_tenant_id is not None and matched_recipe is not None:
+        if request_rid is not None:
+            matched_recipes = [
+                recipe
+                for recipe in self.recipe_modules
+                if recipe.get_recipe_id() == request_rid
+                or (
+                    request_rid == "thirdpartyemailpassword"
+                    and recipe.get_recipe_id() in ["thirdparty", "emailpassword"]
+                )
+                or (
+                    request_rid == "thirdpartypasswordless"
+                    and recipe.get_recipe_id() in ["thirdparty", "passwordless"]
+                )
+            ]
+
+            if len(matched_recipes) == 0:
+                log_debug_message(
+                    "middleware: Not handling based on rid match. Trying without rid."
+                )
+                return await handle_without_rid()
+
+            for recipe in matched_recipes:
+                log_debug_message(
+                    "middleware: Matched with recipe Ids: %s", recipe.get_recipe_id()
+                )
+
+            id_result = None
+            final_matched_recipe = None
+            for recipe in matched_recipes:
+                current_id_result = await recipe.return_api_id_if_can_handle_request(
+                    path, method, user_context
+                )
+                if current_id_result is not None:
+                    if id_result is not None:
+                        raise ValueError(
+                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support."
+                        )
+                    final_matched_recipe = recipe
+                    id_result = current_id_result
+
+            if id_result is None or final_matched_recipe is None:
+                return await handle_without_rid()
+
             log_debug_message(
                 "middleware: Request being handled by recipe. ID is: %s",
-                api_and_tenant_id.api_id,
+                id_result.api_id,
             )
-            api_resp = await matched_recipe.handle_api_request(
-                api_and_tenant_id.api_id,
-                api_and_tenant_id.tenant_id,
+            request_handled = await final_matched_recipe.handle_api_request(
+                id_result.api_id,
+                id_result.tenant_id,
                 request,
                 path,
                 method,
                 response,
                 user_context,
             )
-            if api_resp is None:
-                log_debug_message("middleware: Not handled because API returned None")
-            else:
-                log_debug_message("middleware: Ended")
-            return api_resp
-        return None
+            if request_handled is None:
+                log_debug_message(
+                    "middleware: Not handled because API returned request_handled as None"
+                )
+                return None
+            log_debug_message("middleware: Ended")
+            return request_handled
+        return await handle_without_rid()
 
     async def handle_supertokens_error(
         self,

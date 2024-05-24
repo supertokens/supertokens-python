@@ -150,7 +150,6 @@ async def create_reset_password_link(
         link=get_password_reset_link(
             recipe_instance.get_app_info(),
             token.token,
-            recipe_instance.get_recipe_id(),
             tenant_id,
             request,
             user_context,

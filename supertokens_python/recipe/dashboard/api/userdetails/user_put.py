@@ -12,7 +12,6 @@ from supertokens_python.recipe.emailpassword.asyncio import (
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
 from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordEmailAlreadyExistsError,
-    UpdateEmailOrPasswordUnknownUserIdError,
 )
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.passwordless.asyncio import (
@@ -33,15 +32,6 @@ from supertokens_python.recipe.passwordless.utils import (
     ContactPhoneOnlyConfig,
     default_validate_email,
     default_validate_phone_number,
-)
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    ThirdPartyEmailPasswordRecipe,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    update_email_or_password as tpep_update_email_or_password,
-)
-from supertokens_python.recipe.thirdpartypasswordless import (
-    ThirdPartyPasswordlessRecipe,
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
@@ -96,35 +86,6 @@ async def update_email_for_recipe_id(
 
         return UserPutAPIOkResponse()
 
-    if recipe_id == "thirdpartyemailpassword":
-        form_fields = (
-            ThirdPartyEmailPasswordRecipe.get_instance().email_password_recipe.config.sign_up_feature.form_fields
-        )
-        email_form_fields = [
-            form_field
-            for form_field in form_fields
-            if form_field.id == FORM_FIELD_EMAIL_ID
-        ]
-
-        validation_error = await email_form_fields[0].validate(email, tenant_id)
-
-        if validation_error is not None:
-            return UserPutAPIInvalidEmailErrorResponse(validation_error)
-
-        email_update_response = await tpep_update_email_or_password(
-            user_id, email, user_context=user_context
-        )
-
-        if isinstance(
-            email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
-        ):
-            return UserPutAPIEmailAlreadyExistsErrorResponse()
-
-        if isinstance(email_update_response, UpdateEmailOrPasswordUnknownUserIdError):
-            raise Exception("Should never come here")
-
-        return UserPutAPIOkResponse()
-
     if recipe_id == "passwordless":
         validation_error = None
 
@@ -133,37 +94,6 @@ async def update_email_for_recipe_id(
         if isinstance(passwordless_config.contact_method, ContactPhoneOnlyConfig):
             validation_error = await default_validate_email(email, tenant_id)
 
-        elif isinstance(
-            passwordless_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            validation_error = await passwordless_config.validate_email_address(
-                email, tenant_id
-            )
-
-        if validation_error is not None:
-            return UserPutAPIInvalidEmailErrorResponse(validation_error)
-
-        update_result = await pless_update_user(
-            user_id, email, user_context=user_context
-        )
-
-        if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
-            raise Exception("Should never come here")
-
-        if isinstance(update_result, EmailAlreadyExistsErrorResponse):
-            return UserPutAPIEmailAlreadyExistsErrorResponse()
-
-        return UserPutAPIOkResponse()
-
-    if recipe_id == "thirdpartypasswordless":
-        validation_error = None
-
-        passwordless_config = (
-            ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.config.contact_config
-        )
-
-        if isinstance(passwordless_config, ContactPhoneOnlyConfig):
-            validation_error = await default_validate_email(email, tenant_id)
         elif isinstance(
             passwordless_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
         ):
@@ -210,38 +140,6 @@ async def update_phone_for_recipe_id(
 
         if isinstance(passwordless_config, ContactEmailOnlyConfig):
             validation_error = await default_validate_phone_number(phone, tenant_id)
-        elif isinstance(
-            passwordless_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            validation_error = await passwordless_config.validate_phone_number(
-                phone, tenant_id
-            )
-
-        if validation_error is not None:
-            return UserPutAPIInvalidPhoneErrorResponse(validation_error)
-
-        update_result = await pless_update_user(
-            user_id, phone_number=phone, user_context=user_context
-        )
-
-        if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
-            raise Exception("Should never come here")
-
-        if isinstance(update_result, PhoneNumberAlreadyExistsError):
-            return UserPutPhoneAlreadyExistsAPIResponse()
-
-        return UserPutAPIOkResponse()
-
-    if recipe_id == "thirdpartypasswordless":
-        validation_error = None
-
-        passwordless_config = (
-            ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.config.contact_config
-        )
-
-        if isinstance(passwordless_config, ContactEmailOnlyConfig):
-            validation_error = await default_validate_phone_number(phone, tenant_id)
-
         elif isinstance(
             passwordless_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
         ):
@@ -341,7 +239,7 @@ async def handle_user_put(
             pass
 
         if is_recipe_initialized:
-            metadata_update = {}
+            metadata_update: Dict[str, Any] = {}
 
             if first_name != "":
                 metadata_update["first_name"] = first_name

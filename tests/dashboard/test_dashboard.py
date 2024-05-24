@@ -12,9 +12,10 @@ from supertokens_python.recipe import (
     emailpassword,
     session,
     usermetadata,
-    thirdpartypasswordless,
+    thirdparty,
+    passwordless,
 )
-import supertokens_python.recipe.thirdpartypasswordless.asyncio as tplasync
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 from supertokens_python.recipe.dashboard import InputOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import (
     RecipeInterface as DashboardRI,
@@ -229,7 +230,8 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
     st_args = get_st_init_args(
         [
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
-            thirdpartypasswordless.init(
+            thirdparty.init(),
+            passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(),
                 flow_type="USER_INPUT_CODE",
             ),
@@ -245,7 +247,7 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
     init(**st_args)
     start_st()
 
-    pluser = await tplasync.thirdparty_manually_create_or_update_user(
+    pluser = await manually_create_or_update_user(
         "public", "google", "googleid", "test@example.com"
     )
 

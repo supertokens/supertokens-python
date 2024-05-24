@@ -12,7 +12,6 @@ from starlette.testclient import TestClient
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, thirdparty
-from supertokens_python.recipe import thirdpartyemailpassword
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderClientConfig,
     ProviderConfig,
@@ -159,30 +158,32 @@ async def test_signinup_when_validate_access_token_throws(fastapi_client: TestCl
         **st_init_common_args,
         "recipe_list": [
             session.init(),
-            thirdpartyemailpassword.init(
-                providers=[
-                    ProviderInput(
-                        config=ProviderConfig(
-                            third_party_id="custom",
-                            clients=[
-                                ProviderClientConfig(
-                                    client_id="test",
-                                    client_secret="test-secret",
-                                    scope=["profile", "email"],
-                                ),
-                            ],
-                            authorization_endpoint="https://example.com/oauth/authorize",
-                            validate_access_token=invalid_access_token,
-                            authorization_endpoint_query_params={
-                                "response_type": "token",  # Changing an existing parameter
-                                "response_mode": "form",  # Adding a new parameter
-                                "scope": None,  # Removing a parameter
-                            },
-                            token_endpoint="https://example.com/oauth/token",
-                        ),
-                        override=get_custom_invalid_token_provider,
-                    )
-                ]
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        ProviderInput(
+                            config=ProviderConfig(
+                                third_party_id="custom",
+                                clients=[
+                                    ProviderClientConfig(
+                                        client_id="test",
+                                        client_secret="test-secret",
+                                        scope=["profile", "email"],
+                                    ),
+                                ],
+                                authorization_endpoint="https://example.com/oauth/authorize",
+                                validate_access_token=invalid_access_token,
+                                authorization_endpoint_query_params={
+                                    "response_type": "token",  # Changing an existing parameter
+                                    "response_mode": "form",  # Adding a new parameter
+                                    "scope": None,  # Removing a parameter
+                                },
+                                token_endpoint="https://example.com/oauth/token",
+                            ),
+                            override=get_custom_invalid_token_provider,
+                        )
+                    ]
+                )
             ),
         ],
     }
@@ -221,30 +222,32 @@ async def test_signinup_works_when_validate_access_token_does_not_throw(
         **st_init_common_args,
         "recipe_list": [
             session.init(),
-            thirdpartyemailpassword.init(
-                providers=[
-                    ProviderInput(
-                        config=ProviderConfig(
-                            third_party_id="custom",
-                            clients=[
-                                ProviderClientConfig(
-                                    client_id="test",
-                                    client_secret="test-secret",
-                                    scope=["profile", "email"],
-                                ),
-                            ],
-                            authorization_endpoint="https://example.com/oauth/authorize",
-                            validate_access_token=valid_access_token,
-                            authorization_endpoint_query_params={
-                                "response_type": "token",  # Changing an existing parameter
-                                "response_mode": "form",  # Adding a new parameter
-                                "scope": None,  # Removing a parameter
-                            },
-                            token_endpoint="https://example.com/oauth/token",
-                        ),
-                        override=get_custom_valid_token_provider,
-                    )
-                ]
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        ProviderInput(
+                            config=ProviderConfig(
+                                third_party_id="custom",
+                                clients=[
+                                    ProviderClientConfig(
+                                        client_id="test",
+                                        client_secret="test-secret",
+                                        scope=["profile", "email"],
+                                    ),
+                                ],
+                                authorization_endpoint="https://example.com/oauth/authorize",
+                                validate_access_token=valid_access_token,
+                                authorization_endpoint_query_params={
+                                    "response_type": "token",  # Changing an existing parameter
+                                    "response_mode": "form",  # Adding a new parameter
+                                    "scope": None,  # Removing a parameter
+                                },
+                                token_endpoint="https://example.com/oauth/token",
+                            ),
+                            override=get_custom_valid_token_provider,
+                        )
+                    ]
+                )
             ),
         ],
     }
@@ -286,29 +289,31 @@ async def test_signinup_android_without_redirect_uri(
         **st_init_common_args,
         "recipe_list": [
             session.init(),
-            thirdpartyemailpassword.init(
-                providers=[
-                    ProviderInput(
-                        config=ProviderConfig(
-                            third_party_id="custom",
-                            clients=[
-                                ProviderClientConfig(
-                                    client_id="test",
-                                    client_secret="test-secret",
-                                    scope=["profile", "email"],
-                                    client_type="android",
-                                ),
-                            ],
-                            authorization_endpoint="https://example.com/oauth/authorize",
-                            authorization_endpoint_query_params={
-                                "response_type": "token",  # Changing an existing parameter
-                                "response_mode": "form",  # Adding a new parameter
-                                "scope": None,  # Removing a parameter
-                            },
-                            token_endpoint="https://example.com/oauth/token",
-                        ),
-                    )
-                ]
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        ProviderInput(
+                            config=ProviderConfig(
+                                third_party_id="custom",
+                                clients=[
+                                    ProviderClientConfig(
+                                        client_id="test",
+                                        client_secret="test-secret",
+                                        scope=["profile", "email"],
+                                        client_type="android",
+                                    ),
+                                ],
+                                authorization_endpoint="https://example.com/oauth/authorize",
+                                authorization_endpoint_query_params={
+                                    "response_type": "token",  # Changing an existing parameter
+                                    "response_mode": "form",  # Adding a new parameter
+                                    "scope": None,  # Removing a parameter
+                                },
+                                token_endpoint="https://example.com/oauth/token",
+                            ),
+                        )
+                    ]
+                )
             ),
         ],
     }
@@ -345,30 +350,32 @@ async def test_signinup_generating_fake_email(
         **st_init_common_args,
         "recipe_list": [
             session.init(),
-            thirdpartyemailpassword.init(
-                providers=[
-                    ProviderInput(
-                        config=ProviderConfig(
-                            third_party_id="custom",
-                            clients=[
-                                ProviderClientConfig(
-                                    client_id="test",
-                                    client_secret="test-secret",
-                                    scope=["profile", "email"],
-                                    client_type="android",
-                                ),
-                            ],
-                            authorization_endpoint="https://example.com/oauth/authorize",
-                            authorization_endpoint_query_params={
-                                "response_type": "token",  # Changing an existing parameter
-                                "response_mode": "form",  # Adding a new parameter
-                                "scope": None,  # Removing a parameter
-                            },
-                            token_endpoint="https://example.com/oauth/token",
-                            require_email=False,
-                        ),
-                    )
-                ]
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[
+                        ProviderInput(
+                            config=ProviderConfig(
+                                third_party_id="custom",
+                                clients=[
+                                    ProviderClientConfig(
+                                        client_id="test",
+                                        client_secret="test-secret",
+                                        scope=["profile", "email"],
+                                        client_type="android",
+                                    ),
+                                ],
+                                authorization_endpoint="https://example.com/oauth/authorize",
+                                authorization_endpoint_query_params={
+                                    "response_type": "token",  # Changing an existing parameter
+                                    "response_mode": "form",  # Adding a new parameter
+                                    "scope": None,  # Removing a parameter
+                                },
+                                token_endpoint="https://example.com/oauth/token",
+                                require_email=False,
+                            ),
+                        )
+                    ]
+                )
             ),
         ],
     }

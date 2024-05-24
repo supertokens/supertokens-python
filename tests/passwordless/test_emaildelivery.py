@@ -34,7 +34,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import passwordless, session
+from supertokens_python.recipe import passwordless, session, emailverification
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import (
     SMTPService,
 )
@@ -48,6 +48,20 @@ from tests.utils import (
     sign_in_up_request_code_resend,
     start_st,
 )
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessLoginEmailTemplateVars,
+)
+from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
+from supertokens_python.recipe.passwordless.asyncio import (
+    signinup,
+)
+from supertokens_python.recipe.emailverification.asyncio import (
+    create_email_verification_token,
+)
+from supertokens_python.recipe.emailverification.interfaces import (
+    CreateEmailVerificationTokenOkResult,
+)
+
 
 respx_mock = respx.MockRouter
 
@@ -75,6 +89,109 @@ async def driver_config_client():
         return {"userId": user_id}
 
     return TestClient(app)
+
+
+@mark.asyncio
+async def test_email_verify_for_pless_user_no_callback():
+    "Email verify: test pless user shouldn't trigger callback"
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
+
+    def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
+        async def send_raw_email_override(
+            _content: EmailContent, _user_context: Dict[str, Any]
+        ):
+            nonlocal send_raw_email_called
+            send_raw_email_called = True
+
+        async def get_content_override(
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+        ) -> EmailContent:
+            nonlocal get_content_called
+            get_content_called = True
+
+            assert isinstance(template_vars, PasswordlessLoginEmailTemplateVars)
+
+            return EmailContent(
+                body="Custom body",
+                to_email=template_vars.email,  # type: ignore
+                subject="custom subject",
+                is_html=False,
+            )
+
+        oi.send_raw_email = send_raw_email_override
+        oi.get_content = get_content_override
+
+        return oi
+
+    email_delivery_service = SMTPService(
+        smtp_settings=SMTPSettings(
+            host="",
+            from_=SMTPSettingsFrom("", ""),
+            password="",
+            port=465,
+            secure=True,
+        ),
+        override=smtp_service_override,
+    )
+
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[EmailTemplateVars],
+    ) -> EmailDeliveryInterface[EmailTemplateVars]:
+        oi_send_email = oi.send_email
+
+        async def send_email_override(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
+            nonlocal outer_override_called
+            outer_override_called = True
+            await oi_send_email(template_vars, user_context)
+
+        oi.send_email = send_email_override
+        return oi
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailverification.init(mode="OPTIONAL"),
+            passwordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
+
+    pless_response = await signinup("public", "test@example.com", None, {})
+    create_token = await create_email_verification_token(
+        "public", pless_response.user.user_id
+    )
+
+    assert isinstance(create_token, CreateEmailVerificationTokenOkResult)
+    # TODO: Replaced CreateEmailVerificationTokenEmailAlreadyVerifiedError. Confirm if this is correct.
+
+    assert (
+        all([outer_override_called, get_content_called, send_raw_email_called]) is False
+    )
 
 
 @mark.asyncio

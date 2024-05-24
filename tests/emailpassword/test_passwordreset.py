@@ -269,13 +269,10 @@ async def test_valid_token_input_and_passoword_has_changed(
                 password_reset_url_with_token.split("?")[1].split("&")[0].split("=")[1]
             )
             assert (
-                password_reset_url_with_token.split("?")[1].split("&")[2].split("=")[1]
+                password_reset_url_with_token.split("?")[1].split("&")[1].split("=")[1]
                 == "public"
             )
-            assert (
-                password_reset_url_with_token.split("?")[1].split("&")[1].split("=")[1]
-                == "emailpassword"
-            )
+            assert len(password_reset_url_with_token.split("?")[1].split("&")) == 2
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),

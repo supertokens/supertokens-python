@@ -34,8 +34,6 @@ from supertokens_python.recipe import (
     passwordless,
     session,
     thirdparty,
-    thirdpartyemailpassword,
-    thirdpartypasswordless,
     userroles,
 )
 from supertokens_python.recipe.dashboard import DashboardRecipe
@@ -44,7 +42,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
 )
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
-from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIOptions as EPAPIOptions,
 )
@@ -95,18 +92,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    ThirdPartyEmailPasswordRecipe,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
-    APIInterface as ThirdpartyEmailPasswordAPIInterface,
-)
-from supertokens_python.recipe.thirdpartypasswordless import (
-    ThirdPartyPasswordlessRecipe,
-)
-from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
-    APIInterface as ThirdpartyPasswordlessAPIInterface,
-)
+
 from supertokens_python.recipe.userroles import (
     PermissionClaim,
     UserRoleClaim,
@@ -202,20 +188,6 @@ class CustomEPEmailService(
         latest_url_with_token = template_vars.password_reset_link
 
 
-class CustomTPEPEmailService(
-    thirdpartyemailpassword.EmailDeliveryInterface[
-        thirdpartyemailpassword.EmailTemplateVars
-    ]
-):
-    async def send_email(
-        self,
-        template_vars: thirdpartyemailpassword.EmailTemplateVars,
-        user_context: Dict[str, Any],
-    ) -> None:
-        global latest_url_with_token
-        latest_url_with_token = template_vars.password_reset_link
-
-
 async def create_and_send_custom_email(
     _: User, url_with_token: str, __: Dict[str, Any]
 ) -> None:
@@ -291,14 +263,12 @@ def custom_init(
 ):
     UserRolesRecipe.reset()
     PasswordlessRecipe.reset()
-    ThirdPartyPasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()
     SessionRecipe.reset()
     ThirdPartyRecipe.reset()
     EmailPasswordRecipe.reset()
     EmailVerificationRecipe.reset()
-    ThirdPartyEmailPasswordRecipe.reset()
     DashboardRecipe.reset()
     MultitenancyRecipe.reset()
     Supertokens.reset()
@@ -504,157 +474,6 @@ def custom_init(
         original_implementation.authorisation_url_get = authorisation_url_get
         return original_implementation
 
-    def override_thirdpartyemailpassword_apis(
-        original_implementation: ThirdpartyEmailPasswordAPIInterface,
-    ):
-        original_emailpassword_email_exists_get = (
-            original_implementation.emailpassword_email_exists_get
-        )
-        original_generate_password_reset_token_post = (
-            original_implementation.generate_password_reset_token_post
-        )
-        original_password_reset_post = original_implementation.password_reset_post
-        original_emailpassword_sign_in_post = (
-            original_implementation.emailpassword_sign_in_post
-        )
-        original_emailpassword_sign_up_post = (
-            original_implementation.emailpassword_sign_up_post
-        )
-        original_thirdparty_sign_in_up_post = (
-            original_implementation.thirdparty_sign_in_up_post
-        )
-        original_authorisation_url_get = original_implementation.authorisation_url_get
-
-        async def emailpassword_email_exists_get(
-            email: str,
-            tenant_id: str,
-            api_options: EPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "query", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API email exists")
-            return await original_emailpassword_email_exists_get(
-                email, tenant_id, api_options, user_context
-            )
-
-        async def generate_password_reset_token_post(
-            form_fields: List[FormField],
-            tenant_id: str,
-            api_options: EPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API reset password")
-            return await original_generate_password_reset_token_post(
-                form_fields, tenant_id, api_options, user_context
-            )
-
-        async def password_reset_post(
-            form_fields: List[FormField],
-            token: str,
-            tenant_id: str,
-            api_options: EPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse(
-                    "general error from API reset password consume"
-                )
-            return await original_password_reset_post(
-                form_fields, token, tenant_id, api_options, user_context
-            )
-
-        async def emailpassword_sign_in_post(
-            form_fields: List[FormField],
-            tenant_id: str,
-            api_options: EPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API sign in")
-            return await original_emailpassword_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
-            )
-
-        async def emailpassword_sign_up_post(
-            form_fields: List[FormField],
-            tenant_id: str,
-            api_options: EPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API sign up")
-            return await original_emailpassword_sign_up_post(
-                form_fields, tenant_id, api_options, user_context
-            )
-
-        async def thirdparty_sign_in_up_post(
-            provider: Provider,
-            redirect_uri_info: Union[RedirectUriInfo, None],
-            oauth_tokens: Union[Dict[str, Any], None],
-            tenant_id: str,
-            api_options: ThirdPartyInterfaces.APIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API sign in up")
-            return await original_thirdparty_sign_in_up_post(
-                provider,
-                redirect_uri_info,
-                oauth_tokens,
-                tenant_id,
-                api_options,
-                user_context,
-            )
-
-        async def authorisation_url_get(
-            provider: Provider,
-            redirect_uri_on_provider_dashboard: str,
-            api_options: ThirdPartyInterfaces.APIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "query", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse(
-                    "general error from API authorisation url get"
-                )
-            return await original_authorisation_url_get(
-                provider, redirect_uri_on_provider_dashboard, api_options, user_context
-            )
-
-        original_implementation.emailpassword_email_exists_get = (
-            emailpassword_email_exists_get
-        )
-        original_implementation.generate_password_reset_token_post = (
-            generate_password_reset_token_post
-        )
-        original_implementation.password_reset_post = password_reset_post
-        original_implementation.emailpassword_sign_in_post = emailpassword_sign_in_post
-        original_implementation.emailpassword_sign_up_post = emailpassword_sign_up_post
-        original_implementation.thirdparty_sign_in_up_post = thirdparty_sign_in_up_post
-        original_implementation.authorisation_url_get = authorisation_url_get
-        return original_implementation
-
     def override_session_apis(original_implementation: SessionAPIInterface):
         original_signout_post = original_implementation.signout_post
 
@@ -739,136 +558,23 @@ def custom_init(
         original_implementation.resend_code_post = resend_code_post
         return original_implementation
 
-    def override_thirdpartypasswordless_apis(
-        original_implementation: ThirdpartyPasswordlessAPIInterface,
-    ):
-        original_consume_code_post = original_implementation.consume_code_post
-        original_create_code_post = original_implementation.create_code_post
-        original_resend_code_post = original_implementation.resend_code_post
-        original_thirdparty_sign_in_up_post = (
-            original_implementation.thirdparty_sign_in_up_post
-        )
-        original_authorisation_url_get = original_implementation.authorisation_url_get
-
-        async def consume_code_post(
-            pre_auth_session_id: str,
-            user_input_code: Union[str, None],
-            device_id: Union[str, None],
-            link_code: Union[str, None],
-            tenant_id: str,
-            api_options: PAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API consume code")
-            return await original_consume_code_post(
-                pre_auth_session_id,
-                user_input_code,
-                device_id,
-                link_code,
-                tenant_id,
-                api_options,
-                user_context,
-            )
-
-        async def create_code_post(
-            email: Union[str, None],
-            phone_number: Union[str, None],
-            tenant_id: str,
-            api_options: PAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API create code")
-            return await original_create_code_post(
-                email, phone_number, tenant_id, api_options, user_context
-            )
-
-        async def resend_code_post(
-            device_id: str,
-            pre_auth_session_id: str,
-            tenant_id: str,
-            api_options: PAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API resend code")
-            return await original_resend_code_post(
-                device_id, pre_auth_session_id, tenant_id, api_options, user_context
-            )
-
-        async def thirdparty_sign_in_up_post(
-            provider: Provider,
-            redirect_uri_info: Union[RedirectUriInfo, None],
-            oauth_tokens: Union[Dict[str, Any], None],
-            tenant_id: str,
-            api_options: TPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "body", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse("general error from API sign in up")
-            return await original_thirdparty_sign_in_up_post(
-                provider,
-                redirect_uri_info,
-                oauth_tokens,
-                tenant_id,
-                api_options,
-                user_context,
-            )
-
-        async def authorisation_url_get(
-            provider: Provider,
-            redirect_uri_on_provider_dashboard: str,
-            api_options: TPAPIOptions,
-            user_context: Dict[str, Any],
-        ):
-            is_general_error = await check_for_general_error(
-                "query", api_options.request
-            )
-            if is_general_error:
-                return GeneralErrorResponse(
-                    "general error from API authorisation url get"
-                )
-            return await original_authorisation_url_get(
-                provider, redirect_uri_on_provider_dashboard, api_options, user_context
-            )
-
-        original_implementation.consume_code_post = consume_code_post
-        original_implementation.create_code_post = create_code_post
-        original_implementation.resend_code_post = resend_code_post
-        original_implementation.thirdparty_sign_in_up_post = thirdparty_sign_in_up_post
-        original_implementation.authorisation_url_get = authorisation_url_get
-        return original_implementation
-
-    providers_list: List[thirdpartypasswordless.ProviderInput] = [
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
+    providers_list: List[thirdparty.ProviderInput] = [
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
                 third_party_id="google",
                 clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
+                    thirdparty.ProviderClientConfig(
                         client_id=os.environ["GOOGLE_CLIENT_ID"],
                         client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
                     ),
                 ],
             ),
         ),
-        thirdpartyemailpassword.ProviderInput(
-            config=thirdpartyemailpassword.ProviderConfig(
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
                 third_party_id="github",
                 clients=[
-                    thirdpartyemailpassword.ProviderClientConfig(
+                    thirdparty.ProviderClientConfig(
                         client_id=os.environ["GITHUB_CLIENT_ID"],
                         client_secret=os.environ["GITHUB_CLIENT_SECRET"],
                     ),
@@ -903,15 +609,6 @@ def custom_init(
                     apis=override_passwordless_apis
                 ),
             )
-            thirdpartypasswordless_init = thirdpartypasswordless.init(
-                contact_config=ContactPhoneOnlyConfig(),
-                flow_type=flow_type,
-                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-                providers=providers_list,
-                override=thirdpartypasswordless.InputOverrideConfig(
-                    apis=override_thirdpartypasswordless_apis
-                ),
-            )
         elif contact_method == "EMAIL":
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(),
@@ -921,17 +618,6 @@ def custom_init(
                 ),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
-                ),
-            )
-            thirdpartypasswordless_init = thirdpartypasswordless.init(
-                contact_config=ContactEmailOnlyConfig(),
-                flow_type=flow_type,
-                email_delivery=passwordless.EmailDeliveryConfig(
-                    CustomPlessEmailService()
-                ),
-                providers=providers_list,
-                override=thirdpartypasswordless.InputOverrideConfig(
-                    apis=override_thirdpartypasswordless_apis
                 ),
             )
         else:
@@ -946,20 +632,6 @@ def custom_init(
                     apis=override_passwordless_apis
                 ),
             )
-            thirdpartypasswordless_init = thirdpartypasswordless.init(
-                contact_config=ContactEmailOrPhoneConfig(),
-                flow_type=flow_type,
-                providers=providers_list,
-                email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                    CustomPlessEmailService()
-                ),
-                sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(
-                    CustomSMSService()
-                ),
-                override=thirdpartypasswordless.InputOverrideConfig(
-                    apis=override_thirdpartypasswordless_apis
-                ),
-            )
     else:
         passwordless_init = passwordless.init(
             contact_config=ContactPhoneOnlyConfig(),
@@ -967,18 +639,6 @@ def custom_init(
             email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
-        )
-        thirdpartypasswordless_init = thirdpartypasswordless.init(
-            contact_config=ContactPhoneOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-            providers=providers_list,
-            email_delivery=thirdpartypasswordless.EmailDeliveryConfig(
-                CustomPlessEmailService()
-            ),
-            sms_delivery=thirdpartypasswordless.SMSDeliveryConfig(CustomSMSService()),
-            override=thirdpartypasswordless.InputOverrideConfig(
-                apis=override_thirdpartypasswordless_apis
-            ),
         )
 
     recipe_list = [
@@ -1002,18 +662,7 @@ def custom_init(
             sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
             override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
         ),
-        thirdpartyemailpassword.init(
-            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
-            providers=providers_list,
-            email_delivery=thirdpartyemailpassword.EmailDeliveryConfig(
-                CustomTPEPEmailService()
-            ),
-            override=thirdpartyemailpassword.InputOverrideConfig(
-                apis=override_thirdpartyemailpassword_apis
-            ),
-        ),
         passwordless_init,
-        thirdpartypasswordless_init,
     ]
 
     init(

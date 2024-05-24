@@ -38,12 +38,6 @@ from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    ThirdPartyEmailPasswordRecipe,
-)
-from supertokens_python.recipe.thirdpartypasswordless import (
-    ThirdPartyPasswordlessRecipe,
-)
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.utils import is_version_gte
@@ -215,7 +209,6 @@ def reset(stop_core: bool = True):
     ProcessState.get_instance().reset()
     Supertokens.reset()
     SessionRecipe.reset()
-    ThirdPartyEmailPasswordRecipe.reset()
     EmailPasswordRecipe.reset()
     EmailVerificationRecipe.reset()
     ThirdPartyRecipe.reset()
@@ -223,7 +216,6 @@ def reset(stop_core: bool = True):
     JWTRecipe.reset()
     UserMetadataRecipe.reset()
     UserRolesRecipe.reset()
-    ThirdPartyPasswordlessRecipe.reset()
     DashboardRecipe.reset()
     PasswordlessRecipe.reset()
     MultitenancyRecipe.reset()

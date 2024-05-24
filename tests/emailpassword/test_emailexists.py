@@ -155,6 +155,36 @@ async def test_good_input_email_does_not_exists(driver_config_client: TestClient
 
 
 @mark.asyncio
+async def test_good_input_email_does_not_exists_new_path(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io"),
+            emailpassword.init(),
+        ],
+    )
+    start_st()
+
+    response_1 = driver_config_client.get(
+        url="/auth/emailpassword/email/exists", params={"email": "random@gmail.com"}
+    )
+
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+    assert dict_response["exists"] is False
+
+
+@mark.asyncio
 async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(
     driver_config_client: TestClient,
 ):

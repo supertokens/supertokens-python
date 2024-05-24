@@ -74,9 +74,7 @@ class APIImplementation(APIInterface):
                 ).get_as_string_dangerous()
                 + api_options.app_info.website_base_path.get_as_string_dangerous()
                 + "/verify"
-                + "?rid="
-                + api_options.recipe_id
-                + "&preAuthSessionId="
+                + "?preAuthSessionId="
                 + response.pre_auth_session_id
                 + "&tenantId="
                 + tenant_id
@@ -187,9 +185,7 @@ class APIImplementation(APIInterface):
                         ).get_as_string_dangerous()
                         + api_options.app_info.website_base_path.get_as_string_dangerous()
                         + "/verify"
-                        + "?rid="
-                        + api_options.recipe_id
-                        + "&preAuthSessionId="
+                        + "?preAuthSessionId="
                         + response.pre_auth_session_id
                         + "&tenantId="
                         + tenant_id

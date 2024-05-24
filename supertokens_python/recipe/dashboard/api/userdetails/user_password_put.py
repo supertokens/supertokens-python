@@ -16,17 +16,8 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     ResetPasswordUsingTokenOkResult,
 )
 from supertokens_python.recipe.emailpassword.types import NormalisedFormField
-from supertokens_python.recipe.thirdpartyemailpassword import (
-    ThirdPartyEmailPasswordRecipe,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    create_reset_password_token as tpep_create_reset_password_token,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    reset_password_using_token as tpep_reset_password_using_token,
-)
+
 from supertokens_python.utils import Awaitable
-from typing_extensions import Literal
 
 from ...interfaces import (
     APIInterface,
@@ -51,26 +42,6 @@ async def handle_user_password_put(
 
     if new_password is None or not isinstance(new_password, str):
         raise_bad_input_exception("Missing required parameter 'newPassword'")
-
-    recipe_to_use: Union[
-        Literal["emailpassword", "thirdpartyemailpassword"], None
-    ] = None
-
-    try:
-        EmailPasswordRecipe.get_instance()
-        recipe_to_use = "emailpassword"
-    except Exception:
-        pass
-
-    if recipe_to_use is None:
-        try:
-            ThirdPartyEmailPasswordRecipe.get_instance()
-            recipe_to_use = "thirdpartyemailpassword"
-        except Exception:
-            pass
-
-    if recipe_to_use is None:
-        raise Exception("Should not come here")
 
     async def reset_password(
         form_fields: List[NormalisedFormField],
@@ -126,16 +97,8 @@ async def handle_user_password_put(
 
         return UserPasswordPutAPIResponse()
 
-    if recipe_to_use == "emailpassword":
-        return await reset_password(
-            EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
-            ep_create_reset_password_token,
-            ep_reset_password_using_token,
-        )
-
-    if recipe_to_use == "thirdpartyemailpassword":
-        return await reset_password(
-            ThirdPartyEmailPasswordRecipe.get_instance().email_password_recipe.config.sign_up_feature.form_fields,
-            tpep_create_reset_password_token,
-            tpep_reset_password_using_token,
-        )
+    return await reset_password(
+        EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
+        ep_create_reset_password_token,
+        ep_reset_password_using_token,
+    )
