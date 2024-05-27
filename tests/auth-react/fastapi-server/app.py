@@ -308,6 +308,17 @@ def custom_init(
         ),
         thirdparty.ProviderInput(
             config=thirdparty.ProviderConfig(
+                third_party_id="facebook",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["FACEBOOK_CLIENT_ID"],
+                        client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
+                    ),
+                ],
+            )
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
                 third_party_id="auth0",
                 name="Auth0",
                 authorization_endpoint=f"https://{os.environ['AUTH0_DOMAIN']}/authorize",
