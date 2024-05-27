@@ -26,6 +26,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 from typing_extensions import Literal
+from supertokens_python.recipe import multitenancy
 
 from supertokens_python import (
     InputAppInfo,
@@ -648,7 +649,15 @@ def custom_init(
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
         )
 
+    async def get_allowed_domains_for_tenant_id(
+        tenant_id: str, _: Dict[str, Any]
+    ) -> List[str]:
+        return [tenant_id + ".example.com", "localhost"]
+
     recipe_list = [
+        multitenancy.init(
+            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
+        ),
         userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(

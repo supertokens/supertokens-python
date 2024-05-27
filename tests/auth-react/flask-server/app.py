@@ -77,6 +77,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe import multitenancy
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -649,6 +650,11 @@ def custom_init(
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
         )
 
+    async def get_allowed_domains_for_tenant_id(
+        tenant_id: str, _: Dict[str, Any]
+    ) -> List[str]:
+        return [tenant_id + ".example.com", "localhost"]
+
     recipe_list = [
         userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
@@ -671,6 +677,9 @@ def custom_init(
             override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
         ),
         passwordless_init,
+        multitenancy.init(
+            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
+        ),
     ]
 
     init(

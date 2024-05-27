@@ -66,6 +66,7 @@ from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.types import GeneralErrorResponse
 
 from .store import save_code, save_url_with_token
+from supertokens_python.recipe import multitenancy
 
 load_dotenv()
 
@@ -592,7 +593,15 @@ def custom_init(
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
         )
 
+    async def get_allowed_domains_for_tenant_id(
+        tenant_id: str, _: Dict[str, Any]
+    ) -> List[str]:
+        return [tenant_id + ".example.com", "localhost"]
+
     recipe_list = [
+        multitenancy.init(
+            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
+        ),
         userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
