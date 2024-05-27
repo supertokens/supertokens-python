@@ -641,7 +641,7 @@ def custom_init(
             )
     else:
         passwordless_init = passwordless.init(
-            contact_config=ContactPhoneOnlyConfig(),
+            contact_config=ContactEmailOrPhoneConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
