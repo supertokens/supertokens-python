@@ -735,6 +735,7 @@ def get_token():
 def before_each():
     global code_store
     code_store = dict()
+    custom_init()
     return ""
 
 

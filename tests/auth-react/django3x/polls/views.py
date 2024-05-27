@@ -186,6 +186,7 @@ def test_set_flow(request: HttpRequest):
 
 def before_each(request: HttpRequest):
     setattr(settings, "CODE_STORE", dict())
+    custom_init()
     return HttpResponse("")
 
 

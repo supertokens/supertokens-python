@@ -700,6 +700,7 @@ app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 def before_each():
     global code_store
     code_store = dict()
+    custom_init()
     return PlainTextResponse("")
 
 
