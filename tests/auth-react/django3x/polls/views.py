@@ -198,6 +198,7 @@ def test_feature_flags(request: HttpRequest):
                 "thirdpartypasswordless",
                 "generalerror",
                 "userroles",
+                "multitenancy",
             ]
         }
     )

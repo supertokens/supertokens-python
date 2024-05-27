@@ -762,7 +762,13 @@ def test_get_device():
 
 @app.get("/test/featureFlags")  # type: ignore
 def test_feature_flags():
-    available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"]
+    available = [
+        "passwordless",
+        "thirdpartypasswordless",
+        "generalerror",
+        "userroles",
+        "multitenancy",
+    ]
     return jsonify({"available": available})
 
 

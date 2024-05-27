@@ -725,7 +725,13 @@ def test_get_device(request: Request):
 
 @app.get("/test/featureFlags")
 def test_feature_flags(request: Request):
-    available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"]
+    available = [
+        "passwordless",
+        "thirdpartypasswordless",
+        "generalerror",
+        "userroles",
+        "multitenancy",
+    ]
     return JSONResponse({"available": available})
 
 
