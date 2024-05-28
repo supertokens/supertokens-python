@@ -600,6 +600,7 @@ def custom_init(
         passwordless_init = passwordless.init(
             contact_config=ContactEmailOrPhoneConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
         )
