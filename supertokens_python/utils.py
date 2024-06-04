@@ -250,6 +250,7 @@ def set_request_in_user_context_if_not_defined(
 
     if isinstance(user_context["_default"], dict):
         user_context["_default"]["request"] = request
+        user_context["_default"]["keep_cache_alive"] = True
 
     return user_context
 

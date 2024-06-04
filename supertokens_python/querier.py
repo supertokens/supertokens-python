@@ -40,6 +40,7 @@ from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 from sniffio import AsyncLibraryNotFoundError
 from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
+from supertokens_python.utils import get_timestamp_ms
 
 
 class Querier:
@@ -68,10 +69,13 @@ class Querier:
             ],
         ]
     ] = None
+    __global_cache_tag = get_timestamp_ms()
+    __disable_cache = False
 
     def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
         self.__rid_to_core = None
+        self.__global_cache_tag = get_timestamp_ms()
         if rid_to_core is not None:
             self.__rid_to_core = rid_to_core
 
@@ -152,7 +156,7 @@ class Querier:
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
-        if (not Querier.__init_called) or (Querier.__hosts is None):
+        if not Querier.__init_called:
             raise Exception(
                 "Please call the supertokens.init function before using SuperTokens"
             )
@@ -181,6 +185,7 @@ class Querier:
                 ],
             ]
         ] = None,
+        disable_cache: bool = False,
     ):
         if not Querier.__init_called:
             Querier.__init_called = True
@@ -190,6 +195,7 @@ class Querier:
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
             Querier.network_interceptor = network_interceptor
+            Querier.__disable_cache = disable_cache
 
     async def __get_headers_with_api_version(self, path: NormalisedURLPath):
         headers = {API_VERSION_HEADER: await self.get_api_version()}
@@ -211,6 +217,44 @@ class Querier:
         async def f(url: str, method: str) -> Response:
             headers = await self.__get_headers_with_api_version(path)
             nonlocal params
+
+            assert params is not None
+
+            # Sort the keys for deterministic order
+            sorted_keys = sorted(params.keys())
+            sorted_header_keys = sorted(headers.keys())
+
+            # Start with the path as the unique key
+            unique_key = path.get_as_string_dangerous()
+
+            # Append sorted params to the unique key
+            for key in sorted_keys:
+                value = params[key]
+                unique_key += f";{key}={value}"
+
+            # Append a separator for headers
+            unique_key += ";hdrs"
+
+            # Append sorted headers to the unique key
+            for key in sorted_header_keys:
+                value = headers[key]
+                unique_key += f";{key}={value}"
+
+            if user_context is not None and "_default" in user_context:
+                if (
+                    "global_cache_tag" in user_context["_default"]
+                    and user_context["_default"]["global_cache_tag"]
+                    != self.__global_cache_tag
+                ):
+                    self.invalidate_core_call_cache(user_context, False)
+
+                if (
+                    not Querier.__disable_cache
+                    and "core_cache_call" in user_context["_default"]
+                    and unique_key in user_context["_default"]["core_cache_call"]
+                ):
+                    return user_context["_default"]["core_cache_call"][unique_key]
+
             if Querier.network_interceptor is not None:
                 (
                     url,
@@ -222,13 +266,29 @@ class Querier:
                     url, method, headers, params, {}, user_context
                 )
 
-            return await self.api_request(
+            response = await self.api_request(
                 url,
                 method,
                 2,
                 headers=headers,
                 params=params,
             )
+
+            if (
+                response.status_code == 200
+                and not Querier.__disable_cache
+                and user_context is not None
+            ):
+                user_context["_default"] = {
+                    **user_context.get("_default", {}),
+                    "core_cache_call": {
+                        **user_context["_default"].get("core_cache_call", {}),
+                        unique_key: response,
+                    },
+                    "global_cache_key": self.__global_cache_tag,
+                }
+
+            return response
 
         return await self.__send_request_helper(path, "GET", f, len(self.__hosts))
 
@@ -239,6 +299,8 @@ class Querier:
         user_context: Union[Dict[str, Any], None],
         test: bool = False,
     ) -> Dict[str, Any]:
+        if user_context is not None:
+            self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -280,6 +342,8 @@ class Querier:
         params: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
+        if user_context is not None:
+            self.invalidate_core_call_cache(user_context)
         if params is None:
             params = {}
 
@@ -312,6 +376,8 @@ class Querier:
         data: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
+        if user_context is not None:
+            self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -334,10 +400,30 @@ class Querier:
 
         return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))
 
-    def get_all_core_urls_for_path(self, path: str) -> List[str]:
-        if self.__hosts is None:
-            return []
+    def invalidate_core_call_cache(
+        self,
+        user_context: Union[Dict[str, Any], None],
+        upd_global_cache_tag_if_necessary: bool = True,
+    ):
+        if user_context is None:
+            return
 
+        if upd_global_cache_tag_if_necessary and (
+            "_default" in user_context
+            and "keep_cache_alive" in user_context["_default"]
+            and user_context["_default"]["keep_cache_alive"] is not True
+        ):
+            self.__global_cache_tag = get_timestamp_ms()
+
+        if "_default" in user_context:
+            user_context["_default"] = {
+                **user_context["_default"],
+                "core_call_cache": {},
+            }
+        else:
+            user_context["_default"] = {"core_call_cache": {}}
+
+    def get_all_core_urls_for_path(self, path: str) -> List[str]:
         normalized_path = NormalisedURLPath(path)
 
         result: List[str] = []
