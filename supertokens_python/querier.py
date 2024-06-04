@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 
 from typing import List, Set, Union
 
-from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 from sniffio import AsyncLibraryNotFoundError
@@ -84,7 +83,7 @@ class Querier:
         if ("SUPERTOKENS_ENV" not in environ) or (
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
-            raise_general_exception("calling testing function in non testing env")
+            raise Exception("calling testing function in non testing env")
         Querier.__init_called = False
 
     @staticmethod
@@ -92,7 +91,7 @@ class Querier:
         if ("SUPERTOKENS_ENV" not in environ) or (
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
-            raise_general_exception("calling testing function in non testing env")
+            raise Exception("calling testing function in non testing env")
         return Querier.__hosts_alive_for_testing
 
     async def api_request(
@@ -104,7 +103,7 @@ class Querier:
         **kwargs: Any,
     ) -> Response:
         if attempts_remaining == 0:
-            raise_general_exception("Retry request failed")
+            raise Exception("Retry request failed")
 
         try:
             async with AsyncClient() as client:
@@ -145,7 +144,7 @@ class Querier:
         api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
 
         if api_version is None:
-            raise_general_exception(
+            raise Exception(
                 "The running SuperTokens core version is not compatible with this python "
                 "SDK. Please visit https://supertokens.io/docs/community/compatibility-table "
                 "to find the right versions"
@@ -282,7 +281,7 @@ class Querier:
                 user_context["_default"] = {
                     **user_context.get("_default", {}),
                     "core_cache_call": {
-                        **user_context["_default"].get("core_cache_call", {}),
+                        **user_context.get("_default", {}).get("core_cache_call", {}),
                         unique_key: response,
                     },
                     "global_cache_key": self.__global_cache_tag,
@@ -448,7 +447,7 @@ class Querier:
         retry_info_map: Optional[Dict[str, int]] = None,
     ) -> Dict[str, Any]:
         if no_of_tries == 0:
-            raise_general_exception("No SuperTokens core available to query")
+            raise Exception("No SuperTokens core available to query")
 
         try:
             current_host_domain = self.__hosts[
@@ -494,7 +493,7 @@ class Querier:
                     )
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
-                raise_general_exception(
+                raise Exception(
                     "SuperTokens core threw an error for a "
                     + method
                     + " request to path: "
@@ -518,5 +517,3 @@ class Querier:
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1, retry_info_map
             )
-        except Exception as e:
-            raise_general_exception(e)

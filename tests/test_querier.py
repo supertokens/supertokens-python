@@ -18,6 +18,8 @@ from supertokens_python.recipe import (
     emailverification,
     dashboard,
 )
+from supertokens_python import InputAppInfo
+from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
 import asyncio
 import respx
 import httpx
@@ -31,6 +33,7 @@ from tests.utils import (
     teardown_function,
     start_st,
 )
+from typing import Any, Dict, Optional
 
 _ = setup_function
 _ = teardown_function
@@ -190,3 +193,51 @@ async def test_querier_text_and_headers():
                 "content-length": str(len(json.dumps(body))),
             },
         }
+
+
+async def test_caching_works():
+
+    called_core = False
+
+    def intercept(
+        url: str,
+        method: str,
+        headers: Dict[str, Any],
+        params: Optional[Dict[str, Any]],
+        body: Optional[Dict[str, Any]],
+        _: Optional[Dict[str, Any]],
+    ):
+        nonlocal called_core
+        called_core = True
+        return url, method, headers, params, body
+
+    init(
+        supertokens_config=SupertokensConfig(
+            connection_uri="http://localhost:3567", network_interceptor=intercept
+        ),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        mode="asgi",
+        recipe_list=[
+            session.init(),
+            emailpassword.init(),
+            dashboard.init(),
+        ],
+    )  # type: ignore
+    start_st()
+    user_context: Dict[str, Any] = {}
+    user = await get_user_by_id("random", user_context)
+
+    assert user is None
+    assert called_core
+
+    called_core = False
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert not called_core

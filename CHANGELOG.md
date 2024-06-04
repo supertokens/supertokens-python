@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Adds caching per API based on user context.
+- Changes general error in querier to normal python error.
+
 ## [0.21.0] - 2024-05-23
 
 ### Breaking change
