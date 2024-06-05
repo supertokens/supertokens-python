@@ -17,9 +17,13 @@ from supertokens_python.recipe import (
     emailpassword,
     emailverification,
     dashboard,
+    thirdparty,
 )
 from supertokens_python import InputAppInfo
-from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
+from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id, sign_up
+from supertokens_python.recipe.thirdparty.asyncio import (
+    get_user_by_id as tp_get_user_by_id,
+)
 import asyncio
 import respx
 import httpx
@@ -227,6 +231,7 @@ async def test_caching_works():
             session.init(),
             emailpassword.init(),
             dashboard.init(),
+            thirdparty.init(),
         ],
     )  # type: ignore
     start_st()
@@ -241,3 +246,230 @@ async def test_caching_works():
     user = await get_user_by_id("random", user_context)
     assert user is None
     assert not called_core
+
+    user = await tp_get_user_by_id("random", user_context)
+
+    assert user is None
+    assert called_core
+
+    called_core = False
+
+    user = await tp_get_user_by_id("random", user_context)
+    assert user is None
+    assert not called_core
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert not called_core
+
+
+async def test_caching_gets_clear_with_non_get():
+
+    called_core = False
+
+    def intercept(
+        url: str,
+        method: str,
+        headers: Dict[str, Any],
+        params: Optional[Dict[str, Any]],
+        body: Optional[Dict[str, Any]],
+        _: Optional[Dict[str, Any]],
+    ):
+        nonlocal called_core
+        called_core = True
+        return url, method, headers, params, body
+
+    init(
+        supertokens_config=SupertokensConfig(
+            connection_uri="http://localhost:3567", network_interceptor=intercept
+        ),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        mode="asgi",
+        recipe_list=[
+            session.init(),
+            emailpassword.init(),
+            dashboard.init(),
+        ],
+    )  # type: ignore
+    start_st()
+    user_context: Dict[str, Any] = {}
+    user = await get_user_by_id("random", user_context)
+
+    assert user is None
+    assert called_core
+
+    await sign_up("public", "test@example.com", "abcd1234", user_context)
+
+    called_core = False
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert called_core
+
+    called_core = False
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert not called_core
+
+
+async def test_no_caching_if_disabled_by_user():
+
+    called_core = False
+
+    def intercept(
+        url: str,
+        method: str,
+        headers: Dict[str, Any],
+        params: Optional[Dict[str, Any]],
+        body: Optional[Dict[str, Any]],
+        _: Optional[Dict[str, Any]],
+    ):
+        nonlocal called_core
+        called_core = True
+        return url, method, headers, params, body
+
+    init(
+        supertokens_config=SupertokensConfig(
+            connection_uri="http://localhost:3567",
+            network_interceptor=intercept,
+            disable_core_call_cache=True,
+        ),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        mode="asgi",
+        recipe_list=[
+            session.init(),
+            emailpassword.init(),
+            dashboard.init(),
+        ],
+    )  # type: ignore
+    start_st()
+    user_context: Dict[str, Any] = {}
+    user = await get_user_by_id("random", user_context)
+
+    assert user is None
+    assert called_core
+
+    called_core = False
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert called_core
+
+
+async def test_no_caching_if_headers_are_different():
+
+    called_core = False
+
+    def intercept(
+        url: str,
+        method: str,
+        headers: Dict[str, Any],
+        params: Optional[Dict[str, Any]],
+        body: Optional[Dict[str, Any]],
+        _: Optional[Dict[str, Any]],
+    ):
+        nonlocal called_core
+        called_core = True
+        return url, method, headers, params, body
+
+    init(
+        supertokens_config=SupertokensConfig(
+            connection_uri="http://localhost:3567",
+            network_interceptor=intercept,
+        ),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        mode="asgi",
+        recipe_list=[
+            session.init(),
+            emailpassword.init(),
+            dashboard.init(),
+            thirdparty.init(),
+        ],
+    )  # type: ignore
+    start_st()
+    user_context: Dict[str, Any] = {}
+    user = await get_user_by_id("random", user_context)
+
+    assert user is None
+    assert called_core
+
+    called_core = False
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert not called_core
+
+    called_core = False
+
+    user = await tp_get_user_by_id("random", user_context)
+    assert user is None
+    assert called_core
+
+
+async def test_caching_gets_clear_when_query_without_user_context():
+
+    called_core = False
+
+    def intercept(
+        url: str,
+        method: str,
+        headers: Dict[str, Any],
+        params: Optional[Dict[str, Any]],
+        body: Optional[Dict[str, Any]],
+        _: Optional[Dict[str, Any]],
+    ):
+        nonlocal called_core
+        called_core = True
+        return url, method, headers, params, body
+
+    init(
+        supertokens_config=SupertokensConfig(
+            connection_uri="http://localhost:3567", network_interceptor=intercept
+        ),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        mode="asgi",
+        recipe_list=[
+            session.init(),
+            emailpassword.init(),
+            dashboard.init(),
+        ],
+    )  # type: ignore
+    start_st()
+    user_context: Dict[str, Any] = {}
+    user = await get_user_by_id("random", user_context)
+
+    assert user is None
+    assert called_core
+
+    await sign_up("public", "test@example.com", "abcd1234")
+
+    called_core = False
+
+    user = await get_user_by_id("random", user_context)
+    assert user is None
+    assert called_core

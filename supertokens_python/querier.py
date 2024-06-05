@@ -239,20 +239,17 @@ class Querier:
                 value = headers[key]
                 unique_key += f";{key}={value}"
 
-            if user_context is not None and "_default" in user_context:
+            if user_context is not None:
                 if (
-                    "global_cache_tag" in user_context["_default"]
-                    and user_context["_default"]["global_cache_tag"]
+                    user_context.get("_default", {}).get("global_cache_tag", -1)
                     != self.__global_cache_tag
                 ):
                     self.invalidate_core_call_cache(user_context, False)
 
-                if (
-                    not Querier.__disable_cache
-                    and "core_cache_call" in user_context["_default"]
-                    and unique_key in user_context["_default"]["core_cache_call"]
-                ):
-                    return user_context["_default"]["core_cache_call"][unique_key]
+                if not Querier.__disable_cache and unique_key in user_context.get(
+                    "_default", {}
+                ).get("core_call_cache", {}):
+                    return user_context["_default"]["core_call_cache"][unique_key]
 
             if Querier.network_interceptor is not None:
                 (
@@ -280,11 +277,11 @@ class Querier:
             ):
                 user_context["_default"] = {
                     **user_context.get("_default", {}),
-                    "core_cache_call": {
-                        **user_context.get("_default", {}).get("core_cache_call", {}),
+                    "core_call_cache": {
+                        **user_context.get("_default", {}).get("core_call_cache", {}),
                         unique_key: response,
                     },
-                    "global_cache_key": self.__global_cache_tag,
+                    "global_cache_tag": self.__global_cache_tag,
                 }
 
             return response
@@ -298,8 +295,7 @@ class Querier:
         user_context: Union[Dict[str, Any], None],
         test: bool = False,
     ) -> Dict[str, Any]:
-        if user_context is not None:
-            self.invalidate_core_call_cache(user_context)
+        self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -375,8 +371,7 @@ class Querier:
         data: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
-        if user_context is not None:
-            self.invalidate_core_call_cache(user_context)
+        self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -405,22 +400,17 @@ class Querier:
         upd_global_cache_tag_if_necessary: bool = True,
     ):
         if user_context is None:
-            return
+            user_context = {}
 
         if upd_global_cache_tag_if_necessary and (
-            "_default" in user_context
-            and "keep_cache_alive" in user_context["_default"]
-            and user_context["_default"]["keep_cache_alive"] is not True
+            user_context.get("_default", {}).get("keep_cache_alive", False) is not True
         ):
             self.__global_cache_tag = get_timestamp_ms()
 
-        if "_default" in user_context:
-            user_context["_default"] = {
-                **user_context["_default"],
-                "core_call_cache": {},
-            }
-        else:
-            user_context["_default"] = {"core_call_cache": {}}
+        user_context["_default"] = {
+            **user_context.get("_default", {}),
+            "core_call_cache": {},
+        }
 
     def get_all_core_urls_for_path(self, path: str) -> List[str]:
         normalized_path = NormalisedURLPath(path)
