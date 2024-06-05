@@ -400,11 +400,15 @@ class Querier:
         upd_global_cache_tag_if_necessary: bool = True,
     ):
         if user_context is None:
+            # this is done so that the code below runs as expected.
+            # It will reset the __global_cache_tag if needed, and the
+            # stuff we assign to the user_context will just be ignored (as expected)
             user_context = {}
 
         if upd_global_cache_tag_if_necessary and (
             user_context.get("_default", {}).get("keep_cache_alive", False) is not True
         ):
+            # there can be race conditions here, but i think we can ignore them.
             self.__global_cache_tag = get_timestamp_ms()
 
         user_context["_default"] = {
