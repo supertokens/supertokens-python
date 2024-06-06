@@ -278,6 +278,7 @@ def set_request_in_user_context_if_not_defined(
 
     if isinstance(user_context[&#34;_default&#34;], dict):
         user_context[&#34;_default&#34;][&#34;request&#34;] = request
+        user_context[&#34;_default&#34;][&#34;keep_cache_alive&#34;] = True
 
     return user_context
 
@@ -790,6 +791,7 @@ def normalise_email(email: str) -&gt; str:
 
     if isinstance(user_context[&#34;_default&#34;], dict):
         user_context[&#34;_default&#34;][&#34;request&#34;] = request
+        user_context[&#34;_default&#34;][&#34;keep_cache_alive&#34;] = True
 
     return user_context</code></pre>
 </details>

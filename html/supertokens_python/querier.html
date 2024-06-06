@@ -63,11 +63,11 @@ if TYPE_CHECKING:
 
 from typing import List, Set, Union
 
-from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 from sniffio import AsyncLibraryNotFoundError
 from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
+from supertokens_python.utils import get_timestamp_ms
 
 
 class Querier:
@@ -96,10 +96,13 @@ class Querier:
             ],
         ]
     ] = None
+    __global_cache_tag = get_timestamp_ms()
+    __disable_cache = False
 
     def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
         self.__rid_to_core = None
+        self.__global_cache_tag = get_timestamp_ms()
         if rid_to_core is not None:
             self.__rid_to_core = rid_to_core
 
@@ -108,7 +111,7 @@ class Querier:
         if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
             environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
         ):
-            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+            raise Exception(&#34;calling testing function in non testing env&#34;)
         Querier.__init_called = False
 
     @staticmethod
@@ -116,7 +119,7 @@ class Querier:
         if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
             environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
         ):
-            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+            raise Exception(&#34;calling testing function in non testing env&#34;)
         return Querier.__hosts_alive_for_testing
 
     async def api_request(
@@ -128,7 +131,7 @@ class Querier:
         **kwargs: Any,
     ) -&gt; Response:
         if attempts_remaining == 0:
-            raise_general_exception(&#34;Retry request failed&#34;)
+            raise Exception(&#34;Retry request failed&#34;)
 
         try:
             async with AsyncClient() as client:
@@ -169,7 +172,7 @@ class Querier:
         api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
 
         if api_version is None:
-            raise_general_exception(
+            raise Exception(
                 &#34;The running SuperTokens core version is not compatible with this python &#34;
                 &#34;SDK. Please visit https://supertokens.io/docs/community/compatibility-table &#34;
                 &#34;to find the right versions&#34;
@@ -180,7 +183,7 @@ class Querier:
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
-        if (not Querier.__init_called) or (Querier.__hosts is None):
+        if not Querier.__init_called:
             raise Exception(
                 &#34;Please call the supertokens.init function before using SuperTokens&#34;
             )
@@ -209,6 +212,7 @@ class Querier:
                 ],
             ]
         ] = None,
+        disable_cache: bool = False,
     ):
         if not Querier.__init_called:
             Querier.__init_called = True
@@ -218,6 +222,7 @@ class Querier:
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
             Querier.network_interceptor = network_interceptor
+            Querier.__disable_cache = disable_cache
 
     async def __get_headers_with_api_version(self, path: NormalisedURLPath):
         headers = {API_VERSION_HEADER: await self.get_api_version()}
@@ -239,6 +244,41 @@ class Querier:
         async def f(url: str, method: str) -&gt; Response:
             headers = await self.__get_headers_with_api_version(path)
             nonlocal params
+
+            assert params is not None
+
+            # Sort the keys for deterministic order
+            sorted_keys = sorted(params.keys())
+            sorted_header_keys = sorted(headers.keys())
+
+            # Start with the path as the unique key
+            unique_key = path.get_as_string_dangerous()
+
+            # Append sorted params to the unique key
+            for key in sorted_keys:
+                value = params[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            # Append a separator for headers
+            unique_key += &#34;;hdrs&#34;
+
+            # Append sorted headers to the unique key
+            for key in sorted_header_keys:
+                value = headers[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            if user_context is not None:
+                if (
+                    user_context.get(&#34;_default&#34;, {}).get(&#34;global_cache_tag&#34;, -1)
+                    != self.__global_cache_tag
+                ):
+                    self.invalidate_core_call_cache(user_context, False)
+
+                if not Querier.__disable_cache and unique_key in user_context.get(
+                    &#34;_default&#34;, {}
+                ).get(&#34;core_call_cache&#34;, {}):
+                    return user_context[&#34;_default&#34;][&#34;core_call_cache&#34;][unique_key]
+
             if Querier.network_interceptor is not None:
                 (
                     url,
@@ -250,13 +290,29 @@ class Querier:
                     url, method, headers, params, {}, user_context
                 )
 
-            return await self.api_request(
+            response = await self.api_request(
                 url,
                 method,
                 2,
                 headers=headers,
                 params=params,
             )
+
+            if (
+                response.status_code == 200
+                and not Querier.__disable_cache
+                and user_context is not None
+            ):
+                user_context[&#34;_default&#34;] = {
+                    **user_context.get(&#34;_default&#34;, {}),
+                    &#34;core_call_cache&#34;: {
+                        **user_context.get(&#34;_default&#34;, {}).get(&#34;core_call_cache&#34;, {}),
+                        unique_key: response,
+                    },
+                    &#34;global_cache_tag&#34;: self.__global_cache_tag,
+                }
+
+            return response
 
         return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))
 
@@ -267,6 +323,7 @@ class Querier:
         user_context: Union[Dict[str, Any], None],
         test: bool = False,
     ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -308,6 +365,8 @@ class Querier:
         params: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -&gt; Dict[str, Any]:
+        if user_context is not None:
+            self.invalidate_core_call_cache(user_context)
         if params is None:
             params = {}
 
@@ -340,6 +399,7 @@ class Querier:
         data: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -362,10 +422,29 @@ class Querier:
 
         return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))
 
-    def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
-        if self.__hosts is None:
-            return []
+    def invalidate_core_call_cache(
+        self,
+        user_context: Union[Dict[str, Any], None],
+        upd_global_cache_tag_if_necessary: bool = True,
+    ):
+        if user_context is None:
+            # this is done so that the code below runs as expected.
+            # It will reset the __global_cache_tag if needed, and the
+            # stuff we assign to the user_context will just be ignored (as expected)
+            user_context = {}
 
+        if upd_global_cache_tag_if_necessary and (
+            user_context.get(&#34;_default&#34;, {}).get(&#34;keep_cache_alive&#34;, False) is not True
+        ):
+            # there can be race conditions here, but i think we can ignore them.
+            self.__global_cache_tag = get_timestamp_ms()
+
+        user_context[&#34;_default&#34;] = {
+            **user_context.get(&#34;_default&#34;, {}),
+            &#34;core_call_cache&#34;: {},
+        }
+
+    def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
         normalized_path = NormalisedURLPath(path)
 
         result: List[str] = []
@@ -390,7 +469,7 @@ class Querier:
         retry_info_map: Optional[Dict[str, int]] = None,
     ) -&gt; Dict[str, Any]:
         if no_of_tries == 0:
-            raise_general_exception(&#34;No SuperTokens core available to query&#34;)
+            raise Exception(&#34;No SuperTokens core available to query&#34;)
 
         try:
             current_host_domain = self.__hosts[
@@ -436,7 +515,7 @@ class Querier:
                     )
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
-                raise_general_exception(
+                raise Exception(
                     &#34;SuperTokens core threw an error for a &#34;
                     + method
                     + &#34; request to path: &#34;
@@ -459,9 +538,7 @@ class Querier:
         except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1, retry_info_map
-            )
-        except Exception as e:
-            raise_general_exception(e)</code></pre>
+            )</code></pre>
 </details>
 </section>
 <section>
@@ -509,10 +586,13 @@ class Querier:
             ],
         ]
     ] = None
+    __global_cache_tag = get_timestamp_ms()
+    __disable_cache = False
 
     def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
         self.__rid_to_core = None
+        self.__global_cache_tag = get_timestamp_ms()
         if rid_to_core is not None:
             self.__rid_to_core = rid_to_core
 
@@ -521,7 +601,7 @@ class Querier:
         if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
             environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
         ):
-            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+            raise Exception(&#34;calling testing function in non testing env&#34;)
         Querier.__init_called = False
 
     @staticmethod
@@ -529,7 +609,7 @@ class Querier:
         if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
             environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
         ):
-            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+            raise Exception(&#34;calling testing function in non testing env&#34;)
         return Querier.__hosts_alive_for_testing
 
     async def api_request(
@@ -541,7 +621,7 @@ class Querier:
         **kwargs: Any,
     ) -&gt; Response:
         if attempts_remaining == 0:
-            raise_general_exception(&#34;Retry request failed&#34;)
+            raise Exception(&#34;Retry request failed&#34;)
 
         try:
             async with AsyncClient() as client:
@@ -582,7 +662,7 @@ class Querier:
         api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
 
         if api_version is None:
-            raise_general_exception(
+            raise Exception(
                 &#34;The running SuperTokens core version is not compatible with this python &#34;
                 &#34;SDK. Please visit https://supertokens.io/docs/community/compatibility-table &#34;
                 &#34;to find the right versions&#34;
@@ -593,7 +673,7 @@ class Querier:
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
-        if (not Querier.__init_called) or (Querier.__hosts is None):
+        if not Querier.__init_called:
             raise Exception(
                 &#34;Please call the supertokens.init function before using SuperTokens&#34;
             )
@@ -622,6 +702,7 @@ class Querier:
                 ],
             ]
         ] = None,
+        disable_cache: bool = False,
     ):
         if not Querier.__init_called:
             Querier.__init_called = True
@@ -631,6 +712,7 @@ class Querier:
             Querier.__last_tried_index = 0
             Querier.__hosts_alive_for_testing = set()
             Querier.network_interceptor = network_interceptor
+            Querier.__disable_cache = disable_cache
 
     async def __get_headers_with_api_version(self, path: NormalisedURLPath):
         headers = {API_VERSION_HEADER: await self.get_api_version()}
@@ -652,6 +734,41 @@ class Querier:
         async def f(url: str, method: str) -&gt; Response:
             headers = await self.__get_headers_with_api_version(path)
             nonlocal params
+
+            assert params is not None
+
+            # Sort the keys for deterministic order
+            sorted_keys = sorted(params.keys())
+            sorted_header_keys = sorted(headers.keys())
+
+            # Start with the path as the unique key
+            unique_key = path.get_as_string_dangerous()
+
+            # Append sorted params to the unique key
+            for key in sorted_keys:
+                value = params[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            # Append a separator for headers
+            unique_key += &#34;;hdrs&#34;
+
+            # Append sorted headers to the unique key
+            for key in sorted_header_keys:
+                value = headers[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            if user_context is not None:
+                if (
+                    user_context.get(&#34;_default&#34;, {}).get(&#34;global_cache_tag&#34;, -1)
+                    != self.__global_cache_tag
+                ):
+                    self.invalidate_core_call_cache(user_context, False)
+
+                if not Querier.__disable_cache and unique_key in user_context.get(
+                    &#34;_default&#34;, {}
+                ).get(&#34;core_call_cache&#34;, {}):
+                    return user_context[&#34;_default&#34;][&#34;core_call_cache&#34;][unique_key]
+
             if Querier.network_interceptor is not None:
                 (
                     url,
@@ -663,13 +780,29 @@ class Querier:
                     url, method, headers, params, {}, user_context
                 )
 
-            return await self.api_request(
+            response = await self.api_request(
                 url,
                 method,
                 2,
                 headers=headers,
                 params=params,
             )
+
+            if (
+                response.status_code == 200
+                and not Querier.__disable_cache
+                and user_context is not None
+            ):
+                user_context[&#34;_default&#34;] = {
+                    **user_context.get(&#34;_default&#34;, {}),
+                    &#34;core_call_cache&#34;: {
+                        **user_context.get(&#34;_default&#34;, {}).get(&#34;core_call_cache&#34;, {}),
+                        unique_key: response,
+                    },
+                    &#34;global_cache_tag&#34;: self.__global_cache_tag,
+                }
+
+            return response
 
         return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))
 
@@ -680,6 +813,7 @@ class Querier:
         user_context: Union[Dict[str, Any], None],
         test: bool = False,
     ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -721,6 +855,8 @@ class Querier:
         params: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -&gt; Dict[str, Any]:
+        if user_context is not None:
+            self.invalidate_core_call_cache(user_context)
         if params is None:
             params = {}
 
@@ -753,6 +889,7 @@ class Querier:
         data: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
 
@@ -775,10 +912,29 @@ class Querier:
 
         return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))
 
-    def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
-        if self.__hosts is None:
-            return []
+    def invalidate_core_call_cache(
+        self,
+        user_context: Union[Dict[str, Any], None],
+        upd_global_cache_tag_if_necessary: bool = True,
+    ):
+        if user_context is None:
+            # this is done so that the code below runs as expected.
+            # It will reset the __global_cache_tag if needed, and the
+            # stuff we assign to the user_context will just be ignored (as expected)
+            user_context = {}
 
+        if upd_global_cache_tag_if_necessary and (
+            user_context.get(&#34;_default&#34;, {}).get(&#34;keep_cache_alive&#34;, False) is not True
+        ):
+            # there can be race conditions here, but i think we can ignore them.
+            self.__global_cache_tag = get_timestamp_ms()
+
+        user_context[&#34;_default&#34;] = {
+            **user_context.get(&#34;_default&#34;, {}),
+            &#34;core_call_cache&#34;: {},
+        }
+
+    def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
         normalized_path = NormalisedURLPath(path)
 
         result: List[str] = []
@@ -803,7 +959,7 @@ class Querier:
         retry_info_map: Optional[Dict[str, int]] = None,
     ) -&gt; Dict[str, Any]:
         if no_of_tries == 0:
-            raise_general_exception(&#34;No SuperTokens core available to query&#34;)
+            raise Exception(&#34;No SuperTokens core available to query&#34;)
 
         try:
             current_host_domain = self.__hosts[
@@ -849,7 +1005,7 @@ class Querier:
                     )
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
-                raise_general_exception(
+                raise Exception(
                     &#34;SuperTokens core threw an error for a &#34;
                     + method
                     + &#34; request to path: &#34;
@@ -872,9 +1028,7 @@ class Querier:
         except (ConnectionError, NetworkError, ConnectTimeout) as _:
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1, retry_info_map
-            )
-        except Exception as e:
-            raise_general_exception(e)</code></pre>
+            )</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -903,7 +1057,7 @@ def get_hosts_alive_for_testing():
     if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
         environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
     ):
-        raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        raise Exception(&#34;calling testing function in non testing env&#34;)
     return Querier.__hosts_alive_for_testing</code></pre>
 </details>
 </dd>
@@ -918,7 +1072,7 @@ def get_hosts_alive_for_testing():
 </summary>
 <pre><code class="python">@staticmethod
 def get_instance(rid_to_core: Union[str, None] = None):
-    if (not Querier.__init_called) or (Querier.__hosts is None):
+    if not Querier.__init_called:
         raise Exception(
             &#34;Please call the supertokens.init function before using SuperTokens&#34;
         )
@@ -926,7 +1080,7 @@ def get_instance(rid_to_core: Union[str, None] = None):
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>hosts: List[Host], api_key: Union[str, None] = None, network_interceptor: Optional[Callable[[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]], Tuple[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>hosts: List[Host], api_key: Union[str, None] = None, network_interceptor: Optional[Callable[[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]], Tuple[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]] = None, disable_cache: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -957,6 +1111,7 @@ def init(
             ],
         ]
     ] = None,
+    disable_cache: bool = False,
 ):
     if not Querier.__init_called:
         Querier.__init_called = True
@@ -965,7 +1120,8 @@ def init(
         Querier.api_version = None
         Querier.__last_tried_index = 0
         Querier.__hosts_alive_for_testing = set()
-        Querier.network_interceptor = network_interceptor</code></pre>
+        Querier.network_interceptor = network_interceptor
+        Querier.__disable_cache = disable_cache</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.reset"><code class="name flex">
@@ -982,7 +1138,7 @@ def reset():
     if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
         environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
     ):
-        raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        raise Exception(&#34;calling testing function in non testing env&#34;)
     Querier.__init_called = False</code></pre>
 </details>
 </dd>
@@ -1007,7 +1163,7 @@ def reset():
     **kwargs: Any,
 ) -&gt; Response:
     if attempts_remaining == 0:
-        raise_general_exception(&#34;Retry request failed&#34;)
+        raise Exception(&#34;Retry request failed&#34;)
 
     try:
         async with AsyncClient() as client:
@@ -1038,9 +1194,6 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
-    if self.__hosts is None:
-        return []
-
     normalized_path = NormalisedURLPath(path)
 
     result: List[str] = []
@@ -1087,7 +1240,7 @@ def reset():
     api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
 
     if api_version is None:
-        raise_general_exception(
+        raise Exception(
             &#34;The running SuperTokens core version is not compatible with this python &#34;
             &#34;SDK. Please visit https://supertokens.io/docs/community/compatibility-table &#34;
             &#34;to find the right versions&#34;
@@ -1095,6 +1248,38 @@ def reset():
 
     Querier.api_version = api_version
     return Querier.api_version</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.querier.Querier.invalidate_core_call_cache"><code class="name flex">
+<span>def <span class="ident">invalidate_core_call_cache</span></span>(<span>self, user_context: Union[Dict[str, Any], None], upd_global_cache_tag_if_necessary: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def invalidate_core_call_cache(
+    self,
+    user_context: Union[Dict[str, Any], None],
+    upd_global_cache_tag_if_necessary: bool = True,
+):
+    if user_context is None:
+        # this is done so that the code below runs as expected.
+        # It will reset the __global_cache_tag if needed, and the
+        # stuff we assign to the user_context will just be ignored (as expected)
+        user_context = {}
+
+    if upd_global_cache_tag_if_necessary and (
+        user_context.get(&#34;_default&#34;, {}).get(&#34;keep_cache_alive&#34;, False) is not True
+    ):
+        # there can be race conditions here, but i think we can ignore them.
+        self.__global_cache_tag = get_timestamp_ms()
+
+    user_context[&#34;_default&#34;] = {
+        **user_context.get(&#34;_default&#34;, {}),
+        &#34;core_call_cache&#34;: {},
+    }</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.querier.Querier.send_delete_request"><code class="name flex">
@@ -1112,6 +1297,8 @@ def reset():
     params: Union[Dict[str, Any], None],
     user_context: Union[Dict[str, Any], None],
 ) -&gt; Dict[str, Any]:
+    if user_context is not None:
+        self.invalidate_core_call_cache(user_context)
     if params is None:
         params = {}
 
@@ -1160,6 +1347,41 @@ def reset():
     async def f(url: str, method: str) -&gt; Response:
         headers = await self.__get_headers_with_api_version(path)
         nonlocal params
+
+        assert params is not None
+
+        # Sort the keys for deterministic order
+        sorted_keys = sorted(params.keys())
+        sorted_header_keys = sorted(headers.keys())
+
+        # Start with the path as the unique key
+        unique_key = path.get_as_string_dangerous()
+
+        # Append sorted params to the unique key
+        for key in sorted_keys:
+            value = params[key]
+            unique_key += f&#34;;{key}={value}&#34;
+
+        # Append a separator for headers
+        unique_key += &#34;;hdrs&#34;
+
+        # Append sorted headers to the unique key
+        for key in sorted_header_keys:
+            value = headers[key]
+            unique_key += f&#34;;{key}={value}&#34;
+
+        if user_context is not None:
+            if (
+                user_context.get(&#34;_default&#34;, {}).get(&#34;global_cache_tag&#34;, -1)
+                != self.__global_cache_tag
+            ):
+                self.invalidate_core_call_cache(user_context, False)
+
+            if not Querier.__disable_cache and unique_key in user_context.get(
+                &#34;_default&#34;, {}
+            ).get(&#34;core_call_cache&#34;, {}):
+                return user_context[&#34;_default&#34;][&#34;core_call_cache&#34;][unique_key]
+
         if Querier.network_interceptor is not None:
             (
                 url,
@@ -1171,13 +1393,29 @@ def reset():
                 url, method, headers, params, {}, user_context
             )
 
-        return await self.api_request(
+        response = await self.api_request(
             url,
             method,
             2,
             headers=headers,
             params=params,
         )
+
+        if (
+            response.status_code == 200
+            and not Querier.__disable_cache
+            and user_context is not None
+        ):
+            user_context[&#34;_default&#34;] = {
+                **user_context.get(&#34;_default&#34;, {}),
+                &#34;core_call_cache&#34;: {
+                    **user_context.get(&#34;_default&#34;, {}).get(&#34;core_call_cache&#34;, {}),
+                    unique_key: response,
+                },
+                &#34;global_cache_tag&#34;: self.__global_cache_tag,
+            }
+
+        return response
 
     return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))</code></pre>
 </details>
@@ -1198,6 +1436,7 @@ def reset():
     user_context: Union[Dict[str, Any], None],
     test: bool = False,
 ) -&gt; Dict[str, Any]:
+    self.invalidate_core_call_cache(user_context)
     if data is None:
         data = {}
 
@@ -1249,6 +1488,7 @@ def reset():
     data: Union[Dict[str, Any], None],
     user_context: Union[Dict[str, Any], None],
 ) -&gt; Dict[str, Any]:
+    self.invalidate_core_call_cache(user_context)
     if data is None:
         data = {}
 
@@ -1300,6 +1540,7 @@ def reset():
 <li><code><a title="supertokens_python.querier.Querier.get_hosts_alive_for_testing" href="#supertokens_python.querier.Querier.get_hosts_alive_for_testing">get_hosts_alive_for_testing</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.get_instance" href="#supertokens_python.querier.Querier.get_instance">get_instance</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.init" href="#supertokens_python.querier.Querier.init">init</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.invalidate_core_call_cache" href="#supertokens_python.querier.Querier.invalidate_core_call_cache">invalidate_core_call_cache</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.network_interceptor" href="#supertokens_python.querier.Querier.network_interceptor">network_interceptor</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.reset" href="#supertokens_python.querier.Querier.reset">reset</a></code></li>
 <li><code><a title="supertokens_python.querier.Querier.send_delete_request" href="#supertokens_python.querier.Querier.send_delete_request">send_delete_request</a></code></li>

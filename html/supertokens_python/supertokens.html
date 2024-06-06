@@ -114,10 +114,12 @@ class SupertokensConfig:
                 ],
             ]
         ] = None,
+        disable_core_call_cache: bool = False,
     ):  # We keep this = None here because this is directly used by the user.
         self.connection_uri = connection_uri
         self.api_key = api_key
         self.network_interceptor = network_interceptor
+        self.disable_core_call_cache = disable_core_call_cache
 
 
 class Host:
@@ -271,7 +273,10 @@ class Supertokens:
             )
         )
         Querier.init(
-            hosts, supertokens_config.api_key, supertokens_config.network_interceptor
+            hosts,
+            supertokens_config.api_key,
+            supertokens_config.network_interceptor,
+            supertokens_config.disable_core_call_cache,
         )
 
         if len(recipe_list) == 0:
@@ -1037,7 +1042,10 @@ class Supertokens:
             )
         )
         Querier.init(
-            hosts, supertokens_config.api_key, supertokens_config.network_interceptor
+            hosts,
+            supertokens_config.api_key,
+            supertokens_config.network_interceptor,
+            supertokens_config.disable_core_call_cache,
         )
 
         if len(recipe_list) == 0:
@@ -2137,7 +2145,7 @@ def reset():
 </dd>
 <dt id="supertokens_python.supertokens.SupertokensConfig"><code class="flex name class">
 <span>class <span class="ident">SupertokensConfig</span></span>
-<span>(</span><span>connection_uri: str, api_key: Union[str, None] = None, network_interceptor: Optional[Callable[[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]], Tuple[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]] = None)</span>
+<span>(</span><span>connection_uri: str, api_key: Union[str, None] = None, network_interceptor: Optional[Callable[[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]], Tuple[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]] = None, disable_core_call_cache: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2169,10 +2177,12 @@ def reset():
                 ],
             ]
         ] = None,
+        disable_core_call_cache: bool = False,
     ):  # We keep this = None here because this is directly used by the user.
         self.connection_uri = connection_uri
         self.api_key = api_key
-        self.network_interceptor = network_interceptor</code></pre>
+        self.network_interceptor = network_interceptor
+        self.disable_core_call_cache = disable_core_call_cache</code></pre>
 </details>
 </dd>
 </dl>
