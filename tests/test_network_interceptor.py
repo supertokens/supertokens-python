@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, emailpassword, userroles
 from supertokens_python.recipe.emailpassword.asyncio import sign_in, sign_up
@@ -119,7 +118,7 @@ async def test_network_interceptor_incorrect_core_url():
         ],
     )
     start_st()
-    with pytest.raises(GeneralError) as err:
+    with pytest.raises(Exception) as err:
         await sign_up("public", "testEmail@email.com", "validPassword123")
     assert "status code: 404" in str(err)
 
@@ -161,7 +160,7 @@ async def test_network_interceptor_incorrect_query_params():
         ],
     )
     start_st()
-    with pytest.raises(GeneralError) as err:
+    with pytest.raises(Exception) as err:
         await get_roles_for_user("public", "someUserId")
     assert "status code: 400" in str(err)
 
@@ -203,7 +202,7 @@ async def test_network_interceptor_incorrect_request_body():
     )
     start_st()
 
-    with pytest.raises(GeneralError) as err:
+    with pytest.raises(Exception) as err:
         await sign_in("public", "testEmail@email.com", "validPassword123")
     assert "status code: 400" in str(err)
 

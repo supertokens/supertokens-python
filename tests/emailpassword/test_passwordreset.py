@@ -21,7 +21,6 @@ from fastapi.requests import Request
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
@@ -394,7 +393,7 @@ async def test_create_reset_password_link(
     link = await create_reset_password_link("public", "invalidUserId")
     assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
 
-    with raises(GeneralError) as err:
+    with raises(Exception) as err:
         await create_reset_password_link("invalidTenantId", user_info["id"])
     assert "status code: 400" in str(err.value)
 

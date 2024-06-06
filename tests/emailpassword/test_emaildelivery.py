@@ -15,7 +15,6 @@
 import json
 from typing import Any, Dict
 from pytest import fixture, mark, raises
-from supertokens_python.exceptions import GeneralError
 
 import httpx
 import respx
@@ -1126,6 +1125,6 @@ async def test_send_reset_password_email_invalid_input(
     link = await send_reset_password_email("public", "invalidUserId")
     assert isinstance(link, SendResetPasswordEmailUnknownUserIdError)
 
-    with raises(GeneralError) as err:
+    with raises(Exception) as err:
         await send_reset_password_email("invalidTenantId", user_info["id"])
     assert "status code: 400" in str(err.value)

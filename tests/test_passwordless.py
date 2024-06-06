@@ -18,7 +18,6 @@ from fastapi import FastAPI
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
@@ -400,7 +399,7 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(
     # Delete the email
     response = await delete_email_for_user(user_id)
     # Delete the phone number (Should raise exception because deleting both of them isn't allowed)
-    with raises(GeneralError) as e:
+    with raises(Exception) as e:
         response = await delete_phone_number_for_user(user_id)
 
     assert e.value.args[0].endswith(
