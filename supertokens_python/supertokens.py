@@ -86,10 +86,12 @@ class SupertokensConfig:
                 ],
             ]
         ] = None,
+        disable_core_call_cache: bool = False,
     ):  # We keep this = None here because this is directly used by the user.
         self.connection_uri = connection_uri
         self.api_key = api_key
         self.network_interceptor = network_interceptor
+        self.disable_core_call_cache = disable_core_call_cache
 
 
 class Host:
@@ -243,7 +245,10 @@ class Supertokens:
             )
         )
         Querier.init(
-            hosts, supertokens_config.api_key, supertokens_config.network_interceptor
+            hosts,
+            supertokens_config.api_key,
+            supertokens_config.network_interceptor,
+            supertokens_config.disable_core_call_cache,
         )
 
         if len(recipe_list) == 0:
