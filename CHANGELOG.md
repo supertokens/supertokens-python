@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.22.1] - 2024-06-10
+- Remove `user_context` being `None` check in querier delete function to make it consistent with other non GET functions
+
 ## [0.22.0] - 2024-06-05
 - Adds caching per API based on user context.
 

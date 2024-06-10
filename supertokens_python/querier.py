@@ -337,8 +337,7 @@ class Querier:
         params: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
-        if user_context is not None:
-            self.invalidate_core_call_cache(user_context)
+        self.invalidate_core_call_cache(user_context)
         if params is None:
             params = {}
 
