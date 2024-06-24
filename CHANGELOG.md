@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.23.0] - 2024-06-24
+
+### Breaking change
+
+- The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
+
 ## [0.22.1] - 2024-06-10
 - Remove `user_context` being `None` check in querier delete function to make it consistent with other non GET functions
 
