@@ -37,7 +37,7 @@ from .constants import (
     available_token_transfer_methods,
 )
 from ...logger import log_debug_message
-from supertokens_python.constants import HUNDRED_YEARS_IN_MS
+from supertokens_python.constants import ONE_YEAR_IN_MS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -391,11 +391,11 @@ def _set_access_token_in_response(
         config,
         "access",
         access_token,
-        # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+        # We set the expiration to 1 year, because we can't really access the expiration of the refresh token everywhere we are setting it.
         # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
         # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-        # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-        get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
+        # Some browsers now cap the maximum expiry at 400 days, so we set it to 1 year, which should suffice.
+        get_timestamp_ms() + ONE_YEAR_IN_MS,
         transfer_method,
         request,
         user_context,
@@ -410,7 +410,7 @@ def _set_access_token_in_response(
             config,
             "access",
             access_token,
-            get_timestamp_ms() + HUNDRED_YEARS_IN_MS,
+            get_timestamp_ms() + ONE_YEAR_IN_MS,
             "header",
             request,
             user_context,
