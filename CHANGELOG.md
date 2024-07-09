@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.23.1] - 2024-07-09
+
+### Changes
+
+-   `refresh_post` and `refresh_session` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
+
 ## [0.23.0] - 2024-06-24
 
 ### Breaking change
