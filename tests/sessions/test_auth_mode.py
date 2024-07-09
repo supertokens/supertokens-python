@@ -475,15 +475,15 @@ async def test_should_update_acccess_token_payload(
 @mark.parametrize(
     "transfer_method, auth_header, auth_cookie, output, set_tokens, cleared_tokens",
     [
-        ("any", False, False, "unauthorised", None, None),
-        ("header", False, False, "unauthorised", None, None),
-        ("cookie", False, False, "unauthorised", None, None),
+        ("any", False, False, "unauthorised", None, "both"),
+        ("header", False, False, "unauthorised", None, "both"),
+        ("cookie", False, False, "unauthorised", None, "both"),
         ("any", False, True, "validatecookie", "cookies", None),
-        ("header", False, True, "unauthorised", None, None),
+        ("header", False, True, "unauthorised", None, "both"),
         ("cookie", False, True, "validatecookie", "cookies", None),
         ("any", True, False, "validateheader", "headers", None),
         ("header", True, False, "validateheader", "headers", None),
-        ("cookie", True, False, "unauthorised", None, None),
+        ("cookie", True, False, "unauthorised", None, "both"),
         ("any", True, True, "validateheader", "headers", "cookies"),
         ("header", True, True, "validateheader", "headers", "cookies"),
         ("cookie", True, True, "validatecookie", "cookies", "headers"),
@@ -544,6 +544,18 @@ async def test_refresh_session_parametrized(
             refresh_result["sRefreshToken"]["expires"]
             == "Thu, 01 Jan 1970 00:00:00 GMT"
         )
+    elif cleared_tokens == "both":
+        assert refresh_result["accessTokenFromHeader"] == ""
+        assert refresh_result["refreshTokenFromHeader"] == ""
+        assert refresh_result["accessToken"] == ""
+        assert (
+            refresh_result["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+        )
+        assert refresh_result["refreshToken"] == ""
+        assert (
+            refresh_result["sRefreshToken"]["expires"]
+            == "Thu, 01 Jan 1970 00:00:00 GMT"
+        )
 
     if set_tokens == "headers":
         assert refresh_result["accessTokenFromHeader"] != ""
@@ -565,12 +577,13 @@ async def test_refresh_session_parametrized(
     else:
         assert False, "Invalid set_tokens value"
 
-    if set_tokens != "cookies" and cleared_tokens != "cookies":
-        assert refresh_result["accessToken"] is None
-        assert refresh_result["refreshToken"] is None
-    elif set_tokens != "headers" and cleared_tokens != "headers":
-        assert refresh_result["accessTokenFromHeader"] is None
-        assert refresh_result["refreshTokenFromHeader"] is None
+    if cleared_tokens != "both":
+        if set_tokens != "cookies" and cleared_tokens != "cookies":
+            assert refresh_result["accessToken"] is None
+            assert refresh_result["refreshToken"] is None
+        elif set_tokens != "headers" and cleared_tokens != "headers":
+            assert refresh_result["accessTokenFromHeader"] is None
+            assert refresh_result["refreshTokenFromHeader"] is None
 
 
 async def refresh_session(

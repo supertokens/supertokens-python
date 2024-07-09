@@ -439,7 +439,7 @@ async def refresh_session_in_request(
 
         return raise_unauthorised_exception(
             "Refresh token not found. Are you sending the refresh token in the request?",
-            clear_tokens=False,
+            clear_tokens=True,
             response_mutators=response_mutators,
         )
 
@@ -460,7 +460,7 @@ async def refresh_session_in_request(
             # see https://github.com/supertokens/supertokens-node/issues/141
             raise_unauthorised_exception(
                 "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
-                clear_tokens=False,
+                clear_tokens=True,
             )
         disable_anti_csrf = True
 
