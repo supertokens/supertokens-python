@@ -280,10 +280,8 @@ class EmailVerificationRecipe(RecipeModule):
 
 
 class EmailVerificationClaimValidators(BooleanClaimValidators):
-    def __init__(self, claim: EmailVerificationClaimClass, default_max_age_in_sec: int):
-        super().__init__(claim, default_max_age_in_sec)
-        # required to override the type as "int":
-        self.default_max_age_in_sec = default_max_age_in_sec
+    def __init__(self, claim: EmailVerificationClaimClass):
+        super().__init__(claim, None)
 
     def is_verified(
         self,
@@ -291,7 +289,6 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
         max_age_in_seconds: Optional[int] = None,
         id_: Optional[str] = None,
     ) -> SessionClaimValidator:
-        max_age_in_seconds = max_age_in_seconds or self.default_max_age_in_sec
 
         assert isinstance(self.claim, EmailVerificationClaimClass)
         return IsVerifiedSCV(
@@ -305,8 +302,6 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
 
 class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
-        default_max_age_in_sec = 300
-
         async def fetch_value(
             user_id: str, _tenant_id: str, user_context: Dict[str, Any]
         ) -> bool:
@@ -322,11 +317,9 @@ class EmailVerificationClaimClass(BooleanClaim):
                 return True
             raise Exception("UNKNOWN_USER_ID")
 
-        super().__init__("st-ev", fetch_value, default_max_age_in_sec)
+        super().__init__("st-ev", fetch_value, None)
 
-        self.validators = EmailVerificationClaimValidators(
-            claim=self, default_max_age_in_sec=default_max_age_in_sec
-        )
+        self.validators = EmailVerificationClaimValidators(claim=self)
 
 
 EmailVerificationClaim = EmailVerificationClaimClass()
@@ -477,14 +470,13 @@ class IsVerifiedSCV(SessionClaimValidator):
         claim: EmailVerificationClaimClass,
         ev_claim_validators: EmailVerificationClaimValidators,
         refetch_time_on_false_in_seconds: int,
-        max_age_in_seconds: int,
+        max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
         self.claim: EmailVerificationClaimClass = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
-        self.max_age_in_ms = max_age_in_seconds * 1000
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -500,13 +492,16 @@ class IsVerifiedSCV(SessionClaimValidator):
         if value is None:
             return True
 
+        current_time = get_timestamp_ms()
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
 
-        return (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms) or (
-            value is False
-            and (
-                last_refetch_time
-                < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
-            )
-        )
+        if self.max_age_in_sec is not None:
+            if last_refetch_time < current_time - self.max_age_in_sec * 1000:
+                return True
+
+        if value is False:
+            if last_refetch_time < current_time - self.refetch_time_on_false_in_ms:
+                return True
+
+        return False
