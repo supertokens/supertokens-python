@@ -92,7 +92,7 @@ class SessionRecipe(RecipeModule):
         invalid_claim_status_code: Union[int, None] = None,
         use_dynamic_access_token_signing_key: Union[bool, None] = None,
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
-        default_jwk_refresh_interval_sec: Union[int, None] = None,
+        jwk_refresh_interval_sec: Union[int, None] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
@@ -109,7 +109,7 @@ class SessionRecipe(RecipeModule):
             invalid_claim_status_code,
             use_dynamic_access_token_signing_key,
             expose_access_token_to_frontend_in_cookie_based_auth,
-            default_jwk_refresh_interval_sec,
+            jwk_refresh_interval_sec,
         )
         self.openid_recipe = OpenIdRecipe(
             recipe_id,
@@ -309,7 +309,7 @@ class SessionRecipe(RecipeModule):
         invalid_claim_status_code: Union[int, None] = None,
         use_dynamic_access_token_signing_key: Union[bool, None] = None,
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
-        default_jwk_refresh_interval_sec: Union[int, None] = None,
+        jwk_refresh_interval_sec: Union[int, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
@@ -328,7 +328,7 @@ class SessionRecipe(RecipeModule):
                     invalid_claim_status_code,
                     use_dynamic_access_token_signing_key,
                     expose_access_token_to_frontend_in_cookie_based_auth,
-                    default_jwk_refresh_interval_sec,
+                    jwk_refresh_interval_sec,
                 )
                 return SessionRecipe.__instance
             raise_general_exception(

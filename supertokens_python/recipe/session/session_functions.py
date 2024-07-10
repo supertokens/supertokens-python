@@ -199,7 +199,7 @@ async def get_session(
             # We check if the token was created since the last time we refreshed the keys from the core
             # Since we do not know the exact timing of the last refresh, we check against the max age
 
-            if time_created <= time.time() - config.default_jwk_refresh_interval_sec:
+            if time_created <= time.time() - config.jwk_refresh_interval_sec:
                 raise e
         else:
             # Since v3 (and above) tokens contain a kid we can trust the cache refresh mechanism built on top of the pyjwt lib

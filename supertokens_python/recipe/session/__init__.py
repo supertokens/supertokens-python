@@ -51,7 +51,7 @@ def init(
     invalid_claim_status_code: Union[int, None] = None,
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
-    default_jwk_refresh_interval_sec: Union[int, None] = None,
+    jwk_refresh_interval_sec: Union[int, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
@@ -66,5 +66,5 @@ def init(
         invalid_claim_status_code,
         use_dynamic_access_token_signing_key,
         expose_access_token_to_frontend_in_cookie_based_auth,
-        default_jwk_refresh_interval_sec,
+        jwk_refresh_interval_sec,
     )
