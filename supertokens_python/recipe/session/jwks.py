@@ -135,7 +135,7 @@ def get_latest_keys(config: SessionConfig, kid: Optional[str] = None) -> List[Py
                 last_error = e
 
             if cached_jwks is not None:  # we found a valid JWKS
-                cached_keys = CachedKeys(cached_jwks, config.jwk_refresh_interval_sec)
+                cached_keys = CachedKeys(cached_jwks, config.jwks_refresh_interval_sec)
                 log_debug_message("Returning JWKS from fetch")
                 matching_keys = find_matching_keys(get_cached_keys(), kid)
                 if matching_keys is not None:

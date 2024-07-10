@@ -78,7 +78,7 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
     well_known_count = get_log_occurence_count(caplog)
     init(
         **get_st_init_args(
-            recipe_list=[session.init(jwk_refresh_interval_sec=jwk_max_age_sec)]
+            recipe_list=[session.init(jwks_refresh_interval_sec=jwk_max_age_sec)]
         )
     )
     start_st()
@@ -114,7 +114,7 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
 
     original_jwks_config = JWKSConfig.copy()
 
-    init(**get_st_init_args(recipe_list=[session.init(jwk_refresh_interval_sec=2)]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     set_key_value_in_config(
         "access_token_dynamic_signing_key_update_interval", "0.0004"
     )  # ~1.5 sec
@@ -253,7 +253,7 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 
     jwks_refresh_count = get_log_occurence_count(caplog)
 
-    init(**get_st_init_args(recipe_list=[session.init(jwk_refresh_interval_sec=2)]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
     assert next(jwks_refresh_count) == 0
@@ -380,7 +380,7 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
 
     original_jwks_config = JWKSConfig.copy()
 
-    init(**get_st_init_args(recipe_list=[session.init(jwk_refresh_interval_sec=2)]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
     s = await create_new_session_without_request_response("public", "userId", {}, {})
@@ -565,7 +565,7 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     set_key_value_in_config(
         "access_token_dynamic_signing_key_update_interval", "0.0014"
     )  # ~5s
-    init(**get_st_init_args(recipe_list=[session.init(jwk_refresh_interval_sec=2)]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
     state = {
