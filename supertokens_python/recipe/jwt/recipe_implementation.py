@@ -85,9 +85,8 @@ class RecipeImplementation(RecipeInterface):
             pattern = r",?\s*max-age=(\d+)(?:,|$)"
             max_age_header = re.match(pattern, cache_control)
             if max_age_header is not None:
-                validity_in_secs = int(max_age_header.group(1))
                 try:
-                    validity_in_secs = int(validity_in_secs)
+                    validity_in_secs = int(max_age_header.group(1))
                 except Exception:
                     validity_in_secs = DEFAULT_JWKS_MAX_AGE
 

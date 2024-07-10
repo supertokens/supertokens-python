@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 
 -   `refresh_post` and `refresh_session` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
+-   Adds `default_jwk_refresh_interval_sec` config to `session.init` to set the default JWK cache duration. The default is 4 hours.
 
 ## [0.23.0] - 2024-06-24
 

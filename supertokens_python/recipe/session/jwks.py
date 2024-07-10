@@ -19,31 +19,32 @@ from typing_extensions import TypedDict
 
 from jwt import PyJWK, PyJWKSet
 
-from .constants import JWKCacheMaxAgeInMs
-
+from supertokens_python.recipe.session.utils import SessionConfig
 from supertokens_python.utils import RWMutex, RWLockContext, get_timestamp_ms
 from supertokens_python.querier import Querier
 from supertokens_python.logger import log_debug_message
 
 
 class JWKSConfigType(TypedDict):
-    cache_max_age: int
     request_timeout: int
 
 
 JWKSConfig: JWKSConfigType = {
-    "cache_max_age": JWKCacheMaxAgeInMs,
     "request_timeout": 10000,  # 10s
 }
 
 
 class CachedKeys:
-    def __init__(self, keys: List[PyJWK]):
+    def __init__(self, keys: List[PyJWK], refresh_interval_sec: int):
         self.keys = keys
         self.last_refresh_time = get_timestamp_ms()
+        self.refresh_interval_sec = refresh_interval_sec
 
     def is_fresh(self):
-        return get_timestamp_ms() - self.last_refresh_time < JWKSConfig["cache_max_age"]
+        return (
+            get_timestamp_ms() - self.last_refresh_time
+            < self.refresh_interval_sec * 1000
+        )
 
 
 cached_keys: Optional[CachedKeys] = None
@@ -86,7 +87,7 @@ def find_matching_keys(
     return None
 
 
-def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
+def get_latest_keys(config: SessionConfig, kid: Optional[str] = None) -> List[PyJWK]:
     global cached_keys
 
     if environ.get("SUPERTOKENS_ENV") == "testing":
@@ -134,7 +135,9 @@ def get_latest_keys(kid: Optional[str] = None) -> List[PyJWK]:
                 last_error = e
 
             if cached_jwks is not None:  # we found a valid JWKS
-                cached_keys = CachedKeys(cached_jwks)
+                cached_keys = CachedKeys(
+                    cached_jwks, config.default_jwk_refresh_interval_sec
+                )
                 log_debug_message("Returning JWKS from fetch")
                 matching_keys = find_matching_keys(get_cached_keys(), kid)
                 if matching_keys is not None:
