@@ -47,6 +47,7 @@ import jwt
 from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
+from supertokens_python.recipe.session.utils import SessionConfig
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
@@ -76,6 +77,7 @@ from supertokens_python.recipe.session.jwks import get_latest_keys
 
 
 def get_info_from_access_token(
+    config: SessionConfig,
     jwt_info: ParsedJWTInfo,
     do_anti_csrf_check: bool,
 ):
@@ -88,7 +90,7 @@ def get_info_from_access_token(
         )
 
         if jwt_info.version &gt;= 3:
-            matching_keys = get_latest_keys(jwt_info.kid)
+            matching_keys = get_latest_keys(config, jwt_info.kid)
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
                 matching_keys[0].key,  # type: ignore
@@ -98,7 +100,7 @@ def get_info_from_access_token(
         else:
             # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we&#39;ll use that payload
-            for k in get_latest_keys():
+            for k in get_latest_keys(config):
                 try:
                     payload = jwt.decode(  # type: ignore
                         jwt_info.raw_token_string,
@@ -211,7 +213,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.access_token.get_info_from_access_token"><code class="name flex">
-<span>def <span class="ident">get_info_from_access_token</span></span>(<span>jwt_info: ParsedJWTInfo, do_anti_csrf_check: bool)</span>
+<span>def <span class="ident">get_info_from_access_token</span></span>(<span>config: SessionConfig, jwt_info: ParsedJWTInfo, do_anti_csrf_check: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -220,6 +222,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_info_from_access_token(
+    config: SessionConfig,
     jwt_info: ParsedJWTInfo,
     do_anti_csrf_check: bool,
 ):
@@ -232,7 +235,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
         )
 
         if jwt_info.version &gt;= 3:
-            matching_keys = get_latest_keys(jwt_info.kid)
+            matching_keys = get_latest_keys(config, jwt_info.kid)
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
                 matching_keys[0].key,  # type: ignore
@@ -242,7 +245,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
         else:
             # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we&#39;ll use that payload
-            for k in get_latest_keys():
+            for k in get_latest_keys(config):
                 try:
                     payload = jwt.decode(  # type: ignore
                         jwt_info.raw_token_string,
@@ -309,7 +312,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.sanitize_number"><code class="name flex">
-<span>def <span class="ident">sanitize_number</span></span>(<span>n: Any) ‑> Union[int, float, ForwardRef(None)]</span>
+<span>def <span class="ident">sanitize_number</span></span>(<span>n: Any) ‑> Union[int, float, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

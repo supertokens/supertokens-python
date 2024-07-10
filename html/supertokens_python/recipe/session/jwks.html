@@ -47,31 +47,32 @@ from typing_extensions import TypedDict
 
 from jwt import PyJWK, PyJWKSet
 
-from .constants import JWKCacheMaxAgeInMs
-
+from supertokens_python.recipe.session.utils import SessionConfig
 from supertokens_python.utils import RWMutex, RWLockContext, get_timestamp_ms
 from supertokens_python.querier import Querier
 from supertokens_python.logger import log_debug_message
 
 
 class JWKSConfigType(TypedDict):
-    cache_max_age: int
     request_timeout: int
 
 
 JWKSConfig: JWKSConfigType = {
-    &#34;cache_max_age&#34;: JWKCacheMaxAgeInMs,
     &#34;request_timeout&#34;: 10000,  # 10s
 }
 
 
 class CachedKeys:
-    def __init__(self, keys: List[PyJWK]):
+    def __init__(self, keys: List[PyJWK], refresh_interval_sec: int):
         self.keys = keys
         self.last_refresh_time = get_timestamp_ms()
+        self.refresh_interval_sec = refresh_interval_sec
 
     def is_fresh(self):
-        return get_timestamp_ms() - self.last_refresh_time &lt; JWKSConfig[&#34;cache_max_age&#34;]
+        return (
+            get_timestamp_ms() - self.last_refresh_time
+            &lt; self.refresh_interval_sec * 1000
+        )
 
 
 cached_keys: Optional[CachedKeys] = None
@@ -114,7 +115,7 @@ def find_matching_keys(
     return None
 
 
-def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
+def get_latest_keys(config: SessionConfig, kid: Optional[str] = None) -&gt; List[PyJWK]:
     global cached_keys
 
     if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
@@ -162,7 +163,7 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
                 last_error = e
 
             if cached_jwks is not None:  # we found a valid JWKS
-                cached_keys = CachedKeys(cached_jwks)
+                cached_keys = CachedKeys(cached_jwks, config.jwks_refresh_interval_sec)
                 log_debug_message(&#34;Returning JWKS from fetch&#34;)
                 matching_keys = find_matching_keys(get_cached_keys(), kid)
                 if matching_keys is not None:
@@ -229,7 +230,7 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.jwks.get_latest_keys"><code class="name flex">
-<span>def <span class="ident">get_latest_keys</span></span>(<span>kid: Optional[str] = None) ‑> List[jwt.api_jwk.PyJWK]</span>
+<span>def <span class="ident">get_latest_keys</span></span>(<span>config: <a title="supertokens_python.recipe.session.utils.SessionConfig" href="utils.html#supertokens_python.recipe.session.utils.SessionConfig">SessionConfig</a>, kid: Optional[str] = None) ‑> List[jwt.api_jwk.PyJWK]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -237,7 +238,7 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
+<pre><code class="python">def get_latest_keys(config: SessionConfig, kid: Optional[str] = None) -&gt; List[PyJWK]:
     global cached_keys
 
     if environ.get(&#34;SUPERTOKENS_ENV&#34;) == &#34;testing&#34;:
@@ -285,7 +286,7 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
                 last_error = e
 
             if cached_jwks is not None:  # we found a valid JWKS
-                cached_keys = CachedKeys(cached_jwks)
+                cached_keys = CachedKeys(cached_jwks, config.jwks_refresh_interval_sec)
                 log_debug_message(&#34;Returning JWKS from fetch&#34;)
                 matching_keys = find_matching_keys(get_cached_keys(), kid)
                 if matching_keys is not None:
@@ -318,7 +319,7 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
 <dl>
 <dt id="supertokens_python.recipe.session.jwks.CachedKeys"><code class="flex name class">
 <span>class <span class="ident">CachedKeys</span></span>
-<span>(</span><span>keys: List[jwt.api_jwk.PyJWK])</span>
+<span>(</span><span>keys: List[jwt.api_jwk.PyJWK], refresh_interval_sec: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -327,12 +328,16 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CachedKeys:
-    def __init__(self, keys: List[PyJWK]):
+    def __init__(self, keys: List[PyJWK], refresh_interval_sec: int):
         self.keys = keys
         self.last_refresh_time = get_timestamp_ms()
+        self.refresh_interval_sec = refresh_interval_sec
 
     def is_fresh(self):
-        return get_timestamp_ms() - self.last_refresh_time &lt; JWKSConfig[&#34;cache_max_age&#34;]</code></pre>
+        return (
+            get_timestamp_ms() - self.last_refresh_time
+            &lt; self.refresh_interval_sec * 1000
+        )</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -346,7 +351,10 @@ def get_latest_keys(kid: Optional[str] = None) -&gt; List[PyJWK]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def is_fresh(self):
-    return get_timestamp_ms() - self.last_refresh_time &lt; JWKSConfig[&#34;cache_max_age&#34;]</code></pre>
+    return (
+        get_timestamp_ms() - self.last_refresh_time
+        &lt; self.refresh_interval_sec * 1000
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -372,7 +380,6 @@ dict(one=1, two=2)</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class JWKSConfigType(TypedDict):
-    cache_max_age: int
     request_timeout: int</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -381,10 +388,6 @@ dict(one=1, two=2)</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.session.jwks.JWKSConfigType.cache_max_age"><code class="name">var <span class="ident">cache_max_age</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.session.jwks.JWKSConfigType.request_timeout"><code class="name">var <span class="ident">request_timeout</span> : int</code></dt>
 <dd>
 <div class="desc"></div>
@@ -424,7 +427,6 @@ dict(one=1, two=2)</p></div>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.jwks.JWKSConfigType" href="#supertokens_python.recipe.session.jwks.JWKSConfigType">JWKSConfigType</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.jwks.JWKSConfigType.cache_max_age" href="#supertokens_python.recipe.session.jwks.JWKSConfigType.cache_max_age">cache_max_age</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.jwks.JWKSConfigType.request_timeout" href="#supertokens_python.recipe.session.jwks.JWKSConfigType.request_timeout">request_timeout</a></code></li>
 </ul>
 </li>
