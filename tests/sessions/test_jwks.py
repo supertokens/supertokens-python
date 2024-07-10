@@ -14,6 +14,7 @@ from supertokens_python.recipe.session.asyncio import (
     create_new_session_without_request_response,
     get_session_without_request_response,
 )
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import get_timestamp_ms
 from tests.utils import (
     get_st_init_args,
@@ -72,23 +73,27 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
     caplog.set_level(logging.DEBUG)
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["cache_max_age"] = 2000
+    jwk_max_age_sec = 2
 
     well_known_count = get_log_occurence_count(caplog)
-    init(**get_st_init_args(recipe_list=[session.init()]))
+    init(
+        **get_st_init_args(
+            recipe_list=[session.init(jwks_refresh_interval_sec=jwk_max_age_sec)]
+        )
+    )
     start_st()
 
     assert next(well_known_count) == 0
 
     s = await create_new_session_without_request_response("public", "userId", {}, {})
-    time.sleep(JWKSConfig["cache_max_age"] / 1000)
+    time.sleep(jwk_max_age_sec)
 
     tokens = s.get_all_session_tokens_dangerously()
     await get_session_without_request_response(
         tokens.get("accessToken"), tokens.get("antiCsrfToken")
     )
 
-    time.sleep(JWKSConfig["cache_max_age"] / 1000)
+    time.sleep(jwk_max_age_sec)
     assert next(well_known_count) == 1
 
     JWKSConfig.update(original_jwks_config)
@@ -108,9 +113,8 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
     jwks_refresh_count = get_log_occurence_count(caplog)
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["cache_max_age"] = 2000
 
-    init(**get_st_init_args(recipe_list=[session.init()]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     set_key_value_in_config(
         "access_token_dynamic_signing_key_update_interval", "0.0004"
     )  # ~1.5 sec
@@ -118,19 +122,19 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
 
     assert next(jwks_refresh_count) == 0
 
-    keys_before = get_latest_keys()
+    keys_before = get_latest_keys(SessionRecipe.get_instance().config)
     kids_before: List[str] = [k.key_id for k in keys_before]  # type: ignore
 
     assert next(jwks_refresh_count) == 1
 
-    keys_between = get_latest_keys()
+    keys_between = get_latest_keys(SessionRecipe.get_instance().config)
     kids_between: List[str] = [k.key_id for k in keys_between]  # type: ignore
 
     time.sleep(3)
 
     assert next(jwks_refresh_count) == 1
 
-    keys_after = get_latest_keys()
+    keys_after = get_latest_keys(SessionRecipe.get_instance().config)
     kids_after: List[str] = [k.key_id for k in keys_after]  # type: ignore
 
     assert next(jwks_refresh_count) == 2
@@ -246,11 +250,10 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
     """
     caplog.set_level(logging.DEBUG)
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["cache_max_age"] = 2000
 
     jwks_refresh_count = get_log_occurence_count(caplog)
 
-    init(**get_st_init_args(recipe_list=[session.init()]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
     assert next(jwks_refresh_count) == 0
@@ -307,7 +310,7 @@ async def test_that_combined_jwks_throws_for_invalid_connection(
     start_st()
 
     with pytest.raises(Exception):
-        get_latest_keys()
+        get_latest_keys(SessionRecipe.get_instance().config)
 
     assert next(jwk_refresh_count) == 1
     JWKSConfig.update(original_jwks_config)
@@ -332,7 +335,7 @@ async def test_that_combined_jwks_doesnot_throw_if_atleast_one_core_url_is_valid
     init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("http://localhost:3567;example.com:3567;localhost:90"), "recipe_list": [session.init()]})  # type: ignore
     start_st()
 
-    combined_jwks_res = get_latest_keys()
+    combined_jwks_res = get_latest_keys(SessionRecipe.get_instance().config)
     assert len(combined_jwks_res) > 0
     assert next(jwk_refresh_count) == 1
 
@@ -351,7 +354,7 @@ async def test_that_combined_jwks_throw_if_all_core_urls_are_invalid(
     start_st()
 
     with pytest.raises(requests.exceptions.ConnectionError):
-        get_latest_keys()
+        get_latest_keys(SessionRecipe.get_instance().config)
 
     assert next(jwk_refresh_count) == 3
 
@@ -376,9 +379,8 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     )
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["cache_max_age"] = 2000
 
-    init(**get_st_init_args(recipe_list=[session.init()]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
     s = await create_new_session_without_request_response("public", "userId", {}, {})
@@ -433,7 +435,7 @@ async def test_that_sdk_tries_fetching_jwks_for_all_core_hosts(
     assert next(urls_attempted_count) == 0
     assert next(get_combined_jwks_count) == 0
 
-    get_latest_keys()
+    get_latest_keys(SessionRecipe.get_instance().config)
 
     assert next(urls_attempted_count) == 3
     assert next(get_combined_jwks_count) == 1
@@ -462,7 +464,7 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
 
     assert next(urls_attempted_count) == 0
 
-    get_latest_keys()
+    get_latest_keys(SessionRecipe.get_instance().config)
 
     assert next(urls_attempted_count) == 2
 
@@ -559,12 +561,11 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     )
 
     original_jwks_config = JWKSConfig.copy()
-    JWKSConfig["cache_max_age"] = 2000
 
     set_key_value_in_config(
         "access_token_dynamic_signing_key_update_interval", "0.0014"
     )  # ~5s
-    init(**get_st_init_args(recipe_list=[session.init()]))
+    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
     state = {
@@ -572,7 +573,7 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
         "different_key_found_count": 0,
     }
 
-    jwks = get_latest_keys()
+    jwks = get_latest_keys(SessionRecipe.get_instance().config)
     keys = [k.key_id for k in jwks]  # type: ignore
 
     def stop_after_11s():
@@ -593,7 +594,7 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
 
     def callback():
         nonlocal keys
-        current_keys: List[str] = [k.key_id for k in get_latest_keys()]  # type: ignore
+        current_keys: List[str] = [k.key_id for k in get_latest_keys(SessionRecipe.get_instance().config)]  # type: ignore
         new_keys = [k for k in current_keys if k not in keys]
         if len(new_keys) > 0:
             state["different_key_found_count"] += 1
