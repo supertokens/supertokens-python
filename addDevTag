@@ -76,7 +76,7 @@ if [ $# -eq 0 ]
 then
     make build-docs
     git add --all
-    git commit --allow-empty -m"adding dev-v$version tag to this commit to ensure building"
+    git commit --allow-empty -nm"adding dev-v$version tag to this commit to ensure building"
     git push
 	commit_hash=`git log --pretty=format:'%H' -n 1`
 fi

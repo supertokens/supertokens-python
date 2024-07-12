@@ -19,6 +19,7 @@ import jwt
 from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
+from supertokens_python.recipe.session.utils import SessionConfig
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
@@ -48,6 +49,7 @@ from supertokens_python.recipe.session.jwks import get_latest_keys
 
 
 def get_info_from_access_token(
+    config: SessionConfig,
     jwt_info: ParsedJWTInfo,
     do_anti_csrf_check: bool,
 ):
@@ -60,7 +62,7 @@ def get_info_from_access_token(
         )
 
         if jwt_info.version >= 3:
-            matching_keys = get_latest_keys(jwt_info.kid)
+            matching_keys = get_latest_keys(config, jwt_info.kid)
             payload = jwt.decode(  # type: ignore
                 jwt_info.raw_token_string,
                 matching_keys[0].key,  # type: ignore
@@ -70,7 +72,7 @@ def get_info_from_access_token(
         else:
             # It won't have kid. So we'll have to try the token against all the keys from all the jwk_clients
             # If any of them work, we'll use that payload
-            for k in get_latest_keys():
+            for k in get_latest_keys(config):
                 try:
                     payload = jwt.decode(  # type: ignore
                         jwt_info.raw_token_string,

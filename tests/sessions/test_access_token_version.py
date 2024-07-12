@@ -16,6 +16,7 @@ from supertokens_python.recipe.session.jwt import (
 from supertokens_python.recipe.session.access_token import (
     validate_access_token_structure,
 )
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
@@ -38,6 +39,7 @@ async def test_access_token_v4():
     parsed_info = parse_jwt_without_signature_verification(access_token)
 
     res = get_info_from_access_token(
+        SessionRecipe.get_instance().config,
         parsed_info,
         False,
     )

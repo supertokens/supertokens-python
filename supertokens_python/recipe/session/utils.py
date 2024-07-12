@@ -383,6 +383,7 @@ class SessionConfig:
         invalid_claim_status_code: int,
         use_dynamic_access_token_signing_key: bool,
         expose_access_token_to_frontend_in_cookie_based_auth: bool,
+        jwks_refresh_interval_sec: int,
     ):
         self.session_expired_status_code = session_expired_status_code
         self.invalid_claim_status_code = invalid_claim_status_code
@@ -402,6 +403,7 @@ class SessionConfig:
         self.override = override
         self.framework = framework
         self.mode = mode
+        self.jwks_refresh_interval_sec = jwks_refresh_interval_sec
 
 
 def validate_and_normalise_user_input(
@@ -424,6 +426,7 @@ def validate_and_normalise_user_input(
     invalid_claim_status_code: Union[int, None] = None,
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
+    jwks_refresh_interval_sec: Union[int, None] = None,
 ):
     _ = cookie_same_site  # we have this otherwise pylint complains that cookie_same_site is unused, but it is being used in the get_cookie_same_site function.
     if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
@@ -531,6 +534,9 @@ def validate_and_normalise_user_input(
     if anti_csrf is not None:
         anti_csrf_function_or_string = anti_csrf
 
+    if jwks_refresh_interval_sec is None:
+        jwks_refresh_interval_sec = 4 * 3600  # 4 hours
+
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
@@ -547,6 +553,7 @@ def validate_and_normalise_user_input(
         invalid_claim_status_code,
         use_dynamic_access_token_signing_key,
         expose_access_token_to_frontend_in_cookie_based_auth,
+        jwks_refresh_interval_sec,
     )
 
 
