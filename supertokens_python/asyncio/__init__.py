@@ -35,15 +35,7 @@ async def get_users_oldest_first(
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> UsersResponse:
-    return await Supertokens.get_instance().get_users(
-        tenant_id,
-        "ASC",
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
-    )
+    raise NotImplementedError("This function is not implemented")
 
 
 async def get_users_newest_first(
@@ -54,15 +46,7 @@ async def get_users_newest_first(
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> UsersResponse:
-    return await Supertokens.get_instance().get_users(
-        tenant_id,
-        "DESC",
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
-    )
+    raise NotImplementedError("This function is not implemented")
 
 
 async def get_user_count(
@@ -78,7 +62,7 @@ async def get_user_count(
 async def delete_user(
     user_id: str, user_context: Optional[Dict[str, Any]] = None
 ) -> None:
-    return await Supertokens.get_instance().delete_user(user_id, user_context)
+    raise NotImplementedError("This function is not implemented")
 
 
 async def create_user_id_mapping(

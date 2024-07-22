@@ -25,7 +25,6 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import UsersResponse
 
 
 def get_users_oldest_first(
@@ -35,11 +34,12 @@ def get_users_oldest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
+):
+    from supertokens_python.asyncio import get_users_oldest_first
+
     return sync(
-        Supertokens.get_instance().get_users(
+        get_users_oldest_first(
             tenant_id,
-            "ASC",
             limit,
             pagination_token,
             include_recipe_ids,
@@ -56,11 +56,12 @@ def get_users_newest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
+):
+    from supertokens_python.asyncio import get_users_newest_first
+
     return sync(
-        Supertokens.get_instance().get_users(
+        get_users_newest_first(
             tenant_id,
-            "DESC",
             limit,
             pagination_token,
             include_recipe_ids,
@@ -83,7 +84,9 @@ def get_user_count(
 
 
 def delete_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> None:
-    return sync(Supertokens.get_instance().delete_user(user_id, user_context))
+    from supertokens_python.asyncio import delete_user
+
+    return sync(delete_user(user_id, user_context))
 
 
 def create_user_id_mapping(

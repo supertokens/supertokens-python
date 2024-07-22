@@ -35,6 +35,7 @@ from supertokens_python.recipe.passwordless.utils import (
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
+from supertokens_python.types import RecipeUserId
 
 from ...interfaces import (
     APIInterface,
@@ -219,9 +220,11 @@ async def handle_user_put(
             "Required parameter 'phone' is missing or has an invalid type"
         )
 
-    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    user_response = await get_user_for_recipe_id(
+        RecipeUserId(user_id), recipe_id, user_context
+    )
 
-    if user_response is None:
+    if user_response.user is None:
         raise Exception("Should never come here")
 
     first_name = first_name.strip()
@@ -251,7 +254,11 @@ async def handle_user_put(
 
     if email != "":
         email_update_response = await update_email_for_recipe_id(
-            user_response.recipe, user_id, email, tenant_id, user_context
+            user_response.recipe or "passwordless",
+            user_id,
+            email,
+            tenant_id,
+            user_context,
         )
 
         if not isinstance(email_update_response, UserPutAPIOkResponse):
@@ -259,7 +266,11 @@ async def handle_user_put(
 
     if phone != "":
         phone_update_response = await update_phone_for_recipe_id(
-            user_response.recipe, user_id, phone, tenant_id, user_context
+            user_response.recipe or "passwordless",
+            user_id,
+            phone,
+            tenant_id,
+            user_context,
         )
 
         if not isinstance(phone_update_response, UserPutAPIOkResponse):

@@ -13,25 +13,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List, Literal
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
-from supertokens_python.recipe.emailpassword.asyncio import (
-    get_user_by_id as ep_get_user_by_id,
-)
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
-from supertokens_python.recipe.passwordless.asyncio import (
-    get_user_by_id as pless_get_user_by_id,
-)
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.recipe.thirdparty.asyncio import (
-    get_user_by_id as tp_get_user_by_idx,
-)
-from supertokens_python.types import User
-from supertokens_python.utils import Awaitable, log_debug_message, normalise_email
+from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.utils import log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
@@ -56,94 +47,25 @@ if TYPE_CHECKING:
 
 
 class UserWithMetadata:
-    user_id: str
-    time_joined: int
-    recipe_id: Optional[str] = None
-    email: Optional[str] = None
-    phone_number: Optional[str] = None
-    tp_info: Optional[Dict[str, Any]] = None
+    user: AccountLinkingUser
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    tenant_ids: List[str]
 
     def from_user(
         self,
-        user: User,
+        user: AccountLinkingUser,
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ):
         self.first_name = first_name
         self.last_name = last_name
-
-        self.user_id = user.user_id
-        # from_user() is called in /api/users (note extra s)
-        # here we DashboardUsersGetResponse() doesn't maintain
-        # recipe id for each user on its own. That's why we need
-        # to set self.recipe_id here.
-        self.recipe_id = user.recipe_id
-        self.time_joined = user.time_joined
-        self.email = user.email
-        self.phone_number = user.phone_number
-        self.tp_info = (
-            None if user.third_party_info is None else user.third_party_info.__dict__
-        )
-        self.tenant_ids = user.tenant_ids
-
-        return self
-
-    def from_dict(
-        self,
-        user_obj_dict: Dict[str, Any],
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-    ):
-        self.first_name = first_name
-        self.last_name = last_name
-
-        self.user_id = user_obj_dict["user_id"]
-        # from_dict() is used in `/api/user` where
-        # recipe_id is already passed seperately to
-        # GetUserForRecipeIdResult object
-        # So we set recipe_id to None here
-        self.recipe_id = None
-        self.time_joined = user_obj_dict["time_joined"]
-        self.tenant_ids = user_obj_dict.get("tenant_ids", [])
-
-        self.email = user_obj_dict.get("email")
-        self.phone_number = user_obj_dict.get("phone_number")
-        self.tp_info = (
-            None
-            if user_obj_dict.get("third_party_info") is None
-            else user_obj_dict["third_party_info"].__dict__
-        )
-
+        self.user = user
         return self
 
     def to_json(self) -> Dict[str, Any]:
-        user_json: Dict[str, Any] = {
-            "id": self.user_id,
-            "timeJoined": self.time_joined,
-            "tenantIds": self.tenant_ids,
-        }
-        if self.tp_info is not None:
-            user_json["thirdParty"] = {
-                "id": self.tp_info["id"],
-                "userId": self.tp_info["user_id"],
-            }
-        if self.phone_number is not None:
-            user_json["phoneNumber"] = self.phone_number
-        if self.email is not None:
-            user_json["email"] = self.email
-        if self.first_name is not None:
-            user_json["firstName"] = self.first_name
-        if self.last_name is not None:
-            user_json["lastName"] = self.last_name
-
-        if self.recipe_id is not None:
-            return {
-                "recipeId": self.recipe_id,
-                "user": user_json,
-            }
+        user_json = self.user.to_json()
+        user_json["firstName"] = self.first_name
+        user_json["lastName"] = self.last_name
         return user_json
 
 
@@ -263,12 +185,6 @@ def is_valid_recipe_id(recipe_id: str) -> bool:
     return recipe_id in ("emailpassword", "thirdparty", "passwordless")
 
 
-class GetUserForRecipeIdResult:
-    def __init__(self, user: UserWithMetadata, recipe: str):
-        self.user = user
-        self.recipe = recipe
-
-
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.types import User as EmailPasswordUser
     from supertokens_python.recipe.passwordless.types import User as PasswordlessUser
@@ -282,53 +198,93 @@ if TYPE_CHECKING:
     ]
 
 
-async def get_user_for_recipe_id(
-    user_id: str, recipe_id: str
-) -> Optional[GetUserForRecipeIdResult]:
-    user: Optional[UserWithMetadata] = None
-    recipe: Optional[str] = None
-
-    async def update_user_dict(
-        get_user_funcs: List[Callable[[str], Awaitable[GetUserResult]]],
-        recipes: List[str],
+class GetUserForRecipeIdHelperResult:
+    def __init__(
+        self, user: Optional[AccountLinkingUser] = None, recipe: Optional[str] = None
     ):
-        nonlocal user, user_id, recipe
+        self.user = user
+        self.recipe = recipe
 
-        for get_user_func, recipe_id in zip(get_user_funcs, recipes):
-            try:
-                recipe_user = await get_user_func(user_id)  # type: ignore
 
-                if recipe_user is not None:
-                    user = UserWithMetadata().from_dict(
-                        recipe_user.__dict__, first_name="", last_name=""
-                    )
-                    recipe = recipe_id
-                    break
-            except Exception:
-                pass
+class GetUserForRecipeIdResult:
+    def __init__(
+        self, user: Optional[UserWithMetadata] = None, recipe: Optional[str] = None
+    ):
+        self.user = user
+        self.recipe = recipe
+
+
+async def get_user_for_recipe_id(
+    recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
+) -> GetUserForRecipeIdResult:
+    user_response = await _get_user_for_recipe_id(
+        recipe_user_id, recipe_id, user_context
+    )
+
+    user = None
+    if user_response.user is not None:
+        user = UserWithMetadata().from_user(
+            user_response.user, first_name="", last_name=""
+        )
+
+    return GetUserForRecipeIdResult(user=user, recipe=user_response.recipe)
+
+
+async def _get_user_for_recipe_id(
+    recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
+) -> GetUserForRecipeIdHelperResult:
+    recipe: Optional[Literal["emailpassword", "thirdparty", "passwordless"]] = None
+
+    # Simple mock for get_user
+    async def mock_get_user(params: Dict[str, Any]) -> Optional[AccountLinkingUser]:
+        # This is a basic mock. You might want to expand this based on your needs.
+        raise NotImplementedError(
+            "This is a mock function. Implement this based on your needs."
+        )
+
+    user = await mock_get_user(
+        {
+            "user_id": recipe_user_id.get_as_string(),
+            "user_context": user_context,
+        }
+    )
+
+    if user is None:
+        return GetUserForRecipeIdHelperResult(user=None, recipe=None)
+
+    login_method = next(
+        (
+            m
+            for m in user.login_methods
+            if m.recipe_id == recipe_id
+            and m.recipe_user_id.get_as_string() == recipe_user_id.get_as_string()
+        ),
+        None,
+    )
+
+    if login_method is None:
+        return GetUserForRecipeIdHelperResult(user=None, recipe=None)
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
-        await update_user_dict(
-            [ep_get_user_by_id],
-            ["emailpassword"],
-        )
-
+        try:
+            EmailPasswordRecipe.get_instance()
+            recipe = "emailpassword"
+        except Exception:
+            pass
     elif recipe_id == ThirdPartyRecipe.recipe_id:
-        await update_user_dict(
-            [tp_get_user_by_idx],
-            ["thirdparty"],
-        )
-
+        try:
+            ThirdPartyRecipe.get_instance()
+            recipe = "thirdparty"
+        except Exception:
+            pass
     elif recipe_id == PasswordlessRecipe.recipe_id:
-        await update_user_dict(
-            [pless_get_user_by_id],
-            ["passwordless"],
-        )
+        try:
+            PasswordlessRecipe.get_instance()
+            recipe = "passwordless"
+        except Exception:
+            pass
 
-    if user is not None and recipe is not None:
-        return GetUserForRecipeIdResult(user, recipe)
-
-    return None
+    return GetUserForRecipeIdHelperResult(user=user, recipe=recipe)
 
 
 def is_recipe_initialised(recipeId: str) -> bool:

@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.types import User
+from supertokens_python.types import AccountLinkingUser
 
 from ...types import APIResponse
 
@@ -94,7 +94,7 @@ class DashboardUsersGetResponse(APIResponse):
 
     def __init__(
         self,
-        users: Union[List[User], List[UserWithMetadata]],
+        users: Union[List[AccountLinkingUser], List[UserWithMetadata]],
         next_pagination_token: Optional[str],
     ):
         self.users = users
