@@ -17,6 +17,7 @@ from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
+from supertokens_python.types import RecipeUserId
 from .jwt import parse_jwt_without_signature_verification
 from .utils import TokenTransferMethod
 
@@ -138,6 +139,11 @@ class Session(SessionContainer):
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.user_id
+
+    def get_recipe_user_id(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -> RecipeUserId:
+        return self.recipe_user_id
 
     def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.tenant_id

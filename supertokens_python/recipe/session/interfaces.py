@@ -28,7 +28,12 @@ from typing import (
 from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
+from supertokens_python.types import (
+    APIResponse,
+    GeneralErrorResponse,
+    MaybeAwaitable,
+    RecipeUserId,
+)
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
@@ -416,6 +421,9 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.req_res_info: Optional[ReqResInfo] = req_res_info
         self.access_token_updated = access_token_updated
         self.tenant_id = tenant_id
+        self.recipe_user_id = RecipeUserId(
+            user_id
+        )  # TODO: change me to be based on input arg.
 
         self.response_mutators: List[ResponseMutator] = []
 
@@ -458,6 +466,12 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_recipe_user_id(
+        self, user_context: Optional[Dict[str, Any]] = None
+    ) -> RecipeUserId:
         pass
 
     @abstractmethod
@@ -601,11 +615,11 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_attach_to_request_response(
         self,
         request: BaseRequest,
-        token_transfer: TokenTransferMethod,
+        transfer_method: TokenTransferMethod,
         user_context: Dict[str, Any],
     ) -> None:
         return sync(
-            self.attach_to_request_response(request, token_transfer, user_context)
+            self.attach_to_request_response(request, transfer_method, user_context)
         )
 
     # This is there so that we can do session["..."] to access some of the members of this class
