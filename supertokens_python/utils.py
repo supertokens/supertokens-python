@@ -30,7 +30,7 @@ from typing import (
     List,
     TypeVar,
     Union,
-    Optional,
+    Optional
 )
 from urllib.parse import urlparse
 
@@ -40,13 +40,15 @@ from tldextract import extract  # type: ignore
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
+from supertokens_python.framework.litestar.framework import LitestarFramework
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
-from .types import MaybeAwaitable
+from .framework.types import Framework
+from .types import MaybeAwaitable, SupportedFrameworks
 
 _T = TypeVar("_T")
 
@@ -54,10 +56,11 @@ if TYPE_CHECKING:
     pass
 
 
-FRAMEWORKS = {
+FRAMEWORKS: dict[SupportedFrameworks, Framework] = {
     "fastapi": FastapiFramework(),
     "flask": FlaskFramework(),
     "django": DjangoFramework(),
+    "litestar": LitestarFramework()
 }
 
 
