@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.process_state import AllowedProcessStates, ProcessState
+from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.recipe.session.interfaces import TokenInfo
 
 from .exceptions import (
@@ -270,9 +270,7 @@ async def get_session(
             )
         )
 
-    ProcessState.get_instance().add_state(
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
-    )
+    ProcessState.get_instance().add_state(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY)
 
     data = {
         "accessToken": parsed_access_token.raw_token_string,

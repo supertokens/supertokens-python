@@ -27,7 +27,7 @@ from requests.cookies import cookiejar_from_dict  # type: ignore
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
-from supertokens_python.process_state import AllowedProcessStates, ProcessState
+from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
@@ -119,7 +119,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         s.recipe_implementation, access_token, response.antiCsrfToken, True, False, None
     )
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY
         not in ProcessState.get_instance().history
     )
 
@@ -151,8 +151,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     )
 
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
-        in ProcessState.get_instance().history
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY in ProcessState.get_instance().history
     )
 
     assert response3.session is not None
@@ -173,7 +172,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         None,
     )
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY
         not in ProcessState.get_instance().history
     )
 
@@ -742,7 +741,7 @@ async def test_that_verify_session_doesnt_always_call_core():
     assert session1.refresh_token is not None
 
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY
         not in ProcessState.get_instance().history
     )
 
@@ -756,7 +755,7 @@ async def test_that_verify_session_doesnt_always_call_core():
     assert session2.refresh_token is None
 
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY
         not in ProcessState.get_instance().history
     )
 
@@ -770,7 +769,7 @@ async def test_that_verify_session_doesnt_always_call_core():
     assert session3.refresh_token is not None
 
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY
         not in ProcessState.get_instance().history
     )
 
@@ -784,8 +783,7 @@ async def test_that_verify_session_doesnt_always_call_core():
     assert session4.refresh_token is None
 
     assert (
-        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY
-        in ProcessState.get_instance().history
+        PROCESS_STATE.CALLING_SERVICE_IN_VERIFY in ProcessState.get_instance().history
     )  # Core got called this time
 
 
