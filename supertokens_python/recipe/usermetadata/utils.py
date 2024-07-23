@@ -20,10 +20,10 @@ from supertokens_python.recipe.usermetadata.interfaces import (
     APIInterface,
     RecipeInterface,
 )
-from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+    from supertokens_python.supertokens import AppInfo
 
 
 class InputOverrideConfig:

@@ -255,22 +255,41 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+        # from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+        # from supertokens_python.recipe.totp.recipe import TOTPRecipe
 
         multitenancy_found = False
+        totp_found = False
+        user_metadata_found = False
+        multi_factor_auth_found = False
 
         def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
-            nonlocal multitenancy_found
+            nonlocal multitenancy_found, totp_found, user_metadata_found, multi_factor_auth_found
             recipe_module = recipe(self.app_info)
-            if recipe_module.get_recipe_id() == MultitenancyRecipe.recipe_id:
+            if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True
+            elif recipe_module.get_recipe_id() == "usermetadata":
+                user_metadata_found = True
+            # elif recipe_module.get_recipe_id() == MultiFactorAuthRecipe.recipe_id:
+            #     multi_factor_auth_found = True
+            # elif recipe_module.get_recipe_id() == TOTPRecipe.recipe_id:
+            #     totp_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
         if not multitenancy_found:
-            recipe = MultitenancyRecipe.init()(self.app_info)
-            self.recipe_modules.append(recipe)
+            from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
+            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+        if totp_found and not multi_factor_auth_found:
+            raise_general_exception(
+                "Please initialize the MultiFactorAuth recipe to use TOTP."
+            )
+        if not user_metadata_found:
+            from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+
+            self.recipe_modules.append(UserMetadataRecipe.init()(self.app_info))
 
         self.telemetry = (
             telemetry
