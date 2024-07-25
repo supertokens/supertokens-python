@@ -24,7 +24,8 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import UsersResponse
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
 
 
 async def get_users_oldest_first(
@@ -34,8 +35,18 @@ async def get_users_oldest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
-    raise NotImplementedError("This function is not implemented")
+) -> GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
+        tenant_id,
+        time_joined_order="DESC",
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
+    )
 
 
 async def get_users_newest_first(
@@ -45,8 +56,18 @@ async def get_users_newest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
-    raise NotImplementedError("This function is not implemented")
+) -> GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
+        tenant_id,
+        time_joined_order="ASC",
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
+    )
 
 
 async def get_user_count(
@@ -60,9 +81,17 @@ async def get_user_count(
 
 
 async def delete_user(
-    user_id: str, user_context: Optional[Dict[str, Any]] = None
+    user_id: str,
+    remove_all_linked_accounts: bool = True,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> None:
-    raise NotImplementedError("This function is not implemented")
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.delete_user(
+        user_id,
+        remove_all_linked_accounts=remove_all_linked_accounts,
+        user_context=user_context,
+    )
 
 
 async def create_user_id_mapping(

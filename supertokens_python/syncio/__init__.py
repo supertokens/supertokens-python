@@ -83,10 +83,14 @@ def get_user_count(
     )
 
 
-def delete_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> None:
+def delete_user(
+    user_id: str,
+    remove_all_linked_accounts: bool = True,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> None:
     from supertokens_python.asyncio import delete_user
 
-    return sync(delete_user(user_id, user_context))
+    return sync(delete_user(user_id, remove_all_linked_accounts, user_context))
 
 
 def create_user_id_mapping(

@@ -173,14 +173,6 @@ class User:
         return res
 
 
-class UsersResponse:
-    def __init__(
-        self, users: List[AccountLinkingUser], next_pagination_token: Union[str, None]
-    ):
-        self.users: List[AccountLinkingUser] = users
-        self.next_pagination_token: Union[str, None] = next_pagination_token
-
-
 class APIResponse(ABC):
     @abstractmethod
     def to_json(self) -> Dict[str, Any]:

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, List, Dict, Union
+from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
 from typing_extensions import Literal
 
 from ...usermetadata import UserMetadataRecipe
@@ -27,15 +27,10 @@ if TYPE_CHECKING:
         APIOptions,
         APIInterface,
     )
-    from supertokens_python.types import APIResponse, AccountLinkingUser
+    from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
 from supertokens_python.asyncio import get_users_newest_first, get_users_oldest_first
-
-
-class MockUsersResponse:
-    users: List[AccountLinkingUser] = []
-    next_pagination_token: Union[str, None] = None
 
 
 async def handle_users_get_api(

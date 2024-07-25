@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List, Literal
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -235,18 +236,8 @@ async def _get_user_for_recipe_id(
 ) -> GetUserForRecipeIdHelperResult:
     recipe: Optional[Literal["emailpassword", "thirdparty", "passwordless"]] = None
 
-    # Simple mock for get_user
-    async def mock_get_user(params: Dict[str, Any]) -> Optional[AccountLinkingUser]:
-        # This is a basic mock. You might want to expand this based on your needs.
-        raise NotImplementedError(
-            "This is a mock function. Implement this based on your needs."
-        )
-
-    user = await mock_get_user(
-        {
-            "user_id": recipe_user_id.get_as_string(),
-            "user_context": user_context,
-        }
+    user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        recipe_user_id.get_as_string(), user_context
     )
 
     if user is None:
