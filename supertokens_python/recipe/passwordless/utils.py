@@ -17,6 +17,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from typing_extensions import Literal
+
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
@@ -28,19 +30,28 @@ from supertokens_python.ingredients.smsdelivery.types import (
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginSMSTemplateVars,
 )
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from .interfaces import (
-        APIInterface,
-        RecipeInterface,
-        PasswordlessLoginEmailTemplateVars,
-    )
     from supertokens_python import AppInfo
 
+    from .interfaces import (
+        APIInterface,
+        PasswordlessLoginEmailTemplateVars,
+        RecipeInterface,
+    )
+
 from re import fullmatch
+from typing import List
 
 from phonenumbers import is_valid_number, parse  # type: ignore
+
+from supertokens_python.recipe.multifactorauth.types import FactorIds
+from supertokens_python.recipe.passwordless import (
+    ContactConfig,
+    ContactEmailOnlyConfig,
+    ContactEmailOrPhoneConfig,
+    ContactPhoneOnlyConfig,
+)
 from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
@@ -240,3 +251,36 @@ def validate_and_normalise_user_input(
         get_sms_delivery_config=get_sms_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code,
     )
+
+
+def get_enabled_pwless_factors(config: ContactConfig, flow_type: str) -> List[str]:
+    all_factors: List[str] = []
+
+    if flow_type == "MAGIC_LINK":
+        if isinstance(config, ContactEmailOnlyConfig):
+            all_factors = [FactorIds.LINK_EMAIL]
+        elif isinstance(config, ContactPhoneOnlyConfig):
+            all_factors = [FactorIds.LINK_PHONE]
+        else:
+            all_factors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE]
+    elif flow_type == "USER_INPUT_CODE":
+        if isinstance(config, ContactEmailOnlyConfig):
+            all_factors = [FactorIds.OTP_EMAIL]
+        elif isinstance(config, ContactPhoneOnlyConfig):
+            all_factors = [FactorIds.OTP_PHONE]
+        else:
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE]
+    else:  # USER_INPUT_CODE_AND_MAGIC_LINK
+        if isinstance(config, ContactEmailOnlyConfig):
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL]
+        elif isinstance(config, ContactPhoneOnlyConfig):
+            all_factors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE]
+        else:
+            all_factors = [
+                FactorIds.OTP_EMAIL,
+                FactorIds.OTP_PHONE,
+                FactorIds.LINK_EMAIL,
+                FactorIds.LINK_PHONE,
+            ]
+
+    return all_factors

@@ -14,9 +14,11 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Awaitable, Dict, List, TypeVar, Union
-from phonenumbers import format_number, parse  # type: ignore
-import phonenumbers  # type: ignore
 
+import phonenumbers  # type: ignore
+from phonenumbers import format_number, parse  # type: ignore
+
+T = TypeVar("T")
 _T = TypeVar("_T")
 
 
@@ -189,3 +191,11 @@ class GeneralErrorResponse(APIResponse):
 
 
 MaybeAwaitable = Union[Awaitable[_T], _T]
+
+
+class UserContext(Dict[str, Any]):
+    pass
+
+
+def brand_user_context(user_context: Dict[str, Any]) -> UserContext:
+    return UserContext(user_context)
