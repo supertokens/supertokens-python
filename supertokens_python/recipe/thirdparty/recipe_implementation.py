@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.recipe.thirdparty.providers.config_utils import (
@@ -204,6 +205,7 @@ class RecipeImplementation(RecipeInterface):
         merged_providers = merge_providers_from_core_and_static(
             provider_configs_from_core=tenant_config.third_party.providers,
             provider_inputs_from_static=self.providers,
+            include_all_providers=tenant_id == DEFAULT_TENANT_ID,
         )
 
         provider = await find_and_create_provider_instance(
