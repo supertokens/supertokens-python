@@ -22,6 +22,9 @@ from supertokens_python.recipe.thirdparty.provider import (
 )
 from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderInput
+from .utils import normalise_oidc_endpoint_to_include_well_known
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class GitlabImpl(GenericProvider):
@@ -33,15 +36,29 @@ class GitlabImpl(GenericProvider):
         if config.scope is None:
             config.scope = ["openid", "email"]
 
-        if config.oidc_discovery_endpoint is None:
-            if config.additional_config is not None and config.additional_config.get(
-                "gitlabBaseUrl"
-            ):
-                config.oidc_discovery_endpoint = config.additional_config[
-                    "gitlabBaseUrl"
-                ]
-            else:
-                config.oidc_discovery_endpoint = "https://gitlab.com"
+        if (
+            config.additional_config is not None
+            and config.additional_config.get("gitlabBaseUrl") is not None
+        ):
+            gitlab_base_url = config.additional_config["gitlabBaseUrl"]
+            oidc_domain = NormalisedURLDomain(gitlab_base_url)
+            oidc_path = NormalisedURLPath("/.well-known/openid-configuration")
+            config.oidc_discovery_endpoint = (
+                oidc_domain.get_as_string_dangerous()
+                + oidc_path.get_as_string_dangerous()
+            )
+        elif (
+            config.oidc_discovery_endpoint is None
+            or config.oidc_discovery_endpoint == ""
+        ):
+            config.oidc_discovery_endpoint = (
+                "https://gitlab.com/.well-known/openid-configuration"
+            )
+
+        # The config could be coming from core where we didn't add the well-known previously
+        config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
+            config.oidc_discovery_endpoint
+        )
 
         return config
 
@@ -49,8 +66,5 @@ class GitlabImpl(GenericProvider):
 def Gitlab(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
         input.config.name = "Gitlab"
-
-    if input.config.oidc_discovery_endpoint is None:
-        input.config.oidc_discovery_endpoint = "https://gitlab.com"
 
     return NewProvider(input, GitlabImpl)

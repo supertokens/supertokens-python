@@ -20,7 +20,10 @@ from time import time
 
 from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderConfigForClient, ProviderInput
-from .utils import get_actual_client_id_from_development_client_id
+from .utils import (
+    get_actual_client_id_from_development_client_id,
+    normalise_oidc_endpoint_to_include_well_known,
+)
 
 
 class AppleImpl(GenericProvider):
@@ -33,22 +36,33 @@ class AppleImpl(GenericProvider):
             config.scope = ["openid", "email"]
 
         if config.client_secret is None:
+            if (
+                config.additional_config is None
+                or config.additional_config.get("keyId") is None
+                or config.additional_config.get("teamId") is None
+                or config.additional_config.get("privateKey") is None
+            ):
+                raise Exception(
+                    "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
+                )
+
             config.client_secret = await self._get_client_secret(config)
+
+        if not config.oidc_discovery_endpoint:
+            raise Exception("should never happen")
+
+        # The config could be coming from core where we didn't add the well-known previously
+        config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
+            config.oidc_discovery_endpoint
+        )
 
         return config
 
     async def _get_client_secret(  # pylint: disable=no-self-use
         self, config: ProviderConfigForClient
     ) -> str:
-        if (
-            config.additional_config is None
-            or config.additional_config.get("keyId") is None
-            or config.additional_config.get("teamId") is None
-            or config.additional_config.get("privateKey") is None
-        ):
-            raise Exception(
-                "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
-            )
+        if config.additional_config is None:
+            raise Exception("additionalConfig is required for Apple")
 
         payload: Dict[str, Any] = {
             "iss": config.additional_config.get("teamId"),
@@ -71,7 +85,9 @@ def Apple(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builti
         input.config.name = "Apple"
 
     if input.config.oidc_discovery_endpoint is None:
-        input.config.oidc_discovery_endpoint = "https://appleid.apple.com/"
+        input.config.oidc_discovery_endpoint = (
+            "https://appleid.apple.com/.well-known/openid-configuration"
+        )
 
     input.config.authorization_endpoint_query_params = {
         "response_mode": "form_post",

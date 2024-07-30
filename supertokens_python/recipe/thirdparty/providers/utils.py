@@ -3,6 +3,8 @@ from typing import Any, Dict, Optional, Tuple
 from httpx import AsyncClient
 
 from supertokens_python.logger import log_debug_message
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
 
 DEV_OAUTH_CLIENT_IDS = [
     "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
@@ -63,3 +65,25 @@ async def do_post_request(
             "Received response with status %s and body %s", res.status_code, res.text
         )
         return res.status_code, res.json()
+
+
+def normalise_oidc_endpoint_to_include_well_known(url: str) -> str:
+    # We call this only for built-in providers that use OIDC.
+    # We no longer generically add well-known in the custom provider
+    if url.endswith("/.well-known/openid-configuration"):
+        return url
+
+    try:
+        normalised_domain = NormalisedURLDomain(url)
+        normalised_path = NormalisedURLPath(url)
+
+        normalised_path = normalised_path.append(
+            NormalisedURLPath("/.well-known/openid-configuration")
+        )
+    except Exception:
+        return url  # Return original URL if normalization fails
+
+    return (
+        normalised_domain.get_as_string_dangerous()
+        + normalised_path.get_as_string_dangerous()
+    )
