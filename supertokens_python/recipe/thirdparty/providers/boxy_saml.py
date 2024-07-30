@@ -29,29 +29,28 @@ class BoxySAMLImpl(GenericProvider):
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
-        if (
-            config.additional_config is None
-            or config.additional_config.get("boxyURL") is None
-        ):
-            raise Exception("Please provide the boxyURL in the additionalConfig")
 
-        boxy_url = str(config.additional_config.get("boxyURL"))
+        boxy_url = (
+            config.additional_config.get("boxyURL")
+            if config.additional_config is not None
+            else None
+        )
+        if boxy_url:
+            if config.authorization_endpoint is None:
+                config.authorization_endpoint = f"{boxy_url}/api/oauth/authorize"
 
-        if config.authorization_endpoint is None:
-            config.authorization_endpoint = f"{boxy_url}/api/oauth/authorize"
+            if config.token_endpoint is None:
+                config.token_endpoint = f"{boxy_url}/api/oauth/token"
 
-        if config.token_endpoint is None:
-            config.token_endpoint = f"{boxy_url}/api/oauth/token"
-
-        if config.user_info_endpoint is None:
-            config.user_info_endpoint = f"{boxy_url}/api/oauth/userinfo"
+            if config.user_info_endpoint is None:
+                config.user_info_endpoint = f"{boxy_url}/api/oauth/userinfo"
 
         return config
 
 
 def BoxySAML(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
     if input.config.name is None:
-        input.config.name = "Boxy SAML"
+        input.config.name = "SAML"
 
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
