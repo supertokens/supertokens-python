@@ -78,13 +78,17 @@ async def update_and_get_mfa_related_info_in_session(
     if mfa_claim_value is None:
         session_user = await get_user(session_recipe_user_id, user_context)
         if session_user is None:
-            raise SuperTokensSessionError(SuperTokensSessionError.UNAUTHORISED, "Session user not found")
+            raise SuperTokensSessionError(
+                SuperTokensSessionError.UNAUTHORISED, "Session user not found"
+            )
 
         session_info = await Session.get_session_information(
             session_handle, user_context
         )
         if session_info is None:
-            raise SuperTokensSessionError(SuperTokensSessionError.UNAUTHORISED, "Session not found")
+            raise SuperTokensSessionError(
+                SuperTokensSessionError.UNAUTHORISED, "Session not found"
+            )
 
         first_factor_time = session_info.time_created
         computed_first_factor_id_for_session: Optional[str] = None
@@ -140,7 +144,9 @@ async def update_and_get_mfa_related_info_in_session(
                         break
 
         if computed_first_factor_id_for_session is None:
-            raise SuperTokensSessionError(SuperTokensSessionError.UNAUTHORISED, "Incorrect login method used")
+            raise SuperTokensSessionError(
+                SuperTokensSessionError.UNAUTHORISED, "Incorrect login method used"
+            )
 
         updated_claim_val = True
         mfa_claim_value = {
@@ -158,7 +164,9 @@ async def update_and_get_mfa_related_info_in_session(
             user_prom = asyncio.Future()
             session_user = await get_user(session_recipe_user_id, user_context)
             if session_user is None:
-                raise SuperTokensSessionError(SuperTokensSessionError.UNAUTHORISED, "Session user not found")
+                raise SuperTokensSessionError(
+                    SuperTokensSessionError.UNAUTHORISED, "Session user not found"
+                )
             user_prom.set_result(session_user)
         return await user_prom
 
