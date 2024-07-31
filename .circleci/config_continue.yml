@@ -265,151 +265,151 @@ workflows:
   version: 2
   tagged-build:
     jobs:
-      # - test-dev-tag-as-not-passed:
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-unit:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      #     matrix:
-      #       parameters:
-      #         cdi-version: placeholder
+      - test-dev-tag-as-not-passed: {}
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-unit:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+          matrix:
+            parameters:
+              cdi-version: placeholder
       - test-backend-sdk-testing:
-          # requires:
-          #     - test-dev-tag-as-not-passed
+          requires:
+              - test-dev-tag-as-not-passed
           context:
               - slack-notification
-          filters:
-              tags:
-                  only: /dev-v[0-9]+(\.[0-9]+)*/
-              branches:
-                  only: /test-cicd\/.*/
+          # filters:
+          #     tags:
+          #         only: /dev-v[0-9]+(\.[0-9]+)*/
+          #     branches:
+          #         only: /test-cicd\/.*/
           matrix:
               parameters:
                   cdi-version: placeholder
                   fdi-version: placeholder
-      # - test-website-fastapi:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-website-flask:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-website-django:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-website-drf-async:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-website-drf-sync:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-website-django2x:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      # - test-authreact-fastapi:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      #     matrix:
-      #       parameters:
-      #         fdi-version: placeholder
-      # - test-authreact-flask:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      #     matrix:
-      #       parameters:
-      #         fdi-version: placeholder
-      # - test-authreact-django:
-      #     requires:
-      #       - test-dev-tag-as-not-passed
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
-      #     matrix:
-      #       parameters:
-      #         fdi-version: placeholder
+      - test-website-fastapi:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-website-flask:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-website-django:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-website-drf-async:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-website-drf-sync:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-website-django2x:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+      - test-authreact-fastapi:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+          matrix:
+            parameters:
+              fdi-version: placeholder
+      - test-authreact-flask:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+          matrix:
+            parameters:
+              fdi-version: placeholder
+      - test-authreact-django:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
+          matrix:
+            parameters:
+              fdi-version: placeholder
       - test-success:
           requires:
-            # - test-unit
+            - test-unit
             - test-backend-sdk-testing
-            # - test-website-fastapi
-            # - test-website-flask
-            # - test-website-django
-            # - test-website-drf-async
-            # - test-website-drf-sync
-            # - test-website-django2x
-            # - test-authreact-fastapi
-            # - test-authreact-flask
-            # - test-authreact-django
+            - test-website-fastapi
+            - test-website-flask
+            - test-website-django
+            - test-website-drf-async
+            - test-website-drf-sync
+            - test-website-django2x
+            - test-authreact-fastapi
+            - test-authreact-flask
+            - test-authreact-django
           context:
             - slack-notification
           # filters:
