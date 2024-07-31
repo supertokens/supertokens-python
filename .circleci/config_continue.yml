@@ -52,7 +52,7 @@ jobs:
             update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
             update-alternatives --set python3 /usr/bin/python3.11
             python3 --version
-      - run: pip3 install -r dev-requirements.txt
+      - run: python3 -m pip install -r dev-requirements.txt
       - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
       - slack/status
   test-website-fastapi:
