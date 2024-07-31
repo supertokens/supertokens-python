@@ -17,7 +17,6 @@ import asyncio
 from json import JSONDecodeError
 from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Tuple
-from urllib.parse import urlencode
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
@@ -167,12 +166,9 @@ class Querier:
                     url, method, headers, query_params, {}, user_context
                 )
 
-            query_string = urlencode(query_params or {})
-
-            # Append query string to URL
-            url = f"{url}?{query_string}"
-
-            return await self.api_request(url, method, 2, headers=headers)
+            return await self.api_request(
+                url, method, 2, headers=headers, params=query_params
+            )
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), "GET", f, len(self.__hosts)
