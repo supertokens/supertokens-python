@@ -397,23 +397,23 @@ workflows:
       #     matrix:
       #       parameters:
       #         fdi-version: placeholder
-      # - test-success:
-      #     requires:
-      #       - test-unit
-      #       - test-backend-sdk-testing
-      #       - test-website-fastapi
-      #       - test-website-flask
-      #       - test-website-django
-      #       - test-website-drf-async
-      #       - test-website-drf-sync
-      #       - test-website-django2x
-      #       - test-authreact-fastapi
-      #       - test-authreact-flask
-      #       - test-authreact-django
-      #     context:
-      #       - slack-notification
-      #     filters:
-      #       tags:
-      #         only: /dev-v[0-9]+(\.[0-9]+)*/
-      #       branches:
-      #         only: /test-cicd\/.*/
+      - test-success:
+          requires:
+            # - test-unit
+            - test-backend-sdk-testing
+            # - test-website-fastapi
+            # - test-website-flask
+            # - test-website-django
+            # - test-website-drf-async
+            # - test-website-drf-sync
+            # - test-website-django2x
+            # - test-authreact-fastapi
+            # - test-authreact-flask
+            # - test-authreact-django
+          context:
+            - slack-notification
+          # filters:
+          #   tags:
+          #     only: /dev-v[0-9]+(\.[0-9]+)*/
+          #   branches:
+          #     only: /test-cicd\/.*/
