@@ -43,7 +43,7 @@ class GoogleWorkspacesImpl(GoogleImpl):
 def GoogleWorkspaces(
     input: ProviderInput,  # pylint: disable=redefined-builtin
 ) -> Provider:
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Google Workspaces"
 
     if input.config.validate_id_token_payload is None:

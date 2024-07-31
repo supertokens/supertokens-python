@@ -36,20 +36,20 @@ class BoxySAMLImpl(GenericProvider):
             else None
         )
         if boxy_url:
-            if config.authorization_endpoint is None:
+            if not config.authorization_endpoint:
                 config.authorization_endpoint = f"{boxy_url}/api/oauth/authorize"
 
-            if config.token_endpoint is None:
+            if not config.token_endpoint:
                 config.token_endpoint = f"{boxy_url}/api/oauth/token"
 
-            if config.user_info_endpoint is None:
+            if not config.user_info_endpoint:
                 config.user_info_endpoint = f"{boxy_url}/api/oauth/userinfo"
 
         return config
 
 
 def BoxySAML(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "SAML"
 
     if input.config.user_info_map is None:

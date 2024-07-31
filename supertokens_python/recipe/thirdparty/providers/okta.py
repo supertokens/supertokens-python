@@ -35,7 +35,7 @@ class OktaImpl(GenericProvider):
             config.additional_config is None
             or config.additional_config.get("oktaDomain") is None
         ):
-            if config.oidc_discovery_endpoint == "":
+            if not config.oidc_discovery_endpoint:
                 raise Exception(
                     "Please provide the oktaDomain in the additionalConfig of the Okta provider."
                 )
@@ -65,7 +65,7 @@ class OktaImpl(GenericProvider):
 
 
 def Okta(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Okta"
 
     return NewProvider(input, OktaImpl)

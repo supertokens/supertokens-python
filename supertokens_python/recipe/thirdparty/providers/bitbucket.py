@@ -90,15 +90,15 @@ class BitbucketImpl(GenericProvider):
 
 
 def Bitbucket(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Bitbucket"
 
-    if input.config.authorization_endpoint is None:
+    if not input.config.authorization_endpoint:
         input.config.authorization_endpoint = (
             "https://bitbucket.org/site/oauth2/authorize"
         )
 
-    if input.config.token_endpoint is None:
+    if not input.config.token_endpoint:
         input.config.token_endpoint = "https://bitbucket.org/site/oauth2/access_token"
 
     if input.config.authorization_endpoint_query_params is None:

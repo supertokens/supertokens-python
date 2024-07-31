@@ -35,17 +35,7 @@ class AppleImpl(GenericProvider):
         if config.scope is None:
             config.scope = ["openid", "email"]
 
-        if config.client_secret is None:
-            if (
-                config.additional_config is None
-                or config.additional_config.get("keyId") is None
-                or config.additional_config.get("teamId") is None
-                or config.additional_config.get("privateKey") is None
-            ):
-                raise Exception(
-                    "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
-                )
-
+        if not config.client_secret:
             config.client_secret = await self._get_client_secret(config)
 
         if not config.oidc_discovery_endpoint:
@@ -61,8 +51,15 @@ class AppleImpl(GenericProvider):
     async def _get_client_secret(  # pylint: disable=no-self-use
         self, config: ProviderConfigForClient
     ) -> str:
-        if config.additional_config is None:
-            raise Exception("additionalConfig is required for Apple")
+        if (
+            config.additional_config is None
+            or config.additional_config.get("keyId") is None
+            or config.additional_config.get("teamId") is None
+            or config.additional_config.get("privateKey") is None
+        ):
+            raise Exception(
+                "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
+            )
 
         payload: Dict[str, Any] = {
             "iss": config.additional_config.get("teamId"),
@@ -81,10 +78,10 @@ class AppleImpl(GenericProvider):
 
 
 def Apple(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Apple"
 
-    if input.config.oidc_discovery_endpoint is None:
+    if not input.config.oidc_discovery_endpoint:
         input.config.oidc_discovery_endpoint = (
             "https://appleid.apple.com/.well-known/openid-configuration"
         )

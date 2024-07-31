@@ -54,10 +54,10 @@ def Google(
     input: ProviderInput,  # pylint: disable=redefined-builtin
     base_class: Callable[[ProviderConfig], GoogleImpl] = GoogleImpl,
 ) -> Provider:
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Google"
 
-    if input.config.oidc_discovery_endpoint is None:
+    if not input.config.oidc_discovery_endpoint:
         input.config.oidc_discovery_endpoint = (
             "https://accounts.google.com/.well-known/openid-configuration"
         )

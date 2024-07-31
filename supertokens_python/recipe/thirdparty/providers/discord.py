@@ -41,16 +41,16 @@ class DiscordImpl(GenericProvider):
 
 
 def Discord(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Discord"
 
-    if input.config.authorization_endpoint is None:
+    if not input.config.authorization_endpoint:
         input.config.authorization_endpoint = "https://discord.com/api/oauth2/authorize"
 
-    if input.config.token_endpoint is None:
+    if not input.config.token_endpoint:
         input.config.token_endpoint = "https://discord.com/api/oauth2/token"
 
-    if input.config.user_info_endpoint is None:
+    if not input.config.user_info_endpoint:
         input.config.user_info_endpoint = "https://discord.com/api/users/@me"
 
     if input.config.user_info_map is None:

@@ -13,7 +13,7 @@
 # under the License.
 
 from typing import Any, Dict, Optional, Union, List
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from ..constants import DEFAULT_TENANT_ID
 
 from supertokens_python.recipe.multitenancy.interfaces import (
     APIOptions,

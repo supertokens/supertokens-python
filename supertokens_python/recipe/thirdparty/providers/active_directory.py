@@ -45,7 +45,7 @@ class ActiveDirectoryImpl(GenericProvider):
             config.oidc_discovery_endpoint
         )
 
-        if config.scope is None or len(config.scope) == 0:
+        if config.scope is None:
             config.scope = ["openid", "email"]
 
         # TODO: Implement client assertion if required
@@ -56,7 +56,7 @@ class ActiveDirectoryImpl(GenericProvider):
 def ActiveDirectory(
     input: ProviderInput,  # pylint: disable=redefined-builtin
 ) -> Provider:
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Active Directory"
 
     return NewProvider(input, ActiveDirectoryImpl)
