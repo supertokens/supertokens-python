@@ -21,8 +21,6 @@ from urllib.parse import urlencode
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
-from .supertokens import Supertokens, get_request_from_user_context
-
 from .constants import (
     API_KEY_HEADER,
     API_VERSION,
@@ -138,6 +136,11 @@ class Querier:
         )
 
         async def f(url: str, method: str) -> Response:
+            from supertokens_python.supertokens import (
+                Supertokens,
+                get_request_from_user_context,
+            )
+
             headers = {}
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
