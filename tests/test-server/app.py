@@ -13,6 +13,7 @@ from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 from test_functions_mapper import get_func  # type: ignore
 from emailpassword import add_emailpassword_routes
+from multitenancy import add_multitenancy_routes
 from supertokens_python import (
     AppInfo,
     Supertokens,
@@ -158,11 +159,11 @@ def init_st(config):  # type: ignore
                     for provider in sign_in_up_feature["providers"]:
                         user_info_map: Optional[UserInfoMap] = None
 
-                        if "userInfoMap" in provider:
-                            map_from_payload = provider["userInfoMap"].get(
+                        if "userInfoMap" in provider["config"]:
+                            map_from_payload = provider["config"]["userInfoMap"].get(
                                 "fromIdTokenPayload", {}
                             )
-                            map_from_api = provider["userInfoMap"].get(
+                            map_from_api = provider["config"]["userInfoMap"].get(
                                 "fromUserInfoAPI", {}
                             )
                             user_info_map = UserInfoMap(
@@ -179,6 +180,13 @@ def init_st(config):  # type: ignore
                                     email_verified=map_from_api.get("emailVerified"),
                                 ),
                             )
+
+                        include_in_non_public_tenants_by_default = None
+
+                        if "includeInNonPublicTenantsByDefault" in provider:
+                            include_in_non_public_tenants_by_default = provider[
+                                "includeInNonPublicTenantsByDefault"
+                            ]
 
                         provider_input = thirdparty.ProviderInput(
                             config=thirdparty.ProviderConfig(
@@ -222,7 +230,8 @@ def init_st(config):  # type: ignore
                                 require_email=provider["config"].get(
                                     "requireEmail", True
                                 ),
-                            )
+                            ),
+                            include_in_non_public_tenants_by_default=include_in_non_public_tenants_by_default,
                         )
                         providers.append(provider_input)
             recipe_list.append(
@@ -381,7 +390,7 @@ def not_found(error):  # type: ignore
 
 
 add_emailpassword_routes(app)
-
+add_multitenancy_routes(app)
 
 if __name__ == "__main__":
     default_st_init()

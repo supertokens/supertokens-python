@@ -226,9 +226,6 @@ async def get_oidc_discovery_info(issuer: str):
 
     ndomain = NormalisedURLDomain(issuer)
     npath = NormalisedURLPath(issuer)
-    openid_config_path = NormalisedURLPath("/.well-known/openid-configuration")
-
-    npath = npath.append(openid_config_path)
 
     oidc_info = await do_get_request(
         ndomain.get_as_string_dangerous() + npath.get_as_string_dangerous()
