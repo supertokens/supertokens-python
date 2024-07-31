@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>supertokens_python.types API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.types</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from abc import ABC, abstractmethod
+from typing import Any, Awaitable, Dict, List, TypeVar, Union
+
+_T = TypeVar(&#34;_T&#34;)
+
+
+class ThirdPartyInfo:
+    def __init__(self, third_party_user_id: str, third_party_id: str):
+        self.user_id = third_party_user_id
+        self.id = third_party_id
+
+
+class User:
+    def __init__(
+        self,
+        recipe_id: str,
+        user_id: str,
+        time_joined: int,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        third_party_info: Union[ThirdPartyInfo, None],
+        tenant_ids: List[str],
+    ):
+        self.recipe_id = recipe_id
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined
+        self.third_party_info = third_party_info
+        self.phone_number = phone_number
+        self.tenant_ids = tenant_ids
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {
+            &#34;recipeId&#34;: self.recipe_id,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user_id,
+                &#34;timeJoined&#34;: self.time_joined,
+                &#34;tenantIds&#34;: self.tenant_ids,
+            },
+        }
+
+        if self.email is not None:
+            res[&#34;user&#34;][&#34;email&#34;] = self.email
+        if self.phone_number is not None:
+            res[&#34;user&#34;][&#34;phoneNumber&#34;] = self.phone_number
+        if self.third_party_info is not None:
+            res[&#34;user&#34;][&#34;thirdParty&#34;] = self.third_party_info.__dict__
+
+        return res
+
+
+class UsersResponse:
+    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
+        self.users: List[User] = users
+        self.next_pagination_token: Union[str, None] = next_pagination_token
+
+
+class APIResponse(ABC):
+    @abstractmethod
+    def to_json(self) -&gt; Dict[str, Any]:
+        pass
+
+
+class GeneralErrorResponse(APIResponse):
+    def __init__(self, message: str):
+        self.status = &#34;GENERAL_ERROR&#34;
+        self.message = message
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}
+
+
+MaybeAwaitable = Union[Awaitable[_T], _T]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.types.APIResponse"><code class="flex name class">
+<span>class <span class="ident">APIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class APIResponse(ABC):
+    @abstractmethod
+    def to_json(self) -&gt; Dict[str, Any]:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.dashboard.interfaces.AnalyticsResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.AnalyticsResponse">AnalyticsResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantsGetResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.DashboardListTenantsGetResponse">DashboardListTenantsGetResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse">DashboardUsersGetResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.SearchTagsOK">SearchTagsOK</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.SignOutOK" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.SignOutOK">SignOutOK</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse">UserCountGetAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse">UserDeleteAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse">UserEmailVerifyGetAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse">UserEmailVerifyPutAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse">UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse">UserEmailVerifyTokenPostAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError">UserGetAPIRecipeNotInitialisedError</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse">UserMetadataGetAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse">UserMetadataPutAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse">UserPasswordPutAPIInvalidPasswordErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse">UserPasswordPutAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse">UserPutAPIEmailAlreadyExistsErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse">UserPutAPIInvalidEmailErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse">UserPutAPIInvalidPhoneErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse">UserPutPhoneAlreadyExistsAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse">UserSessionsGetAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse">UserSessionsPostAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult">SignInPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError">SignInPostWrongCredentialsError</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError">SignUpPostEmailAlreadyExistsError</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult">SignUpPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostInvalidTokenError" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostInvalidTokenError">EmailVerifyPostInvalidTokenError</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostOkResult">EmailVerifyPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError">GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="recipe/jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a></li>
+<li><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="recipe/multitenancy/interfaces.html#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="recipe/openid/interfaces.html#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a></li>
+<li><a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a></li>
+<li><a title="supertokens_python.types.GeneralErrorResponse" href="#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.types.APIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def to_json(self) -&gt; Dict[str, Any]:
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.types.GeneralErrorResponse"><code class="flex name class">
+<span>class <span class="ident">GeneralErrorResponse</span></span>
+<span>(</span><span>message: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneralErrorResponse(APIResponse):
+    def __init__(self, message: str):
+        self.status = &#34;GENERAL_ERROR&#34;
+        self.message = message
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.types.GeneralErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.types.ThirdPartyInfo"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyInfo</span></span>
+<span>(</span><span>third_party_user_id: str, third_party_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyInfo:
+    def __init__(self, third_party_user_id: str, third_party_id: str):
+        self.user_id = third_party_user_id
+        self.id = third_party_id</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.types.User"><code class="flex name class">
+<span>class <span class="ident">User</span></span>
+<span>(</span><span>recipe_id: str, user_id: str, time_joined: int, email: Optional[str], phone_number: Optional[str], third_party_info: Optional[<a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a>], tenant_ids: List[str])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class User:
+    def __init__(
+        self,
+        recipe_id: str,
+        user_id: str,
+        time_joined: int,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        third_party_info: Union[ThirdPartyInfo, None],
+        tenant_ids: List[str],
+    ):
+        self.recipe_id = recipe_id
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined
+        self.third_party_info = third_party_info
+        self.phone_number = phone_number
+        self.tenant_ids = tenant_ids
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {
+            &#34;recipeId&#34;: self.recipe_id,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user_id,
+                &#34;timeJoined&#34;: self.time_joined,
+                &#34;tenantIds&#34;: self.tenant_ids,
+            },
+        }
+
+        if self.email is not None:
+            res[&#34;user&#34;][&#34;email&#34;] = self.email
+        if self.phone_number is not None:
+            res[&#34;user&#34;][&#34;phoneNumber&#34;] = self.phone_number
+        if self.third_party_info is not None:
+            res[&#34;user&#34;][&#34;thirdParty&#34;] = self.third_party_info.__dict__
+
+        return res</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.types.User.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res: Dict[str, Any] = {
+        &#34;recipeId&#34;: self.recipe_id,
+        &#34;user&#34;: {
+            &#34;id&#34;: self.user_id,
+            &#34;timeJoined&#34;: self.time_joined,
+            &#34;tenantIds&#34;: self.tenant_ids,
+        },
+    }
+
+    if self.email is not None:
+        res[&#34;user&#34;][&#34;email&#34;] = self.email
+    if self.phone_number is not None:
+        res[&#34;user&#34;][&#34;phoneNumber&#34;] = self.phone_number
+    if self.third_party_info is not None:
+        res[&#34;user&#34;][&#34;thirdParty&#34;] = self.third_party_info.__dict__
+
+    return res</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.types.UsersResponse"><code class="flex name class">
+<span>class <span class="ident">UsersResponse</span></span>
+<span>(</span><span>users: List[<a title="supertokens_python.types.User" href="#supertokens_python.types.User">User</a>], next_pagination_token: Optional[str])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UsersResponse:
+    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
+        self.users: List[User] = users
+        self.next_pagination_token: Union[str, None] = next_pagination_token</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.types.APIResponse" href="#supertokens_python.types.APIResponse">APIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.APIResponse.to_json" href="#supertokens_python.types.APIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.GeneralErrorResponse" href="#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.GeneralErrorResponse.to_json" href="#supertokens_python.types.GeneralErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.User" href="#supertokens_python.types.User">User</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.User.to_json" href="#supertokens_python.types.User.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.UsersResponse" href="#supertokens_python.types.UsersResponse">UsersResponse</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
