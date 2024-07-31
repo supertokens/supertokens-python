@@ -8,11 +8,112 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.24.0] - 2024-07-10
+## [0.24.0] - 2024-07-31
+
+### Changes
+
+-   Adds test server for `backend-sdk-testing`
+-   Sends `websiteDomain` and `apiDomain` to core for telemetry.
+-   `boxyURL` is no more mandatory input in `additionalConfig` while adding boxy-saml provider in thirdParty.
+-   Adds `jwks_refresh_interval_sec` input to `Session.init` to set the default JWKS cache duration. The default is 4 hours.
 
 ### Breaking change
 
 -   Removes the default `max_age_in_seconds` value (previously 300 seconds) in EmailVerification Claim. If the claim value is true and `max_age_in_seconds` is not provided, it will not be refetched.
+-   SDK will no longer add `.well-known/openid-configuration` to the `oidc_discovery_endpoint` config in thirdParty providers. If you have specified any custom `oidc_discovery_endpoint` in the thirdparty.init or added to the core, please make sure to update them to include `.well-known/openid-configuration`.
+-   For a non-public tenant, when there are no providers added in the core, the SDK used to fallback to the providers added in the ThirdParty.init. Now, the SDK will not fallback to the providers added in the ThirdParty.init by default. If you require a thirdparty provider to be available for non-public tenants, you can make it available by setting `include_in_non_public_tenants_by_default` for each of the providers. See the migration section below to see how to do this. Note that this only affects non-public tenants when there are no providers added in core.
+
+### Migration
+
+#### Make providers available in non-public tenants by default
+
+To make all the providers added in the ThirdParty.init available for non-public tenants by default,
+
+Before:
+
+```py
+thirdparty.init(
+    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+        providers=[
+            thirdparty.ProviderInput(
+                config=thirdparty.ProviderConfig(
+                    third_party_id="google",
+                    # rest of the config
+                )
+            ),
+            thirdparty.ProviderInput(
+                config=thirdparty.ProviderConfig(
+                    third_party_id="github",
+                    # rest of the config
+                )
+            ),
+        ]
+    )
+)
+```
+
+After:
+
+```py
+thirdparty.init(
+    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+        providers=[
+            thirdparty.ProviderInput(
+                config=thirdparty.ProviderConfig(
+                    third_party_id="google",
+                    # rest of the config
+                ),
+                
+                # Add the following line to make this provider available in non-public tenants by default
+                include_in_non_public_tenants_by_default=True
+            ),
+            thirdparty.ProviderInput(
+                config=thirdparty.ProviderConfig(
+                    third_party_id="github",
+                    # rest of the config
+                ),
+                
+                # Add the following line to make this provider available in non-public tenants by default
+                include_in_non_public_tenants_by_default=True
+            ),
+        ]
+    )
+)
+```
+
+#### Migrating `oidc_discover_endpoint` in core (for custom providers only):
+
+For each tenant, do the following
+
+1.  GET `/appid-<appId>/<tenantId>/recipe/multitenancy/tenant/v2`
+
+    You should see the thirdParty providers in the response using `response.thirdParty.providers`
+
+2.  For each config in providers list, if you have `oidcDiscoveryEndpoint` in the config, update it to include `.well-known/openid-configuration` at the end.
+
+Here's a sample code snippet to update the `oidcDiscoveryEndpoint`:
+
+```py
+import supertokens_python.recipe.multitenancy.syncio as multitenancy
+
+def is_custom_provider(third_party_id: str) -> bool:
+    custom_providers = [
+        "custom",
+        # ... all your custom thirdPartyIds
+    ]
+    return third_party_id in custom_providers
+
+
+tenants_res = multitenancy.list_all_tenants()
+
+for tenant in tenants_res.tenants:
+    for provider in tenant.third_party.providers:
+        if is_custom_provider(provider.third_party_id) and provider.oidc_discovery_endpoint:
+            provider.oidc_discovery_endpoint = provider.oidc_discovery_endpoint.rstrip("/")
+            provider.oidc_discovery_endpoint += "/.well-known/openid-configuration"
+
+            multitenancy.create_or_update_third_party_config(tenant.tenant_id, provider)
+```
 
 ## [0.23.1] - 2024-07-09
 
