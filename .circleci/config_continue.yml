@@ -45,7 +45,7 @@ jobs:
           name: Install latest Python and dependencies
           command: |
             apt-get update
-            apt-get install -y software-properties-common
+            apt-get install -y software-properties-common lsof
             add-apt-repository -y ppa:deadsnakes/ppa
             apt-get update
             DEBIAN_FRONTEND=noninteractive apt-get install -y python3.11 python3-pip python3.11-dev libffi-dev
