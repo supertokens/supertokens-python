@@ -1,6 +1,8 @@
 from typing import Any, Dict, List, Set, Union
 import time
 
+from httpx import Response
+
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 
 override_logs: List[Dict[str, Any]] = []
@@ -36,5 +38,7 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
 
     if isinstance(data, FlaskRequest):
         return "FlaskRequest"
+    if isinstance(data, Response):
+        return "Response"
 
     return data

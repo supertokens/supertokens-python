@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
+from utils import init_test_claims
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
@@ -14,6 +15,7 @@ from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 from test_functions_mapper import get_func  # type: ignore
 from emailpassword import add_emailpassword_routes
 from multitenancy import add_multitenancy_routes
+from session import add_session_routes
 from supertokens_python import (
     AppInfo,
     Supertokens,
@@ -59,12 +61,46 @@ def default_st_init():
 T = TypeVar("T")
 
 
+def toCamelCase(snake_case: str) -> str:
+    components = snake_case.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
+def create_override(input, member, name):  # type: ignore
+    member_val = getattr(input, member)  # type: ignore
+
+    async def override(*args, **kwargs):  # type: ignore
+        override_logging.log_override_event(
+            name + "." + toCamelCase(member),  # type: ignore
+            "CALL",
+            {"args": args, "kwargs": kwargs},
+        )
+        try:
+            res = await member_val(*args, **kwargs)
+            override_logging.log_override_event(
+                name + "." + toCamelCase(member), "RES", res  # type: ignore
+            )
+            return res
+        except Exception as e:
+            override_logging.log_override_event(
+                name + "." + toCamelCase(member), "REJ", e  # type: ignore
+            )
+            raise e
+
+    setattr(input, member, override)  # type: ignore
+
+
 def override_builder_with_logging(
     name: str, override_name: Optional[str] = None
 ) -> Callable[[T], T]:
     def builder(input: T) -> T:
-        # TODO
-        print(dir(input))
+        for member in dir(input):
+            if member.startswith("__"):
+                continue
+
+            member_val = getattr(input, member)
+            if callable(member_val):
+                create_override(input, member, name)
         return input
 
     return builder
@@ -345,6 +381,7 @@ def reset_override_params():
 
 @app.route("/test/getoverridelogs", methods=["GET"])  # type: ignore
 def get_override_logs():
+    print(override_logging.override_logs)
     return jsonify({"logs": override_logging.override_logs})
 
 
@@ -391,6 +428,9 @@ def not_found(error):  # type: ignore
 
 add_emailpassword_routes(app)
 add_multitenancy_routes(app)
+add_session_routes(app)
+
+init_test_claims()
 
 if __name__ == "__main__":
     default_st_init()
