@@ -42,16 +42,19 @@ jobs:
       - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run:
-          name: Install latest Python
+          name: Install latest Python and dependencies
           command: |
             apt-get update
             apt-get install -y software-properties-common
             add-apt-repository -y ppa:deadsnakes/ppa
             apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y python3.11 python3-pip
+            DEBIAN_FRONTEND=noninteractive apt-get install -y python3.11 python3-pip python3.11-dev libffi-dev
             update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
             update-alternatives --set python3 /usr/bin/python3.11
             python3 --version
+            python3 -m pip install "cython<3.0.0" wheel
+            python3 -m pip install --upgrade pip setuptools
+            python3 -m pip install "pyyaml==5.4.1" --no-build-isolation
       - run: python3 -m pip install -r dev-requirements.txt
       - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
       - slack/status
