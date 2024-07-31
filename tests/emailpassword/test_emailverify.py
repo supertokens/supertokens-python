@@ -1340,7 +1340,9 @@ async def test_generate_email_verification_uses_correct_origin(
             email_verify_link = template_vars.email_verify_link
 
     def get_origin(_: Optional[BaseRequest], user_context: Dict[str, Any]) -> str:
-        return user_context["url"]
+        if "url" in user_context:
+            return user_context["url"]
+        return "https://supertokens.io"
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
