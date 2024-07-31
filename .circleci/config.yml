@@ -10,7 +10,7 @@ orbs:
 jobs:
     create-test-jobs:
         machine:
-            image: ubuntu-2204:edge
+            image: ubuntu-2204:2022.04.1
         steps:
             - checkout
             - run:

@@ -123,7 +123,10 @@ class Querier:
                 self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
             )
 
-    async def get_api_version(self):
+    async def get_api_version(self, user_context: Union[Dict[str, Any], None] = None):
+        if user_context is None:
+            user_context = {}
+
         if Querier.api_version is not None:
             return Querier.api_version
 
@@ -132,10 +135,40 @@ class Querier:
         )
 
         async def f(url: str, method: str) -> Response:
+            from supertokens_python.supertokens import (
+                Supertokens,
+                get_request_from_user_context,
+            )
+
             headers = {}
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
-            return await self.api_request(url, method, 2, headers=headers)
+
+            # Get app info
+            app_info = Supertokens.get_instance().app_info
+
+            req = get_request_from_user_context(user_context)
+            website_domain = app_info.get_origin(req, user_context)
+            # Prepare query parameters
+            query_params = {
+                "apiDomain": app_info.api_domain.get_as_string_dangerous(),
+                "websiteDomain": website_domain.get_as_string_dangerous(),
+            }
+
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    query_params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, query_params, {}, user_context
+                )
+
+            return await self.api_request(
+                url, method, 2, headers=headers, params=query_params
+            )
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), "GET", f, len(self.__hosts)
@@ -196,8 +229,10 @@ class Querier:
             Querier.network_interceptor = network_interceptor
             Querier.__disable_cache = disable_cache
 
-    async def __get_headers_with_api_version(self, path: NormalisedURLPath):
-        headers = {API_VERSION_HEADER: await self.get_api_version()}
+    async def __get_headers_with_api_version(
+        self, path: NormalisedURLPath, user_context: Union[Dict[str, Any], None]
+    ):
+        headers = {API_VERSION_HEADER: await self.get_api_version(user_context)}
         if Querier.__api_key is not None:
             headers = {**headers, API_KEY_HEADER: Querier.__api_key}
         if path.is_a_recipe_path() and self.__rid_to_core is not None:
@@ -214,7 +249,7 @@ class Querier:
             params = {}
 
         async def f(url: str, method: str) -> Response:
-            headers = await self.__get_headers_with_api_version(path)
+            headers = await self.__get_headers_with_api_version(path, user_context)
             nonlocal params
 
             assert params is not None
@@ -306,7 +341,7 @@ class Querier:
         ):
             return data
 
-        headers = await self.__get_headers_with_api_version(path)
+        headers = await self.__get_headers_with_api_version(path, user_context)
         headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str, method: str) -> Response:
@@ -342,7 +377,7 @@ class Querier:
             params = {}
 
         async def f(url: str, method: str) -> Response:
-            headers = await self.__get_headers_with_api_version(path)
+            headers = await self.__get_headers_with_api_version(path, user_context)
             nonlocal params
             if Querier.network_interceptor is not None:
                 (
@@ -374,7 +409,7 @@ class Querier:
         if data is None:
             data = {}
 
-        headers = await self.__get_headers_with_api_version(path)
+        headers = await self.__get_headers_with_api_version(path, user_context)
         headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str, method: str) -> Response:

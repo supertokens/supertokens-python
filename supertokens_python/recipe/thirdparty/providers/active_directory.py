@@ -20,6 +20,7 @@ from ..provider import (
     ProviderConfigForClient,
     ProviderInput,
 )
+from .utils import normalise_oidc_endpoint_to_include_well_known
 
 
 class ActiveDirectoryImpl(GenericProvider):
@@ -27,21 +28,27 @@ class ActiveDirectoryImpl(GenericProvider):
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClient:
         config = await super().get_config_for_client_type(client_type, user_context)
-        if config.oidc_discovery_endpoint is None:
-            if (
-                config.additional_config is None
-                or config.additional_config.get("directoryId") is None
-            ):
+
+        if (
+            config.additional_config is None
+            or config.additional_config.get("directoryId") is None
+        ):
+            if not config.oidc_discovery_endpoint:
                 raise Exception(
                     "Please provide the directoryId in the additionalConfig of the Active Directory provider."
                 )
+        else:
+            config.oidc_discovery_endpoint = f"https://login.microsoftonline.com/{config.additional_config['directoryId']}/v2.0/.well-known/openid-configuration"
 
-            config.oidc_discovery_endpoint = f"https://login.microsoftonline.com/{config.additional_config.get('directoryId')}/v2.0/"
+        # The config could be coming from core where we didn't add the well-known previously
+        config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
+            config.oidc_discovery_endpoint
+        )
 
         if config.scope is None:
             config.scope = ["openid", "email"]
 
-        # TODO later if required, client assertion impl
+        # TODO: Implement client assertion if required
 
         return config
 
@@ -49,7 +56,7 @@ class ActiveDirectoryImpl(GenericProvider):
 def ActiveDirectory(
     input: ProviderInput,  # pylint: disable=redefined-builtin
 ) -> Provider:
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Active Directory"
 
     return NewProvider(input, ActiveDirectoryImpl)

@@ -155,11 +155,16 @@ def merge_config(
 def merge_providers_from_core_and_static(
     provider_configs_from_core: List[ProviderConfig],
     provider_inputs_from_static: List[ProviderInput],
+    include_all_providers: bool,
 ) -> List[ProviderInput]:
     merged_providers: List[ProviderInput] = []
 
     if len(provider_configs_from_core) == 0:
-        for config in provider_inputs_from_static:
+        for config in filter(
+            lambda provider: include_all_providers
+            or provider.include_in_non_public_tenants_by_default,
+            provider_inputs_from_static,
+        ):
             merged_providers.append(config)
     else:
         for provider_config_from_core in provider_configs_from_core:
@@ -221,9 +226,6 @@ async def get_oidc_discovery_info(issuer: str):
 
     ndomain = NormalisedURLDomain(issuer)
     npath = NormalisedURLPath(issuer)
-    openid_config_path = NormalisedURLPath("/.well-known/openid-configuration")
-
-    npath = npath.append(openid_config_path)
 
     oidc_info = await do_get_request(
         ndomain.get_as_string_dangerous() + npath.get_as_string_dangerous()

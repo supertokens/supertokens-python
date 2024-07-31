@@ -54,20 +54,20 @@ class FacebookImpl(GenericProvider):
 
 
 def Facebook(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Facebook"
 
-    if input.config.authorization_endpoint is None:
+    if not input.config.authorization_endpoint:
         input.config.authorization_endpoint = (
             "https://www.facebook.com/v12.0/dialog/oauth"
         )
 
-    if input.config.token_endpoint is None:
+    if not input.config.token_endpoint:
         input.config.token_endpoint = (
             "https://graph.facebook.com/v12.0/oauth/access_token"
         )
 
-    if input.config.user_info_endpoint is None:
+    if not input.config.user_info_endpoint:
         input.config.user_info_endpoint = "https://graph.facebook.com/me"
 
     if input.config.user_info_map is None:
