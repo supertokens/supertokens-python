@@ -381,7 +381,6 @@ def reset_override_params():
 
 @app.route("/test/getoverridelogs", methods=["GET"])  # type: ignore
 def get_override_logs():
-    print(override_logging.override_logs)
     return jsonify({"logs": override_logging.override_logs})
 
 
