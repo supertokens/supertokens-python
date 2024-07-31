@@ -41,24 +41,24 @@ workflows:
     version: 2
     tagged-build:
         jobs:
-            - create-test-jobs:
-                filters:
-                    tags:
-                        only: /dev-v[0-9]+(\.[0-9]+)*/
-                    branches:
-                        only: /test-cicd\/.*/
-            - publish:
-                context:
-                    - slack-notification
-                filters:
-                    tags:
-                        only: /v[0-9]+(\.[0-9]+)*/
-                    branches:
-                        ignore: /.*/
-            - update-docs:
-                context:
-                    - slack-notification
-                filters:
-                    branches:
-                        only:
-                            - master
+            - create-test-jobs: {}
+                # filters:
+                #     tags:
+                #         only: /dev-v[0-9]+(\.[0-9]+)*/
+                #     branches:
+                #         only: /test-cicd\/.*/
+            # - publish:
+            #     context:
+            #         - slack-notification
+            #     filters:
+            #         tags:
+            #             only: /v[0-9]+(\.[0-9]+)*/
+            #         branches:
+            #             ignore: /.*/
+            # - update-docs:
+            #     context:
+            #         - slack-notification
+            #     filters:
+            #         branches:
+            #             only:
+            #                 - master
