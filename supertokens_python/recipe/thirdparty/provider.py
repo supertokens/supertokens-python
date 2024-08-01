@@ -367,7 +367,11 @@ class ProviderInput:
     def __init__(
         self,
         config: ProviderConfig,
+        include_in_non_public_tenants_by_default: bool = False,
         override: Optional[Callable[[Provider], Provider]] = None,
     ):
         self.config = config
+        self.include_in_non_public_tenants_by_default = (
+            include_in_non_public_tenants_by_default
+        )
         self.override = override

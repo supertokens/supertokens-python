@@ -27,6 +27,7 @@ from .custom import (
     GenericProvider,
     NewProvider,
 )
+from .utils import normalise_oidc_endpoint_to_include_well_known
 
 
 class GoogleImpl(GenericProvider):
@@ -38,6 +39,14 @@ class GoogleImpl(GenericProvider):
         if config.scope is None:
             config.scope = ["openid", "email"]
 
+        if not config.oidc_discovery_endpoint:
+            raise Exception("should never happen")
+
+        # The config could be coming from core where we didn't add the well-known previously
+        config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
+            config.oidc_discovery_endpoint
+        )
+
         return config
 
 
@@ -45,11 +54,13 @@ def Google(
     input: ProviderInput,  # pylint: disable=redefined-builtin
     base_class: Callable[[ProviderConfig], GoogleImpl] = GoogleImpl,
 ) -> Provider:
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Google"
 
-    if input.config.oidc_discovery_endpoint is None:
-        input.config.oidc_discovery_endpoint = "https://accounts.google.com/"
+    if not input.config.oidc_discovery_endpoint:
+        input.config.oidc_discovery_endpoint = (
+            "https://accounts.google.com/.well-known/openid-configuration"
+        )
 
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())

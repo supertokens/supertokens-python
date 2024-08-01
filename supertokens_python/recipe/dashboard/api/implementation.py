@@ -69,7 +69,7 @@ class APIImplementation(APIInterface):
 
             is_search_enabled: bool = False
             querier = Querier.get_instance(options.recipe_id)
-            cdiVersion = await querier.get_api_version()
+            cdiVersion = await querier.get_api_version(user_context)
             if not cdiVersion:
                 is_search_enabled = True
             elif is_version_gte(cdiVersion, "2.20"):

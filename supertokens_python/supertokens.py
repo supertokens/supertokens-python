@@ -383,7 +383,7 @@ class Supertokens:
     ]:
         querier = Querier.get_instance(None)
 
-        cdi_version = await querier.get_api_version()
+        cdi_version = await querier.get_api_version(user_context)
 
         if is_version_gte(cdi_version, "2.15"):
             body: Dict[str, Any] = {
@@ -419,7 +419,7 @@ class Supertokens:
     ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
-        cdi_version = await querier.get_api_version()
+        cdi_version = await querier.get_api_version(user_context)
 
         if is_version_gte(cdi_version, "2.15"):
             body = {
@@ -454,7 +454,7 @@ class Supertokens:
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 
-        cdi_version = await querier.get_api_version()
+        cdi_version = await querier.get_api_version(user_context)
 
         if is_version_gte(cdi_version, "2.15"):
             body: Dict[str, Any] = {
@@ -486,7 +486,7 @@ class Supertokens:
     ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
-        cdi_version = await querier.get_api_version()
+        cdi_version = await querier.get_api_version(user_context)
 
         if is_version_gte(cdi_version, "2.15"):
             res = await querier.send_post_request(
@@ -675,3 +675,9 @@ class Supertokens:
             return None
 
         return user_context.get("_default", {}).get("request")
+
+
+def get_request_from_user_context(
+    user_context: Optional[Dict[str, Any]],
+) -> Optional[BaseRequest]:
+    return Supertokens.get_instance().get_request_from_user_context(user_context)

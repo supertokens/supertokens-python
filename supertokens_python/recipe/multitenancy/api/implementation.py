@@ -13,6 +13,7 @@
 # under the License.
 
 from typing import Any, Dict, Optional, Union, List
+from ..constants import DEFAULT_TENANT_ID
 
 from supertokens_python.recipe.multitenancy.interfaces import (
     APIOptions,
@@ -54,7 +55,9 @@ class APIImplementation(APIInterface):
         provider_configs_from_core = tenant_config.third_party.providers
 
         merged_providers = merge_providers_from_core_and_static(
-            provider_configs_from_core, provider_inputs_from_static
+            provider_configs_from_core,
+            provider_inputs_from_static,
+            tenant_id == DEFAULT_TENANT_ID,
         )
 
         final_provider_list: List[ThirdPartyProvider] = []

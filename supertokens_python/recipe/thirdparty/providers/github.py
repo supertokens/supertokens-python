@@ -67,13 +67,13 @@ class GithubImpl(GenericProvider):
 
 
 def Github(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Github"
 
-    if input.config.authorization_endpoint is None:
+    if not input.config.authorization_endpoint:
         input.config.authorization_endpoint = "https://github.com/login/oauth/authorize"
 
-    if input.config.token_endpoint is None:
+    if not input.config.token_endpoint:
         input.config.token_endpoint = "https://github.com/login/oauth/access_token"
 
     if input.config.validate_access_token is None:

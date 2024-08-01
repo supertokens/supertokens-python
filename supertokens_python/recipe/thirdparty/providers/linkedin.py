@@ -76,15 +76,15 @@ class LinkedinImpl(GenericProvider):
 
 
 def Linkedin(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin
-    if input.config.name is None:
+    if not input.config.name:
         input.config.name = "Linkedin"
 
-    if input.config.authorization_endpoint is None:
+    if not input.config.authorization_endpoint:
         input.config.authorization_endpoint = (
             "https://www.linkedin.com/oauth/v2/authorization"
         )
 
-    if input.config.token_endpoint is None:
+    if not input.config.token_endpoint:
         input.config.token_endpoint = "https://www.linkedin.com/oauth/v2/accessToken"
 
     if input.config.user_info_map is None:

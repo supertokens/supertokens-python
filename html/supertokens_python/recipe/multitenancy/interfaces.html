@@ -1,0 +1,1705 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>supertokens_python.recipe.multitenancy.interfaces API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.multitenancy.interfaces</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional, List
+
+from supertokens_python.types import APIResponse, GeneralErrorResponse
+
+if TYPE_CHECKING:
+    from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.recipe.thirdparty.provider import (
+        ProviderConfig,
+        ProviderInput,
+    )
+    from .utils import MultitenancyConfig
+
+
+class TenantConfig:
+    def __init__(
+        self,
+        email_password_enabled: Union[bool, None] = None,
+        passwordless_enabled: Union[bool, None] = None,
+        third_party_enabled: Union[bool, None] = None,
+        core_config: Union[Dict[str, Any], None] = None,
+    ):
+        self.email_password_enabled = email_password_enabled
+        self.passwordless_enabled = passwordless_enabled
+        self.third_party_enabled = third_party_enabled
+        self.core_config = core_config
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        if self.email_password_enabled is not None:
+            res[&#34;emailPasswordEnabled&#34;] = self.email_password_enabled
+        if self.passwordless_enabled is not None:
+            res[&#34;passwordlessEnabled&#34;] = self.passwordless_enabled
+        if self.third_party_enabled is not None:
+            res[&#34;thirdPartyEnabled&#34;] = self.third_party_enabled
+        if self.core_config is not None:
+            res[&#34;coreConfig&#34;] = self.core_config
+        return res
+
+
+class CreateOrUpdateTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, created_new: bool):
+        self.created_new = created_new
+
+
+class DeleteTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, did_exist: bool):
+        self.did_exist = did_exist
+
+
+class EmailPasswordConfig:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self):
+        return {&#34;enabled&#34;: self.enabled}
+
+
+class PasswordlessConfig:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self):
+        return {&#34;enabled&#34;: self.enabled}
+
+
+class ThirdPartyConfig:
+    def __init__(self, enabled: bool, providers: List[ProviderConfig]):
+        self.enabled = enabled
+        self.providers = providers
+
+    def to_json(self):
+        return {
+            &#34;enabled&#34;: self.enabled,
+            &#34;providers&#34;: [provider.to_json() for provider in self.providers],
+        }
+
+
+class TenantConfigResponse:
+    def __init__(
+        self,
+        emailpassword: EmailPasswordConfig,
+        passwordless: PasswordlessConfig,
+        third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
+    ):
+        self.emailpassword = emailpassword
+        self.passwordless = passwordless
+        self.third_party = third_party
+        self.core_config = core_config
+
+
+class GetTenantOkResult(TenantConfigResponse):
+    status = &#34;OK&#34;
+
+
+class ListAllTenantsItem(TenantConfigResponse):
+    def __init__(
+        self,
+        tenant_id: str,
+        emailpassword: EmailPasswordConfig,
+        passwordless: PasswordlessConfig,
+        third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
+    ):
+        super().__init__(emailpassword, passwordless, third_party, core_config)
+        self.tenant_id = tenant_id
+
+    def to_json(self):
+        res = {
+            &#34;tenantId&#34;: self.tenant_id,
+            &#34;emailPassword&#34;: self.emailpassword.to_json(),
+            &#34;passwordless&#34;: self.passwordless.to_json(),
+            &#34;thirdParty&#34;: self.third_party.to_json(),
+            &#34;coreConfig&#34;: self.core_config,
+        }
+
+        return res
+
+
+class ListAllTenantsOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, tenants: List[ListAllTenantsItem]):
+        self.tenants = tenants
+
+
+class CreateOrUpdateThirdPartyConfigOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, created_new: bool):
+        self.created_new = created_new
+
+
+class DeleteThirdPartyConfigOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, did_config_exist: bool):
+        self.did_config_exist = did_config_exist
+
+
+class AssociateUserToTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, was_already_associated: bool):
+        self.was_already_associated = was_already_associated
+
+
+class AssociateUserToTenantUnknownUserIdError:
+    status = &#34;UNKNOWN_USER_ID_ERROR&#34;
+
+
+class AssociateUserToTenantEmailAlreadyExistsError:
+    status = &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;
+
+
+class AssociateUserToTenantPhoneNumberAlreadyExistsError:
+    status = &#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;
+
+
+class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
+    status = &#34;THIRD_PARTY_USER_ALREADY_EXISTS_ERROR&#34;
+
+
+class DisassociateUserFromTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, was_associated: bool):
+        self.was_associated = was_associated
+
+
+class RecipeInterface(ABC):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    async def get_tenant_id(
+        self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
+    ) -&gt; str:
+        pass
+
+    @abstractmethod
+    async def create_or_update_tenant(
+        self,
+        tenant_id: str,
+        config: Optional[TenantConfig],
+        user_context: Dict[str, Any],
+    ) -&gt; CreateOrUpdateTenantOkResult:
+        pass
+
+    @abstractmethod
+    async def delete_tenant(
+        self, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; DeleteTenantOkResult:
+        pass
+
+    @abstractmethod
+    async def get_tenant(
+        self, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; Optional[GetTenantOkResult]:
+        pass
+
+    @abstractmethod
+    async def list_all_tenants(
+        self, user_context: Dict[str, Any]
+    ) -&gt; ListAllTenantsOkResult:
+        pass
+
+    # third party provider management
+    @abstractmethod
+    async def create_or_update_third_party_config(
+        self,
+        tenant_id: str,
+        config: ProviderConfig,
+        skip_validation: Optional[bool],
+        user_context: Dict[str, Any],
+    ) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
+        pass
+
+    @abstractmethod
+    async def delete_third_party_config(
+        self,
+        tenant_id: str,
+        third_party_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; DeleteThirdPartyConfigOkResult:
+        pass
+
+    # user tenant association
+    @abstractmethod
+    async def associate_user_to_tenant(
+        self,
+        tenant_id: str,
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        AssociateUserToTenantOkResult,
+        AssociateUserToTenantUnknownUserIdError,
+        AssociateUserToTenantEmailAlreadyExistsError,
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    ]:
+        pass
+
+    @abstractmethod
+    async def dissociate_user_from_tenant(
+        self,
+        tenant_id: str,
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; DisassociateUserFromTenantOkResult:
+        pass
+
+
+class APIOptions:
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: MultitenancyConfig,
+        recipe_implementation: RecipeInterface,
+        static_third_party_providers: List[ProviderInput],
+    ):
+        self.request = request
+        self.response = response
+        self.recipe_id = recipe_id
+        self.config = config
+        self.recipe_implementation = recipe_implementation
+        self.static_third_party_providers = static_third_party_providers
+
+
+class ThirdPartyProvider:
+    def __init__(
+        self, id: str, name: Optional[str]
+    ):  # pylint: disable=redefined-builtin
+        self.id = id
+        self.name = name
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;id&#34;: self.id,
+            &#34;name&#34;: self.name,
+        }
+
+
+class LoginMethodEmailPassword:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+        }
+
+
+class LoginMethodPasswordless:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+        }
+
+
+class LoginMethodThirdParty:
+    def __init__(self, enabled: bool, providers: List[ThirdPartyProvider]):
+        self.enabled = enabled
+        self.providers = providers
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+            &#34;providers&#34;: [provider.to_json() for provider in self.providers],
+        }
+
+
+class LoginMethodsGetOkResult(APIResponse):
+    def __init__(
+        self,
+        email_password: LoginMethodEmailPassword,
+        passwordless: LoginMethodPasswordless,
+        third_party: LoginMethodThirdParty,
+    ):
+        self.status = &#34;OK&#34;
+        self.email_password = email_password
+        self.passwordless = passwordless
+        self.third_party = third_party
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;status&#34;: self.status,
+            &#34;emailPassword&#34;: self.email_password.to_json(),
+            &#34;passwordless&#34;: self.passwordless.to_json(),
+            &#34;thirdParty&#34;: self.third_party.to_json(),
+        }
+
+
+class APIInterface(ABC):
+    def __init__(self):
+        self.disable_login_methods_get = False
+
+    @abstractmethod
+    async def login_methods_get(
+        self,
+        tenant_id: str,
+        client_type: Optional[str],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+        pass
+
+
+TypeGetAllowedDomainsForTenantId = Callable[
+    [str, Dict[str, Any]], Awaitable[Optional[List[str]]]
+]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.APIInterface"><code class="flex name class">
+<span>class <span class="ident">APIInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class APIInterface(ABC):
+    def __init__(self):
+        self.disable_login_methods_get = False
+
+    @abstractmethod
+    async def login_methods_get(
+        self,
+        tenant_id: str,
+        client_type: Optional[str],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multitenancy.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.multitenancy.api.implementation.APIImplementation">APIImplementation</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.APIInterface.login_methods_get"><code class="name flex">
+<span>async def <span class="ident">login_methods_get</span></span>(<span>self, tenant_id: str, client_type: Optional[str], api_options: <a title="supertokens_python.recipe.multitenancy.interfaces.APIOptions" href="#supertokens_python.recipe.multitenancy.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def login_methods_get(
+    self,
+    tenant_id: str,
+    client_type: Optional[str],
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.APIOptions"><code class="flex name class">
+<span>class <span class="ident">APIOptions</span></span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: MultitenancyConfig, recipe_implementation: <a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface">RecipeInterface</a>, static_third_party_providers: List[ProviderInput])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class APIOptions:
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: MultitenancyConfig,
+        recipe_implementation: RecipeInterface,
+        static_third_party_providers: List[ProviderInput],
+    ):
+        self.request = request
+        self.response = response
+        self.recipe_id = recipe_id
+        self.config = config
+        self.recipe_implementation = recipe_implementation
+        self.static_third_party_providers = static_third_party_providers</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">AssociateUserToTenantEmailAlreadyExistsError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AssociateUserToTenantEmailAlreadyExistsError:
+    status = &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult"><code class="flex name class">
+<span>class <span class="ident">AssociateUserToTenantOkResult</span></span>
+<span>(</span><span>was_already_associated: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AssociateUserToTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, was_already_associated: bool):
+        self.was_already_associated = was_already_associated</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">AssociateUserToTenantPhoneNumberAlreadyExistsError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AssociateUserToTenantPhoneNumberAlreadyExistsError:
+    status = &#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">AssociateUserToTenantThirdPartyUserAlreadyExistsError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
+    status = &#34;THIRD_PARTY_USER_ALREADY_EXISTS_ERROR&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError"><code class="flex name class">
+<span>class <span class="ident">AssociateUserToTenantUnknownUserIdError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AssociateUserToTenantUnknownUserIdError:
+    status = &#34;UNKNOWN_USER_ID_ERROR&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult"><code class="flex name class">
+<span>class <span class="ident">CreateOrUpdateTenantOkResult</span></span>
+<span>(</span><span>created_new: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateOrUpdateTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, created_new: bool):
+        self.created_new = created_new</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult"><code class="flex name class">
+<span>class <span class="ident">CreateOrUpdateThirdPartyConfigOkResult</span></span>
+<span>(</span><span>created_new: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateOrUpdateThirdPartyConfigOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, created_new: bool):
+        self.created_new = created_new</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult"><code class="flex name class">
+<span>class <span class="ident">DeleteTenantOkResult</span></span>
+<span>(</span><span>did_exist: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeleteTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, did_exist: bool):
+        self.did_exist = did_exist</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult"><code class="flex name class">
+<span>class <span class="ident">DeleteThirdPartyConfigOkResult</span></span>
+<span>(</span><span>did_config_exist: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeleteThirdPartyConfigOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, did_config_exist: bool):
+        self.did_config_exist = did_config_exist</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult"><code class="flex name class">
+<span>class <span class="ident">DisassociateUserFromTenantOkResult</span></span>
+<span>(</span><span>was_associated: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DisassociateUserFromTenantOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, was_associated: bool):
+        self.was_associated = was_associated</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig"><code class="flex name class">
+<span>class <span class="ident">EmailPasswordConfig</span></span>
+<span>(</span><span>enabled: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailPasswordConfig:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self):
+        return {&#34;enabled&#34;: self.enabled}</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;enabled&#34;: self.enabled}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult"><code class="flex name class">
+<span>class <span class="ident">GetTenantOkResult</span></span>
+<span>(</span><span>emailpassword: <a title="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig" href="#supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig">EmailPasswordConfig</a>, passwordless: <a title="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig" href="#supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig">PasswordlessConfig</a>, third_party: <a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig">ThirdPartyConfig</a>, core_config: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetTenantOkResult(TenantConfigResponse):
+    status = &#34;OK&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse">TenantConfigResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem"><code class="flex name class">
+<span>class <span class="ident">ListAllTenantsItem</span></span>
+<span>(</span><span>tenant_id: str, emailpassword: <a title="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig" href="#supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig">EmailPasswordConfig</a>, passwordless: <a title="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig" href="#supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig">PasswordlessConfig</a>, third_party: <a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig">ThirdPartyConfig</a>, core_config: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ListAllTenantsItem(TenantConfigResponse):
+    def __init__(
+        self,
+        tenant_id: str,
+        emailpassword: EmailPasswordConfig,
+        passwordless: PasswordlessConfig,
+        third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
+    ):
+        super().__init__(emailpassword, passwordless, third_party, core_config)
+        self.tenant_id = tenant_id
+
+    def to_json(self):
+        res = {
+            &#34;tenantId&#34;: self.tenant_id,
+            &#34;emailPassword&#34;: self.emailpassword.to_json(),
+            &#34;passwordless&#34;: self.passwordless.to_json(),
+            &#34;thirdParty&#34;: self.third_party.to_json(),
+            &#34;coreConfig&#34;: self.core_config,
+        }
+
+        return res</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse">TenantConfigResponse</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    res = {
+        &#34;tenantId&#34;: self.tenant_id,
+        &#34;emailPassword&#34;: self.emailpassword.to_json(),
+        &#34;passwordless&#34;: self.passwordless.to_json(),
+        &#34;thirdParty&#34;: self.third_party.to_json(),
+        &#34;coreConfig&#34;: self.core_config,
+    }
+
+    return res</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult"><code class="flex name class">
+<span>class <span class="ident">ListAllTenantsOkResult</span></span>
+<span>(</span><span>tenants: List[<a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem">ListAllTenantsItem</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ListAllTenantsOkResult:
+    status = &#34;OK&#34;
+
+    def __init__(self, tenants: List[ListAllTenantsItem]):
+        self.tenants = tenants</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword"><code class="flex name class">
+<span>class <span class="ident">LoginMethodEmailPassword</span></span>
+<span>(</span><span>enabled: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LoginMethodEmailPassword:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;enabled&#34;: self.enabled,
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless"><code class="flex name class">
+<span>class <span class="ident">LoginMethodPasswordless</span></span>
+<span>(</span><span>enabled: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LoginMethodPasswordless:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;enabled&#34;: self.enabled,
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty"><code class="flex name class">
+<span>class <span class="ident">LoginMethodThirdParty</span></span>
+<span>(</span><span>enabled: bool, providers: List[<a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider">ThirdPartyProvider</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LoginMethodThirdParty:
+    def __init__(self, enabled: bool, providers: List[ThirdPartyProvider]):
+        self.enabled = enabled
+        self.providers = providers
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+            &#34;providers&#34;: [provider.to_json() for provider in self.providers],
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;enabled&#34;: self.enabled,
+        &#34;providers&#34;: [provider.to_json() for provider in self.providers],
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult"><code class="flex name class">
+<span>class <span class="ident">LoginMethodsGetOkResult</span></span>
+<span>(</span><span>email_password: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword">LoginMethodEmailPassword</a>, passwordless: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless">LoginMethodPasswordless</a>, third_party: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty">LoginMethodThirdParty</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LoginMethodsGetOkResult(APIResponse):
+    def __init__(
+        self,
+        email_password: LoginMethodEmailPassword,
+        passwordless: LoginMethodPasswordless,
+        third_party: LoginMethodThirdParty,
+    ):
+        self.status = &#34;OK&#34;
+        self.email_password = email_password
+        self.passwordless = passwordless
+        self.third_party = third_party
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;status&#34;: self.status,
+            &#34;emailPassword&#34;: self.email_password.to_json(),
+            &#34;passwordless&#34;: self.passwordless.to_json(),
+            &#34;thirdParty&#34;: self.third_party.to_json(),
+        }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;status&#34;: self.status,
+        &#34;emailPassword&#34;: self.email_password.to_json(),
+        &#34;passwordless&#34;: self.passwordless.to_json(),
+        &#34;thirdParty&#34;: self.third_party.to_json(),
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig"><code class="flex name class">
+<span>class <span class="ident">PasswordlessConfig</span></span>
+<span>(</span><span>enabled: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PasswordlessConfig:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self):
+        return {&#34;enabled&#34;: self.enabled}</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;enabled&#34;: self.enabled}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface"><code class="flex name class">
+<span>class <span class="ident">RecipeInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RecipeInterface(ABC):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    async def get_tenant_id(
+        self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
+    ) -&gt; str:
+        pass
+
+    @abstractmethod
+    async def create_or_update_tenant(
+        self,
+        tenant_id: str,
+        config: Optional[TenantConfig],
+        user_context: Dict[str, Any],
+    ) -&gt; CreateOrUpdateTenantOkResult:
+        pass
+
+    @abstractmethod
+    async def delete_tenant(
+        self, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; DeleteTenantOkResult:
+        pass
+
+    @abstractmethod
+    async def get_tenant(
+        self, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; Optional[GetTenantOkResult]:
+        pass
+
+    @abstractmethod
+    async def list_all_tenants(
+        self, user_context: Dict[str, Any]
+    ) -&gt; ListAllTenantsOkResult:
+        pass
+
+    # third party provider management
+    @abstractmethod
+    async def create_or_update_third_party_config(
+        self,
+        tenant_id: str,
+        config: ProviderConfig,
+        skip_validation: Optional[bool],
+        user_context: Dict[str, Any],
+    ) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
+        pass
+
+    @abstractmethod
+    async def delete_third_party_config(
+        self,
+        tenant_id: str,
+        third_party_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; DeleteThirdPartyConfigOkResult:
+        pass
+
+    # user tenant association
+    @abstractmethod
+    async def associate_user_to_tenant(
+        self,
+        tenant_id: str,
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        AssociateUserToTenantOkResult,
+        AssociateUserToTenantUnknownUserIdError,
+        AssociateUserToTenantEmailAlreadyExistsError,
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+        AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    ]:
+        pass
+
+    @abstractmethod
+    async def dissociate_user_from_tenant(
+        self,
+        tenant_id: str,
+        user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; DisassociateUserFromTenantOkResult:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation" href="recipe_implementation.html#supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation">RecipeImplementation</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.associate_user_to_tenant"><code class="name flex">
+<span>async def <span class="ident">associate_user_to_tenant</span></span>(<span>self, tenant_id: str, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult">AssociateUserToTenantOkResult</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError">AssociateUserToTenantUnknownUserIdError</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError">AssociateUserToTenantEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError">AssociateUserToTenantPhoneNumberAlreadyExistsError</a>, <a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError">AssociateUserToTenantThirdPartyUserAlreadyExistsError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def associate_user_to_tenant(
+    self,
+    tenant_id: str,
+    user_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    AssociateUserToTenantOkResult,
+    AssociateUserToTenantUnknownUserIdError,
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_tenant"><code class="name flex">
+<span>async def <span class="ident">create_or_update_tenant</span></span>(<span>self, tenant_id: str, config: Optional[<a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig">TenantConfig</a>], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult">CreateOrUpdateTenantOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def create_or_update_tenant(
+    self,
+    tenant_id: str,
+    config: Optional[TenantConfig],
+    user_context: Dict[str, Any],
+) -&gt; CreateOrUpdateTenantOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_third_party_config"><code class="name flex">
+<span>async def <span class="ident">create_or_update_third_party_config</span></span>(<span>self, tenant_id: str, config: ProviderConfig, skip_validation: Optional[bool], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult">CreateOrUpdateThirdPartyConfigOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def create_or_update_third_party_config(
+    self,
+    tenant_id: str,
+    config: ProviderConfig,
+    skip_validation: Optional[bool],
+    user_context: Dict[str, Any],
+) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_tenant"><code class="name flex">
+<span>async def <span class="ident">delete_tenant</span></span>(<span>self, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult">DeleteTenantOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def delete_tenant(
+    self, tenant_id: str, user_context: Dict[str, Any]
+) -&gt; DeleteTenantOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_third_party_config"><code class="name flex">
+<span>async def <span class="ident">delete_third_party_config</span></span>(<span>self, tenant_id: str, third_party_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult">DeleteThirdPartyConfigOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def delete_third_party_config(
+    self,
+    tenant_id: str,
+    third_party_id: str,
+    user_context: Dict[str, Any],
+) -&gt; DeleteThirdPartyConfigOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.dissociate_user_from_tenant"><code class="name flex">
+<span>async def <span class="ident">dissociate_user_from_tenant</span></span>(<span>self, tenant_id: str, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult">DisassociateUserFromTenantOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def dissociate_user_from_tenant(
+    self,
+    tenant_id: str,
+    user_id: str,
+    user_context: Dict[str, Any],
+) -&gt; DisassociateUserFromTenantOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant"><code class="name flex">
+<span>async def <span class="ident">get_tenant</span></span>(<span>self, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult">GetTenantOkResult</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def get_tenant(
+    self, tenant_id: str, user_context: Dict[str, Any]
+) -&gt; Optional[GetTenantOkResult]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant_id"><code class="name flex">
+<span>async def <span class="ident">get_tenant_id</span></span>(<span>self, tenant_id_from_frontend: str, user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def get_tenant_id(
+    self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
+) -&gt; str:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.list_all_tenants"><code class="name flex">
+<span>async def <span class="ident">list_all_tenants</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult">ListAllTenantsOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def list_all_tenants(
+    self, user_context: Dict[str, Any]
+) -&gt; ListAllTenantsOkResult:
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfig"><code class="flex name class">
+<span>class <span class="ident">TenantConfig</span></span>
+<span>(</span><span>email_password_enabled: Union[bool, None] = None, passwordless_enabled: Union[bool, None] = None, third_party_enabled: Union[bool, None] = None, core_config: Union[Dict[str, Any], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TenantConfig:
+    def __init__(
+        self,
+        email_password_enabled: Union[bool, None] = None,
+        passwordless_enabled: Union[bool, None] = None,
+        third_party_enabled: Union[bool, None] = None,
+        core_config: Union[Dict[str, Any], None] = None,
+    ):
+        self.email_password_enabled = email_password_enabled
+        self.passwordless_enabled = passwordless_enabled
+        self.third_party_enabled = third_party_enabled
+        self.core_config = core_config
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        if self.email_password_enabled is not None:
+            res[&#34;emailPasswordEnabled&#34;] = self.email_password_enabled
+        if self.passwordless_enabled is not None:
+            res[&#34;passwordlessEnabled&#34;] = self.passwordless_enabled
+        if self.third_party_enabled is not None:
+            res[&#34;thirdPartyEnabled&#34;] = self.third_party_enabled
+        if self.core_config is not None:
+            res[&#34;coreConfig&#34;] = self.core_config
+        return res</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res: Dict[str, Any] = {}
+    if self.email_password_enabled is not None:
+        res[&#34;emailPasswordEnabled&#34;] = self.email_password_enabled
+    if self.passwordless_enabled is not None:
+        res[&#34;passwordlessEnabled&#34;] = self.passwordless_enabled
+    if self.third_party_enabled is not None:
+        res[&#34;thirdPartyEnabled&#34;] = self.third_party_enabled
+    if self.core_config is not None:
+        res[&#34;coreConfig&#34;] = self.core_config
+    return res</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse"><code class="flex name class">
+<span>class <span class="ident">TenantConfigResponse</span></span>
+<span>(</span><span>emailpassword: <a title="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig" href="#supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig">EmailPasswordConfig</a>, passwordless: <a title="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig" href="#supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig">PasswordlessConfig</a>, third_party: <a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig">ThirdPartyConfig</a>, core_config: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TenantConfigResponse:
+    def __init__(
+        self,
+        emailpassword: EmailPasswordConfig,
+        passwordless: PasswordlessConfig,
+        third_party: ThirdPartyConfig,
+        core_config: Dict[str, Any],
+    ):
+        self.emailpassword = emailpassword
+        self.passwordless = passwordless
+        self.third_party = third_party
+        self.core_config = core_config</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult">GetTenantOkResult</a></li>
+<li><a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem">ListAllTenantsItem</a></li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyConfig</span></span>
+<span>(</span><span>enabled: bool, providers: List[ProviderConfig])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyConfig:
+    def __init__(self, enabled: bool, providers: List[ProviderConfig]):
+        self.enabled = enabled
+        self.providers = providers
+
+    def to_json(self):
+        return {
+            &#34;enabled&#34;: self.enabled,
+            &#34;providers&#34;: [provider.to_json() for provider in self.providers],
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {
+        &#34;enabled&#34;: self.enabled,
+        &#34;providers&#34;: [provider.to_json() for provider in self.providers],
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyProvider</span></span>
+<span>(</span><span>id: str, name: Optional[str])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyProvider:
+    def __init__(
+        self, id: str, name: Optional[str]
+    ):  # pylint: disable=redefined-builtin
+        self.id = id
+        self.name = name
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;id&#34;: self.id,
+            &#34;name&#34;: self.name,
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;id&#34;: self.id,
+        &#34;name&#34;: self.name,
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.multitenancy" href="index.html">supertokens_python.recipe.multitenancy</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.APIInterface" href="#supertokens_python.recipe.multitenancy.interfaces.APIInterface">APIInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.APIInterface.login_methods_get" href="#supertokens_python.recipe.multitenancy.interfaces.APIInterface.login_methods_get">login_methods_get</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.APIOptions" href="#supertokens_python.recipe.multitenancy.interfaces.APIOptions">APIOptions</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError">AssociateUserToTenantEmailAlreadyExistsError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError.status" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult">AssociateUserToTenantOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError">AssociateUserToTenantPhoneNumberAlreadyExistsError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError.status" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError">AssociateUserToTenantThirdPartyUserAlreadyExistsError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError.status" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError">AssociateUserToTenantUnknownUserIdError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError.status" href="#supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult">CreateOrUpdateTenantOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult">CreateOrUpdateThirdPartyConfigOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult">DeleteTenantOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult">DeleteThirdPartyConfigOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult">DisassociateUserFromTenantOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig" href="#supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig">EmailPasswordConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.EmailPasswordConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult">GetTenantOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.GetTenantOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem">ListAllTenantsItem</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsItem.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult">ListAllTenantsOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult.status" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword">LoginMethodEmailPassword</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless">LoginMethodPasswordless</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty">LoginMethodThirdParty</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig" href="#supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig">PasswordlessConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.PasswordlessConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface">RecipeInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.associate_user_to_tenant" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.associate_user_to_tenant">associate_user_to_tenant</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_tenant" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_tenant">create_or_update_tenant</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_third_party_config" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_third_party_config">create_or_update_third_party_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_tenant" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_tenant">delete_tenant</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_third_party_config" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_third_party_config">delete_third_party_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.dissociate_user_from_tenant" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.dissociate_user_from_tenant">dissociate_user_from_tenant</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant">get_tenant</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant_id" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant_id">get_tenant_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.list_all_tenants" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.list_all_tenants">list_all_tenants</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig">TenantConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfigResponse">TenantConfigResponse</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig">ThirdPartyConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider">ThirdPartyProvider</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.ThirdPartyProvider.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
