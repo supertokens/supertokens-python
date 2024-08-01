@@ -14,7 +14,9 @@ from .types import (MFARequirementList, NormalizedOverride, RecipeInterface,
                     TypeInput, TypeNormalisedInput)
 
 
-def validate_and_normalise_user_input(config: Optional[TypeInput]) -> TypeNormalisedInput:
+def validate_and_normalise_user_input(
+    config: Optional[TypeInput],
+) -> TypeNormalisedInput:
     if (
         config is not None
         and config.first_factors is not None
@@ -22,13 +24,18 @@ def validate_and_normalise_user_input(config: Optional[TypeInput]) -> TypeNormal
     ):
         raise Exception("'first_factors' can be either undefined or a non-empty array")
 
-    override = NormalizedOverride(
-        functions=lambda r, o: r,
-        apis=lambda a, o: a,
-    )
-
-    if config is not None and config.override is not None:
-        override.update(config.override) 
+    override: NormalizedOverride = {
+        "functions": config.override["functions"]
+        if config is not None
+        and config.override is not None
+        and config.override["functions"] is not None
+        else lambda a, o: a,
+        "apis": config.override["apis"]
+        if config is not None
+        and config.override is not None
+        and config.override["apis"] is not None
+        else lambda a, o: a,
+    }
 
     return TypeNormalisedInput(
         first_factors=config.first_factors if config is not None else None,
@@ -197,29 +204,29 @@ async def update_and_get_mfa_related_info_in_session(
         }
     )
 
-    are_auth_reqs_complete = (
-        len(
-            MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
-                completed_factors, mfa_requirements_for_auth
-            ).factor_ids
-        )
-        == 0
-    )
-    if mfa_claim_value["v"] != are_auth_reqs_complete:
-        updated_claim_val = True
-        mfa_claim_value["v"] = are_auth_reqs_complete
+    # are_auth_reqs_complete = (
+    #     len(
+    #         MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
+    #             completed_factors, mfa_requirements_for_auth
+    #         ).factor_ids
+    #     )
+    #     == 0
+    # )
+    # if mfa_claim_value["v"] != are_auth_reqs_complete:
+    #     updated_claim_val = True
+    #     mfa_claim_value["v"] = are_auth_reqs_complete
 
-    if "session" in input and updated_claim_val:
-        await input["session"].set_claim_value(
-            MultiFactorAuthClaim, mfa_claim_value, user_context
-        )
+    # if "session" in input and updated_claim_val:
+    #     await input["session"].set_claim_value(
+    #         MultiFactorAuthClaim, mfa_claim_value, user_context
+    #     )
 
-    return {
-        "completed_factors": completed_factors,
-        "mfa_requirements_for_auth": mfa_requirements_for_auth,
-        "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
-    }
-        "completed_factors": completed_factors,
-        "mfa_requirements_for_auth": mfa_requirements_for_auth,
-        "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
-    }
+    # return {
+    #     "completed_factors": completed_factors,
+    #     "mfa_requirements_for_auth": mfa_requirements_for_auth,
+    #     "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
+    # }
+    #     "completed_factors": completed_factors,
+    #     "mfa_requirements_for_auth": mfa_requirements_for_auth,
+    #     "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
+    # }
