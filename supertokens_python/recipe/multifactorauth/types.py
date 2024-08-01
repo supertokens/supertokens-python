@@ -1,6 +1,17 @@
 from ast import Call
 from token import OP
-from typing import Awaitable, Callable, Dict, List, Optional, Protocol, TypedDict, Union
+from typing import (
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    TypeAlias,
+    TypedDict,
+    Union,
+)
 
 from httpcore import Origin
 
@@ -10,6 +21,14 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionContainerInterface
 from supertokens_python.recipe_module import RecipeUserId
 from supertokens_python.types import GeneralErrorResponse, JSONObject, User, UserContext
+
+MFARequirementList: TypeAlias = List[
+    Union[
+        Dict[Literal["oneOf"], List[str]],
+        Dict[Literal["allOfInAnyOrder"], List[str]],
+        str,
+    ]
+]
 
 
 class FactorIds:
@@ -138,6 +157,33 @@ class NormalizedOverride(TypedDict):
 
 
 class TypeNormalisedInput:
+    def __init__(
+        self,
+        override: NormalizedOverride,
+        first_factors: Optional[List[str]] = None,
+    ):
+        self.first_factors = first_factors
+        self.override = override
+
+
+class TypeNormalisedInput:
+    def __init__(
+        self,
+        override: NormalizedOverride,
+        first_factors: Optional[List[str]] = None,
+    ):
+        self.first_factors = first_factors
+        self.override = override
+
+    def __init__(
+        self,
+        override: NormalizedOverride,
+        first_factors: Optional[List[str]] = None,
+    ):
+        self.first_factors = first_factors
+        self.override = override
+        self.override = override
+
     def __init__(
         self,
         override: NormalizedOverride,

@@ -1,17 +1,20 @@
-from typing import Any, Dict, Optional, Union
+from typing import Dict, Optional, Union
 
 from supertokens_python import get_user
 from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multitenancy import Multitenancy
 from supertokens_python.recipe.multitenancy.utils import is_valid_first_factor
 from supertokens_python.recipe.session import Session, SessionContainer
-from supertokens_python.recipe.session.exceptions import \
-    SuperTokensSessionError
+from supertokens_python.recipe.session.exceptions import UnauthorisedError
 
 from .multi_factor_auth_claim import MultiFactorAuthClaim
 from .recipe import Recipe
-from .types import (MFARequirementList, NormalizedOverride, RecipeInterface,
-                    TypeInput, TypeNormalisedInput)
+from .types import (
+    MFARequirementList,
+    NormalizedOverride,
+    TypeInput,
+    TypeNormalisedInput,
+)
 
 
 def validate_and_normalise_user_input(
@@ -22,7 +25,7 @@ def validate_and_normalise_user_input(
         and config.first_factors is not None
         and len(config.first_factors) == 0
     ):
-        raise Exception("'first_factors' can be either undefined or a non-empty array")
+        raise Exception("'first_factors' can be either None or a non-empty array")
 
     override: NormalizedOverride = {
         "functions": config.override["functions"]
@@ -45,7 +48,7 @@ def validate_and_normalise_user_input(
 
 async def update_and_get_mfa_related_info_in_session(
     input: Union[Dict[str, Union[str, Dict[str, any]]], Dict[str, SessionContainer]],
-    user_context: Dict[str, any],
+    user_context: UserContext,
     updated_factor_id: Optional[str] = None,
 ) -> Dict[str, Union[Dict[str, int], MFARequirementList, bool]]:
     if user_context is None:
@@ -74,28 +77,24 @@ async def update_and_get_mfa_related_info_in_session(
     if updated_factor_id:
         if mfa_claim_value is None:
             updated_claim_val = True
-            mfa_claim_value = {
-                "c": {updated_factor_id: int(time.time())},
-                "v": True,  # updated later in the function
-            }
+            mfa_claim_value = MFAClaimValue(
+                c={updated_factor_id: int(time.time())},
+                v=True,  # updated later in the function
+            )
         else:
             updated_claim_val = True
-            mfa_claim_value["c"][updated_factor_id] = int(time.time())
+            mfa_claim_value.c[updated_factor_id] = int(time.time())
 
     if mfa_claim_value is None:
         session_user = await get_user(session_recipe_user_id, user_context)
         if session_user is None:
-            raise SuperTokensSessionError(
-                SuperTokensSessionError.UNAUTHORISED, "Session user not found"
-            )
+            raise SuperTokensSessionError(UnauthorisedError, "Session user not found")
 
         session_info = await Session.get_session_information(
             session_handle, user_context
         )
         if session_info is None:
-            raise SuperTokensSessionError(
-                SuperTokensSessionError.UNAUTHORISED, "Session not found"
-            )
+            raise SuperTokensSessionError(UnauthorisedError, "Session not found")
 
         first_factor_time = session_info.time_created
         computed_first_factor_id_for_session: Optional[str] = None
@@ -107,9 +106,7 @@ async def update_and_get_mfa_related_info_in_session(
                         tenant_id, FactorIds.EMAILPASSWORD, user_context
                     )
                     if valid_res.status == "TENANT_NOT_FOUND_ERROR":
-                        raise SuperTokensSessionError(
-                            SuperTokensSessionError.UNAUTHORISED, "Tenant not found"
-                        )
+                        raise UnauthorisedError("Tenant not found")
                     elif valid_res.status == "OK":
                         computed_first_factor_id_for_session = FactorIds.EMAILPASSWORD
                         break
@@ -118,14 +115,12 @@ async def update_and_get_mfa_related_info_in_session(
                         tenant_id, FactorIds.THIRDPARTY, user_context
                     )
                     if valid_res.status == "TENANT_NOT_FOUND_ERROR":
-                        raise SuperTokensSessionError(
-                            SuperTokensSessionError.UNAUTHORISED, "Tenant not found"
-                        )
+                        raise UnauthorisedError("Tenant not found")
                     elif valid_res.status == "OK":
                         computed_first_factor_id_for_session = FactorIds.THIRDPARTY
                         break
                 else:
-                    factors_to_check = []
+                    factors_to_check: List[str] = []
                     if login_method.email is not None:
                         factors_to_check.extend(
                             [FactorIds.LINK_EMAIL, FactorIds.OTP_EMAIL]
@@ -140,9 +135,7 @@ async def update_and_get_mfa_related_info_in_session(
                             tenant_id, factor_id, user_context
                         )
                         if valid_res.status == "TENANT_NOT_FOUND_ERROR":
-                            raise SuperTokensSessionError(
-                                SuperTokensSessionError.UNAUTHORISED, "Tenant not found"
-                            )
+                            raise UnauthorisedError("Tenant not found")
                         elif valid_res.status == "OK":
                             computed_first_factor_id_for_session = factor_id
                             break
@@ -151,29 +144,25 @@ async def update_and_get_mfa_related_info_in_session(
                         break
 
         if computed_first_factor_id_for_session is None:
-            raise SuperTokensSessionError(
-                SuperTokensSessionError.UNAUTHORISED, "Incorrect login method used"
-            )
+            raise UnauthorisedError("Incorrect login method used")
 
         updated_claim_val = True
-        mfa_claim_value = {
-            "c": {computed_first_factor_id_for_session: first_factor_time},
-            "v": True,  # updated later in this function
-        }
+        mfa_claim_value = MFAClaimValue(
+            c={computed_first_factor_id_for_session: first_factor_time},
+            v=True,  # updated later in this function
+        )
 
-    completed_factors = mfa_claim_value["c"]
+    completed_factors = mfa_claim_value.c
 
     user_prom: Optional[asyncio.Future] = None
 
-    async def user_getter():
+    async def user_getter() -> User:
         nonlocal user_prom
         if user_prom is None:
             user_prom = asyncio.Future()
             session_user = await get_user(session_recipe_user_id, user_context)
             if session_user is None:
-                raise SuperTokensSessionError(
-                    SuperTokensSessionError.UNAUTHORISED, "Session user not found"
-                )
+                raise UnauthorisedError("Session user not found")
             user_prom.set_result(session_user)
         return await user_prom
 
@@ -204,29 +193,25 @@ async def update_and_get_mfa_related_info_in_session(
         }
     )
 
-    # are_auth_reqs_complete = (
-    #     len(
-    #         MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
-    #             completed_factors, mfa_requirements_for_auth
-    #         ).factor_ids
-    #     )
-    #     == 0
-    # )
-    # if mfa_claim_value["v"] != are_auth_reqs_complete:
-    #     updated_claim_val = True
-    #     mfa_claim_value["v"] = are_auth_reqs_complete
+    are_auth_reqs_complete = (
+        len(
+            MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
+                completed_factors, mfa_requirements_for_auth
+            ).factor_ids
+        )
+        == 0
+    )
+    if mfa_claim_value.v != are_auth_reqs_complete:
+        updated_claim_val = True
+        mfa_claim_value.v = are_auth_reqs_complete
 
-    # if "session" in input and updated_claim_val:
-    #     await input["session"].set_claim_value(
-    #         MultiFactorAuthClaim, mfa_claim_value, user_context
-    #     )
+    if "session" in input and updated_claim_val:
+        await input["session"].set_claim_value(
+            MultiFactorAuthClaim, mfa_claim_value, user_context
+        )
 
-    # return {
-    #     "completed_factors": completed_factors,
-    #     "mfa_requirements_for_auth": mfa_requirements_for_auth,
-    #     "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
-    # }
-    #     "completed_factors": completed_factors,
-    #     "mfa_requirements_for_auth": mfa_requirements_for_auth,
-    #     "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
-    # }
+    return {
+        "completed_factors": completed_factors,
+        "mfa_requirements_for_auth": mfa_requirements_for_auth,
+        "is_mfa_requirements_for_auth_satisfied": mfa_claim_value.v,
+    }
