@@ -5,41 +5,41 @@ from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multitenancy import Multitenancy
 from supertokens_python.recipe.multitenancy.utils import is_valid_first_factor
 from supertokens_python.recipe.session import Session, SessionContainer
-from supertokens_python.recipe.session.exceptions import SuperTokensSessionError
+from supertokens_python.recipe.session.exceptions import \
+    SuperTokensSessionError
 
 from .multi_factor_auth_claim import MultiFactorAuthClaim
 from .recipe import Recipe
-from .types import MFARequirementList
+from .types import (MFARequirementList, NormalizedOverride, RecipeInterface,
+                    TypeInput, TypeNormalisedInput)
 
 
-def validate_and_normalise_user_input(
-    config: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+def validate_and_normalise_user_input(config: Optional[TypeInput]) -> TypeNormalisedInput:
     if (
         config is not None
-        and config.get("first_factors") is not None
-        and len(config["first_factors"]) == 0
+        and config.first_factors is not None
+        and len(config.first_factors) == 0
     ):
         raise Exception("'first_factors' can be either undefined or a non-empty array")
 
-    override = {
-        "functions": (lambda original_implementation: original_implementation),
-        "apis": (lambda original_implementation: original_implementation),
-    }
+    override = NormalizedOverride(
+        functions=lambda r, o: r,
+        apis=lambda a, o: a,
+    )
 
-    if config is not None and config.get("override") is not None:
-        override.update(config["override"])
+    if config is not None and config.override is not None:
+        override.update(config.override) 
 
-    return {
-        "first_factors": config.get("first_factors") if config is not None else None,
-        "override": override,
-    }
+    return TypeNormalisedInput(
+        first_factors=config.first_factors if config is not None else None,
+        override=override,
+    )
 
 
 async def update_and_get_mfa_related_info_in_session(
     input: Union[Dict[str, Union[str, Dict[str, any]]], Dict[str, SessionContainer]],
+    user_context: Dict[str, any],
     updated_factor_id: Optional[str] = None,
-    user_context: Dict[str, any] = None,
 ) -> Dict[str, Union[Dict[str, int], MFARequirementList, bool]]:
     if user_context is None:
         user_context = {}
@@ -215,6 +215,10 @@ async def update_and_get_mfa_related_info_in_session(
         )
 
     return {
+        "completed_factors": completed_factors,
+        "mfa_requirements_for_auth": mfa_requirements_for_auth,
+        "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
+    }
         "completed_factors": completed_factors,
         "mfa_requirements_for_auth": mfa_requirements_for_auth,
         "is_mfa_requirements_for_auth_satisfied": mfa_claim_value["v"],
