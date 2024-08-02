@@ -160,3 +160,9 @@ class TypeNormalisedInput:
     ):
         self.first_factors = first_factors
         self.override = override
+
+
+class MFAClaimValue:
+    def __init__(self, c: Dict[str, Union[int, None]], v: bool):
+        self.c = c
+        self.v = v

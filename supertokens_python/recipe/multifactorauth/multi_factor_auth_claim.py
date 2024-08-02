@@ -1,11 +1,12 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-from supertokens_python.recipe.session import SessionClaim, SessionClaimValidator
-from supertokens_python.recipe.session.claims import ClaimValidationResult
-from supertokens_python.recipe.session.interfaces import SessionClaimValidator
-from supertokens_python.recipe.usermetadata.utils import JSONObject
-from supertokens_python.types import UserId
+from supertokens_python.recipe.session.interfaces import (
+    ClaimValidationResult,
+    JSONObject,
+    SessionClaim,
+    SessionClaimValidator,
+)
+from supertokens_python.types import RecipeUserId
 
 from .types import MFAClaimValue, MFARequirementList
 from .utils import update_and_get_mfa_related_info_in_session
@@ -148,8 +149,8 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
 
     async def fetch_value(
         self,
-        user_id: UserId,
-        recipe_user_id: UserId,
+        user_id: str,
+        recipe_user_id: RecipeUserId,
         tenant_id: str,
         current_payload: Optional[JSONObject],
         user_context: Dict[str, Any],
