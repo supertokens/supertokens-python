@@ -8,8 +8,12 @@ from supertokens_python.recipe.session import Session, SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 
 from .multi_factor_auth_claim import MultiFactorAuthClaim
-from .types import (MFARequirementList, NormalizedOverride, TypeInput,
-                    TypeNormalisedInput)
+from .types import (
+    MFARequirementList,
+    NormalizedOverride,
+    TypeInput,
+    TypeNormalisedInput,
+)
 
 
 def validate_and_normalise_user_input(
@@ -40,13 +44,11 @@ def validate_and_normalise_user_input(
         override=override,
     )
 
+
 async def update_and_get_mfa_related_info_in_session(
-    input: Union[
-        dict[str, Union[UserId, str, dict]],
-        dict[str, SessionContainer]
-    ],
+    input: Union[dict[str, Union[UserId, str, dict]], dict[str, SessionContainer]],
     updated_factor_id: Optional[str] = None,
-    user_context: dict = {}
+    user_context: dict = {},
 ) -> dict[str, Union[MFAClaimValue["c"], MFARequirementList, bool]]:
     session_recipe_user_id: UserId
     tenant_id: str
@@ -72,10 +74,8 @@ async def update_and_get_mfa_related_info_in_session(
         if mfa_claim_value is None:
             updated_claim_val = True
             mfa_claim_value = {
-                "c": {
-                    updated_factor_id: int(time.time())
-                },
-                "v": True  # updated later in the function
+                "c": {updated_factor_id: int(time.time())},
+                "v": True,  # updated later in the function
             }
         else:
             updated_claim_val = True
@@ -86,7 +86,9 @@ async def update_and_get_mfa_related_info_in_session(
         if session_user is None:
             raise UnauthorisedError("Session user not found")
 
-        session_info: Optional[SessionInformation] = await Session.get_session_information(session_handle, user_context)
+        session_info: Optional[
+            SessionInformation
+        ] = await Session.get_session_information(session_handle, user_context)
 
         if session_info is None:
             raise UnauthorisedError("Session not found")
@@ -94,16 +96,23 @@ async def update_and_get_mfa_related_info_in_session(
         first_factor_time = session_info.time_created
         computed_first_factor_id_for_session: Optional[str] = None
         for login_method in session_user.login_methods:
-            if login_method.recipe_user_id.get_as_string() == session_recipe_user_id.get_as_string():
+            if (
+                login_method.recipe_user_id.get_as_string()
+                == session_recipe_user_id.get_as_string()
+            ):
                 if login_method.recipe_id == "emailpassword":
-                    valid_res = await is_valid_first_factor(tenant_id, FactorIds.EMAILPASSWORD, user_context)
+                    valid_res = await is_valid_first_factor(
+                        tenant_id, FactorIds.EMAILPASSWORD, user_context
+                    )
                     if valid_res.status == "TENANT_NOT_FOUND_ERROR":
                         raise UnauthorisedError("Tenant not found")
                     elif valid_res.status == "OK":
                         computed_first_factor_id_for_session = FactorIds.EMAILPASSWORD
                         break
                 elif login_method.recipe_id == "thirdparty":
-                    valid_res = await is_valid_first_factor(tenant_id, FactorIds.THIRDPARTY, user_context)
+                    valid_res = await is_valid_first_factor(
+                        tenant_id, FactorIds.THIRDPARTY, user_context
+                    )
                     if valid_res.status == "TENANT_NOT_FOUND_ERROR":
                         raise UnauthorisedError("Tenant not found")
                     elif valid_res.status == "OK":
@@ -112,12 +121,18 @@ async def update_and_get_mfa_related_info_in_session(
                 else:
                     factors_to_check = []
                     if login_method.email is not None:
-                        factors_to_check.extend([FactorIds.LINK_EMAIL, FactorIds.OTP_EMAIL])
+                        factors_to_check.extend(
+                            [FactorIds.LINK_EMAIL, FactorIds.OTP_EMAIL]
+                        )
                     if login_method.phone_number is not None:
-                        factors_to_check.extend([FactorIds.LINK_PHONE, FactorIds.OTP_PHONE])
+                        factors_to_check.extend(
+                            [FactorIds.LINK_PHONE, FactorIds.OTP_PHONE]
+                        )
 
                     for factor_id in factors_to_check:
-                        valid_res = await is_valid_first_factor(tenant_id, factor_id, user_context)
+                        valid_res = await is_valid_first_factor(
+                            tenant_id, factor_id, user_context
+                        )
                         if valid_res.status == "TENANT_NOT_FOUND_ERROR":
                             raise UnauthorisedError("Tenant not found")
                         elif valid_res.status == "OK":
@@ -132,10 +147,8 @@ async def update_and_get_mfa_related_info_in_session(
 
         updated_claim_val = True
         mfa_claim_value = {
-            "c": {
-                computed_first_factor_id_for_session: first_factor_time
-            },
-            "v": True  # updated later in this function
+            "c": {computed_first_factor_id_for_session: first_factor_time},
+            "v": True,  # updated later in this function
         }
 
     completed_factors = mfa_claim_value["c"]
@@ -151,37 +164,49 @@ async def update_and_get_mfa_related_info_in_session(
             user_prom = session_user
         return user_prom
 
-    mfa_requirements_for_auth = await Recipe.get_instance().recipe_implementation.get_mfa_requirements_for_auth({
-        "access_token_payload": access_token_payload,
-        "tenant_id": tenant_id,
-        "user": user_getter,
-        "factors_setup_for_user": lambda: user_getter().then(
-            lambda user: Recipe.get_instance().recipe_implementation.get_factors_setup_for_user(
-                user=user,
-                user_context=user_context
-            )
-        ),
-        "required_secondary_factors_for_user": lambda: user_getter().then(
-            lambda session_user: Recipe.get_instance().recipe_implementation.get_required_secondary_factors_for_user(
-                user_id=session_user.user_id,
-                user_context=user_context
-            )
-        ),
-        "required_secondary_factors_for_tenant": lambda: Multitenancy.get_tenant(tenant_id, user_context).then(
-            lambda tenant_info: tenant_info.required_secondary_factors if tenant_info is not None else []
-        ),
-        "completed_factors": completed_factors,
-        "user_context": user_context,
-    })
+    mfa_requirements_for_auth = await Recipe.get_instance().recipe_implementation.get_mfa_requirements_for_auth(
+        {
+            "access_token_payload": access_token_payload,
+            "tenant_id": tenant_id,
+            "user": user_getter,
+            "factors_setup_for_user": lambda: user_getter().then(
+                lambda user: Recipe.get_instance().recipe_implementation.get_factors_setup_for_user(
+                    user=user, user_context=user_context
+                )
+            ),
+            "required_secondary_factors_for_user": lambda: user_getter().then(
+                lambda session_user: Recipe.get_instance().recipe_implementation.get_required_secondary_factors_for_user(
+                    user_id=session_user.user_id, user_context=user_context
+                )
+            ),
+            "required_secondary_factors_for_tenant": lambda: Multitenancy.get_tenant(
+                tenant_id, user_context
+            ).then(
+                lambda tenant_info: tenant_info.required_secondary_factors
+                if tenant_info is not None
+                else []
+            ),
+            "completed_factors": completed_factors,
+            "user_context": user_context,
+        }
+    )
 
-    are_auth_reqs_complete = len(MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
-        completed_factors, mfa_requirements_for_auth).factor_ids) == 0
+    are_auth_reqs_complete = (
+        len(
+            MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
+                completed_factors, mfa_requirements_for_auth
+            ).factor_ids
+        )
+        == 0
+    )
     if mfa_claim_value["v"] != are_auth_reqs_complete:
         updated_claim_val = True
         mfa_claim_value["v"] = are_auth_reqs_complete
 
     if "session" in input and updated_claim_val:
-        await input["session"].set_claim_value(MultiFactorAuthClaim, mfa_claim_value, user_context)
+        await input["session"].set_claim_value(
+            MultiFactorAuthClaim, mfa_claim_value, user_context
+        )
 
     return {
         "completed_factors": completed_factors,
