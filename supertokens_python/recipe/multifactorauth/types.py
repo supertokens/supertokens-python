@@ -1,5 +1,3 @@
-from ast import Call
-from token import OP
 from typing import (
     Awaitable,
     Callable,
@@ -13,14 +11,10 @@ from typing import (
     Union,
 )
 
-from httpcore import Origin
-
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.interfaces import SessionContainerInterface
-from supertokens_python.recipe_module import RecipeUserId
-from supertokens_python.types import GeneralErrorResponse, JSONObject, User, UserContext
+from supertokens_python.recipe.session.interfaces import JSONObject, SessionContainer
+from supertokens_python.types import GeneralErrorResponse, User, UserContext
 
 MFARequirementList: TypeAlias = List[
     Union[
@@ -103,7 +97,7 @@ class RecipeInterface(Protocol):
 
     async def mark_factor_as_complete_in_session(
         self,
-        session: SessionContainerInterface,
+        session: SessionContainer,
         factor_id: str,
         user_context: UserContext,
     ) -> None:
@@ -130,13 +124,14 @@ class RecipeInterface(Protocol):
         ...
 
 
-class Override(TypedDict):
-    functions: Optional[
-        Callable[[RecipeInterface, OverrideBuilder[RecipeInterface]], RecipeInterface]
-    ]
-    apis: Optional[
-        Callable[[APIInterface, OverrideBuilder[APIInterface]], APIInterface]
-    ]
+class Override:
+    def __init__(
+        self,
+        functions: Optional[Callable[[RecipeInterface], RecipeInterface]],
+        apis: Optional[Callable[[APIInterface], APIInterface]],
+    ):
+        self.functions = functions
+        self.apis = apis
 
 
 class TypeInput:
@@ -149,41 +144,17 @@ class TypeInput:
         self.override = override
 
 
-class NormalizedOverride(TypedDict):
-    functions: Callable[
-        [RecipeInterface, OverrideBuilder[RecipeInterface]], RecipeInterface
-    ]
-    apis: Callable[[APIInterface, OverrideBuilder[APIInterface]], APIInterface]
+class NormalizedOverride:
+    def __init__(
+        self,
+        functions: Callable[[RecipeInterface], RecipeInterface],
+        apis: Callable[[APIInterface], APIInterface],
+    ):
+        self.functions = functions
+        self.apis = apis
 
 
 class TypeNormalisedInput:
-    def __init__(
-        self,
-        override: NormalizedOverride,
-        first_factors: Optional[List[str]] = None,
-    ):
-        self.first_factors = first_factors
-        self.override = override
-
-
-class TypeNormalisedInput:
-    def __init__(
-        self,
-        override: NormalizedOverride,
-        first_factors: Optional[List[str]] = None,
-    ):
-        self.first_factors = first_factors
-        self.override = override
-
-    def __init__(
-        self,
-        override: NormalizedOverride,
-        first_factors: Optional[List[str]] = None,
-    ):
-        self.first_factors = first_factors
-        self.override = override
-        self.override = override
-
     def __init__(
         self,
         override: NormalizedOverride,
