@@ -12,7 +12,6 @@ from typing import (
 )
 
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import JSONObject, SessionContainer
 from supertokens_python.types import GeneralErrorResponse, User, UserContext
 
@@ -47,7 +46,6 @@ class APIInterface(Protocol):
 
 class APIOptions(TypedDict):
     recipe_implementation: "RecipeInterface"
-    recipe_instance: "Recipe"
     config: "TypeNormalisedInput"
     recipe_id: str
     is_in_serverless_env: bool
