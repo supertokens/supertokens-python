@@ -11,6 +11,14 @@ from supertokens_python.types import RecipeUserId
 from .types import MFAClaimValue, MFARequirementList
 from .utils import update_and_get_mfa_related_info_in_session
 
+# class IncludesSCV(SessionClaimValidator):
+#     async def validate(
+#         self,
+#         payload: JSONObject,
+#         user_context: Dict[str, Any],
+#     ):
+#         return await self._validate(payload, user_context, is_include=True)
+
 
 class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
     def __init__(self, key: Optional[str] = None):
@@ -23,6 +31,7 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
     def _has_completed_mfa_requirements_for_auth(
         self, claim_key: Optional[str] = None
     ) -> SessionClaimValidator:
+
         return {
             "claim": self,
             "id": claim_key or self.key,
