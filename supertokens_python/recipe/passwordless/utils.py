@@ -46,12 +46,6 @@ from typing import List
 from phonenumbers import is_valid_number, parse  # type: ignore
 
 from supertokens_python.recipe.multifactorauth.types import FactorIds
-from supertokens_python.recipe.passwordless import (
-    ContactConfig,
-    ContactEmailOnlyConfig,
-    ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig,
-)
 from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
@@ -253,7 +247,9 @@ def validate_and_normalise_user_input(
     )
 
 
-def get_enabled_pwless_factors(config: ContactConfig, flow_type: str) -> List[str]:
+def get_enabled_pwless_factors(config: ContactConfig, flow_type: Literal[
+        "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
+]) -> List[str]:
     all_factors: List[str] = []
 
     if flow_type == "MAGIC_LINK":
