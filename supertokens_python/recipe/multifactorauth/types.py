@@ -14,12 +14,7 @@ from typing import (
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.session.interfaces import JSONObject, SessionContainer
-from supertokens_python.types import (
-    GeneralErrorResponse,
-    RecipeUserId,
-    User,
-    UserContext,
-)
+from supertokens_python.types import GeneralErrorResponse, User
 
 MFARequirementList: TypeAlias = List[
     Union[
@@ -45,7 +40,7 @@ class APIInterface(Protocol):
         self,
         options: "APIOptions",
         session: SessionContainer,
-        user_context: UserContext,
+        user_context: Dict[str, Any],
     ) -> Optional[Dict[str, object]]:
         ...
 
@@ -82,7 +77,7 @@ class RecipeInterface(Protocol):
         factor_id: str,
         mfa_requirements_for_auth: Awaitable[List[Union[Dict[str, List[str]], str]]],
         factors_set_up_for_user: Awaitable[List[str]],
-        user_context: UserContext,
+        user_context: Dict[str, Any],
     ) -> None:
         ...
 
@@ -95,7 +90,7 @@ class RecipeInterface(Protocol):
         factors_set_up_for_user: Awaitable[List[str]],
         required_secondary_factors_for_user: Awaitable[List[str]],
         required_secondary_factors_for_tenant: Awaitable[List[str]],
-        user_context: UserContext,
+        user_context: Dict[str, Any],
     ) -> List[Union[Dict[str, List[str]], str]]:
         ...
 
@@ -103,27 +98,27 @@ class RecipeInterface(Protocol):
         self,
         session: SessionContainer,
         factor_id: str,
-        user_context: UserContext,
+        user_context: Dict[str, Any],
     ) -> None:
         ...
 
     async def get_factors_setup_for_user(
-        self, user: User, user_context: UserContext
+        self, user: User, user_context: Dict[str, Any]
     ) -> List[str]:
         ...
 
     async def get_required_secondary_factors_for_user(
-        self, user_id: str, user_context: UserContext
+        self, user_id: str, user_context: Dict[str, Any]
     ) -> List[str]:
         ...
 
     async def add_to_required_secondary_factors_for_user(
-        self, user_id: str, factor_id: str, user_context: UserContext
+        self, user_id: str, factor_id: str, user_context: Dict[str, Any]
     ) -> None:
         ...
 
     async def remove_from_required_secondary_factors_for_user(
-        self, user_id: str, factor_id: str, user_context: UserContext
+        self, user_id: str, factor_id: str, user_context: Dict[str, Any]
     ) -> None:
         ...
 
@@ -203,3 +198,13 @@ class SessionInput:
 
 
 SessionInputType = Union[SessionRecipeUserIdInput, SessionInput]
+
+
+class FactorIdsAndType:
+    def __init__(
+        self,
+        factor_ids: List[str],
+        type: Union[Literal["string"], Literal["oneOf"], Literal["allOfInAnyOrder"]],
+    ):
+        self.factor_ids = factor_ids
+        self.type = type
