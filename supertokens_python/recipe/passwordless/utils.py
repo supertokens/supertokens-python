@@ -247,9 +247,12 @@ def validate_and_normalise_user_input(
     )
 
 
-def get_enabled_pwless_factors(config: ContactConfig, flow_type: Literal[
+def get_enabled_pwless_factors(
+    config: ContactConfig,
+    flow_type: Literal[
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
-]) -> List[str]:
+    ],
+) -> List[str]:
     all_factors: List[str] = []
 
     if flow_type == "MAGIC_LINK":

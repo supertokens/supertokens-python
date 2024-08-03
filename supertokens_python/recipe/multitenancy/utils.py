@@ -105,4 +105,3 @@ def validate_and_normalise_user_input(
         get_allowed_domains_for_tenant_id,
         OverrideConfig(override.functions, override.apis),
     )
-
