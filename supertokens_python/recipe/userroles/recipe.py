@@ -21,6 +21,7 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.session.interfaces import JSONObject
 from supertokens_python.recipe.userroles.recipe_implementation import (
     RecipeImplementation,
 )
@@ -151,7 +152,10 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
         default_max_age_in_sec = 300
 
         async def fetch_value(
-            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+            user_id: str,
+            tenant_id: str,
+            _current_payload: Optional[JSONObject],
+            user_context: Dict[str, Any],
         ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
 
@@ -186,7 +190,10 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
         default_max_age_in_sec = 300
 
         async def fetch_value(
-            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+            user_id: str,
+            tenant_id: str,
+            _current_payload: Optional[JSONObject],
+            user_context: Dict[str, Any],
         ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
             res = await recipe.recipe_implementation.get_roles_for_user(

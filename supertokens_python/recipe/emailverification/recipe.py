@@ -303,7 +303,10 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
 class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
         async def fetch_value(
-            user_id: str, _tenant_id: str, user_context: Dict[str, Any]
+            user_id: str,
+            _tenant_id: str,
+            _current_payload: Optional[JSONObject],
+            user_context: Dict[str, Any],
         ) -> bool:
             recipe = EmailVerificationRecipe.get_instance()
             email_info = await recipe.get_email_for_user_id(user_id, user_context)

@@ -25,6 +25,7 @@ from typing import (
     TypeVar,
     Union,
 )
+
 from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
@@ -632,7 +633,7 @@ class SessionClaim(ABC, Generic[_T]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, str, Optional[JSONObject], Dict[str, Any]],
             MaybeAwaitable[Optional[_T]],
         ],
     ) -> None:

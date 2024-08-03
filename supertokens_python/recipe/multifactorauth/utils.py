@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Any, Awaitable, Coroutine, Dict, Optional, Tuple, Union
 
 from supertokens_python import get_user
 from supertokens_python.recipe.multifactorauth.types import FactorIds
@@ -6,11 +6,14 @@ from supertokens_python.recipe.multitenancy import Multitenancy
 from supertokens_python.recipe.multitenancy.utils import is_valid_first_factor
 from supertokens_python.recipe.session import Session, SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
+from supertokens_python.types import UserContext
 
 from .multi_factor_auth_claim import MultiFactorAuthClaim
 from .types import (
+    MFAClaimValue,
     MFARequirementList,
     NormalizedOverride,
+    SessionInputType,
     TypeInput,
     TypeNormalisedInput,
 )
@@ -46,10 +49,8 @@ def validate_and_normalise_user_input(
 
 
 async def update_and_get_mfa_related_info_in_session(
-    input: Union[dict[str, Union[UserId, str, dict]], dict[str, SessionContainer]],
-    updated_factor_id: Optional[str] = None,
-    user_context: dict = {},
-) -> dict[str, Union[MFAClaimValue["c"], MFARequirementList, bool]]:
+    input: SessionInputType,
+) -> Tuple[Dict[str, Optional[int]], MFARequirementList, bool]:
     session_recipe_user_id: UserId
     tenant_id: str
     access_token_payload: dict

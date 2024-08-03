@@ -1,4 +1,5 @@
 from typing import (
+    Any,
     Awaitable,
     Callable,
     Dict,
@@ -13,7 +14,12 @@ from typing import (
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.session.interfaces import JSONObject, SessionContainer
-from supertokens_python.types import GeneralErrorResponse, User, UserContext
+from supertokens_python.types import (
+    GeneralErrorResponse,
+    RecipeUserId,
+    User,
+    UserContext,
+)
 
 MFARequirementList: TypeAlias = List[
     Union[
@@ -166,3 +172,34 @@ class MFAClaimValue:
     def __init__(self, c: Dict[str, Union[int, None]], v: bool):
         self.c = c
         self.v = v
+
+
+class SessionRecipeUserIdInput:
+    def __init__(
+        self,
+        session_recipe_user_id: str,
+        tenant_id: str,
+        access_token_payload: Any,
+        user_context: Dict[str, Any],
+        updated_factor_id: Optional[str] = None,
+    ):
+        self.session_recipe_user_id = session_recipe_user_id
+        self.tenant_id = tenant_id
+        self.access_token_payload = access_token_payload
+        self.updated_factor_id = updated_factor_id
+        self.user_context = user_context
+
+
+class SessionInput:
+    def __init__(
+        self,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+        updated_factor_id: Optional[str] = None,
+    ):
+        self.session = session
+        self.updated_factor_id = updated_factor_id
+        self.user_context = user_context
+
+
+SessionInputType = Union[SessionRecipeUserIdInput, SessionInput]

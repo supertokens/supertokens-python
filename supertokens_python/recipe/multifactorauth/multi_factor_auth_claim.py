@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.session.interfaces import (
@@ -6,117 +8,162 @@ from supertokens_python.recipe.session.interfaces import (
     SessionClaim,
     SessionClaimValidator,
 )
-from supertokens_python.types import RecipeUserId
 
-from .types import MFAClaimValue, MFARequirementList
+from .types import MFAClaimValue, MFARequirementList, SessionRecipeUserIdInput
 from .utils import update_and_get_mfa_related_info_in_session
 
-# class IncludesSCV(SessionClaimValidator):
-#     async def validate(
-#         self,
-#         payload: JSONObject,
-#         user_context: Dict[str, Any],
-#     ):
-#         return await self._validate(payload, user_context, is_include=True)
 
+class HasCompletedRequirementListSCV(SessionClaimValidator):
+    def __init__(
+        self,
+        id_: str,
+        claim: MultiFactorAuthClaimClass,
+        mfa_claim_validators: MultiFactorAuthClaimValidators,
+        refetch_time_on_false_in_seconds: int,
+        max_age_in_seconds: Optional[int],
+    ):
+        super().__init__(id_)
+        self.claim = claim
+        self.mfa_claim_validators = mfa_claim_validators
+        self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
+        self.max_age_in_sec = max_age_in_seconds
 
-class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
-    def __init__(self, key: Optional[str] = None):
-        super().__init__(key or "st-mfa")
-        self.validators = {
-            "has_completed_mfa_requirements_for_auth": self._has_completed_mfa_requirements_for_auth,
-            "has_completed_requirement_list": self._has_completed_requirement_list,
-        }
-
-    def _has_completed_mfa_requirements_for_auth(
-        self, claim_key: Optional[str] = None
-    ) -> SessionClaimValidator:
-
-        return {
-            "claim": self,
-            "id": claim_key or self.key,
-            "should_refetch": lambda payload: self.get_value_from_payload(payload)
-            is None,
-            "validate": self._validate_mfa_requirements_for_auth,
-        }
-
-    async def _validate_mfa_requirements_for_auth(
-        self, payload: JSONObject
+    async def validate(
+        self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
-        claim_val = self.get_value_from_payload(payload)
-        if claim_val is None:
-            raise Exception(
-                "This should never happen, claim value not present in payload"
+        if (self.claim.key not in payload) or (not payload[self.claim.key]):
+            return ClaimValidationResult(
+                is_valid=False, reason={"message": "Claim value not present in payload"}
             )
 
-        v = claim_val["v"]
-        return ClaimValidationResult(
-            is_valid=v,
-            reason=None
-            if v
-            else {"message": "MFA requirement for auth is not satisfied"},
+        claim_val: MFAClaimValue = payload[self.claim.key]
+
+        completed_factors = claim_val.c
+        next_set_of_unsatisfied_factors = (
+            self.claim.get_next_set_of_unsatisfied_factors(
+                completed_factors, self.mfa_claim_validators.requirement_list
+            )
         )
 
-    def _has_completed_requirement_list(
-        self, requirement_list: MFARequirementList, claim_key: Optional[str] = None
-    ) -> SessionClaimValidator:
-        return {
-            "claim": self,
-            "id": claim_key or self.key,
-            "should_refetch": lambda payload: self.get_value_from_payload(payload)
-            is None,
-            "validate": lambda payload: self._validate_requirement_list(
-                payload, requirement_list
-            ),
-        }
-
-    async def _validate_requirement_list(
-        self, payload: JSONObject, requirement_list: MFARequirementList
-    ) -> ClaimValidationResult:
-        if not requirement_list:
+        if not next_set_of_unsatisfied_factors["factor_ids"]:
             return ClaimValidationResult(is_valid=True)
 
-        claim_val = self.get_value_from_payload(payload)
-        if claim_val is None:
-            raise Exception(
-                "This should never happen, claim value not present in payload"
-            )
+        factor_type = next_set_of_unsatisfied_factors["type"]
+        factor_ids = next_set_of_unsatisfied_factors["factor_ids"]
 
-        completed_factors = claim_val["c"]
-        next_unsatisfied_factors = self.get_next_set_of_unsatisfied_factors(
-            completed_factors, requirement_list
-        )
-
-        if not next_unsatisfied_factors["factor_ids"]:
-            return ClaimValidationResult(is_valid=True)
-
-        factor_type = next_unsatisfied_factors["type"]
-        factor_ids = next_unsatisfied_factors["factor_ids"]
-
-        if factor_type == "string":
+        if factor_type == "oneOf":
             return ClaimValidationResult(
                 is_valid=False,
-                reason={
-                    "message": f"Factor validation failed: {factor_ids[0]} not completed",
-                    "factor_id": factor_ids[0],
-                },
+                reason=f"None of these factors are complete in the session: {', '.join(factor_ids)}",
             )
-        elif factor_type == "oneOf":
+        elif factor_type == "allOfInAnyOrder":
             return ClaimValidationResult(
                 is_valid=False,
-                reason={
-                    "message": f"None of these factors are complete in the session: {', '.join(factor_ids)}",
-                    "one_of": factor_ids,
-                },
+                reason=f"Some of the factors are not complete in the session: {', '.join(factor_ids)}",
             )
         else:
             return ClaimValidationResult(
                 is_valid=False,
-                reason={
-                    "message": f"Some of the factors are not complete in the session: {', '.join(factor_ids)}",
-                    "all_of_in_any_order": factor_ids,
-                },
+                reason=f"Factor validation failed: {factor_ids[0]} not completed",
             )
+
+
+class HasCompletedRequirementListForAuthSCV(SessionClaimValidator):
+    def __init__(
+        self,
+        id_: str,
+        claim: MultiFactorAuthClaimClass,
+        mfa_claim_validators: MultiFactorAuthClaimValidators,
+        refetch_time_on_false_in_seconds: int,
+        max_age_in_seconds: Optional[int],
+    ):
+        super().__init__(id_)
+        self.claim = claim
+        self.mfa_claim_validators = mfa_claim_validators
+        self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
+        self.max_age_in_sec = max_age_in_seconds
+
+    async def validate(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -> ClaimValidationResult:
+        if not self.claim.key in payload:
+            return ClaimValidationResult(
+                is_valid=False, reason="Claim value not present in payload"
+            )
+
+        claim_val: MFAClaimValue = payload[self.claim.key]
+
+        if not claim_val:
+            return ClaimValidationResult(
+                is_valid=False, reason="Claim value not present in payload"
+            )
+
+        if not claim_val["v"]:
+            return ClaimValidationResult(
+                is_valid=False,
+                reason="MFA requirement for auth is not satisfied",
+            )
+
+        return ClaimValidationResult(is_valid=True)
+
+
+class MultiFactorAuthClaimValidators:
+    def __init__(self, claim: MultiFactorAuthClaimClass):
+        self.claim = claim
+
+    def has_completed_requirement_list(
+        self, requirement_list: MFARequirementList, claim_key: Optional[str] = None
+    ) -> SessionClaimValidator:
+        return HasCompletedRequirementListSCV(
+            id_=claim_key or self.claim.key,
+            claim=self.claim,
+            mfa_claim_validators=self,
+            refetch_time_on_false_in_seconds=0,
+            max_age_in_seconds=None,
+        )
+
+    def has_completed_mfa_requirements_for_auth(
+        self, claim_key: Optional[str] = None
+    ) -> SessionClaimValidator:
+
+        return HasCompletedRequirementListForAuthSCV(
+            id_=claim_key or self.claim.key,
+            claim=self.claim,
+            mfa_claim_validators=self,
+            refetch_time_on_false_in_seconds=0,
+            max_age_in_seconds=None,
+        )
+
+
+class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
+    def __init__(self, key: Optional[str] = None):
+        key = key or "st-mfa"
+
+        async def fetch_value(
+            recipe_user_id: str,
+            tenant_id: str,
+            current_payload: Optional[JSONObject],
+            user_context: Dict[str, Any],
+        ) -> MFAClaimValue:
+            (
+                completed_factors,
+                _,
+                is_mfa_requirements_for_auth_satisfied,
+            ) = await update_and_get_mfa_related_info_in_session(
+                input=SessionRecipeUserIdInput(
+                    session_recipe_user_id=recipe_user_id,
+                    tenant_id=tenant_id,
+                    access_token_payload=current_payload,
+                    user_context=user_context,
+                )
+            )
+            return MFAClaimValue(
+                c=completed_factors,
+                v=is_mfa_requirements_for_auth_satisfied,
+            )
+
+        super().__init__(key or "st-mfa", fetch_value=fetch_value)
+        self.validators = MultiFactorAuthClaimValidators(claim=self)
 
     def get_next_set_of_unsatisfied_factors(
         self, completed_factors: Dict[str, Any], requirement_list: MFARequirementList
@@ -154,29 +201,6 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
         return {
             "factor_ids": [],
             "type": "string",
-        }
-
-    async def fetch_value(
-        self,
-        user_id: str,
-        recipe_user_id: RecipeUserId,
-        tenant_id: str,
-        current_payload: Optional[JSONObject],
-        user_context: Dict[str, Any],
-    ) -> MFAClaimValue:
-        mfa_info = await update_and_get_mfa_related_info_in_session(
-            session_recipe_user_id=recipe_user_id,
-            tenant_id=tenant_id,
-            access_token_payload=current_payload,
-            user_context=user_context,
-        )
-        completed_factors, is_mfa_requirements_for_auth_satisfied = (
-            mfa_info["completed_factors"],
-            mfa_info["is_mfa_requirements_for_auth_satisfied"],
-        )
-        return {
-            "c": completed_factors,
-            "v": is_mfa_requirements_for_auth_satisfied,
         }
 
     def add_to_payload_internal(

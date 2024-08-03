@@ -1,15 +1,12 @@
-from typing import Dict, Any, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session.claims import (
-    BooleanClaim,
-    SessionClaim,
-)
+from supertokens_python.recipe.session.claims import BooleanClaim, SessionClaim
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 from tests.utils import st_init_common_args
 
-TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___: True)  # type: ignore
-NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___: None)  # type: ignore
+TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___, ____: True)  # type: ignore
+NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___, ____: None)  # type: ignore
 
 
 def session_functions_override_with_claim(

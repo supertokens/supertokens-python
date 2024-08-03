@@ -191,11 +191,3 @@ class GeneralErrorResponse(APIResponse):
 
 
 MaybeAwaitable = Union[Awaitable[_T], _T]
-
-
-class UserContext(Dict[str, Any]):
-    pass
-
-
-def brand_user_context(user_context: Dict[str, Any]) -> UserContext:
-    return UserContext(user_context)

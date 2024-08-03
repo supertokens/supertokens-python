@@ -20,35 +20,27 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.recipe.session.claim_base_classes.primitive_array_claim import (
     PrimitiveArrayClaim,
 )
+from supertokens_python.recipe.session.interfaces import JSONObject
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...post_init_callbacks import PostSTInitCallbacks
-
-from .interfaces import (
-    APIOptions,
-    TypeGetAllowedDomainsForTenantId,
-)
-
+from .interfaces import APIOptions, TypeGetAllowedDomainsForTenantId
 from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.supertokens import AppInfo
     from supertokens_python.recipe.thirdparty.provider import ProviderInput
+    from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multitenancy.api.implementation import APIImplementation
 
-
 from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
 from .exceptions import MultitenancyError
-from .utils import (
-    InputOverrideConfig,
-    validate_and_normalise_user_input,
-)
+from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 
 class MultitenancyRecipe(RecipeModule):
@@ -205,7 +197,10 @@ class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
         default_max_age_in_sec = 60 * 60
 
         async def fetch_value(
-            _: str, tenant_id: str, user_context: Dict[str, Any]
+            _: str,
+            tenant_id: str,
+            _current_payload: Optional[JSONObject],
+            user_context: Dict[str, Any],
         ) -> Optional[List[str]]:
             recipe = MultitenancyRecipe.get_instance()
 
