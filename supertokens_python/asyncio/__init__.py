@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python import Supertokens
 from supertokens_python.interfaces import (
@@ -24,8 +24,9 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.types import AccountLinkingUser
 
 
 async def get_users_oldest_first(
@@ -67,6 +68,14 @@ async def get_users_newest_first(
         include_recipe_ids=include_recipe_ids,
         query=query,
         user_context=user_context,
+    )
+
+
+async def get_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> Optional[AccountLinkingUser]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        user_id, user_context
     )
 
 

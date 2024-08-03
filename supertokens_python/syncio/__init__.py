@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
@@ -69,6 +69,11 @@ def get_users_newest_first(
             user_context,
         )
     )
+
+
+def get_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> Any:
+    from supertokens_python.asyncio import get_user
+    return sync(get_user(user_id, user_context))
 
 
 def get_user_count(
