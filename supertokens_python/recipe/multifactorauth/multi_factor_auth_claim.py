@@ -28,8 +28,7 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
-        # TDOD: fix type in SessionClaimValidator class with generic
-        self.claim: MultiFactorAuthClaimClass = claim  # type: ignore
+        self.claim: MultiFactorAuthClaimClass = claim
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
         self.requirement_list = requirement_list
