@@ -23,7 +23,6 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         self,
         id_: str,
         claim: MultiFactorAuthClaimClass,
-        mfa_claim_validators: MultiFactorAuthClaimValidators,
         requirement_list: MFARequirementList,
         refetch_time_on_false_in_seconds: int,
         max_age_in_seconds: Optional[int],
@@ -31,7 +30,6 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         super().__init__(id_)
         # TDOD: fix type in SessionClaimValidator class with generic
         self.claim: MultiFactorAuthClaimClass = claim  # type: ignore
-        self.mfa_claim_validators = mfa_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
         self.requirement_list = requirement_list
@@ -91,20 +89,18 @@ class HasCompletedRequirementListForAuthSCV(SessionClaimValidator):
         self,
         id_: str,
         claim: MultiFactorAuthClaimClass,
-        mfa_claim_validators: MultiFactorAuthClaimValidators,
         refetch_time_on_false_in_seconds: int,
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
         self.claim = claim
-        self.mfa_claim_validators = mfa_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
-        if not self.claim.key in payload:
+        if self.claim.key not in payload:
             return ClaimValidationResult(
                 is_valid=False, reason={"message": "Claim value not present in payload"}
             )
@@ -134,7 +130,6 @@ class MultiFactorAuthClaimValidators:
         return HasCompletedRequirementListSCV(
             id_=claim_key or self.claim.key,
             claim=self.claim,
-            mfa_claim_validators=self,
             refetch_time_on_false_in_seconds=0,
             max_age_in_seconds=None,
             requirement_list=requirement_list,
@@ -147,7 +142,6 @@ class MultiFactorAuthClaimValidators:
         return HasCompletedRequirementListForAuthSCV(
             id_=claim_key or self.claim.key,
             claim=self.claim,
-            mfa_claim_validators=self,
             refetch_time_on_false_in_seconds=0,
             max_age_in_seconds=None,
         )
