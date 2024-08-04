@@ -132,7 +132,7 @@ class PrimitiveClaim(SessionClaim[Primitive]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, str, Optional[JSONObject], Dict[str, Any]],
             MaybeAwaitable[Optional[Primitive]],
         ],
         default_max_age_in_sec: Optional[int] = None,

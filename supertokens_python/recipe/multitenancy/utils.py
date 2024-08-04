@@ -23,6 +23,7 @@ from supertokens_python.utils import (
 
 if TYPE_CHECKING:
     from typing import Union
+
     from .interfaces import (
         TypeGetAllowedDomainsForTenantId,
         RecipeInterface,

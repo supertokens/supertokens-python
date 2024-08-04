@@ -13,6 +13,7 @@
 # under the License.
 from typing import Any, Callable, Dict, Optional
 
+from supertokens_python.recipe.session.interfaces import JSONObject
 from supertokens_python.types import MaybeAwaitable
 
 from .primitive_claim import PrimitiveClaim, PrimitiveClaimValidators
@@ -31,7 +32,7 @@ class BooleanClaim(PrimitiveClaim[bool]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, str, Optional[JSONObject], Dict[str, Any]],
             MaybeAwaitable[Optional[bool]],
         ],
         default_max_age_in_sec: Optional[int] = None,
