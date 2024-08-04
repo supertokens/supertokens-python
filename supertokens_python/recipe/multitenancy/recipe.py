@@ -13,7 +13,6 @@
 # under the License.
 from __future__ import annotations
 
-from lib2to3.pgen2.token import OP
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 

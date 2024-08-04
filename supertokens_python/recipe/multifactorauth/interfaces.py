@@ -1,10 +1,14 @@
-from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, Optional, Union
+from __future__ import annotations
 
-from supertokens_python.recipe.multifactorauth.types import (
-    APIOptions,
-    MFARequirementList,
-)
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional, Union
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.multifactorauth.types import (
+        APIOptions,
+        MFARequirementList,
+    )
+
 from supertokens_python.recipe.session.interfaces import JSONObject, SessionContainer
 from supertokens_python.types import AccountLinkingUser
 
