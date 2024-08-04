@@ -32,7 +32,11 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
     async def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
-        return True if self.claim.key not in payload or not payload[self.claim.key] else False
+        return (
+            True
+            if self.claim.key not in payload or not payload[self.claim.key]
+            else False
+        )
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -100,8 +104,11 @@ class HasCompletedMFARequirementsForAuthSCV(SessionClaimValidator):
     async def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
-        return True if self.claim.key not in payload or not payload[self.claim.key] else False
-
+        return (
+            True
+            if self.claim.key not in payload or not payload[self.claim.key]
+            else False
+        )
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -228,7 +235,7 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
     def get_value_from_payload(
         self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> Optional[MFAClaimValue]:
-        return payload.get(self.key, {})
+        return payload.get(self.key)
 
 
 MultiFactorAuthClaim = MultiFactorAuthClaimClass()
