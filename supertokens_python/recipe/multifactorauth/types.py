@@ -5,14 +5,16 @@ from typing import (
     List,
     Literal,
     Optional,
-    Protocol,
     TypeAlias,
     TypedDict,
     Union,
 )
 
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.multifactorauth.interfaces import RecipeInterface
+from supertokens_python.recipe.multifactorauth.interfaces import (
+    APIInterface,
+    RecipeInterface,
+)
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.types import GeneralErrorResponse
 
@@ -33,16 +35,6 @@ class FactorIds:
     LINK_PHONE: str = "link-phone"
     THIRDPARTY: str = "thirdparty"
     TOTP: str = "totp"
-
-
-class APIInterface(Protocol):
-    def resync_session_and_fetch_mfa_info_put(
-        self,
-        options: "APIOptions",
-        session: SessionContainer,
-        user_context: Dict[str, Any],
-    ) -> Optional[Dict[str, object]]:
-        ...
 
 
 class APIOptions(TypedDict):

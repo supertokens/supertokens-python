@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
         ProviderConfig,
         ProviderInput,
     )
+
     from .utils import MultitenancyConfig
 
 
@@ -102,11 +103,13 @@ class TenantConfigResponse:
         passwordless: PasswordlessConfig,
         third_party: ThirdPartyConfig,
         core_config: Dict[str, Any],
+        required_secondary_factors: Optional[List[str]] = None,
     ):
         self.emailpassword = emailpassword
         self.passwordless = passwordless
         self.third_party = third_party
         self.core_config = core_config
+        self.required_secondary_factors = required_secondary_factors
 
 
 class GetTenantOkResult(TenantConfigResponse):

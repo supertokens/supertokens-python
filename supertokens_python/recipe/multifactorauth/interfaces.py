@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, Union
+from typing import Any, Awaitable, Dict, List, Protocol, Union
 
-from supertokens_python.recipe.multifactorauth.types import MFARequirementList
+from supertokens_python.recipe.multifactorauth.types import (
+    APIOptions,
+    MFARequirementList,
+)
 from supertokens_python.recipe.session.interfaces import JSONObject, SessionContainer
-from supertokens_python.types import AccountLinkingUser, User
+from supertokens_python.types import AccountLinkingUser
 
 
 class RecipeInterface(ABC):
@@ -64,3 +67,13 @@ class RecipeInterface(ABC):
         self, user_id: str, factor_id: str, user_context: Dict[str, Any]
     ) -> None:
         pass
+
+
+class APIInterface(Protocol):
+    def resync_session_and_fetch_mfa_info_put(
+        self,
+        options: "APIOptions",
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+    ) -> Optional[Dict[str, object]]:
+        ...

@@ -3,8 +3,11 @@ import time
 from typing import Any, Awaitable, Dict, List, Optional
 
 from supertokens_python.asyncio import get_user
+from supertokens_python.recipe.multifactorauth.recipe import (
+    MultiFactorAuthRecipe as Recipe,
+)
 from supertokens_python.recipe.multifactorauth.types import FactorIds
-from supertokens_python.recipe.multitenancy import Multitenancy
+from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.multitenancy.factrs import is_valid_first_factor
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
@@ -164,21 +167,25 @@ async def update_and_get_mfa_related_info_in_session(
 
     async def get_factors_setup_for_user() -> List[str]:
         user = await user_prom
-        return await Recipe.get_instance_or_throw_error().recipe_interface_impl.get_factors_setup_for_user(
+        return await Recipe.get_instance_or_throw_error().recipe_implementation.get_factors_setup_for_user(
             user=user, user_context=input.user_context
         )
 
     async def get_required_secondary_factors_for_user() -> List[str]:
         user = await user_prom
-        return await Recipe.get_instance_or_throw_error().recipe_interface_impl.get_required_secondary_factors_for_user(
+        return await Recipe.get_instance_or_throw_error().recipe_implementation.get_required_secondary_factors_for_user(
             user_id=user.id, user_context=input.user_context
         )
 
     async def get_required_secondary_factors_for_tenant() -> List[str]:
-        tenant_info = await Multitenancy.get_tenant(tenant_id, input.user_context)
-        return tenant_info["requiredSecondaryFactors"] if tenant_info else []
+        tenant_info = await get_tenant(tenant_id, input.user_context)
+        return (
+            tenant_info.required_secondary_factors
+            if tenant_info and tenant_info.required_secondary_factors
+            else []
+        )
 
-    mfa_requirements_for_auth: MFARequirementList = await Recipe.get_instance_or_throw_error().recipe_interface_impl.get_mfa_requirements_for_auth(
+    mfa_requirements_for_auth: MFARequirementList = await Recipe.get_instance_or_throw_error().recipe_implementation.get_mfa_requirements_for_auth(
         tenant_id=tenant_id,
         access_token_payload=access_token_payload,
         completed_factors=completed_factors,
