@@ -1,7 +1,7 @@
 aiosmtplib>=1.1.6,<4.0.0
 anyio==3.5.0
 asgiref==3.5.2
-astroid>2.9.3
+astroid==2.9.3
 attrs==21.4.0
 black==22.3.0
 certifi==2021.10.8
@@ -49,9 +49,9 @@ py==1.11.0
 pycodestyle==2.8.0
 pycparser==2.21
 pycryptodome==3.10.4
-pydantic==1.10.0
+pydantic==1.9.0
 PyJWT==2.6.0
-pylint==3.2.6
+pylint==2.12.2
 pyparsing==3.0.7
 pyright==1.1.236
 pyrsistent==0.18.1
@@ -83,5 +83,5 @@ tzdata==2021.5
 urllib3==1.26.9
 uvicorn==0.18.2
 Werkzeug==2.0.3
-wrapt==1.14.1
+wrapt==1.13.3
 zipp==3.7.0
