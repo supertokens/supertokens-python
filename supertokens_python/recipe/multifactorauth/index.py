@@ -21,23 +21,6 @@ from .recipe import MultiFactorAuth, Recipe
 from .utils import update_and_get_mfa_related_info_in_session
 
 
-class FactorIds(TypedDict):
-    EMAILPASSWORD: str
-    OTP_EMAIL: str
-    OTP_PHONE: str
-    TOTP: str
-    OAUTH: str
-
-
-FACTOR_IDS = FactorIds(
-    EMAILPASSWORD="emailpassword",
-    OTP_EMAIL="otp-email",
-    OTP_PHONE="otp-phone",
-    TOTP="totp",
-    OAUTH="oauth",
-)
-
-
 async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
     session: SessionContainer, factor_id: str, user_context: Dict[str, Any] = None
 ) -> None:

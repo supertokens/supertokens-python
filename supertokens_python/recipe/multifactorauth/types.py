@@ -208,3 +208,17 @@ class FactorIdsAndType:
     ):
         self.factor_ids = factor_ids
         self.type = type
+
+
+class MFARelatedInfoInSession:
+    def __init__(
+        self,
+        completed_factors: Dict[str, Union[int, None]],
+        mfa_requirements_for_auth: MFARequirementList,
+        is_mfa_requirements_for_auth_satisfied: bool,
+    ):
+        self.completed_factors = completed_factors
+        self.mfa_requirements_for_auth = mfa_requirements_for_auth
+        self.is_mfa_requirements_for_auth_satisfied = (
+            is_mfa_requirements_for_auth_satisfied
+        )

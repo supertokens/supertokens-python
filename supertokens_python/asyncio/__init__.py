@@ -71,7 +71,9 @@ async def get_users_newest_first(
     )
 
 
-async def get_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> Optional[AccountLinkingUser]:
+async def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -> Optional[AccountLinkingUser]:
     if user_context is None:
         user_context = {}
     return await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(

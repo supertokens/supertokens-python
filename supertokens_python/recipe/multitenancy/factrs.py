@@ -4,13 +4,16 @@ from typing import Any, Dict, List
 
 from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.recipe.multitenancy.types import TenantConfig
+from supertokens_python.recipe.multitenancy.types import (
+    TenantConfig,
+    ValidFirstFactorResponse,
+)
 from supertokens_python.utils import log_debug_message
 
 
 async def is_valid_first_factor(
     tenant_id: str, factor_id: str, user_context: Dict[str, Any]
-) -> Dict[str, str]:
+) -> ValidFirstFactorResponse:
     mt_recipe = MultitenancyRecipe.get_instance()
     if mt_recipe is None:
         raise Exception("Should never happen")
@@ -19,7 +22,7 @@ async def is_valid_first_factor(
         tenant_id=tenant_id, user_context=user_context
     )
     if tenant_info is None:
-        return {"status": "TENANT_NOT_FOUND_ERROR"}
+        return ValidFirstFactorResponse(status="TENANT_NOT_FOUND_ERROR")
 
     tenant_config: TenantConfig = {
         k: v for k, v in tenant_info.items() if k != "status"
@@ -48,9 +51,9 @@ async def is_valid_first_factor(
         first_factors=configured_first_factors,
         factor_id=factor_id,
     ):
-        return {"status": "OK"}
+        return ValidFirstFactorResponse(status="OK")
 
-    return {"status": "INVALID_FIRST_FACTOR_ERROR"}
+    return ValidFirstFactorResponse(status="INVALID_FIRST_FACTOR_ERROR")
 
 
 def is_factor_configured_for_tenant(
