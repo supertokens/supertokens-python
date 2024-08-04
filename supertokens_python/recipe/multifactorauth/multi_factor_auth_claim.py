@@ -29,13 +29,20 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         self.claim: MultiFactorAuthClaimClass = claim
         self.requirement_list = requirement_list
 
+    async def should_refetch(
+        self, payload: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> Awaitable[bool] | bool:
+        return super().should_refetch(payload, user_context)
+
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
+        if len(self.requirement_list) == 0:
+            return ClaimValidationResult(is_valid=True)  # no requirements to satisfy
 
         if (self.claim.key not in payload) or (not payload[self.claim.key]):
-            return ClaimValidationResult(
-                is_valid=False, reason={"message": "Claim value not present in payload"}
+            raise Exception(
+                "This should never happen, claim value not present in payload"
             )
 
         claim_val: MFAClaimValue = payload[self.claim.key]
@@ -47,8 +54,10 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
             )
         )
 
-        if not next_set_of_unsatisfied_factors.factor_ids:
-            return ClaimValidationResult(is_valid=True)
+        if len(next_set_of_unsatisfied_factors.factor_ids) == 0:
+            return ClaimValidationResult(
+                is_valid=True
+            )  # No item in the requirementList is left unsatisfied, hence is Valid
 
         factor_ids = next_set_of_unsatisfied_factors.factor_ids
 

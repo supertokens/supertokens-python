@@ -72,7 +72,9 @@ def get_users_newest_first(
     )
 
 
-def get_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> Optional[AccountLinkingUser]:
+def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -> Optional[AccountLinkingUser]:
     from supertokens_python.asyncio import get_user
 
     return sync(get_user(user_id, user_context))
