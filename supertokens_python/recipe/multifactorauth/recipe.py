@@ -22,6 +22,7 @@ from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.supertokens import AppInfo, Supertokens
 
 
+# TODO: Implement this fully
 class MultiFactorAuthRecipe(RecipeModule):
     recipe_id = "multifactorauth"
     __instance = None

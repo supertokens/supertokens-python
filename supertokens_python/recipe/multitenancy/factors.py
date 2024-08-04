@@ -3,11 +3,9 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 from supertokens_python.recipe.multifactorauth.types import FactorIds
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.recipe.multitenancy.types import (
-    TenantConfig,
-    ValidFirstFactorResponse,
-)
+from supertokens_python.recipe.multitenancy.types import ValidFirstFactorResponse
 from supertokens_python.utils import log_debug_message
 
 
@@ -65,7 +63,7 @@ def is_factor_configured_for_tenant(
     configured_first_factors = [
         f
         for f in first_factors
-        if f in all_available_first_factors or f not in FactorIds.__members__.values()
+        if f in all_available_first_factors or f not in FactorIds.__dict__.values()
     ]
 
     return factor_id in configured_first_factors

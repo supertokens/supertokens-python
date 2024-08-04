@@ -103,7 +103,7 @@ class TypeNormalisedInput:
 
 
 class MFAClaimValue:
-    def __init__(self, c: Dict[str, Union[int, None]], v: bool):
+    def __init__(self, c: Dict[str, int], v: bool):
         self.c = c
         self.v = v
 
@@ -152,7 +152,7 @@ class FactorIdsAndType:
 class MFARelatedInfoInSession:
     def __init__(
         self,
-        completed_factors: Dict[str, Union[int, None]],
+        completed_factors: Dict[str, int],
         mfa_requirements_for_auth: MFARequirementList,
         is_mfa_requirements_for_auth_satisfied: bool,
     ):
