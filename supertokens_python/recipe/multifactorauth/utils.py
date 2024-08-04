@@ -1,5 +1,6 @@
+import asyncio
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Awaitable, Dict, List, Optional
 
 from supertokens_python.asyncio import get_user
 from supertokens_python.recipe.multifactorauth.types import FactorIds
@@ -153,36 +154,42 @@ async def update_and_get_mfa_related_info_in_session(
 
     completed_factors = mfa_claim_value.c
 
-    user_prom = Optional[AccountLinkingUser]
-
-    async def user_getter():
-        user_prom = await get_user(session_recipe_user_id, input.user_context)
-        if user_prom is None:
+    async def get_user_or_raise() -> AccountLinkingUser:
+        user = await get_user(session_recipe_user_id, input.user_context)
+        if user is None:
             raise UnauthorisedError("Session user not found")
-        return user_prom
+        return user
+
+    user_prom: Awaitable[AccountLinkingUser] = asyncio.create_task(get_user_or_raise())
+
+    async def get_factors_setup_for_user() -> List[str]:
+        user = await user_prom
+        return await Recipe.get_instance_or_throw_error().recipe_interface_impl.get_factors_setup_for_user(
+            user=user, user_context=input.user_context
+        )
+
+    async def get_required_secondary_factors_for_user() -> List[str]:
+        user = await user_prom
+        return await Recipe.get_instance_or_throw_error().recipe_interface_impl.get_required_secondary_factors_for_user(
+            user_id=user.id, user_context=input.user_context
+        )
+
+    async def get_required_secondary_factors_for_tenant() -> List[str]:
+        tenant_info = await Multitenancy.get_tenant(tenant_id, input.user_context)
+        return tenant_info["requiredSecondaryFactors"] if tenant_info else []
 
     mfa_requirements_for_auth: MFARequirementList = await Recipe.get_instance_or_throw_error().recipe_interface_impl.get_mfa_requirements_for_auth(
-        access_token_payload=access_token_payload,
         tenant_id=tenant_id,
-        user=user_getter,
-        factors_set_up_for_user=lambda: user_getter().then(
-            lambda user: Recipe.get_instance_or_throw_error().recipe_interface_impl.get_factors_setup_for_user(
-                user=user, user_context=input.user_context
-            )
-        ),
-        required_secondary_factors_for_user=lambda: user_getter().then(
-            lambda user: Recipe.get_instance_or_throw_error().recipe_interface_impl.get_required_secondary_factors_for_user(
-                user_id=user["id"], user_context=input.user_context
-            )
-        ),
-        required_secondary_factors_for_tenant=lambda: Multitenancy.get_tenant(
-            tenant_id, input.user_context
-        ).then(
-            lambda tenant_info: tenant_info["requiredSecondaryFactors"]
-            if tenant_info
-            else []
-        ),
+        access_token_payload=access_token_payload,
         completed_factors=completed_factors,
+        user=user_prom,
+        factors_set_up_for_user=asyncio.create_task(get_factors_setup_for_user()),
+        required_secondary_factors_for_user=asyncio.create_task(
+            get_required_secondary_factors_for_user()
+        ),
+        required_secondary_factors_for_tenant=asyncio.create_task(
+            get_required_secondary_factors_for_tenant()
+        ),
         user_context=input.user_context,
     )
 
