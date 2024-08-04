@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, Protocol, Union
+from typing import Any, Awaitable, Dict, List, Optional, Union
 
 from supertokens_python.recipe.multifactorauth.types import (
     APIOptions,
@@ -69,11 +69,12 @@ class RecipeInterface(ABC):
         pass
 
 
-class APIInterface(Protocol):
+class APIInterface(ABC):
+    @abstractmethod
     def resync_session_and_fetch_mfa_info_put(
         self,
-        options: "APIOptions",
+        options: APIOptions,
         session: SessionContainer,
         user_context: Dict[str, Any],
     ) -> Optional[Dict[str, object]]:
-        ...
+        pass
