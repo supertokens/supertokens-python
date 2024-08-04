@@ -24,12 +24,10 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         id_: str,
         claim: MultiFactorAuthClaimClass,
         requirement_list: MFARequirementList,
-        refetch_time_on_false_in_seconds: int,
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
         self.claim: MultiFactorAuthClaimClass = claim
-        self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
         self.requirement_list = requirement_list
 
@@ -88,12 +86,10 @@ class HasCompletedRequirementListForAuthSCV(SessionClaimValidator):
         self,
         id_: str,
         claim: MultiFactorAuthClaimClass,
-        refetch_time_on_false_in_seconds: int,
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
         self.claim = claim
-        self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
 
     async def validate(
@@ -129,7 +125,6 @@ class MultiFactorAuthClaimValidators:
         return HasCompletedRequirementListSCV(
             id_=claim_key or self.claim.key,
             claim=self.claim,
-            refetch_time_on_false_in_seconds=0,
             max_age_in_seconds=None,
             requirement_list=requirement_list,
         )
@@ -141,7 +136,6 @@ class MultiFactorAuthClaimValidators:
         return HasCompletedRequirementListForAuthSCV(
             id_=claim_key or self.claim.key,
             claim=self.claim,
-            refetch_time_on_false_in_seconds=0,
             max_age_in_seconds=None,
         )
 
