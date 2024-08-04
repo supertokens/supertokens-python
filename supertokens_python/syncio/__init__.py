@@ -25,6 +25,7 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
+from supertokens_python.types import AccountLinkingUser
 
 
 def get_users_oldest_first(
@@ -71,7 +72,7 @@ def get_users_newest_first(
     )
 
 
-def get_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> Any:
+def get_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> Optional[AccountLinkingUser]:
     from supertokens_python.asyncio import get_user
 
     return sync(get_user(user_id, user_context))
