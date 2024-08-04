@@ -97,6 +97,12 @@ class HasCompletedMFARequirementsForAuthSCV(SessionClaimValidator):
         super().__init__(id_)
         self.claim = claim
 
+    async def should_refetch(
+        self, payload: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> Awaitable[bool] | bool:
+        return super().should_refetch(payload, user_context)
+
+
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
@@ -149,11 +155,7 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
             current_payload: Optional[JSONObject],
             user_context: Dict[str, Any],
         ) -> MFAClaimValue:
-            (
-                completed_factors,
-                _,
-                is_mfa_requirements_for_auth_satisfied,
-            ) = await update_and_get_mfa_related_info_in_session(
+            mfa_info = await update_and_get_mfa_related_info_in_session(
                 input=SessionRecipeUserIdInput(
                     session_recipe_user_id=recipe_user_id,
                     tenant_id=tenant_id,
@@ -162,8 +164,8 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
                 )
             )
             return MFAClaimValue(
-                c=completed_factors,
-                v=is_mfa_requirements_for_auth_satisfied,
+                c=mfa_info.completed_factors,
+                v=mfa_info.is_mfa_requirements_for_auth_satisfied,
             )
 
         super().__init__(key or "st-mfa", fetch_value=fetch_value)
