@@ -211,8 +211,11 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
 
         return FactorIdsAndType(factor_ids=[], type="string")
 
-    def add_to_payload_internal(
-        self, payload: JSONObject, value: MFAClaimValue
+    def add_to_payload_(
+        self,
+        payload: JSONObject,
+        value: MFAClaimValue,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> JSONObject:
         prev_value = payload.get(self.key, {})
         return {
@@ -229,8 +232,11 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
         del payload[self.key]
         return payload
 
-    def remove_from_payload_by_merge_internal(self) -> JSONObject:
-        return {self.key: None}
+    def remove_from_payload_by_merge_(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -> JSONObject:
+        payload[self.key] = None
+        return payload
 
     def get_value_from_payload(
         self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
