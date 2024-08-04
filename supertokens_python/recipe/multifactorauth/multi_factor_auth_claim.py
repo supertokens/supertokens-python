@@ -150,6 +150,7 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
         key = key or "st-mfa"
 
         async def fetch_value(
+            # TODO: Add first value as user_id
             recipe_user_id: str,
             tenant_id: str,
             current_payload: Optional[JSONObject],
@@ -172,7 +173,7 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
         self.validators = MultiFactorAuthClaimValidators(claim=self)
 
     def get_next_set_of_unsatisfied_factors(
-        self, completed_factors: Dict[str, Any], requirement_list: MFARequirementList
+        self, completed_factors: Dict[str, int], requirement_list: MFARequirementList
     ) -> FactorIdsAndType:
         for req in requirement_list:
             next_factors: Set[str] = set()
@@ -198,7 +199,7 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
                         if factor_id not in completed_factors
                     )
 
-            if next_factors:
+            if len(next_factors) > 0:
                 return FactorIdsAndType(factor_ids=list(next_factors), type=factor_type)
 
         return FactorIdsAndType(factor_ids=[], type="string")
