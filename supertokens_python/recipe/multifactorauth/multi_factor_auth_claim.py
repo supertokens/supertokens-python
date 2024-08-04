@@ -88,7 +88,7 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
             )
 
 
-class HasCompletedRequirementListForAuthSCV(SessionClaimValidator):
+class HasCompletedMFARequirementsForAuthSCV(SessionClaimValidator):
     def __init__(
         self,
         id_: str,
@@ -100,24 +100,20 @@ class HasCompletedRequirementListForAuthSCV(SessionClaimValidator):
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
-        if self.claim.key not in payload:
-            return ClaimValidationResult(
-                is_valid=False, reason={"message": "Claim value not present in payload"}
+        if self.claim.key not in payload or not payload[self.claim.key]:
+            raise Exception(
+                "This should never happen, claim value not present in payload"
             )
-
         claim_val: MFAClaimValue = payload[self.claim.key]
 
-        if not claim_val.v:
-            return ClaimValidationResult(
-                is_valid=claim_val.v,
-                reason={
-                    "message": "MFA requirement for auth is not satisfied",
-                }
-                if not claim_val.v
-                else None,
-            )
-
-        return ClaimValidationResult(is_valid=True)
+        return ClaimValidationResult(
+            is_valid=claim_val.v,
+            reason={
+                "message": "MFA requirement for auth is not satisfied",
+            }
+            if not claim_val.v
+            else None,
+        )
 
 
 class MultiFactorAuthClaimValidators:
@@ -137,7 +133,7 @@ class MultiFactorAuthClaimValidators:
         self, claim_key: Optional[str] = None
     ) -> SessionClaimValidator:
 
-        return HasCompletedRequirementListForAuthSCV(
+        return HasCompletedMFARequirementsForAuthSCV(
             id_=claim_key or self.claim.key,
             claim=self.claim,
         )
