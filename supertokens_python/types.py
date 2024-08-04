@@ -14,11 +14,9 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Awaitable, Dict, List, TypeVar, Union
-
-import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse  # type: ignore
+import phonenumbers  # type: ignore
 
-T = TypeVar("T")
 _T = TypeVar("_T")
 
 
