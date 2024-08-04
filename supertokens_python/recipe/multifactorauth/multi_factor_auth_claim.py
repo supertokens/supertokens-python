@@ -31,8 +31,8 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
 
     async def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
-    ) -> Awaitable[bool] | bool:
-        return super().should_refetch(payload, user_context)
+    ) -> bool:
+        return True if self.claim.key not in payload or not payload[self.claim.key] else False
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -99,8 +99,8 @@ class HasCompletedMFARequirementsForAuthSCV(SessionClaimValidator):
 
     async def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
-    ) -> Awaitable[bool] | bool:
-        return super().should_refetch(payload, user_context)
+    ) -> bool:
+        return True if self.claim.key not in payload or not payload[self.claim.key] else False
 
 
     async def validate(
