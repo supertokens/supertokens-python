@@ -8,7 +8,7 @@ from supertokens_python.recipe.multifactorauth.recipe import (
 )
 from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
-from supertokens_python.recipe.multitenancy.factrs import is_valid_first_factor
+from supertokens_python.recipe.multitenancy.factors import is_valid_first_factor
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import AccountLinkingUser

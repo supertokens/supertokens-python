@@ -13,6 +13,7 @@
 # under the License.
 from __future__ import annotations
 
+from lib2to3.pgen2.token import OP
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
@@ -84,6 +85,8 @@ class MultitenancyRecipe(RecipeModule):
         )
 
         RecipeModule.get_tenant_id = recipe_implementation.get_tenant_id
+        self.static_first_factors: Optional[List[str]] = None
+        self.all_available_first_factors: List[str] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, MultitenancyError)
