@@ -119,7 +119,8 @@ disable=raw-checker-failed,
         too-many-return-statements,
         logging-not-lazy,
         logging-fstring-interpolation,
-        consider-using-f-string
+        consider-using-f-string,
+        consider-using-in
 
 
 # Enable the message, report, category or checker with the given id(s). You can

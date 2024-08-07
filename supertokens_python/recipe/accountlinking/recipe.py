@@ -63,6 +63,14 @@ class EmailChangeAllowedResult:
         self.reason = reason
 
 
+class TryLinkingByAccountInfoOrCreatePrimaryUserResult:
+    def __init__(
+        self, status: Literal["OK", "NO_LINK"], user: Optional[AccountLinkingUser]
+    ):
+        self.status = status
+        self.user = user
+
+
 class AccountLinkingRecipe(RecipeModule):
     recipe_id = "accountlinking"
     __instance = None
@@ -726,3 +734,301 @@ class AccountLinkingRecipe(RecipeModule):
                             # attempt_account_linking=False,
                             user_context=user_context,
                         )
+
+    async def should_become_primary_user(
+        self,
+        user: AccountLinkingUser,
+        tenant_id: str,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        should_do_account_linking = (
+            await self.config.should_do_automatic_account_linking(
+                AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                    user.login_methods[0]
+                ),
+                None,
+                session,
+                tenant_id,
+                user_context,
+            )
+        )
+
+        if isinstance(should_do_account_linking, ShouldNotAutomaticallyLink):
+            log_debug_message(
+                "should_become_primary_user returning false because shouldAutomaticallyLink is false"
+            )
+            return False
+
+        if (
+            should_do_account_linking.should_require_verification
+            and not user.login_methods[0].verified
+        ):
+            log_debug_message(
+                "should_become_primary_user returning false because shouldRequireVerification is true but the login method is not verified"
+            )
+            return False
+
+        log_debug_message("should_become_primary_user returning true")
+        return True
+
+    async def try_linking_by_account_info_or_create_primary_user(
+        self,
+        input_user: AccountLinkingUser,
+        session: Optional[SessionContainer],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> TryLinkingByAccountInfoOrCreatePrimaryUserResult:
+        tries = 0
+        while tries < 100:
+            tries += 1
+            primary_user_that_can_be_linked_to_the_input_user = (
+                await self.get_primary_user_that_can_be_linked_to_recipe_user_id(
+                    tenant_id=tenant_id,
+                    user=input_user,
+                    user_context=user_context,
+                )
+            )
+            if primary_user_that_can_be_linked_to_the_input_user is not None:
+                log_debug_message(
+                    "try_linking_by_account_info_or_create_primary_user: got primary user we can try linking"
+                )
+                # we check if the input_user and primary_user_that_can_be_linked_to_the_input_user are linked based on recipeIds because the input_user obj could be outdated
+                if not any(
+                    lm.recipe_user_id.get_as_string()
+                    == input_user.login_methods[0].recipe_user_id.get_as_string()
+                    for lm in primary_user_that_can_be_linked_to_the_input_user.login_methods
+                ):
+                    should_do_account_linking = await self.config.should_do_automatic_account_linking(
+                        AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                            input_user.login_methods[0]
+                        ),
+                        primary_user_that_can_be_linked_to_the_input_user,
+                        session,
+                        tenant_id,
+                        user_context,
+                    )
+
+                    if isinstance(
+                        should_do_account_linking, ShouldNotAutomaticallyLink
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user: not linking because shouldAutomaticallyLink is false"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="NO_LINK", user=None
+                        )
+
+                    account_info_verified_in_prim_user = any(
+                        (
+                            input_user.login_methods[0].email is not None
+                            and lm.has_same_email_as(input_user.login_methods[0].email)
+                        )
+                        or (
+                            input_user.login_methods[0].phone_number is not None
+                            and lm.has_same_phone_number_as(
+                                input_user.login_methods[0].phone_number
+                            )
+                            and lm.verified
+                        )
+                        for lm in primary_user_that_can_be_linked_to_the_input_user.login_methods
+                    )
+                    if should_do_account_linking.should_require_verification and (
+                        not input_user.login_methods[0].verified
+                        or not account_info_verified_in_prim_user
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified in the new or the primary user"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="NO_LINK", user=None
+                        )
+
+                    log_debug_message(
+                        "try_linking_by_account_info_or_create_primary_user linking"
+                    )
+                    link_accounts_result = await self.recipe_implementation.link_accounts(
+                        recipe_user_id=input_user.login_methods[0].recipe_user_id,
+                        primary_user_id=primary_user_that_can_be_linked_to_the_input_user.id,
+                        user_context=user_context,
+                    )
+
+                    # pylint:disable=no-else-return
+                    if link_accounts_result.status == "OK":
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user successfully linked"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="OK", user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user already linked to another user"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="OK", user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == "INPUT_USER_IS_NOT_A_PRIMARY_USER"
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user linking failed because of a race condition"
+                        )
+                        continue
+                    else:
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user linking failed because of a race condition"
+                        )
+                        continue
+                return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                    status="OK", user=input_user
+                )
+
+            oldest_user_that_can_be_linked_to_the_input_user = (
+                await self.get_oldest_user_that_can_be_linked_to_recipe_user(
+                    tenant_id=tenant_id,
+                    user=input_user,
+                    user_context=user_context,
+                )
+            )
+            if (
+                oldest_user_that_can_be_linked_to_the_input_user is not None
+                and oldest_user_that_can_be_linked_to_the_input_user.id != input_user.id
+            ):
+                log_debug_message(
+                    "try_linking_by_account_info_or_create_primary_user: got an older user we can try linking"
+                )
+                should_make_older_user_primary = await self.should_become_primary_user(
+                    oldest_user_that_can_be_linked_to_the_input_user,
+                    tenant_id,
+                    session,
+                    user_context,
+                )
+                if should_make_older_user_primary:
+                    create_primary_user_result = await self.recipe_implementation.create_primary_user(
+                        recipe_user_id=oldest_user_that_can_be_linked_to_the_input_user.login_methods[
+                            0
+                        ].recipe_user_id,
+                        user_context=user_context,
+                    )
+                    if (
+                        create_primary_user_result.status
+                        == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        or create_primary_user_result.status
+                        == "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+                    ):
+                        log_debug_message(
+                            f"try_linking_by_account_info_or_create_primary_user: retrying because createPrimaryUser returned {create_primary_user_result.status}"
+                        )
+                        continue
+                    should_do_account_linking = await self.config.should_do_automatic_account_linking(
+                        AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                            input_user.login_methods[0]
+                        ),
+                        create_primary_user_result.user,
+                        session,
+                        tenant_id,
+                        user_context,
+                    )
+
+                    if isinstance(
+                        should_do_account_linking, ShouldNotAutomaticallyLink
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user: not linking because shouldAutomaticallyLink is false"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="NO_LINK", user=None
+                        )
+
+                    if (
+                        should_do_account_linking.should_require_verification
+                        and not input_user.login_methods[0].verified
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="NO_LINK", user=None
+                        )
+
+                    log_debug_message(
+                        "try_linking_by_account_info_or_create_primary_user linking"
+                    )
+                    link_accounts_result = (
+                        await self.recipe_implementation.link_accounts(
+                            recipe_user_id=input_user.login_methods[0].recipe_user_id,
+                            primary_user_id=create_primary_user_result.user.id,
+                            user_context=user_context,
+                        )
+                    )
+
+                    # pylint:disable=no-else-return
+                    if link_accounts_result.status == "OK":
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user successfully linked"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="OK", user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user already linked to another user"
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status="OK", user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == "INPUT_USER_IS_NOT_A_PRIMARY_USER"
+                    ):
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user linking failed because of a race condition"
+                        )
+                        continue
+                    else:
+                        log_debug_message(
+                            "try_linking_by_account_info_or_create_primary_user linking failed because of a race condition"
+                        )
+                        continue
+
+            log_debug_message(
+                "try_linking_by_account_info_or_create_primary_user: trying to make the current user primary"
+            )
+            # pylint:disable=no-else-return
+            if await self.should_become_primary_user(
+                input_user, tenant_id, session, user_context
+            ):
+                create_primary_user_result = (
+                    await self.recipe_implementation.create_primary_user(
+                        recipe_user_id=input_user.login_methods[0].recipe_user_id,
+                        user_context=user_context,
+                    )
+                )
+
+                if (
+                    create_primary_user_result.status
+                    == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    or create_primary_user_result.status
+                    == "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+                ):
+                    continue
+                return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                    status="OK",
+                    user=create_primary_user_result.user,
+                )
+            else:
+                return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                    status="OK", user=input_user
+                )
+
+        raise Exception(
+            "This should never happen: ran out of retries for try_linking_by_account_info_or_create_primary_user"
+        )
