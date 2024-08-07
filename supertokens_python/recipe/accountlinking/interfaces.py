@@ -24,8 +24,6 @@ if TYPE_CHECKING:
         ThirdPartyInfo,
     )
 
-from typing import Optional
-
 
 class AccountInfo:
     def __init__(

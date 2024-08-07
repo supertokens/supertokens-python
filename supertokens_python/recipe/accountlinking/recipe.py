@@ -14,13 +14,15 @@
 from __future__ import annotations
 
 from os import environ
-from typing import Any, Dict, List, Union, TYPE_CHECKING, Optional, Callable
+from typing import Any, Dict, List, Union, TYPE_CHECKING, Optional, Callable, Awaitable
 from supertokens_python.supertokens import Supertokens
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-
+from .utils import validate_and_normalise_user_input
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from .recipe_implementation import RecipeImplementation
+from supertokens_python.querier import Querier
 
 from .types import (
     RecipeLevelUser,
@@ -48,7 +50,9 @@ class AccountLinkingRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         on_account_linked: Optional[
-            Callable[[AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], None]
+            Callable[
+                [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+            ]
         ] = None,
         should_do_automatic_account_linking: Optional[
             Callable[
@@ -59,14 +63,24 @@ class AccountLinkingRecipe(RecipeModule):
                     str,
                     Dict[str, Any],
                 ],
-                Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink],
+                Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
             ]
         ] = None,
         override: Optional[InputOverrideConfig] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.recipe_implementation: RecipeInterface
-        raise Exception("TODO: to implement")
+        self.config = validate_and_normalise_user_input(
+            app_info, on_account_linked, should_do_automatic_account_linking, override
+        )
+        recipe_implementation: RecipeInterface = RecipeImplementation(
+            Querier.get_instance(recipe_id)
+        )
+
+        self.recipe_implementation = (
+            recipe_implementation
+            if self.config.override.functions is None
+            else self.config.override.functions(recipe_implementation)
+        )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return False
@@ -101,7 +115,9 @@ class AccountLinkingRecipe(RecipeModule):
     @staticmethod
     def init(
         on_account_linked: Optional[
-            Callable[[AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], None]
+            Callable[
+                [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+            ]
         ] = None,
         should_do_automatic_account_linking: Optional[
             Callable[
@@ -112,7 +128,7 @@ class AccountLinkingRecipe(RecipeModule):
                     str,
                     Dict[str, Any],
                 ],
-                Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink],
+                Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
             ]
         ] = None,
         override: Optional[InputOverrideConfig] = None,

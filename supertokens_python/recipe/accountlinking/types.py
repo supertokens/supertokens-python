@@ -13,7 +13,7 @@
 # under the License.
 
 from __future__ import annotations
-from typing import Callable, Dict, Any, Union, Optional, List, TYPE_CHECKING
+from typing import Callable, Dict, Any, Union, Optional, List, TYPE_CHECKING, Awaitable
 from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
     AccountInfo,
@@ -105,7 +105,7 @@ class AccountLinkingConfig:
     def __init__(
         self,
         on_account_linked: Callable[
-            [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], None
+            [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
         ],
         should_do_automatic_account_linking: Callable[
             [
@@ -115,7 +115,7 @@ class AccountLinkingConfig:
                 str,
                 Dict[str, Any],
             ],
-            Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink],
+            Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
         ],
         override: OverrideConfig,
     ):
