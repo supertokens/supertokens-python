@@ -25,6 +25,7 @@ if TYPE_CHECKING:
         RecipeUserId,
         ThirdPartyInfo,
         AccountLinkingUser,
+        LoginMethod,
     )
     from supertokens_python.recipe.session import SessionContainer
 
@@ -38,7 +39,9 @@ class AccountInfoWithRecipeId(AccountInfo):
         third_party: Optional[ThirdPartyInfo] = None,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id = recipe_id
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless"
+        ] = recipe_id
 
 
 class RecipeLevelUser(AccountInfoWithRecipeId):
@@ -54,34 +57,47 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         super().__init__(recipe_id, email, phone_number, third_party)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id = recipe_id
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless"
+        ] = recipe_id
 
 
-class AccountInfoWithRecipeIdAndUserId(RecipeLevelUser):
+class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
     def __init__(
         self,
         recipe_user_id: Optional[RecipeUserId],
-        tenant_ids: List[str],
-        time_joined: int,
         recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
     ):
-        super().__init__(
-            tenant_ids, time_joined, recipe_id, email, phone_number, third_party
-        )
+        super().__init__(recipe_id, email, phone_number, third_party)
         self.recipe_user_id = recipe_user_id
+
+    @staticmethod
+    def from_account_info_or_login_method(
+        account_info: Union[AccountInfoWithRecipeId, LoginMethod],
+    ) -> AccountInfoWithRecipeIdAndUserId:
+        return AccountInfoWithRecipeIdAndUserId(
+            recipe_id=account_info.recipe_id,
+            email=account_info.email,
+            phone_number=account_info.phone_number,
+            third_party=account_info.third_party,
+            recipe_user_id=(
+                account_info.recipe_user_id
+                if isinstance(account_info, LoginMethod)
+                else None
+            ),
+        )
 
 
 class ShouldNotAutomaticallyLink:
     def __init__(self):
-        self.should_automatically_link = False
+        pass
 
 
 class ShouldAutomaticallyLink:
     def __init__(self, should_require_verification: bool):
-        self.should_automatically_link = True
         self.should_require_verification = should_require_verification
 
 

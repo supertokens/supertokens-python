@@ -241,7 +241,7 @@ class EmailVerificationRecipe(RecipeModule):
         return func
 
     @staticmethod
-    def get_instance() -> EmailVerificationRecipe:
+    def get_instance_or_throw() -> EmailVerificationRecipe:
         if EmailVerificationRecipe.__instance is not None:
             return EmailVerificationRecipe.__instance
         raise_general_exception(
@@ -305,7 +305,7 @@ class EmailVerificationClaimClass(BooleanClaim):
         async def fetch_value(
             user_id: str, _tenant_id: str, user_context: Dict[str, Any]
         ) -> bool:
-            recipe = EmailVerificationRecipe.get_instance()
+            recipe = EmailVerificationRecipe.get_instance_or_throw()
             email_info = await recipe.get_email_for_user_id(user_id, user_context)
 
             if isinstance(email_info, GetEmailForUserIdOkResult):
@@ -395,8 +395,10 @@ class APIImplementation(APIInterface):
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
     ]:
         user_id = session.get_user_id(user_context)
-        email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
-            user_id, user_context
+        email_info = (
+            await EmailVerificationRecipe.get_instance_or_throw().get_email_for_user_id(
+                user_id, user_context
+            )
         )
         tenant_id = session.get_tenant_id()
 

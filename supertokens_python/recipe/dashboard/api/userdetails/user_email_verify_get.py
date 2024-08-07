@@ -24,7 +24,7 @@ async def handle_user_email_verify_get(
         raise_bad_input_exception("Missing required parameter 'userId'")
 
     try:
-        EmailVerificationRecipe.get_instance()
+        EmailVerificationRecipe.get_instance_or_throw()
     except Exception:
         return FeatureNotEnabledError()
 

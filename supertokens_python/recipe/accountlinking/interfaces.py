@@ -21,20 +21,8 @@ if TYPE_CHECKING:
     from supertokens_python.types import (
         AccountLinkingUser,
         RecipeUserId,
-        ThirdPartyInfo,
+        AccountInfo,
     )
-
-
-class AccountInfo:
-    def __init__(
-        self,
-        email: Optional[str] = None,
-        phone_number: Optional[str] = None,
-        third_party: Optional[ThirdPartyInfo] = None,
-    ):
-        self.email = email
-        self.phone_number = phone_number
-        self.third_party = third_party
 
 
 class RecipeInterface(ABC):

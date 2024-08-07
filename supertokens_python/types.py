@@ -13,9 +13,10 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, TypeVar, Union
+from typing import Any, Awaitable, Dict, List, TypeVar, Union, Optional
 from phonenumbers import format_number, parse  # type: ignore
 import phonenumbers  # type: ignore
+from typing_extensions import Literal
 
 _T = TypeVar("_T")
 
@@ -27,6 +28,11 @@ class RecipeUserId:
     def get_as_string(self) -> str:
         return self.recipe_user_id
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, RecipeUserId):
+            return self.recipe_user_id == other.recipe_user_id
+        return False
+
 
 class ThirdPartyInfo:
     def __init__(self, third_party_id: str, third_party_user_id: str):
@@ -34,10 +40,22 @@ class ThirdPartyInfo:
         self.user_id = third_party_user_id
 
 
-class LoginMethod:
+class AccountInfo:
     def __init__(
         self,
-        recipe_id: str,
+        email: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        third_party: Optional[ThirdPartyInfo] = None,
+    ):
+        self.email = email
+        self.phone_number = phone_number
+        self.third_party = third_party
+
+
+class LoginMethod(AccountInfo):
+    def __init__(
+        self,
+        recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
         recipe_user_id: str,
         tenant_ids: List[str],
         email: Union[str, None],
@@ -46,12 +64,12 @@ class LoginMethod:
         time_joined: int,
         verified: bool,
     ):
-        self.recipe_id = recipe_id
+        super().__init__(email, phone_number, third_party)
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless"
+        ] = recipe_id
         self.recipe_user_id = RecipeUserId(recipe_user_id)
-        self.tenant_ids = tenant_ids
-        self.email = email
-        self.phone_number = phone_number
-        self.third_party = third_party
+        self.tenant_ids: List[str] = tenant_ids
         self.time_joined = time_joined
         self.verified = verified
 
