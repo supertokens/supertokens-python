@@ -117,6 +117,23 @@ class LoginMethod(AccountInfo):
             "verified": self.verified,
         }
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> "LoginMethod":
+        return LoginMethod(
+            recipe_id=json["recipeId"],
+            recipe_user_id=json["recipeUserId"],
+            tenant_ids=json["tenantIds"],
+            email=json["email"],
+            phone_number=json["phoneNumber"],
+            third_party=(
+                ThirdPartyInfo(json["thirdParty"]["id"], json["thirdParty"]["userId"])
+                if json["thirdParty"]
+                else None
+            ),
+            time_joined=json["timeJoined"],
+            verified=json["verified"],
+        )
+
 
 class AccountLinkingUser:
     def __init__(
@@ -150,6 +167,19 @@ class AccountLinkingUser:
             "loginMethods": [lm.to_json() for lm in self.login_methods],
             "timeJoined": self.time_joined,
         }
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> "AccountLinkingUser":
+        return AccountLinkingUser(
+            user_id=json["id"],
+            is_primary_user=json["isPrimaryUser"],
+            tenant_ids=json["tenantIds"],
+            emails=json["emails"],
+            phone_numbers=json["phoneNumbers"],
+            third_party=json["thirdParty"],
+            login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
+            time_joined=json["timeJoined"],
+        )
 
 
 class User:

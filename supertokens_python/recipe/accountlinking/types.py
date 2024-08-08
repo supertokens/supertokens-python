@@ -61,6 +61,19 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
             "emailpassword", "thirdparty", "passwordless"
         ] = recipe_id
 
+    @staticmethod
+    def from_login_method(
+        login_method: LoginMethod,
+    ) -> RecipeLevelUser:
+        return RecipeLevelUser(
+            tenant_ids=login_method.tenant_ids,
+            time_joined=login_method.time_joined,
+            recipe_id=login_method.recipe_id,
+            email=login_method.email,
+            phone_number=login_method.phone_number,
+            third_party=login_method.third_party,
+        )
+
 
 class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
     def __init__(

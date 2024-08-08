@@ -39,18 +39,25 @@ from .interfaces import (
     RecipeUserId,
     AccountInfo,
 )
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from .types import AccountLinkingConfig, RecipeLevelUser
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
+    from .recipe import AccountLinkingRecipe
 
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         querier: Querier,
+        recipe_instance: AccountLinkingRecipe,
+        config: AccountLinkingConfig,
     ):
         super().__init__()
         self.querier = querier
+        self.recipe_instance = recipe_instance
+        self.config = config
 
     async def get_users(
         self,
@@ -62,8 +69,27 @@ class RecipeImplementation(RecipeInterface):
         query: Optional[Dict[str, str]],
         user_context: Dict[str, Any],
     ) -> GetUsersResult:
-        # Implementation for get_users
-        raise NotImplementedError("get_users")
+        include_recipe_ids_str = None
+        if include_recipe_ids is not None:
+            include_recipe_ids_str = ",".join(include_recipe_ids)
+
+        params = {
+            "includeRecipeIds": include_recipe_ids_str,
+            "timeJoinedOrder": time_joined_order,
+            "limit": limit,
+            "paginationToken": pagination_token,
+        }
+        if query:
+            params.update(query)
+
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(f"/{tenant_id or 'public'}/users"), params, user_context
+        )
+
+        return GetUsersResult(
+            users=[AccountLinkingUser.from_json(u) for u in response["users"]],
+            next_pagination_token=response.get("nextPaginationToken"),
+        )
 
     async def can_create_primary_user(
         self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
@@ -72,8 +98,32 @@ class RecipeImplementation(RecipeInterface):
         CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError,
         CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
     ]:
-        # Implementation for can_create_primary_user
-        raise NotImplementedError("can_create_primary_user")
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
+            {
+                "recipeUserId": recipe_user_id.get_as_string(),
+            },
+            user_context,
+        )
+
+        if response["status"] == "OK":
+            return CanCreatePrimaryUserOkResult(response["wasAlreadyAPrimaryUser"])
+        elif (
+            response["status"]
+            == "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+        ):
+            return CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError(
+                response["primaryUserId"], response["description"]
+            )
+        elif (
+            response["status"]
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_PRIMARY_USER_ID_ERROR"
+        ):
+            return CanCreatePrimaryUserAccountInfoAlreadyAssociatedError(
+                response["primaryUserId"], response["description"]
+            )
+        else:
+            raise Exception(f"Unknown response status: {response['status']}")
 
     async def create_primary_user(
         self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
@@ -82,8 +132,35 @@ class RecipeImplementation(RecipeInterface):
         CreatePrimaryUserRecipeUserIdAlreadyLinkedError,
         CreatePrimaryUserAccountInfoAlreadyAssociatedError,
     ]:
-        # Implementation for create_primary_user
-        raise NotImplementedError("create_primary_user")
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/accountlinking/user/primary"),
+            {
+                "recipeUserId": recipe_user_id.get_as_string(),
+            },
+            user_context,
+        )
+
+        if response["status"] == "OK":
+            return CreatePrimaryUserOkResult(
+                AccountLinkingUser.from_json(response["user"]),
+                response["wasAlreadyAPrimaryUser"],
+            )
+        elif (
+            response["status"]
+            == "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+        ):
+            return CreatePrimaryUserRecipeUserIdAlreadyLinkedError(
+                response["primaryUserId"], response["description"]
+            )
+        elif (
+            response["status"]
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_PRIMARY_USER_ID_ERROR"
+        ):
+            return CreatePrimaryUserAccountInfoAlreadyAssociatedError(
+                response["primaryUserId"], response["description"]
+            )
+        else:
+            raise Exception(f"Unknown response status: {response['status']}")
 
     async def can_link_accounts(
         self,
@@ -96,8 +173,35 @@ class RecipeImplementation(RecipeInterface):
         CanLinkAccountsAccountInfoAlreadyAssociatedError,
         CanLinkAccountsInputUserNotPrimaryError,
     ]:
-        # Implementation for can_link_accounts
-        raise NotImplementedError("can_link_accounts")
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/accountlinking/user/link/check"),
+            {
+                "recipeUserId": recipe_user_id.get_as_string(),
+                "primaryUserId": primary_user_id,
+            },
+            user_context,
+        )
+
+        if response["status"] == "OK":
+            return CanLinkAccountsOkResult(response["accountsAlreadyLinked"])
+        elif (
+            response["status"]
+            == "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+        ):
+            return CanLinkAccountsRecipeUserIdAlreadyLinkedError(
+                response["primaryUserId"], response["description"]
+            )
+        elif (
+            response["status"]
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_PRIMARY_USER_ID_ERROR"
+        ):
+            return CanLinkAccountsAccountInfoAlreadyAssociatedError(
+                response["primaryUserId"], response["description"]
+            )
+        elif response["status"] == "INPUT_USER_IS_NOT_A_PRIMARY_USER":
+            return CanLinkAccountsInputUserNotPrimaryError(response["description"])
+        else:
+            raise Exception(f"Unknown response status: {response['status']}")
 
     async def link_accounts(
         self,
@@ -110,20 +214,113 @@ class RecipeImplementation(RecipeInterface):
         LinkAccountsAccountInfoAlreadyAssociatedError,
         LinkAccountsInputUserNotPrimaryError,
     ]:
-        # Implementation for link_accounts
-        raise NotImplementedError("link_accounts")
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/accountlinking/user/link"),
+            {
+                "recipeUserId": recipe_user_id.get_as_string(),
+                "primaryUserId": primary_user_id,
+            },
+            user_context,
+        )
+
+        if response["status"] in [
+            "OK",
+            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+        ]:
+            response["user"] = AccountLinkingUser.from_json(response["user"])
+
+        if response["status"] == "OK":
+            user = response["user"]
+            if not response["accountsAlreadyLinked"]:
+                await self.recipe_instance.verify_email_for_recipe_user_if_linked_accounts_are_verified(
+                    user=user,
+                    recipe_user_id=recipe_user_id,
+                    user_context=user_context,
+                )
+
+                updated_user = await self.get_user(
+                    user_id=primary_user_id,
+                    user_context=user_context,
+                )
+                if updated_user is None:
+                    raise Exception("This error should never be thrown")
+                user = updated_user
+
+                login_method_info = next(
+                    (
+                        lm
+                        for lm in user.login_methods
+                        if lm.recipe_user_id.get_as_string()
+                        == recipe_user_id.get_as_string()
+                    ),
+                    None,
+                )
+                if login_method_info is None:
+                    raise Exception("This error should never be thrown")
+
+                await self.config.on_account_linked(
+                    user,
+                    RecipeLevelUser.from_login_method(login_method_info),
+                    user_context,
+                )
+
+            response["user"] = user
+
+        if response["status"] == "OK":
+            return LinkAccountsOkResult(
+                user=response["user"],
+                accounts_already_linked=response["accountsAlreadyLinked"],
+            )
+        elif (
+            response["status"]
+            == "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+        ):
+            return LinkAccountsRecipeUserIdAlreadyLinkedError(
+                primary_user_id=response["primaryUserId"],
+                description=response["description"],
+            )
+        elif (
+            response["status"]
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+        ):
+            return LinkAccountsAccountInfoAlreadyAssociatedError(
+                primary_user_id=response["primaryUserId"],
+                description=response["description"],
+            )
+        elif response["status"] == "INPUT_USER_IS_NOT_A_PRIMARY_USER":
+            return LinkAccountsInputUserNotPrimaryError(
+                description=response["description"],
+            )
+        else:
+            raise Exception(f"Unknown response status: {response['status']}")
 
     async def unlink_account(
         self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
     ) -> UnlinkAccountOkResult:
-        # Implementation for unlink_account
-        raise NotImplementedError("unlink_account")
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/accountlinking/user/unlink"),
+            {
+                "recipeUserId": recipe_user_id.get_as_string(),
+            },
+            user_context,
+        )
+        return UnlinkAccountOkResult(
+            response["wasRecipeUserDeleted"], response["wasLinked"]
+        )
 
     async def get_user(
         self, user_id: str, user_context: Dict[str, Any]
     ) -> Optional[AccountLinkingUser]:
-        # Implementation for get_user
-        raise NotImplementedError("get_user")
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/user/id"),
+            {
+                "userId": user_id,
+            },
+            user_context,
+        )
+        if response["status"] == "OK":
+            return AccountLinkingUser.from_json(response["user"])
+        return None
 
     async def list_users_by_account_info(
         self,
@@ -132,8 +329,23 @@ class RecipeImplementation(RecipeInterface):
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
     ) -> List[AccountLinkingUser]:
-        # Implementation for list_users_by_account_info
-        raise NotImplementedError("list_users_by_account_info")
+        params = {
+            "email": account_info.email,
+            "phoneNumber": account_info.phone_number,
+            "doUnionOfAccountInfo": do_union_of_account_info,
+        }
+
+        if account_info.third_party:
+            params["thirdPartyId"] = account_info.third_party.id
+            params["thirdPartyUserId"] = account_info.third_party.user_id
+
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(f"/{tenant_id or 'public'}/users/by-accountinfo"),
+            params,
+            user_context,
+        )
+
+        return [AccountLinkingUser.from_json(u) for u in response["users"]]
 
     async def delete_user(
         self,
@@ -141,5 +353,11 @@ class RecipeImplementation(RecipeInterface):
         remove_all_linked_accounts: bool,
         user_context: Dict[str, Any],
     ) -> None:
-        # Implementation for delete_user
-        raise NotImplementedError("delete_user")
+        await self.querier.send_post_request(
+            NormalisedURLPath("/user/remove"),
+            {
+                "userId": user_id,
+                "removeAllLinkedAccounts": remove_all_linked_accounts,
+            },
+            user_context,
+        )

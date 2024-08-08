@@ -105,7 +105,7 @@ class AccountLinkingRecipe(RecipeModule):
             app_info, on_account_linked, should_do_automatic_account_linking, override
         )
         recipe_implementation: RecipeInterface = RecipeImplementation(
-            Querier.get_instance(recipe_id)
+            Querier.get_instance(recipe_id), self, self.config
         )
 
         self.recipe_implementation = (
@@ -376,7 +376,6 @@ class AccountLinkingRecipe(RecipeModule):
 
         primary_users = [u for u in users if u.is_primary_user]
 
-        # pylint:disable=no-else-return
         if not primary_users:
             log_debug_message("isSignInUpAllowedHelper no primary user exists")
             should_do_account_linking = (
@@ -568,7 +567,6 @@ class AccountLinkingRecipe(RecipeModule):
                     "You found a bug. Please report it on github.com/supertokens/supertokens-core"
                 )
 
-            # pylint:disable=no-else-return
             if user.is_primary_user:
                 if other_primary_user_for_new_email:
                     log_debug_message(
@@ -855,7 +853,6 @@ class AccountLinkingRecipe(RecipeModule):
                         user_context=user_context,
                     )
 
-                    # pylint:disable=no-else-return
                     if link_accounts_result.status == "OK":
                         log_debug_message(
                             "try_linking_by_account_info_or_create_primary_user successfully linked"
@@ -969,7 +966,6 @@ class AccountLinkingRecipe(RecipeModule):
                         )
                     )
 
-                    # pylint:disable=no-else-return
                     if link_accounts_result.status == "OK":
                         log_debug_message(
                             "try_linking_by_account_info_or_create_primary_user successfully linked"
@@ -1004,7 +1000,7 @@ class AccountLinkingRecipe(RecipeModule):
             log_debug_message(
                 "try_linking_by_account_info_or_create_primary_user: trying to make the current user primary"
             )
-            # pylint:disable=no-else-return
+
             if await self.should_become_primary_user(
                 input_user, tenant_id, session, user_context
             ):
