@@ -26,6 +26,7 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
+from supertokens_python.types import AccountLinkingUser
 
 
 async def get_users_oldest_first(
@@ -91,6 +92,16 @@ async def delete_user(
         user_id,
         remove_all_linked_accounts=remove_all_linked_accounts,
         user_context=user_context,
+    )
+
+
+async def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -> Optional[AccountLinkingUser]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        user_id=user_id, user_context=user_context
     )
 
 

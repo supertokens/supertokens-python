@@ -60,14 +60,16 @@ class EmailChangeAllowedResult:
         reason: Literal["OK", "PRIMARY_USER_CONFLICT", "ACCOUNT_TAKEOVER_RISK"],
     ):
         self.allowed = allowed
-        self.reason = reason
+        self.reason: Literal[
+            "OK", "PRIMARY_USER_CONFLICT", "ACCOUNT_TAKEOVER_RISK"
+        ] = reason
 
 
 class TryLinkingByAccountInfoOrCreatePrimaryUserResult:
     def __init__(
         self, status: Literal["OK", "NO_LINK"], user: Optional[AccountLinkingUser]
     ):
-        self.status = status
+        self.status: Literal["OK", "NO_LINK"] = status
         self.user = user
 
 
