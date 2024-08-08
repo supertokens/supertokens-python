@@ -6,6 +6,7 @@ from supertokens_python.recipe.session.claims import (
     SessionClaim,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.types import RecipeUserId
 from tests.utils import st_init_common_args
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___: True)  # type: ignore
@@ -29,7 +30,9 @@ def session_functions_override_with_claim(
             tenant_id: str,
             user_context: Dict[str, Any],
         ):
-            payload_update = await claim.build(user_id, tenant_id, user_context)
+            payload_update = await claim.build(
+                user_id, RecipeUserId(user_id), tenant_id, user_context
+            )
             if access_token_payload is None:
                 access_token_payload = {}
             access_token_payload = {

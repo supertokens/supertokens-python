@@ -163,9 +163,9 @@ class Session(SessionContainer):
         return {
             "accessToken": self.access_token,
             "accessAndFrontTokenUpdated": self.access_token_updated,
-            "refreshToken": None
-            if self.refresh_token is None
-            else self.refresh_token.token,
+            "refreshToken": (
+                None if self.refresh_token is None else self.refresh_token.token
+            ),
             "frontToken": self.front_token,
             "antiCsrfToken": self.anti_csrf_token,
         }
@@ -236,7 +236,10 @@ class Session(SessionContainer):
             user_context = {}
 
         update = await claim.build(
-            self.get_user_id(), self.get_tenant_id(), user_context
+            self.get_user_id(),
+            self.get_recipe_user_id(),
+            self.get_tenant_id(),
+            user_context,
         )
         return await self.merge_into_access_token_payload(update, user_context)
 

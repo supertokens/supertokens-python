@@ -17,52 +17,53 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse, RecipeUserId
 
 from ...supertokens import AppInfo
 from ..session.interfaces import SessionContainer
+from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
-    from .types import User, VerificationEmailTemplateVars
+    from .types import EmailVerificationUser, VerificationEmailTemplateVars
     from .utils import EmailVerificationConfig
 
 
 class CreateEmailVerificationTokenOkResult:
-    status = "OK"
+    status: Literal["OK"] = "OK"
 
     def __init__(self, token: str):
         self.token = token
 
 
 class CreateEmailVerificationTokenEmailAlreadyVerifiedError:
-    status = "EMAIL_ALREADY_VERIFIED_ERROR"
+    status: Literal["EMAIL_ALREADY_VERIFIED_ERROR"] = "EMAIL_ALREADY_VERIFIED_ERROR"
 
 
 class CreateEmailVerificationLinkEmailAlreadyVerifiedError:
-    status = "EMAIL_ALREADY_VERIFIED_ERROR"
+    status: Literal["EMAIL_ALREADY_VERIFIED_ERROR"] = "EMAIL_ALREADY_VERIFIED_ERROR"
 
 
 class CreateEmailVerificationLinkOkResult:
-    status = "OK"
+    status: Literal["OK"] = "OK"
 
     def __init__(self, link: str):
         self.link = link
 
 
 class SendEmailVerificationEmailAlreadyVerifiedError:
-    status = "EMAIL_ALREADY_VERIFIED_ERROR"
+    status: Literal["EMAIL_ALREADY_VERIFIED_ERROR"] = "EMAIL_ALREADY_VERIFIED_ERROR"
 
 
 class SendEmailVerificationEmailOkResult:
-    status = "OK"
+    status: Literal["OK"] = "OK"
 
 
 class VerifyEmailUsingTokenOkResult:
-    status = "OK"
+    status: Literal["OK"] = "OK"
 
-    def __init__(self, user: User):
+    def __init__(self, user: EmailVerificationUser):
         self.user = user
 
 
@@ -84,7 +85,11 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_email_verification_token(
-        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
+        self,
+        recipe_user_id: RecipeUserId,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> Union[
         CreateEmailVerificationTokenOkResult,
         CreateEmailVerificationTokenEmailAlreadyVerifiedError,
@@ -93,25 +98,33 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def verify_email_using_token(
-        self, token: str, tenant_id: str, user_context: Dict[str, Any]
+        self,
+        token: str,
+        tenant_id: str,
+        attempt_account_linking: bool,
+        user_context: Dict[str, Any],
     ) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         pass
 
     @abstractmethod
     async def is_email_verified(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
     ) -> bool:
         pass
 
     @abstractmethod
     async def revoke_email_verification_tokens(
-        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
+        self,
+        recipe_user_id: RecipeUserId,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> RevokeEmailVerificationTokensOkResult:
         pass
 
     @abstractmethod
     async def unverify_email(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
     ) -> UnverifyEmailOkResult:
         pass
 
@@ -137,15 +150,15 @@ class APIOptions:
 
 
 class EmailVerifyPostOkResult(APIResponse):
-    def __init__(self, user: User):
+    def __init__(
+        self, user: EmailVerificationUser, new_session: Optional[SessionContainer]
+    ):
         self.user = user
+        self.new_session = new_session
         self.status = "OK"
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            "status": self.status,
-            "user": {"id": self.user.user_id, "email": self.user.email},
-        }
+        return {"status": self.status}
 
 
 class EmailVerifyPostInvalidTokenError(APIResponse):
@@ -157,9 +170,10 @@ class EmailVerifyPostInvalidTokenError(APIResponse):
 
 
 class IsEmailVerifiedGetOkResult(APIResponse):
-    def __init__(self, is_verified: bool):
+    def __init__(self, is_verified: bool, new_session: Optional[SessionContainer]):
         self.status = "OK"
         self.is_verified = is_verified
+        self.new_session = new_session
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status, "isVerified": self.is_verified}
@@ -174,8 +188,9 @@ class GenerateEmailVerifyTokenPostOkResult(APIResponse):
 
 
 class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(APIResponse):
-    def __init__(self):
+    def __init__(self, new_session: Optional[SessionContainer]):
         self.status = "EMAIL_ALREADY_VERIFIED_ERROR"
+        self.new_session = new_session
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
@@ -237,7 +252,7 @@ class UnknownUserIdError(Exception):
 
 
 TypeGetEmailForUserIdFunction = Callable[
-    [str, Dict[str, Any]],
+    [RecipeUserId, Dict[str, Any]],
     Awaitable[
         Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]
     ],

@@ -20,7 +20,7 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import resolve
 
-from ...types import MaybeAwaitable
+from ...types import MaybeAwaitable, RecipeUserId
 from . import session_functions
 from .access_token import validate_access_token_structure
 from .cookie_and_header import build_front_token
@@ -128,6 +128,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 value = await resolve(
                     validator.claim.fetch_value(
                         user_id,
+                        RecipeUserId(user_id),
                         access_token_payload.get("tId", DEFAULT_TENANT_ID),
                         user_context,
                     )
@@ -419,7 +420,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             return False
 
         access_token_payload_update = await claim.build(
-            session_info.user_id, session_info.tenant_id, user_context
+            session_info.user_id,
+            RecipeUserId(session_info.user_id),
+            session_info.tenant_id,
+            user_context,
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context

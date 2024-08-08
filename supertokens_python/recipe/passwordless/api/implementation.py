@@ -42,7 +42,7 @@ from supertokens_python.recipe.passwordless.utils import (
     ContactPhoneOnlyConfig,
 )
 from supertokens_python.recipe.session.asyncio import create_new_session
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types import GeneralErrorResponse, RecipeUserId
 from ...emailverification import EmailVerificationRecipe
 from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult
 
@@ -289,12 +289,12 @@ class APIImplementation(APIInterface):
             ev_instance = EmailVerificationRecipe.get_instance_optional()
             if ev_instance is not None:
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                    user.user_id, user.email, tenant_id, user_context
+                    RecipeUserId(user.user_id), user.email, tenant_id, user_context
                 )
 
                 if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                     await ev_instance.recipe_implementation.verify_email_using_token(
-                        token_response.token, tenant_id, user_context
+                        token_response.token, tenant_id, True, user_context
                     )
 
         session = await create_new_session(

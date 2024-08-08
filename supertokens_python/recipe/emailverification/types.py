@@ -20,17 +20,19 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPServiceInterface,
     EmailDeliveryInterface,
 )
+from supertokens_python.types import RecipeUserId
 
 
-class User:
-    def __init__(self, user_id: str, email: str):
-        self.user_id = user_id
+class EmailVerificationUser:
+    def __init__(self, recipe_user_id: RecipeUserId, email: str):
+        self.recipe_user_id = recipe_user_id
         self.email = email
 
 
 class VerificationEmailTemplateVarsUser:
-    def __init__(self, user_id: str, email: str):
-        self.id = user_id
+    def __init__(self, _id: str, recipe_user_id: RecipeUserId, email: str):
+        self.id = _id
+        self.recipe_user_id = recipe_user_id
         self.email = email
 
 

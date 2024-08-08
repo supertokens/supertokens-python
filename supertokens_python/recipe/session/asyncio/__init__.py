@@ -28,7 +28,7 @@ from supertokens_python.recipe.session.interfaces import (
     SessionInformationResult,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import FRAMEWORKS, resolve
 
 from ...jwt.interfaces import (
@@ -112,7 +112,9 @@ async def create_new_session_without_request_response(
             del final_access_token_payload[prop]
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, tenant_id, user_context)
+        update = await claim.build(
+            user_id, RecipeUserId(user_id), tenant_id, user_context
+        )
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(

@@ -19,6 +19,7 @@ from typing import Any, Dict, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.requests import Request
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -44,7 +45,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenInvalidTokenError,
 )
 from supertokens_python.recipe.emailverification.types import (
-    User as EVUser,
+    EmailVerificationUser as EVUser,
 )
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
@@ -1372,13 +1373,13 @@ async def test_generate_email_verification_uses_correct_origin(
     email = dict_response["user"]["email"]
 
     await send_email_verification_email(
-        "public", user_id, email, {"url": "localhost:3000"}
+        "public", user_id, RecipeUserId(user_id), email, {"url": "localhost:3000"}
     )
     url = urlparse(email_verify_link)
     assert url.netloc == "localhost:3000"
 
     await send_email_verification_email(
-        "public", user_id, email, {"url": "localhost:3002"}
+        "public", user_id, RecipeUserId(user_id), email, {"url": "localhost:3002"}
     )
     url = urlparse(email_verify_link)
     assert url.netloc == "localhost:3002"

@@ -55,20 +55,20 @@ class EmailVerificationConfig:
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
         ],
-        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction],
+        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction],
         override: OverrideConfig,
     ):
         self.mode = mode
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
-        self.get_email_for_user_id = get_email_for_user_id
+        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
 ) -> EmailVerificationConfig:
     if mode not in ["REQUIRED", "OPTIONAL"]:
@@ -98,7 +98,7 @@ def validate_and_normalise_user_input(
     return EmailVerificationConfig(
         mode,
         get_email_delivery_config,
-        get_email_for_user_id,
+        get_email_for_recipe_user_id,
         override,
     )
 

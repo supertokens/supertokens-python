@@ -85,7 +85,7 @@ if mode == "asgi":
     @verify_session()
     async def unverify_email_api(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
-        await unverify_email(session_.get_user_id())
+        await unverify_email(session_.get_recipe_user_id())
         await session_.fetch_and_set_claim(EmailVerificationClaim)
         return JsonResponse({"status": "OK"})
 
@@ -139,7 +139,7 @@ else:
     @verify_session()
     def sync_unverify_email_api(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
-        sync_unverify_email(session_.get_user_id())
+        sync_unverify_email(session_.get_recipe_user_id())
         session_.sync_fetch_and_set_claim(EmailVerificationClaim)
         return JsonResponse({"status": "OK"})
 

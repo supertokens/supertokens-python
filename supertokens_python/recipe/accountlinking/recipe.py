@@ -28,7 +28,6 @@ from supertokens_python.logger import (
 )
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from typing_extensions import Literal
-from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
 from .types import (
     RecipeLevelUser,
@@ -42,15 +41,14 @@ from .types import (
 
 from .interfaces import RecipeInterface
 
-from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenOkResult,
-)
-
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
     from supertokens_python.types import AccountLinkingUser, LoginMethod, RecipeUserId
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.recipe.emailverification.recipe import (
+        EmailVerificationRecipe,
+    )
 
 
 class EmailChangeAllowedResult:
@@ -113,6 +111,13 @@ class AccountLinkingRecipe(RecipeModule):
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)
         )
+
+        self.email_verification_recipe: EmailVerificationRecipe | None = None
+
+    def register_email_verification_recipe(
+        self, email_verification_recipe: EmailVerificationRecipe
+    ):
+        self.email_verification_recipe = email_verification_recipe
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return False
@@ -693,10 +698,7 @@ class AccountLinkingRecipe(RecipeModule):
         recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> None:
-        try:
-            EmailVerificationRecipe.get_instance_or_throw()
-        except Exception:
-            # if email verification recipe is not initialized, we do a no-op
+        if self.email_verification_recipe is None:
             return
 
         if user.is_primary_user:
@@ -718,20 +720,20 @@ class AccountLinkingRecipe(RecipeModule):
                         break
 
                 if should_verify_email:
-                    ev_recipe = EmailVerificationRecipe.get_instance_or_throw()
+                    ev_recipe = self.email_verification_recipe.get_instance_or_throw()
                     resp = await ev_recipe.recipe_implementation.create_email_verification_token(
                         tenant_id=user.tenant_ids[0],
-                        user_id=recipe_user_id.get_as_string(),
+                        recipe_user_id=recipe_user_id,
                         email=recipe_user_email,
                         user_context=user_context,
                     )
-                    if isinstance(resp, CreateEmailVerificationTokenOkResult):
+                    if resp.status == "OK":
                         # we purposely pass in false below cause we don't want account
                         # linking to happen
                         await ev_recipe.recipe_implementation.verify_email_using_token(
                             tenant_id=user.tenant_ids[0],
                             token=resp.token,
-                            # attempt_account_linking=False,
+                            attempt_account_linking=False,
                             user_context=user_context,
                         )
 

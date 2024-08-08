@@ -54,7 +54,7 @@ from supertokens_python.recipe.session.utils import (
     get_required_claim_validators,
     get_auth_mode_from_header,
 )
-from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import (
     FRAMEWORKS,
     get_rid_from_header,
@@ -268,7 +268,9 @@ async def create_new_session_in_request(
             del final_access_token_payload[prop]
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, tenant_id, user_context)
+        update = await claim.build(
+            user_id, RecipeUserId(user_id), tenant_id, user_context
+        )
         final_access_token_payload.update(update)
 
     log_debug_message("createNewSession: Access token payload built")

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Breaking changes
+- `supertokens_python.recipe.emailverification.types.User` has been renamed to `supertokens_python.recipe.emailverification.types.EmailVerificationUser`
+- The user object has been changed to be a global one, containing information about all emails, phone numbers, third party info and login methods associated with that user.
+- Type of `get_email_for_user_id` in `emailverification.init` has changed
+
 ## [0.24.0] - 2024-07-31
 
 ### Changes

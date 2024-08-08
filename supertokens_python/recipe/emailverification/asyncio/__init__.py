@@ -28,7 +28,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
 )
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
-
+from supertokens_python.types import RecipeUserId
 from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
@@ -38,7 +38,7 @@ from supertokens_python.recipe.emailverification.types import (
 
 async def create_email_verification_token(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
@@ -49,7 +49,9 @@ async def create_email_verification_token(
         user_context = {}
     recipe = EmailVerificationRecipe.get_instance_or_throw()
     if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
+        email_info = await recipe.get_email_for_recipe_user_id(
+            None, recipe_user_id, user_context
+        )
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
@@ -58,22 +60,25 @@ async def create_email_verification_token(
             raise Exception("Unknown User ID provided without email")
 
     return await recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, tenant_id, user_context
+        recipe_user_id, email, tenant_id, user_context
     )
 
 
 async def verify_email_using_token(
-    tenant_id: str, token: str, user_context: Union[None, Dict[str, Any]] = None
+    tenant_id: str,
+    token: str,
+    attempt_account_linking: bool = True,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await EmailVerificationRecipe.get_instance_or_throw().recipe_implementation.verify_email_using_token(
-        token, tenant_id, user_context
+        token, tenant_id, attempt_account_linking, user_context
     )
 
 
 async def is_email_verified(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
@@ -82,7 +87,9 @@ async def is_email_verified(
 
     recipe = EmailVerificationRecipe.get_instance_or_throw()
     if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
+        email_info = await recipe.get_email_for_recipe_user_id(
+            None, recipe_user_id, user_context
+        )
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
@@ -91,13 +98,13 @@ async def is_email_verified(
             raise Exception("Unknown User ID provided without email")
 
     return await recipe.recipe_implementation.is_email_verified(
-        user_id, email, user_context
+        recipe_user_id, email, user_context
     )
 
 
 async def revoke_email_verification_tokens(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> RevokeEmailVerificationTokensOkResult:
@@ -106,7 +113,9 @@ async def revoke_email_verification_tokens(
 
     recipe = EmailVerificationRecipe.get_instance_or_throw()
     if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
+        email_info = await recipe.get_email_for_recipe_user_id(
+            None, recipe_user_id, user_context
+        )
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
@@ -115,12 +124,12 @@ async def revoke_email_verification_tokens(
             raise Exception("Unknown User ID provided without email")
 
     return await EmailVerificationRecipe.get_instance_or_throw().recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, tenant_id, user_context
+        recipe_user_id, email, tenant_id, user_context
     )
 
 
 async def unverify_email(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
@@ -129,7 +138,9 @@ async def unverify_email(
 
     recipe = EmailVerificationRecipe.get_instance_or_throw()
     if email is None:
-        email_info = await recipe.get_email_for_user_id(user_id, user_context)
+        email_info = await recipe.get_email_for_recipe_user_id(
+            None, recipe_user_id, user_context
+        )
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
@@ -140,7 +151,7 @@ async def unverify_email(
             raise Exception("Unknown User ID provided without email")
 
     return await EmailVerificationRecipe.get_instance_or_throw().recipe_implementation.unverify_email(
-        user_id, email, user_context
+        recipe_user_id, email, user_context
     )
 
 
@@ -157,7 +168,7 @@ async def send_email(
 
 async def create_email_verification_link(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str],
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
@@ -171,7 +182,7 @@ async def create_email_verification_link(
     app_info = recipe_instance.get_app_info()
 
     email_verification_token = await create_email_verification_token(
-        tenant_id, user_id, email, user_context
+        tenant_id, recipe_user_id, email, user_context
     )
     if isinstance(
         email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
@@ -193,6 +204,7 @@ async def create_email_verification_link(
 async def send_email_verification_email(
     tenant_id: str,
     user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str],
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
@@ -205,7 +217,9 @@ async def send_email_verification_email(
     if email is None:
         recipe_instance = EmailVerificationRecipe.get_instance_or_throw()
 
-        email_info = await recipe_instance.get_email_for_user_id(user_id, user_context)
+        email_info = await recipe_instance.get_email_for_recipe_user_id(
+            None, recipe_user_id, user_context
+        )
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
@@ -214,7 +228,7 @@ async def send_email_verification_email(
             raise Exception("Unknown User ID provided without email")
 
     email_verification_link = await create_email_verification_link(
-        tenant_id, user_id, email, user_context
+        tenant_id, recipe_user_id, email, user_context
     )
 
     if isinstance(
@@ -224,7 +238,7 @@ async def send_email_verification_email(
 
     await send_email(
         VerificationEmailTemplateVars(
-            user=VerificationEmailTemplateVarsUser(user_id, email),
+            user=VerificationEmailTemplateVarsUser(user_id, recipe_user_id, email),
             email_verify_link=email_verification_link.link,
             tenant_id=tenant_id,
         ),

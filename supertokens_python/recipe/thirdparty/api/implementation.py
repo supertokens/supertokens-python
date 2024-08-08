@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions
     from supertokens_python.recipe.thirdparty.provider import Provider
 
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types import GeneralErrorResponse, RecipeUserId
 
 
 class APIImplementation(APIInterface):
@@ -118,7 +118,7 @@ class APIImplementation(APIInterface):
             if ev_instance is not None:
                 token_response = await ev_instance.recipe_implementation.create_email_verification_token(
                     tenant_id=tenant_id,
-                    user_id=signinup_response.user.user_id,
+                    recipe_user_id=RecipeUserId(signinup_response.user.user_id),
                     email=signinup_response.user.email,
                     user_context=user_context,
                 )
@@ -127,6 +127,7 @@ class APIImplementation(APIInterface):
                     await ev_instance.recipe_implementation.verify_email_using_token(
                         token=token_response.token,
                         tenant_id=tenant_id,
+                        attempt_account_linking=True,
                         user_context=user_context,
                     )
 

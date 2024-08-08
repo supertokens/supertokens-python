@@ -780,7 +780,7 @@ async def get_token():
 
 @app.get("/unverifyEmail")
 async def unverify_email_api(session_: SessionContainer = Depends(verify_session())):
-    await unverify_email(session_.get_user_id())
+    await unverify_email(session_.get_recipe_user_id())
     await session_.fetch_and_set_claim(EmailVerificationClaim)
     return JSONResponse({"status": "OK"})
 

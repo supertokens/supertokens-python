@@ -19,7 +19,7 @@ from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailverification.types import (
-    User,
+    EmailVerificationUser,
     VerificationEmailTemplateVars,
 )
 from supertokens_python.supertokens import AppInfo
@@ -27,7 +27,7 @@ from supertokens_python.utils import handle_httpx_client_exceptions
 
 
 async def create_and_send_email_using_supertokens_service(
-    app_info: AppInfo, user: User, email_verification_url: str
+    app_info: AppInfo, user: EmailVerificationUser, email_verification_url: str
 ) -> None:
     if ("SUPERTOKENS_ENV" in environ) and (environ["SUPERTOKENS_ENV"] == "testing"):
         return
@@ -62,7 +62,9 @@ class BackwardCompatibilityService(
         user_context: Dict[str, Any],
     ) -> None:
         try:
-            email_user = User(template_vars.user.id, template_vars.user.email)
+            email_user = EmailVerificationUser(
+                template_vars.user.recipe_user_id, template_vars.user.email
+            )
             await create_and_send_email_using_supertokens_service(
                 self.app_info, email_user, template_vars.email_verify_link
             )
