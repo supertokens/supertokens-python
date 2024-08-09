@@ -101,6 +101,7 @@ def get_info_from_access_token(
             user_data = payload
 
         session_handle = sanitize_string(payload.get("sessionHandle"))
+        recipe_user_id = sanitize_string(payload.get("recipeUserId", user_id))
         refresh_token_hash_1 = sanitize_string(payload.get("refreshTokenHash1"))
         parent_refresh_token_hash_1 = sanitize_string(
             payload.get("parentRefreshTokenHash1")
@@ -129,6 +130,7 @@ def get_info_from_access_token(
             "expiryTime": expiry_time,
             "timeCreated": time_created,
             "tenantId": tenant_id,
+            "recipeUserId": recipe_user_id,
         }
     except Exception as e:
         log_debug_message(
@@ -139,7 +141,40 @@ def get_info_from_access_token(
 
 
 def validate_access_token_structure(payload: Dict[str, Any], version: int) -> None:
-    if version >= 3:
+    if version >= 5:
+        if (
+            not isinstance(payload.get("sub"), str)
+            or not isinstance(payload.get("exp"), (int, float))
+            or not isinstance(payload.get("iat"), (int, float))
+            or not isinstance(payload.get("sessionHandle"), str)
+            or not isinstance(payload.get("refreshTokenHash1"), str)
+            or not isinstance(payload.get("rsub"), str)
+        ):
+            log_debug_message(
+                "validateAccessTokenStructure: Access token is using version >= 5"
+            )
+            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            # it would come here if we change the structure of the JWT.
+            raise Exception(
+                "Access token does not contain all the information. Maybe the structure has changed?"
+            )
+    elif version >= 4:
+        if (
+            not isinstance(payload.get("sub"), str)
+            or not isinstance(payload.get("exp"), (int, float))
+            or not isinstance(payload.get("iat"), (int, float))
+            or not isinstance(payload.get("sessionHandle"), str)
+            or not isinstance(payload.get("refreshTokenHash1"), str)
+        ):
+            log_debug_message(
+                "validateAccessTokenStructure: Access token is using version >= 4"
+            )
+            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            # it would come here if we change the structure of the JWT.
+            raise Exception(
+                "Access token does not contain all the information. Maybe the structure has changed?"
+            )
+    elif version >= 3:
         if (
             not isinstance(payload.get("sub"), str)
             or not isinstance(payload.get("exp"), (int, float))
@@ -151,6 +186,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
                 "validateAccessTokenStructure: Access token is using version >= 3"
             )
             # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            # it would come here if we change the structure of the JWT.
             raise Exception(
                 "Access token does not contain all the information. Maybe the structure has changed?"
             )
@@ -160,18 +196,19 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
                 raise Exception(
                     "Access token does not contain all the information. Maybe the structure has changed?"
                 )
-
     elif (
         not isinstance(payload.get("sessionHandle"), str)
-        or payload.get("userData") is None
+        or not isinstance(payload.get("userId"), str)
         or not isinstance(payload.get("refreshTokenHash1"), str)
-        or not isinstance(payload.get("expiryTime"), (float, int))
-        or not isinstance(payload.get("timeCreated"), (float, int))
+        or payload.get("userData") is None
+        or not isinstance(payload.get("expiryTime"), (int, float))
+        or not isinstance(payload.get("timeCreated"), (int, float))
     ):
         log_debug_message(
             "validateAccessTokenStructure: Access token is using version < 3"
         )
         # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+        # it would come here if we change the structure of the JWT.
         raise Exception(
             "Access token does not contain all the information. Maybe the structure has changed?"
         )

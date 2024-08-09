@@ -29,7 +29,6 @@ from .interfaces import (
     AccessTokenObj,
     ClaimsValidationResult,
     GetClaimValueOkResult,
-    JSONObject,
     RecipeInterface,
     RegenerateAccessTokenOkResult,
     SessionClaim,
@@ -62,6 +61,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def create_new_session(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
@@ -73,7 +73,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         result = await session_functions.create_new_session(
             self,
             tenant_id,
-            user_id,
+            recipe_user_id,
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
@@ -96,6 +96,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             result.antiCsrfToken,
             result.session.handle,
             result.session.userId,
+            recipe_user_id,
             payload,
             None,
             True,
@@ -107,6 +108,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def validate_claims(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Dict[str, Any],
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
@@ -128,7 +130,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 value = await resolve(
                     validator.claim.fetch_value(
                         user_id,
-                        RecipeUserId(user_id),
+                        recipe_user_id,
                         access_token_payload.get("tId", DEFAULT_TENANT_ID),
                         user_context,
                     )
@@ -151,21 +153,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         )
 
         return ClaimsValidationResult(invalid_claims, access_token_payload_update)
-
-    async def validate_claims_in_jwt_payload(
-        self,
-        user_id: str,
-        jwt_payload: JSONObject,
-        claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
-    ) -> ClaimsValidationResult:
-        invalid_claims = await validate_claims_in_payload(
-            claim_validators,
-            jwt_payload,
-            user_context,
-        )
-
-        return ClaimsValidationResult(invalid_claims)
 
     async def get_session(
         self,
@@ -267,6 +254,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             anti_csrf_token,
             response.session.handle,
             response.session.userId,
+            response.session.recipe_user_id,
             payload,
             None,
             access_token_updated,
@@ -321,6 +309,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             response.antiCsrfToken,
             response.session.handle,
             response.session.userId,
+            response.session.recipe_user_id,
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
@@ -339,23 +328,35 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def revoke_all_sessions_for_user(
         self,
         user_id: str,
+        revoke_sessions_for_linked_accounts: bool,
         tenant_id: Optional[str],
         revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -> List[str]:
         return await session_functions.revoke_all_sessions_for_user(
-            self, user_id, tenant_id, revoke_across_all_tenants, user_context
+            self,
+            user_id,
+            revoke_sessions_for_linked_accounts,
+            tenant_id,
+            revoke_across_all_tenants,
+            user_context,
         )
 
     async def get_all_session_handles_for_user(
         self,
         user_id: str,
+        fetch_sessions_for_linked_accounts: bool,
         tenant_id: Optional[str],
         fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -> List[str]:
         return await session_functions.get_all_session_handles_for_user(
-            self, user_id, tenant_id, fetch_across_all_tenants, user_context
+            self,
+            user_id,
+            fetch_sessions_for_linked_accounts,
+            tenant_id,
+            fetch_across_all_tenants,
+            user_context,
         )
 
     async def revoke_multiple_sessions(
@@ -421,7 +422,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         access_token_payload_update = await claim.build(
             session_info.user_id,
-            RecipeUserId(session_info.user_id),
+            session_info.recipe_user_id,
             session_info.tenant_id,
             user_context,
         )
@@ -461,6 +462,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         tenant_id: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> MaybeAwaitable[List[SessionClaimValidator]]:
@@ -502,6 +504,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session = SessionObj(
             response["session"]["handle"],
             response["session"]["userId"],
+            RecipeUserId(response["session"]["recipeUserId"]),
             response["session"]["userDataInJWT"],
             response["session"]["tenantId"],
         )

@@ -15,6 +15,7 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_without_request_response,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import get_timestamp_ms
 from tests.utils import (
     get_st_init_args,
@@ -85,7 +86,9 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
 
     assert next(well_known_count) == 0
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
     time.sleep(jwk_max_age_sec)
 
     tokens = s.get_all_session_tokens_dangerously()
@@ -173,7 +176,9 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
 
     assert next(well_known_count) == 0
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
 
     assert next(well_known_count) == 0
 
@@ -188,7 +193,9 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
 
     assert next(well_known_count) == 1
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
 
     assert next(well_known_count) == 1
 
@@ -258,7 +265,9 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 
     assert next(jwks_refresh_count) == 0
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
 
     assert get_cached_keys() is None
     assert next(jwks_refresh_count) == 0
@@ -383,7 +392,9 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
     init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
     start_st()
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
     assert get_cached_keys() is None
     assert next(jwk_refresh_count) == 0
     assert next(returned_from_cache_count) == 0
@@ -478,7 +489,9 @@ async def test_session_verification_of_jwt_based_on_session_payload(
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
 
     payload = s.get_access_token_payload()
     del payload["iat"]
@@ -500,7 +513,9 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
     init(**get_st_init_args(recipe_list=[session.init()]))
     start_st()
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
 
     payload = s.get_access_token_payload()
     del payload["iat"]
@@ -525,7 +540,9 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key():
     )
     start_st()
 
-    s = await create_new_session_without_request_response("public", "userId", {}, {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
 
     payload = s.get_access_token_payload()
     del payload["iat"]
@@ -645,7 +662,7 @@ async def client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "test"
-        s = await create_new_session(request, "public", user_id, {}, {})
+        s = await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"jwt": s.get_access_token()}
 
     @app.get("/sessioninfo")

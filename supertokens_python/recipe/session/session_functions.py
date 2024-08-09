@@ -17,6 +17,7 @@ import time
 from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
+from supertokens_python.types import RecipeUserId
 
 from .access_token import get_info_from_access_token
 from .jwt import ParsedJWTInfo
@@ -40,9 +41,17 @@ from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 
 class CreateOrRefreshAPIResponseSession:
-    def __init__(self, handle: str, userId: str, userDataInJWT: Any, tenant_id: str):
+    def __init__(
+        self,
+        handle: str,
+        userId: str,
+        recipe_user_id: RecipeUserId,
+        userDataInJWT: Any,
+        tenant_id: str,
+    ):
         self.handle = handle
         self.userId = userId
+        self.recipe_user_id = recipe_user_id
         self.userDataInJWT = userDataInJWT
         self.tenant_id = tenant_id
 
@@ -66,12 +75,14 @@ class GetSessionAPIResponseSession:
         self,
         handle: str,
         userId: str,
+        recipe_user_id: RecipeUserId,
         userDataInJWT: Dict[str, Any],
         expiryTime: int,
         tenant_id: str,
     ) -> None:
         self.handle = handle
         self.userId = userId
+        self.recipe_user_id = recipe_user_id
         self.userDataInJWT = userDataInJWT
         self.expiryTime = expiryTime
         self.tenant_id = tenant_id
@@ -97,7 +108,7 @@ class GetSessionAPIResponse:
 async def create_new_session(
     recipe_implementation: RecipeImplementation,
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data_in_database: Union[None, Dict[str, Any]],
@@ -115,7 +126,7 @@ async def create_new_session(
     response = await recipe_implementation.querier.send_post_request(
         NormalisedURLPath(f"{tenant_id}/recipe/session"),
         {
-            "userId": user_id,
+            "userId": recipe_user_id.get_as_string(),
             "userDataInJWT": access_token_payload,
             "userDataInDatabase": session_data_in_database,
             "useDynamicSigningKey": recipe_implementation.config.use_dynamic_access_token_signing_key,
@@ -128,6 +139,7 @@ async def create_new_session(
         CreateOrRefreshAPIResponseSession(
             response["session"]["handle"],
             response["session"]["userId"],
+            RecipeUserId(response["session"]["recipeUserId"]),
             response["session"]["userDataInJWT"],
             response["session"]["tenantId"],
         ),
@@ -264,6 +276,7 @@ async def get_session(
             GetSessionAPIResponseSession(
                 access_token_info["sessionHandle"],
                 access_token_info["userId"],
+                RecipeUserId(access_token_info["recipeUserId"]),
                 access_token_info["userData"],
                 access_token_info["expiryTime"],
                 access_token_info["tenantId"],
@@ -291,6 +304,7 @@ async def get_session(
             GetSessionAPIResponseSession(
                 response["session"]["handle"],
                 response["session"]["userId"],
+                RecipeUserId(response["session"]["recipeUserId"]),
                 response["session"]["userDataInJWT"],
                 (
                     response.get("accessToken", {}).get(
@@ -369,6 +383,7 @@ async def refresh_session(
             CreateOrRefreshAPIResponseSession(
                 response["session"]["handle"],
                 response["session"]["userId"],
+                RecipeUserId(response["session"]["recipeUserId"]),
                 response["session"]["userDataInJWT"],
                 response["session"]["tenantId"],
             ),
@@ -393,13 +408,16 @@ async def refresh_session(
         "refreshSession: Returning TOKEN_THEFT_DETECTED because of core response"
     )
     raise_token_theft_exception(
-        response["session"]["userId"], response["session"]["handle"]
+        response["session"]["userId"],
+        RecipeUserId(response["session"]["recipeUserId"]),
+        response["session"]["handle"],
     )
 
 
 async def revoke_all_sessions_for_user(
     recipe_implementation: RecipeImplementation,
     user_id: str,
+    revoke_sessions_for_linked_accounts: bool,
     tenant_id: Optional[str],
     revoke_across_all_tenants: bool,
     user_context: Optional[Dict[str, Any]],
@@ -410,13 +428,21 @@ async def revoke_all_sessions_for_user(
     if revoke_across_all_tenants:
         response = await recipe_implementation.querier.send_post_request(
             NormalisedURLPath("/recipe/session/remove"),
-            {"userId": user_id, "revokeAcrossAllTenants": revoke_across_all_tenants},
+            {
+                "userId": user_id,
+                "revokeAcrossAllTenants": revoke_across_all_tenants,
+                "revokeSessionsForLinkedAccounts": revoke_sessions_for_linked_accounts,
+            },
             user_context=user_context,
         )
     else:
         response = await recipe_implementation.querier.send_post_request(
             NormalisedURLPath(f"{tenant_id}/recipe/session/remove"),
-            {"userId": user_id, "revokeAcrossAllTenants": revoke_across_all_tenants},
+            {
+                "userId": user_id,
+                "revokeAcrossAllTenants": revoke_across_all_tenants,
+                "revokeSessionsForLinkedAccounts": revoke_sessions_for_linked_accounts,
+            },
             user_context=user_context,
         )
     return response["sessionHandlesRevoked"]
@@ -425,6 +451,7 @@ async def revoke_all_sessions_for_user(
 async def get_all_session_handles_for_user(
     recipe_implementation: RecipeImplementation,
     user_id: str,
+    fetch_sessions_for_linked_accounts: bool,
     tenant_id: Optional[str],
     fetch_across_all_tenants: bool,
     user_context: Optional[Dict[str, Any]],
@@ -435,13 +462,21 @@ async def get_all_session_handles_for_user(
     if fetch_across_all_tenants:
         response = await recipe_implementation.querier.send_get_request(
             NormalisedURLPath("/recipe/session/user"),
-            {"userId": user_id, "fetchAcrossAllTenants": fetch_across_all_tenants},
+            {
+                "userId": user_id,
+                "fetchAcrossAllTenants": fetch_across_all_tenants,
+                "fetchSessionsForAllLinkedAccounts": fetch_sessions_for_linked_accounts,
+            },
             user_context=user_context,
         )
     else:
         response = await recipe_implementation.querier.send_get_request(
             NormalisedURLPath(f"{tenant_id}/recipe/session/user"),
-            {"userId": user_id, "fetchAcrossAllTenants": fetch_across_all_tenants},
+            {
+                "userId": user_id,
+                "fetchAcrossAllTenants": fetch_across_all_tenants,
+                "fetchSessionsForAllLinkedAccounts": fetch_sessions_for_linked_accounts,
+            },
             user_context=user_context,
         )
     return response["sessionHandles"]
@@ -521,6 +556,7 @@ async def get_session_information(
         return SessionInformationResult(
             response["sessionHandle"],
             response["userId"],
+            RecipeUserId(response["recipeUserId"]),
             response["userDataInDatabase"],
             response["expiry"],
             response["userDataInJWT"],

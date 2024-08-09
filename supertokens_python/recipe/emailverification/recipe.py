@@ -413,7 +413,7 @@ class EmailVerificationRecipe(RecipeModule):
                     # We do not really need to do this, but we do it anyway.. no harm.
                     await revoke_all_sessions_for_user(
                         recipe_user_id_whose_email_got_verified.get_as_string(),
-                        # False,
+                        False,
                         session.get_tenant_id(),
                         user_context,
                     )
@@ -422,7 +422,7 @@ class EmailVerificationRecipe(RecipeModule):
                     return await create_new_session(
                         req,
                         session.get_tenant_id(),
-                        session.get_recipe_user_id(user_context).get_as_string(),
+                        session.get_recipe_user_id(user_context),
                         {},
                         {},
                         user_context,

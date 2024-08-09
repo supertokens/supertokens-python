@@ -50,6 +50,7 @@ class SessionObj:
         self,
         handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         user_data_in_jwt: Dict[str, Any],
         tenant_id: str,
     ):
@@ -57,6 +58,7 @@ class SessionObj:
         self.user_id = user_id
         self.user_data_in_jwt = user_data_in_jwt
         self.tenant_id = tenant_id
+        self.recipe_user_id = recipe_user_id
 
 
 class AccessTokenObj:
@@ -77,6 +79,7 @@ class SessionInformationResult:
         self,
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         session_data_in_database: Dict[str, Any],
         expiry: int,
         custom_claims_in_access_token_payload: Dict[str, Any],
@@ -92,6 +95,7 @@ class SessionInformationResult:
         )
         self.time_created = time_created
         self.tenant_id = tenant_id
+        self.recipe_user_id = recipe_user_id
 
 
 class ReqResInfo:
@@ -148,6 +152,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def create_new_session(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
@@ -161,6 +166,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         tenant_id: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> MaybeAwaitable[List[SessionClaimValidator]]:
@@ -188,17 +194,8 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def validate_claims(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Dict[str, Any],
-        claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
-    ) -> ClaimsValidationResult:
-        pass
-
-    @abstractmethod
-    async def validate_claims_in_jwt_payload(
-        self,
-        user_id: str,
-        jwt_payload: JSONObject,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> ClaimsValidationResult:
@@ -224,6 +221,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def revoke_all_sessions_for_user(
         self,
         user_id: str,
+        revoke_sessions_for_linked_accounts: bool,
         tenant_id: str,
         revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
@@ -234,6 +232,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def get_all_session_handles_for_user(
         self,
         user_id: str,
+        fetch_sessions_for_linked_accounts: bool,
         tenant_id: str,
         fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
@@ -359,7 +358,7 @@ class APIInterface(ABC):
     @abstractmethod
     async def signout_post(
         self,
-        session: Optional[SessionContainer],
+        session: SessionContainer,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[SignOutOkayResponse, GeneralErrorResponse]:
@@ -404,6 +403,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         anti_csrf_token: Optional[str],
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         user_data_in_access_token: Optional[Dict[str, Any]],
         req_res_info: Optional[ReqResInfo],
         access_token_updated: bool,
@@ -421,10 +421,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.req_res_info: Optional[ReqResInfo] = req_res_info
         self.access_token_updated = access_token_updated
         self.tenant_id = tenant_id
-        self.recipe_user_id = RecipeUserId(
-            user_id
-        )  # TODO: change me to be based on input arg.
-
+        self.recipe_user_id = recipe_user_id
         self.response_mutators: List[ResponseMutator] = []
 
     @abstractmethod

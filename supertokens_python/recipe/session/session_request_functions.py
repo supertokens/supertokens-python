@@ -239,6 +239,7 @@ async def create_new_session_in_request(
     recipe_instance: SessionRecipe,
     access_token_payload: Dict[str, Any],
     user_id: str,
+    recipe_user_id: RecipeUserId,
     config: SessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
@@ -268,9 +269,7 @@ async def create_new_session_in_request(
             del final_access_token_payload[prop]
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(
-            user_id, RecipeUserId(user_id), tenant_id, user_context
-        )
+        update = await claim.build(user_id, recipe_user_id, tenant_id, user_context)
         final_access_token_payload.update(update)
 
     log_debug_message("createNewSession: Access token payload built")
@@ -316,6 +315,7 @@ async def create_new_session_in_request(
     disable_anti_csrf = output_transfer_method == "header"
     session = await recipe_instance.recipe_implementation.create_new_session(
         user_id,
+        recipe_user_id,
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,

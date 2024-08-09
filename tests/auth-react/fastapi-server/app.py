@@ -538,7 +538,7 @@ def custom_init(
         original_signout_post = original_implementation.signout_post
 
         async def signout_post(
-            session: Optional[SessionContainer],
+            session: SessionContainer,
             api_options: SAPIOptions,
             user_context: Dict[str, Any],
         ):

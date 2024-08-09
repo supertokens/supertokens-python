@@ -135,7 +135,7 @@ class APIImplementation(APIInterface):
         session = await create_new_session(
             request=api_options.request,
             tenant_id=tenant_id,
-            user_id=user.user_id,
+            recipe_user_id=RecipeUserId(user.user_id),
             user_context=user_context,
         )
 

@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from fastapi import FastAPI
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 
@@ -126,6 +127,7 @@ async def test_user_context(driver_config_client: TestClient):
 
         async def create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -140,6 +142,7 @@ async def test_user_context(driver_config_client: TestClient):
                 user_context["preCreateNewSession"] = True
             response = await og_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
@@ -240,6 +243,7 @@ async def test_default_context(driver_config_client: TestClient):
 
         async def create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -253,6 +257,7 @@ async def test_default_context(driver_config_client: TestClient):
 
             response = await og_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
@@ -363,6 +368,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
         async def create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -378,6 +384,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
             response = await og_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,

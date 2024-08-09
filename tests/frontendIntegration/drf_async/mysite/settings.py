@@ -16,6 +16,8 @@ from typing import List
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
 
+from supertokens_python.types import RecipeUserId
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -173,6 +175,7 @@ def functions_override_session(param: RecipeInterface):
 
     async def create_new_session_custom(
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
         disable_anti_csrf: Union[bool, None],
@@ -184,6 +187,7 @@ def functions_override_session(param: RecipeInterface):
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
             user_id,
+            recipe_user_id,
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,

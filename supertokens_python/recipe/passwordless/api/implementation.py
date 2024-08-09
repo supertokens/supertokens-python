@@ -300,7 +300,7 @@ class APIImplementation(APIInterface):
         session = await create_new_session(
             request=api_options.request,
             tenant_id=tenant_id,
-            user_id=user.user_id,
+            recipe_user_id=RecipeUserId(user.user_id),
             access_token_payload={},
             session_data_in_database={},
             user_context=user_context,

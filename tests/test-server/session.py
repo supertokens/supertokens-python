@@ -85,6 +85,7 @@ def add_session_routes(app: Flask):
             anti_csrf_token=None,  # We don't have anti-csrf token in the input
             session_handle=data["session"]["sessionHandle"],
             user_id=data["session"]["userId"],
+            recipe_user_id=data["session"]["recipeUserId"],
             user_data_in_access_token=data["session"]["userDataInAccessToken"],
             req_res_info=None,  # We don't have this information in the input
             access_token_updated=data["session"]["accessTokenUpdated"],
@@ -143,6 +144,7 @@ def add_session_routes(app: Flask):
             anti_csrf_token=None,  # We don't have anti-csrf token in the input
             session_handle=data["session"]["sessionHandle"],
             user_id=data["session"]["userId"],
+            recipe_user_id=data["session"]["recipeUserId"],
             user_data_in_access_token=data["session"]["userDataInAccessToken"],
             req_res_info=None,  # We don't have this information in the input
             access_token_updated=data["session"]["accessTokenUpdated"],

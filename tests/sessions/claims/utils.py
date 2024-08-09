@@ -24,6 +24,7 @@ def session_functions_override_with_claim(
 
         async def new_create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Union[None, Dict[str, Any]],
             session_data_in_database: Union[None, Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -43,6 +44,7 @@ def session_functions_override_with_claim(
 
             return await oi_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,

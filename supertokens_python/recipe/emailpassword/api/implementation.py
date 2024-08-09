@@ -47,7 +47,7 @@ from supertokens_python.utils import find_first_occurrence_in_list
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types import GeneralErrorResponse, RecipeUserId
 
 
 class APIImplementation(APIInterface):
@@ -178,7 +178,7 @@ class APIImplementation(APIInterface):
         session = await create_new_session(
             tenant_id=tenant_id,
             request=api_options.request,
-            user_id=user.user_id,
+            recipe_user_id=RecipeUserId(user.user_id),
             access_token_payload={},
             session_data_in_database={},
             user_context=user_context,
@@ -219,7 +219,7 @@ class APIImplementation(APIInterface):
         session = await create_new_session(
             tenant_id=tenant_id,
             request=api_options.request,
-            user_id=user.user_id,
+            recipe_user_id=RecipeUserId(user.user_id),
             access_token_payload={},
             session_data_in_database={},
             user_context=user_context,

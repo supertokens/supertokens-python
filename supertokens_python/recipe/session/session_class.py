@@ -210,6 +210,7 @@ class Session(SessionContainer):
 
         validate_claim_res = await self.recipe_implementation.validate_claims(
             self.get_user_id(user_context),
+            self.get_recipe_user_id(user_context),
             self.get_access_token_payload(user_context),
             claim_validators,
             user_context,
@@ -236,9 +237,9 @@ class Session(SessionContainer):
             user_context = {}
 
         update = await claim.build(
-            self.get_user_id(),
-            self.get_recipe_user_id(),
-            self.get_tenant_id(),
+            self.get_user_id(user_context=user_context),
+            self.get_recipe_user_id(user_context=user_context),
+            self.get_tenant_id(user_context=user_context),
             user_context,
         )
         return await self.merge_into_access_token_payload(update, user_context)

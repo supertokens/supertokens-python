@@ -54,6 +54,7 @@ from supertokens_python.recipe.session.syncio import merge_into_access_token_pay
 from supertokens_python.async_to_sync_wrapper import sync
 
 from supertokens_python.constants import VERSION
+from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.syncio import get_session_information
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -306,6 +307,7 @@ def functions_override_session(param: RecipeInterface):
 
     def create_new_session_custom(
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
         disable_anti_csrf: Union[bool, None],
@@ -317,6 +319,7 @@ def functions_override_session(param: RecipeInterface):
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return original_create_new_session(
             user_id,
+            recipe_user_id,
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,

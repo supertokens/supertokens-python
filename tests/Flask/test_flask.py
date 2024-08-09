@@ -32,6 +32,7 @@ from supertokens_python.recipe.session.syncio import (
     refresh_session,
     revoke_session,
 )
+from supertokens_python.types import RecipeUserId
 from tests.Flask.utils import extract_all_cookies
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
@@ -193,7 +194,7 @@ def driver_config_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        create_new_session(request, "public", user_id, {}, {})
+        create_new_session(request, "public", RecipeUserId(user_id), {}, {})
 
         return jsonify({"userId": user_id, "session": "ssss"})
 
@@ -753,7 +754,7 @@ def flask_app():
     @app.route("/login")  # type: ignore
     def login():  # type: ignore
         user_id = "userId"
-        s = create_new_session(request, "public", user_id, {}, {})
+        s = create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return jsonify({"user": s.get_user_id()})
 
     @app.route("/ping")  # type: ignore
@@ -832,7 +833,9 @@ def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middlewa
     assert res.status_code == 401
     assert res.json == {"message": "unauthorised"}
 
-    s = create_new_session_without_request_response("public", "userId", {}, {})
+    s = create_new_session_without_request_response(
+        "public", RecipeUserId("userId"), {}, {}
+    )
     res = client.get(
         "/verify", headers={"Authorization": "Bearer " + s.get_access_token()}
     )
@@ -882,7 +885,7 @@ def flask_app_that_checks_for_supertokens_in_g():
 
     @app.route("/create-session")  # type: ignore
     def create_session_api():  # type: ignore
-        create_new_session(request, "public", "userId", {}, {})
+        create_new_session(request, "public", RecipeUserId("userId"), {}, {})
         return jsonify({})
 
     return app

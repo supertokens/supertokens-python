@@ -21,6 +21,7 @@ from fastapi import FastAPI, Depends
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from pytest import fixture, mark
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from requests.cookies import cookiejar_from_dict  # type: ignore
 
@@ -105,7 +106,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
         raise Exception("Should never come here")
 
     response = await create_new_session(
-        s.recipe_implementation, "public", "", False, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(""), False, {}, {}, None
     )
 
     assert response.session is not None
@@ -210,7 +211,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         new_session = await create_new_session(
             s.recipe_implementation,
             "public",
-            "someUser",
+            RecipeUserId("someUser"),
             False,
             {"someKey": "someValue"},
             {},
@@ -218,7 +219,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
         )
         access_tokens.append(new_session.accessToken.token)
 
-    session_handles = await get_all_session_handles_for_user("someUser", "public")
+    session_handles = await get_all_session_handles_for_user("someUser", True, "public")
 
     assert len(session_handles) == 7
 
@@ -280,7 +281,9 @@ async def driver_config_client():
 
     @app.post("/create")
     async def create_api(request: Request):  # type: ignore
-        await async_create_new_session(request, "public", "test-user", {}, {})
+        await async_create_new_session(
+            request, "public", RecipeUserId("test-user"), {}, {}
+        )
         return ""
 
     @app.post("/sessioninfo-optional")
@@ -313,7 +316,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
     user_id = "user_id"
 
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, False, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(user_id), False, {}, {}, None
     )
 
     session_handle = response.session.handle
@@ -400,7 +403,9 @@ async def test_should_use_override_functions_in_session_container_methods():
 
     mock_response = MagicMock()
 
-    my_session = await async_create_new_session(mock_response, "public", "test_id")
+    my_session = await async_create_new_session(
+        mock_response, "public", RecipeUserId("test_id"), {}
+    )
     data = await my_session.get_session_data_from_database()
 
     assert data == {"foo": "bar"}
@@ -733,7 +738,9 @@ async def test_that_verify_session_doesnt_always_call_core():
 
     # response = await create_new_session(s.recipe_implementation, "", False, {}, {})
 
-    session1 = await create_new_session_without_request_response("public", "user-id")
+    session1 = await create_new_session_without_request_response(
+        "public", RecipeUserId("user-id")
+    )
 
     assert session1 is not None
     assert session1.access_token != ""

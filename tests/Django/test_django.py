@@ -41,6 +41,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
 
 import pytest
+from supertokens_python.types import RecipeUserId
 from tests.utils import (
     clean_st,
     reset,
@@ -86,7 +87,7 @@ def get_cookies(response: HttpResponse) -> Dict[str, Any]:
 
 
 async def create_new_session_view(request: HttpRequest):
-    await create_new_session(request, "public", "user_id")
+    await create_new_session(request, "public", RecipeUserId("user_id"))
     return JsonResponse({"foo": "bar"})
 
 
@@ -979,7 +980,7 @@ class SupertokensTest(TestCase):
 
         # Create a session and get access token
         s = await create_new_session_without_request_response(
-            "public", "userId", {}, {}
+            "public", RecipeUserId("userId"), {}, {}
         )
         access_token = s.get_access_token()
         headers = {"HTTP_AUTHORIZATION": "Bearer " + access_token}
