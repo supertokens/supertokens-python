@@ -48,6 +48,8 @@ async def handle_signout_api(
         user_context=user_context,
     )
 
+    assert session is not None
+
     response = await api_implementation.signout_post(session, api_options, user_context)
     if api_options.response is None:
         raise Exception("Should never come here")

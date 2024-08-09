@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.requests import Request
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -56,7 +57,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")

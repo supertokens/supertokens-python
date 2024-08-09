@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
 from .api import (
@@ -81,10 +80,6 @@ class ThirdPartyRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
-
             mt_recipe = MultitenancyRecipe.get_instance_optional()
             if mt_recipe:
                 mt_recipe.static_third_party_providers = self.providers

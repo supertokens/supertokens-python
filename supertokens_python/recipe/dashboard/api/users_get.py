@@ -17,8 +17,6 @@ import asyncio
 from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
 from typing_extensions import Literal
 
-from supertokens_python.supertokens import Supertokens
-
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
 from ..interfaces import DashboardUsersGetResponse
@@ -32,6 +30,7 @@ if TYPE_CHECKING:
     from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
+from supertokens_python.asyncio import get_users_newest_first, get_users_oldest_first
 
 
 async def handle_users_get_api(
@@ -50,21 +49,22 @@ async def handle_users_get_api(
         "timeJoinedOrder", "DESC"
     )
     if time_joined_order not in ["ASC", "DESC"]:
-        raise_bad_input_exception("Invalid value recieved for 'timeJoinedOrder'")
+        raise_bad_input_exception("Invalid value received for 'timeJoinedOrder'")
 
     pagination_token = api_options.request.get_query_param("paginationToken")
+    query = get_search_params_from_url(api_options.request.get_original_url())
 
-    users_response = await Supertokens.get_instance().get_users(
+    users_response = await (
+        get_users_newest_first
+        if time_joined_order == "DESC"
+        else get_users_oldest_first
+    )(
         tenant_id,
-        time_joined_order=time_joined_order,
         limit=int(limit),
         pagination_token=pagination_token,
-        include_recipe_ids=None,
-        query=api_options.request.get_query_params(),
+        query=query,
         user_context=user_context,
     )
-
-    # user metadata bulk fetch with batches:
 
     try:
         UserMetadataRecipe.get_instance()
@@ -80,15 +80,13 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
         user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id, user_context)
+        user_metadata = await get_user_metadata(user.id, user_context)
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 
-        # None becomes null which is acceptable for the dashboard.
         users_with_metadata[user_idx].first_name = first_name
         users_with_metadata[user_idx].last_name = last_name
 
-    # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
         metadata_fetch_awaitables.append(get_user_metadata_and_update_user(i))
 
@@ -108,10 +106,22 @@ async def handle_users_get_api(
             )
         ]
         await asyncio.gather(*promises_to_call)
-
         promise_arr_start_position += batch_size
 
     return DashboardUsersGetResponse(
         users_with_metadata,
         users_response.next_pagination_token,
     )
+
+
+def get_search_params_from_url(url: str) -> Dict[str, str]:
+    from urllib.parse import urlparse, parse_qs
+
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    search_query = {
+        key: value[0]
+        for key, value in query_params.items()
+        if key not in ["limit", "timeJoinedOrder", "paginationToken"]
+    }
+    return search_query

@@ -3,6 +3,7 @@ from unittest.mock import patch
 from pytest import mark
 
 from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.types import RecipeUserId
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
 from tests.utils import AsyncMock, MagicMock
 
@@ -28,6 +29,7 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,
         False,  # access_token_updated
@@ -60,6 +62,7 @@ async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated

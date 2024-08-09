@@ -56,7 +56,6 @@ from .utils import (
     OverrideConfig,
     validate_and_normalise_user_input,
 )
-from ..emailverification import EmailVerificationRecipe
 from ..emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     EmailDoesNotExistError,
@@ -142,9 +141,7 @@ class PasswordlessRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+            pass
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 

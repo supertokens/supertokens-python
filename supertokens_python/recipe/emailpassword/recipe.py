@@ -43,7 +43,6 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 
 from .api import (
     handle_email_exists_api,
@@ -118,9 +117,7 @@ class EmailPasswordRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+            pass
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 

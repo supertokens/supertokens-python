@@ -11,16 +11,175 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, TypeVar, Union
+from typing import Any, Awaitable, Dict, List, TypeVar, Union, Optional
+from phonenumbers import format_number, parse  # type: ignore
+import phonenumbers  # type: ignore
+from typing_extensions import Literal
 
 _T = TypeVar("_T")
 
 
+class RecipeUserId:
+    def __init__(self, recipe_user_id: str):
+        self.recipe_user_id = recipe_user_id
+
+    def get_as_string(self) -> str:
+        return self.recipe_user_id
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, RecipeUserId):
+            return self.recipe_user_id == other.recipe_user_id
+        return False
+
+
 class ThirdPartyInfo:
-    def __init__(self, third_party_user_id: str, third_party_id: str):
-        self.user_id = third_party_user_id
+    def __init__(self, third_party_id: str, third_party_user_id: str):
         self.id = third_party_id
+        self.user_id = third_party_user_id
+
+
+class AccountInfo:
+    def __init__(
+        self,
+        email: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        third_party: Optional[ThirdPartyInfo] = None,
+    ):
+        self.email = email
+        self.phone_number = phone_number
+        self.third_party = third_party
+
+
+class LoginMethod(AccountInfo):
+    def __init__(
+        self,
+        recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
+        recipe_user_id: str,
+        tenant_ids: List[str],
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        third_party: Union[ThirdPartyInfo, None],
+        time_joined: int,
+        verified: bool,
+    ):
+        super().__init__(email, phone_number, third_party)
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless"
+        ] = recipe_id
+        self.recipe_user_id = RecipeUserId(recipe_user_id)
+        self.tenant_ids: List[str] = tenant_ids
+        self.time_joined = time_joined
+        self.verified = verified
+
+    def has_same_email_as(self, email: Union[str, None]) -> bool:
+        if email is None:
+            return False
+        return (
+            self.email is not None
+            and self.email.lower().strip() == email.lower().strip()
+        )
+
+    def has_same_phone_number_as(self, phone_number: Union[str, None]) -> bool:
+        if phone_number is None:
+            return False
+
+        cleaned_phone = phone_number.strip()
+        try:
+            cleaned_phone = format_number(
+                parse(phone_number, None), phonenumbers.PhoneNumberFormat.E164
+            )
+        except Exception:
+            pass  # here we just use the stripped version
+
+        return self.phone_number is not None and self.phone_number == cleaned_phone
+
+    def has_same_third_party_info_as(
+        self, third_party: Union[ThirdPartyInfo, None]
+    ) -> bool:
+        if third_party is None or self.third_party is None:
+            return False
+        return (
+            self.third_party.id.strip() == third_party.id.strip()
+            and self.third_party.user_id.strip() == third_party.user_id.strip()
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "recipeId": self.recipe_id,
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "tenantIds": self.tenant_ids,
+            "email": self.email,
+            "phoneNumber": self.phone_number,
+            "thirdParty": self.third_party.__dict__ if self.third_party else None,
+            "timeJoined": self.time_joined,
+            "verified": self.verified,
+        }
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> "LoginMethod":
+        return LoginMethod(
+            recipe_id=json["recipeId"],
+            recipe_user_id=json["recipeUserId"],
+            tenant_ids=json["tenantIds"],
+            email=json["email"],
+            phone_number=json["phoneNumber"],
+            third_party=(
+                ThirdPartyInfo(json["thirdParty"]["id"], json["thirdParty"]["userId"])
+                if json["thirdParty"]
+                else None
+            ),
+            time_joined=json["timeJoined"],
+            verified=json["verified"],
+        )
+
+
+class AccountLinkingUser:
+    def __init__(
+        self,
+        user_id: str,
+        is_primary_user: bool,
+        tenant_ids: List[str],
+        emails: List[str],
+        phone_numbers: List[str],
+        third_party: List[ThirdPartyInfo],
+        login_methods: List[LoginMethod],
+        time_joined: int,
+    ):
+        self.id = user_id
+        self.is_primary_user = is_primary_user
+        self.tenant_ids = tenant_ids
+        self.emails = emails
+        self.phone_numbers = phone_numbers
+        self.third_party = third_party
+        self.login_methods = login_methods
+        self.time_joined = time_joined
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "isPrimaryUser": self.is_primary_user,
+            "tenantIds": self.tenant_ids,
+            "emails": self.emails,
+            "phoneNumbers": self.phone_numbers,
+            "thirdParty": self.third_party,
+            "loginMethods": [lm.to_json() for lm in self.login_methods],
+            "timeJoined": self.time_joined,
+        }
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> "AccountLinkingUser":
+        return AccountLinkingUser(
+            user_id=json["id"],
+            is_primary_user=json["isPrimaryUser"],
+            tenant_ids=json["tenantIds"],
+            emails=json["emails"],
+            phone_numbers=json["phoneNumbers"],
+            third_party=json["thirdParty"],
+            login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
+            time_joined=json["timeJoined"],
+        )
 
 
 class User:
@@ -60,12 +219,6 @@ class User:
             res["user"]["thirdParty"] = self.third_party_info.__dict__
 
         return res
-
-
-class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
-        self.users: List[User] = users
-        self.next_pagination_token: Union[str, None] = next_pagination_token
 
 
 class APIResponse(ABC):

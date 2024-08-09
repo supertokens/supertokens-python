@@ -487,7 +487,7 @@ def custom_init(
         original_signout_post = original_implementation.signout_post
 
         async def signout_post(
-            session: Optional[SessionContainer],
+            session: SessionContainer,
             api_options: SAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -796,7 +796,7 @@ def test_feature_flags():
 @verify_session()
 def unverify_email_api():
     session_: SessionContainer = g.supertokens  # type: ignore
-    unverify_email(session_.get_user_id())
+    unverify_email(session_.get_recipe_user_id())
     session_.sync_fetch_and_set_claim(EmailVerificationClaim)
     return jsonify({"status": "OK"})
 

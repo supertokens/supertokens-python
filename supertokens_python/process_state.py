@@ -12,22 +12,27 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from os import environ
-from typing import List
+from typing import List, Optional
 from enum import Enum
 
 
-class AllowedProcessStates(Enum):
+class PROCESS_STATE(Enum):
     CALLING_SERVICE_IN_VERIFY = 1
-    CALLING_SERVICE_IN_GET_HANDSHAKE_INFO = 2
-    CALLING_SERVICE_IN_GET_API_VERSION = 3
-    CALLING_SERVICE_IN_REQUEST_HELPER = 4
+    CALLING_SERVICE_IN_GET_API_VERSION = 2
+    CALLING_SERVICE_IN_REQUEST_HELPER = 3
+    MULTI_JWKS_VALIDATION = 4
+    IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS = 5
+    IS_SIGN_UP_ALLOWED_CALLED = 6
+    IS_SIGN_IN_ALLOWED_CALLED = 7
+    IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED = 8
+    ADDING_NO_CACHE_HEADER_IN_FETCH = 9
 
 
 class ProcessState:
     __instance = None
 
     def __init__(self):
-        self.history: List[AllowedProcessStates] = []
+        self.history: List[PROCESS_STATE] = []
 
     @staticmethod
     def get_instance():
@@ -35,9 +40,17 @@ class ProcessState:
             ProcessState.__instance = ProcessState()
         return ProcessState.__instance
 
-    def add_state(self, state: AllowedProcessStates):
+    def add_state(self, state: PROCESS_STATE):
         if ("SUPERTOKENS_ENV" in environ) and (environ["SUPERTOKENS_ENV"] == "testing"):
             self.history.append(state)
 
     def reset(self):
         self.history = []
+
+    def get_event_by_last_event_by_name(
+        self, state: PROCESS_STATE
+    ) -> Optional[PROCESS_STATE]:
+        for event in reversed(self.history):
+            if event == state:
+                return event
+        return None

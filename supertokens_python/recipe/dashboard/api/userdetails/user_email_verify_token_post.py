@@ -13,6 +13,8 @@ from ...interfaces import (
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
 )
 
+from supertokens_python.types import RecipeUserId
+
 
 async def handle_email_verify_token_post(
     _api_interface: APIInterface,
@@ -32,7 +34,11 @@ async def handle_email_verify_token_post(
         )
 
     res = await send_email_verification_email(
-        tenant_id=tenant_id, user_id=user_id, email=None, user_context=user_context
+        tenant_id=tenant_id,
+        user_id=user_id,
+        recipe_user_id=RecipeUserId(user_id),
+        email=None,
+        user_context=user_context,
     )
 
     if isinstance(res, SendEmailVerificationEmailAlreadyVerifiedError):

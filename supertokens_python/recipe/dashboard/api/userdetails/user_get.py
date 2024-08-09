@@ -4,6 +4,7 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
+from supertokens_python.types import RecipeUserId
 
 from ...interfaces import (
     APIInterface,
@@ -40,8 +41,10 @@ async def handle_user_get(
     if not is_recipe_initialised(recipe_id):
         return UserGetAPIRecipeNotInitialisedError()
 
-    user_response = await get_user_for_recipe_id(user_id, recipe_id)
-    if user_response is None:
+    user_response = await get_user_for_recipe_id(
+        RecipeUserId(user_id), recipe_id, _user_context
+    )
+    if user_response.user is None:
         return UserGetAPINoUserFoundError()
 
     user = user_response.user

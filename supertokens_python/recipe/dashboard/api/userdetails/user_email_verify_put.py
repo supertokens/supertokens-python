@@ -11,6 +11,8 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenInvalidTokenError,
 )
 
+from supertokens_python.types import RecipeUserId
+
 from ...interfaces import (
     APIInterface,
     APIOptions,
@@ -40,7 +42,10 @@ async def handle_user_email_verify_put(
 
     if verified:
         token_response = await create_email_verification_token(
-            tenant_id=tenant_id, user_id=user_id, email=None, user_context=user_context
+            tenant_id=tenant_id,
+            recipe_user_id=RecipeUserId(user_id),
+            email=None,
+            user_context=user_context,
         )
 
         if isinstance(
@@ -57,6 +62,6 @@ async def handle_user_email_verify_put(
             raise Exception("Should not come here")
 
     else:
-        await unverify_email(user_id, user_context=user_context)
+        await unverify_email(RecipeUserId(user_id), user_context=user_context)
 
     return UserEmailVerifyPutAPIResponse()

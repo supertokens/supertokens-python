@@ -21,6 +21,7 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session
 from typing import Optional, Dict, Any
 from supertokens_python.framework import BaseRequest
+from supertokens_python.types import RecipeUserId
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -698,7 +699,7 @@ async def test_samesite_valid_config():
         ["http://localhost:3000", "https://supertokensapi.io"],
         ["http://127.0.0.1:3000", "https://supertokensapi.io"],
     ]
-    for (website_domain, api_domain) in domain_combinations:
+    for website_domain, api_domain in domain_combinations:
         reset()
         clean_st()
         setup_st()
@@ -724,7 +725,7 @@ async def test_samesite_invalid_config():
         ["http://supertokens.io", "http://127.0.0.1:8000"],
         ["http://supertokens.io", "http://supertokensapi.io"],
     ]
-    for (website_domain, api_domain) in domain_combinations:
+    for website_domain, api_domain in domain_combinations:
         reset()
         clean_st()
         setup_st()
@@ -744,7 +745,9 @@ async def test_samesite_invalid_config():
                     )
                 ],
             )
-            await create_new_session("public", MagicMock(), "userId", {}, {})
+            await create_new_session(
+                "public", MagicMock(), RecipeUserId("userId"), {}, {}
+            )
         except Exception as e:
             assert (
                 str(e)
