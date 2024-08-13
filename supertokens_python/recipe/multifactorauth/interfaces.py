@@ -29,7 +29,7 @@ from ...types import GeneralErrorResponse
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
-    from .types import MFARequirementList, AccountLinkingConfig
+    from .types import MFARequirementList, MultiFactorAuthConfig
 
 
 class RecipeInterface(ABC):
@@ -98,14 +98,14 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: AccountLinkingConfig,
+        config: MultiFactorAuthConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: AccountLinkingConfig = config
+        self.config = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
 

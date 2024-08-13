@@ -50,7 +50,17 @@ class OverrideConfig:
         self.apis = apis
 
 
-class AccountLinkingConfig:
+class InputOverrideConfig:
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
+        self.functions = functions
+        self.apis = apis
+
+
+class MultiFactorAuthConfig:
     def __init__(
         self,
         first_factors: Optional[List[str]],
