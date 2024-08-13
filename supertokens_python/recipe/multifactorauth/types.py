@@ -14,6 +14,7 @@
 
 from typing import Dict, Any, Union, List, Optional, Callable
 from .interfaces import RecipeInterface, APIInterface
+from typing_extensions import Literal
 
 
 class MFARequirementList(List[Union[Dict[str, List[str]], str]]):
@@ -50,16 +51,6 @@ class OverrideConfig:
         self.apis = apis
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
 class MultiFactorAuthConfig:
     def __init__(
         self,
@@ -68,3 +59,23 @@ class MultiFactorAuthConfig:
     ):
         self.first_factors = first_factors
         self.override = override
+
+
+class FactorIds:
+    EMAILPASSWORD: Literal["emailpassword"] = "emailpassword"
+    OTP_EMAIL: Literal["otp-email"] = "otp-email"
+    OTP_PHONE: Literal["otp-phone"] = "otp-phone"
+    LINK_EMAIL: Literal["link-email"] = "link-email"
+    LINK_PHONE: Literal["link-phone"] = "link-phone"
+    THIRDPARTY: Literal["thirdparty"] = "thirdparty"
+    TOTP: Literal["totp"] = "totp"
+
+
+class FactorIdsAndType:
+    def __init__(
+        self,
+        factor_ids: List[str],
+        type: Union[Literal["string"], Literal["oneOf"], Literal["allOfInAnyOrder"]],
+    ):
+        self.factor_ids = factor_ids
+        self.type = type

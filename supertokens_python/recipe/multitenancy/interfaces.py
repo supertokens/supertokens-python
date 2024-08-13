@@ -102,11 +102,15 @@ class TenantConfigResponse:
         passwordless: PasswordlessConfig,
         third_party: ThirdPartyConfig,
         core_config: Dict[str, Any],
+        first_factors: Optional[List[str]] = None,
+        required_secondary_factors: Optional[List[str]] = None,
     ):
         self.emailpassword = emailpassword
         self.passwordless = passwordless
         self.third_party = third_party
         self.core_config = core_config
+        self.first_factors = first_factors
+        self.required_secondary_factors = required_secondary_factors
 
 
 class GetTenantOkResult(TenantConfigResponse):

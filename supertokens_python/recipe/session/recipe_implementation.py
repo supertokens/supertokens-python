@@ -132,6 +132,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                         user_id,
                         recipe_user_id,
                         access_token_payload.get("tId", DEFAULT_TENANT_ID),
+                        access_token_payload,
                         user_context,
                     )
                 )

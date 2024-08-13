@@ -90,7 +90,9 @@ async def test_get_last_refetch_time_empty_payload():
 
 async def test_should_return_none_for_empty_payload(timestamp: int):
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
 
     assert claim.get_last_refetch_time(payload) == timestamp
 
@@ -112,7 +114,9 @@ async def test_validators_should_not_validate_empty_payload():
 
 async def test_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
     res = await claim.validators.has_value(val2).validate(payload, {})
 
     assert res.is_valid is False
@@ -125,7 +129,9 @@ async def test_should_not_validate_mismatching_payload():
 
 async def test_validator_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
     res = await claim.validators.has_value(val).validate(payload, {})
 
     assert res.is_valid is True
@@ -133,7 +139,9 @@ async def test_validator_should_validate_matching_payload():
 
 async def test_should_validate_old_values_as_well(patch_get_timestamp_ms: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
 
     # Increase clock time by 10 mins:
     patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
@@ -151,7 +159,9 @@ async def test_should_refetch_if_value_not_set():
 
 async def test_validator_should_not_refetch_if_value_is_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
     assert (
         await resolve(claim.validators.has_value(val2).should_refetch(payload, {}))
         is False
@@ -175,7 +185,9 @@ async def test_should_not_validate_empty_payload():
 
 async def test_has_fresh_value_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
     res = await claim.validators.has_value(val2, 600).validate(payload, {})
     assert res.is_valid is False
     assert res.reason == {
@@ -187,7 +199,9 @@ async def test_has_fresh_value_should_not_validate_mismatching_payload():
 
 async def test_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
     res = await claim.validators.has_value(val, 600).validate(payload, {})
     assert res.is_valid is True
 
@@ -197,7 +211,9 @@ async def test_should_not_validate_old_values_as_well(
 ):
 
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
 
     # Increase clock time by 10 mins:
     patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
@@ -214,14 +230,14 @@ async def test_should_refetch_if_value_is_not_set():
 
 async def test_should_not_refetch_if_value_is_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("userId", RecipeUserId("userId"), "public")
+    payload = await claim.build("userId", RecipeUserId("userId"), "public", {})
 
     assert claim.validators.has_value(val2, 600).should_refetch(payload, {}) is False
 
 
 async def test_should_refetch_if_value_is_old(patch_get_timestamp_ms: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
-    payload = await claim.build("userId", RecipeUserId("userId"), DEFAULT_TENANT_ID)
+    payload = await claim.build("userId", RecipeUserId("userId"), DEFAULT_TENANT_ID, {})
 
     # Increase clock time by 10 mins:
     patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
@@ -233,7 +249,9 @@ async def test_should_not_validate_old_values_as_well_with_default_max_age_provi
     patch_get_timestamp_ms: MagicMock,
 ):
     claim = PrimitiveClaim("key", sync_fetch_value, 300)  # 5 mins
-    payload = await claim.build("user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID)
+    payload = await claim.build(
+        "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
+    )
 
     # Increase clock time by 10 mins:
     patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
@@ -251,7 +269,7 @@ async def test_should_refetch_if_value_is_old_with_default_max_age_provided(
     patch_get_timestamp_ms: MagicMock,
 ):
     claim = PrimitiveClaim("key", sync_fetch_value, 300)  # 5 mins
-    payload = await claim.build("userId", RecipeUserId("userId"), "public")
+    payload = await claim.build("userId", RecipeUserId("userId"), "public", {})
 
     # Increase clock time by 10 mins:
     patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore

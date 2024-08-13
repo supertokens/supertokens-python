@@ -629,7 +629,7 @@ class SessionClaim(ABC, Generic[_T]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, RecipeUserId, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[_T]],
         ],
     ) -> None:
@@ -676,13 +676,16 @@ class SessionClaim(ABC, Generic[_T]):
         user_id: str,
         recipe_user_id: RecipeUserId,
         tenant_id: str,
+        current_payload: Dict[str, Any],
         user_context: Optional[Dict[str, Any]] = None,
     ) -> JSONObject:
         if user_context is None:
             user_context = {}
 
         value = await resolve(
-            self.fetch_value(user_id, recipe_user_id, tenant_id, user_context)
+            self.fetch_value(
+                user_id, recipe_user_id, tenant_id, current_payload, user_context
+            )
         )
 
         if value is None:

@@ -477,6 +477,7 @@ class EmailVerificationClaimClass(BooleanClaim):
             _: str,
             recipe_user_id: RecipeUserId,
             __: str,
+            ___: Dict[str, Any],
             user_context: Dict[str, Any],
         ) -> bool:
             recipe = EmailVerificationRecipe.get_instance_or_throw()

@@ -39,7 +39,7 @@ class RecipeInterface(ABC):
         session: SessionContainer,
         factor_id: str,
         mfa_requirements_for_auth: MFARequirementList,
-        factors_set_up_for_user: Awaitable[Callable[[], List[str]]],
+        factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
         user_context: Dict[str, Any],
     ) -> None:
         pass
@@ -50,10 +50,10 @@ class RecipeInterface(ABC):
         tenant_id: str,
         access_token_payload: Dict[str, Any],
         completed_factors: Dict[str, int],
-        user: Awaitable[Callable[[], AccountLinkingUser]],
-        factors_set_up_for_user: Awaitable[Callable[[], List[str]]],
-        required_secondary_factors_for_user: Awaitable[Callable[[], List[str]]],
-        required_secondary_factors_for_tenant: Awaitable[Callable[[], List[str]]],
+        user: Callable[[], Awaitable[AccountLinkingUser]],
+        factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
+        required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]],
+        required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]],
         user_context: Dict[str, Any],
     ) -> MFARequirementList:
         pass

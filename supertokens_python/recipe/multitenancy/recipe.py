@@ -92,6 +92,8 @@ class MultitenancyRecipe(RecipeModule):
         )
 
         RecipeModule.get_tenant_id = recipe_implementation.get_tenant_id
+        self.static_first_factors: Optional[List[str]] = None
+        self.all_available_first_factors: List[str] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, MultitenancyError)

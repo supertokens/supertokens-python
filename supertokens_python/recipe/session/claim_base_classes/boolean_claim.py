@@ -31,7 +31,7 @@ class BooleanClaim(PrimitiveClaim[bool]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, RecipeUserId, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[bool]],
         ],
         default_max_age_in_sec: Optional[int] = None,
