@@ -134,7 +134,7 @@ class Querier:
             raise Exception(&#34;Retry request failed&#34;)
 
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=30.0) as client:
                 if method == &#34;GET&#34;:
                     return await client.get(url, *args, **kwargs)  # type: ignore
                 if method == &#34;POST&#34;:
@@ -658,7 +658,7 @@ class Querier:
             raise Exception(&#34;Retry request failed&#34;)
 
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=30.0) as client:
                 if method == &#34;GET&#34;:
                     return await client.get(url, *args, **kwargs)  # type: ignore
                 if method == &#34;POST&#34;:
@@ -1234,7 +1234,7 @@ def reset():
         raise Exception(&#34;Retry request failed&#34;)
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             if method == &#34;GET&#34;:
                 return await client.get(url, *args, **kwargs)  # type: ignore
             if method == &#34;POST&#34;:

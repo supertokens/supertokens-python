@@ -121,7 +121,7 @@ async def handle_analytics_post(
         data[&#34;telemetryId&#34;] = telemetry_id
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             await client.post(  # type: ignore
                 url=TELEMETRY_SUPERTOKENS_API_URL,
                 json=data,
@@ -209,7 +209,7 @@ async def handle_analytics_post(
         data[&#34;telemetryId&#34;] = telemetry_id
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             await client.post(  # type: ignore
                 url=TELEMETRY_SUPERTOKENS_API_URL,
                 json=data,

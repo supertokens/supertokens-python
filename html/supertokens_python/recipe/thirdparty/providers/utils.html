@@ -64,7 +64,7 @@ async def do_get_request(
     if headers is None:
         headers = {}
 
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         res = await client.get(url, params=query_params, headers=headers)  # type:ignore
 
         log_debug_message(
@@ -87,7 +87,7 @@ async def do_post_request(
     headers[&#34;content-type&#34;] = &#34;application/x-www-form-urlencoded&#34;
     headers[&#34;accept&#34;] = &#34;application/json&#34;
 
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         res = await client.post(url, data=body_params, headers=headers)  # type:ignore
         log_debug_message(
             &#34;Received response with status %s and body %s&#34;, res.status_code, res.text
@@ -143,7 +143,7 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
     if headers is None:
         headers = {}
 
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         res = await client.get(url, params=query_params, headers=headers)  # type:ignore
 
         log_debug_message(
@@ -175,7 +175,7 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
     headers[&#34;content-type&#34;] = &#34;application/x-www-form-urlencoded&#34;
     headers[&#34;accept&#34;] = &#34;application/json&#34;
 
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         res = await client.post(url, data=body_params, headers=headers)  # type:ignore
         log_debug_message(
             &#34;Received response with status %s and body %s&#34;, res.status_code, res.text

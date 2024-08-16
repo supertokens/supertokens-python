@@ -73,7 +73,7 @@ async def create_and_send_email_with_supertokens_service(
         data[&#34;userInputCode&#34;] = input_.user_input_code
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/passwordless/login&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
             resp.raise_for_status()
             log_debug_message(&#34;Passwordless login email sent to %s&#34;, input_.email)
@@ -145,7 +145,7 @@ class BackwardCompatibilityService(
         data[&#34;userInputCode&#34;] = input_.user_input_code
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/passwordless/login&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
             resp.raise_for_status()
             log_debug_message(&#34;Passwordless login email sent to %s&#34;, input_.email)
