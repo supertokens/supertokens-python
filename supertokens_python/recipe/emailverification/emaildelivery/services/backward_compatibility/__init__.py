@@ -38,7 +38,7 @@ async def create_and_send_email_using_supertokens_service(
         "emailVerifyURL": email_verification_url,
     }
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             resp = await client.post("https://api.supertokens.io/0/st/auth/email/verify", json=data, headers={"api-version": "0"})  # type: ignore
             resp.raise_for_status()
             log_debug_message("Email verification email sent to %s", user.email)

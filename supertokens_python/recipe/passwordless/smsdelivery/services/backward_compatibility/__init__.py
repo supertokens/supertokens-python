@@ -46,7 +46,7 @@ async def create_and_send_sms_using_supertokens_service(
         sms_input_json["urlWithLinkCode"] = input_.url_with_link_code
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             res = await client.post(  # type: ignore
                 SUPERTOKENS_SMS_SERVICE_URL,
                 json={
