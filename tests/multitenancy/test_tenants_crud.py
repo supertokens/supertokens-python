@@ -76,32 +76,32 @@ async def test_tenant_crud():
 
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config.emailpassword.enabled is True
-    assert t1_config.passwordless.enabled is False
-    assert t1_config.third_party.enabled is False
+    assert t1_config.email_password_enabled is True
+    assert t1_config.passwordless_enabled is False
+    assert t1_config.third_party_enabled is False
     assert t1_config.core_config == {}
 
     t2_config = await get_tenant("t2")
     assert t2_config is not None
-    assert t2_config.emailpassword.enabled is False
-    assert t2_config.passwordless.enabled is True
-    assert t2_config.third_party.enabled is False
+    assert t2_config.email_password_enabled is False
+    assert t2_config.passwordless_enabled is True
+    assert t2_config.third_party_enabled is False
     assert t2_config.core_config == {}
 
     t3_config = await get_tenant("t3")
     assert t3_config is not None
-    assert t3_config.emailpassword.enabled is False
-    assert t3_config.passwordless.enabled is False
-    assert t3_config.third_party.enabled is True
+    assert t3_config.email_password_enabled is False
+    assert t3_config.passwordless_enabled is False
+    assert t3_config.third_party_enabled is True
     assert t3_config.core_config == {}
 
     # update tenant1 to add passwordless:
     await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config.emailpassword.enabled is True
-    assert t1_config.passwordless.enabled is True
-    assert t1_config.third_party.enabled is False
+    assert t1_config.email_password_enabled is True
+    assert t1_config.passwordless_enabled is True
+    assert t1_config.third_party_enabled is False
     assert t1_config.core_config == {}
 
     # update tenant1 to add thirdparty:
@@ -109,9 +109,9 @@ async def test_tenant_crud():
     t1_config = await get_tenant("t1")
     assert t1_config is not None
     assert t1_config is not None
-    assert t1_config.emailpassword.enabled is True
-    assert t1_config.passwordless.enabled is True
-    assert t1_config.third_party.enabled is True
+    assert t1_config.email_password_enabled is True
+    assert t1_config.passwordless_enabled is True
+    assert t1_config.third_party_enabled is True
     assert t1_config.core_config == {}
 
     # delete tenant2:
@@ -139,8 +139,8 @@ async def test_tenant_thirdparty_config():
     tenant_config = await get_tenant("t1")
     assert tenant_config is not None
 
-    assert len(tenant_config.third_party.providers) == 1
-    provider = tenant_config.third_party.providers[0]
+    assert len(tenant_config.third_party_providers) == 1
+    provider = tenant_config.third_party_providers[0]
     assert provider.third_party_id == "google"
     assert provider.clients is not None
     assert len(provider.clients) == 1
@@ -197,8 +197,8 @@ async def test_tenant_thirdparty_config():
 
     tenant_config = await get_tenant("t1")
     assert tenant_config is not None
-    assert len(tenant_config.third_party.providers) == 1
-    provider = tenant_config.third_party.providers[0]
+    assert len(tenant_config.third_party_providers) == 1
+    provider = tenant_config.third_party_providers[0]
     assert provider.third_party_id == "google"
     assert provider.name == "Custom name"
     assert provider.clients is not None
@@ -244,7 +244,7 @@ async def test_tenant_thirdparty_config():
 
     tenant_config = await get_tenant("t1")
     assert tenant_config is not None
-    assert len(tenant_config.third_party.providers) == 0
+    assert len(tenant_config.third_party_providers) == 0
 
 
 async def test_user_association_and_disassociation_with_tenants():

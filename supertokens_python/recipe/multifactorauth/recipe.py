@@ -15,13 +15,18 @@ from __future__ import annotations
 
 from os import environ
 from typing import Any, Dict, Optional, List, Union
-from typing_extensions import Literal
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.multifactorauth.api import (
+    resync_session_and_fetch_mfa_info,
+)
+from supertokens_python.recipe.multifactorauth.constants import (
+    RESYNC_SESSION_AND_FETCH_MFA_INFO,
+)
 from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
     MultiFactorAuthClaim,
 )
@@ -39,9 +44,13 @@ from .types import (
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     GetEmailsForFactorUnknownSessionRecipeUserIdResult,
     GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+    GetEmailsForFactorOkResult,
+    GetPhoneNumbersForFactorsOkResult,
 )
 from .utils import validate_and_normalise_user_input
 from .recipe_implementation import RecipeImplementation
+from .api.implementation import APIImplementation
+from .interfaces import APIOptions
 
 
 class MultiFactorAuthRecipe(RecipeModule):
@@ -84,6 +93,13 @@ class MultiFactorAuthRecipe(RecipeModule):
             else self.config.override.functions(recipe_implementation)
         )
 
+        api_implementation = APIImplementation()
+        self.api_implementation = (
+            api_implementation
+            if self.config.override.apis is None
+            else self.config.override.apis(api_implementation)
+        )
+
         def callback():
             mt_recipe = MultitenancyRecipe.get_instance()
             mt_recipe.static_first_factors = self.config.first_factors
@@ -98,7 +114,16 @@ class MultiFactorAuthRecipe(RecipeModule):
         return False
 
     def get_apis_handled(self) -> List[APIHandled]:
-        return []
+        return [
+            APIHandled(
+                method="put",
+                path_without_api_base_path=NormalisedURLPath(
+                    RESYNC_SESSION_AND_FETCH_MFA_INFO
+                ),
+                request_id=RESYNC_SESSION_AND_FETCH_MFA_INFO,
+                disabled=self.api_implementation.disable_resync_session_and_fetch_mfa_info_put,
+            )
+        ]
 
     async def handle_api_request(
         self,
@@ -110,7 +135,18 @@ class MultiFactorAuthRecipe(RecipeModule):
         response: BaseResponse,
         user_context: Dict[str, Any],
     ):
-        return None
+        options = APIOptions(
+            request,
+            response,
+            self.get_recipe_id(),
+            self.config,
+            self.recipe_implementation,
+            self.get_app_info(),
+            self,
+        )
+        return await resync_session_and_fetch_mfa_info.handle_resync_session_and_fetch_mfa_info_api(
+            tenant_id, self.api_implementation, options, user_context
+        )
 
     async def handle_error(
         self,
@@ -193,11 +229,8 @@ class MultiFactorAuthRecipe(RecipeModule):
     async def get_emails_for_factors(
         self, user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
     ) -> Union[
-        Dict[
-            Literal["status", "factorIdToEmailsMap"],
-            Union[Literal["OK"], Dict[str, List[str]]],
-        ],
-        Dict[Literal["status"], Literal["UNKNOWN_SESSION_RECIPE_USER_ID"]],
+        GetEmailsForFactorOkResult,
+        GetEmailsForFactorUnknownSessionRecipeUserIdResult,
     ]:
 
         factorIdToEmailsMap: Dict[str, List[str]] = {}
@@ -207,10 +240,10 @@ class MultiFactorAuthRecipe(RecipeModule):
             if isinstance(
                 func_result, GetEmailsForFactorUnknownSessionRecipeUserIdResult
             ):
-                return {"status": "UNKNOWN_SESSION_RECIPE_USER_ID"}
+                return GetEmailsForFactorUnknownSessionRecipeUserIdResult()
             factorIdToEmailsMap.update(func_result.factor_id_to_emails_map)
 
-        return {"status": "OK", "factorIdToEmailsMap": factorIdToEmailsMap}
+        return GetEmailsForFactorOkResult(factor_id_to_emails_map=factorIdToEmailsMap)
 
     def add_func_to_get_phone_numbers_for_factors_from_other_recipes(
         self, func: GetPhoneNumbersForFactorsFromOtherRecipesFunc
@@ -220,11 +253,8 @@ class MultiFactorAuthRecipe(RecipeModule):
     async def get_phone_numbers_for_factors(
         self, user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
     ) -> Union[
-        Dict[
-            Literal["status", "factorIdToPhoneNumberMap"],
-            Union[Literal["OK"], Dict[str, List[str]]],
-        ],
-        Dict[Literal["status"], Literal["UNKNOWN_SESSION_RECIPE_USER_ID"]],
+        GetPhoneNumbersForFactorsOkResult,
+        GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
     ]:
         factorIdToPhoneNumberMap: Dict[str, List[str]] = {}
 
@@ -233,7 +263,9 @@ class MultiFactorAuthRecipe(RecipeModule):
             if isinstance(
                 func_result, GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult
             ):
-                return {"status": "UNKNOWN_SESSION_RECIPE_USER_ID"}
+                return GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult()
             factorIdToPhoneNumberMap.update(func_result.factor_id_to_phone_number_map)
 
-        return {"status": "OK", "factorIdToPhoneNumberMap": factorIdToPhoneNumberMap}
+        return GetPhoneNumbersForFactorsOkResult(
+            factor_id_to_phone_number_map=factorIdToPhoneNumberMap
+        )

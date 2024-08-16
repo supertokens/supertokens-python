@@ -37,7 +37,6 @@ import math
 import time
 from typing_extensions import Literal
 from supertokens_python.utils import log_debug_message
-from ..multitenancy.interfaces import GetTenantOkResult
 
 if TYPE_CHECKING:
     from .types import OverrideConfig, MultiFactorAuthConfig
@@ -276,7 +275,6 @@ async def is_valid_first_factor(
         configured_first_factors = mt_recipe.all_available_first_factors
 
     if is_factor_configured_for_tenant(
-        tenant_config=tenant_config,
         all_available_first_factors=mt_recipe.all_available_first_factors,
         first_factors=configured_first_factors,
         factor_id=factor_id,
@@ -287,7 +285,6 @@ async def is_valid_first_factor(
 
 
 def is_factor_configured_for_tenant(
-    tenant_config: GetTenantOkResult,
     all_available_first_factors: List[str],
     first_factors: List[str],
     factor_id: str,

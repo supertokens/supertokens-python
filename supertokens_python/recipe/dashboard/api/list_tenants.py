@@ -42,12 +42,7 @@ async def handle_list_tenants_api(
     final_tenants: List[DashboardListTenantItem] = []
 
     for current_tenant in tenants.tenants:
-        dashboard_tenant = DashboardListTenantItem(
-            tenant_id=current_tenant.tenant_id,
-            emailpassword=current_tenant.emailpassword,
-            passwordless=current_tenant.passwordless,
-            third_party=current_tenant.third_party,
-        )
+        dashboard_tenant = DashboardListTenantItem(current_tenant)
         final_tenants.append(dashboard_tenant)
 
     return DashboardListTenantsGetResponse(final_tenants)

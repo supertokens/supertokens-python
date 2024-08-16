@@ -62,9 +62,9 @@ def add_multitenancy_routes(app: Flask):
             {
                 "status": "OK",
                 "tenant": {
-                    "emailPassword": response.emailpassword.to_json(),
-                    "thirdParty": response.third_party.to_json(),
-                    "passwordless": response.passwordless.to_json(),
+                    "emailPassword": {"enabled": response.email_password_enabled},
+                    "thirdParty": {"enabled": response.third_party_enabled},
+                    "passwordless": {"enabled": response.passwordless_enabled},
                     "coreConfig": response.core_config,
                 },
             }
@@ -119,32 +119,34 @@ def add_multitenancy_routes(app: Flask):
                 user_info_endpoint_headers=config.get("userInfoEndpointHeaders"),
                 jwks_uri=config.get("jwksURI"),
                 oidc_discovery_endpoint=config.get("oidcDiscoveryEndpoint"),
-                user_info_map=UserInfoMap(
-                    from_id_token_payload=UserFields(
-                        user_id=config.get("userInfoMap", {})
-                        .get("fromIdTokenPayload", {})
-                        .get("userId"),
-                        email=config.get("userInfoMap", {})
-                        .get("fromIdTokenPayload", {})
-                        .get("email"),
-                        email_verified=config.get("userInfoMap", {})
-                        .get("fromIdTokenPayload", {})
-                        .get("emailVerified"),
-                    ),
-                    from_user_info_api=UserFields(
-                        user_id=config.get("userInfoMap", {})
-                        .get("fromUserInfoAPI", {})
-                        .get("userId"),
-                        email=config.get("userInfoMap", {})
-                        .get("fromUserInfoAPI", {})
-                        .get("email"),
-                        email_verified=config.get("userInfoMap", {})
-                        .get("fromUserInfoAPI", {})
-                        .get("emailVerified"),
-                    ),
-                )
-                if "userInfoMap" in config
-                else None,
+                user_info_map=(
+                    UserInfoMap(
+                        from_id_token_payload=UserFields(
+                            user_id=config.get("userInfoMap", {})
+                            .get("fromIdTokenPayload", {})
+                            .get("userId"),
+                            email=config.get("userInfoMap", {})
+                            .get("fromIdTokenPayload", {})
+                            .get("email"),
+                            email_verified=config.get("userInfoMap", {})
+                            .get("fromIdTokenPayload", {})
+                            .get("emailVerified"),
+                        ),
+                        from_user_info_api=UserFields(
+                            user_id=config.get("userInfoMap", {})
+                            .get("fromUserInfoAPI", {})
+                            .get("userId"),
+                            email=config.get("userInfoMap", {})
+                            .get("fromUserInfoAPI", {})
+                            .get("email"),
+                            email_verified=config.get("userInfoMap", {})
+                            .get("fromUserInfoAPI", {})
+                            .get("emailVerified"),
+                        ),
+                    )
+                    if "userInfoMap" in config
+                    else None
+                ),
                 require_email=config.get("requireEmail", True),
             )
         )

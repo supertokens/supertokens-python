@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Union, List, Callable, Awaitable
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 
 from supertokens_python.types import AccountLinkingUser
 
@@ -24,7 +25,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...supertokens import AppInfo
 
-from ...types import GeneralErrorResponse
+from ...types import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -101,6 +102,7 @@ class APIOptions:
         config: MultiFactorAuthConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
+        recipe_instance: MultiFactorAuthRecipe,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
@@ -108,6 +110,7 @@ class APIOptions:
         self.config = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
+        self.recipe_instance = recipe_instance
 
 
 class APIInterface:
@@ -132,16 +135,31 @@ class NextFactors:
         self.already_setup = already_setup
         self.allowed_to_setup = allowed_to_setup
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "next": self.next,
+            "alreadySetup": self.already_setup,
+            "allowedToSetup": self.allowed_to_setup,
+        }
 
-class ResyncSessionAndFetchMFAInfoPUTOkResult:
+
+class ResyncSessionAndFetchMFAInfoPUTOkResult(APIResponse):
     def __init__(
         self,
         factors: NextFactors,
-        emails: Dict[str, Union[List[str], None]],
-        phone_numbers: Dict[str, Union[List[str], None]],
+        emails: Dict[str, List[str]],
+        phone_numbers: Dict[str, List[str]],
     ):
         self.factors = factors
         self.emails = emails
         self.phone_numbers = phone_numbers
 
     status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "factors": self.factors.to_json(),
+            "emails": self.emails,
+            "phoneNumbers": self.phone_numbers,
+        }

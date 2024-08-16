@@ -28,32 +28,34 @@ if TYPE_CHECKING:
 
 
 class TenantConfig:
+    # pylint: disable=dangerous-default-value
     def __init__(
         self,
-        email_password_enabled: Union[bool, None] = None,
-        passwordless_enabled: Union[bool, None] = None,
-        third_party_enabled: Union[bool, None] = None,
-        core_config: Union[Dict[str, Any], None] = None,
+        tenant_id: str = "",
+        third_party_providers: List[ProviderConfig] = [],
+        email_password_enabled: bool = False,
+        passwordless_enabled: bool = False,
+        third_party_enabled: bool = False,
+        core_config: Dict[str, Any] = {},
         first_factors: Optional[List[str]] = None,
         required_secondary_factors: Optional[List[str]] = None,
     ):
+        self.tenant_id = tenant_id
         self.email_password_enabled = email_password_enabled
         self.passwordless_enabled = passwordless_enabled
         self.third_party_enabled = third_party_enabled
         self.core_config = core_config
         self.first_factors = first_factors
         self.required_secondary_factors = required_secondary_factors
+        self.third_party_providers = third_party_providers
 
     def to_json(self) -> Dict[str, Any]:
         res: Dict[str, Any] = {}
-        if self.email_password_enabled is not None:
-            res["emailPasswordEnabled"] = self.email_password_enabled
-        if self.passwordless_enabled is not None:
-            res["passwordlessEnabled"] = self.passwordless_enabled
-        if self.third_party_enabled is not None:
-            res["thirdPartyEnabled"] = self.third_party_enabled
-        if self.core_config is not None:
-            res["coreConfig"] = self.core_config
+        res["tenantId"] = self.tenant_id
+        res["emailPasswordEnabled"] = self.email_password_enabled
+        res["passwordlessEnabled"] = self.passwordless_enabled
+        res["thirdPartyEnabled"] = self.third_party_enabled
+        res["coreConfig"] = self.core_config
         return res
 
 
@@ -71,84 +73,10 @@ class DeleteTenantOkResult:
         self.did_exist = did_exist
 
 
-class EmailPasswordConfig:
-    def __init__(self, enabled: bool):
-        self.enabled = enabled
-
-    def to_json(self):
-        return {"enabled": self.enabled}
-
-
-class PasswordlessConfig:
-    def __init__(self, enabled: bool):
-        self.enabled = enabled
-
-    def to_json(self):
-        return {"enabled": self.enabled}
-
-
-class ThirdPartyConfig:
-    def __init__(self, enabled: bool, providers: List[ProviderConfig]):
-        self.enabled = enabled
-        self.providers = providers
-
-    def to_json(self):
-        return {
-            "enabled": self.enabled,
-            "providers": [provider.to_json() for provider in self.providers],
-        }
-
-
-class TenantConfigResponse:
-    def __init__(
-        self,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-        core_config: Dict[str, Any],
-        first_factors: Optional[List[str]] = None,
-        required_secondary_factors: Optional[List[str]] = None,
-    ):
-        self.emailpassword = emailpassword
-        self.passwordless = passwordless
-        self.third_party = third_party
-        self.core_config = core_config
-        self.first_factors = first_factors
-        self.required_secondary_factors = required_secondary_factors
-
-
-class GetTenantOkResult(TenantConfigResponse):
-    status = "OK"
-
-
-class ListAllTenantsItem(TenantConfigResponse):
-    def __init__(
-        self,
-        tenant_id: str,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-        core_config: Dict[str, Any],
-    ):
-        super().__init__(emailpassword, passwordless, third_party, core_config)
-        self.tenant_id = tenant_id
-
-    def to_json(self):
-        res = {
-            "tenantId": self.tenant_id,
-            "emailPassword": self.emailpassword.to_json(),
-            "passwordless": self.passwordless.to_json(),
-            "thirdParty": self.third_party.to_json(),
-            "coreConfig": self.core_config,
-        }
-
-        return res
-
-
 class ListAllTenantsOkResult:
     status = "OK"
 
-    def __init__(self, tenants: List[ListAllTenantsItem]):
+    def __init__(self, tenants: List[TenantConfig]):
         self.tenants = tenants
 
 
@@ -224,7 +152,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_tenant(
         self, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Optional[GetTenantOkResult]:
+    ) -> Optional[TenantConfig]:
         pass
 
     @abstractmethod

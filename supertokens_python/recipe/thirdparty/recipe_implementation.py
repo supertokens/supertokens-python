@@ -203,7 +203,7 @@ class RecipeImplementation(RecipeInterface):
             raise Exception("Tenant not found")
 
         merged_providers = merge_providers_from_core_and_static(
-            provider_configs_from_core=tenant_config.third_party.providers,
+            provider_configs_from_core=tenant_config.third_party_providers,
             provider_inputs_from_static=self.providers,
             include_all_providers=tenant_id == DEFAULT_TENANT_ID,
         )

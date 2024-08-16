@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from supertokens_python.types import AccountLinkingUser
 
@@ -26,12 +27,6 @@ if TYPE_CHECKING:
 
     from supertokens_python.recipe.session.interfaces import SessionInformationResult
     from supertokens_python.framework import BaseRequest, BaseResponse
-
-    from supertokens_python.recipe.multitenancy.interfaces import (
-        EmailPasswordConfig,
-        PasswordlessConfig,
-        ThirdPartyConfig,
-    )
 
 
 class SessionInfo:
@@ -109,27 +104,16 @@ class DashboardUsersGetResponse(APIResponse):
 
 
 class DashboardListTenantItem:
-    def __init__(
-        self,
-        tenant_id: str,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-    ):
-        self.tenant_id = tenant_id
-        self.emailpassword = emailpassword
-        self.passwordless = passwordless
-        self.third_party = third_party
+    def __init__(self, tenant_config: TenantConfig):
+        self.tenant_config = tenant_config
 
-    def to_json(self):
-        res = {
-            "tenantId": self.tenant_id,
-            "emailPassword": self.emailpassword.to_json(),
-            "passwordless": self.passwordless.to_json(),
-            "thirdParty": self.third_party.to_json(),
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "tenantId": self.tenant_config.tenant_id,
+            "emailPassword": {"enabled": self.tenant_config.email_password_enabled},
+            "passwordless": {"enabled": self.tenant_config.passwordless_enabled},
+            "thirdParty": {"enabled": self.tenant_config.third_party_enabled},
         }
-
-        return res
 
 
 class DashboardListTenantsGetResponse(APIResponse):

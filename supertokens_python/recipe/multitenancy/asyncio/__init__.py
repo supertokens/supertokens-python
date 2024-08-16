@@ -18,7 +18,6 @@ from ..interfaces import (
     TenantConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
-    GetTenantOkResult,
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
@@ -61,7 +60,7 @@ async def delete_tenant(
 
 async def get_tenant(
     tenant_id: str, user_context: Optional[Dict[str, Any]] = None
-) -> Optional[GetTenantOkResult]:
+) -> Optional[TenantConfig]:
     if user_context is None:
         user_context = {}
     recipe = MultitenancyRecipe.get_instance()

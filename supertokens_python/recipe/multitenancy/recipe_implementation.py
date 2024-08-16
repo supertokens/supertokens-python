@@ -28,15 +28,9 @@ from .interfaces import (
     TenantConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
-    TenantConfigResponse,
-    GetTenantOkResult,
-    EmailPasswordConfig,
-    PasswordlessConfig,
-    ThirdPartyConfig,
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
-    ListAllTenantsItem,
 )
 
 if TYPE_CHECKING:
@@ -48,7 +42,7 @@ from supertokens_python.querier import NormalisedURLPath
 from .constants import DEFAULT_TENANT_ID
 
 
-def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
+def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfig:
     from supertokens_python.recipe.thirdparty.provider import (
         UserInfoMap,
         UserFields,
@@ -109,13 +103,12 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
             )
         )
 
-    return TenantConfigResponse(
-        emailpassword=EmailPasswordConfig(tenant["emailPassword"]["enabled"]),
-        passwordless=PasswordlessConfig(tenant["passwordless"]["enabled"]),
-        third_party=ThirdPartyConfig(
-            tenant["thirdParty"]["enabled"],
-            providers,
-        ),
+    return TenantConfig(
+        tenant_id=tenant["tenantId"],
+        email_password_enabled=tenant["emailPassword"]["enabled"],
+        passwordless_enabled=tenant["passwordless"]["enabled"],
+        third_party_providers=providers,
+        third_party_enabled=tenant["thirdParty"]["enabled"],
         core_config=tenant["coreConfig"],
     )
 
@@ -163,7 +156,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
-    ) -> Optional[GetTenantOkResult]:
+    ) -> Optional[TenantConfig]:
         res = await self.querier.send_get_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
@@ -177,12 +170,7 @@ class RecipeImplementation(RecipeInterface):
 
         tenant_config = parse_tenant_config(res)
 
-        return GetTenantOkResult(
-            emailpassword=tenant_config.emailpassword,
-            passwordless=tenant_config.passwordless,
-            third_party=tenant_config.third_party,
-            core_config=tenant_config.core_config,
-        )
+        return tenant_config
 
     async def list_all_tenants(
         self, user_context: Dict[str, Any]
@@ -193,18 +181,11 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
-        tenant_items: List[ListAllTenantsItem] = []
+        tenant_items: List[TenantConfig] = []
 
         for tenant in response["tenants"]:
             config = parse_tenant_config(tenant)
-            item = ListAllTenantsItem(
-                tenant["tenantId"],
-                config.emailpassword,
-                config.passwordless,
-                config.third_party,
-                config.core_config,
-            )
-            tenant_items.append(item)
+            tenant_items.append(config)
 
         return ListAllTenantsOkResult(
             tenants=tenant_items,

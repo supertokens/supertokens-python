@@ -52,7 +52,7 @@ class APIImplementation(APIInterface):
             raise Exception("Tenant not found")
 
         provider_inputs_from_static = api_options.static_third_party_providers
-        provider_configs_from_core = tenant_config.third_party.providers
+        provider_configs_from_core = tenant_config.third_party_providers
 
         merged_providers = merge_providers_from_core_and_static(
             provider_configs_from_core,
@@ -82,10 +82,10 @@ class APIImplementation(APIInterface):
 
         return LoginMethodsGetOkResult(
             email_password=LoginMethodEmailPassword(
-                tenant_config.emailpassword.enabled
+                tenant_config.email_password_enabled
             ),
-            passwordless=LoginMethodPasswordless(tenant_config.passwordless.enabled),
+            passwordless=LoginMethodPasswordless(tenant_config.passwordless_enabled),
             third_party=LoginMethodThirdParty(
-                tenant_config.third_party.enabled, final_provider_list
+                tenant_config.third_party_enabled, final_provider_list
             ),
         )
