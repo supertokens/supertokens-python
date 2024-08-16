@@ -156,7 +156,7 @@ async def verify_id_token_from_jwks_endpoint_and_get_payload(
     id_token: str, jwks_uri: str, audience: str
 ):
     public_keys: List[RSAAlgorithm] = []
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         response = await client.get(jwks_uri)  # type:ignore
         key_payload = response.json()
         for key in key_payload["keys"]:

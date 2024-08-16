@@ -36,7 +36,7 @@ async def do_get_request(
     if headers is None:
         headers = {}
 
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         res = await client.get(url, params=query_params, headers=headers)  # type:ignore
 
         log_debug_message(
@@ -59,7 +59,7 @@ async def do_post_request(
     headers["content-type"] = "application/x-www-form-urlencoded"
     headers["accept"] = "application/json"
 
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=30.0) as client:
         res = await client.post(url, data=body_params, headers=headers)  # type:ignore
         log_debug_message(
             "Received response with status %s and body %s", res.status_code, res.text

@@ -45,7 +45,7 @@ async def create_and_send_email_with_supertokens_service(
         data["userInputCode"] = input_.user_input_code
 
     try:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30.0) as client:
             resp = await client.post("https://api.supertokens.io/0/st/auth/passwordless/login", json=data, headers={"api-version": "0"})  # type: ignore
             resp.raise_for_status()
             log_debug_message("Passwordless login email sent to %s", input_.email)
