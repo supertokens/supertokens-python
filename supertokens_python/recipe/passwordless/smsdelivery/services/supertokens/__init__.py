@@ -50,7 +50,7 @@ class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVar
         if template_vars.user_input_code:
             sms_input["userInputCode"] = template_vars.user_input_code
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=30.0) as client:
                 await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={

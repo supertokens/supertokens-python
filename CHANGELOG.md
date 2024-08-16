@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Session recipe's error handlers take an extra param of recipe_user_id as well
 - Session recipe, removes `validate_claims_in_jwt_payload` that is exposed to the user.
 
+## [0.24.1] - 2024-08-16
+
+-   Sets time out for httpx client to 30s everywhere. - https://github.com/supertokens/supertokens-python/issues/516
+
 ## [0.24.0] - 2024-07-31
 
 ### Changes

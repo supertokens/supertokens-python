@@ -106,7 +106,7 @@ class Querier:
             raise Exception("Retry request failed")
 
         try:
-            async with AsyncClient() as client:
+            async with AsyncClient(timeout=30.0) as client:
                 if method == "GET":
                     return await client.get(url, *args, **kwargs)  # type: ignore
                 if method == "POST":
