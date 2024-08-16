@@ -168,8 +168,6 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
             user_context: Dict[str, Any],
         ) -> MFAClaimValue:
             mfa_info = await update_and_get_mfa_related_info_in_session(
-                input_session=None,
-                input_updated_factor_id=None,
                 input_session_recipe_user_id=recipe_user_id,
                 input_tenant_id=tenant_id,
                 input_access_token_payload=current_payload,

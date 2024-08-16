@@ -12,13 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Dict, Any, Union, List, Optional, Callable
+from typing import Awaitable, Dict, Any, Union, List, Optional, Callable
+
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from .interfaces import RecipeInterface, APIInterface
 from typing_extensions import Literal
+from supertokens_python.types import AccountLinkingUser, RecipeUserId
 
 
 class MFARequirementList(List[Union[Dict[str, List[str]], str]]):
-    def __init__(self, *args: Union[str, Dict[str, List[str]]]):
+    def __init__(
+        self,
+        *args: Union[
+            str, Dict[Union[Literal["oneOf"], Literal["allOfInAnyOrder"]], List[str]]
+        ]
+    ):
         super().__init__()
         for arg in args:
             if isinstance(arg, str):
@@ -79,3 +87,73 @@ class FactorIdsAndType:
     ):
         self.factor_ids = factor_ids
         self.type = type
+
+
+class GetFactorsSetupForUserFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[[AccountLinkingUser, Dict[str, Any]], Awaitable[List[str]]],
+    ):
+        self.func = func
+
+
+class GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[[TenantConfig], Awaitable[List[str]]],
+    ):
+        self.func = func
+
+
+class GetEmailsForFactorOkResult:
+    status: Literal["OK"] = "OK"
+
+    def __init__(self, factor_id_to_emails_map: Dict[str, List[str]]):
+        self.factor_id_to_emails_map = factor_id_to_emails_map
+
+
+class GetEmailsForFactorUnknownSessionRecipeUserIdResult:
+    status: Literal["UNKNOWN_SESSION_RECIPE_USER_ID"] = "UNKNOWN_SESSION_RECIPE_USER_ID"
+
+
+class GetEmailsForFactorFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[
+            [AccountLinkingUser, RecipeUserId],
+            Awaitable[
+                Union[
+                    GetEmailsForFactorOkResult,
+                    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+                ]
+            ],
+        ],
+    ):
+        self.func = func
+
+
+class GetPhoneNumbersForFactorsOkResult:
+    status: Literal["OK"] = "OK"
+
+    def __init__(self, factor_id_to_phone_number_map: Dict[str, List[str]]):
+        self.factor_id_to_phone_number_map = factor_id_to_phone_number_map
+
+
+class GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult:
+    status: Literal["UNKNOWN_SESSION_RECIPE_USER_ID"] = "UNKNOWN_SESSION_RECIPE_USER_ID"
+
+
+class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[
+            [AccountLinkingUser, RecipeUserId],
+            Awaitable[
+                Union[
+                    GetPhoneNumbersForFactorsOkResult,
+                    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+                ]
+            ],
+        ],
+    ):
+        self.func = func

@@ -34,11 +34,15 @@ class TenantConfig:
         passwordless_enabled: Union[bool, None] = None,
         third_party_enabled: Union[bool, None] = None,
         core_config: Union[Dict[str, Any], None] = None,
+        first_factors: Optional[List[str]] = None,
+        required_secondary_factors: Optional[List[str]] = None,
     ):
         self.email_password_enabled = email_password_enabled
         self.passwordless_enabled = passwordless_enabled
         self.third_party_enabled = third_party_enabled
         self.core_config = core_config
+        self.first_factors = first_factors
+        self.required_secondary_factors = required_secondary_factors
 
     def to_json(self) -> Dict[str, Any]:
         res: Dict[str, Any] = {}

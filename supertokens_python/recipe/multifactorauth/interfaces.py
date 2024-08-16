@@ -38,7 +38,7 @@ class RecipeInterface(ABC):
         self,
         session: SessionContainer,
         factor_id: str,
-        mfa_requirements_for_auth: MFARequirementList,
+        mfa_requirements_for_auth: Callable[[], Awaitable[MFARequirementList]],
         factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
         user_context: Dict[str, Any],
     ) -> None:

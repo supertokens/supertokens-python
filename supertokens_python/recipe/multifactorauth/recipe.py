@@ -15,14 +15,33 @@ from __future__ import annotations
 
 from os import environ
 from typing import Any, Dict, Optional, List, Union
+from typing_extensions import Literal
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.multifactorauth.interfaces import RecipeInterface
+from supertokens_python.post_init_callbacks import PostSTInitCallbacks
+from supertokens_python.querier import Querier
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
-from .types import OverrideConfig
+from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from .types import (
+    OverrideConfig,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
+    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
+    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+)
+from .utils import validate_and_normalise_user_input
+from .recipe_implementation import RecipeImplementation
 
 
 class MultiFactorAuthRecipe(RecipeModule):
@@ -37,7 +56,43 @@ class MultiFactorAuthRecipe(RecipeModule):
         override: Union[OverrideConfig, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.recipe_implementation: RecipeInterface
+        self.get_factors_setup_for_user_from_other_recipes_funcs: List[
+            GetFactorsSetupForUserFromOtherRecipesFunc
+        ] = []
+        self.get_all_available_secondary_factor_ids_from_other_recipes_funcs: List[
+            GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc
+        ] = []
+        self.get_emails_for_factor_from_other_recipes_funcs: List[
+            GetEmailsForFactorFromOtherRecipesFunc
+        ] = []
+        self.get_phone_numbers_for_factor_from_other_recipes_funcs: List[
+            GetPhoneNumbersForFactorsFromOtherRecipesFunc
+        ] = []
+        self.is_get_mfa_requirements_for_auth_overridden: bool = False
+
+        self.config = validate_and_normalise_user_input(
+            first_factors,
+            override,
+        )
+
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self
+        )
+        self.recipe_implementation = (
+            recipe_implementation
+            if self.config.override.functions is None
+            else self.config.override.functions(recipe_implementation)
+        )
+
+        def callback():
+            mt_recipe = MultitenancyRecipe.get_instance()
+            mt_recipe.static_first_factors = self.config.first_factors
+
+            SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
+                MultiFactorAuthClaim.validators.has_completed_mfa_requirements_for_auth()
+            )
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return False
@@ -104,3 +159,81 @@ class MultiFactorAuthRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         MultiFactorAuthRecipe.__instance = None
+
+    def add_func_to_get_all_available_secondary_factor_ids_from_other_recipes(
+        self, func: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc
+    ):
+        self.get_all_available_secondary_factor_ids_from_other_recipes_funcs.append(
+            func
+        )
+
+    async def get_all_available_secondary_factor_ids(
+        self, tenant_config: TenantConfig
+    ) -> List[str]:
+        factor_ids: List[str] = []
+        for (
+            func
+        ) in self.get_all_available_secondary_factor_ids_from_other_recipes_funcs:
+            factor_ids_res = await func.func(tenant_config)
+            for factor_id in factor_ids_res:
+                if factor_id not in factor_ids:
+                    factor_ids.append(factor_id)
+        return factor_ids
+
+    def add_func_to_get_factors_setup_for_user_from_other_recipes(
+        self, func: GetFactorsSetupForUserFromOtherRecipesFunc
+    ):
+        self.get_factors_setup_for_user_from_other_recipes_funcs.append(func)
+
+    def add_func_to_get_emails_for_factor_from_other_recipes(
+        self, func: GetEmailsForFactorFromOtherRecipesFunc
+    ):
+        self.get_emails_for_factor_from_other_recipes_funcs.append(func)
+
+    async def get_emails_for_factors(
+        self, user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+    ) -> Union[
+        Dict[
+            Literal["status", "factorIdToEmailsMap"],
+            Union[Literal["OK"], Dict[str, List[str]]],
+        ],
+        Dict[Literal["status"], Literal["UNKNOWN_SESSION_RECIPE_USER_ID"]],
+    ]:
+
+        factorIdToEmailsMap: Dict[str, List[str]] = {}
+
+        for func in self.get_emails_for_factor_from_other_recipes_funcs:
+            func_result = await func.func(user, session_recipe_user_id)
+            if isinstance(
+                func_result, GetEmailsForFactorUnknownSessionRecipeUserIdResult
+            ):
+                return {"status": "UNKNOWN_SESSION_RECIPE_USER_ID"}
+            factorIdToEmailsMap.update(func_result.factor_id_to_emails_map)
+
+        return {"status": "OK", "factorIdToEmailsMap": factorIdToEmailsMap}
+
+    def add_func_to_get_phone_numbers_for_factors_from_other_recipes(
+        self, func: GetPhoneNumbersForFactorsFromOtherRecipesFunc
+    ):
+        self.get_phone_numbers_for_factor_from_other_recipes_funcs.append(func)
+
+    async def get_phone_numbers_for_factors(
+        self, user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+    ) -> Union[
+        Dict[
+            Literal["status", "factorIdToPhoneNumberMap"],
+            Union[Literal["OK"], Dict[str, List[str]]],
+        ],
+        Dict[Literal["status"], Literal["UNKNOWN_SESSION_RECIPE_USER_ID"]],
+    ]:
+        factorIdToPhoneNumberMap: Dict[str, List[str]] = {}
+
+        for func in self.get_phone_numbers_for_factor_from_other_recipes_funcs:
+            func_result = await func.func(user, session_recipe_user_id)
+            if isinstance(
+                func_result, GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult
+            ):
+                return {"status": "UNKNOWN_SESSION_RECIPE_USER_ID"}
+            factorIdToPhoneNumberMap.update(func_result.factor_id_to_phone_number_map)
+
+        return {"status": "OK", "factorIdToPhoneNumberMap": factorIdToPhoneNumberMap}

@@ -74,12 +74,12 @@ class UpdateAndGetMFARelatedInfoInSessionResult:
 
 
 async def update_and_get_mfa_related_info_in_session(
-    input_session_recipe_user_id: Optional[RecipeUserId],
-    input_tenant_id: Optional[str],
-    input_access_token_payload: Optional[Dict[str, Any]],
-    input_session: Optional[SessionContainer],
-    input_updated_factor_id: Optional[str],
     user_context: Dict[str, Any],
+    input_session_recipe_user_id: Optional[RecipeUserId] = None,
+    input_tenant_id: Optional[str] = None,
+    input_access_token_payload: Optional[Dict[str, Any]] = None,
+    input_session: Optional[SessionContainer] = None,
+    input_updated_factor_id: Optional[str] = None,
 ) -> UpdateAndGetMFARelatedInfoInSessionResult:
     session_recipe_user_id: RecipeUserId
     tenant_id: str
