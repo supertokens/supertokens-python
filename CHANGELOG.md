@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.24.1] - 2024-08-16
 
--   Sets no time out for http client in querier and 30s everywhere else. - https://github.com/supertokens/supertokens-python/issues/516
+-   Sets time out for httpx client to 30s everywhere. - https://github.com/supertokens/supertokens-python/issues/516
 
 ## [0.24.0] - 2024-07-31
 
