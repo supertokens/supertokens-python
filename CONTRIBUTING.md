@@ -82,8 +82,3 @@ This will generate the API docs in a folder called docs
 ```
 make build-docs
 ```
-
-## AI prompt rules for generating code (with Claude sonnet-3.5):
-- Avoid using TypeDict
-- Avoid using generic Dict as much as possible, except when defining the types for user_context. Instead, create a custom class to indicate that type. If a function has multiple status Literal output, then there should be one class per status.
-- Variable and function names should be in snake_case. Class names in PascalCase.

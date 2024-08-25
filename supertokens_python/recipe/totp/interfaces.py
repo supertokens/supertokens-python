@@ -16,8 +16,11 @@ from typing import List, Dict, Any, Union
 from typing_extensions import Literal
 from abc import ABC, abstractmethod
 
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
-class OkResult:
+
+class OkResult(APIResponse):
     def __init__(self):
         self.status: Literal["OK"] = "OK"
 
@@ -28,9 +31,12 @@ class UserIdentifierInfoOkResult(OkResult):
         self.info: str = info
 
 
-class UnknownUserIdError:
+class UnknownUserIdError(APIResponse):
     def __init__(self):
         self.status: Literal["UNKNOWN_USER_ID_ERROR"] = "UNKNOWN_USER_ID_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
 
 class UserIdentifierInfoDoesNotExistError:
@@ -47,29 +53,51 @@ class CreateDeviceOkResult(OkResult):
         self.secret: str = secret
         self.qr_code_string: str = qr_code_string
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "deviceName": self.device_name,
+            "secret": self.secret,
+            "qrCodeString": self.qr_code_string,
+        }
 
-class DeviceAlreadyExistsError:
+
+class DeviceAlreadyExistsError(APIResponse):
     def __init__(self):
         self.status: Literal[
             "DEVICE_ALREADY_EXISTS_ERROR"
         ] = "DEVICE_ALREADY_EXISTS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
 
 class UpdateDeviceOkResult(OkResult):
     pass
 
 
-class UnknownDeviceError:
+class UnknownDeviceError(APIResponse):
     def __init__(self):
         self.status: Literal["UNKNOWN_DEVICE_ERROR"] = "UNKNOWN_DEVICE_ERROR"
 
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
-class Device:
+
+class Device(APIResponse):
     def __init__(self, name: str, period: int, skew: int, verified: bool):
         self.name: str = name
         self.period: int = period
         self.skew: int = skew
         self.verified: bool = verified
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "period": self.period,
+            "skew": self.skew,
+            "verified": self.verified,
+        }
 
 
 class ListDevicesOkResult(OkResult):
@@ -77,11 +105,23 @@ class ListDevicesOkResult(OkResult):
         super().__init__()
         self.devices: List[Device] = devices
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "devices": [device.to_json() for device in self.devices],
+        }
+
 
 class RemoveDeviceOkResult(OkResult):
     def __init__(self, did_device_exist: bool):
         super().__init__()
         self.did_device_exist: bool = did_device_exist
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "didDeviceExist": self.did_device_exist,
+        }
 
 
 class VerifyDeviceOkResult(OkResult):
@@ -92,8 +132,14 @@ class VerifyDeviceOkResult(OkResult):
         super().__init__()
         self.was_already_verified: bool = was_already_verified
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "wasAlreadyVerified": self.was_already_verified,
+        }
 
-class InvalidTOTPError:
+
+class InvalidTOTPError(APIResponse):
     def __init__(
         self, current_number_of_failed_attempts: int, max_number_of_failed_attempts: int
     ):
@@ -101,11 +147,24 @@ class InvalidTOTPError:
         self.current_number_of_failed_attempts: int = current_number_of_failed_attempts
         self.max_number_of_failed_attempts: int = max_number_of_failed_attempts
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "currentNumberOfFailedAttempts": self.current_number_of_failed_attempts,
+            "maxNumberOfFailedAttempts": self.max_number_of_failed_attempts,
+        }
 
-class LimitReachedError:
+
+class LimitReachedError(APIResponse):
     def __init__(self, retry_after_ms: int):
         self.status: Literal["LIMIT_REACHED_ERROR"] = "LIMIT_REACHED_ERROR"
         self.retry_after_ms: int = retry_after_ms
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "retryAfterMs": self.retry_after_ms,
+        }
 
 
 class VerifyTOTPOkResult(OkResult):
@@ -113,6 +172,9 @@ class VerifyTOTPOkResult(OkResult):
         self,
     ):
         super().__init__()
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
 
 class RecipeInterface(ABC):
@@ -184,5 +246,73 @@ class RecipeInterface(ABC):
         UnknownUserIdError,
         InvalidTOTPError,
         LimitReachedError,
+    ]:
+        pass
+
+
+class APIOptions:
+    pass
+
+
+class APIInterface(ABC):
+    @abstractmethod
+    async def create_device_post(
+        self,
+        device_name: Union[str, None],
+        options: APIOptions,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+    ) -> Union[CreateDeviceOkResult, DeviceAlreadyExistsError, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def list_devices_get(
+        self,
+        options: APIOptions,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+    ) -> Union[ListDevicesOkResult, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def remove_device_post(
+        self,
+        device_name: str,
+        options: APIOptions,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+    ) -> Union[RemoveDeviceOkResult, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def verify_device_post(
+        self,
+        device_name: str,
+        totp: str,
+        options: APIOptions,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+    ) -> Union[
+        VerifyDeviceOkResult,
+        UnknownDeviceError,
+        InvalidTOTPError,
+        LimitReachedError,
+        GeneralErrorResponse,
+    ]:
+        pass
+
+    @abstractmethod
+    async def verify_totp_post(
+        self,
+        totp: str,
+        options: APIOptions,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
+    ) -> Union[
+        VerifyTOTPOkResult,
+        UnknownUserIdError,
+        InvalidTOTPError,
+        LimitReachedError,
+        GeneralErrorResponse,
     ]:
         pass
