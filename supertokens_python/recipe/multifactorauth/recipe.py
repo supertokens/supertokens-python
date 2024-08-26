@@ -189,6 +189,10 @@ class MultiFactorAuthRecipe(RecipeModule):
         )
 
     @staticmethod
+    def get_instance() -> Optional[MultiFactorAuthRecipe]:
+        return MultiFactorAuthRecipe.__instance
+
+    @staticmethod
     def reset():
         if ("SUPERTOKENS_ENV" not in environ) or (
             environ["SUPERTOKENS_ENV"] != "testing"
