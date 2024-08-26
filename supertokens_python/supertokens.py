@@ -255,8 +255,10 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        # from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
-        # from supertokens_python.recipe.totp.recipe import TOTPRecipe
+        from supertokens_python.recipe.multifactorauth.recipe import (
+            MultiFactorAuthRecipe,
+        )
+        from supertokens_python.recipe.totp.recipe import TOTPRecipe
 
         multitenancy_found = False
         totp_found = False
@@ -270,10 +272,10 @@ class Supertokens:
                 multitenancy_found = True
             elif recipe_module.get_recipe_id() == "usermetadata":
                 user_metadata_found = True
-            # elif recipe_module.get_recipe_id() == MultiFactorAuthRecipe.recipe_id:
-            #     multi_factor_auth_found = True
-            # elif recipe_module.get_recipe_id() == TOTPRecipe.recipe_id:
-            #     totp_found = True
+            elif recipe_module.get_recipe_id() == MultiFactorAuthRecipe.recipe_id:
+                multi_factor_auth_found = True
+            elif recipe_module.get_recipe_id() == TOTPRecipe.recipe_id:
+                totp_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
@@ -283,9 +285,7 @@ class Supertokens:
 
             self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
         if totp_found and not multi_factor_auth_found:
-            raise_general_exception(
-                "Please initialize the MultiFactorAuth recipe to use TOTP."
-            )
+            raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
         if not user_metadata_found:
             from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
