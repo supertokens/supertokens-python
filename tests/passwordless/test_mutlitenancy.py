@@ -57,9 +57,24 @@ async def test_multitenancy_functions():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(passwordless_enabled=True))
+    await create_or_update_tenant(
+        "t1",
+        TenantConfig(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant(
+        "t2",
+        TenantConfig(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant(
+        "t3",
+        TenantConfig(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
 
     code1 = await create_code(
         tenant_id="t1", email="test@example.com", user_input_code="123456"

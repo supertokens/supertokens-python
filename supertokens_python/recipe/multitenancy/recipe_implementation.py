@@ -105,11 +105,10 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfig:
 
     return TenantConfig(
         tenant_id=tenant["tenantId"],
-        email_password_enabled=tenant["emailPassword"]["enabled"],
-        passwordless_enabled=tenant["passwordless"]["enabled"],
         third_party_providers=providers,
-        third_party_enabled=tenant["thirdParty"]["enabled"],
         core_config=tenant["coreConfig"],
+        first_factors=tenant.get("firstFactors"),
+        required_secondary_factors=tenant.get("requiredSecondaryFactors"),
     )
 
 
@@ -131,10 +130,19 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         response = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/multitenancy/tenant"),
+            NormalisedURLPath("/recipe/multitenancy/tenant/v2"),
             {
                 "tenantId": tenant_id,
-                **(config.to_json() if config is not None else {}),
+                "firstFactors": (
+                    config.first_factors
+                    if config and config.first_factors is not None
+                    else None
+                ),
+                "requiredSecondaryFactors": (
+                    config.required_secondary_factors
+                    if config and config.required_secondary_factors is not None
+                    else None
+                ),
             },
             user_context=user_context,
         )
@@ -159,7 +167,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> Optional[TenantConfig]:
         res = await self.querier.send_get_request(
             NormalisedURLPath(
-                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/v2"
             ),
             None,
             user_context=user_context,
@@ -176,7 +184,7 @@ class RecipeImplementation(RecipeInterface):
         self, user_context: Dict[str, Any]
     ) -> ListAllTenantsOkResult:
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/multitenancy/tenant/list"),
+            NormalisedURLPath("/recipe/multitenancy/tenant/list/v2"),
             {},
             user_context=user_context,
         )

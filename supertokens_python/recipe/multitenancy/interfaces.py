@@ -33,30 +33,15 @@ class TenantConfig:
         self,
         tenant_id: str = "",
         third_party_providers: List[ProviderConfig] = [],
-        email_password_enabled: bool = False,
-        passwordless_enabled: bool = False,
-        third_party_enabled: bool = False,
         core_config: Dict[str, Any] = {},
         first_factors: Optional[List[str]] = None,
         required_secondary_factors: Optional[List[str]] = None,
     ):
         self.tenant_id = tenant_id
-        self.email_password_enabled = email_password_enabled
-        self.passwordless_enabled = passwordless_enabled
-        self.third_party_enabled = third_party_enabled
         self.core_config = core_config
         self.first_factors = first_factors
         self.required_secondary_factors = required_secondary_factors
         self.third_party_providers = third_party_providers
-
-    def to_json(self) -> Dict[str, Any]:
-        res: Dict[str, Any] = {}
-        res["tenantId"] = self.tenant_id
-        res["emailPasswordEnabled"] = self.email_password_enabled
-        res["passwordlessEnabled"] = self.passwordless_enabled
-        res["thirdPartyEnabled"] = self.third_party_enabled
-        res["coreConfig"] = self.core_config
-        return res
 
 
 class CreateOrUpdateTenantOkResult:
@@ -216,6 +201,8 @@ class APIOptions:
         config: MultitenancyConfig,
         recipe_implementation: RecipeInterface,
         static_third_party_providers: List[ProviderInput],
+        all_available_first_factors: List[str],
+        static_first_factors: Optional[List[str]],
     ):
         self.request = request
         self.response = response
@@ -223,6 +210,8 @@ class APIOptions:
         self.config = config
         self.recipe_implementation = recipe_implementation
         self.static_third_party_providers = static_third_party_providers
+        self.static_first_factors = static_first_factors
+        self.all_available_first_factors = all_available_first_factors
 
 
 class ThirdPartyProvider:
@@ -277,11 +266,13 @@ class LoginMethodsGetOkResult(APIResponse):
         email_password: LoginMethodEmailPassword,
         passwordless: LoginMethodPasswordless,
         third_party: LoginMethodThirdParty,
+        first_factors: List[str],
     ):
         self.status = "OK"
         self.email_password = email_password
         self.passwordless = passwordless
         self.third_party = third_party
+        self.first_factors = first_factors
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -289,6 +280,7 @@ class LoginMethodsGetOkResult(APIResponse):
             "emailPassword": self.email_password.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
+            "firstFactors": self.first_factors,
         }
 
 

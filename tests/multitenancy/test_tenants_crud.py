@@ -67,51 +67,84 @@ async def test_tenant_crud():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t2",
+        TenantConfig(first_factors=["otp-email, otp-phone, link-email, link-phone"]),
+    )
+    await create_or_update_tenant("t3", TenantConfig(first_factors=["thirdparty"]))
 
     tenants = await list_all_tenants()
-    assert len(tenants.tenants) == 4
+    assert len(tenants.tenants) == 3
 
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config.email_password_enabled is True
-    assert t1_config.passwordless_enabled is False
-    assert t1_config.third_party_enabled is False
+    assert t1_config.first_factors is not None
+    assert "emailpassword" in t1_config.first_factors
+    assert "otp-email" in t1_config.first_factors
+    assert "otp-phone" in t1_config.first_factors
+    assert "link-email" in t1_config.first_factors
+    assert "link-phone" in t1_config.first_factors
+    assert "thirdparty" in t1_config.first_factors
     assert t1_config.core_config == {}
 
     t2_config = await get_tenant("t2")
     assert t2_config is not None
-    assert t2_config.email_password_enabled is False
-    assert t2_config.passwordless_enabled is True
-    assert t2_config.third_party_enabled is False
+    assert t2_config.first_factors is not None
+    assert "emailpassword" in t2_config.first_factors
+    assert "otp-email" in t2_config.first_factors
+    assert "otp-phone" in t2_config.first_factors
+    assert "link-email" in t2_config.first_factors
+    assert "link-phone" in t2_config.first_factors
+    assert "thirdparty" in t2_config.first_factors
     assert t2_config.core_config == {}
 
     t3_config = await get_tenant("t3")
     assert t3_config is not None
-    assert t3_config.email_password_enabled is False
-    assert t3_config.passwordless_enabled is False
-    assert t3_config.third_party_enabled is True
+    assert t3_config.first_factors is not None
+    assert "emailpassword" in t3_config.first_factors
+    assert "otp-email" in t3_config.first_factors
+    assert "otp-phone" in t3_config.first_factors
+    assert "link-email" in t3_config.first_factors
+    assert "link-phone" in t3_config.first_factors
+    assert "thirdparty" in t3_config.first_factors
     assert t3_config.core_config == {}
 
     # update tenant1 to add passwordless:
-    await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
+    await create_or_update_tenant(
+        "t1",
+        TenantConfig(
+            first_factors=[
+                "otp-email",
+                "otp-phone",
+                "link-email",
+                "link-phone",
+            ]
+        ),
+    )
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config.email_password_enabled is True
-    assert t1_config.passwordless_enabled is True
-    assert t1_config.third_party_enabled is False
+    assert t1_config.first_factors is not None
+    assert "emailpassword" in t1_config.first_factors
+    assert "otp-email" in t1_config.first_factors
+    assert "otp-phone" in t1_config.first_factors
+    assert "link-email" in t1_config.first_factors
+    assert "link-phone" in t1_config.first_factors
+    assert "thirdparty" in t1_config.first_factors
     assert t1_config.core_config == {}
 
     # update tenant1 to add thirdparty:
-    await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant("t1", TenantConfig(first_factors=["thirdparty"]))
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config is not None
-    assert t1_config.email_password_enabled is True
-    assert t1_config.passwordless_enabled is True
-    assert t1_config.third_party_enabled is True
+    assert t1_config.first_factors is not None
+    assert "emailpassword" in t1_config.first_factors
+    assert "otp-email" in t1_config.first_factors
+    assert "otp-phone" in t1_config.first_factors
+    assert "link-email" in t1_config.first_factors
+    assert "link-phone" in t1_config.first_factors
+    assert "thirdparty" in t1_config.first_factors
+    assert t1_config.core_config == {}
     assert t1_config.core_config == {}
 
     # delete tenant2:
@@ -126,7 +159,7 @@ async def test_tenant_thirdparty_config():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
+    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
     await create_or_update_third_party_config(
         "t1",
         config=ProviderConfig(
@@ -253,9 +286,14 @@ async def test_user_association_and_disassociation_with_tenants():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t2",
+        TenantConfig(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant("t3", TenantConfig(first_factors=["thirdparty"]))
 
     signup_response = await sign_up("public", "test@example.com", "password1")
     assert isinstance(signup_response, SignUpOkResult)

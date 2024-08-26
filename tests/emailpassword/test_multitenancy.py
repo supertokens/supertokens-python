@@ -62,9 +62,9 @@ async def test_multitenancy_in_emailpassword():
 
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
+    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant("t2", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant("t3", TenantConfig(first_factors=["emailpassword"]))
 
     user1 = await sign_up("t1", "test@example.com", "password1")
     user2 = await sign_up("t2", "test@example.com", "password2")

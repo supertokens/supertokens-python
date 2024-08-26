@@ -125,6 +125,8 @@ class MultitenancyRecipe(RecipeModule):
             self.config,
             self.recipe_implementation,
             self.static_third_party_providers,
+            self.all_available_first_factors,
+            self.static_first_factors,
         )
         return await handle_login_methods_api(
             self.api_implementation,

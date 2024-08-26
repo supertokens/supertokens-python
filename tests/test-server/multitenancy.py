@@ -23,9 +23,9 @@ def add_multitenancy_routes(app: Flask):
         user_context = data.get("userContext")
 
         config = TenantConfig(
-            email_password_enabled=config.get("emailPasswordEnabled"),
-            passwordless_enabled=config.get("passwordlessEnabled"),
-            third_party_enabled=config.get("thirdPartyEnabled"),
+            first_factors=config.get("firstFactors"),
+            required_secondary_factors=config.get("requiredSecondaryFactors"),
+            third_party_providers=config.get("thirdPartyProviders"),
             core_config=config.get("coreConfig"),
         )
 
@@ -62,9 +62,9 @@ def add_multitenancy_routes(app: Flask):
             {
                 "status": "OK",
                 "tenant": {
-                    "emailPassword": {"enabled": response.email_password_enabled},
-                    "thirdParty": {"enabled": response.third_party_enabled},
-                    "passwordless": {"enabled": response.passwordless_enabled},
+                    "firstFactors": response.first_factors,
+                    "requiredSecondaryFactors": response.required_secondary_factors,
+                    "thirdPartyProviders": response.third_party_providers,
                     "coreConfig": response.core_config,
                 },
             }

@@ -25,6 +25,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
 from supertokens_python.types import GeneralErrorResponse
 
 from ..interfaces import APIInterface, ThirdPartyProvider
+from ...multifactorauth.utils import is_valid_first_factor
 
 
 class APIImplementation(APIInterface):
@@ -80,12 +81,35 @@ class APIImplementation(APIInterface):
                 ThirdPartyProvider(provider_instance.id, provider_instance.config.name)
             )
 
+        first_factors: List[str] = []
+        if tenant_config.first_factors is not None:
+            first_factors = tenant_config.first_factors
+        elif api_options.static_first_factors is not None:
+            first_factors = api_options.static_first_factors
+        else:
+            first_factors = list(set(api_options.all_available_first_factors))
+
+        valid_first_factors: List[str] = []
+        for factor_id in first_factors:
+            valid_res = await is_valid_first_factor(tenant_id, factor_id, user_context)
+            if valid_res == "OK":
+                valid_first_factors.append(factor_id)
+            if valid_res == "TENANT_NOT_FOUND_ERROR":
+                raise Exception("Tenant not found")
+
         return LoginMethodsGetOkResult(
             email_password=LoginMethodEmailPassword(
-                tenant_config.email_password_enabled
+                enabled="emailpassword" in valid_first_factors
             ),
-            passwordless=LoginMethodPasswordless(tenant_config.passwordless_enabled),
+            passwordless=LoginMethodPasswordless(
+                enabled=any(
+                    factor in valid_first_factors
+                    for factor in ["otp-email", "otp-phone", "link-email", "link-phone"]
+                )
+            ),
             third_party=LoginMethodThirdParty(
-                tenant_config.third_party_enabled, final_provider_list
+                enabled="thirdparty" in valid_first_factors,
+                providers=final_provider_list,
             ),
+            first_factors=valid_first_factors,
         )

@@ -110,9 +110,6 @@ class DashboardListTenantItem:
     def to_json(self) -> Dict[str, Any]:
         return {
             "tenantId": self.tenant_config.tenant_id,
-            "emailPassword": {"enabled": self.tenant_config.email_password_enabled},
-            "passwordless": {"enabled": self.tenant_config.passwordless_enabled},
-            "thirdParty": {"enabled": self.tenant_config.third_party_enabled},
         }
 
 

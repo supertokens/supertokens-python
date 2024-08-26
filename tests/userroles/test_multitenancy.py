@@ -56,9 +56,9 @@ async def test_multitenancy_in_user_roles():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
+    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant("t2", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant("t3", TenantConfig(first_factors=["emailpassword"]))
 
     user = await sign_up("public", "test@example.com", "password1")
     assert isinstance(user, SignUpOkResult)
