@@ -22,6 +22,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     DisassociateUserFromTenantOkResult,
 )
+from supertokens_python.types import RecipeUserId
 
 from .interfaces import (
     RecipeInterface,
@@ -242,7 +243,10 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def associate_user_to_tenant(
-        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
+        self,
+        tenant_id: Optional[str],
+        recipe_user_id: RecipeUserId,
+        user_context: Dict[str, Any],
     ) -> Union[
         AssociateUserToTenantOkResult,
         AssociateUserToTenantUnknownUserIdError,
@@ -255,7 +259,7 @@ class RecipeImplementation(RecipeInterface):
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"
             ),
             {
-                "userId": user_id,
+                "recipeUserId": recipe_user_id.get_as_string(),
             },
             user_context=user_context,
         )
@@ -282,14 +286,17 @@ class RecipeImplementation(RecipeInterface):
         raise Exception("Should never come here")
 
     async def dissociate_user_from_tenant(
-        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
+        self,
+        tenant_id: Optional[str],
+        recipe_user_id: RecipeUserId,
+        user_context: Dict[str, Any],
     ) -> DisassociateUserFromTenantOkResult:
         response = await self.querier.send_post_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove"
             ),
             {
-                "userId": user_id,
+                "recipeUserId": recipe_user_id.get_as_string(),
             },
             user_context=user_context,
         )

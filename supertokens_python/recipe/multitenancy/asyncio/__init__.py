@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union, Optional, TYPE_CHECKING
 
+from supertokens_python.types import RecipeUserId
+
 from ..interfaces import (
     TenantConfig,
     CreateOrUpdateTenantOkResult,
@@ -112,7 +114,7 @@ async def delete_third_party_config(
 
 async def associate_user_to_tenant(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Union[
     AssociateUserToTenantOkResult,
@@ -127,13 +129,13 @@ async def associate_user_to_tenant(
     recipe = MultitenancyRecipe.get_instance()
 
     return await recipe.recipe_implementation.associate_user_to_tenant(
-        tenant_id, user_id, user_context
+        tenant_id, recipe_user_id, user_context
     )
 
 
 async def dissociate_user_from_tenant(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> DisassociateUserFromTenantOkResult:
     if user_context is None:
@@ -142,5 +144,5 @@ async def dissociate_user_from_tenant(
     recipe = MultitenancyRecipe.get_instance()
 
     return await recipe.recipe_implementation.dissociate_user_from_tenant(
-        tenant_id, user_id, user_context
+        tenant_id, recipe_user_id, user_context
     )

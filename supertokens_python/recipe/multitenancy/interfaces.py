@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional, List
 
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse, RecipeUserId
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -171,7 +171,7 @@ class RecipeInterface(ABC):
     async def associate_user_to_tenant(
         self,
         tenant_id: str,
-        user_id: str,
+        recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> Union[
         AssociateUserToTenantOkResult,
@@ -186,7 +186,7 @@ class RecipeInterface(ABC):
     async def dissociate_user_from_tenant(
         self,
         tenant_id: str,
-        user_id: str,
+        recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> DisassociateUserFromTenantOkResult:
         pass

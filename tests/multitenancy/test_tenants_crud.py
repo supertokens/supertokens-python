@@ -19,6 +19,7 @@ from typing import Any, Dict
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, multitenancy, session
+from supertokens_python.types import RecipeUserId
 from tests.utils import (
     setup_function,
     teardown_function,
@@ -299,17 +300,17 @@ async def test_user_association_and_disassociation_with_tenants():
     assert isinstance(signup_response, SignUpOkResult)
     user_id = signup_response.user.user_id
 
-    await associate_user_to_tenant("t1", user_id)
-    await associate_user_to_tenant("t2", user_id)
-    await associate_user_to_tenant("t3", user_id)
+    await associate_user_to_tenant("t1", RecipeUserId(user_id))
+    await associate_user_to_tenant("t2", RecipeUserId(user_id))
+    await associate_user_to_tenant("t3", RecipeUserId(user_id))
 
     user = await get_user_by_id(user_id)
     assert user is not None
     assert len(user.tenant_ids) == 4  # public + 3 tenants
 
-    await dissociate_user_from_tenant("t1", user_id)
-    await dissociate_user_from_tenant("t2", user_id)
-    await dissociate_user_from_tenant("t3", user_id)
+    await dissociate_user_from_tenant("t1", RecipeUserId(user_id))
+    await dissociate_user_from_tenant("t2", RecipeUserId(user_id))
+    await dissociate_user_from_tenant("t3", RecipeUserId(user_id))
 
     user = await get_user_by_id(user_id)
     assert user is not None

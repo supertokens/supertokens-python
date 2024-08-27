@@ -122,7 +122,8 @@ disable=raw-checker-failed,
         consider-using-f-string,
         consider-using-in,
         no-else-return,
-        no-self-use
+        no-self-use,
+        no-else-raise
 
 
 # Enable the message, report, category or checker with the given id(s). You can

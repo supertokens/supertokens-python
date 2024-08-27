@@ -52,6 +52,7 @@ def init(
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     jwks_refresh_interval_sec: Union[int, None] = None,
+    overwrite_session_during_sign_in_up: Union[bool, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
@@ -67,4 +68,5 @@ def init(
         use_dynamic_access_token_signing_key,
         expose_access_token_to_frontend_in_cookie_based_auth,
         jwks_refresh_interval_sec,
+        overwrite_session_during_sign_in_up,
     )
