@@ -12,38 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Awaitable, Callable, List, TypeVar, Union
+from typing import Awaitable, Callable, Optional, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface,
     SMTPServiceInterface,
 )
-
-
-class User:
-    def __init__(
-        self, user_id: str, email: str, time_joined: int, tenant_ids: List[str]
-    ):
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.tenant_ids = tenant_ids
-
-    def __eq__(self, other: object):
-        return (
-            isinstance(other, self.__class__)
-            and self.user_id == other.user_id
-            and self.email == other.email
-            and self.time_joined == other.time_joined
-            and self.tenant_ids == other.tenant_ids
-        )
-
-
-class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token
+from supertokens_python.types import RecipeUserId
 
 
 class ErrorFormField:
@@ -89,8 +65,11 @@ _T = TypeVar("_T")
 
 
 class PasswordResetEmailTemplateVarsUser:
-    def __init__(self, user_id: str, email: str):
+    def __init__(
+        self, user_id: str, recipe_user_id: Optional[RecipeUserId], email: str
+    ):
         self.id = user_id
+        self.recipe_user_id = recipe_user_id
         self.email = email
 
 

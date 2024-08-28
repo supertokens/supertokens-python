@@ -40,6 +40,9 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import log_debug_message
 from .asyncio import get_user
 
+from typing import Dict, Union
+from supertokens_python.utils import log_debug_message
+
 
 class OkResponse:
     status: Literal["OK"]
@@ -563,7 +566,7 @@ class OkResponse2:
 
     def __init__(self, user: AccountLinkingUser):
         self.status = "OK"
-        self.user = user
+        self.user: AccountLinkingUser = user
 
 
 async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
@@ -950,3 +953,9 @@ async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
             "filter_out_invalid_second_factors_or_throw_if_all_are_invalid allowing all factors because MFA is not enabled"
         )
         return factor_ids
+
+
+def is_fake_email(email: str) -> bool:
+    return email.endswith("@stfakeemail.supertokens.com") or email.endswith(
+        ".fakeemail.com"
+    )  # .fakeemail.com for older users

@@ -14,6 +14,14 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
+from supertokens_python.recipe.emailpassword.exceptions import (
+    raise_form_field_exception,
+)
+
+from supertokens_python.recipe.emailpassword.interfaces import (
+    PasswordPolicyViolationError,
+)
+from supertokens_python.recipe.emailpassword.types import ErrorFormField
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
@@ -55,4 +63,14 @@ async def handle_password_reset_api(
     response = await api_implementation.password_reset_post(
         form_fields, token, tenant_id, api_options, user_context
     )
+    if isinstance(response, PasswordPolicyViolationError):
+        return raise_form_field_exception(
+            "Error in input formFields",
+            [
+                ErrorFormField(
+                    id="password",
+                    error=response.failure_reason,
+                )
+            ],
+        )
     return send_200_response(response.to_json(), api_options.response)
