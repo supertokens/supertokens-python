@@ -26,7 +26,7 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
-from supertokens_python.types import AccountLinkingUser
+from supertokens_python.types import AccountInfo, AccountLinkingUser
 
 
 async def get_users_oldest_first(
@@ -154,4 +154,20 @@ async def update_or_delete_user_id_mapping_info(
 ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
     return await Supertokens.get_instance().update_or_delete_user_id_mapping_info(
         user_id, user_id_type, external_user_id_info, user_context
+    )
+
+
+async def list_users_by_account_info(
+    tenant_id: str,
+    account_info: AccountInfo,
+    do_union_of_account_info: bool = False,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> List[AccountLinkingUser]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
+        tenant_id,
+        account_info,
+        do_union_of_account_info,
+        user_context,
     )

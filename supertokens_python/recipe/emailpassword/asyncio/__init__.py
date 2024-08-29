@@ -123,8 +123,9 @@ async def reset_password_using_token(
         user_context=user_context,
     )
 
-    if isinstance(result, EmailAlreadyExistsError) or isinstance(
-        result, UpdateEmailOrPasswordEmailChangeNotAllowedError
+    if isinstance(
+        result,
+        (EmailAlreadyExistsError, UpdateEmailOrPasswordEmailChangeNotAllowedError),
     ):
         raise Exception("Should never happen")
 

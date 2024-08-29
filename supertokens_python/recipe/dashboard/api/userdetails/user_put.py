@@ -11,7 +11,7 @@ from supertokens_python.recipe.emailpassword.asyncio import (
 )
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
 from supertokens_python.recipe.emailpassword.interfaces import (
-    UpdateEmailOrPasswordEmailAlreadyExistsError,
+    EmailAlreadyExistsError,
 )
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.passwordless.asyncio import (
@@ -77,12 +77,10 @@ async def update_email_for_recipe_id(
             return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
         email_update_response = await ep_update_email_or_password(
-            user_id, email, user_context=user_context
+            RecipeUserId(user_id), email, user_context=user_context
         )
 
-        if isinstance(
-            email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
-        ):
+        if isinstance(email_update_response, EmailAlreadyExistsError):
             return UserPutAPIEmailAlreadyExistsErrorResponse()
 
         return UserPutAPIOkResponse()

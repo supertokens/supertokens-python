@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordLinkOkResult,
+    EmailAlreadyExistsError,
     SignInOkResult,
     SignUpOkResult,
-    UpdateEmailOrPasswordEmailAlreadyExistsError,
+    UnknownUserIdError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
     UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordUnknownUserIdError,
 )
 import supertokens_python.recipe.emailpassword.syncio as emailpassword
 
@@ -28,8 +28,8 @@ def add_emailpassword_routes(app: Flask):
                 {
                     "status": "OK",
                     "user": {
-                        "id": response.user.user_id,
-                        "email": response.user.email,
+                        "id": response.user.id,
+                        "email": response.user.emails[0],
                         "timeJoined": response.user.time_joined,
                         "tenantIds": response.user.tenant_ids,
                     },
@@ -56,8 +56,8 @@ def add_emailpassword_routes(app: Flask):
                 {
                     "status": "OK",
                     "user": {
-                        "id": response.user.user_id,
-                        "email": response.user.email,
+                        "id": response.user.id,
+                        "email": response.user.emails[0],
                         "timeJoined": response.user.time_joined,
                         "tenantIds": response.user.tenant_ids,
                     },
@@ -80,8 +80,8 @@ def add_emailpassword_routes(app: Flask):
             tenant_id, user_id, user_context
         )
 
-        if isinstance(response, CreateResetPasswordLinkOkResult):
-            return jsonify({"status": "OK", "link": response.link})
+        if isinstance(response, str):
+            return jsonify({"status": "OK", "link": response})
         else:
             return jsonify({"status": "UNKNOWN_USER_ID_ERROR"})
 
@@ -109,10 +109,12 @@ def add_emailpassword_routes(app: Flask):
 
         if isinstance(response, UpdateEmailOrPasswordOkResult):
             return jsonify({"status": "OK"})
-        elif isinstance(response, UpdateEmailOrPasswordUnknownUserIdError):
+        elif isinstance(response, UnknownUserIdError):
             return jsonify({"status": "UNKNOWN_USER_ID_ERROR"})
-        elif isinstance(response, UpdateEmailOrPasswordEmailAlreadyExistsError):
+        elif isinstance(response, EmailAlreadyExistsError):
             return jsonify({"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+        elif isinstance(response, UpdateEmailOrPasswordEmailChangeNotAllowedError):
+            return jsonify({"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR"})
         else:
             return jsonify(
                 {

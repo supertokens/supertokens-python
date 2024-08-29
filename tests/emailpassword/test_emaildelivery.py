@@ -61,10 +61,6 @@ from tests.utils import (
 from supertokens_python.recipe.emailpassword.asyncio import (
     send_reset_password_email,
 )
-from supertokens_python.recipe.emailpassword.interfaces import (
-    SendResetPasswordEmailOkResult,
-    SendResetPasswordEmailUnknownUserIdError,
-)
 
 respx_mock = respx.MockRouter
 
@@ -1085,8 +1081,8 @@ async def test_send_reset_password_email(
     dict_response = json.loads(response_1.text)
     user_info = dict_response["user"]
     assert dict_response["status"] == "OK"
-    resp = await send_reset_password_email("public", user_info["id"])
-    assert isinstance(resp, SendResetPasswordEmailOkResult)
+    resp = await send_reset_password_email("public", user_info["id"], "")
+    assert resp == "OK"
 
     assert reset_url == "http://supertokens.io/auth/reset-password"
     assert token_info is not None and "token=" in token_info
@@ -1122,9 +1118,9 @@ async def test_send_reset_password_email_invalid_input(
     dict_response = json.loads(response_1.text)
     user_info = dict_response["user"]
 
-    link = await send_reset_password_email("public", "invalidUserId")
-    assert isinstance(link, SendResetPasswordEmailUnknownUserIdError)
+    link = await send_reset_password_email("public", "invalidUserId", "")
+    assert link == "UNKNOWN_USER_ID_ERROR"
 
     with raises(Exception) as err:
-        await send_reset_password_email("invalidTenantId", user_info["id"])
+        await send_reset_password_email("invalidTenantId", user_info["id"], "")
     assert "status code: 400" in str(err.value)

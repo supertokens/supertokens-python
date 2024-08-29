@@ -323,8 +323,12 @@ class APIImplementation(APIInterface):
                 )
             )
 
-            if isinstance(update_response, EmailAlreadyExistsError) or isinstance(
-                update_response, UpdateEmailOrPasswordEmailChangeNotAllowedError
+            if isinstance(
+                update_response,
+                (
+                    EmailAlreadyExistsError,
+                    UpdateEmailOrPasswordEmailChangeNotAllowedError,
+                ),
             ):
                 raise Exception("Should never happen")
             if isinstance(update_response, UnknownUserIdError):

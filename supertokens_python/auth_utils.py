@@ -40,9 +40,6 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import log_debug_message
 from .asyncio import get_user
 
-from typing import Dict, Union
-from supertokens_python.utils import log_debug_message
-
 
 class OkResponse:
     status: Literal["OK"]

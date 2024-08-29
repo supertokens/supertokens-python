@@ -63,7 +63,7 @@ async def test_multitenancy_in_user_roles():
 
     user = await sign_up("public", "test@example.com", "password1")
     assert isinstance(user, SignUpOkResult)
-    user_id = user.user.user_id
+    user_id = user.user.id
 
     await associate_user_to_tenant("t1", RecipeUserId(user_id))
     await associate_user_to_tenant("t2", RecipeUserId(user_id))

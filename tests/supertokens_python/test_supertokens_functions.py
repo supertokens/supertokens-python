@@ -61,7 +61,7 @@ async def test_supertokens_functions():
     for e in emails:
         signup_resp = await ep_asyncio.sign_up("public", e, "secret_pass")
         assert isinstance(signup_resp, SignUpOkResult)
-        user_ids.append(signup_resp.user.user_id)
+        user_ids.append(signup_resp.user.id)
 
     # Get user count
     assert await st_asyncio.get_user_count() == len(emails)

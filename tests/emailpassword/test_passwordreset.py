@@ -27,7 +27,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import create_reset_password_link
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordLinkUnknownUserIdError,
+    UnknownUserIdError,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
@@ -383,19 +383,20 @@ async def test_create_reset_password_link(
     dict_response = json.loads(response_1.text)
     user_info = dict_response["user"]
     assert dict_response["status"] == "OK"
-    link = await create_reset_password_link("public", user_info["id"])
-    url = urlparse(link.link)  # type: ignore
+    link = await create_reset_password_link("public", user_info["id"], "")
+    assert isinstance(link, str)
+    url = urlparse(link)
     queries = url.query.strip("&").split("&")
     assert url.path == "/auth/reset-password"
     assert "token=" in queries[0]
     assert "tenantId=public" in queries
     assert "rid=emailpassword" not in queries
 
-    link = await create_reset_password_link("public", "invalidUserId")
-    assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
+    link = await create_reset_password_link("public", "invalidUserId", "")
+    assert isinstance(link, UnknownUserIdError)
 
     with raises(Exception) as err:
-        await create_reset_password_link("invalidTenantId", user_info["id"])
+        await create_reset_password_link("invalidTenantId", user_info["id"], "")
     assert "status code: 400" in str(err.value)
 
 

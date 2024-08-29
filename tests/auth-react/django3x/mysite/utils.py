@@ -392,6 +392,7 @@ def custom_init(
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[SessionContainer],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -405,12 +406,13 @@ def custom_init(
                     msg = body["generalErrorMessage"]
                 return GeneralErrorResponse(msg)
             return await original_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         async def sign_up_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[SessionContainer],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -420,7 +422,7 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API sign up")
             return await original_sign_up_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         original_implementation.email_exists_get = email_exists_get

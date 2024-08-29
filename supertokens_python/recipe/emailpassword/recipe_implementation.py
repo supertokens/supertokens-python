@@ -43,10 +43,10 @@ from supertokens_python.auth_utils import (
     LinkingToSessionUserFailedResponse,
     link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
 )
+from ...types import AccountLinkingUser
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-    from ...types import AccountLinkingUser
 
 
 class RecipeImplementation(RecipeInterface):

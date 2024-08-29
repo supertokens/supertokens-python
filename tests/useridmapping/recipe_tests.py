@@ -21,10 +21,11 @@ from supertokens_python.interfaces import (
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,
-    ResetPasswordUsingTokenOkResult,
     SignInOkResult,
     CreateResetPasswordOkResult,
+    UpdateEmailOrPasswordOkResult,
 )
+from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
 from .utils import st_config
@@ -55,23 +56,23 @@ async def ep_get_new_user_id(email: str) -> str:
     sign_up_res = await sign_up("public", email, "password")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    return sign_up_res.user.user_id
+    return sign_up_res.user.id
 
 
 async def ep_get_existing_user_id(user_id: str) -> str:
-    from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
+    from supertokens_python.asyncio import get_user
 
-    res = await get_user_by_id(user_id)
+    res = await get_user(user_id)
     assert res is not None
-    return res.user_id
+    return res.id
 
 
 async def ep_get_existing_user_by_email(email: str) -> str:
-    from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
+    from supertokens_python.asyncio import list_users_by_account_info
 
-    res = await get_user_by_email("public", email)
-    assert res is not None
-    return res.user_id
+    res = await list_users_by_account_info("public", AccountInfo(email=email))
+    assert len(res) == 1
+    return res[0].id
 
 
 async def ep_get_existing_user_by_signin(email: str) -> str:
@@ -79,7 +80,7 @@ async def ep_get_existing_user_by_signin(email: str) -> str:
 
     res = await sign_in("public", email, "password")
     assert isinstance(res, SignInOkResult)
-    return res.user.user_id
+    return res.user.id
 
 
 async def ep_get_existing_user_after_reset_password(user_id: str) -> str:
@@ -89,12 +90,11 @@ async def ep_get_existing_user_after_reset_password(user_id: str) -> str:
         reset_password_using_token,
     )
 
-    result = await create_reset_password_token("public", user_id)
+    result = await create_reset_password_token("public", user_id, "")
     assert isinstance(result, CreateResetPasswordOkResult)
     res = await reset_password_using_token("public", result.token, new_password)
-    assert isinstance(res, ResetPasswordUsingTokenOkResult)
-    assert res.user_id is not None
-    return res.user_id
+    assert isinstance(res, UpdateEmailOrPasswordOkResult)
+    return user_id
 
 
 async def ep_get_existing_user_after_updating_email_and_sign_in(user_id: str) -> str:
@@ -105,12 +105,12 @@ async def ep_get_existing_user_after_updating_email_and_sign_in(user_id: str) ->
         sign_in,
     )
 
-    res = await update_email_or_password(user_id, new_email, "password")
+    res = await update_email_or_password(RecipeUserId(user_id), new_email, "password")
     assert isinstance(res, SignUpOkResult)
 
     res = await sign_in("public", new_email, "password")
     assert isinstance(res, SignInOkResult)
-    return res.user.user_id
+    return res.user.id
 
 
 @mark.parametrize("use_external_id_info", [(True,), (False,)])

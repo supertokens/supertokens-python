@@ -74,12 +74,13 @@ async def test_user_context(driver_config_client: TestClient):
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[session.SessionContainer],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             user_context = {"preSignInPOST": True}
             response = await og_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
             if (
                 "preSignInPOST" in user_context
@@ -100,20 +101,32 @@ async def test_user_context(driver_config_client: TestClient):
         og_sign_up = param.sign_up
 
         async def sign_up_(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            user_context: Dict[str, Any],
         ):
             if "manualCall" in user_context:
                 global signUpContextWorks
                 signUpContextWorks = True
-            response = await og_sign_up(email, password, tenant_id, user_context)
+            response = await og_sign_up(
+                email, password, tenant_id, session, user_context
+            )
             return response
 
         async def sign_in(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            user_context: Dict[str, Any],
         ):
             if "preSignInPOST" in user_context:
                 user_context["preSignIn"] = True
-            response = await og_sign_in(email, password, tenant_id, user_context)
+            response = await og_sign_in(
+                email, password, tenant_id, session, user_context
+            )
             if "preSignInPOST" in user_context and "preSignIn" in user_context:
                 user_context["postSignIn"] = True
             return response
@@ -185,7 +198,9 @@ async def test_user_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
+    await sign_up(
+        "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
+    )
 
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
     assert res.status_code == 200
@@ -207,6 +222,7 @@ async def test_default_context(driver_config_client: TestClient):
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[session.SessionContainer],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
@@ -216,7 +232,7 @@ async def test_default_context(driver_config_client: TestClient):
                 signin_api_context_works = True
 
             return await og_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         param.sign_in_post = sign_in_post
@@ -226,14 +242,18 @@ async def test_default_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
 
         async def sign_in(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            user_context: Dict[str, Any],
         ):
             req = user_context.get("_default", {}).get("request")
             if req:
                 nonlocal signin_context_works
                 signin_context_works = True
 
-            return await og_sign_in(email, password, tenant_id, user_context)
+            return await og_sign_in(email, password, tenant_id, session, user_context)
 
         param.sign_in = sign_in
         return param
@@ -293,7 +313,9 @@ async def test_default_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
+    await sign_up(
+        "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
+    )
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
 
     assert res.status_code == 200
@@ -320,6 +342,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[session.SessionContainer],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
@@ -331,7 +354,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
                 signin_api_context_works = True
 
             return await og_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         param.sign_in_post = sign_in_post
@@ -341,7 +364,11 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
 
         async def sign_in(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            user_context: Dict[str, Any],
         ):
             req = get_request_from_user_context(user_context)
             if req:
@@ -358,7 +385,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
             user_context["_default"]["request"] = orginal_request
 
-            return await og_sign_in(email, password, tenant_id, user_context)
+            return await og_sign_in(email, password, tenant_id, session, user_context)
 
         param.sign_in = sign_in
         return param
@@ -420,7 +447,9 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
+    await sign_up(
+        "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
+    )
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
 
     assert res.status_code == 200

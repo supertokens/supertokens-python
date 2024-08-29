@@ -108,8 +108,8 @@ from supertokens_python.recipe.userroles.asyncio import (
     add_role_to_user,
     create_new_role_or_add_permissions,
 )
-from supertokens_python.types import GeneralErrorResponse
-from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
+from supertokens_python.types import AccountInfo, GeneralErrorResponse
+from supertokens_python.asyncio import list_users_by_account_info
 from supertokens_python.asyncio import delete_user
 
 load_dotenv()
@@ -447,6 +447,7 @@ def custom_init(
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[SessionContainer],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -460,12 +461,13 @@ def custom_init(
                     msg = body["generalErrorMessage"]
                 return GeneralErrorResponse(msg)
             return await original_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         async def sign_up_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[SessionContainer],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -475,7 +477,7 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API sign up")
             return await original_sign_up_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         original_implementation.email_exists_get = email_exists_get
@@ -800,10 +802,10 @@ async def set_role_api(
 @app.post("/deleteUser")
 async def delete_user_api(request: Request):
     body = await request.json()
-    user = await get_user_by_email("public", body["email"])
-    if user is None:
+    user = await list_users_by_account_info("public", AccountInfo(email=body["email"]))
+    if len(user) == 0:
         raise Exception("Should not come here")
-    await delete_user(user.user_id)
+    await delete_user(user[0].id)
     return JSONResponse({"status": "OK"})
 
 

@@ -1,23 +1,17 @@
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
-from supertokens_python.recipe.emailpassword.asyncio import (
-    create_reset_password_token as ep_create_reset_password_token,
-)
-from supertokens_python.recipe.emailpassword.asyncio import (
-    reset_password_using_token as ep_reset_password_using_token,
-)
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_PASSWORD_ID
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordOkResult,
-    CreateResetPasswordWrongUserIdError,
-    ResetPasswordUsingTokenInvalidTokenError,
-    ResetPasswordUsingTokenOkResult,
+    UnknownUserIdError,
+    PasswordResetTokenInvalidError,
+)
+from supertokens_python.recipe.emailpassword.asyncio import (
+    create_reset_password_token,
+    reset_password_using_token,
 )
 from supertokens_python.recipe.emailpassword.types import NormalisedFormField
-
-from supertokens_python.utils import Awaitable
 
 from ...interfaces import (
     APIInterface,
@@ -45,21 +39,6 @@ async def handle_user_password_put(
 
     async def reset_password(
         form_fields: List[NormalisedFormField],
-        create_reset_password_token: Callable[
-            [str, str, Dict[str, Any]],
-            Awaitable[
-                Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]
-            ],
-        ],
-        reset_password_using_token: Callable[
-            [str, str, str, Dict[str, Any]],
-            Awaitable[
-                Union[
-                    ResetPasswordUsingTokenOkResult,
-                    ResetPasswordUsingTokenInvalidTokenError,
-                ]
-            ],
-        ],
     ) -> Union[
         UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse
     ]:
@@ -77,10 +56,10 @@ async def handle_user_password_put(
             )
 
         password_reset_token = await create_reset_password_token(
-            tenant_id, user_id, user_context
+            tenant_id, user_id, "", user_context
         )
 
-        if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
+        if isinstance(password_reset_token, UnknownUserIdError):
             # Techincally it can but its an edge case so we assume that it wont
             # UNKNOWN_USER_ID_ERROR
             raise Exception("Should never come here")
@@ -89,9 +68,7 @@ async def handle_user_password_put(
             tenant_id, password_reset_token.token, new_password, user_context
         )
 
-        if isinstance(
-            password_reset_response, ResetPasswordUsingTokenInvalidTokenError
-        ):
+        if isinstance(password_reset_response, PasswordResetTokenInvalidError):
             # RESET_PASSWORD_INVALID_TOKEN_ERROR
             raise Exception("Should not come here")
 
@@ -99,6 +76,4 @@ async def handle_user_password_put(
 
     return await reset_password(
         EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields,
-        ep_create_reset_password_token,
-        ep_reset_password_using_token,
     )

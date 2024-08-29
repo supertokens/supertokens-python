@@ -25,7 +25,7 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import AccountLinkingUser
+from supertokens_python.types import AccountInfo, AccountLinkingUser
 
 
 def get_users_oldest_first(
@@ -158,5 +158,22 @@ def update_or_delete_user_id_mapping_info(
     return sync(
         Supertokens.get_instance().update_or_delete_user_id_mapping_info(
             user_id, user_id_type, external_user_id_info, user_context
+        )
+    )
+
+
+def list_users_by_account_info(
+    tenant_id: str,
+    account_info: AccountInfo,
+    do_union_of_account_info: bool = False,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> List[AccountLinkingUser]:
+    from supertokens_python.asyncio import (
+        list_users_by_account_info as async_list_users_by_account_info,
+    )
+
+    return sync(
+        async_list_users_by_account_info(
+            tenant_id, account_info, do_union_of_account_info, user_context
         )
     )

@@ -24,6 +24,7 @@ from supertokens_python.recipe.emailverification import EmailVerificationClaim
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.userroles import UserRoleClaim, PermissionClaim
+from supertokens_python.types import AccountInfo
 
 mode = os.environ.get("APP_MODE", "asgi")
 
@@ -94,14 +95,16 @@ if mode == "asgi":
         return JsonResponse({"status": "OK"})
 
     async def delete_user(request: HttpRequest):
-        from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
+        from supertokens_python.asyncio import list_users_by_account_info
         from supertokens_python.asyncio import delete_user
 
         body = json.loads(request.body)
-        user = await get_user_by_email("public", body["email"])
-        if user is None:
+        user = await list_users_by_account_info(
+            "public", AccountInfo(email=body["email"])
+        )
+        if len(user) == 0:
             raise Exception("Should not come here")
-        await delete_user(user.user_id)
+        await delete_user(user[0].id)
         return JsonResponse({"status": "OK"})
 
 else:
@@ -144,14 +147,14 @@ else:
         return JsonResponse({"status": "OK"})
 
     def sync_delete_user(request: HttpRequest):
-        from supertokens_python.recipe.emailpassword.syncio import get_user_by_email
+        from supertokens_python.syncio import list_users_by_account_info
         from supertokens_python.syncio import delete_user
 
         body = json.loads(request.body)
-        user = get_user_by_email("public", body["email"])
-        if user is None:
+        user = list_users_by_account_info("public", AccountInfo(email=body["email"]))
+        if len(user) == 0:
             raise Exception("Should not come here")
-        delete_user(user.user_id)
+        delete_user(user[0].id)
         return JsonResponse({"status": "OK"})
 
     @verify_session(override_global_claim_validators=override_global_claim_validators)

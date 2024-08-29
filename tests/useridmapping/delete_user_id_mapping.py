@@ -66,7 +66,7 @@ async def test_delete_user_id_mapping(user_type: USER_TYPE):
     sign_up_res = await sign_up("public", "test@example.com", "password")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    supertokens_user_id = sign_up_res.user.user_id
+    supertokens_user_id = sign_up_res.user.id
     external_user_id = "externalId"
     external_id_info = "externalIdInfo"
 
@@ -104,7 +104,7 @@ async def test_delete_user_id_mapping_without_and_with_force():
     sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    supertokens_user_id = sign_up_res.user.user_id
+    supertokens_user_id = sign_up_res.user.id
     external_user_id = "externalId"
     external_user_info = "externalIdInfo"
 

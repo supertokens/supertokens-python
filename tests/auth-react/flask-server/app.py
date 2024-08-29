@@ -48,7 +48,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 from supertokens_python.recipe.emailpassword.types import (
     FormField,
     InputFormField,
-    User,
 )
 from supertokens_python.recipe.emailverification import (
     EmailVerificationClaim,
@@ -103,9 +102,12 @@ from supertokens_python.recipe.userroles.syncio import (
     add_role_to_user,
     create_new_role_or_add_permissions,
 )
-from supertokens_python.types import GeneralErrorResponse
-from supertokens_python.recipe.emailpassword.syncio import get_user_by_email
-from supertokens_python.syncio import delete_user
+from supertokens_python.types import (
+    AccountInfo,
+    AccountLinkingUser,
+    GeneralErrorResponse,
+)
+from supertokens_python.syncio import delete_user, list_users_by_account_info
 
 load_dotenv()
 
@@ -198,7 +200,7 @@ class CustomEPEmailService(
 
 
 async def create_and_send_custom_email(
-    _: User, url_with_token: str, __: Dict[str, Any]
+    _: AccountLinkingUser, url_with_token: str, __: Dict[str, Any]
 ) -> None:
     global latest_url_with_token
     latest_url_with_token = url_with_token
@@ -396,6 +398,7 @@ def custom_init(
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[SessionContainer],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -409,12 +412,13 @@ def custom_init(
                     msg = body["generalErrorMessage"]
                 return GeneralErrorResponse(msg)
             return await original_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         async def sign_up_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[SessionContainer],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -424,7 +428,7 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API sign up")
             return await original_sign_up_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields, tenant_id, session, api_options, user_context
             )
 
         original_implementation.email_exists_get = email_exists_get
@@ -816,10 +820,10 @@ def verify_email_api():
 @app.route("/deleteUser", methods=["POST"])  # type: ignore
 def delete_user_api():
     body: Dict[str, Any] = request.get_json()  # type: ignore
-    user = get_user_by_email("public", body["email"])
-    if user is None:
+    user = list_users_by_account_info("public", AccountInfo(email=body["email"]))
+    if len(user) == 0:
         raise Exception("Should not come here")
-    delete_user(user.user_id)
+    delete_user(user[0].id)
     return jsonify({"status": "OK"})
 
 
