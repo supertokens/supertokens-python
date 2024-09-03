@@ -81,7 +81,7 @@ class BooleanClaim(PrimitiveClaim[bool]):
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaim"><code class="flex name class">
 <span>class <span class="ident">BooleanClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, str, Dict[str, Any]], Union[Awaitable[Optional[bool]], bool, None]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, str, Dict[str, Any]], Union[Awaitable[Optional[bool]], bool, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
