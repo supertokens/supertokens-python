@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.24.2] - 2024-09-03
+- Makes optional input form fields truly optional instead of just being able to accept `""`.
+
 ## [0.24.1] - 2024-08-16
 
 -   Sets time out for httpx client to 30s everywhere. - https://github.com/supertokens/supertokens-python/issues/516

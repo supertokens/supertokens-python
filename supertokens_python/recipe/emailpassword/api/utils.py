@@ -51,6 +51,8 @@ async def validate_form_or_throw_error(
         if is_invalid_value:
             continue
 
+        assert input_field is not None
+
         error = await field.validate(input_field.value, tenant_id)
         if error is not None:
             validation_errors.append(ErrorFormField(field.id, error))
