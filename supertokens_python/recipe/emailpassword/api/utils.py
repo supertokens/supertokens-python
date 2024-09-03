@@ -34,19 +34,28 @@ async def validate_form_or_throw_error(
     tenant_id: str,
 ):
     validation_errors: List[ErrorFormField] = []
-    if len(config_form_fields) != len(inputs):
-        raise_bad_input_exception("Are you sending too many / too few formFields?")
+    if len(config_form_fields) < len(inputs):
+        raise_bad_input_exception("Are you sending too many formFields?")
 
     for field in config_form_fields:
         input_field: Union[None, FormField] = find_first_occurrence_in_list(
             lambda x: x.id == field.id, inputs
         )
-        if input_field is None or (input_field.value == "" and not field.optional):
+        is_invalid_value = input_field is None or input_field.value == ""
+        if not field.optional and is_invalid_value:
             validation_errors.append(ErrorFormField(field.id, "Field is not optional"))
-        else:
-            error = await field.validate(input_field.value, tenant_id)
-            if error is not None:
-                validation_errors.append(ErrorFormField(field.id, error))
+            continue
+
+        # If the field was invalid and not optional, execution won't reach here.
+        # so we need to skip it if  the value is invalid and optional.
+        if is_invalid_value:
+            continue
+
+        assert input_field is not None
+
+        error = await field.validate(input_field.value, tenant_id)
+        if error is not None:
+            validation_errors.append(ErrorFormField(field.id, error))
 
     if len(validation_errors) != 0:
         # raise BadInputError(msg="Error in input formFields")

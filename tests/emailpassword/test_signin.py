@@ -16,9 +16,8 @@ from typing import Union
 
 from fastapi import FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import delete_user, get_user_count
 from supertokens_python.framework.fastapi import get_middleware
@@ -31,7 +30,9 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
+from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     clean_st,
     extract_all_cookies,
@@ -425,9 +426,11 @@ async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClie
 
     response_2 = driver_config_client.post(url="/auth/signin", json={"x": "y"})
 
-    assert response_2.status_code == 400
+    assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
-    assert dict_response["message"] == "Are you sending too many / too few formFields?"
+    assert dict_response["status"] == "FIELD_ERROR"
+    assert len(dict_response["formFields"]) == 2
+    assert dict_response["formFields"][0]["error"] == "Field is not optional"
 
 
 @mark.asyncio
@@ -457,9 +460,11 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
 
     response_2 = driver_config_client.post(url="/auth/signin", json={"x": "y"})
 
-    assert response_2.status_code == 400
+    assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
-    assert dict_response["message"] == "Are you sending too many / too few formFields?"
+    assert dict_response["status"] == "FIELD_ERROR"
+    assert len(dict_response["formFields"]) == 2
+    assert dict_response["formFields"][0]["error"] == "Field is not optional"
 
 
 @mark.asyncio
@@ -581,7 +586,12 @@ async def test_formFields_has_no_email_field(driver_config_client: TestClient):
         json={"formFields": [{"id": "password", "value": "validpassword123"}]},
     )
 
-    assert response_2.status_code == 400
+    assert response_2.status_code == 200
+    dict_response = json.loads(response_2.text)
+    assert dict_response["status"] == "FIELD_ERROR"
+    assert len(dict_response["formFields"]) == 1
+    assert dict_response["formFields"][0]["error"] == "Field is not optional"
+    assert dict_response["formFields"][0]["id"] == "email"
 
 
 @mark.asyncio
@@ -614,7 +624,12 @@ async def test_formFields_has_no_password_field(driver_config_client: TestClient
         json={"formFields": [{"id": "email", "value": "randomgmail.com"}]},
     )
 
-    assert response_2.status_code == 400
+    assert response_2.status_code == 200
+    dict_response = json.loads(response_2.text)
+    assert dict_response["status"] == "FIELD_ERROR"
+    assert len(dict_response["formFields"]) == 2
+    assert dict_response["formFields"][0]["error"] == "Field is not optional"
+    assert dict_response["formFields"][1]["error"] == "Email is not valid"
 
 
 @mark.asyncio
@@ -657,6 +672,137 @@ async def test_delete_user(driver_config_client: TestClient):
             pass
 
         assert error_raised
+
+
+@mark.asyncio
+async def test_optional_custom_field_without_input(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(
+                    form_fields=[
+                        emailpassword.InputFormField("test_field", optional=True)
+                    ]
+                )
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpassword123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+
+    response_2 = driver_config_client.post(
+        url="/auth/signin",
+        json={
+            "formFields": [
+                {"id": "email", "value": "random@gmail.com"},
+                {"id": "password", "value": "validpassword123"},
+            ]
+        },
+    )
+
+    assert response_2.status_code == 200
+    dict_response = json.loads(response_2.text)
+    assert dict_response["status"] == "OK"
+
+
+@mark.asyncio
+async def test_too_many_fields(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(
+                    form_fields=[
+                        emailpassword.InputFormField("test_field", optional=True)
+                    ]
+                )
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpassword123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+
+    response_2 = driver_config_client.post(
+        url="/auth/signin",
+        json={
+            "formFields": [
+                {"id": "email", "value": "random@gmail.com"},
+                {"id": "password", "value": "validpassword123"},
+                {"id": "test_field", "value": "gmail.com"},
+                {"id": "extra_field", "value": "random@gmail.com"},
+            ]
+        },
+    )
+
+    assert response_2.status_code == 400
+    dict_response = json.loads(response_2.text)
+    assert dict_response["message"] == "Are you sending too many formFields?"
+
+
+@mark.asyncio
+async def test_non_optional_custom_field_without_input(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(
+                    form_fields=[
+                        emailpassword.InputFormField("test_field", optional=False)
+                    ]
+                )
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpassword123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "FIELD_ERROR"
+    assert len(dict_response["formFields"]) == 1
+    assert dict_response["formFields"][0]["error"] == "Field is not optional"
+    assert dict_response["formFields"][0]["id"] == "test_field"
 
 
 # TODO add few more tests
