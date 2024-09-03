@@ -767,4 +767,41 @@ async def test_too_many_fields(driver_config_client: TestClient):
     assert dict_response["message"] == "Are you sending too many formFields?"
 
 
+@mark.asyncio
+async def test_non_optional_custom_field_without_input(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(
+                    form_fields=[
+                        emailpassword.InputFormField("test_field", optional=False)
+                    ]
+                )
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client, "random@gmail.com", "validpassword123"
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "FIELD_ERROR"
+    assert len(dict_response["formFields"]) == 1
+    assert dict_response["formFields"][0]["error"] == "Field is not optional"
+    assert dict_response["formFields"][0]["id"] == "test_field"
+
+
 # TODO add few more tests
