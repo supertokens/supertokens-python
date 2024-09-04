@@ -54,6 +54,8 @@ async def handle_sign_in_api(
         override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
+    if session is not None:
+        tenant_id = session.get_tenant_id()
 
     response = await api_implementation.sign_in_post(
         form_fields, tenant_id, session, api_options, user_context

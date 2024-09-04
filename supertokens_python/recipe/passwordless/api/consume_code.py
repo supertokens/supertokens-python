@@ -14,6 +14,7 @@
 from typing import Any, Dict
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.utils import send_200_response
 
 
@@ -56,11 +57,21 @@ async def consume_code(
 
     pre_auth_session_id = body["preAuthSessionId"]
 
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        user_context=user_context,
+    )
+
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     result = await api_implementation.consume_code_post(
         pre_auth_session_id,
         user_input_code,
         device_id,
         link_code,
+        session,
         tenant_id,
         api_options,
         user_context,

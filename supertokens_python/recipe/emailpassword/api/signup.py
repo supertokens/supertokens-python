@@ -59,6 +59,9 @@ async def handle_sign_up_api(
         user_context=user_context,
     )
 
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     response = await api_implementation.sign_up_post(
         form_fields, tenant_id, session, api_options, user_context
     )

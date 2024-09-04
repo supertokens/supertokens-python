@@ -11,10 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from supertokens_python import get_request_from_user_context
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
 from supertokens_python.recipe.passwordless.interfaces import (
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeOkResult,
+    CheckCodeRestartFlowError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeOkResult,
@@ -23,8 +28,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    DeleteUserInfoOkResult,
-    DeleteUserInfoUnknownUserIdError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
     RevokeAllCodesOkResult,
     RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsError,
@@ -37,8 +42,9 @@ from supertokens_python.recipe.passwordless.types import (
     DeviceType,
     EmailTemplateVars,
     SMSTemplateVars,
-    User,
 )
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import RecipeUserId
 
 
 async def create_code(
@@ -46,6 +52,7 @@ async def create_code(
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> CreateCodeOkResult:
     if user_context is None:
@@ -55,6 +62,7 @@ async def create_code(
         phone_number=phone_number,
         user_input_code=user_input_code,
         tenant_id=tenant_id,
+        session=session,
         user_context=user_context,
     )
 
@@ -85,12 +93,14 @@ async def consume_code(
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
     link_code: Union[str, None] = None,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     ConsumeCodeOkResult,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeRestartFlowError,
+    LinkingToSessionUserFailedError,
 ]:
     if user_context is None:
         user_context = {}
@@ -100,48 +110,13 @@ async def consume_code(
         device_id=device_id,
         link_code=link_code,
         tenant_id=tenant_id,
-        user_context=user_context,
-    )
-
-
-async def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -> Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(
-        user_id=user_id, user_context=user_context
-    )
-
-
-async def get_user_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -> Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return (
-        await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_email(
-            email=email,
-            tenant_id=tenant_id,
-            user_context=user_context,
-        )
-    )
-
-
-async def get_user_by_phone_number(
-    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
-) -> Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
-        phone_number=phone_number,
-        tenant_id=tenant_id,
+        session=session,
         user_context=user_context,
     )
 
 
 async def update_user(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -150,34 +125,41 @@ async def update_user(
     UpdateUserUnknownUserIdError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserPhoneNumberAlreadyExistsError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
 ]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.update_user(
-        user_id=user_id,
+        recipe_user_id=recipe_user_id,
         email=email,
         phone_number=phone_number,
         user_context=user_context,
     )
 
 
-async def delete_email_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+async def check_code(
+    tenant_id: str,
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None] = None,
+    device_id: Union[str, None] = None,
+    link_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[
+    CheckCodeOkResult,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeRestartFlowError,
+]:
     if user_context is None:
         user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(
-        user_id=user_id, user_context=user_context
-    )
-
-
-async def delete_phone_number_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
-        user_id=user_id, user_context=user_context
+    return await PasswordlessRecipe.get_instance().recipe_implementation.check_code(
+        pre_auth_session_id=pre_auth_session_id,
+        user_input_code=user_input_code,
+        device_id=device_id,
+        link_code=link_code,
+        tenant_id=tenant_id,
+        user_context=user_context,
     )
 
 
@@ -281,6 +263,7 @@ async def signinup(
     tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
+    session: Optional[SessionContainer],
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> ConsumeCodeOkResult:
     if user_context is None:
@@ -290,6 +273,7 @@ async def signinup(
         phone_number=phone_number,
         tenant_id=tenant_id,
         user_context=user_context,
+        session=session,
     )
 
 

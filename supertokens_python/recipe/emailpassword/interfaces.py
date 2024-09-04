@@ -15,12 +15,16 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
-from typing_extensions import Literal
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 from ...supertokens import AppInfo
-from ...types import APIResponse, GeneralErrorResponse, RecipeUserId
+from ...types import (
+    APIResponse,
+    GeneralErrorResponse,
+    RecipeUserId,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -44,20 +48,6 @@ class EmailAlreadyExistsError(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
-
-
-class LinkingToSessionUserFailedError:
-    def __init__(
-        self,
-        reason: Literal[
-            "EMAIL_VERIFICATION_REQUIRED",
-            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "INPUT_USER_IS_NOT_A_PRIMARY_USER",
-        ],
-    ):
-        self.reason = reason
 
 
 class SignInOkResult:

@@ -15,6 +15,7 @@ from typing import Any, Dict, Union, Optional
 from typing_extensions import Literal
 from supertokens_python import get_request_from_user_context
 from supertokens_python.asyncio import get_user
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.session import SessionContainer
@@ -33,7 +34,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     PasswordPolicyViolationError,
     SignUpOkResult,
     EmailAlreadyExistsError,
-    LinkingToSessionUserFailedError,
     SignInOkResult,
     WrongCredentialsError,
 )

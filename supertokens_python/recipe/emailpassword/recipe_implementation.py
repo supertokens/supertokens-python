@@ -35,12 +35,11 @@ from .interfaces import (
     SignUpOkResult,
     UpdateEmailOrPasswordOkResult,
     PasswordPolicyViolationError,
-    LinkingToSessionUserFailedError,
 )
 from .utils import EmailPasswordConfig
 from .constants import FORM_FIELD_PASSWORD_ID
 from supertokens_python.auth_utils import (
-    LinkingToSessionUserFailedResponse,
+    LinkingToSessionUserFailedError,
     link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
 )
 from ...types import AccountLinkingUser
@@ -88,7 +87,7 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
-        if isinstance(link_result, LinkingToSessionUserFailedResponse):
+        if isinstance(link_result, LinkingToSessionUserFailedError):
             return LinkingToSessionUserFailedError(reason=link_result.reason)
 
         updated_user = link_result.user
@@ -167,8 +166,8 @@ class RecipeImplementation(RecipeInterface):
                 user_context=user_context,
             )
 
-            if isinstance(link_result, LinkingToSessionUserFailedResponse):
-                return LinkingToSessionUserFailedError(reason=link_result.reason)
+            if isinstance(link_result, LinkingToSessionUserFailedError):
+                return link_result
 
             response.user = link_result.user
 

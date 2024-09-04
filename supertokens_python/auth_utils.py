@@ -41,26 +41,7 @@ from supertokens_python.utils import log_debug_message
 from .asyncio import get_user
 
 
-class OkResponse:
-    status: Literal["OK"]
-    valid_factor_ids: List[str]
-    is_first_factor: bool
-
-    def __init__(self, valid_factor_ids: List[str], is_first_factor: bool):
-        self.status = "OK"
-        self.valid_factor_ids = valid_factor_ids
-        self.is_first_factor = is_first_factor
-
-
-class SignUpNotAllowedResponse:
-    status: Literal["SIGN_UP_NOT_ALLOWED"]
-
-
-class SignInNotAllowedResponse:
-    status: Literal["SIGN_IN_NOT_ALLOWED"]
-
-
-class LinkingToSessionUserFailedResponse:
+class LinkingToSessionUserFailedError:
     status: Literal["LINKING_TO_SESSION_USER_FAILED"]
     reason: Literal[
         "EMAIL_VERIFICATION_REQUIRED",
@@ -83,6 +64,25 @@ class LinkingToSessionUserFailedResponse:
         self.reason = reason
 
 
+class OkResponse:
+    status: Literal["OK"]
+    valid_factor_ids: List[str]
+    is_first_factor: bool
+
+    def __init__(self, valid_factor_ids: List[str], is_first_factor: bool):
+        self.status = "OK"
+        self.valid_factor_ids = valid_factor_ids
+        self.is_first_factor = is_first_factor
+
+
+class SignUpNotAllowedResponse:
+    status: Literal["SIGN_UP_NOT_ALLOWED"]
+
+
+class SignInNotAllowedResponse:
+    status: Literal["SIGN_IN_NOT_ALLOWED"]
+
+
 async def pre_auth_checks(
     authenticating_account_info: AccountInfoWithRecipeId,
     authenticating_user: Union[AccountLinkingUser, None],
@@ -98,7 +98,7 @@ async def pre_auth_checks(
     OkResponse,
     SignUpNotAllowedResponse,
     SignInNotAllowedResponse,
-    LinkingToSessionUserFailedResponse,
+    LinkingToSessionUserFailedError,
 ]:
     valid_factor_ids: List[str] = []
 
@@ -491,7 +491,7 @@ async def check_auth_type_and_linking_status(
     OkFirstFactorResponse,
     OkSecondFactorLinkedResponse,
     OkSecondFactorNotLinkedResponse,
-    LinkingToSessionUserFailedResponse,
+    LinkingToSessionUserFailedError,
 ]:
     log_debug_message("check_auth_type_and_linking_status called")
     session_user: Union[AccountLinkingUser, None] = None
@@ -529,7 +529,7 @@ async def check_auth_type_and_linking_status(
             session_user_result.status
             == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ):
-            return LinkingToSessionUserFailedResponse(
+            return LinkingToSessionUserFailedError(
                 reason="SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             )
 
@@ -572,7 +572,7 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
     recipe_user_id: RecipeUserId,
     session: Union[SessionContainer, None],
     user_context: Dict[str, Any],
-) -> Union[OkResponse2, LinkingToSessionUserFailedResponse,]:
+) -> Union[OkResponse2, LinkingToSessionUserFailedError,]:
     log_debug_message(
         "link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info called"
     )
@@ -623,7 +623,7 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
             OkSecondFactorNotLinkedResponse,
         ),
     ):
-        return LinkingToSessionUserFailedResponse(reason=auth_type_res.reason)
+        return LinkingToSessionUserFailedError(reason=auth_type_res.reason)
 
     if isinstance(auth_type_res, OkFirstFactorResponse):
         if not recipe_init_defined_should_do_automatic_account_linking():
@@ -660,7 +660,7 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
         linking_to_session_user_requires_verification=auth_type_res.linking_to_session_user_requires_verification,
         user_context=user_context,
     )
-    if isinstance(session_linking_res, LinkingToSessionUserFailedResponse):
+    if isinstance(session_linking_res, LinkingToSessionUserFailedError):
         if session_linking_res.reason == "INPUT_USER_IS_NOT_A_PRIMARY_USER":
             return await retry()
         else:
@@ -778,7 +778,7 @@ async def try_linking_by_session(
     authenticated_user: AccountLinkingUser,
     session_user: AccountLinkingUser,
     user_context: Dict[str, Any],
-) -> Union[OkResponse2, LinkingToSessionUserFailedResponse,]:
+) -> Union[OkResponse2, LinkingToSessionUserFailedError,]:
     log_debug_message("tryLinkingBySession called")
 
     session_user_has_verified_account_info = any(
@@ -797,7 +797,7 @@ async def try_linking_by_session(
     )
 
     if not can_link_based_on_verification:
-        return LinkingToSessionUserFailedResponse(reason="EMAIL_VERIFICATION_REQUIRED")
+        return LinkingToSessionUserFailedError(reason="EMAIL_VERIFICATION_REQUIRED")
 
     link_accounts_result = (
         await AccountLinkingRecipe.get_instance().recipe_implementation.link_accounts(
@@ -819,21 +819,21 @@ async def try_linking_by_session(
         log_debug_message(
             "tryLinkingBySession linking to session user failed because of a race condition - input user linked to another user"
         )
-        return LinkingToSessionUserFailedResponse(
+        return LinkingToSessionUserFailedError(
             reason="RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         )
     elif link_accounts_result.status == "INPUT_USER_IS_NOT_A_PRIMARY_USER":
         log_debug_message(
             "tryLinkingBySession linking to session user failed because of a race condition - INPUT_USER_IS_NOT_A_PRIMARY_USER, should retry"
         )
-        return LinkingToSessionUserFailedResponse(
+        return LinkingToSessionUserFailedError(
             reason="INPUT_USER_IS_NOT_A_PRIMARY_USER"
         )
     else:
         log_debug_message(
             "tryLinkingBySession linking to session user failed because of a race condition - input user has another primary user it can be linked to"
         )
-        return LinkingToSessionUserFailedResponse(
+        return LinkingToSessionUserFailedError(
             reason="ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         )
 

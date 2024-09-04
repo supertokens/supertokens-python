@@ -22,6 +22,7 @@ from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOrPhoneConfig,
     ContactPhoneOnlyConfig,
 )
+from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.types import GeneralErrorResponse
 from supertokens_python.utils import send_200_response
 
@@ -109,9 +110,19 @@ async def create_code(
         except Exception:
             phone_number = phone_number.strip()
 
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        user_context=user_context,
+    )
+
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     result = await api_implementation.create_code_post(
         email=email,
         phone_number=phone_number,
+        session=session,
         tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
