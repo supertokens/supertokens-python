@@ -20,7 +20,6 @@ import httpx
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -182,9 +181,9 @@ async def test_email_verify_for_pless_user_no_callback():
     if not is_version_gte(version, "2.11"):
         return
 
-    pless_response = await signinup("public", "test@example.com", None, {})
+    pless_response = await signinup("public", "test@example.com", None, None, {})
     create_token = await create_email_verification_token(
-        "public", RecipeUserId(pless_response.user.user_id)
+        "public", pless_response.recipe_user_id
     )
 
     assert isinstance(create_token, CreateEmailVerificationTokenOkResult)

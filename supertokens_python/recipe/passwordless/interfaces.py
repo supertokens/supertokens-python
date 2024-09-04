@@ -282,6 +282,18 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
+    async def delete_email_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        pass
+
+    @abstractmethod
+    async def delete_phone_number_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        pass
+
+    @abstractmethod
     async def revoke_all_codes(
         self,
         email: Union[str, None],

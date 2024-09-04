@@ -187,12 +187,10 @@ def is_valid_recipe_id(recipe_id: str) -> bool:
 
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.passwordless.types import User as PasswordlessUser
     from supertokens_python.recipe.thirdparty.types import User as ThirdPartyUser
 
     GetUserResult = Union[
         ThirdPartyUser,
-        PasswordlessUser,
         None,
     ]
 

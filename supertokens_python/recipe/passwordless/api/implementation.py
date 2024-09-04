@@ -86,7 +86,6 @@ class PasswordlessUserResult:
 
 async def get_passwordless_user_by_account_info(
     tenant_id: str,
-    session: Optional[SessionContainer],
     user_context: Dict[str, Any],
     account_info: AccountInfo,
 ) -> Optional[PasswordlessUserResult]:
@@ -161,7 +160,7 @@ class APIImplementation(APIInterface):
         )
 
         user_with_matching_login_method = await get_passwordless_user_by_account_info(
-            tenant_id, session, user_context, account_info
+            tenant_id, user_context, account_info
         )
 
         factor_ids = []
@@ -350,7 +349,6 @@ class APIImplementation(APIInterface):
 
         user_with_matching_login_method = await get_passwordless_user_by_account_info(
             tenant_id=tenant_id,
-            session=session,
             user_context=user_context,
             account_info=AccountInfo(
                 email=device_info.email,

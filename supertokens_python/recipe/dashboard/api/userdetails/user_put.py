@@ -104,7 +104,7 @@ async def update_email_for_recipe_id(
             return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
         update_result = await pless_update_user(
-            user_id, email, user_context=user_context
+            RecipeUserId(user_id), email, user_context=user_context
         )
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
@@ -150,7 +150,7 @@ async def update_phone_for_recipe_id(
             return UserPutAPIInvalidPhoneErrorResponse(validation_error)
 
         update_result = await pless_update_user(
-            user_id, phone_number=phone, user_context=user_context
+            RecipeUserId(user_id), phone_number=phone, user_context=user_context
         )
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):

@@ -509,6 +509,7 @@ def custom_init(
             user_input_code: Union[str, None],
             device_id: Union[str, None],
             link_code: Union[str, None],
+            session: Optional[SessionContainer],
             tenant_id: str,
             api_options: PAPIOptions,
             user_context: Dict[str, Any],
@@ -523,6 +524,7 @@ def custom_init(
                 user_input_code,
                 device_id,
                 link_code,
+                session,
                 tenant_id,
                 api_options,
                 user_context,
@@ -531,6 +533,7 @@ def custom_init(
         async def create_code_post(
             email: Union[str, None],
             phone_number: Union[str, None],
+            session: Optional[SessionContainer],
             tenant_id: str,
             api_options: PAPIOptions,
             user_context: Dict[str, Any],
@@ -541,12 +544,13 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API create code")
             return await original_create_code_post(
-                email, phone_number, tenant_id, api_options, user_context
+                email, phone_number, session, tenant_id, api_options, user_context
             )
 
         async def resend_code_post(
             device_id: str,
             pre_auth_session_id: str,
+            session: Optional[SessionContainer],
             tenant_id: str,
             api_options: PAPIOptions,
             user_context: Dict[str, Any],
@@ -557,7 +561,12 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API resend code")
             return await original_resend_code_post(
-                device_id, pre_auth_session_id, tenant_id, api_options, user_context
+                device_id,
+                pre_auth_session_id,
+                session,
+                tenant_id,
+                api_options,
+                user_context,
             )
 
         original_implementation.consume_code_post = consume_code_post

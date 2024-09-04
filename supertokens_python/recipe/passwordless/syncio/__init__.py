@@ -145,6 +145,34 @@ def update_user(
     )
 
 
+def delete_email_for_user(
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    return sync(
+        asyncio.delete_email_for_user(
+            recipe_user_id=recipe_user_id,
+            user_context=user_context,
+        )
+    )
+
+
+def delete_phone_number_for_user(
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    return sync(
+        asyncio.delete_phone_number_for_user(
+            recipe_user_id=recipe_user_id,
+            user_context=user_context,
+        )
+    )
+
+
 def revoke_all_codes(
     tenant_id: str,
     email: Union[str, None] = None,

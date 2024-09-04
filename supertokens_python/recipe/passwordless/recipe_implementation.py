@@ -437,6 +437,32 @@ class RecipeImplementation(RecipeInterface):
         )
         return RevokeCodeOkResult()
 
+    async def delete_email_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        data = {"recipeUserId": recipe_user_id.get_as_string(), "email": None}
+        result = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/user"),
+            data,
+            user_context=user_context,
+        )
+        if result["status"] == "OK":
+            return UpdateUserOkResult()
+        return UpdateUserUnknownUserIdError()
+
+    async def delete_phone_number_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        data = {"recipeUserId": recipe_user_id.get_as_string(), "phoneNumber": None}
+        result = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/user"),
+            data,
+            user_context=user_context,
+        )
+        if result["status"] == "OK":
+            return UpdateUserOkResult()
+        return UpdateUserUnknownUserIdError()
+
     async def update_user(
         self,
         recipe_user_id: RecipeUserId,

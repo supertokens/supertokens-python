@@ -15,6 +15,12 @@
 from typing import Any, Dict
 
 from fastapi import FastAPI
+from supertokens_python.asyncio import get_user, list_users_by_account_info
+from supertokens_python.recipe.passwordless.asyncio import (
+    delete_email_for_user,
+    delete_phone_number_for_user,
+)
+from supertokens_python.types import AccountInfo, RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -22,16 +28,10 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.asyncio import (
-    delete_email_for_user,
-    delete_phone_number_for_user,
-    get_user_by_email,
-    get_user_by_id,
-    get_user_by_phone_number,
     update_user,
     create_magic_link,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
-    DeleteUserInfoOkResult,
     UpdateUserOkResult,
 )
 from supertokens_python.utils import is_version_gte
@@ -227,14 +227,16 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
 
     await update_user(user_id, "foo@example.com", "+919494949494")
 
-    response = await delete_phone_number_for_user(user_id)
-    assert isinstance(response, DeleteUserInfoOkResult)
+    response = await delete_phone_number_for_user(RecipeUserId(user_id))
+    assert isinstance(response, UpdateUserOkResult)
 
-    user = await get_user_by_phone_number("public", "+919494949494")
+    user = await list_users_by_account_info(
+        "public", AccountInfo(phone_number="+919494949494")
+    )
     assert user is None
 
-    user = await get_user_by_id(user_id)
-    assert user is not None and user.phone_number is None
+    user = await get_user(user_id)
+    assert user is not None and user.phone_numbers == []
 
 
 @mark.asyncio
@@ -310,14 +312,16 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
 
     await update_user(user_id, "hello@example.com", "+919494949494")
 
-    response = await delete_email_for_user(user_id)
-    assert isinstance(response, DeleteUserInfoOkResult)
+    response = await delete_email_for_user(RecipeUserId(user_id))
+    assert isinstance(response, UpdateUserOkResult)
 
-    user = await get_user_by_email("public", "hello@example.com")
+    user = await list_users_by_account_info(
+        "public", AccountInfo(email="hello@example.com")
+    )
     assert user is None
 
-    user = await get_user_by_id(user_id)
-    assert user is not None and user.email is None
+    user = await get_user(user_id)
+    assert user is not None and user.emails == []
 
 
 @mark.asyncio

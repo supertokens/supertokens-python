@@ -138,6 +138,30 @@ async def update_user(
     )
 
 
+async def delete_email_for_user(
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    return await PasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+
+
+async def delete_phone_number_for_user(
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    return await PasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+
+
 async def check_code(
     tenant_id: str,
     pre_auth_session_id: str,
