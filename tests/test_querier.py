@@ -21,9 +21,6 @@ from supertokens_python.recipe import (
 )
 from supertokens_python import InputAppInfo
 from supertokens_python.recipe.emailpassword.asyncio import get_user, sign_up
-from supertokens_python.recipe.thirdparty.asyncio import (
-    get_user_by_id as tp_get_user,
-)
 import asyncio
 import respx
 import httpx
@@ -247,14 +244,14 @@ async def test_caching_works():
     assert user is None
     assert not called_core
 
-    user = await tp_get_user("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await tp_get_user("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
@@ -420,7 +417,7 @@ async def test_no_caching_if_headers_are_different():
 
     called_core = False
 
-    user = await tp_get_user("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 

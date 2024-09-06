@@ -12,49 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.thirdparty.interfaces import (
+    EmailChangeNotAllowedError,
+    ManuallyCreateOrUpdateUserOkResult,
+    SignInUpNotAllowed,
+)
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
-
-from ..types import User
-
-
-async def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -> Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(
-        user_id, user_context
-    )
-
-
-async def get_users_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -> List[User]:
-    if user_context is None:
-        user_context = {}
-    return (
-        await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(
-            email, tenant_id, user_context
-        )
-    )
-
-
-async def get_user_by_third_party_info(
-    tenant_id: str,
-    third_party_id: str,
-    third_party_user_id: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
-        third_party_id,
-        third_party_user_id,
-        tenant_id,
-        user_context,
-    )
 
 
 async def manually_create_or_update_user(
@@ -62,16 +29,25 @@ async def manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    is_verified: bool,
+    session: Optional[SessionContainer],
     user_context: Union[None, Dict[str, Any]] = None,
-):
+) -> Union[
+    ManuallyCreateOrUpdateUserOkResult,
+    LinkingToSessionUserFailedError,
+    SignInUpNotAllowed,
+    EmailChangeNotAllowedError,
+]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.manually_create_or_update_user(
-        third_party_id,
-        third_party_user_id,
-        email,
-        tenant_id,
-        user_context,
+        third_party_id=third_party_id,
+        third_party_user_id=third_party_user_id,
+        email=email,
+        is_verified=is_verified,
+        session=session,
+        tenant_id=tenant_id,
+        user_context=user_context,
     )
 
 

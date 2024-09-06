@@ -186,15 +186,6 @@ def is_valid_recipe_id(recipe_id: str) -> bool:
     return recipe_id in ("emailpassword", "thirdparty", "passwordless")
 
 
-if TYPE_CHECKING:
-    from supertokens_python.recipe.thirdparty.types import User as ThirdPartyUser
-
-    GetUserResult = Union[
-        ThirdPartyUser,
-        None,
-    ]
-
-
 class GetUserForRecipeIdHelperResult:
     def __init__(
         self, user: Optional[AccountLinkingUser] = None, recipe: Optional[str] = None

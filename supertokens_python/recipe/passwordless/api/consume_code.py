@@ -13,9 +13,16 @@
 # under the License.
 from typing import Any, Dict
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.passwordless.interfaces import (
+    APIInterface,
+    APIOptions,
+    ConsumeCodePostOkResult,
+)
 from supertokens_python.recipe.session.asyncio import get_session
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import (
+    get_backwards_compatible_user_info,
+    send_200_response,
+)
 
 
 async def consume_code(
@@ -76,4 +83,17 @@ async def consume_code(
         api_options,
         user_context,
     )
+
+    if isinstance(result, ConsumeCodePostOkResult):
+        return send_200_response(
+            get_backwards_compatible_user_info(
+                req=api_options.request,
+                user_info=result.user,
+                session_container=result.session,
+                created_new_recipe_user=result.created_new_recipe_user,
+                user_context=user_context,
+            ),
+            api_options.response,
+        )
+
     return send_200_response(result.to_json(), api_options.response)

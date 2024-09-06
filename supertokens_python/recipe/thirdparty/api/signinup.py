@@ -14,13 +14,18 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
+from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.recipe.thirdparty.interfaces import SignInUpPostOkResult
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import (
+    get_backwards_compatible_user_info,
+    send_200_response,
+)
 
 
 async def handle_sign_in_up_api(
@@ -80,6 +85,15 @@ async def handle_sign_in_up_api(
             pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
         )
 
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        user_context=user_context,
+    )
+
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     result = await api_implementation.sign_in_up_post(
         provider=provider,
         redirect_uri_info=redirect_uri_info,
@@ -87,5 +101,19 @@ async def handle_sign_in_up_api(
         tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
+        session=session,
     )
+
+    if isinstance(result, SignInUpPostOkResult):
+        return send_200_response(
+            get_backwards_compatible_user_info(
+                req=api_options.request,
+                user_info=result.user,
+                session_container=result.session,
+                created_new_recipe_user=result.created_new_recipe_user,
+                user_context=user_context,
+            ),
+            api_options.response,
+        )
+
     return send_200_response(result.to_json(), api_options.response)

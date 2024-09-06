@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
+from supertokens_python.asyncio import get_user
 from supertokens_python.recipe import session, multitenancy, thirdparty
 from supertokens_python import init
 from supertokens_python.recipe.multitenancy.asyncio import (
@@ -20,12 +21,15 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 )
 from supertokens_python.recipe.thirdparty.asyncio import (
     manually_create_or_update_user,
-    get_user_by_id,
-    get_users_by_email,
-    get_user_by_third_party_info,
     get_provider,
 )
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.thirdparty.interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
+)
+from supertokens_python.asyncio import list_users_by_account_info
+from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
+from supertokens_python.types import AccountInfo
 
 from tests.utils import get_st_init_args
 from tests.utils import (
@@ -55,23 +59,29 @@ async def test_thirtyparty_multitenancy_functions():
 
     # sign up:
     user1a = await manually_create_or_update_user(
-        "t1", "google", "googleid1", "test@example.com"
+        "t1", "google", "googleid1", "test@example.com", True, None
     )
+    assert isinstance(user1a, ManuallyCreateOrUpdateUserOkResult)
     user1b = await manually_create_or_update_user(
-        "t1", "facebook", "fbid1", "test@example.com"
+        "t1", "facebook", "fbid1", "test@example.com", True, None
     )
+    assert isinstance(user1b, ManuallyCreateOrUpdateUserOkResult)
     user2a = await manually_create_or_update_user(
-        "t2", "google", "googleid1", "test@example.com"
+        "t2", "google", "googleid1", "test@example.com", True, None
     )
+    assert isinstance(user2a, ManuallyCreateOrUpdateUserOkResult)
     user2b = await manually_create_or_update_user(
-        "t2", "facebook", "fbid1", "test@example.com"
+        "t2", "facebook", "fbid1", "test@example.com", True, None
     )
+    assert isinstance(user2b, ManuallyCreateOrUpdateUserOkResult)
     user3a = await manually_create_or_update_user(
-        "t3", "google", "googleid1", "test@example.com"
+        "t3", "google", "googleid1", "test@example.com", True, None
     )
+    assert isinstance(user3a, ManuallyCreateOrUpdateUserOkResult)
     user3b = await manually_create_or_update_user(
-        "t3", "facebook", "fbid1", "test@example.com"
+        "t3", "facebook", "fbid1", "test@example.com", True, None
     )
+    assert isinstance(user3b, ManuallyCreateOrUpdateUserOkResult)
 
     assert user1a.user.tenant_ids == ["t1"]
     assert user1b.user.tenant_ids == ["t1"]
@@ -81,12 +91,12 @@ async def test_thirtyparty_multitenancy_functions():
     assert user3b.user.tenant_ids == ["t3"]
 
     # get user by id:
-    g_user1a = await get_user_by_id(user1a.user.user_id)
-    g_user1b = await get_user_by_id(user1b.user.user_id)
-    g_user2a = await get_user_by_id(user2a.user.user_id)
-    g_user2b = await get_user_by_id(user2b.user.user_id)
-    g_user3a = await get_user_by_id(user3a.user.user_id)
-    g_user3b = await get_user_by_id(user3b.user.user_id)
+    g_user1a = await get_user(user1a.user.id)
+    g_user1b = await get_user(user1b.user.id)
+    g_user2a = await get_user(user2a.user.id)
+    g_user2b = await get_user(user2b.user.id)
+    g_user3a = await get_user(user3a.user.id)
+    g_user3b = await get_user(user3b.user.id)
 
     assert g_user1a == user1a.user
     assert g_user1b == user1b.user
@@ -96,21 +106,69 @@ async def test_thirtyparty_multitenancy_functions():
     assert g_user3b == user3b.user
 
     # get user by email:
-    by_email_user1 = await get_users_by_email("t1", "test@example.com")
-    by_email_user2 = await get_users_by_email("t2", "test@example.com")
-    by_email_user3 = await get_users_by_email("t3", "test@example.com")
+    by_email_user1 = await list_users_by_account_info(
+        "t1", AccountInfo(email="test@example.com")
+    )
+    by_email_user2 = await list_users_by_account_info(
+        "t2", AccountInfo(email="test@example.com")
+    )
+    by_email_user3 = await list_users_by_account_info(
+        "t3", AccountInfo(email="test@example.com")
+    )
 
     assert by_email_user1 == [user1a.user, user1b.user]
     assert by_email_user2 == [user2a.user, user2b.user]
     assert by_email_user3 == [user3a.user, user3b.user]
 
     # get user by thirdparty id:
-    g_user_by_tpid1a = await get_user_by_third_party_info("t1", "google", "googleid1")
-    g_user_by_tpid1b = await get_user_by_third_party_info("t1", "facebook", "fbid1")
-    g_user_by_tpid2a = await get_user_by_third_party_info("t2", "google", "googleid1")
-    g_user_by_tpid2b = await get_user_by_third_party_info("t2", "facebook", "fbid1")
-    g_user_by_tpid3a = await get_user_by_third_party_info("t3", "google", "googleid1")
-    g_user_by_tpid3b = await get_user_by_third_party_info("t3", "facebook", "fbid1")
+    g_user_by_tpid1a = await list_users_by_account_info(
+        "t1",
+        AccountInfo(
+            third_party=ThirdPartyInfo(
+                third_party_id="google", third_party_user_id="googleid1"
+            )
+        ),
+    )
+    g_user_by_tpid1b = await list_users_by_account_info(
+        "t1",
+        AccountInfo(
+            third_party=ThirdPartyInfo(
+                third_party_id="facebook", third_party_user_id="fbid1"
+            )
+        ),
+    )
+    g_user_by_tpid2a = await list_users_by_account_info(
+        "t2",
+        AccountInfo(
+            third_party=ThirdPartyInfo(
+                third_party_id="google", third_party_user_id="googleid1"
+            )
+        ),
+    )
+    g_user_by_tpid2b = await list_users_by_account_info(
+        "t2",
+        AccountInfo(
+            third_party=ThirdPartyInfo(
+                third_party_id="facebook", third_party_user_id="fbid1"
+            )
+        ),
+    )
+    g_user_by_tpid3a = await list_users_by_account_info(
+        "t3",
+        AccountInfo(
+            third_party=ThirdPartyInfo(
+                third_party_id="google", third_party_user_id="googleid1"
+            )
+        ),
+    )
+    g_user_by_tpid3b = await list_users_by_account_info(
+        "t3",
+        AccountInfo(
+            third_party=ThirdPartyInfo(
+                third_party_id="facebook", third_party_user_id="fbid1"
+            )
+        ),
+    )
 
     assert g_user_by_tpid1a == user1a.user
     assert g_user_by_tpid1b == user1b.user

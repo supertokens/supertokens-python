@@ -17,26 +17,36 @@ import json
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
+from supertokens_python.auth_utils import (
+    OkResponse,
+    PostAuthChecksOkResponse,
+    SignInNotAllowedResponse,
+    SignUpNotAllowedResponse,
+    get_authenticating_user_and_add_to_current_tenant_if_required,
+    post_auth_checks,
+    pre_auth_checks,
+)
+from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
 
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
-from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenOkResult,
-)
-from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface,
     AuthorisationUrlGetOkResult,
+    SignInUpNotAllowed,
+    SignInUpOkResult,
     SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResult,
 )
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
-from supertokens_python.recipe.thirdparty.types import UserInfoEmail
+from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo, UserInfoEmail
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions
     from supertokens_python.recipe.thirdparty.provider import Provider
 
-from supertokens_python.types import GeneralErrorResponse, RecipeUserId
+from supertokens_python.types import GeneralErrorResponse
 
 
 class APIImplementation(APIInterface):
@@ -62,14 +72,27 @@ class APIImplementation(APIInterface):
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        session: Optional[SessionContainer],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         SignInUpPostOkResult,
         SignInUpPostNoEmailGivenByProviderResponse,
+        SignInUpNotAllowed,
         GeneralErrorResponse,
     ]:
+        error_code_map = {
+            "SIGN_UP_NOT_ALLOWED": "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
+            "SIGN_IN_NOT_ALLOWED": "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
+            "LINKING_TO_SESSION_USER_FAILED": {
+                "EMAIL_VERIFICATION_REQUIRED": "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_020)",
+                "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR": "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_021)",
+                "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR": "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_022)",
+                "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR": "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_023)",
+            },
+        }
+
         oauth_tokens_to_use: Dict[str, Any] = {}
 
         if redirect_uri_info is not None:
@@ -77,8 +100,10 @@ class APIImplementation(APIInterface):
                 redirect_uri_info=redirect_uri_info,
                 user_context=user_context,
             )
+        elif oauth_tokens is not None:
+            oauth_tokens_to_use = oauth_tokens
         else:
-            oauth_tokens_to_use = oauth_tokens  # type: ignore
+            raise Exception("should never come here")
 
         user_info = await provider.get_user_info(
             oauth_tokens=oauth_tokens_to_use,
@@ -88,61 +113,145 @@ class APIImplementation(APIInterface):
         if user_info.email is None and provider.config.require_email is False:
             # We don't expect to get an email from this provider.
             # So we generate a fake one
-            if provider.config.generate_fake_email is not None:
-                user_info.email = UserInfoEmail(
-                    email=await provider.config.generate_fake_email(
-                        tenant_id, user_info.third_party_user_id, user_context
-                    ),
-                    is_verified=True,
+            assert provider.config.generate_fake_email is not None
+            user_info.email = UserInfoEmail(
+                email=await provider.config.generate_fake_email(
+                    tenant_id, user_info.third_party_user_id, user_context
+                ),
+                is_verified=True,
+            )
+
+        email_info = user_info.email
+        if email_info is None:
+            return SignInUpPostNoEmailGivenByProviderResponse()
+
+        recipe_id = "thirdparty"
+
+        async def check_credentials_on_tenant(_: str):
+            # We essentially did this above when calling exchange_auth_code_for_oauth_tokens
+            return True
+
+        authenticating_user = (
+            await get_authenticating_user_and_add_to_current_tenant_if_required(
+                third_party=ThirdPartyInfo(
+                    third_party_user_id=user_info.third_party_user_id,
+                    third_party_id=provider.id,
+                ),
+                email=None,
+                phone_number=None,
+                recipe_id=recipe_id,
+                user_context=user_context,
+                session=session,
+                tenant_id=tenant_id,
+                check_credentials_on_tenant=check_credentials_on_tenant,
+            )
+        )
+
+        is_sign_up = authenticating_user is None
+        if authenticating_user is not None:
+            # This is a sign in. So before we proceed, we need to check if an email change
+            # is allowed since the email could have changed from the social provider's side.
+            # We do this check here and not in the recipe function cause we want to keep the
+            # recipe function checks to a minimum so that the dev has complete control of
+            # what they can do.
+
+            # The is_email_change_allowed and pre_auth_checks functions take an is_verified boolean.
+            # Now, even though we already have that from the input, that's just what the provider says.
+            # If the provider says that the email is NOT verified, it could have been that the email
+            # is verified on the user's account via supertokens on a previous sign in / up.
+            # So we just check that as well before calling is_email_change_allowed
+
+            assert authenticating_user.login_method is not None
+            recipe_user_id = authenticating_user.login_method.recipe_user_id
+
+            if (
+                not email_info.is_verified
+                and EmailVerificationRecipe.get_instance_optional() is not None
+            ):
+                email_info.is_verified = await is_email_verified(
+                    recipe_user_id,
+                    email_info.id,
+                    user_context,
                 )
 
-        email = user_info.email.id if user_info.email is not None else None
-        email_verified = (
-            user_info.email.is_verified if user_info.email is not None else None
+        pre_auth_checks_result = await pre_auth_checks(
+            authenticating_account_info=AccountInfoWithRecipeId(
+                recipe_id=recipe_id,
+                email=email_info.id,
+                third_party=ThirdPartyInfo(
+                    third_party_user_id=user_info.third_party_user_id,
+                    third_party_id=provider.id,
+                ),
+            ),
+            authenticating_user=(
+                authenticating_user.user if authenticating_user else None
+            ),
+            factor_ids=["thirdparty"],
+            is_sign_up=is_sign_up,
+            is_verified=email_info.is_verified,
+            sign_in_verifies_login_method=email_info.is_verified,
+            skip_session_user_update_in_core=False,
+            tenant_id=tenant_id,
+            user_context=user_context,
+            session=session,
         )
-        if email is None:
-            return SignInUpPostNoEmailGivenByProviderResponse()
+
+        if not isinstance(pre_auth_checks_result, OkResponse):
+            if isinstance(pre_auth_checks_result, SignUpNotAllowedResponse):
+                reason = error_code_map["SIGN_IN_NOT_ALLOWED"]
+                assert isinstance(reason, str)
+                return SignInUpNotAllowed(reason)
+            if isinstance(pre_auth_checks_result, SignInNotAllowedResponse):
+                reason = error_code_map["SIGN_IN_NOT_ALLOWED"]
+                assert isinstance(reason, str)
+                return SignInUpNotAllowed(reason)
+
+            reason_dict = error_code_map["LINKING_TO_SESSION_USER_FAILED"]
+            assert isinstance(reason_dict, Dict)
+            reason = reason_dict[pre_auth_checks_result.reason]
+            return SignInUpNotAllowed(reason=reason)
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(
             third_party_id=provider.id,
             third_party_user_id=user_info.third_party_user_id,
-            email=email,
+            email=email_info.id,
+            is_verified=email_info.is_verified,
             oauth_tokens=oauth_tokens_to_use,
             raw_user_info_from_provider=user_info.raw_user_info_from_provider,
+            session=session,
             tenant_id=tenant_id,
             user_context=user_context,
         )
 
-        if email_verified:
-            ev_instance = EmailVerificationRecipe.get_instance_optional()
-            if ev_instance is not None:
-                token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                    tenant_id=tenant_id,
-                    recipe_user_id=RecipeUserId(signinup_response.user.user_id),
-                    email=signinup_response.user.email,
-                    user_context=user_context,
-                )
+        if isinstance(signinup_response, SignInUpNotAllowed):
+            return signinup_response
 
-                if isinstance(token_response, CreateEmailVerificationTokenOkResult):
-                    await ev_instance.recipe_implementation.verify_email_using_token(
-                        token=token_response.token,
-                        tenant_id=tenant_id,
-                        attempt_account_linking=True,
-                        user_context=user_context,
-                    )
+        if not isinstance(signinup_response, SignInUpOkResult):
+            reason_dict = error_code_map["LINKING_TO_SESSION_USER_FAILED"]
+            assert isinstance(reason_dict, Dict)
+            reason = reason_dict[signinup_response.reason]
+            return SignInUpNotAllowed(reason=reason)
 
-        user = signinup_response.user
-        session = await create_new_session(
+        post_auth_checks_result = await post_auth_checks(
+            factor_id="thirdparty",
+            is_sign_up=is_sign_up,
+            authenticated_user=signinup_response.user,
+            recipe_user_id=signinup_response.recipe_user_id,
             request=api_options.request,
             tenant_id=tenant_id,
-            recipe_user_id=RecipeUserId(user.user_id),
             user_context=user_context,
+            session=session,
         )
 
+        if not isinstance(post_auth_checks_result, PostAuthChecksOkResponse):
+            reason = error_code_map["SIGN_IN_NOT_ALLOWED"]
+            assert isinstance(reason, str)
+            return SignInUpNotAllowed(reason)
+
         return SignInUpPostOkResult(
-            created_new_user=signinup_response.created_new_user,
-            user=user,
-            session=session,
+            created_new_recipe_user=signinup_response.created_new_recipe_user,
+            user=post_auth_checks_result.user,
+            session=post_auth_checks_result.session,
             oauth_tokens=oauth_tokens_to_use,
             raw_user_info_from_provider=user_info.raw_user_info_from_provider,
         )

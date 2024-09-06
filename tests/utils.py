@@ -265,12 +265,12 @@ def extract_info(response: Response) -> Dict[str, Any]:
         "antiCsrf": response.headers.get("anti-csrf"),
         "accessTokenFromHeader": access_token_from_header,
         "refreshTokenFromHeader": refresh_token_from_header,
-        "accessTokenFromAny": access_token_from_header
-        if access_token is None
-        else access_token,
-        "refreshTokenFromAny": refresh_token_from_header
-        if refresh_token is None
-        else refresh_token,
+        "accessTokenFromAny": (
+            access_token_from_header if access_token is None else access_token
+        ),
+        "refreshTokenFromAny": (
+            refresh_token_from_header if refresh_token is None else refresh_token
+        ),
     }
 
 
@@ -599,5 +599,5 @@ async def create_users(
                 )
         elif user["recipe"] == "thirdparty" and thirdparty:
             await manually_create_or_update_user(
-                "public", user["provider"], user["userId"], user["email"]
+                "public", user["provider"], user["userId"], user["email"], True, None
             )

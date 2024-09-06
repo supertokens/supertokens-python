@@ -18,6 +18,8 @@ from phonenumbers import format_number, parse  # type: ignore
 import phonenumbers  # type: ignore
 from typing_extensions import Literal
 
+from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
+
 _T = TypeVar("_T")
 
 
@@ -32,12 +34,6 @@ class RecipeUserId:
         if isinstance(other, RecipeUserId):
             return self.recipe_user_id == other.recipe_user_id
         return False
-
-
-class ThirdPartyInfo:
-    def __init__(self, third_party_id: str, third_party_user_id: str):
-        self.id = third_party_id
-        self.user_id = third_party_user_id
 
 
 class AccountInfo:

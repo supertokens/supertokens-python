@@ -23,11 +23,11 @@ from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_ten
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
     AccountInfo,
     AccountLinkingUser,
     LoginMethod,
-    ThirdPartyInfo,
 )
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeUserId,
