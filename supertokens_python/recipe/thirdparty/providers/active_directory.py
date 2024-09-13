@@ -37,13 +37,12 @@ class ActiveDirectoryImpl(GenericProvider):
                 raise Exception(
                     "Please provide the directoryId in the additionalConfig of the Active Directory provider."
                 )
-        else:
-            config.oidc_discovery_endpoint = f"https://login.microsoftonline.com/{config.additional_config['directoryId']}/v2.0/.well-known/openid-configuration"
-
-        # The config could be coming from core where we didn't add the well-known previously
-        config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
-            config.oidc_discovery_endpoint
-        )
+        if config.oidc_discovery_endpoint is not None:
+            config.oidc_discovery_endpoint = (
+                normalise_oidc_endpoint_to_include_well_known(
+                    config.oidc_discovery_endpoint
+                )
+            )
 
         if config.scope is None:
             config.scope = ["openid", "email"]
