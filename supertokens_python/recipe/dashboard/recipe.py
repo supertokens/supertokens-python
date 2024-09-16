@@ -23,6 +23,9 @@ from supertokens_python.recipe.dashboard.api.multitenancy.create_or_update_third
 from supertokens_python.recipe.dashboard.api.multitenancy.create_tenant import (
     create_tenant,
 )
+from supertokens_python.recipe.dashboard.api.multitenancy.delete_tenant import (
+    delete_tenant_api,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -267,6 +270,12 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
+                "delete",
+                TENANT_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(
                     get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
                 ),
@@ -356,6 +365,8 @@ class DashboardRecipe(RecipeModule):
         elif request_id == TENANT_API:
             if method == "post":
                 api_function = create_tenant
+            if method == "delete":
+                api_function = delete_tenant_api
         elif request_id == TENANT_THIRD_PARTY_CONFIG_API:
             if method == "put":
                 api_function = handle_create_or_update_third_party_config
