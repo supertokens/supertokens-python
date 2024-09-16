@@ -1,4 +1,6 @@
 from typing import List
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multifactorauth.utils import (
     is_factor_configured_for_tenant,
 )
@@ -38,3 +40,63 @@ def get_normalised_first_factors_based_on_tenant_config_from_core_and_sdk_init(
             valid_first_factors.append(factor_id)
 
     return valid_first_factors
+
+
+def get_factor_not_available_message(
+    factor_id: str, available_factors: List[str]
+) -> str:
+    recipe_name = factor_id_to_recipe(factor_id)
+    if recipe_name != "Passwordless":
+        return f"Please initialise {recipe_name} recipe to be able to use this login method"
+
+    passwordless_factors = [
+        FactorIds.LINK_EMAIL,
+        FactorIds.LINK_PHONE,
+        FactorIds.OTP_EMAIL,
+        FactorIds.OTP_PHONE,
+    ]
+    passwordless_factors_not_available = [
+        f for f in passwordless_factors if f not in available_factors
+    ]
+
+    if len(passwordless_factors_not_available) == 4:
+        return (
+            "Please initialise Passwordless recipe to be able to use this login method"
+        )
+
+    flow_type, contact_method = factor_id.split("-")
+    return f"Please ensure that Passwordless recipe is initialised with contactMethod: {contact_method.upper()} and flowType: {'USER_INPUT_CODE' if flow_type == 'otp' else 'MAGIC_LINK'}"
+
+
+def factor_id_to_recipe(factor_id: str) -> str:
+    factor_id_to_recipe_map = {
+        "emailpassword": "Emailpassword",
+        "thirdparty": "ThirdParty",
+        "otp-email": "Passwordless",
+        "otp-phone": "Passwordless",
+        "link-email": "Passwordless",
+        "link-phone": "Passwordless",
+        "totp": "Totp",
+    }
+
+    return factor_id_to_recipe_map.get(factor_id, "")
+
+
+async def get_normalised_required_secondary_factors_based_on_tenant_config_from_core_and_sdk_init(
+    tenant_details_from_core: TenantConfig,
+) -> List[str]:
+    mfa_instance = MultiFactorAuthRecipe.get_instance()
+
+    if mfa_instance is None:
+        return []
+
+    secondary_factors = await mfa_instance.get_all_available_secondary_factor_ids(
+        tenant_details_from_core
+    )
+    secondary_factors = [
+        factor_id
+        for factor_id in secondary_factors
+        if factor_id in (tenant_details_from_core.required_secondary_factors or [])
+    ]
+
+    return secondary_factors

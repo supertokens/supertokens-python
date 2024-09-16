@@ -35,6 +35,18 @@ from supertokens_python.recipe.dashboard.api.multitenancy.get_tenant_info import
 from supertokens_python.recipe.dashboard.api.multitenancy.get_third_party_config import (
     get_third_party_config,
 )
+from supertokens_python.recipe.dashboard.api.multitenancy.list_all_tenants_with_login_methods import (
+    list_all_tenants_with_login_methods,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config import (
+    update_tenant_core_config,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor import (
+    update_tenant_first_factor,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_secondary_factor import (
+    update_tenant_secondary_factor,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -92,6 +104,10 @@ from .constants import (
     TENANTS_LIST_API,
     TENANT_THIRD_PARTY_CONFIG_API,
     TENANT_API,
+    LIST_TENANTS_WITH_LOGIN_METHODS,
+    UPDATE_TENANT_CORE_CONFIG_API,
+    UPDATE_TENANT_FIRST_FACTOR_API,
+    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
 )
 from .utils import (
     InputOverrideConfig,
@@ -314,6 +330,40 @@ class DashboardRecipe(RecipeModule):
                 TENANT_THIRD_PARTY_CONFIG_API,
                 False,
             ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(LIST_TENANTS_WITH_LOGIN_METHODS)
+                ),
+                "get",
+                LIST_TENANTS_WITH_LOGIN_METHODS,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(UPDATE_TENANT_CORE_CONFIG_API)
+                ),
+                "put",
+                UPDATE_TENANT_CORE_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(UPDATE_TENANT_FIRST_FACTOR_API)
+                ),
+                "put",
+                UPDATE_TENANT_FIRST_FACTOR_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(
+                        UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API
+                    )
+                ),
+                "put",
+                UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
+                False,
+            ),
         ]
 
     async def handle_api_request(
@@ -407,6 +457,14 @@ class DashboardRecipe(RecipeModule):
                 api_function = delete_third_party_config_api
             if method == "get":
                 api_function = get_third_party_config
+        elif request_id == LIST_TENANTS_WITH_LOGIN_METHODS:
+            api_function = list_all_tenants_with_login_methods
+        elif request_id == UPDATE_TENANT_CORE_CONFIG_API:
+            api_function = update_tenant_core_config
+        elif request_id == UPDATE_TENANT_FIRST_FACTOR_API:
+            api_function = update_tenant_first_factor
+        elif request_id == UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API:
+            api_function = update_tenant_secondary_factor
 
         if api_function is not None:
             return await api_key_protector(
