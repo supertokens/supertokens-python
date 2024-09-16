@@ -26,6 +26,12 @@ from supertokens_python.recipe.dashboard.api.multitenancy.create_tenant import (
 from supertokens_python.recipe.dashboard.api.multitenancy.delete_tenant import (
     delete_tenant_api,
 )
+from supertokens_python.recipe.dashboard.api.multitenancy.delete_third_party_config import (
+    delete_third_party_config_api,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.get_tenant_info import (
+    get_tenant_info,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -276,10 +282,32 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
+                "get",
+                TENANT_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(
                     get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
                 ),
                 "put",
+                TENANT_THIRD_PARTY_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                "delete",
+                TENANT_THIRD_PARTY_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                "get",
                 TENANT_THIRD_PARTY_CONFIG_API,
                 False,
             ),
@@ -367,9 +395,13 @@ class DashboardRecipe(RecipeModule):
                 api_function = create_tenant
             if method == "delete":
                 api_function = delete_tenant_api
+            if method == "get":
+                api_function = get_tenant_info
         elif request_id == TENANT_THIRD_PARTY_CONFIG_API:
             if method == "put":
                 api_function = handle_create_or_update_third_party_config
+            if method == "delete":
+                api_function = delete_third_party_config_api
 
         if api_function is not None:
             return await api_key_protector(

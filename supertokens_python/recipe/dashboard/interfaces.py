@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing_extensions import Literal
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from supertokens_python.types import AccountLinkingUser
@@ -336,3 +337,60 @@ class AnalyticsResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
+
+
+class CoreConfigFieldInfo:
+    def __init__(
+        self,
+        key: str,
+        value_type: Literal["string", "boolean", "number"],
+        value: Union[str, int, float, bool, None],
+        description: str,
+        is_different_across_tenants: bool,
+        possible_values: Union[List[str], None] = None,
+        is_nullable: bool = False,
+        default_value: Union[str, int, float, bool, None] = None,
+        is_plugin_property: bool = False,
+        is_plugin_property_editable: bool = False,
+    ):
+        self.key = key
+        self.value_type = value_type
+        self.value = value
+        self.description = description
+        self.is_different_across_tenants = is_different_across_tenants
+        self.possible_values = possible_values
+        self.is_nullable = is_nullable
+        self.default_value = default_value
+        self.is_plugin_property = is_plugin_property
+        self.is_plugin_property_editable = is_plugin_property_editable
+
+    def to_json(self) -> Dict[str, Any]:
+        result: Dict[str, Any] = {
+            "key": self.key,
+            "valueType": self.value_type,
+            "value": self.value,
+            "description": self.description,
+            "isDifferentAcrossTenants": self.is_different_across_tenants,
+            "isNullable": self.is_nullable,
+            "defaultValue": self.default_value,
+            "isPluginProperty": self.is_plugin_property,
+            "isPluginPropertyEditable": self.is_plugin_property_editable,
+        }
+        if self.possible_values is not None:
+            result["possibleValues"] = self.possible_values
+        return result
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> CoreConfigFieldInfo:
+        return CoreConfigFieldInfo(
+            key=json["key"],
+            value_type=json["valueType"],
+            value=json["value"],
+            description=json["description"],
+            is_different_across_tenants=json["isDifferentAcrossTenants"],
+            possible_values=json["possibleValues"],
+            is_nullable=json["isNullable"],
+            default_value=json["defaultValue"],
+            is_plugin_property=json["isPluginProperty"],
+            is_plugin_property_editable=json["isPluginPropertyEditable"],
+        )
