@@ -20,7 +20,9 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 )
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
     add_role_to_user,
@@ -57,9 +59,15 @@ async def test_multitenancy_in_user_roles():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
-    await create_or_update_tenant("t2", TenantConfig(first_factors=["emailpassword"]))
-    await create_or_update_tenant("t3", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t2", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
 
     user = await sign_up("public", "test@example.com", "password1")
     assert isinstance(user, SignUpOkResult)

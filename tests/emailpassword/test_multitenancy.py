@@ -29,7 +29,9 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignInOkResult,
     CreateResetPasswordOkResult,
 )
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.types import AccountInfo
 
 from tests.utils import get_st_init_args
@@ -62,9 +64,15 @@ async def test_multitenancy_in_emailpassword():
 
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
-    await create_or_update_tenant("t2", TenantConfig(first_factors=["emailpassword"]))
-    await create_or_update_tenant("t3", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t2", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
 
     user1 = await sign_up("t1", "test@example.com", "password1")
     user2 = await sign_up("t2", "test@example.com", "password2")

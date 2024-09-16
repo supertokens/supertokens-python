@@ -183,6 +183,13 @@ def utf_base64decode(s: str, urlsafe: bool) -> str:
     return b64decode(s.encode("utf-8")).decode("utf-8")
 
 
+def encode_base64(value: str) -> str:
+    """
+    Encode the passed value to base64 and return the encoded value.
+    """
+    return b64encode(value.encode()).decode()
+
+
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
     return list(filter(func, given_list))
 

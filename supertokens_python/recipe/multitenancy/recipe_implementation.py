@@ -32,6 +32,7 @@ from .interfaces import (
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
+    TenantConfigCreateOrUpdate,
 )
 
 if TYPE_CHECKING:
@@ -127,7 +128,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_or_update_tenant(
         self,
         tenant_id: str,
-        config: Optional[TenantConfig],
+        config: Optional[TenantConfigCreateOrUpdate],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         response = await self.querier.send_put_request(

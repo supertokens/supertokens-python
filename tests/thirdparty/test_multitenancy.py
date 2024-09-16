@@ -23,7 +23,9 @@ from supertokens_python.recipe.thirdparty.asyncio import (
     manually_create_or_update_user,
     get_provider,
 )
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
 )
@@ -53,9 +55,15 @@ async def test_thirtyparty_multitenancy_functions():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["thirdparty"]))
-    await create_or_update_tenant("t2", TenantConfig(first_factors=["thirdparty"]))
-    await create_or_update_tenant("t3", TenantConfig(first_factors=["thirdparty"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
+    await create_or_update_tenant(
+        "t2", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
 
     # sign up:
     user1a = await manually_create_or_update_user(
@@ -215,9 +223,15 @@ async def test_get_provider():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["thirdparty"]))
-    await create_or_update_tenant("t2", TenantConfig(first_factors=["thirdparty"]))
-    await create_or_update_tenant("t3", TenantConfig(first_factors=["thirdparty"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
+    await create_or_update_tenant(
+        "t2", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
 
     await create_or_update_third_party_config(
         "t1",

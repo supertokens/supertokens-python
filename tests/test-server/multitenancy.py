@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantOkResult,
-    TenantConfig,
+    TenantConfigCreateOrUpdate,
 )
 import supertokens_python.recipe.multitenancy.syncio as multitenancy
 from supertokens_python.recipe.thirdparty import (
@@ -22,10 +22,9 @@ def add_multitenancy_routes(app: Flask):
         config = data["config"]
         user_context = data.get("userContext")
 
-        config = TenantConfig(
+        config = TenantConfigCreateOrUpdate(
             first_factors=config.get("firstFactors"),
             required_secondary_factors=config.get("requiredSecondaryFactors"),
-            third_party_providers=config.get("thirdPartyProviders"),
             core_config=config.get("coreConfig"),
         )
 

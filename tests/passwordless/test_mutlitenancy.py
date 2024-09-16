@@ -23,7 +23,9 @@ from supertokens_python.recipe.passwordless.asyncio import (
     consume_code,
     ConsumeCodeOkResult,
 )
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.types import AccountInfo
 
 from tests.utils import get_st_init_args
@@ -59,19 +61,19 @@ async def test_multitenancy_functions():
 
     await create_or_update_tenant(
         "t1",
-        TenantConfig(
+        TenantConfigCreateOrUpdate(
             first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
         ),
     )
     await create_or_update_tenant(
         "t2",
-        TenantConfig(
+        TenantConfigCreateOrUpdate(
             first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
         ),
     )
     await create_or_update_tenant(
         "t3",
-        TenantConfig(
+        TenantConfigCreateOrUpdate(
             first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
         ),
     )

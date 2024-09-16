@@ -29,6 +29,7 @@ from ..interfaces import (
     AssociateUserToTenantPhoneNumberAlreadyExistsError,
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     DisassociateUserFromTenantOkResult,
+    TenantConfigCreateOrUpdate,
 )
 from ..recipe import MultitenancyRecipe
 
@@ -38,7 +39,7 @@ if TYPE_CHECKING:
 
 async def create_or_update_tenant(
     tenant_id: str,
-    config: Optional[TenantConfig],
+    config: Optional[TenantConfigCreateOrUpdate],
     user_context: Optional[Dict[str, Any]] = None,
 ) -> CreateOrUpdateTenantOkResult:
     if user_context is None:

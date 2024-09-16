@@ -15,15 +15,16 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate
 from supertokens_python.types import RecipeUserId
 
 if TYPE_CHECKING:
-    from ..interfaces import TenantConfig, ProviderConfig
+    from ..interfaces import ProviderConfig
 
 
 def create_or_update_tenant(
     tenant_id: str,
-    config: Optional[TenantConfig],
+    config: Optional[TenantConfigCreateOrUpdate],
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:

@@ -43,6 +43,40 @@ class TenantConfig:
         self.required_secondary_factors = required_secondary_factors
         self.third_party_providers = third_party_providers
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> TenantConfig:
+        return TenantConfig(
+            tenant_id=json.get("tenantId", ""),
+            third_party_providers=[
+                ProviderConfig.from_json(provider)
+                for provider in json.get("thirdPartyProviders", [])
+            ],
+            core_config=json.get("coreConfig", {}),
+            first_factors=json.get("firstFactors", []),
+            required_secondary_factors=json.get("requiredSecondaryFactors", []),
+        )
+
+
+class TenantConfigCreateOrUpdate:
+    # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        core_config: Dict[str, Any] = {},
+        first_factors: Optional[List[str]] = None,
+        required_secondary_factors: Optional[List[str]] = None,
+    ):
+        self.core_config = core_config
+        self.first_factors = first_factors
+        self.required_secondary_factors = required_secondary_factors
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> TenantConfigCreateOrUpdate:
+        return TenantConfigCreateOrUpdate(
+            core_config=json.get("coreConfig", {}),
+            first_factors=json.get("firstFactors", []),
+            required_secondary_factors=json.get("requiredSecondaryFactors", []),
+        )
+
 
 class CreateOrUpdateTenantOkResult:
     status = "OK"
@@ -123,7 +157,7 @@ class RecipeInterface(ABC):
     async def create_or_update_tenant(
         self,
         tenant_id: str,
-        config: Optional[TenantConfig],
+        config: Optional[TenantConfigCreateOrUpdate],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         pass

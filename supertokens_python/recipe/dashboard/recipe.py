@@ -17,6 +17,12 @@ from os import environ
 from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.dashboard.api.multitenancy.create_or_update_third_party_config import (
+    handle_create_or_update_third_party_config,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.create_tenant import (
+    create_tenant,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -72,6 +78,8 @@ from .constants import (
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
     TENANTS_LIST_API,
+    TENANT_THIRD_PARTY_CONFIG_API,
+    TENANT_API,
 )
 from .utils import (
     InputOverrideConfig,
@@ -252,6 +260,20 @@ class DashboardRecipe(RecipeModule):
                 TENANTS_LIST_API,
                 False,
             ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
+                "post",
+                TENANT_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                "put",
+                TENANT_THIRD_PARTY_CONFIG_API,
+                False,
+            ),
         ]
 
     async def handle_api_request(
@@ -331,6 +353,12 @@ class DashboardRecipe(RecipeModule):
                 api_function = handle_analytics_post
         elif request_id == TENANTS_LIST_API:
             api_function = handle_list_tenants_api
+        elif request_id == TENANT_API:
+            if method == "post":
+                api_function = create_tenant
+        elif request_id == TENANT_THIRD_PARTY_CONFIG_API:
+            if method == "put":
+                api_function = handle_create_or_update_third_party_config
 
         if api_function is not None:
             return await api_key_protector(

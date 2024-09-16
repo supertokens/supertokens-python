@@ -46,7 +46,9 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 )
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderConfig,
     ProviderClientConfig,
@@ -69,12 +71,18 @@ async def test_tenant_crud():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
     await create_or_update_tenant(
         "t2",
-        TenantConfig(first_factors=["otp-email, otp-phone, link-email, link-phone"]),
+        TenantConfigCreateOrUpdate(
+            first_factors=["otp-email, otp-phone, link-email, link-phone"]
+        ),
     )
-    await create_or_update_tenant("t3", TenantConfig(first_factors=["thirdparty"]))
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
 
     tenants = await list_all_tenants()
     assert len(tenants.tenants) == 3
@@ -115,7 +123,7 @@ async def test_tenant_crud():
     # update tenant1 to add passwordless:
     await create_or_update_tenant(
         "t1",
-        TenantConfig(
+        TenantConfigCreateOrUpdate(
             first_factors=[
                 "otp-email",
                 "otp-phone",
@@ -136,7 +144,9 @@ async def test_tenant_crud():
     assert t1_config.core_config == {}
 
     # update tenant1 to add thirdparty:
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["thirdparty"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
     t1_config = await get_tenant("t1")
     assert t1_config is not None
     assert t1_config.first_factors is not None
@@ -161,7 +171,9 @@ async def test_tenant_thirdparty_config():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
     await create_or_update_third_party_config(
         "t1",
         config=ProviderConfig(
@@ -288,14 +300,18 @@ async def test_user_association_and_disassociation_with_tenants():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(first_factors=["emailpassword"]))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
     await create_or_update_tenant(
         "t2",
-        TenantConfig(
+        TenantConfigCreateOrUpdate(
             first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
         ),
     )
-    await create_or_update_tenant("t3", TenantConfig(first_factors=["thirdparty"]))
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
 
     signup_response = await sign_up("public", "test@example.com", "password1")
     assert isinstance(signup_response, SignUpOkResult)
