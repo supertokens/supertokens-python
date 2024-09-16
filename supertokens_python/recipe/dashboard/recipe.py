@@ -32,6 +32,9 @@ from supertokens_python.recipe.dashboard.api.multitenancy.delete_third_party_con
 from supertokens_python.recipe.dashboard.api.multitenancy.get_tenant_info import (
     get_tenant_info,
 )
+from supertokens_python.recipe.dashboard.api.multitenancy.get_third_party_config import (
+    get_third_party_config,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -402,6 +405,8 @@ class DashboardRecipe(RecipeModule):
                 api_function = handle_create_or_update_third_party_config
             if method == "delete":
                 api_function = delete_third_party_config_api
+            if method == "get":
+                api_function = get_third_party_config
 
         if api_function is not None:
             return await api_key_protector(
