@@ -183,7 +183,6 @@ class UserSessionsGetAPIResponse(APIResponse):
                 "accessTokenPayload": s.access_token_payload,
                 "expiry": s.expiry,
                 "sessionDataInDatabase": s.session_data_in_database,
-                "tenantId": s.tenant_id,
                 "timeCreated": s.time_created,
                 "userId": s.user_id,
                 "sessionHandle": s.session_handle,
