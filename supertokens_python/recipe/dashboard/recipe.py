@@ -103,7 +103,6 @@ from .api import (
     handle_users_count_get_api,
     handle_users_get_api,
     handle_validate_key_api,
-    handle_list_tenants_api,
 )
 from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
@@ -134,7 +133,6 @@ from .constants import (
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
-    TENANTS_LIST_API,
     TENANT_THIRD_PARTY_CONFIG_API,
     TENANT_API,
     LIST_TENANTS_WITH_LOGIN_METHODS,
@@ -320,12 +318,6 @@ class DashboardRecipe(RecipeModule):
                 ),
                 "post",
                 DASHBOARD_ANALYTICS_API,
-                False,
-            ),
-            APIHandled(
-                NormalisedURLPath(get_api_path_with_dashboard_base(TENANTS_LIST_API)),
-                "get",
-                TENANTS_LIST_API,
                 False,
             ),
             APIHandled(
@@ -563,8 +555,6 @@ class DashboardRecipe(RecipeModule):
         elif request_id == DASHBOARD_ANALYTICS_API:
             if method == "post":
                 api_function = handle_analytics_post
-        elif request_id == TENANTS_LIST_API:
-            api_function = handle_list_tenants_api
         elif request_id == TENANT_API:
             if method == "post":
                 api_function = create_tenant

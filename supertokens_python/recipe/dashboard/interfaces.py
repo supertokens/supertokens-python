@@ -18,8 +18,6 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 from typing_extensions import Literal
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
-from supertokens_python.types import AccountLinkingUser
-
 from ...types import APIResponse
 
 if TYPE_CHECKING:
@@ -90,7 +88,7 @@ class DashboardUsersGetResponse(APIResponse):
 
     def __init__(
         self,
-        users: Union[List[AccountLinkingUser], List[UserWithMetadata]],
+        users: List[UserWithMetadata],
         next_pagination_token: Optional[str],
     ):
         self.users = users
