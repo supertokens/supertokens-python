@@ -56,11 +56,29 @@ from supertokens_python.recipe.dashboard.api.user.create.passwordless_user impor
 from supertokens_python.recipe.dashboard.api.userdetails.user_unlink_get import (
     handle_user_unlink_get,
 )
+from supertokens_python.recipe.dashboard.api.userroles.add_role_to_user import (
+    add_role_to_user_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.get_role_to_user import (
+    get_roles_for_user_api,
+)
 from supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role import (
     get_permissions_for_role_api,
 )
 from supertokens_python.recipe.dashboard.api.userroles.permissions.remove_permissions_from_role import (
     remove_permissions_from_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.remove_user_role import (
+    remove_user_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.roles.create_role_or_add_permissions import (
+    create_role_or_add_permissions_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.roles.delete_role import (
+    delete_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles import (
+    get_all_roles_api,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
@@ -128,6 +146,8 @@ from .constants import (
     UNLINK_USER,
     USERROLES_PERMISSIONS_API,
     USERROLES_REMOVE_PERMISSIONS_API,
+    USERROLES_ROLE_API,
+    USERROLES_USER_API,
 )
 from .utils import (
     InputOverrideConfig,
@@ -430,6 +450,42 @@ class DashboardRecipe(RecipeModule):
                 USERROLES_REMOVE_PERMISSIONS_API,
                 False,
             ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
+                "put",
+                USERROLES_ROLE_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
+                "delete",
+                USERROLES_ROLE_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
+                "get",
+                USERROLES_ROLE_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
+                "get",
+                USERROLES_USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
+                "put",
+                USERROLES_USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
+                "delete",
+                USERROLES_USER_API,
+                False,
+            ),
         ]
 
     async def handle_api_request(
@@ -541,6 +597,20 @@ class DashboardRecipe(RecipeModule):
             api_function = get_permissions_for_role_api
         elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
             api_function = remove_permissions_from_role_api
+        elif request_id == USERROLES_ROLE_API:
+            if method == "put":
+                api_function = create_role_or_add_permissions_api
+            if method == "delete":
+                api_function = delete_role_api
+            if method == "get":
+                api_function = get_all_roles_api
+        elif request_id == USERROLES_USER_API:
+            if method == "get":
+                api_function = get_roles_for_user_api
+            if method == "put":
+                api_function = add_role_to_user_api
+            if method == "delete":
+                api_function = remove_user_role_api
 
         if api_function is not None:
             return await api_key_protector(
