@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional, Union
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.utils import (
     get_user_for_recipe_id,
-    is_valid_recipe_id,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -194,9 +193,6 @@ async def handle_user_put(
         return raise_bad_input_exception(
             "Required parameter 'recipeId' is missing or has an invalid type"
         )
-
-    if not is_valid_recipe_id(recipe_id):
-        raise_bad_input_exception("Invalid recipe id")
 
     if first_name is None and not isinstance(first_name, str):
         raise_bad_input_exception(

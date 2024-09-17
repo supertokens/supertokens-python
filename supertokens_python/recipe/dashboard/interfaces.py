@@ -140,27 +140,18 @@ class UserCountGetAPIResponse(APIResponse):
 class UserGetAPIOkResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, recipe_id: str, user: UserWithMetadata):
-        self.recipe_id = recipe_id
+    def __init__(self, user: UserWithMetadata):
         self.user = user
 
     def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
-            "recipeId": self.recipe_id,
             "user": self.user.to_json(),
         }
 
 
 class UserGetAPINoUserFoundError(APIResponse):
     status: str = "NO_USER_FOUND_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class UserGetAPIRecipeNotInitialisedError(APIResponse):
-    status: str = "RECIPE_NOT_INITIALISED"
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}

@@ -182,10 +182,6 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
     return None
 
 
-def is_valid_recipe_id(recipe_id: str) -> bool:
-    return recipe_id in ("emailpassword", "thirdparty", "passwordless")
-
-
 class GetUserForRecipeIdHelperResult:
     def __init__(
         self, user: Optional[AccountLinkingUser] = None, recipe: Optional[str] = None
@@ -263,33 +259,6 @@ async def _get_user_for_recipe_id(
             pass
 
     return GetUserForRecipeIdHelperResult(user=user, recipe=recipe)
-
-
-def is_recipe_initialised(recipeId: str) -> bool:
-    isRecipeInitialised: bool = False
-
-    if recipeId == EmailPasswordRecipe.recipe_id:
-        try:
-            EmailPasswordRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    elif recipeId == PasswordlessRecipe.recipe_id:
-        try:
-            PasswordlessRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    elif recipeId == ThirdPartyRecipe.recipe_id:
-        try:
-            ThirdPartyRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    return isRecipeInitialised
 
 
 async def validate_api_key(
