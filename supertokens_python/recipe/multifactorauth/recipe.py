@@ -35,7 +35,7 @@ from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
-from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.types import User, RecipeUserId
 from .types import (
     OverrideConfig,
     GetFactorsSetupForUserFromOtherRecipesFunc,
@@ -231,7 +231,7 @@ class MultiFactorAuthRecipe(RecipeModule):
         self.get_emails_for_factor_from_other_recipes_funcs.append(func)
 
     async def get_emails_for_factors(
-        self, user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+        self, user: User, session_recipe_user_id: RecipeUserId
     ) -> Union[
         GetEmailsForFactorOkResult,
         GetEmailsForFactorUnknownSessionRecipeUserIdResult,
@@ -255,7 +255,7 @@ class MultiFactorAuthRecipe(RecipeModule):
         self.get_phone_numbers_for_factor_from_other_recipes_funcs.append(func)
 
     async def get_phone_numbers_for_factors(
-        self, user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+        self, user: User, session_recipe_user_id: RecipeUserId
     ) -> Union[
         GetPhoneNumbersForFactorsOkResult,
         GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,

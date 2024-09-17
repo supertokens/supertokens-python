@@ -24,7 +24,7 @@ from supertokens_python.recipe.multifactorauth.types import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.querier import Querier
-from supertokens_python.types import AccountLinkingUser
+from supertokens_python.types import User
 
 from .recipe_implementation import RecipeImplementation
 from .api.implementation import APIImplementation
@@ -92,9 +92,7 @@ class TOTPRecipe(RecipeModule):
                 async def f1(_: TenantConfig):
                     return ["totp"]
 
-                async def f2(
-                    user: AccountLinkingUser, user_context: Dict[str, Any]
-                ) -> List[str]:
+                async def f2(user: User, user_context: Dict[str, Any]) -> List[str]:
                     device_res = await TOTPRecipe.get_instance_or_throw().recipe_implementation.list_devices(
                         user_id=user.id, user_context=user_context
                     )

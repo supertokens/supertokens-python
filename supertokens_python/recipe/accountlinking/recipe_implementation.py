@@ -35,7 +35,7 @@ from .interfaces import (
     LinkAccountsAccountInfoAlreadyAssociatedError,
     LinkAccountsInputUserNotPrimaryError,
     UnlinkAccountOkResult,
-    AccountLinkingUser,
+    User,
     RecipeUserId,
     AccountInfo,
 )
@@ -87,7 +87,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
         return GetUsersResult(
-            users=[AccountLinkingUser.from_json(u) for u in response["users"]],
+            users=[User.from_json(u) for u in response["users"]],
             next_pagination_token=response.get("nextPaginationToken"),
         )
 
@@ -142,7 +142,7 @@ class RecipeImplementation(RecipeInterface):
 
         if response["status"] == "OK":
             return CreatePrimaryUserOkResult(
-                AccountLinkingUser.from_json(response["user"]),
+                User.from_json(response["user"]),
                 response["wasAlreadyAPrimaryUser"],
             )
         elif (
@@ -227,7 +227,7 @@ class RecipeImplementation(RecipeInterface):
             "OK",
             "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
         ]:
-            response["user"] = AccountLinkingUser.from_json(response["user"])
+            response["user"] = User.from_json(response["user"])
 
         if response["status"] == "OK":
             user = response["user"]
@@ -310,7 +310,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_user(
         self, user_id: str, user_context: Dict[str, Any]
-    ) -> Optional[AccountLinkingUser]:
+    ) -> Optional[User]:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/user/id"),
             {
@@ -319,7 +319,7 @@ class RecipeImplementation(RecipeInterface):
             user_context,
         )
         if response["status"] == "OK":
-            return AccountLinkingUser.from_json(response["user"])
+            return User.from_json(response["user"])
         return None
 
     async def list_users_by_account_info(
@@ -328,7 +328,7 @@ class RecipeImplementation(RecipeInterface):
         account_info: AccountInfo,
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
-    ) -> List[AccountLinkingUser]:
+    ) -> List[User]:
         params = {
             "email": account_info.email,
             "phoneNumber": account_info.phone_number,
@@ -345,7 +345,7 @@ class RecipeImplementation(RecipeInterface):
             user_context,
         )
 
-        return [AccountLinkingUser.from_json(u) for u in response["users"]]
+        return [User.from_json(u) for u in response["users"]]
 
     async def delete_user(
         self,

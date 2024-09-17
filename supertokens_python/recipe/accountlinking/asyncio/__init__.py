@@ -13,7 +13,7 @@
 # under the License.
 from typing import Any, Dict, Optional
 
-from ..types import AccountInfoWithRecipeId, AccountLinkingUser, RecipeUserId
+from ..types import AccountInfoWithRecipeId, User, RecipeUserId
 from ..recipe import AccountLinkingRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.asyncio import get_user
@@ -24,7 +24,7 @@ async def create_primary_user_id_or_link_accounts(
     recipe_user_id: RecipeUserId,
     session: Optional[SessionContainer] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> AccountLinkingUser:
+) -> User:
     if user_context is None:
         user_context = {}
     user = await get_user(recipe_user_id.get_as_string(), user_context)
@@ -46,7 +46,7 @@ async def get_primary_user_that_can_be_linked_to_recipe_user_id(
     tenant_id: str,
     recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Optional[AccountLinkingUser]:
+) -> Optional[User]:
     if user_context is None:
         user_context = {}
     user = await get_user(recipe_user_id.get_as_string(), user_context)

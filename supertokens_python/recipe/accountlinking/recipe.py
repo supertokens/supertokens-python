@@ -43,7 +43,7 @@ from .interfaces import RecipeInterface
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
-    from supertokens_python.types import AccountLinkingUser, LoginMethod, RecipeUserId
+    from supertokens_python.types import User, LoginMethod, RecipeUserId
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.emailverification.recipe import (
@@ -64,9 +64,7 @@ class EmailChangeAllowedResult:
 
 
 class TryLinkingByAccountInfoOrCreatePrimaryUserResult:
-    def __init__(
-        self, status: Literal["OK", "NO_LINK"], user: Optional[AccountLinkingUser]
-    ):
+    def __init__(self, status: Literal["OK", "NO_LINK"], user: Optional[User]):
         self.status: Literal["OK", "NO_LINK"] = status
         self.user = user
 
@@ -80,15 +78,13 @@ class AccountLinkingRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         on_account_linked: Optional[
-            Callable[
-                [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
-            ]
+            Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
         ] = None,
         should_do_automatic_account_linking: Optional[
             Callable[
                 [
                     AccountInfoWithRecipeIdAndUserId,
-                    Optional[AccountLinkingUser],
+                    Optional[User],
                     Optional[SessionContainer],
                     str,
                     Dict[str, Any],
@@ -152,15 +148,13 @@ class AccountLinkingRecipe(RecipeModule):
     @staticmethod
     def init(
         on_account_linked: Optional[
-            Callable[
-                [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
-            ]
+            Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
         ] = None,
         should_do_automatic_account_linking: Optional[
             Callable[
                 [
                     AccountInfoWithRecipeIdAndUserId,
-                    Optional[AccountLinkingUser],
+                    Optional[User],
                     Optional[SessionContainer],
                     str,
                     Dict[str, Any],
@@ -206,9 +200,9 @@ class AccountLinkingRecipe(RecipeModule):
     async def get_primary_user_that_can_be_linked_to_recipe_user_id(
         self,
         tenant_id: str,
-        user: AccountLinkingUser,
+        user: User,
         user_context: Dict[str, Any],
-    ) -> Optional[AccountLinkingUser]:
+    ) -> Optional[User]:
         # First we check if this user itself is a primary user or not. If it is, we return that.
         if user.is_primary_user:
             return user
@@ -262,9 +256,9 @@ class AccountLinkingRecipe(RecipeModule):
     async def get_oldest_user_that_can_be_linked_to_recipe_user(
         self,
         tenant_id: str,
-        user: AccountLinkingUser,
+        user: User,
         user_context: Dict[str, Any],
-    ) -> Optional[AccountLinkingUser]:
+    ) -> Optional[User]:
         # First we check if this user itself is a primary user or not. If it is, we return that since it cannot be linked to anything else
         if user.is_primary_user:
             return user
@@ -287,7 +281,7 @@ class AccountLinkingRecipe(RecipeModule):
 
     async def is_sign_in_allowed(
         self,
-        user: AccountLinkingUser,
+        user: User,
         account_info: Union[AccountInfoWithRecipeId, LoginMethod],
         tenant_id: str,
         session: Optional[SessionContainer],
@@ -343,7 +337,7 @@ class AccountLinkingRecipe(RecipeModule):
         session: Optional[SessionContainer],
         tenant_id: str,
         is_sign_in: bool,
-        user: Optional[AccountLinkingUser],
+        user: Optional[User],
         user_context: Dict[str, Any],
     ) -> bool:
         ProcessState.get_instance().add_state(
@@ -529,7 +523,7 @@ class AccountLinkingRecipe(RecipeModule):
 
     async def is_email_change_allowed(
         self,
-        user: AccountLinkingUser,
+        user: User,
         new_email: str,
         is_verified: bool,
         session: Optional[SessionContainer],
@@ -694,7 +688,7 @@ class AccountLinkingRecipe(RecipeModule):
     # pylint:disable=no-self-use
     async def verify_email_for_recipe_user_if_linked_accounts_are_verified(
         self,
-        user: AccountLinkingUser,
+        user: User,
         recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> None:
@@ -739,7 +733,7 @@ class AccountLinkingRecipe(RecipeModule):
 
     async def should_become_primary_user(
         self,
-        user: AccountLinkingUser,
+        user: User,
         tenant_id: str,
         session: Optional[SessionContainer],
         user_context: Dict[str, Any],
@@ -776,7 +770,7 @@ class AccountLinkingRecipe(RecipeModule):
 
     async def try_linking_by_account_info_or_create_primary_user(
         self,
-        input_user: AccountLinkingUser,
+        input_user: User,
         session: Optional[SessionContainer],
         tenant_id: str,
         user_context: Dict[str, Any],

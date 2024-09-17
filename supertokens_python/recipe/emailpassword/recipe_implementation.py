@@ -42,7 +42,7 @@ from supertokens_python.auth_utils import (
     LinkingToSessionUserFailedError,
     link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
 )
-from ...types import AccountLinkingUser
+from ...types import User
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -114,7 +114,7 @@ class RecipeImplementation(RecipeInterface):
         )
         if response["status"] == "OK":
             return SignUpOkResult(
-                user=AccountLinkingUser.from_json(response["user"]),
+                user=User.from_json(response["user"]),
                 recipe_user_id=RecipeUserId(response["recipeUserId"]),
             )
         return EmailAlreadyExistsError()
@@ -191,7 +191,7 @@ class RecipeImplementation(RecipeInterface):
 
         if response["status"] == "OK":
             return SignInOkResult(
-                user=AccountLinkingUser.from_json(response["user"]),
+                user=User.from_json(response["user"]),
                 recipe_user_id=RecipeUserId(response["recipeUserId"]),
             )
 

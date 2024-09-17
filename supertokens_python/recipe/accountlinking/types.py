@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from supertokens_python.types import (
         RecipeUserId,
         ThirdPartyInfo,
-        AccountLinkingUser,
+        User,
         LoginMethod,
     )
     from supertokens_python.recipe.session import SessionContainer
@@ -134,12 +134,12 @@ class AccountLinkingConfig:
     def __init__(
         self,
         on_account_linked: Callable[
-            [AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+            [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
         ],
         should_do_automatic_account_linking: Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
-                Optional[AccountLinkingUser],
+                Optional[User],
                 Optional[SessionContainer],
                 str,
                 Dict[str, Any],

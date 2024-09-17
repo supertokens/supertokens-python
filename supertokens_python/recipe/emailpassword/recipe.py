@@ -36,7 +36,7 @@ from supertokens_python.recipe.multifactorauth.types import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.types import User, RecipeUserId
 
 from .api.implementation import APIImplementation
 from .exceptions import FieldError, SuperTokensEmailPasswordError
@@ -136,7 +136,7 @@ class EmailPasswordRecipe(RecipeModule):
                 )
 
                 async def get_factors_setup_for_user(
-                    user: AccountLinkingUser, _: Dict[str, Any]
+                    user: User, _: Dict[str, Any]
                 ) -> List[str]:
                     for login_method in user.login_methods:
                         # We don't check for tenant_id here because if we find the user
@@ -154,7 +154,7 @@ class EmailPasswordRecipe(RecipeModule):
                 )
 
                 async def get_emails_for_factor(
-                    user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+                    user: User, session_recipe_user_id: RecipeUserId
                 ) -> Union[
                     GetEmailsForFactorOkResult,
                     GetEmailsForFactorUnknownSessionRecipeUserIdResult,

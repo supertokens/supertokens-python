@@ -24,7 +24,7 @@ from supertokens_python.recipe.passwordless import (
 )
 from supertokens_python.recipe.passwordless.asyncio import signinup
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
-from supertokens_python.types import APIResponse, AccountLinkingUser, RecipeUserId
+from supertokens_python.types import APIResponse, User, RecipeUserId
 from phonenumbers import parse as parse_phone_number, format_number, PhoneNumberFormat
 
 
@@ -32,7 +32,7 @@ class CreatePasswordlessUserOkResponse(APIResponse):
     def __init__(
         self,
         created_new_recipe_user: bool,
-        user: AccountLinkingUser,
+        user: User,
         recipe_user_id: RecipeUserId,
     ):
         self.status: Literal["OK"] = "OK"

@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
-from ...types import APIResponse, AccountLinkingUser, GeneralErrorResponse, RecipeUserId
+from ...types import APIResponse, User, GeneralErrorResponse, RecipeUserId
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 class SignInUpOkResult:
     def __init__(
         self,
-        user: AccountLinkingUser,
+        user: User,
         recipe_user_id: RecipeUserId,
         created_new_recipe_user: bool,
         oauth_tokens: Dict[str, Any],
@@ -49,7 +49,7 @@ class SignInUpOkResult:
 class ManuallyCreateOrUpdateUserOkResult:
     def __init__(
         self,
-        user: AccountLinkingUser,
+        user: User,
         recipe_user_id: RecipeUserId,
         created_new_recipe_user: bool,
     ):
@@ -152,7 +152,7 @@ class SignInUpPostOkResult(APIResponse):
 
     def __init__(
         self,
-        user: AccountLinkingUser,
+        user: User,
         created_new_recipe_user: bool,
         session: SessionContainer,
         oauth_tokens: Dict[str, Any],

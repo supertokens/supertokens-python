@@ -26,7 +26,7 @@ from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
     AccountInfo,
-    AccountLinkingUser,
+    User,
     LoginMethod,
 )
 from supertokens_python.recipe.accountlinking.interfaces import (
@@ -85,7 +85,7 @@ class SignInNotAllowedResponse:
 
 async def pre_auth_checks(
     authenticating_account_info: AccountInfoWithRecipeId,
-    authenticating_user: Union[AccountLinkingUser, None],
+    authenticating_user: Union[User, None],
     tenant_id: str,
     factor_ids: List[str],
     is_sign_up: bool,
@@ -196,11 +196,9 @@ async def pre_auth_checks(
 class PostAuthChecksOkResponse:
     status: Literal["OK"]
     session: SessionContainer
-    user: AccountLinkingUser
+    user: User
 
-    def __init__(
-        self, status: Literal["OK"], session: SessionContainer, user: AccountLinkingUser
-    ):
+    def __init__(self, status: Literal["OK"], session: SessionContainer, user: User):
         self.status = status
         self.session = session
         self.user = user
@@ -211,7 +209,7 @@ class PostAuthChecksSignInNotAllowedResponse:
 
 
 async def post_auth_checks(
-    authenticated_user: AccountLinkingUser,
+    authenticated_user: User,
     recipe_user_id: RecipeUserId,
     is_sign_up: bool,
     factor_id: str,
@@ -280,9 +278,7 @@ async def post_auth_checks(
 
 
 class AuthenticatingUserInfo:
-    def __init__(
-        self, user: AccountLinkingUser, login_method: Union[LoginMethod, None]
-    ):
+    def __init__(self, user: User, login_method: Union[LoginMethod, None]):
         self.user = user
         self.login_method = login_method
 
@@ -457,9 +453,9 @@ class OkSecondFactorLinkedResponse:
     status: Literal["OK"]
     is_first_factor: Literal[False]
     input_user_already_linked_to_session_user: Literal[True]
-    session_user: AccountLinkingUser
+    session_user: User
 
-    def __init__(self, session_user: AccountLinkingUser):
+    def __init__(self, session_user: User):
         self.session_user = session_user
 
 
@@ -467,12 +463,12 @@ class OkSecondFactorNotLinkedResponse:
     status: Literal["OK"]
     is_first_factor: Literal[False]
     input_user_already_linked_to_session_user: Literal[False]
-    session_user: AccountLinkingUser
+    session_user: User
     linking_to_session_user_requires_verification: bool
 
     def __init__(
         self,
-        session_user: AccountLinkingUser,
+        session_user: User,
         linking_to_session_user_requires_verification: bool,
     ):
         self.session_user = session_user
@@ -484,7 +480,7 @@ class OkSecondFactorNotLinkedResponse:
 async def check_auth_type_and_linking_status(
     session: Union[SessionContainer, None],
     account_info: AccountInfoWithRecipeId,
-    input_user: Union[AccountLinkingUser, None],
+    input_user: Union[User, None],
     skip_session_user_update_in_core: bool,
     user_context: Dict[str, Any],
 ) -> Union[
@@ -494,7 +490,7 @@ async def check_auth_type_and_linking_status(
     LinkingToSessionUserFailedError,
 ]:
     log_debug_message("check_auth_type_and_linking_status called")
-    session_user: Union[AccountLinkingUser, None] = None
+    session_user: Union[User, None] = None
     if session is None:
         log_debug_message(
             "check_auth_type_and_linking_status returning first factor because there is no session"
@@ -559,16 +555,16 @@ async def check_auth_type_and_linking_status(
 
 class OkResponse2:
     status: Literal["OK"]
-    user: AccountLinkingUser
+    user: User
 
-    def __init__(self, user: AccountLinkingUser):
+    def __init__(self, user: User):
         self.status = "OK"
-        self.user: AccountLinkingUser = user
+        self.user: User = user
 
 
 async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
     tenant_id: str,
-    input_user: AccountLinkingUser,
+    input_user: User,
     recipe_user_id: RecipeUserId,
     session: Union[SessionContainer, None],
     user_context: Dict[str, Any],
@@ -775,8 +771,8 @@ async def try_and_make_session_user_into_a_primary_user(
 async def try_linking_by_session(
     linking_to_session_user_requires_verification: bool,
     auth_login_method: LoginMethod,
-    authenticated_user: AccountLinkingUser,
-    session_user: AccountLinkingUser,
+    authenticated_user: User,
+    session_user: User,
     user_context: Dict[str, Any],
 ) -> Union[OkResponse2, LinkingToSessionUserFailedError,]:
     log_debug_message("tryLinkingBySession called")
@@ -872,7 +868,7 @@ async def filter_out_invalid_first_factors_or_throw_if_all_are_invalid(
 async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
     factor_ids: List[str],
     input_user_already_linked_to_session_user: bool,
-    session_user: AccountLinkingUser,
+    session_user: User,
     session: SessionContainer,
     user_context: Dict[str, Any],
 ) -> List[str]:

@@ -21,7 +21,7 @@ from . import utils
 from .recipe import AccountLinkingRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
-AccountLinkingUser = types.AccountLinkingUser
+AccountLinkingUser = types.User
 RecipeLevelUser = types.RecipeLevelUser
 AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
 SessionContainer = types.SessionContainer

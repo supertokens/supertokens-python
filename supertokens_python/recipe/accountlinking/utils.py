@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, Awaitabl
 
 from .types import (
     AccountLinkingConfig,
-    AccountLinkingUser,
+    User,
     RecipeLevelUser,
     AccountInfoWithRecipeIdAndUserId,
     SessionContainer,
@@ -30,9 +30,7 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 
-async def default_on_account_linked(
-    _: AccountLinkingUser, __: RecipeLevelUser, ___: Dict[str, Any]
-):
+async def default_on_account_linked(_: User, __: RecipeLevelUser, ___: Dict[str, Any]):
     pass
 
 
@@ -41,7 +39,7 @@ _did_use_default_should_do_automatic_account_linking: bool = True
 
 async def default_should_do_automatic_account_linking(
     _: AccountInfoWithRecipeIdAndUserId,
-    ___: Optional[AccountLinkingUser],
+    ___: Optional[User],
     ____: Optional[SessionContainer],
     _____: str,
     ______: Dict[str, Any],
@@ -56,13 +54,13 @@ def recipe_init_defined_should_do_automatic_account_linking() -> bool:
 def validate_and_normalise_user_input(
     _: AppInfo,
     on_account_linked: Optional[
-        Callable[[AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
     ] = None,
     should_do_automatic_account_linking: Optional[
         Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
-                Optional[AccountLinkingUser],
+                Optional[User],
                 Optional[SessionContainer],
                 str,
                 Dict[str, Any],

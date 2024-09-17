@@ -37,7 +37,7 @@ from supertokens_python.recipe.session import SessionContainer
 from .interfaces import RecipeInterface
 
 from .recipe import MultiFactorAuthRecipe
-from supertokens_python.types import AccountLinkingUser
+from supertokens_python.types import User
 from .utils import update_and_get_mfa_related_info_in_session
 
 
@@ -121,7 +121,7 @@ class RecipeImplementation(RecipeInterface):
         self.recipe_instance = recipe_instance
 
     async def get_factors_setup_for_user(
-        self, user: AccountLinkingUser, user_context: Dict[str, Any]
+        self, user: User, user_context: Dict[str, Any]
     ) -> List[str]:
         factor_ids: List[str] = []
         for (
@@ -138,7 +138,7 @@ class RecipeImplementation(RecipeInterface):
         tenant_id: str,
         access_token_payload: Dict[str, Any],
         completed_factors: Dict[str, int],
-        user: Callable[[], Awaitable[AccountLinkingUser]],
+        user: Callable[[], Awaitable[User]],
         factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
         required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]],
         required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]],

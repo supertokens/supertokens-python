@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER, FDI_KEY_HEADER
 from .exceptions import raise_general_exception
 from .types import MaybeAwaitable
-from supertokens_python.types import AccountLinkingUser
+from supertokens_python.types import User
 
 _T = TypeVar("_T")
 
@@ -302,7 +302,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
 
 def get_backwards_compatible_user_info(
     req: BaseRequest,
-    user_info: AccountLinkingUser,
+    user_info: User,
     session_container: SessionContainer,
     created_new_recipe_user: Union[bool, None],
     user_context: Dict[str, Any],

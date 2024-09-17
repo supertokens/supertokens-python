@@ -34,7 +34,7 @@ from supertokens_python.asyncio import get_user
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-    from supertokens_python.types import RecipeUserId, AccountLinkingUser
+    from supertokens_python.types import RecipeUserId, User
 
 
 class RecipeImplementation(RecipeInterface):
@@ -42,7 +42,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         querier: Querier,
         get_email_for_recipe_user_id: Callable[
-            [Optional[AccountLinkingUser], RecipeUserId, Dict[str, Any]],
+            [Optional[User], RecipeUserId, Dict[str, Any]],
             Awaitable[
                 Union[
                     GetEmailForUserIdOkResult,

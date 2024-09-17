@@ -64,7 +64,7 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import (
     AccountInfo,
-    AccountLinkingUser,
+    User,
     GeneralErrorResponse,
     LoginMethod,
     RecipeUserId,
@@ -74,12 +74,10 @@ from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult
 
 
 class PasswordlessUserResult:
-    user: AccountLinkingUser
+    user: User
     login_method: Union[LoginMethod, None]
 
-    def __init__(
-        self, user: AccountLinkingUser, login_method: Union[LoginMethod, None]
-    ):
+    def __init__(self, user: User, login_method: Union[LoginMethod, None]):
         self.user = user
         self.login_method = login_method
 
@@ -691,7 +689,7 @@ class APIImplementation(APIInterface):
             reason = reason_dict[response.reason]
             return SignInUpPostNotAllowedResponse(reason=reason)
 
-        authenticating_user_input: AccountLinkingUser
+        authenticating_user_input: User
         if response.user:
             authenticating_user_input = response.user
         elif authenticating_user:

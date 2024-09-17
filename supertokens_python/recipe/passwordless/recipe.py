@@ -42,7 +42,7 @@ from supertokens_python.recipe.passwordless.types import (
 from typing_extensions import Literal
 
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.types import User, RecipeUserId
 
 from .api import (
     consume_code,
@@ -171,11 +171,9 @@ class PasswordlessRecipe(RecipeModule):
                 )
 
                 async def get_factors_setup_for_user(
-                    user: AccountLinkingUser, _: Dict[str, Any]
+                    user: User, _: Dict[str, Any]
                 ) -> List[str]:
-                    def is_factor_setup_for_user(
-                        user: AccountLinkingUser, factor_id: str
-                    ) -> bool:
+                    def is_factor_setup_for_user(user: User, factor_id: str) -> bool:
                         for login_method in user.login_methods:
                             if login_method.recipe_id != "passwordless":
                                 continue
@@ -210,7 +208,7 @@ class PasswordlessRecipe(RecipeModule):
                 )
 
                 async def get_emails_for_factor(
-                    user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+                    user: User, session_recipe_user_id: RecipeUserId
                 ) -> Union[
                     GetEmailsForFactorOkResult,
                     GetEmailsForFactorUnknownSessionRecipeUserIdResult,
@@ -315,7 +313,7 @@ class PasswordlessRecipe(RecipeModule):
                 )
 
                 async def get_phone_numbers_for_factors(
-                    user: AccountLinkingUser, session_recipe_user_id: RecipeUserId
+                    user: User, session_recipe_user_id: RecipeUserId
                 ) -> Union[
                     GetPhoneNumbersForFactorsOkResult,
                     GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,

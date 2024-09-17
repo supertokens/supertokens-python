@@ -31,14 +31,14 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
 
     from .types import FormField
-    from ...types import AccountLinkingUser
+    from ...types import User
     from .utils import EmailPasswordConfig
 
 
 class SignUpOkResult:
     status: str = "OK"
 
-    def __init__(self, user: AccountLinkingUser, recipe_user_id: RecipeUserId):
+    def __init__(self, user: User, recipe_user_id: RecipeUserId):
         self.user = user
         self.recipe_user_id = recipe_user_id
 
@@ -51,7 +51,7 @@ class EmailAlreadyExistsError(APIResponse):
 
 
 class SignInOkResult:
-    def __init__(self, user: AccountLinkingUser, recipe_user_id: RecipeUserId):
+    def __init__(self, user: User, recipe_user_id: RecipeUserId):
         self.user = user
         self.recipe_user_id = recipe_user_id
 
@@ -243,7 +243,7 @@ class GeneratePasswordResetTokenPostNotAllowedResponse(APIResponse):
 class PasswordResetPostOkResult(APIResponse):
     status: str = "OK"
 
-    def __init__(self, email: str, user: AccountLinkingUser):
+    def __init__(self, email: str, user: User):
         self.email = email
         self.user = user
 
@@ -254,7 +254,7 @@ class PasswordResetPostOkResult(APIResponse):
 class SignInPostOkResult(APIResponse):
     status: str = "OK"
 
-    def __init__(self, user: AccountLinkingUser, session: SessionContainer):
+    def __init__(self, user: User, session: SessionContainer):
         self.user = user
         self.session = session
 
@@ -278,7 +278,7 @@ class SignInPostNotAllowedResponse(APIResponse):
 class SignUpPostOkResult(APIResponse):
     status: str = "OK"
 
-    def __init__(self, user: AccountLinkingUser, session: SessionContainer):
+    def __init__(self, user: User, session: SessionContainer):
         self.user = user
         self.session = session
 

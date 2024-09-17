@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.types import User, RecipeUserId
 from supertokens_python.utils import log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
@@ -48,13 +48,13 @@ if TYPE_CHECKING:
 
 
 class UserWithMetadata:
-    user: AccountLinkingUser
+    user: User
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
     def from_user(
         self,
-        user: AccountLinkingUser,
+        user: User,
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ):
@@ -183,9 +183,7 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
 
 
 class GetUserForRecipeIdHelperResult:
-    def __init__(
-        self, user: Optional[AccountLinkingUser] = None, recipe: Optional[str] = None
-    ):
+    def __init__(self, user: Optional[User] = None, recipe: Optional[str] = None):
         self.user = user
         self.recipe = recipe
 

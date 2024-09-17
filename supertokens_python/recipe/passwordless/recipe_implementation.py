@@ -48,7 +48,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserUnknownUserIdError,
 )
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.types import User, RecipeUserId
 from supertokens_python.utils import log_debug_message
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
@@ -111,7 +111,7 @@ class RecipeImplementation(RecipeInterface):
 
         recipe_user_id = RecipeUserId(response["recipeUserId"])
 
-        updated_user = AccountLinkingUser.from_json(response["user"])
+        updated_user = User.from_json(response["user"])
 
         link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
             tenant_id=tenant_id,

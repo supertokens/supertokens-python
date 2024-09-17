@@ -30,7 +30,7 @@ from supertokens_python.recipe.thirdparty.providers.config_utils import (
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
-from supertokens_python.types import AccountInfo, AccountLinkingUser, RecipeUserId
+from supertokens_python.types import AccountInfo, User, RecipeUserId
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -152,7 +152,7 @@ class RecipeImplementation(RecipeInterface):
 
         # status is OK
 
-        user = AccountLinkingUser.from_json(
+        user = User.from_json(
             response["user"],
         )
         recipe_user_id = RecipeUserId(response["recipeUserId"])

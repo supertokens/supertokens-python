@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Union, List, Callable, Awaitable
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 
-from supertokens_python.types import AccountLinkingUser
+from supertokens_python.types import User
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
@@ -51,7 +51,7 @@ class RecipeInterface(ABC):
         tenant_id: str,
         access_token_payload: Dict[str, Any],
         completed_factors: Dict[str, int],
-        user: Callable[[], Awaitable[AccountLinkingUser]],
+        user: Callable[[], Awaitable[User]],
         factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
         required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]],
         required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]],
@@ -70,7 +70,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_factors_setup_for_user(
-        self, user: AccountLinkingUser, user_context: Dict[str, Any]
+        self, user: User, user_context: Dict[str, Any]
     ) -> List[str]:
         pass
 

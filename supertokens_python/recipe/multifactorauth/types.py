@@ -17,7 +17,7 @@ from typing import Awaitable, Dict, Any, Union, List, Optional, Callable
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from .interfaces import RecipeInterface, APIInterface
 from typing_extensions import Literal
-from supertokens_python.types import AccountLinkingUser, RecipeUserId
+from supertokens_python.types import User, RecipeUserId
 
 
 class MFARequirementList(List[Union[Dict[str, List[str]], str]]):
@@ -92,7 +92,7 @@ class FactorIdsAndType:
 class GetFactorsSetupForUserFromOtherRecipesFunc:
     def __init__(
         self,
-        func: Callable[[AccountLinkingUser, Dict[str, Any]], Awaitable[List[str]]],
+        func: Callable[[User, Dict[str, Any]], Awaitable[List[str]]],
     ):
         self.func = func
 
@@ -120,7 +120,7 @@ class GetEmailsForFactorFromOtherRecipesFunc:
     def __init__(
         self,
         func: Callable[
-            [AccountLinkingUser, RecipeUserId],
+            [User, RecipeUserId],
             Awaitable[
                 Union[
                     GetEmailsForFactorOkResult,
@@ -147,7 +147,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
     def __init__(
         self,
         func: Callable[
-            [AccountLinkingUser, RecipeUserId],
+            [User, RecipeUserId],
             Awaitable[
                 Union[
                     GetPhoneNumbersForFactorsOkResult,

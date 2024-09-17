@@ -24,7 +24,7 @@ from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import (
     APIResponse,
-    AccountLinkingUser,
+    User,
     GeneralErrorResponse,
     RecipeUserId,
 )
@@ -116,7 +116,7 @@ class ConsumeCodeOkResult:
     def __init__(
         self,
         created_new_recipe_user: bool,
-        user: AccountLinkingUser,
+        user: User,
         recipe_user_id: RecipeUserId,
         consumed_device: ConsumedDevice,
     ):
@@ -400,7 +400,7 @@ class ConsumeCodePostOkResult(APIResponse):
     def __init__(
         self,
         created_new_recipe_user: bool,
-        user: AccountLinkingUser,
+        user: User,
         session: SessionContainer,
     ):
         self.created_new_recipe_user = created_new_recipe_user

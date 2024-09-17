@@ -18,7 +18,7 @@ from typing import Any, Callable, Dict, Union, Optional, TYPE_CHECKING
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
-    from supertokens_python.types import AccountLinkingUser
+    from supertokens_python.types import User
 
 
 class ThirdPartyInfo:
@@ -79,7 +79,7 @@ class AuthorisationRedirectAPI:
 
 
 class SignInUpResponse:
-    def __init__(self, user: AccountLinkingUser, is_new_user: bool):
+    def __init__(self, user: User, is_new_user: bool):
         self.user = user
         self.is_new_user = is_new_user
 

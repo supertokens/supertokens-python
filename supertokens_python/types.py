@@ -131,7 +131,7 @@ class LoginMethod(AccountInfo):
         )
 
 
-class AccountLinkingUser:
+class User:
     def __init__(
         self,
         user_id: str,
@@ -165,8 +165,8 @@ class AccountLinkingUser:
         }
 
     @staticmethod
-    def from_json(json: Dict[str, Any]) -> "AccountLinkingUser":
-        return AccountLinkingUser(
+    def from_json(json: Dict[str, Any]) -> "User":
+        return User(
             user_id=json["id"],
             is_primary_user=json["isPrimaryUser"],
             tenant_ids=json["tenantIds"],
@@ -176,45 +176,6 @@ class AccountLinkingUser:
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )
-
-
-class User:
-    def __init__(
-        self,
-        recipe_id: str,
-        user_id: str,
-        time_joined: int,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        third_party_info: Union[ThirdPartyInfo, None],
-        tenant_ids: List[str],
-    ):
-        self.recipe_id = recipe_id
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.third_party_info = third_party_info
-        self.phone_number = phone_number
-        self.tenant_ids = tenant_ids
-
-    def to_json(self) -> Dict[str, Any]:
-        res: Dict[str, Any] = {
-            "recipeId": self.recipe_id,
-            "user": {
-                "id": self.user_id,
-                "timeJoined": self.time_joined,
-                "tenantIds": self.tenant_ids,
-            },
-        }
-
-        if self.email is not None:
-            res["user"]["email"] = self.email
-        if self.phone_number is not None:
-            res["user"]["phoneNumber"] = self.phone_number
-        if self.third_party_info is not None:
-            res["user"]["thirdParty"] = self.third_party_info.__dict__
-
-        return res
 
 
 class APIResponse(ABC):

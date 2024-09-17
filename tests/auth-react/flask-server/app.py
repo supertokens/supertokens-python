@@ -104,7 +104,7 @@ from supertokens_python.recipe.userroles.syncio import (
 )
 from supertokens_python.types import (
     AccountInfo,
-    AccountLinkingUser,
+    User,
     GeneralErrorResponse,
 )
 from supertokens_python.syncio import delete_user, list_users_by_account_info
@@ -200,7 +200,7 @@ class CustomEPEmailService(
 
 
 async def create_and_send_custom_email(
-    _: AccountLinkingUser, url_with_token: str, __: Dict[str, Any]
+    _: User, url_with_token: str, __: Dict[str, Any]
 ) -> None:
     global latest_url_with_token
     latest_url_with_token = url_with_token

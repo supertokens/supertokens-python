@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..types import AccountInfoWithRecipeId, AccountLinkingUser, RecipeUserId
+from ..types import AccountInfoWithRecipeId, User, RecipeUserId
 from supertokens_python.recipe.session import SessionContainer
 
 
@@ -24,7 +24,7 @@ def create_primary_user_id_or_link_accounts(
     recipe_user_id: RecipeUserId,
     session: Optional[SessionContainer] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> AccountLinkingUser:
+) -> User:
     from ..asyncio import (
         create_primary_user_id_or_link_accounts as async_create_primary_user_id_or_link_accounts,
     )
@@ -40,7 +40,7 @@ def get_primary_user_that_can_be_linked_to_recipe_user_id(
     tenant_id: str,
     recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Optional[AccountLinkingUser]:
+) -> Optional[User]:
     from ..asyncio import (
         get_primary_user_that_can_be_linked_to_recipe_user_id as async_get_primary_user_that_can_be_linked_to_recipe_user_id,
     )

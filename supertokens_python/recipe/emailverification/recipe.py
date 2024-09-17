@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
     from supertokens_python.types import RecipeUserId
-    from ...types import AccountLinkingUser, MaybeAwaitable
+    from ...types import User, MaybeAwaitable
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -270,7 +270,7 @@ class EmailVerificationRecipe(RecipeModule):
 
     async def get_email_for_recipe_user_id(
         self,
-        user: Optional[AccountLinkingUser],
+        user: Optional[User],
         recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:

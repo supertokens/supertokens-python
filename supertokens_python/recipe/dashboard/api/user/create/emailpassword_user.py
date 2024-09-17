@@ -8,11 +8,11 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,
 )
 from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
-from supertokens_python.types import APIResponse, AccountLinkingUser, RecipeUserId
+from supertokens_python.types import APIResponse, User, RecipeUserId
 
 
 class CreateEmailPasswordUserOkResponse(APIResponse):
-    def __init__(self, user: AccountLinkingUser, recipe_user_id: RecipeUserId):
+    def __init__(self, user: User, recipe_user_id: RecipeUserId):
         self.status = "OK"
         self.user = user
         self.recipe_user_id = recipe_user_id

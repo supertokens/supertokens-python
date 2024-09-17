@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from supertokens_python.types import (
-        AccountLinkingUser,
+        User,
         RecipeUserId,
         AccountInfo,
     )
@@ -96,7 +96,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_user(
         self, user_id: str, user_context: Dict[str, Any]
-    ) -> Optional[AccountLinkingUser]:
+    ) -> Optional[User]:
         pass
 
     @abstractmethod
@@ -106,7 +106,7 @@ class RecipeInterface(ABC):
         account_info: AccountInfo,
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
-    ) -> List[AccountLinkingUser]:
+    ) -> List[User]:
         pass
 
     @abstractmethod
@@ -120,9 +120,7 @@ class RecipeInterface(ABC):
 
 
 class GetUsersResult:
-    def __init__(
-        self, users: List[AccountLinkingUser], next_pagination_token: Optional[str]
-    ):
+    def __init__(self, users: List[User], next_pagination_token: Optional[str]):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
@@ -152,7 +150,7 @@ class CanCreatePrimaryUserAccountInfoAlreadyAssociatedError:
 
 
 class CreatePrimaryUserOkResult:
-    def __init__(self, user: AccountLinkingUser, was_already_a_primary_user: bool):
+    def __init__(self, user: User, was_already_a_primary_user: bool):
         self.status: Literal["OK"] = "OK"
         self.user = user
         self.was_already_a_primary_user = was_already_a_primary_user
@@ -213,7 +211,7 @@ class CanLinkAccountsInputUserNotPrimaryError:
 
 
 class LinkAccountsOkResult:
-    def __init__(self, accounts_already_linked: bool, user: AccountLinkingUser):
+    def __init__(self, accounts_already_linked: bool, user: User):
         self.status: Literal["OK"] = "OK"
         self.accounts_already_linked = accounts_already_linked
         self.user = user
@@ -223,7 +221,7 @@ class LinkAccountsRecipeUserIdAlreadyLinkedError:
     def __init__(
         self,
         primary_user_id: Optional[str] = None,
-        user: Optional[AccountLinkingUser] = None,
+        user: Optional[User] = None,
         description: Optional[str] = None,
     ):
         self.status: Literal[
@@ -238,7 +236,7 @@ class LinkAccountsAccountInfoAlreadyAssociatedError:
     def __init__(
         self,
         primary_user_id: Optional[str] = None,
-        user: Optional[AccountLinkingUser] = None,
+        user: Optional[User] = None,
         description: Optional[str] = None,
     ):
         self.status: Literal[
