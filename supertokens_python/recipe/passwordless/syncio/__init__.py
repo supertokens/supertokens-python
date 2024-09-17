@@ -272,7 +272,7 @@ def signinup(
     tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
-    session: Optional[SessionContainer],
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> ConsumeCodeOkResult:
     if user_context is None:

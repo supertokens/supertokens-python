@@ -47,6 +47,12 @@ from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_fa
 from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_secondary_factor import (
     update_tenant_secondary_factor,
 )
+from supertokens_python.recipe.dashboard.api.user.create.emailpassword_user import (
+    create_email_password_user,
+)
+from supertokens_python.recipe.dashboard.api.user.create.passwordless_user import (
+    create_passwordless_user,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -108,6 +114,8 @@ from .constants import (
     UPDATE_TENANT_CORE_CONFIG_API,
     UPDATE_TENANT_FIRST_FACTOR_API,
     UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
+    CREATE_EMAIL_PASSWORD_USER,
+    CREATE_PASSWORDLESS_USER,
 )
 from .utils import (
     InputOverrideConfig,
@@ -364,6 +372,22 @@ class DashboardRecipe(RecipeModule):
                 UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
                 False,
             ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(CREATE_EMAIL_PASSWORD_USER)
+                ),
+                "post",
+                CREATE_EMAIL_PASSWORD_USER,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(CREATE_PASSWORDLESS_USER)
+                ),
+                "post",
+                CREATE_PASSWORDLESS_USER,
+                False,
+            ),
         ]
 
     async def handle_api_request(
@@ -465,6 +489,10 @@ class DashboardRecipe(RecipeModule):
             api_function = update_tenant_first_factor
         elif request_id == UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API:
             api_function = update_tenant_secondary_factor
+        elif request_id == CREATE_EMAIL_PASSWORD_USER:
+            api_function = create_email_password_user
+        elif request_id == CREATE_PASSWORDLESS_USER:
+            api_function = create_passwordless_user
 
         if api_function is not None:
             return await api_key_protector(
