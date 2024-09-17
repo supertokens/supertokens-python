@@ -56,6 +56,12 @@ from supertokens_python.recipe.dashboard.api.user.create.passwordless_user impor
 from supertokens_python.recipe.dashboard.api.userdetails.user_unlink_get import (
     handle_user_unlink_get,
 )
+from supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role import (
+    get_permissions_for_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.permissions.remove_permissions_from_role import (
+    remove_permissions_from_role_api,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -120,6 +126,8 @@ from .constants import (
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
     UNLINK_USER,
+    USERROLES_PERMISSIONS_API,
+    USERROLES_REMOVE_PERMISSIONS_API,
 )
 from .utils import (
     InputOverrideConfig,
@@ -398,6 +406,30 @@ class DashboardRecipe(RecipeModule):
                 UNLINK_USER,
                 False,
             ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USERROLES_PERMISSIONS_API)
+                ),
+                "get",
+                USERROLES_PERMISSIONS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USERROLES_PERMISSIONS_API)
+                ),
+                "put",
+                USERROLES_PERMISSIONS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USERROLES_REMOVE_PERMISSIONS_API)
+                ),
+                "put",
+                USERROLES_REMOVE_PERMISSIONS_API,
+                False,
+            ),
         ]
 
     async def handle_api_request(
@@ -505,6 +537,10 @@ class DashboardRecipe(RecipeModule):
             api_function = create_passwordless_user
         elif request_id == UNLINK_USER:
             api_function = handle_user_unlink_get
+        elif request_id == USERROLES_PERMISSIONS_API:
+            api_function = get_permissions_for_role_api
+        elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
+            api_function = remove_permissions_from_role_api
 
         if api_function is not None:
             return await api_key_protector(

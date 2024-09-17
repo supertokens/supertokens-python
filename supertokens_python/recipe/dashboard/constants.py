@@ -22,3 +22,5 @@ UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API = "/api/tenant/required-secondary-fa
 CREATE_EMAIL_PASSWORD_USER = "/api/user/emailpassword"
 CREATE_PASSWORDLESS_USER = "/api/user/passwordless"
 UNLINK_USER = "/api/user/unlink"
+USERROLES_PERMISSIONS_API = "/api/userroles/role/permissions"
+USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions/remove"
