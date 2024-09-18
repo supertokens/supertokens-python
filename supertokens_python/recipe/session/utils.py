@@ -567,7 +567,7 @@ def validate_and_normalise_user_input(
         (
             overwrite_session_during_sign_in_up
             if overwrite_session_during_sign_in_up is not None
-            else False
+            else True
         ),
     )
 
