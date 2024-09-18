@@ -14,7 +14,8 @@
 from typing import Union, Any, Dict
 
 import phonenumbers  # type: ignore
-from phonenumbers import format_number, parse  # type: ignore
+from phonenumbers import format_number, parse
+from supertokens_python.auth_utils import load_session_in_auth_api_if_needed  # type: ignore
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.passwordless.utils import (
@@ -22,9 +23,11 @@ from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOrPhoneConfig,
     ContactPhoneOnlyConfig,
 )
-from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.types import GeneralErrorResponse
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import (
+    get_normalised_should_try_linking_with_session_user_flag,
+    send_200_response,
+)
 
 
 async def create_code(
@@ -110,10 +113,14 @@ async def create_code(
         except Exception:
             phone_number = phone_number.strip()
 
-    session = await get_session(
-        api_options.request,
-        override_global_claim_validators=lambda _, __, ___: [],
-        user_context=user_context,
+    should_try_linking_with_session_user = (
+        get_normalised_should_try_linking_with_session_user_flag(
+            api_options.request, body
+        )
+    )
+
+    session = await load_session_in_auth_api_if_needed(
+        api_options.request, should_try_linking_with_session_user, user_context
     )
 
     if session is not None:
@@ -126,5 +133,6 @@ async def create_code(
         tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
+        should_try_linking_with_session_user=should_try_linking_with_session_user,
     )
     return send_200_response(result.to_json(), api_options.response)

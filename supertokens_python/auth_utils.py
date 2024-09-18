@@ -22,7 +22,7 @@ from supertokens_python.recipe.multifactorauth.utils import (
 from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_tenant
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.session.asyncio import create_new_session, get_session
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
     AccountInfo,
@@ -36,7 +36,7 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.emailverification import (
     EmailVerificationClaim,
 )
-from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.exceptions import BadInputError, raise_bad_input_exception
 from supertokens_python.utils import log_debug_message
 from .asyncio import get_user
 
@@ -93,6 +93,7 @@ async def pre_auth_checks(
     sign_in_verifies_login_method: bool,
     skip_session_user_update_in_core: bool,
     session: Union[SessionContainer, None],
+    should_try_linking_with_session_user: Union[bool, None],
     user_context: Dict[str, Any],
 ) -> Union[
     OkResponse,
@@ -110,6 +111,7 @@ async def pre_auth_checks(
     log_debug_message("preAuthChecks checking auth types")
     auth_type_info = await check_auth_type_and_linking_status(
         session,
+        should_try_linking_with_session_user,
         authenticating_account_info,
         authenticating_user,
         skip_session_user_update_in_core,
@@ -479,6 +481,7 @@ class OkSecondFactorNotLinkedResponse:
 
 async def check_auth_type_and_linking_status(
     session: Union[SessionContainer, None],
+    should_try_linking_with_session_user: Union[bool, None],
     account_info: AccountInfoWithRecipeId,
     input_user: Union[User, None],
     skip_session_user_update_in_core: bool,
@@ -492,18 +495,34 @@ async def check_auth_type_and_linking_status(
     log_debug_message("check_auth_type_and_linking_status called")
     session_user: Union[User, None] = None
     if session is None:
+        if should_try_linking_with_session_user is True:
+            raise UnauthorisedError(
+                "Session not found but shouldTryLinkingWithSessionUser is true"
+            )
         log_debug_message(
             "check_auth_type_and_linking_status returning first factor because there is no session"
         )
         return OkFirstFactorResponse()
     else:
+        if should_try_linking_with_session_user is False:
+            # In our normal flows this should never happen - but some user overrides might do this.
+            # Anyway, since should_try_linking_with_session_user explicitly set to false, it's safe to consider this a first factor
+            log_debug_message(
+                "check_auth_type_and_linking_status returning first factor because should_try_linking_with_session_user is False"
+            )
+            return OkFirstFactorResponse()
         if not recipe_init_defined_should_do_automatic_account_linking():
-            if MultiFactorAuthRecipe.get_instance() is not None:
+            if should_try_linking_with_session_user is True:
                 raise Exception(
                     "Please initialise the account linking recipe and define should_do_automatic_account_linking to enable MFA"
                 )
             else:
-                return OkFirstFactorResponse()
+                if MultiFactorAuthRecipe.get_instance() is not None:
+                    raise Exception(
+                        "Please initialise the account linking recipe and define should_do_automatic_account_linking to enable MFA"
+                    )
+                else:
+                    return OkFirstFactorResponse()
 
         if input_user is not None and input_user.id == session.get_user_id():
             log_debug_message(
@@ -520,6 +539,10 @@ async def check_auth_type_and_linking_status(
             session, skip_session_user_update_in_core, user_context
         )
         if session_user_result.status == "SHOULD_AUTOMATICALLY_LINK_FALSE":
+            if should_try_linking_with_session_user is True:
+                raise BadInputError(
+                    "should_do_automatic_account_linking returned false when creating primary user but shouldTryLinkingWithSessionUser is true"
+                )
             return OkFirstFactorResponse()
         elif (
             session_user_result.status
@@ -545,6 +568,10 @@ async def check_auth_type_and_linking_status(
         )
 
         if isinstance(should_link, ShouldNotAutomaticallyLink):
+            if should_try_linking_with_session_user is True:
+                raise BadInputError(
+                    "should_do_automatic_account_linking returned false when creating primary user but shouldTryLinkingWithSessionUser is true"
+                )
             return OkFirstFactorResponse()
         else:
             return OkSecondFactorNotLinkedResponse(
@@ -567,6 +594,7 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
     input_user: User,
     recipe_user_id: RecipeUserId,
     session: Union[SessionContainer, None],
+    should_try_linking_with_session_user: Union[bool, None],
     user_context: Dict[str, Any],
 ) -> Union[OkResponse2, LinkingToSessionUserFailedError,]:
     log_debug_message(
@@ -582,6 +610,7 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
             input_user=input_user,
             session=session,
             recipe_user_id=recipe_user_id,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
             user_context=user_context,
         )
 
@@ -600,6 +629,7 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
 
     auth_type_res = await check_auth_type_and_linking_status(
         session,
+        should_try_linking_with_session_user,
         AccountInfoWithRecipeId(
             recipe_id=auth_login_method.recipe_id,
             email=auth_login_method.email,
@@ -952,3 +982,26 @@ def is_fake_email(email: str) -> bool:
     return email.endswith("@stfakeemail.supertokens.com") or email.endswith(
         ".fakeemail.com"
     )  # .fakeemail.com for older users
+
+
+async def load_session_in_auth_api_if_needed(
+    request: BaseRequest,
+    should_try_linking_with_session_user: Optional[bool],
+    user_context: Dict[str, Any],
+) -> Optional[SessionContainer]:
+
+    overwrite_session_during_sign_in_up = (
+        SessionRecipe.get_instance().config.overwrite_session_during_sign_in_up
+    )
+
+    if (
+        should_try_linking_with_session_user is not False
+        or not overwrite_session_during_sign_in_up
+    ):
+        return await get_session(
+            request,
+            session_required=should_try_linking_with_session_user is True,
+            override_global_claim_validators=lambda _, __, ___: [],
+            user_context=user_context,
+        )
+    return None

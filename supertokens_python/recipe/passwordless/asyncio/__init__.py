@@ -64,6 +64,7 @@ async def create_code(
         tenant_id=tenant_id,
         session=session,
         user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )
 
 
@@ -111,6 +112,7 @@ async def consume_code(
         link_code=link_code,
         tenant_id=tenant_id,
         session=session,
+        should_try_linking_with_session_user=session is not None,
         user_context=user_context,
     )
 

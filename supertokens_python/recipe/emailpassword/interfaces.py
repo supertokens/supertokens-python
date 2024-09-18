@@ -116,6 +116,7 @@ class RecipeInterface(ABC):
         password: str,
         tenant_id: str,
         session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[
         SignUpOkResult,
@@ -141,6 +142,7 @@ class RecipeInterface(ABC):
         password: str,
         tenant_id: str,
         session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError,]:
         pass
@@ -350,6 +352,7 @@ class APIInterface:
         form_fields: List[FormField],
         tenant_id: str,
         session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -366,6 +369,7 @@ class APIInterface:
         form_fields: List[FormField],
         tenant_id: str,
         session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[

@@ -48,6 +48,7 @@ async def manually_create_or_update_user(
         session=session,
         tenant_id=tenant_id,
         user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )
 
 

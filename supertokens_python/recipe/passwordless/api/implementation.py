@@ -139,6 +139,7 @@ class APIImplementation(APIInterface):
         email: Union[str, None],
         phone_number: Union[str, None],
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
@@ -205,6 +206,7 @@ class APIImplementation(APIInterface):
             factor_ids=factor_ids,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if not isinstance(pre_auth_checks_result, OkResponse):
@@ -240,6 +242,7 @@ class APIImplementation(APIInterface):
             tenant_id=tenant_id,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         magic_link = None
@@ -323,6 +326,7 @@ class APIImplementation(APIInterface):
         device_id: str,
         pre_auth_session_id: str,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
@@ -368,6 +372,7 @@ class APIImplementation(APIInterface):
             ),
             skip_session_user_update_in_core=True,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if auth_type_info.status == "LINKING_TO_SESSION_USER_FAILED":
@@ -501,6 +506,7 @@ class APIImplementation(APIInterface):
         device_id: Union[str, None],
         link_code: Union[str, None],
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
@@ -640,6 +646,7 @@ class APIImplementation(APIInterface):
             tenant_id=tenant_id,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if not isinstance(pre_auth_checks_result, OkResponse):
@@ -669,6 +676,7 @@ class APIImplementation(APIInterface):
             session=session,
             tenant_id=tenant_id,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if isinstance(response, ConsumeCodeRestartFlowError):

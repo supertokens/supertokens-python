@@ -66,6 +66,7 @@ class RecipeImplementation(RecipeInterface):
         device_id: Union[str, None],
         link_code: Union[str, None],
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -119,6 +120,7 @@ class RecipeImplementation(RecipeInterface):
             recipe_user_id=recipe_user_id,
             session=session,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if isinstance(link_result, LinkingToSessionUserFailedError):
@@ -192,6 +194,7 @@ class RecipeImplementation(RecipeInterface):
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> CreateCodeOkResult:

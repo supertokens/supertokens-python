@@ -430,3 +430,11 @@ class RWLockContext:
 
 def normalise_email(email: str) -> str:
     return email.strip().lower()
+
+
+def get_normalised_should_try_linking_with_session_user_flag(
+    req: BaseRequest, body: Dict[str, Any]
+) -> Optional[bool]:
+    if has_greater_than_equal_to_fdi(req, "3.1"):
+        return body.get("shouldTryLinkingWithSessionUser", False)
+    return None

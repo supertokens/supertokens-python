@@ -91,6 +91,7 @@ class RecipeInterface(ABC):
         email: str,
         is_verified: bool,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -111,6 +112,7 @@ class RecipeInterface(ABC):
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
@@ -219,6 +221,7 @@ class APIInterface:
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],

@@ -393,6 +393,7 @@ def custom_init(
             form_fields: List[FormField],
             tenant_id: str,
             session: Optional[SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -406,13 +407,19 @@ def custom_init(
                     msg = body["generalErrorMessage"]
                 return GeneralErrorResponse(msg)
             return await original_sign_in_post(
-                form_fields, tenant_id, session, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
 
         async def sign_up_post(
             form_fields: List[FormField],
             tenant_id: str,
             session: Optional[SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: EPAPIOptions,
             user_context: Dict[str, Any],
         ):
@@ -422,7 +429,12 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API sign up")
             return await original_sign_up_post(
-                form_fields, tenant_id, session, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
 
         original_implementation.email_exists_get = email_exists_get
@@ -443,6 +455,7 @@ def custom_init(
             redirect_uri_info: Union[RedirectUriInfo, None],
             oauth_tokens: Union[Dict[str, Any], None],
             session: Optional[SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             tenant_id: str,
             api_options: TPAPIOptions,
             user_context: Dict[str, Any],
@@ -457,6 +470,7 @@ def custom_init(
                 redirect_uri_info,
                 oauth_tokens,
                 session,
+                should_try_linking_with_session_user,
                 tenant_id,
                 api_options,
                 user_context,
@@ -512,6 +526,7 @@ def custom_init(
             device_id: Union[str, None],
             link_code: Union[str, None],
             session: Optional[SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             tenant_id: str,
             api_options: PAPIOptions,
             user_context: Dict[str, Any],
@@ -527,6 +542,7 @@ def custom_init(
                 device_id,
                 link_code,
                 session,
+                should_try_linking_with_session_user,
                 tenant_id,
                 api_options,
                 user_context,
@@ -536,6 +552,7 @@ def custom_init(
             email: Union[str, None],
             phone_number: Union[str, None],
             session: Optional[SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             tenant_id: str,
             api_options: PAPIOptions,
             user_context: Dict[str, Any],
@@ -546,13 +563,20 @@ def custom_init(
             if is_general_error:
                 return GeneralErrorResponse("general error from API create code")
             return await original_create_code_post(
-                email, phone_number, session, tenant_id, api_options, user_context
+                email,
+                phone_number,
+                session,
+                should_try_linking_with_session_user,
+                tenant_id,
+                api_options,
+                user_context,
             )
 
         async def resend_code_post(
             device_id: str,
             pre_auth_session_id: str,
             session: Optional[SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             tenant_id: str,
             api_options: PAPIOptions,
             user_context: Dict[str, Any],
@@ -566,6 +590,7 @@ def custom_init(
                 device_id,
                 pre_auth_session_id,
                 session,
+                should_try_linking_with_session_user,
                 tenant_id,
                 api_options,
                 user_context,

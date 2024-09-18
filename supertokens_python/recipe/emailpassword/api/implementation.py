@@ -458,6 +458,7 @@ class APIImplementation(APIInterface):
         form_fields: List[FormField],
         tenant_id: str,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -527,6 +528,7 @@ class APIImplementation(APIInterface):
             sign_in_verifies_login_method=False,
             skip_session_user_update_in_core=False,
             tenant_id=tenant_id,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
             user_context=user_context,
             session=session,
         )
@@ -553,6 +555,7 @@ class APIImplementation(APIInterface):
             session=session,
             tenant_id=tenant_id,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if isinstance(sign_in_response, WrongCredentialsError):
@@ -589,6 +592,7 @@ class APIImplementation(APIInterface):
         form_fields: List[FormField],
         tenant_id: str,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -624,6 +628,7 @@ class APIImplementation(APIInterface):
             tenant_id=tenant_id,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if pre_auth_check_res.status == "SIGN_UP_NOT_ALLOWED":
@@ -667,6 +672,7 @@ class APIImplementation(APIInterface):
             password=password,
             session=session,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if isinstance(sign_up_response, EmailAlreadyExistsError):

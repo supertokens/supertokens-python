@@ -64,6 +64,7 @@ class RecipeImplementation(RecipeInterface):
         password: str,
         tenant_id: str,
         session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[
         SignUpOkResult, EmailAlreadyExistsError, LinkingToSessionUserFailedError
@@ -84,6 +85,7 @@ class RecipeImplementation(RecipeInterface):
             input_user=response.user,
             recipe_user_id=response.recipe_user_id,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
             user_context=user_context,
         )
 
@@ -125,6 +127,7 @@ class RecipeImplementation(RecipeInterface):
         password: str,
         tenant_id: str,
         session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError]:
         response = await self.verify_credentials(
@@ -163,6 +166,7 @@ class RecipeImplementation(RecipeInterface):
                 input_user=response.user,
                 recipe_user_id=response.recipe_user_id,
                 session=session,
+                should_try_linking_with_session_user=should_try_linking_with_session_user,
                 user_context=user_context,
             )
 

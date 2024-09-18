@@ -73,6 +73,7 @@ class APIImplementation(APIInterface):
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
@@ -194,6 +195,7 @@ class APIImplementation(APIInterface):
             tenant_id=tenant_id,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if not isinstance(pre_auth_checks_result, OkResponse):
@@ -221,6 +223,7 @@ class APIImplementation(APIInterface):
             session=session,
             tenant_id=tenant_id,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if isinstance(signinup_response, SignInUpNotAllowed):

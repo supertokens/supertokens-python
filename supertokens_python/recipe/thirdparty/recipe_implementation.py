@@ -60,6 +60,7 @@ class RecipeImplementation(RecipeInterface):
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
@@ -70,6 +71,7 @@ class RecipeImplementation(RecipeInterface):
             tenant_id=tenant_id,
             is_verified=is_verified,
             session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
             user_context=user_context,
         )
 
@@ -99,6 +101,7 @@ class RecipeImplementation(RecipeInterface):
         email: str,
         is_verified: bool,
         session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -174,6 +177,7 @@ class RecipeImplementation(RecipeInterface):
             recipe_user_id=recipe_user_id,
             session=session,
             user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
         )
 
         if link_result.status != "OK":

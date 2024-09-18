@@ -54,7 +54,12 @@ async def sign_up(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(
-        email, password, tenant_id or DEFAULT_TENANT_ID, session, user_context
+        email=email,
+        password=password,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        session=session,
+        user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )
 
 
@@ -68,7 +73,12 @@ async def sign_in(
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(
-        email, password, tenant_id or DEFAULT_TENANT_ID, session, user_context
+        email=email,
+        password=password,
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
+        session=session,
+        user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )
 
 

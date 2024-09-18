@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
-from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpPostOkResult
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
 from supertokens_python.utils import (
     get_backwards_compatible_user_info,
+    get_normalised_should_try_linking_with_session_user_flag,
     send_200_response,
 )
 
@@ -85,10 +86,14 @@ async def handle_sign_in_up_api(
             pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
         )
 
-    session = await get_session(
-        api_options.request,
-        override_global_claim_validators=lambda _, __, ___: [],
-        user_context=user_context,
+    should_try_linking_with_session_user = (
+        get_normalised_should_try_linking_with_session_user_flag(
+            api_options.request, body
+        )
+    )
+
+    session = await load_session_in_auth_api_if_needed(
+        api_options.request, should_try_linking_with_session_user, user_context
     )
 
     if session is not None:
@@ -102,6 +107,7 @@ async def handle_sign_in_up_api(
         api_options=api_options,
         user_context=user_context,
         session=session,
+        should_try_linking_with_session_user=should_try_linking_with_session_user,
     )
 
     if isinstance(result, SignInUpPostOkResult):

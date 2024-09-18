@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -75,12 +75,18 @@ async def test_user_context(driver_config_client: TestClient):
             form_fields: List[FormField],
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             user_context = {"preSignInPOST": True}
             response = await og_sign_in_post(
-                form_fields, tenant_id, session, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
             if (
                 "preSignInPOST" in user_context
@@ -105,13 +111,19 @@ async def test_user_context(driver_config_client: TestClient):
             password: str,
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             user_context: Dict[str, Any],
         ):
             if "manualCall" in user_context:
                 global signUpContextWorks
                 signUpContextWorks = True
             response = await og_sign_up(
-                email, password, tenant_id, session, user_context
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
             )
             return response
 
@@ -120,12 +132,18 @@ async def test_user_context(driver_config_client: TestClient):
             password: str,
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             user_context: Dict[str, Any],
         ):
             if "preSignInPOST" in user_context:
                 user_context["preSignIn"] = True
             response = await og_sign_in(
-                email, password, tenant_id, session, user_context
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
             )
             if "preSignInPOST" in user_context and "preSignIn" in user_context:
                 user_context["postSignIn"] = True
@@ -223,6 +241,7 @@ async def test_default_context(driver_config_client: TestClient):
             form_fields: List[FormField],
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
@@ -232,7 +251,12 @@ async def test_default_context(driver_config_client: TestClient):
                 signin_api_context_works = True
 
             return await og_sign_in_post(
-                form_fields, tenant_id, session, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
 
         param.sign_in_post = sign_in_post
@@ -246,6 +270,7 @@ async def test_default_context(driver_config_client: TestClient):
             password: str,
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             user_context: Dict[str, Any],
         ):
             req = user_context.get("_default", {}).get("request")
@@ -253,7 +278,14 @@ async def test_default_context(driver_config_client: TestClient):
                 nonlocal signin_context_works
                 signin_context_works = True
 
-            return await og_sign_in(email, password, tenant_id, session, user_context)
+            return await og_sign_in(
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
+            )
 
         param.sign_in = sign_in
         return param
@@ -343,6 +375,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
             form_fields: List[FormField],
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
@@ -354,7 +387,12 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
                 signin_api_context_works = True
 
             return await og_sign_in_post(
-                form_fields, tenant_id, session, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
 
         param.sign_in_post = sign_in_post
@@ -368,6 +406,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
             password: str,
             tenant_id: str,
             session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             user_context: Dict[str, Any],
         ):
             req = get_request_from_user_context(user_context)
@@ -385,7 +424,14 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
             user_context["_default"]["request"] = orginal_request
 
-            return await og_sign_in(email, password, tenant_id, session, user_context)
+            return await og_sign_in(
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
+            )
 
         param.sign_in = sign_in
         return param

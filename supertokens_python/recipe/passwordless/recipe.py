@@ -583,6 +583,7 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=user_input_code,
             user_context=user_context,
             session=None,
+            should_try_linking_with_session_user=False,
         )
 
         app_info = self.get_app_info()
@@ -615,6 +616,7 @@ class PasswordlessRecipe(RecipeModule):
             tenant_id=tenant_id,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=False,
         )
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
@@ -624,6 +626,7 @@ class PasswordlessRecipe(RecipeModule):
             tenant_id=tenant_id,
             user_context=user_context,
             session=session,
+            should_try_linking_with_session_user=False,
         )
         if isinstance(consume_code_result, ConsumeCodeOkResult):
             return consume_code_result
