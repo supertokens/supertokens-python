@@ -1,9 +1,9 @@
 from pytest import mark
 
-from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from tests.utils import reset
 
 
 @mark.parametrize(
@@ -31,9 +31,7 @@ from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 def test_same_site_cookie_values(
     api_domain: str, website_domain: str, cookie_same_site: str
 ):
-    Supertokens.reset()
-    SessionRecipe.reset()
-    MultitenancyRecipe.reset()
+    reset()
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -53,6 +51,3 @@ def test_same_site_cookie_values(
 
     s = SessionRecipe.get_instance()
     assert s.config.get_cookie_same_site(None, {}) == cookie_same_site
-    SessionRecipe.reset()
-    MultitenancyRecipe.reset()
-    Supertokens.reset()
