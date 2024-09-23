@@ -718,6 +718,10 @@ async def test_samesite_valid_config():
 
 @mark.asyncio
 async def test_samesite_invalid_config():
+    reset()
+    clean_st()
+    setup_st()
+    start_st()
     domain_combinations = [
         ["http://localhost:3000", "http://supertokensapi.io"],
         ["http://127.0.0.1:3000", "http://supertokensapi.io"],
@@ -726,9 +730,7 @@ async def test_samesite_invalid_config():
         ["http://supertokens.io", "http://supertokensapi.io"],
     ]
     for website_domain, api_domain in domain_combinations:
-        reset()
-        clean_st()
-        setup_st()
+        reset(False)
         try:
             init(
                 supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -746,7 +748,7 @@ async def test_samesite_invalid_config():
                 ],
             )
             await create_new_session(
-                "public", MagicMock(), RecipeUserId("userId"), {}, {}
+                MagicMock(), "public", RecipeUserId("userId"), {}, {}
             )
         except Exception as e:
             assert (

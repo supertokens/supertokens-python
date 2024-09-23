@@ -21,6 +21,7 @@ from supertokens_python.recipe.session.claim_base_classes.primitive_array_claim 
     PrimitiveArrayClaim,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python.types import RecipeUserId
 
 from ...post_init_callbacks import PostSTInitCallbacks
 
@@ -209,7 +210,11 @@ class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
         default_max_age_in_sec = 60 * 60
 
         async def fetch_value(
-            _: str, tenant_id: str, user_context: Dict[str, Any]
+            _user_id: str,
+            _recipe_user_id: RecipeUserId,
+            tenant_id: str,
+            _current_payload: Dict[str, Any],
+            user_context: Dict[str, Any],
         ) -> Optional[List[str]]:
             recipe = MultitenancyRecipe.get_instance()
 

@@ -70,17 +70,21 @@ def validate_and_normalise_user_input(
     ] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> AccountLinkingConfig:
-    from .types import OverrideConfig
+    from .types import (
+        OverrideConfig,
+        InputOverrideConfig as IOC,
+        AccountLinkingConfig as ALC,
+    )
 
     global _did_use_default_should_do_automatic_account_linking
     if override is None:
-        override = InputOverrideConfig()
+        override = IOC()
 
     _did_use_default_should_do_automatic_account_linking = (
         should_do_automatic_account_linking is None
     )
 
-    return AccountLinkingConfig(
+    return ALC(
         override=OverrideConfig(functions=override.functions),
         on_account_linked=(
             default_on_account_linked

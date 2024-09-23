@@ -41,6 +41,9 @@ from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.utils import is_version_gte
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.totp.recipe import TOTPRecipe
 
 INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
@@ -219,6 +222,9 @@ def reset(stop_core: bool = True):
     DashboardRecipe.reset()
     PasswordlessRecipe.reset()
     MultitenancyRecipe.reset()
+    AccountLinkingRecipe.reset()
+    MultiFactorAuthRecipe.reset()
+    TOTPRecipe.reset()
 
 
 def get_cookie_from_response(response: Response, cookie_name: str):

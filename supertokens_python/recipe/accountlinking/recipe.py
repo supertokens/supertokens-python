@@ -102,7 +102,7 @@ class AccountLinkingRecipe(RecipeModule):
             Querier.get_instance(recipe_id), self, self.config
         )
 
-        self.recipe_implementation = (
+        self.recipe_implementation: RecipeInterface = (
             recipe_implementation
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)

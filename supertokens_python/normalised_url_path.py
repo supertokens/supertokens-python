@@ -54,6 +54,7 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
         return input_str
     except Exception:
         pass
+
     if (
         (domain_given(input_str) or input_str.startswith("localhost"))
         and not input_str.startswith("http://")
@@ -61,8 +62,10 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
     ):
         input_str = "http://" + input_str
         return normalise_url_path_or_throw_error(input_str)
+
     if not input_str.startswith("/"):
         input_str = "/" + input_str
+
     try:
         urlparse("http://example.com" + input_str)
         return normalise_url_path_or_throw_error("http://example.com" + input_str)
@@ -74,6 +77,8 @@ def domain_given(input_str: str) -> bool:
     if "." not in input_str or input_str.startswith("/"):
         return False
     try:
+        if not "http://" in input_str and not "https://" in input_str:
+            raise Exception("Trying with http")
         url = urlparse(input_str)
         return url.hostname is not None and "." in url.hostname
     except Exception:
