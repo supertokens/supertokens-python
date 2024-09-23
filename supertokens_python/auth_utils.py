@@ -29,7 +29,7 @@ from supertokens_python.types import (
     User,
     LoginMethod,
 )
-from supertokens_python.recipe.accountlinking.interfaces import (
+from supertokens_python.types import (
     RecipeUserId,
 )
 from supertokens_python.recipe.session.exceptions import UnauthorisedError

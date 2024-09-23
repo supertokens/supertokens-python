@@ -11,13 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from typing import Awaitable, Dict, Any, Union, List, Optional, Callable
+from __future__ import annotations
+from typing import Awaitable, Dict, Any, Union, List, Optional, Callable, TYPE_CHECKING
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
-from .interfaces import RecipeInterface, APIInterface
 from typing_extensions import Literal
 from supertokens_python.types import User, RecipeUserId
+
+if TYPE_CHECKING:
+    from .interfaces import RecipeInterface, APIInterface
 
 
 class MFARequirementList(List[Union[Dict[str, List[str]], str]]):
@@ -25,7 +27,7 @@ class MFARequirementList(List[Union[Dict[str, List[str]], str]]):
         self,
         *args: Union[
             str, Dict[Union[Literal["oneOf"], Literal["allOfInAnyOrder"]], List[str]]
-        ]
+        ],
     ):
         super().__init__()
         for arg in args:

@@ -16,28 +16,27 @@ from __future__ import annotations
 from typing import Callable, Union, Optional, Dict, Any, Awaitable
 
 from . import types
+from ...types import User
+from ..session.interfaces import SessionContainer
 
-from . import utils
 from .recipe import AccountLinkingRecipe
 
-InputOverrideConfig = utils.InputOverrideConfig
-AccountLinkingUser = types.User
+InputOverrideConfig = types.InputOverrideConfig
 RecipeLevelUser = types.RecipeLevelUser
 AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
-SessionContainer = types.SessionContainer
 ShouldAutomaticallyLink = types.ShouldAutomaticallyLink
 ShouldNotAutomaticallyLink = types.ShouldNotAutomaticallyLink
 
 
 def init(
     on_account_linked: Optional[
-        Callable[[AccountLinkingUser, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
     ] = None,
     should_do_automatic_account_linking: Optional[
         Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
-                Optional[AccountLinkingUser],
+                Optional[User],
                 Optional[SessionContainer],
                 str,
                 Dict[str, Any],

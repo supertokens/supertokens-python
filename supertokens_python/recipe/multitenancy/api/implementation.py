@@ -25,7 +25,6 @@ from supertokens_python.recipe.multitenancy.interfaces import (
 from supertokens_python.types import GeneralErrorResponse
 
 from ..interfaces import APIInterface, ThirdPartyProvider
-from ...multifactorauth.utils import is_valid_first_factor
 
 
 class APIImplementation(APIInterface):
@@ -36,6 +35,7 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+        from ...multifactorauth.utils import is_valid_first_factor
         from supertokens_python.recipe.thirdparty.providers.config_utils import (
             merge_providers_from_core_and_static,
             find_and_create_provider_instance,

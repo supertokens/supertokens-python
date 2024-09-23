@@ -14,17 +14,17 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, Awaitable
 
-from .types import (
-    AccountLinkingConfig,
-    User,
-    RecipeLevelUser,
-    AccountInfoWithRecipeIdAndUserId,
-    SessionContainer,
-    ShouldNotAutomaticallyLink,
-    ShouldAutomaticallyLink,
-    InputOverrideConfig,
-    OverrideConfig,
-)
+if TYPE_CHECKING:
+    from .types import (
+        AccountLinkingConfig,
+        User,
+        RecipeLevelUser,
+        AccountInfoWithRecipeIdAndUserId,
+        SessionContainer,
+        ShouldNotAutomaticallyLink,
+        ShouldAutomaticallyLink,
+        InputOverrideConfig,
+    )
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -70,6 +70,8 @@ def validate_and_normalise_user_input(
     ] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> AccountLinkingConfig:
+    from .types import OverrideConfig
+
     global _did_use_default_should_do_automatic_account_linking
     if override is None:
         override = InputOverrideConfig()

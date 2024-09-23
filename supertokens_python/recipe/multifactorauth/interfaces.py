@@ -15,22 +15,16 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Union, List, Callable, Awaitable
-from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
-
-from supertokens_python.types import User
-
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Union
-
-from ...supertokens import AppInfo
-
+from typing import Dict, Any, Union, List, Callable, Awaitable, TYPE_CHECKING
 from ...types import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from .types import MFARequirementList, MultiFactorAuthConfig
+    from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+    from ...supertokens import AppInfo
+    from supertokens_python.types import User
 
 
 class RecipeInterface(ABC):

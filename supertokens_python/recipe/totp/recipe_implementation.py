@@ -19,7 +19,8 @@ from urllib.parse import quote
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.totp.interfaces import (
     RecipeInterface,
-    CreateDeviceOkResult,
+)
+from .types import (
     UnknownUserIdError,
     UpdateDeviceOkResult,
     ListDevicesOkResult,
@@ -28,8 +29,7 @@ from supertokens_python.recipe.totp.interfaces import (
     VerifyTOTPOkResult,
     UserIdentifierInfoOkResult,
     UserIdentifierInfoDoesNotExistError,
-)
-from .types import (
+    CreateDeviceOkResult,
     Device,
     DeviceAlreadyExistsError,
     InvalidTOTPError,

@@ -18,7 +18,7 @@ from typing import Any, Dict, Optional, List
 
 from supertokens_python.recipe.session import SessionContainer
 
-from ..interfaces import (
+from ..types import (
     MFARequirementList,
 )
 from ..recipe import MultiFactorAuthRecipe

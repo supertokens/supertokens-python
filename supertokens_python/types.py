@@ -11,16 +11,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, TypeVar, Union, Optional
+from typing import Any, Awaitable, Dict, List, TypeVar, Union, Optional, TYPE_CHECKING
 from phonenumbers import format_number, parse  # type: ignore
 import phonenumbers  # type: ignore
 from typing_extensions import Literal
 
-from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
-
 _T = TypeVar("_T")
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 
 
 class RecipeUserId:

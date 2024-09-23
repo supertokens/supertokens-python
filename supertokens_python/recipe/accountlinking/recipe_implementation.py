@@ -35,12 +35,10 @@ from .interfaces import (
     LinkAccountsAccountInfoAlreadyAssociatedError,
     LinkAccountsInputUserNotPrimaryError,
     UnlinkAccountOkResult,
-    User,
-    RecipeUserId,
-    AccountInfo,
 )
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from .types import AccountLinkingConfig, RecipeLevelUser
+from .types import AccountLinkingConfig, RecipeLevelUser, AccountInfo
+from supertokens_python.types import User, RecipeUserId
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier

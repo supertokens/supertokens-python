@@ -13,7 +13,8 @@
 # under the License.
 from typing import Any, Dict, Optional
 
-from ..types import AccountInfoWithRecipeId, User, RecipeUserId
+from ..types import AccountInfoWithRecipeId
+from supertokens_python.types import User, RecipeUserId
 from ..recipe import AccountLinkingRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.asyncio import get_user

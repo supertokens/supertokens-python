@@ -16,9 +16,9 @@ from __future__ import annotations
 from typing import Callable, Dict, Any, Union, Optional, List, TYPE_CHECKING, Awaitable
 from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
-    AccountInfo,
     RecipeInterface,
 )
+from supertokens_python.types import AccountInfo
 
 if TYPE_CHECKING:
     from supertokens_python.types import (

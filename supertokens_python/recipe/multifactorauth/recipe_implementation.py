@@ -34,15 +34,13 @@ from supertokens_python.recipe.multifactorauth.types import (
 )
 from supertokens_python.recipe.session import SessionContainer
 
-from .interfaces import RecipeInterface
-
-from .recipe import MultiFactorAuthRecipe
 from supertokens_python.types import User
 from .utils import update_and_get_mfa_related_info_in_session
-
+from .interfaces import RecipeInterface
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
+    from .recipe import MultiFactorAuthRecipe
 
 
 class Validator(SessionClaimValidator):

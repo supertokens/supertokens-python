@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 
-from api.list_devices import handle_list_devices_api
+from .api.list_devices import handle_list_devices_api
 from .api.create_device import handle_create_device_api
 from .api.remove_device import handle_remove_device_api
 from .api.verify_device import handle_verify_device_api

@@ -17,15 +17,6 @@ import json
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
-from supertokens_python.auth_utils import (
-    OkResponse,
-    PostAuthChecksOkResponse,
-    SignInNotAllowedResponse,
-    SignUpNotAllowedResponse,
-    get_authenticating_user_and_add_to_current_tenant_if_required,
-    post_auth_checks,
-    pre_auth_checks,
-)
 from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
 
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
@@ -83,6 +74,16 @@ class APIImplementation(APIInterface):
         SignInUpNotAllowed,
         GeneralErrorResponse,
     ]:
+        from supertokens_python.auth_utils import (
+            OkResponse,
+            PostAuthChecksOkResponse,
+            SignInNotAllowedResponse,
+            SignUpNotAllowedResponse,
+            get_authenticating_user_and_add_to_current_tenant_if_required,
+            post_auth_checks,
+            pre_auth_checks,
+        )
+
         error_code_map = {
             "SIGN_UP_NOT_ALLOWED": "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
             "SIGN_IN_NOT_ALLOWED": "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",

@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpPostOkResult
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
@@ -35,6 +34,8 @@ async def handle_sign_in_up_api(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
+    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
+
     if api_implementation.disable_sign_in_up_post:
         return None
 

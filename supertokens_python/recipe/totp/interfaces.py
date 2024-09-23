@@ -12,15 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Dict, Any, Union
+from __future__ import annotations
+from typing import Dict, Any, Union, TYPE_CHECKING
 from abc import ABC, abstractmethod
-from supertokens_python import AppInfo
-from supertokens_python.framework import BaseRequest, BaseResponse
 
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.totp.recipe import TOTPRecipe
-from supertokens_python.types import GeneralErrorResponse
-from .types import *
+if TYPE_CHECKING:
+    from .types import *
+    from supertokens_python.recipe.session import SessionContainer
+    from supertokens_python import AppInfo
+    from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.recipe.totp.recipe import TOTPRecipe
+    from supertokens_python.types import GeneralErrorResponse
 
 
 class RecipeInterface(ABC):

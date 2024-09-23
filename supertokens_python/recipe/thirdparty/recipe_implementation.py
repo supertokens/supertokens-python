@@ -15,10 +15,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from supertokens_python.asyncio import get_user, list_users_by_account_info
-from supertokens_python.auth_utils import (
-    LinkingToSessionUserFailedError,
-    link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
-)
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
@@ -34,6 +30,9 @@ from supertokens_python.types import AccountInfo, User, RecipeUserId
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
+    from supertokens_python.auth_utils import (
+        LinkingToSessionUserFailedError,
+    )
 
 from .interfaces import (
     EmailChangeNotAllowedError,
@@ -110,6 +109,10 @@ class RecipeImplementation(RecipeInterface):
         SignInUpNotAllowed,
         EmailChangeNotAllowedError,
     ]:
+        from supertokens_python.auth_utils import (
+            link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
+        )
+
         account_linking = AccountLinkingRecipe.get_instance()
         users = await list_users_by_account_info(
             tenant_id,
