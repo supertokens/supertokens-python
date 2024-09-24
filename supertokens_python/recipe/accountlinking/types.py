@@ -91,15 +91,17 @@ class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
     def from_account_info_or_login_method(
         account_info: Union[AccountInfoWithRecipeId, LoginMethod],
     ) -> AccountInfoWithRecipeIdAndUserId:
+        from supertokens_python.types import (
+            LoginMethod as LM,
+        )
+
         return AccountInfoWithRecipeIdAndUserId(
             recipe_id=account_info.recipe_id,
             email=account_info.email,
             phone_number=account_info.phone_number,
             third_party=account_info.third_party,
             recipe_user_id=(
-                account_info.recipe_user_id
-                if isinstance(account_info, LoginMethod)
-                else None
+                account_info.recipe_user_id if isinstance(account_info, LM) else None
             ),
         )
 

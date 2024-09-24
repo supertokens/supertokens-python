@@ -120,12 +120,16 @@ class LoginMethod(AccountInfo):
             recipe_id=json["recipeId"],
             recipe_user_id=json["recipeUserId"],
             tenant_ids=json["tenantIds"],
-            email=json["email"],
-            phone_number=json["phoneNumber"],
+            email=json["email"] if "email" in json else None,
+            phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
             third_party=(
-                ThirdPartyInfo(json["thirdParty"]["id"], json["thirdParty"]["userId"])
-                if json["thirdParty"]
-                else None
+                (
+                    ThirdPartyInfo(
+                        json["thirdParty"]["id"], json["thirdParty"]["userId"]
+                    )
+                    if "thirdParty" in json
+                    else None
+                )
             ),
             time_joined=json["timeJoined"],
             verified=json["verified"],

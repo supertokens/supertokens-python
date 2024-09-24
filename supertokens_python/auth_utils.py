@@ -447,8 +447,8 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
 
 
 class OkFirstFactorResponse:
-    status: Literal["OK"]
-    is_first_factor: Literal[True]
+    status: Literal["OK"] = "OK"
+    is_first_factor: Literal[True] = True
 
 
 class OkSecondFactorLinkedResponse:

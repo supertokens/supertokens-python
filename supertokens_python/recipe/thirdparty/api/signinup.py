@@ -113,13 +113,16 @@ async def handle_sign_in_up_api(
 
     if isinstance(result, SignInUpPostOkResult):
         return send_200_response(
-            get_backwards_compatible_user_info(
-                req=api_options.request,
-                user_info=result.user,
-                session_container=result.session,
-                created_new_recipe_user=result.created_new_recipe_user,
-                user_context=user_context,
-            ),
+            {
+                "status": "OK",
+                **get_backwards_compatible_user_info(
+                    req=api_options.request,
+                    user_info=result.user,
+                    session_container=result.session,
+                    created_new_recipe_user=result.created_new_recipe_user,
+                    user_context=user_context,
+                ),
+            },
             api_options.response,
         )
 

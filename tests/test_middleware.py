@@ -190,7 +190,8 @@ async def test_wrong_rid_with_existing_api_works(
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"][0] == user_info["emails"][0]
+    assert len(dict_response["user"]["emails"]) == 1
 
 
 @mark.asyncio
@@ -239,7 +240,8 @@ async def test_random_rid_with_existing_api_works(
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"][0] == user_info["emails"][0]
+    assert len(dict_response["user"]["emails"]) == 1
 
 
 @mark.asyncio

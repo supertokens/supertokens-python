@@ -44,7 +44,11 @@ async def default_should_do_automatic_account_linking(
     _____: str,
     ______: Dict[str, Any],
 ) -> Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]:
-    return ShouldNotAutomaticallyLink()
+    from .types import (
+        ShouldNotAutomaticallyLink as SNAL,
+    )
+
+    return SNAL()
 
 
 def recipe_init_defined_should_do_automatic_account_linking() -> bool:
