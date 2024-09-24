@@ -330,11 +330,13 @@ class RecipeImplementation(RecipeInterface):
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
     ) -> List[User]:
-        params = {
-            "email": account_info.email,
-            "phoneNumber": account_info.phone_number,
+        params: Dict[str, Any] = {
             "doUnionOfAccountInfo": do_union_of_account_info,
         }
+        if account_info.email is not None:
+            params["email"] = account_info.email
+        if account_info.phone_number is not None:
+            params["phoneNumber"] = account_info.phone_number
 
         if account_info.third_party:
             params["thirdPartyId"] = account_info.third_party.id

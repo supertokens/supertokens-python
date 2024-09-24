@@ -217,7 +217,7 @@ class RecipeImplementation(RecipeInterface):
             device_id=response["deviceId"],
             user_input_code=response["userInputCode"],
             link_code=response["linkCode"],
-            code_life_time=response["codeLifeTime"],
+            code_life_time=response["codeLifetime"],
             time_created=response["timeCreated"],
         )
 

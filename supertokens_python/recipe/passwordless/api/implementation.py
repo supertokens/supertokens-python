@@ -130,6 +130,9 @@ async def get_passwordless_user_by_account_info(
             "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
         )
 
+    if len(users_with_matching_login_methods) == 0:
+        return None
+
     return users_with_matching_login_methods[0]
 
 

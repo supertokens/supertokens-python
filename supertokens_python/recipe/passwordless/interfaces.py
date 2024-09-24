@@ -107,8 +107,8 @@ class ConsumedDevice:
         return ConsumedDevice(
             pre_auth_session_id=json["preAuthSessionId"],
             failed_code_input_attempt_count=json["failedCodeInputAttemptCount"],
-            email=json["email"],
-            phone_number=json["phoneNumber"],
+            email=json["email"] if "email" in json else None,
+            phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
         )
 
 
