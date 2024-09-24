@@ -16,7 +16,10 @@ from __future__ import annotations
 from typing import Any, Dict, List, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
+from supertokens_python.recipe.emailpassword.constants import (
+    FORM_FIELD_EMAIL_ID,
+    FORM_FIELD_PASSWORD_ID,
+)
 from supertokens_python.recipe.emailpassword.exceptions import (
     raise_form_field_exception,
 )
@@ -85,7 +88,18 @@ async def validate_form_fields_or_throw_error(
             raise_bad_input_exception(
                 "All elements of formFields must contain an 'id' and 'value' field"
             )
+
         value = current_form_field["value"]
+        if current_form_field["id"] in [
+            FORM_FIELD_EMAIL_ID,
+            FORM_FIELD_PASSWORD_ID,
+        ] and not isinstance(value, str):
+            # Ensure that the type is string else we will throw a bad input
+            # error.
+            raise_bad_input_exception(
+                f"{current_form_field['id']} value must be a string"
+            )
+
         if current_form_field["id"] == FORM_FIELD_EMAIL_ID and isinstance(value, str):
             value = value.strip()
         form_fields.append(FormField(current_form_field["id"], value))

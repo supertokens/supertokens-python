@@ -258,15 +258,8 @@ def validate_and_normalise_user_input(
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> EmailPasswordConfig:
 
-    # type: ignore
-    if sign_up_feature is not None and not isinstance(
-        sign_up_feature, InputSignUpFeature
-    ):
-        raise ValueError("sign_up_feature must be of type InputSignUpFeature or None")
-
-    # type: ignore
-    if override is not None and not isinstance(override, InputOverrideConfig):
-        raise ValueError("override must be of type InputOverrideConfig or None")
+    # NOTE: We don't need to check the instance of sign_up_feature and override
+    # as they will always be either None or the specified type.
 
     if override is None:
         override = InputOverrideConfig()
