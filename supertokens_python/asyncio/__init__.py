@@ -41,7 +41,7 @@ async def get_users_oldest_first(
         user_context = {}
     return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        time_joined_order="DESC",
+        time_joined_order="ASC",
         limit=limit,
         pagination_token=pagination_token,
         include_recipe_ids=include_recipe_ids,
@@ -62,7 +62,7 @@ async def get_users_newest_first(
         user_context = {}
     return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        time_joined_order="ASC",
+        time_joined_order="DESC",
         limit=limit,
         pagination_token=pagination_token,
         include_recipe_ids=include_recipe_ids,

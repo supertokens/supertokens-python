@@ -71,12 +71,15 @@ class RecipeImplementation(RecipeInterface):
         if include_recipe_ids is not None:
             include_recipe_ids_str = ",".join(include_recipe_ids)
 
-        params = {
-            "includeRecipeIds": include_recipe_ids_str,
+        params: Dict[str, Any] = {
             "timeJoinedOrder": time_joined_order,
-            "limit": limit,
-            "paginationToken": pagination_token,
         }
+        if limit is not None:
+            params["limit"] = limit
+        if pagination_token is not None:
+            params["paginationToken"] = pagination_token
+        if include_recipe_ids_str is not None:
+            params["includeRecipeIds"] = include_recipe_ids_str
         if query:
             params.update(query)
 
