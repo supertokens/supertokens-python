@@ -12,12 +12,8 @@ jobs:
     pr-title:
         name: Pre commit hook check
         runs-on: ubuntu-latest
-        container: rishabhpoddar/supertokens_python_driver_testing
+        # container: rishabhpoddar/supertokens_python_driver_testing
         steps:
-            - name: Install required GLIBC
-              run: |
-                apt-get update && \
-                apt-get install -y --no-install-recommends g++ make zlib1g-dev libc6
             - uses: actions/checkout@v2
             - name: Set up node
               uses: actions/setup-node@v1
