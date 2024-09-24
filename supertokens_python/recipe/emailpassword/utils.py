@@ -14,9 +14,9 @@
 from __future__ import annotations
 
 from re import fullmatch
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union, Dict
-from supertokens_python.framework import BaseRequest
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
+from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
@@ -26,17 +26,14 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_com
 )
 
 from .interfaces import APIInterface, RecipeInterface
-from .types import InputFormField, NormalisedFormField, EmailTemplateVars
+from .types import EmailTemplateVars, InputFormField, NormalisedFormField
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.utils import get_filtered_list
 
-from .constants import (
-    FORM_FIELD_EMAIL_ID,
-    FORM_FIELD_PASSWORD_ID,
-)
+from .constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
 
 
 async def default_validator(_: str, __: str) -> Union[str, None]:
@@ -261,11 +258,8 @@ def validate_and_normalise_user_input(
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> EmailPasswordConfig:
 
-    if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
-        raise ValueError("sign_up_feature must be of type InputSignUpFeature or None")
-
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be of type InputOverrideConfig or None")
+    # NOTE: We don't need to check the instance of sign_up_feature and override
+    # as they will always be either None or the specified type.
 
     if override is None:
         override = InputOverrideConfig()

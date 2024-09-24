@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.24.3] - 2024-09-24
+
+- Adds support for form field related improvements by making fields accept any type of values
+- Adds support for optional fields to properly optional
+
 ## [0.24.2] - 2024-09-03
 - Makes optional input form fields truly optional instead of just being able to accept `""`.
 
