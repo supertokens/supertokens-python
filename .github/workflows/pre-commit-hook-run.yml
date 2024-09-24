@@ -12,7 +12,6 @@ jobs:
     pr-title:
         name: Pre commit hook check
         runs-on: ubuntu-latest
-        # container: rishabhpoddar/supertokens_python_driver_testing
         steps:
             - uses: actions/checkout@v2
             - name: Set up node
