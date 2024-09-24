@@ -720,6 +720,48 @@ async def test_optional_custom_field_without_input(driver_config_client: TestCli
 
 
 @mark.asyncio
+async def test_non_optional_custom_field_with_boolean_value(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(
+                    form_fields=[
+                        emailpassword.InputFormField("autoVerify", optional=False)
+                    ]
+                )
+            ),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    )
+    start_st()
+
+    response_1 = driver_config_client.post(
+        url="/auth/signup",
+        headers={"Content-Type": "application/json"},
+        json={
+            "formFields": [
+                {"id": "email", "value": "random@gmail.com"},
+                {"id": "password", "value": "validpassword123"},
+                {"id": "autoVerify", "value": False},
+            ]
+        },
+    )
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+
+
+@mark.asyncio
 async def test_too_many_fields(driver_config_client: TestClient):
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),

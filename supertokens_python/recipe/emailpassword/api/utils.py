@@ -41,7 +41,9 @@ async def validate_form_or_throw_error(
         input_field: Union[None, FormField] = find_first_occurrence_in_list(
             lambda x: x.id == field.id, inputs
         )
-        is_invalid_value = input_field is None or input_field.value == ""
+        is_invalid_value = input_field is None or (
+            isinstance(input_field.value, str) and input_field.value == ""
+        )
         if not field.optional and is_invalid_value:
             validation_errors.append(ErrorFormField(field.id, "Field is not optional"))
             continue
