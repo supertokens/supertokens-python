@@ -19,10 +19,16 @@ jobs:
               uses: actions/setup-node@v1
               with:
                 node-version: '12'
+            - name: Create virtual environment and install dependencies
+              run: |
+                python3 -m venv venv
+                source venv/bin/activate
+                make dev-install && rm -rf src
             - name: Make a dummy change to README.md
               run: |
                 echo "# Dummy change for PR check" >> README.md
             - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: make dev-install && rm -rf src
-            - run: ./hooks/pre-commit.sh
+            - run: |
+                source venv/bin/activate
+                ./hooks/pre-commit.sh
              
