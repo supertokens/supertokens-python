@@ -74,7 +74,6 @@ class Querier:
     def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
         self.__rid_to_core = None
-        self.__global_cache_tag = get_timestamp_ms()
         if rid_to_core is not None:
             self.__rid_to_core = rid_to_core
 
@@ -277,7 +276,7 @@ class Querier:
             if user_context is not None:
                 if (
                     user_context.get("_default", {}).get("global_cache_tag", -1)
-                    != self.__global_cache_tag
+                    != Querier.__global_cache_tag
                 ):
                     self.invalidate_core_call_cache(user_context, False)
 
@@ -316,7 +315,7 @@ class Querier:
                         **user_context.get("_default", {}).get("core_call_cache", {}),
                         unique_key: response,
                     },
-                    "global_cache_tag": self.__global_cache_tag,
+                    "global_cache_tag": Querier.__global_cache_tag,
                 }
 
             return response
@@ -443,7 +442,7 @@ class Querier:
             user_context.get("_default", {}).get("keep_cache_alive", False) is not True
         ):
             # there can be race conditions here, but i think we can ignore them.
-            self.__global_cache_tag = get_timestamp_ms()
+            Querier.__global_cache_tag = get_timestamp_ms()
 
         user_context["_default"] = {
             **user_context.get("_default", {}),

@@ -244,14 +244,14 @@ async def test_caching_works():
     assert user is None
     assert not called_core
 
-    user = await get_user("random", user_context)
+    user = await get_user("random2", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user("random", user_context)
+    user = await get_user("random2", user_context)
     assert user is None
     assert not called_core
 
@@ -417,7 +417,7 @@ async def test_no_caching_if_headers_are_different():
 
     called_core = False
 
-    user = await get_user("random", user_context)
+    user = await get_user("random2", user_context)
     assert user is None
     assert called_core
 
