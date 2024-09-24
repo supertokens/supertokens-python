@@ -119,9 +119,14 @@ async def test_email_validation_checks_in_generate_token_API(
             json={"formFields": [{"id": "email", "value": invalid_email}]},
         )
 
-        assert res.status_code == 200
         dict_res = json.loads(res.text)
-        assert dict_res["status"] == "FIELD_ERROR"
+        assert res.status_code == 200 if invalid_email == "random" else 400
+        if invalid_email == "random":
+            assert dict_res["status"] == "FIELD_ERROR"
+            assert dict_res["formFields"][0]["id"] == "email"
+            assert dict_res["formFields"][0]["error"] == "Email is not valid"
+        else:
+            assert dict_res["message"] == "email value must be a string"
 
 
 @mark.asyncio
