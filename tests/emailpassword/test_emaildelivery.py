@@ -20,6 +20,7 @@ import httpx
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -206,7 +207,9 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
         async def send_email(
             self,
             template_vars: emailpassword.EmailTemplateVars,
-            user_context: Dict[str, Any],
+            user_context: Dict[
+                str, Any
+            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ) -> None:
             nonlocal email, password_reset_url
             email = template_vars.user.email
@@ -250,13 +253,14 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
         oi_send_email = oi.send_email
 
         async def send_email(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal email, password_reset_url
             email = template_vars.user.email
             assert isinstance(template_vars, PasswordResetEmailTemplateVars)
             password_reset_url = template_vars.password_reset_link
-            await oi_send_email(template_vars, _user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -319,11 +323,12 @@ async def test_reset_password_custom_override_with_send_email_override(
         oi_send_email = oi.send_email
 
         async def send_email(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             template_vars.user.email = "override@example.com"
             assert isinstance(template_vars, PasswordResetEmailTemplateVars)
-            await oi_send_email(template_vars, _user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -332,7 +337,9 @@ async def test_reset_password_custom_override_with_send_email_override(
         emailpassword.EmailDeliveryInterface[emailpassword.EmailTemplateVars]
     ):
         async def send_email(
-            self, template_vars: Any, user_context: Dict[str, Any]
+            self,
+            template_vars: Any,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ) -> None:
             nonlocal email, password_reset_url
             email = template_vars.user.email
@@ -384,7 +391,10 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
         async def send_raw_email_override(
-            content: EmailContent, _user_context: Dict[str, Any]
+            content: EmailContent,
+            user_context: Dict[
+                str, Any
+            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
@@ -396,7 +406,8 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ) -> EmailContent:
             nonlocal get_content_called, password_reset_url
             get_content_called = True
@@ -433,11 +444,12 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
         oi_send_email = oi.send_email
 
         async def send_email_override(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(template_vars, _user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi
@@ -486,7 +498,8 @@ async def test_reset_password_for_non_existent_user(driver_config_client: TestCl
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
         async def send_raw_email_override(
-            content: EmailContent, _user_context: Dict[str, Any]
+            content: EmailContent,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
@@ -498,7 +511,8 @@ async def test_reset_password_for_non_existent_user(driver_config_client: TestCl
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ) -> EmailContent:
             nonlocal get_content_called, password_reset_url
             get_content_called = True
@@ -535,11 +549,12 @@ async def test_reset_password_for_non_existent_user(driver_config_client: TestCl
         oi_send_email = oi.send_email
 
         async def send_email_override(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: EmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(template_vars, _user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi
@@ -613,7 +628,7 @@ async def test_email_verification_default_backward_compatibility(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(user_id), True, {}, {}, None
     )
 
     def api_side_effect(request: httpx.Request):
@@ -679,7 +694,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(user_id), True, {}, {}, None
     )
 
     def api_side_effect(request: httpx.Request):
@@ -727,7 +742,9 @@ async def test_email_verification_backward_compatibility(
         async def send_email(
             self,
             template_vars: emailverification.EmailTemplateVars,
-            user_context: Dict[str, Any],
+            user_context: Dict[
+                str, Any
+            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ) -> None:
             nonlocal email, email_verify_url
             email = template_vars.user.email
@@ -762,7 +779,7 @@ async def test_email_verification_backward_compatibility(
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(user_id), True, {}, {}, None
     )
 
     res = email_verify_token_request(
@@ -792,7 +809,8 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         oi_send_email = oi.send_email
 
         async def send_email(
-            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal email, email_verify_url
             email = template_vars.user.email
@@ -833,7 +851,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(user_id), True, {}, {}, None
     )
 
     def api_side_effect(request: httpx.Request):
@@ -878,7 +896,9 @@ async def test_reset_password_backward_compatibility_non_existent_user(
         async def send_email(
             self,
             template_vars: emailpassword.EmailTemplateVars,
-            user_context: Dict[str, Any],
+            user_context: Dict[
+                str, Any
+            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ):
             nonlocal email, password_reset_url
             email = template_vars.user.email
@@ -925,7 +945,8 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
 
     def smtp_service_override(oi: SMTPServiceInterface[VerificationEmailTemplateVars]):
         async def send_raw_email_override(
-            content: EmailContent, _user_context: Dict[str, Any]
+            content: EmailContent,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
@@ -937,7 +958,8 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(
-            template_vars: VerificationEmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
@@ -974,7 +996,8 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         oi_send_email = oi.send_email
 
         async def send_email_override(
-            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
         ):
             nonlocal outer_override_called
             outer_override_called = True
@@ -1013,7 +1036,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
     response = await create_new_session(
-        s.recipe_implementation, "public", user_id, True, {}, {}, None
+        s.recipe_implementation, "public", RecipeUserId(user_id), True, {}, {}, None
     )
 
     resp = email_verify_token_request(
@@ -1045,7 +1068,9 @@ async def test_send_reset_password_email(
         async def send_email(
             self,
             template_vars: PasswordResetEmailTemplateVars,
-            user_context: Dict[str, Any],
+            user_context: Dict[
+                str, Any
+            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ):
             nonlocal reset_url, token_info, tenant_info, query_length
             password_reset_url = template_vars.password_reset_link
@@ -1081,7 +1106,9 @@ async def test_send_reset_password_email(
     dict_response = json.loads(response_1.text)
     user_info = dict_response["user"]
     assert dict_response["status"] == "OK"
-    resp = await send_reset_password_email("public", user_info["id"], "")
+    resp = await send_reset_password_email(
+        "public", user_info["id"], "random@gmail.com"
+    )
     assert resp == "OK"
 
     assert reset_url == "http://supertokens.io/auth/reset-password"
@@ -1118,9 +1145,13 @@ async def test_send_reset_password_email_invalid_input(
     dict_response = json.loads(response_1.text)
     user_info = dict_response["user"]
 
-    link = await send_reset_password_email("public", "invalidUserId", "")
+    link = await send_reset_password_email(
+        "public", "invalidUserId", "random@gmail.com"
+    )
     assert link == "UNKNOWN_USER_ID_ERROR"
 
     with raises(Exception) as err:
-        await send_reset_password_email("invalidTenantId", user_info["id"], "")
+        await send_reset_password_email(
+            "invalidTenantId", user_info["id"], "random@gmail.com"
+        )
     assert "status code: 400" in str(err.value)

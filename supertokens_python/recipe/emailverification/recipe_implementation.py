@@ -31,10 +31,10 @@ from .interfaces import (
 )
 from .types import EmailVerificationUser
 from supertokens_python.asyncio import get_user
+from supertokens_python.types import RecipeUserId, User
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-    from supertokens_python.types import RecipeUserId, User
 
 
 class RecipeImplementation(RecipeInterface):

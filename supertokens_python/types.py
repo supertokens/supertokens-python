@@ -70,7 +70,23 @@ class LoginMethod(AccountInfo):
         self.time_joined = time_joined
         self.verified = verified
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, LoginMethod):
+            return (
+                self.recipe_id == other.recipe_id
+                and self.recipe_user_id == other.recipe_user_id
+                and self.tenant_ids == other.tenant_ids
+                and self.has_same_email_as(other.email)
+                and self.has_same_phone_number_as(other.phone_number)
+                and self.has_same_third_party_info_as(other.third_party)
+                and self.time_joined == other.time_joined
+                and self.verified == other.verified
+            )
+        return False
+
     def has_same_email_as(self, email: Union[str, None]) -> bool:
+        if self.email is None and email is None:
+            return True
         if email is None:
             return False
         return (
@@ -79,6 +95,8 @@ class LoginMethod(AccountInfo):
         )
 
     def has_same_phone_number_as(self, phone_number: Union[str, None]) -> bool:
+        if self.phone_number is None and phone_number is None:
+            return True
         if phone_number is None:
             return False
 
@@ -95,6 +113,8 @@ class LoginMethod(AccountInfo):
     def has_same_third_party_info_as(
         self, third_party: Union[ThirdPartyInfo, None]
     ) -> bool:
+        if third_party is None and self.third_party is None:
+            return True
         if third_party is None or self.third_party is None:
             return False
         return (
@@ -156,6 +176,20 @@ class User:
         self.third_party = third_party
         self.login_methods = login_methods
         self.time_joined = time_joined
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, User):
+            return (
+                self.id == other.id
+                and self.is_primary_user == other.is_primary_user
+                and self.tenant_ids == other.tenant_ids
+                and self.emails == other.emails
+                and self.phone_numbers == other.phone_numbers
+                and self.third_party == other.third_party
+                and self.login_methods == other.login_methods
+                and self.time_joined == other.time_joined
+            )
+        return False
 
     def to_json(self) -> Dict[str, Any]:
         return {

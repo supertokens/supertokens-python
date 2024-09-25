@@ -198,7 +198,9 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     user_id = dict_response["user"]["id"]
     cookies = extract_all_cookies(response_1)
 
-    verify_token = await create_email_verification_token("public", user_id)
+    verify_token = await create_email_verification_token(
+        "public", RecipeUserId(user_id)
+    )
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         await verify_email_using_token("public", verify_token.token)
 
@@ -742,7 +744,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     await asyncio.sleep(1)
     if user_info_from_callback is None:
         raise Exception("Should never come here")
-    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.recipe_user_id.get_as_string() == user_id  # type: ignore
     assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
@@ -972,7 +974,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
 
     if user_info_from_callback is None:
         raise Exception("Should never come here")
-    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.recipe_user_id.get_as_string() == user_id  # type: ignore
     assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
@@ -1083,7 +1085,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
     if user_info_from_callback is None:
         raise Exception("Should never come here")
-    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.recipe_user_id.get_as_string() == user_id  # type: ignore
     assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
@@ -1121,7 +1123,9 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await create_email_verification_token("public", user_id)
+    verify_token = await create_email_verification_token(
+        "public", RecipeUserId(user_id)
+    )
     await revoke_email_verification_tokens("public", user_id)
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
@@ -1165,7 +1169,9 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await create_email_verification_token("public", user_id)
+    verify_token = await create_email_verification_token(
+        "public", RecipeUserId(user_id)
+    )
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         await verify_email_using_token("public", verify_token.token)
 
@@ -1269,7 +1275,9 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     cookies = extract_all_cookies(res)
 
     # Start verification:
-    verify_token = await create_email_verification_token("public", user_id)
+    verify_token = await create_email_verification_token(
+        "public", RecipeUserId(user_id)
+    )
     assert isinstance(verify_token, CreateEmailVerificationTokenOkResult)
     await verify_email_using_token("public", verify_token.token)
 
@@ -1370,7 +1378,7 @@ async def test_generate_email_verification_uses_correct_origin(
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
-    email = dict_response["user"]["email"]
+    email = dict_response["user"]["emails"][0]
 
     await send_email_verification_email(
         "public", user_id, RecipeUserId(user_id), email, {"url": "localhost:3000"}
