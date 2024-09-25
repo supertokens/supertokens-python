@@ -77,7 +77,7 @@ async def test_tenant_crud():
     await create_or_update_tenant(
         "t2",
         TenantConfigCreateOrUpdate(
-            first_factors=["otp-email, otp-phone, link-email, link-phone"]
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
         ),
     )
     await create_or_update_tenant(
@@ -85,39 +85,30 @@ async def test_tenant_crud():
     )
 
     tenants = await list_all_tenants()
-    assert len(tenants.tenants) == 3
+    assert len(tenants.tenants) == 4
 
     t1_config = await get_tenant("t1")
     assert t1_config is not None
     assert t1_config.first_factors is not None
     assert "emailpassword" in t1_config.first_factors
-    assert "otp-email" in t1_config.first_factors
-    assert "otp-phone" in t1_config.first_factors
-    assert "link-email" in t1_config.first_factors
-    assert "link-phone" in t1_config.first_factors
-    assert "thirdparty" in t1_config.first_factors
+    assert len(t1_config.first_factors) == 1
     assert t1_config.core_config == {}
 
     t2_config = await get_tenant("t2")
     assert t2_config is not None
     assert t2_config.first_factors is not None
-    assert "emailpassword" in t2_config.first_factors
     assert "otp-email" in t2_config.first_factors
     assert "otp-phone" in t2_config.first_factors
     assert "link-email" in t2_config.first_factors
     assert "link-phone" in t2_config.first_factors
-    assert "thirdparty" in t2_config.first_factors
+    assert len(t2_config.first_factors) == 4
     assert t2_config.core_config == {}
 
     t3_config = await get_tenant("t3")
     assert t3_config is not None
     assert t3_config.first_factors is not None
-    assert "emailpassword" in t3_config.first_factors
-    assert "otp-email" in t3_config.first_factors
-    assert "otp-phone" in t3_config.first_factors
-    assert "link-email" in t3_config.first_factors
-    assert "link-phone" in t3_config.first_factors
     assert "thirdparty" in t3_config.first_factors
+    assert len(t3_config.first_factors) == 1
     assert t3_config.core_config == {}
 
     # update tenant1 to add passwordless:
@@ -126,37 +117,26 @@ async def test_tenant_crud():
         TenantConfigCreateOrUpdate(
             first_factors=[
                 "otp-email",
-                "otp-phone",
-                "link-email",
-                "link-phone",
             ]
         ),
     )
     t1_config = await get_tenant("t1")
     assert t1_config is not None
     assert t1_config.first_factors is not None
-    assert "emailpassword" in t1_config.first_factors
     assert "otp-email" in t1_config.first_factors
-    assert "otp-phone" in t1_config.first_factors
-    assert "link-email" in t1_config.first_factors
-    assert "link-phone" in t1_config.first_factors
-    assert "thirdparty" in t1_config.first_factors
+    assert len(t1_config.first_factors) == 1
     assert t1_config.core_config == {}
 
     # update tenant1 to add thirdparty:
     await create_or_update_tenant(
-        "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+        "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty", "otp-email"])
     )
     t1_config = await get_tenant("t1")
     assert t1_config is not None
     assert t1_config.first_factors is not None
-    assert "emailpassword" in t1_config.first_factors
     assert "otp-email" in t1_config.first_factors
-    assert "otp-phone" in t1_config.first_factors
-    assert "link-email" in t1_config.first_factors
-    assert "link-phone" in t1_config.first_factors
     assert "thirdparty" in t1_config.first_factors
-    assert t1_config.core_config == {}
+    assert len(t1_config.first_factors) == 2
     assert t1_config.core_config == {}
 
     # delete tenant2:
