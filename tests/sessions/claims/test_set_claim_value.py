@@ -69,7 +69,7 @@ async def test_should_overwrite_claim_value(timestamp: int):
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"t": timestamp, "v": False}
 
 

@@ -1126,7 +1126,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     verify_token = await create_email_verification_token(
         "public", RecipeUserId(user_id)
     )
-    await revoke_email_verification_tokens("public", user_id)
+    await revoke_email_verification_tokens("public", RecipeUserId(user_id))
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         response = await verify_email_using_token("public", verify_token.token)
@@ -1175,11 +1175,11 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         await verify_email_using_token("public", verify_token.token)
 
-        assert await is_email_verified(user_id)
+        assert await is_email_verified(RecipeUserId(user_id))
 
-        await unverify_email(user_id)
+        await unverify_email(RecipeUserId(user_id))
 
-        is_verified = await is_email_verified(user_id)
+        is_verified = await is_email_verified(RecipeUserId(user_id))
         assert is_verified is False
         return
     raise Exception("Test failed")
@@ -1304,10 +1304,10 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     )
     assert res.status_code == 200
     assert res.json() == {"status": "EMAIL_ALREADY_VERIFIED_ERROR"}
-    assert "front-token" not in res.headers
+    assert res.headers.get("front-token") is not None
 
     # now we mark the email as unverified and try again:
-    await unverify_email(user_id)
+    await unverify_email(RecipeUserId(user_id))
     res = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],

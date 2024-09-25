@@ -426,13 +426,13 @@ async def test_validator_excludes_all_should_validate_matching_payload():
 async def test_validator_should_not_validate_older_values_with_5min_default_max_age(
     patch_get_timestamp_ms: MagicMock,
 ):
-    claim = PrimitiveArrayClaim("key", sync_fetch_value, 3000)  # 5 mins
+    claim = PrimitiveArrayClaim("key", sync_fetch_value, 300)  # 5 mins
     payload = await claim.build(
         "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}
     )
 
     # Increase clock time by 10 MINS:
-    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
+    patch_get_timestamp_ms.return_value += 10 * MINS
 
     res = await resolve(claim.validators.includes(included_item).validate(payload, {}))
     assert res.is_valid is False
