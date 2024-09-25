@@ -47,7 +47,7 @@ async def test_access_token_v4():
         False,
     )
     assert res["userId"] == "user-id"
-    assert parsed_info.version == 4
+    assert parsed_info.version == 5
 
 
 async def test_parsing_access_token_v2():

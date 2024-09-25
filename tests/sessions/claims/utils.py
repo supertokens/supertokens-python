@@ -9,8 +9,8 @@ from supertokens_python.recipe.session.interfaces import RecipeInterface
 from supertokens_python.types import RecipeUserId
 from tests.utils import st_init_common_args
 
-TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___: True)  # type: ignore
-NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___: None)  # type: ignore
+TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___, _____, ______: True)
+NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___, _____, ______: None)
 
 
 def session_functions_override_with_claim(

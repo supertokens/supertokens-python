@@ -62,7 +62,7 @@ async def test_should_overwrite_claim_value(timestamp: int):
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await s.set_claim_value(TrueClaim, False)
@@ -81,7 +81,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await set_claim_value(s.get_handle(), TrueClaim, False)

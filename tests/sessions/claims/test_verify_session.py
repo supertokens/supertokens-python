@@ -447,7 +447,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         assert validators == [validator]
         assert ctx["_default"]["request"]
         recipe_impl_mock.validate_claims.assert_called_once_with(  # type: ignore
-            "test_user_id", {}, [validator], ctx
+            "test_user_id", RecipeUserId("test_user_id"), {}, [validator], ctx
         )
 
 
