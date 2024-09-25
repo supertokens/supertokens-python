@@ -502,6 +502,7 @@ class SupertokensTest(TestCase):
             f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}",
         )
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_multiple_emails(self):
         init(
@@ -554,6 +555,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 1)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_email_t(self):
         init(
@@ -604,6 +606,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 5)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_email_iresh(self):
         init(
@@ -656,6 +659,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 0)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_phone_plus_one(self):
         init(
@@ -711,6 +715,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 3)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_phone_one_bracket(self):
         init(
@@ -766,6 +771,7 @@ class SupertokensTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(data_json["users"]), 0)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_provider_google(self):
         init(
@@ -860,6 +866,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 3)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_provider_google_and_phone_one(self):
         init(

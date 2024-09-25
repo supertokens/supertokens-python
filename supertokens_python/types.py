@@ -116,6 +116,8 @@ class LoginMethod(AccountInfo):
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> "LoginMethod":
+        from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+
         return LoginMethod(
             recipe_id=json["recipeId"],
             recipe_user_id=json["recipeUserId"],
@@ -124,9 +126,7 @@ class LoginMethod(AccountInfo):
             phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
             third_party=(
                 (
-                    ThirdPartyInfo(
-                        json["thirdParty"]["id"], json["thirdParty"]["userId"]
-                    )
+                    TPI(json["thirdParty"]["id"], json["thirdParty"]["userId"])
                     if "thirdParty" in json
                     else None
                 )

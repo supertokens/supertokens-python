@@ -136,9 +136,9 @@ async def test_dashboard_users_get(app: TestClient):
     res = app.get(url="/auth/dashboard/api/users?limit=5")
     body = res.json()
     assert res.status_code == 200
-    assert body["users"][0]["user"]["firstName"] == "User2"
-    assert body["users"][1]["user"]["lastName"] == "Foo"
-    assert body["users"][1]["user"]["firstName"] == "User1"
+    assert body["users"][0]["firstName"] == "User2"
+    assert body["users"][1]["lastName"] == "Foo"
+    assert body["users"][1]["firstName"] == "User1"
 
 
 async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
