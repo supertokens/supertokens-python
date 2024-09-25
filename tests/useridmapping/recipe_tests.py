@@ -84,7 +84,7 @@ async def ep_get_existing_user_by_signin(email: str) -> str:
 
 
 async def ep_get_existing_user_after_reset_password(user_id: str) -> str:
-    new_password = "password"
+    new_password = "password1234"
     from supertokens_python.recipe.emailpassword.asyncio import (
         create_reset_password_token,
         reset_password_using_token,
@@ -105,10 +105,12 @@ async def ep_get_existing_user_after_updating_email_and_sign_in(user_id: str) ->
         sign_in,
     )
 
-    res = await update_email_or_password(RecipeUserId(user_id), new_email, "password")
-    assert isinstance(res, SignUpOkResult)
+    res = await update_email_or_password(
+        RecipeUserId(user_id), new_email, "password1234"
+    )
+    assert isinstance(res, UpdateEmailOrPasswordOkResult)
 
-    res = await sign_in("public", new_email, "password")
+    res = await sign_in("public", new_email, "password1234")
     assert isinstance(res, SignInOkResult)
     return res.user.id
 
@@ -128,7 +130,7 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
     external_user_id = "externalId"
     external_id_info = "externalIdInfo" if use_external_id_info else None
 
-    assert ep_get_existing_user_id(supertokens_user_id) == supertokens_user_id
+    assert await ep_get_existing_user_id(supertokens_user_id) == supertokens_user_id
 
     # Create user id mapping
     res = await create_user_id_mapping(
@@ -138,16 +140,17 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
 
     # Now we should get the external user ID instead of ST user ID
     # irrespective of whether we pass ST User ID or External User ID
-    assert ep_get_existing_user_id(supertokens_user_id) == external_user_id
-    assert ep_get_existing_user_id(external_user_id) == external_user_id
+    assert await ep_get_existing_user_id(supertokens_user_id) == external_user_id
+    assert await ep_get_existing_user_id(external_user_id) == external_user_id
 
     # Same happens for all the functions
-    assert ep_get_existing_user_by_email(email) == external_user_id
-    assert ep_get_existing_user_by_signin(email) == external_user_id
+    assert await ep_get_existing_user_by_email(email) == external_user_id
+    assert await ep_get_existing_user_by_signin(email) == external_user_id
     assert (
-        ep_get_existing_user_after_reset_password(external_user_id) == external_user_id
+        await ep_get_existing_user_after_reset_password(external_user_id)
+        == external_user_id
     )
     assert (
-        ep_get_existing_user_after_updating_email_and_sign_in(external_user_id)
+        await ep_get_existing_user_after_updating_email_and_sign_in(external_user_id)
         == external_user_id
     )
