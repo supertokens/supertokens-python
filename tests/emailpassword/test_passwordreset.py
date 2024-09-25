@@ -21,6 +21,7 @@ from fastapi.requests import Request
 from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
@@ -119,9 +120,14 @@ async def test_email_validation_checks_in_generate_token_API(
             json={"formFields": [{"id": "email", "value": invalid_email}]},
         )
 
-        assert res.status_code == 200
         dict_res = json.loads(res.text)
-        assert dict_res["status"] == "FIELD_ERROR"
+        assert res.status_code == 200 if invalid_email == "random" else 400
+        if invalid_email == "random":
+            assert dict_res["status"] == "FIELD_ERROR"
+            assert dict_res["formFields"][0]["id"] == "email"
+            assert dict_res["formFields"][0]["error"] == "Email is not valid"
+        else:
+            assert dict_res["message"] == "email value must be a string"
 
 
 @mark.asyncio
@@ -179,9 +185,11 @@ async def test_that_generated_password_link_is_correct(
 
     assert response_1.status_code == 200
     assert reset_url == "http://supertokens.io/auth/reset-password"
-    assert token_info is not None and "token=" in token_info  # type: ignore pylint: disable=unsupported-membership-test
+    # type: ignore pylint: disable=unsupported-membership-test
+    assert token_info is not None and "token=" in token_info
     assert query_length == 2
-    assert tenant_info is not None and "tenantId=public" in tenant_info  # type: ignore pylint: disable=unsupported-membership-test
+    # type: ignore pylint: disable=unsupported-membership-test
+    assert tenant_info is not None and "tenantId=public" in tenant_info
 
 
 @mark.asyncio
@@ -222,6 +230,44 @@ async def test_password_validation(driver_config_client: TestClient):
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["status"] != "FIELD_ERROR"
+
+
+@mark.asyncio
+async def test_invalid_type_for_password_and_email(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[emailpassword.init()],
+    )
+    start_st()
+
+    response_1 = driver_config_client.post(
+        url="/auth/user/password/reset",
+        json={
+            "formFields": [{"id": "password", "value": 12345}],
+            "token": "random",
+        },
+    )
+
+    assert response_1.status_code == 400
+    assert json.loads(response_1.text)["message"] == "password value must be a string"
+
+    response_2 = driver_config_client.post(
+        url="/auth/user/password/reset/token",
+        json={
+            "formFields": [{"id": "email", "value": 123456}],
+            "token": "randomToken",
+        },
+    )
+
+    assert response_2.status_code == 400
+    assert json.loads(response_2.text)["message"] == "email value must be a string"
 
 
 @mark.asyncio

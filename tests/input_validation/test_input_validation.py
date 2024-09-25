@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, List
 
 import pytest
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import (
     emailpassword,
@@ -43,22 +44,6 @@ async def test_init_validation_emailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                emailpassword.init(sign_up_feature="sign up"),  # type: ignore
-            ],
-        )
-    assert "sign_up_feature must be of type InputSignUpFeature or None" == str(ex.value)
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
                 emailverification.init("email verify"),  # type: ignore
                 emailpassword.init(),
             ],
@@ -67,22 +52,6 @@ async def test_init_validation_emailpassword():
         "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
-
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[
-                emailpassword.init(override="override"),  # type: ignore
-            ],
-        )
-    assert "override must be of type InputOverrideConfig or None" == str(ex.value)
 
 
 async def get_email_for_user_id(_: RecipeUserId, __: Dict[str, Any]):
@@ -308,7 +277,9 @@ providers_list: List[thirdparty.ProviderInput] = [
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+                    client_secret=os.environ.get(
+                        "GOOGLE_CLIENT_SECRET"
+                    ),  # type: ignore
                 )
             ],
         )
@@ -319,7 +290,9 @@ providers_list: List[thirdparty.ProviderInput] = [
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
+                    client_secret=os.environ.get(
+                        "FACEBOOK_CLIENT_SECRET"
+                    ),  # type: ignore
                 )
             ],
         )
@@ -330,7 +303,9 @@ providers_list: List[thirdparty.ProviderInput] = [
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+                    client_secret=os.environ.get(
+                        "GITHUB_CLIENT_SECRET"
+                    ),  # type: ignore
                 )
             ],
         )
@@ -366,6 +341,9 @@ async def test_init_validation_session():
                 api_base_path="/auth",
             ),
             framework="fastapi",
+            # NOTE: Type is ignored in the following line because that
+            # is what is being tested for so that the SDK throws an error
+            # on invalid type.
             recipe_list=[session.init(error_handlers="error handlers")],  # type: ignore
         )
     assert "error_handlers must be an instance of ErrorHandlers or None" == str(
@@ -402,6 +380,9 @@ async def test_init_validation_thirdparty():
             ),
             framework="fastapi",
             recipe_list=[
+                # NOTE: Type is ignored in the following line because that
+                # is what is being tested for so that the SDK throws an error
+                # on invalid type.
                 thirdparty.init(sign_in_and_up_feature="sign in up")  # type: ignore
             ],
         )

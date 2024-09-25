@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Awaitable, Callable, Optional, TypeVar, Union
+from typing import Awaitable, Callable, Optional, TypeVar, Union, Any
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -29,9 +29,9 @@ class ErrorFormField:
 
 
 class FormField:
-    def __init__(self, id: str, value: str):  # pylint: disable=redefined-builtin
+    def __init__(self, id: str, value: Any):  # pylint: disable=redefined-builtin
         self.id: str = id
-        self.value: str = value
+        self.value: Any = value
 
 
 class InputFormField:

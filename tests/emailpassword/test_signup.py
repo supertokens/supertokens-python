@@ -11,19 +11,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from fastapi import FastAPI
 import json
-from tests.testclient import TestClientWithNoCookieJar as TestClient
+
+from fastapi import FastAPI
 from pytest import fixture, mark
+
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     get_st_init_args,
     setup_function,
+    sign_up_request,
     start_st,
     teardown_function,
-    sign_up_request,
 )
 
 _ = setup_function  # type: ignore

@@ -12,14 +12,24 @@ jobs:
     pr-title:
         name: Pre commit hook check
         runs-on: ubuntu-latest
-        container: rishabhpoddar/supertokens_python_driver_testing
         steps:
             - uses: actions/checkout@v2
             - name: Set up node
               uses: actions/setup-node@v1
               with:
                 node-version: '12'
+            - name: Create virtual environment and install dependencies
+              run: |
+                python3 -m venv venv
+                source venv/bin/activate
+                pip install "cython<3.0.0" wheel
+                pip install "PyYAML==5.4.1" --no-build-isolation
+                make dev-install && rm -rf src
+            - name: Make a dummy change to README.md
+              run: |
+                echo "# Dummy change for PR check" >> README.md
             - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: make dev-install && rm -rf src
-            - run: ./hooks/pre-commit.sh
+            - run: |
+                source venv/bin/activate
+                ./hooks/pre-commit.sh
              

@@ -16,7 +16,10 @@ from __future__ import annotations
 from typing import Any, Dict, List, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
+from supertokens_python.recipe.emailpassword.constants import (
+    FORM_FIELD_EMAIL_ID,
+    FORM_FIELD_PASSWORD_ID,
+)
 from supertokens_python.recipe.emailpassword.exceptions import (
     raise_form_field_exception,
 )
@@ -41,7 +44,9 @@ async def validate_form_or_throw_error(
         input_field: Union[None, FormField] = find_first_occurrence_in_list(
             lambda x: x.id == field.id, inputs
         )
-        is_invalid_value = input_field is None or input_field.value == ""
+        is_invalid_value = input_field is None or (
+            isinstance(input_field.value, str) and input_field.value == ""
+        )
         if not field.optional and is_invalid_value:
             validation_errors.append(ErrorFormField(field.id, "Field is not optional"))
             continue
@@ -83,7 +88,18 @@ async def validate_form_fields_or_throw_error(
             raise_bad_input_exception(
                 "All elements of formFields must contain an 'id' and 'value' field"
             )
+
         value = current_form_field["value"]
+        if current_form_field["id"] in [
+            FORM_FIELD_EMAIL_ID,
+            FORM_FIELD_PASSWORD_ID,
+        ] and not isinstance(value, str):
+            # Ensure that the type is string else we will throw a bad input
+            # error.
+            raise_bad_input_exception(
+                f"{current_form_field['id']} value must be a string"
+            )
+
         if current_form_field["id"] == FORM_FIELD_EMAIL_ID and isinstance(value, str):
             value = value.strip()
         form_fields.append(FormField(current_form_field["id"], value))

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+<<<<<<< HEAD
 ## [0.25.0] - 2024-09-18
 
 ### Breaking changes
@@ -17,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Session recipe's error handlers take an extra param of recipe_user_id as well
 - Session recipe, removes `validate_claims_in_jwt_payload` that is exposed to the user.
 - TODO..
+=======
+## [0.24.3] - 2024-09-24
+
+- Adds support for form field related improvements by making fields accept any type of values
+- Adds support for optional fields to properly optional
+>>>>>>> 0.24
 
 ## [0.24.2] - 2024-09-03
 - Makes optional input form fields truly optional instead of just being able to accept `""`.
