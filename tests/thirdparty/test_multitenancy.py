@@ -178,12 +178,12 @@ async def test_thirtyparty_multitenancy_functions():
         ),
     )
 
-    assert g_user_by_tpid1a == user1a.user
-    assert g_user_by_tpid1b == user1b.user
-    assert g_user_by_tpid2a == user2a.user
-    assert g_user_by_tpid2b == user2b.user
-    assert g_user_by_tpid3a == user3a.user
-    assert g_user_by_tpid3b == user3b.user
+    assert g_user_by_tpid1a == [user1a.user]
+    assert g_user_by_tpid1b == [user1b.user]
+    assert g_user_by_tpid2a == [user2a.user]
+    assert g_user_by_tpid2b == [user2b.user]
+    assert g_user_by_tpid3a == [user3a.user]
+    assert g_user_by_tpid3b == [user3b.user]
 
 
 async def test_get_provider():
