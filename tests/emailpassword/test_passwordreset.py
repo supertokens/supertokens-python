@@ -399,7 +399,7 @@ async def test_valid_token_input_and_passoword_has_changed(
     dict_response = json.loads(response_4.text)
     assert dict_response["status"] == "OK"
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"] == user_info["emails"]
 
 
 @mark.asyncio
