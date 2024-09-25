@@ -76,17 +76,15 @@ class LoginMethod(AccountInfo):
                 self.recipe_id == other.recipe_id
                 and self.recipe_user_id == other.recipe_user_id
                 and self.tenant_ids == other.tenant_ids
-                and self.has_same_email_as(other.email)
-                and self.has_same_phone_number_as(other.phone_number)
-                and self.has_same_third_party_info_as(other.third_party)
+                and self.email == other.email
+                and self.phone_number == other.phone_number
+                and self.third_party == other.third_party
                 and self.time_joined == other.time_joined
                 and self.verified == other.verified
             )
         return False
 
     def has_same_email_as(self, email: Union[str, None]) -> bool:
-        if self.email is None and email is None:
-            return True
         if email is None:
             return False
         return (
@@ -95,8 +93,6 @@ class LoginMethod(AccountInfo):
         )
 
     def has_same_phone_number_as(self, phone_number: Union[str, None]) -> bool:
-        if self.phone_number is None and phone_number is None:
-            return True
         if phone_number is None:
             return False
 
@@ -113,8 +109,6 @@ class LoginMethod(AccountInfo):
     def has_same_third_party_info_as(
         self, third_party: Union[ThirdPartyInfo, None]
     ) -> bool:
-        if third_party is None and self.third_party is None:
-            return True
         if third_party is None or self.third_party is None:
             return False
         return (
