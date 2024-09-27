@@ -25,6 +25,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds support for optional fields to properly optional
 >>>>>>> 0.24
 
+### Migration
+
+#### Convert type of value from form fields before using it
+
+To read a value from formFields where id is `name`,
+
+Before:
+
+```python
+# form_fields should be of type List[FormField]
+name: str | None = None
+for field in form_fields:
+    if field.id == 'name':
+        name = field.value
+```
+
+After:
+
+```python
+# form_fields should be of type List[FormField]
+name: str | None = None
+for field in form_fields:
+    if field.id == 'name':
+        # Check type to ensure it's of type string
+        value_to_consume = field.value
+        if not isinstance(value_to_consume, str):
+            # Throw error
+            raise ValueError('name needs to be a string')
+        name = str(value_to_consume)
+```
+
 ## [0.24.2] - 2024-09-03
 - Makes optional input form fields truly optional instead of just being able to accept `""`.
 
