@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask, supertokens-website tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/frontendIntegration/flask-server/app.py",
+            "args": [
+                "--port",
+                "8080"
+            ],
+            "cwd": "${workspaceFolder}/tests/frontendIntegration/flask-server",
+            "env": {
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true
+        }
+    ]
+}

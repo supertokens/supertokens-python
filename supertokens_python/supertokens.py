@@ -325,6 +325,9 @@ class Supertokens:
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
             raise_general_exception("calling testing function in non testing env")
+        from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+
+        UserMetadataRecipe.reset()
         Querier.reset()
         Supertokens.__instance = None
 
