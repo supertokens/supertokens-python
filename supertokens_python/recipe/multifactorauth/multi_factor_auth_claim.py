@@ -178,7 +178,6 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
             )
 
             mfa_info = await module.update_and_get_mfa_related_info_in_session(
-                self,
                 input_session_recipe_user_id=recipe_user_id,
                 input_tenant_id=tenant_id,
                 input_access_token_payload=current_payload,

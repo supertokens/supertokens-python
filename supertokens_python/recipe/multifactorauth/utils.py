@@ -13,6 +13,9 @@
 # under the License.
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Union, Dict, Any
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionContainer
@@ -32,9 +35,6 @@ from supertokens_python.utils import log_debug_message
 
 if TYPE_CHECKING:
     from .types import OverrideConfig, MultiFactorAuthConfig
-    from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
-        MultiFactorAuthClaimClass,
-    )
 
 
 def validate_and_normalise_user_input(
@@ -70,7 +70,6 @@ class UpdateAndGetMFARelatedInfoInSessionResult:
 
 
 async def update_and_get_mfa_related_info_in_session(
-    MultiFactorAuthClaim: MultiFactorAuthClaimClass,
     user_context: Dict[str, Any],
     input_session_recipe_user_id: Optional[RecipeUserId] = None,
     input_tenant_id: Optional[str] = None,

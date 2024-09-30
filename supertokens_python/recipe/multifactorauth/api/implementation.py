@@ -57,7 +57,6 @@ class APIImplementation(APIInterface):
             )
 
         mfa_info = await module.update_and_get_mfa_related_info_in_session(
-            MultiFactorAuthClaim,
             input_session=session,
             user_context=user_context,
         )

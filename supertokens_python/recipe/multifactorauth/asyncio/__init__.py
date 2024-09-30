@@ -33,10 +33,7 @@ async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
     if user_context is None:
         user_context = {}
 
-    from ..multi_factor_auth_claim import MultiFactorAuthClaim
-
     mfa_info = await update_and_get_mfa_related_info_in_session(
-        MultiFactorAuthClaim,
         input_session=session,
         user_context=user_context,
     )
@@ -69,10 +66,7 @@ async def get_mfa_requirements_for_auth(
     if user_context is None:
         user_context = {}
 
-    from ..multi_factor_auth_claim import MultiFactorAuthClaim
-
     mfa_info = await update_and_get_mfa_related_info_in_session(
-        MultiFactorAuthClaim,
         input_session=session,
         user_context=user_context,
     )

@@ -178,7 +178,6 @@ class RecipeImplementation(RecipeInterface):
         )
 
         await module.update_and_get_mfa_related_info_in_session(
-            MultiFactorAuthClaim,
             input_session=session,
             input_updated_factor_id=factor_id,
             user_context=user_context,

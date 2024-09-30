@@ -924,12 +924,8 @@ async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
             async def get_mfa_requirements_for_auth():
                 nonlocal mfa_info_prom
                 if mfa_info_prom is None:
-                    from .recipe.multifactorauth.multi_factor_auth_claim import (
-                        MultiFactorAuthClaim,
-                    )
 
                     mfa_info_prom = await update_and_get_mfa_related_info_in_session(
-                        MultiFactorAuthClaim,
                         input_session=session,
                         user_context=user_context,
                     )
