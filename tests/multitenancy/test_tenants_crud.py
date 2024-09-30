@@ -42,7 +42,7 @@ from supertokens_python.recipe.multitenancy.asyncio import (
     create_or_update_third_party_config,
     delete_third_party_config,
     associate_user_to_tenant,
-    dissociate_user_from_tenant,
+    disassociate_user_from_tenant,
 )
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
@@ -305,9 +305,9 @@ async def test_user_association_and_disassociation_with_tenants():
     assert user is not None
     assert len(user.tenant_ids) == 4  # public + 3 tenants
 
-    await dissociate_user_from_tenant("t1", RecipeUserId(user_id))
-    await dissociate_user_from_tenant("t2", RecipeUserId(user_id))
-    await dissociate_user_from_tenant("t3", RecipeUserId(user_id))
+    await disassociate_user_from_tenant("t1", RecipeUserId(user_id))
+    await disassociate_user_from_tenant("t2", RecipeUserId(user_id))
+    await disassociate_user_from_tenant("t3", RecipeUserId(user_id))
 
     user = await get_user(user_id)
     assert user is not None

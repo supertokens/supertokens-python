@@ -123,7 +123,8 @@ disable=raw-checker-failed,
         consider-using-in,
         no-else-return,
         no-self-use,
-        no-else-raise
+        no-else-raise,
+        too-many-nested-blocks,
 
 
 # Enable the message, report, category or checker with the given id(s). You can
