@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-import importlib
-
 from typing import TYPE_CHECKING, List, Optional, Union, Dict, Any
+from supertokens_python.recipe.multitenancy.asyncio import get_tenant
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
@@ -34,9 +34,6 @@ if TYPE_CHECKING:
     from .types import OverrideConfig, MultiFactorAuthConfig
     from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
         MultiFactorAuthClaimClass,
-    )
-    from supertokens_python.recipe.multitenancy.recipe import (
-        MultitenancyRecipe as MTRecipeType,
     )
 
 
@@ -203,16 +200,7 @@ async def update_and_get_mfa_related_info_in_session(
     async def get_required_secondary_factors_for_tenant(
         tenant_id: str, user_context: Dict[str, Any]
     ) -> List[str]:
-
-        MultitenancyRecipe = importlib.import_module(
-            "supertokens_python.recipe.multitenancy.recipe"
-        )
-
-        mt_recipe: MTRecipeType = MultitenancyRecipe.get_instance()
-
-        tenant_info = await mt_recipe.recipe_implementation.get_tenant(
-            tenant_id=tenant_id, user_context=user_context
-        )
+        tenant_info = await get_tenant(tenant_id, user_context)
         if tenant_info is None:
             raise UnauthorisedError("Tenant not found")
         return (
@@ -276,14 +264,8 @@ async def is_valid_first_factor(
     tenant_id: str, factor_id: str, user_context: Dict[str, Any]
 ) -> Literal["OK", "INVALID_FIRST_FACTOR_ERROR", "TENANT_NOT_FOUND_ERROR"]:
 
-    MultitenancyRecipe = importlib.import_module(
-        "supertokens_python.recipe.multitenancy.recipe"
-    )
-
-    mt_recipe: MTRecipeType = MultitenancyRecipe.get_instance()
-    tenant_info = await mt_recipe.recipe_implementation.get_tenant(
-        tenant_id=tenant_id, user_context=user_context
-    )
+    mt_recipe = MultitenancyRecipe.get_instance()
+    tenant_info = await get_tenant(tenant_id=tenant_id, user_context=user_context)
     if tenant_info is None:
         return "TENANT_NOT_FOUND_ERROR"
 

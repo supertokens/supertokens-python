@@ -14,7 +14,10 @@
 from __future__ import annotations
 import importlib
 
-from typing import Any, Dict, List, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Union
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
 
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
@@ -33,11 +36,6 @@ from ..interfaces import (
     ResyncSessionAndFetchMFAInfoPUTOkResult,
 )
 
-if TYPE_CHECKING:
-    from ..multi_factor_auth_claim import (
-        MultiFactorAuthClaimClass as MultiFactorAuthClaimType,
-    )
-
 
 class APIImplementation(APIInterface):
     async def resync_session_and_fetch_mfa_info_put(
@@ -46,10 +44,6 @@ class APIImplementation(APIInterface):
         session: SessionContainer,
         user_context: Dict[str, Any],
     ) -> Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
-
-        mfa = importlib.import_module("supertokens_python.recipe.multifactorauth")
-
-        MultiFactorAuthClaim: MultiFactorAuthClaimType = mfa.MultiFactorAuthClaim
 
         module = importlib.import_module(
             "supertokens_python.recipe.multifactorauth.utils"
