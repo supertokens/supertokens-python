@@ -52,7 +52,7 @@ async def default_should_do_automatic_account_linking(
 
 
 def recipe_init_defined_should_do_automatic_account_linking() -> bool:
-    return _did_use_default_should_do_automatic_account_linking
+    return not _did_use_default_should_do_automatic_account_linking
 
 
 def validate_and_normalise_user_input(

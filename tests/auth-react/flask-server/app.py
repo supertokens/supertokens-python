@@ -321,6 +321,30 @@ def auth0_provider_override(oi: Provider) -> Provider:
     return oi
 
 
+def mock_provider_override(oi: Provider) -> Provider:
+    async def get_user_info(
+        oauth_tokens: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> UserInfo:
+        user_id = oauth_tokens.get("userId", "user")
+        email = oauth_tokens.get("email", "email@test.com")
+        is_verified = oauth_tokens.get("isVerified", "true").lower() != "false"
+
+        return UserInfo(
+            user_id, UserInfoEmail(email, is_verified), raw_user_info_from_provider=None
+        )
+
+    async def exchange_auth_code_for_oauth_tokens(
+        redirect_uri_info: RedirectUriInfo,
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return redirect_uri_info.redirect_uri_query_params
+
+    oi.exchange_auth_code_for_oauth_tokens = exchange_auth_code_for_oauth_tokens
+    oi.get_user_info = get_user_info
+    return oi
+
+
 def custom_init():
     global contact_method
     global flow_type
@@ -712,6 +736,21 @@ def custom_init():
                 ],
             ),
             override=auth0_provider_override,
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="mock-provider",
+                name="Mock Provider",
+                authorization_endpoint=get_website_domain() + "/mockProvider/auth",
+                token_endpoint=get_website_domain() + "/mockProvider/token",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id="supertokens",
+                        client_secret="",
+                    )
+                ],
+            ),
+            override=mock_provider_override,
         ),
     ]
 
@@ -1386,6 +1425,7 @@ def index(_: str):
 
 @app.errorhandler(Exception)  # type: ignore
 def all_exception_handler(e: Exception):
+    print(e)
     return "Error", 500
 
 

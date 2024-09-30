@@ -59,7 +59,9 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
                 "This should never happen, claim value not present in payload"
             )
 
-        claim_val: MFAClaimValue = payload[self.claim.key]
+        claim_val: MFAClaimValue = MFAClaimValue(
+            c=payload[self.claim.key]["c"], v=payload[self.claim.key]["v"]
+        )
 
         completed_factors = claim_val.c
         next_set_of_unsatisfied_factors = (
@@ -125,7 +127,9 @@ class HasCompletedMFARequirementsForAuthSCV(SessionClaimValidator):
             raise Exception(
                 "This should never happen, claim value not present in payload"
             )
-        claim_val: MFAClaimValue = payload[self.claim.key]
+        claim_val: MFAClaimValue = MFAClaimValue(
+            c=payload[self.claim.key]["c"], v=payload[self.claim.key]["v"]
+        )
 
         return ClaimValidationResult(
             is_valid=claim_val.v,
