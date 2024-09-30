@@ -1,3 +1,17 @@
+# Copyright (c) 2023, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Set
@@ -15,7 +29,6 @@ from .types import (
     MFAClaimValue,
     MFARequirementList,
 )
-from .utils import update_and_get_mfa_related_info_in_session
 
 
 class HasCompletedRequirementListSCV(SessionClaimValidator):
@@ -29,14 +42,10 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         self.claim: MultiFactorAuthClaimClass = claim
         self.requirement_list = requirement_list
 
-    async def should_refetch(
+    def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
-        return (
-            True
-            if self.claim.key not in payload or not payload[self.claim.key]
-            else False
-        )
+        return bool(self.claim.key not in payload or not payload[self.claim.key])
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -65,7 +74,7 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
 
         factor_ids = next_set_of_unsatisfied_factors.factor_ids
 
-        if next_set_of_unsatisfied_factors.type == "string":
+        if next_set_of_unsatisfied_factors.type_ == "string":
             return ClaimValidationResult(
                 is_valid=False,
                 reason={
@@ -74,7 +83,7 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
                 },
             )
 
-        elif next_set_of_unsatisfied_factors.type == "oneOf":
+        elif next_set_of_unsatisfied_factors.type_ == "oneOf":
             return ClaimValidationResult(
                 is_valid=False,
                 reason={
@@ -101,15 +110,11 @@ class HasCompletedMFARequirementsForAuthSCV(SessionClaimValidator):
         super().__init__(id_)
         self.claim = claim
 
-    async def should_refetch(
+    def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
         assert self.claim is not None
-        return (
-            True
-            if self.claim.key not in payload or not payload[self.claim.key]
-            else False
-        )
+        return bool(self.claim.key not in payload or not payload[self.claim.key])
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -161,13 +166,16 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
         key = key or "st-mfa"
 
         async def fetch_value(
-            user_id: str,
+            _user_id: str,
             recipe_user_id: RecipeUserId,
             tenant_id: str,
             current_payload: Dict[str, Any],
             user_context: Dict[str, Any],
         ) -> MFAClaimValue:
+            from .utils import update_and_get_mfa_related_info_in_session
+
             mfa_info = await update_and_get_mfa_related_info_in_session(
+                self,
                 input_session_recipe_user_id=recipe_user_id,
                 input_tenant_id=tenant_id,
                 input_access_token_payload=current_payload,
@@ -209,9 +217,11 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
                     )
 
             if len(next_factors) > 0:
-                return FactorIdsAndType(factor_ids=list(next_factors), type=factor_type)
+                return FactorIdsAndType(
+                    factor_ids=list(next_factors), type_=factor_type
+                )
 
-        return FactorIdsAndType(factor_ids=[], type="string")
+        return FactorIdsAndType(factor_ids=[], type_="string")
 
     def add_to_payload_(
         self,

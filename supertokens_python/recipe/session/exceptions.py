@@ -87,12 +87,15 @@ class InvalidClaimsError(SuperTokensSessionError):
 
 
 class ClaimValidationError:
-    def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
-        self.id = id_
-        self.reason = reason
+    id_: str
+    reason: Optional[Union[str, Dict[str, Any]]]
+
+    def __init__(self, id_: str, reason: Optional[Union[str, Dict[str, Any]]]):
+        self.id_: str = id_
+        self.reason: Optional[Union[str, Dict[str, Any]]] = reason
 
     def to_json(self):
-        result: Dict[str, Any] = {"id": self.id}
+        result: Dict[str, Any] = {"id": self.id_}
         if self.reason is not None:
             result["reason"] = self.reason
 

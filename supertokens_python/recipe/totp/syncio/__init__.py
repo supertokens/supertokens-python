@@ -18,7 +18,6 @@ from typing import Any, Dict, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..recipe import TOTPRecipe
 from supertokens_python.recipe.totp.types import (
     CreateDeviceOkResult,
     DeviceAlreadyExistsError,
@@ -124,6 +123,3 @@ def verify_totp(
     from supertokens_python.recipe.totp.asyncio import verify_totp as async_func
 
     return sync(async_func(tenant_id, user_id, totp, user_context))
-
-
-init = TOTPRecipe.init

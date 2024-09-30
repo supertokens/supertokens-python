@@ -12,27 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+import importlib
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import Any, Dict, List, Union, TYPE_CHECKING
 
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.multifactorauth.utils import (
     update_and_get_mfa_related_info_in_session,
 )
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
-from ..multi_factor_auth_claim import MultiFactorAuthClaim
 from supertokens_python.asyncio import get_user
 from supertokens_python.recipe.session.exceptions import (
     InvalidClaimsError,
     SuperTokensSessionError,
     UnauthorisedError,
 )
-
-if TYPE_CHECKING:
-    from supertokens_python.recipe.multifactorauth.interfaces import (
-        APIInterface,
-        APIOptions,
-    )
 
 from supertokens_python.types import GeneralErrorResponse
 from ..interfaces import (
@@ -42,6 +36,11 @@ from ..interfaces import (
     ResyncSessionAndFetchMFAInfoPUTOkResult,
 )
 
+if TYPE_CHECKING:
+    from ..multi_factor_auth_claim import (
+        MultiFactorAuthClaimClass as MultiFactorAuthClaimType,
+    )
+
 
 class APIImplementation(APIInterface):
     async def resync_session_and_fetch_mfa_info_put(
@@ -50,6 +49,11 @@ class APIImplementation(APIInterface):
         session: SessionContainer,
         user_context: Dict[str, Any],
     ) -> Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
+
+        mfa = importlib.import_module("supertokens_python.recipe.multifactorauth")
+
+        MultiFactorAuthClaim: MultiFactorAuthClaimType = mfa.MultiFactorAuthClaim
+
         session_user = await get_user(session.get_user_id(), user_context)
 
         if session_user is None:
@@ -58,6 +62,7 @@ class APIImplementation(APIInterface):
             )
 
         mfa_info = await update_and_get_mfa_related_info_in_session(
+            MultiFactorAuthClaim,
             input_session=session,
             user_context=user_context,
         )
@@ -144,7 +149,7 @@ class APIImplementation(APIInterface):
             )
         return ResyncSessionAndFetchMFAInfoPUTOkResult(
             factors=NextFactors(
-                next=next_factors,
+                next_=next_factors,
                 already_setup=factors_setup_for_user,
                 allowed_to_setup=factors_allowed_to_setup,
             ),

@@ -58,10 +58,10 @@ class Validator(SessionClaimValidator):
         self.factor_id = factor_id
         self.mfa_requirement_for_auth = mfa_requirement_for_auth
 
-    async def should_refetch(
+    def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
-        return True if self.claim.get_value_from_payload(payload) is None else False
+        return self.claim.get_value_from_payload(payload) is None
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -174,6 +174,7 @@ class RecipeImplementation(RecipeInterface):
         self, session: SessionContainer, factor_id: str, user_context: Dict[str, Any]
     ):
         await update_and_get_mfa_related_info_in_session(
+            MultiFactorAuthClaim,
             input_session=session,
             input_updated_factor_id=factor_id,
             user_context=user_context,

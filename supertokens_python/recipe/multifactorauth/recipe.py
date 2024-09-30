@@ -47,9 +47,6 @@ from .types import (
     GetEmailsForFactorOkResult,
     GetPhoneNumbersForFactorsOkResult,
 )
-from .utils import validate_and_normalise_user_input
-from .recipe_implementation import RecipeImplementation
-from .api.implementation import APIImplementation
 from .interfaces import APIOptions
 
 
@@ -79,10 +76,13 @@ class MultiFactorAuthRecipe(RecipeModule):
         ] = []
         self.is_get_mfa_requirements_for_auth_overridden: bool = False
 
+        from .utils import validate_and_normalise_user_input
+
         self.config = validate_and_normalise_user_input(
             first_factors,
             override,
         )
+        from .recipe_implementation import RecipeImplementation
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self
@@ -92,6 +92,7 @@ class MultiFactorAuthRecipe(RecipeModule):
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)
         )
+        from .api.implementation import APIImplementation
 
         api_implementation = APIImplementation()
         self.api_implementation = (

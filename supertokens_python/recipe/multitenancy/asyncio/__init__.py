@@ -17,6 +17,7 @@ from typing import Any, Dict, Union, Optional, TYPE_CHECKING
 from supertokens_python.types import RecipeUserId
 
 from ..interfaces import (
+    AssociateUserToTenantNotAllowedError,
     TenantConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
@@ -31,7 +32,6 @@ from ..interfaces import (
     DisassociateUserFromTenantOkResult,
     TenantConfigCreateOrUpdate,
 )
-from ..recipe import MultitenancyRecipe
 
 if TYPE_CHECKING:
     from ..interfaces import ProviderConfig
@@ -44,6 +44,8 @@ async def create_or_update_tenant(
 ) -> CreateOrUpdateTenantOkResult:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultitenancyRecipe
+
     recipe = MultitenancyRecipe.get_instance()
 
     return await recipe.recipe_implementation.create_or_update_tenant(
@@ -56,6 +58,8 @@ async def delete_tenant(
 ) -> DeleteTenantOkResult:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultitenancyRecipe
+
     recipe = MultitenancyRecipe.get_instance()
 
     return await recipe.recipe_implementation.delete_tenant(tenant_id, user_context)
@@ -66,6 +70,8 @@ async def get_tenant(
 ) -> Optional[TenantConfig]:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultitenancyRecipe
+
     recipe = MultitenancyRecipe.get_instance()
 
     return await recipe.recipe_implementation.get_tenant(tenant_id, user_context)
@@ -76,6 +82,8 @@ async def list_all_tenants(
 ) -> ListAllTenantsOkResult:
     if user_context is None:
         user_context = {}
+
+    from ..recipe import MultitenancyRecipe
 
     recipe = MultitenancyRecipe.get_instance()
 
@@ -91,6 +99,8 @@ async def create_or_update_third_party_config(
     if user_context is None:
         user_context = {}
 
+    from ..recipe import MultitenancyRecipe
+
     recipe = MultitenancyRecipe.get_instance()
 
     return await recipe.recipe_implementation.create_or_update_third_party_config(
@@ -105,6 +115,8 @@ async def delete_third_party_config(
 ) -> DeleteThirdPartyConfigOkResult:
     if user_context is None:
         user_context = {}
+
+    from ..recipe import MultitenancyRecipe
 
     recipe = MultitenancyRecipe.get_instance()
 
@@ -123,9 +135,12 @@ async def associate_user_to_tenant(
     AssociateUserToTenantEmailAlreadyExistsError,
     AssociateUserToTenantPhoneNumberAlreadyExistsError,
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    AssociateUserToTenantNotAllowedError,
 ]:
     if user_context is None:
         user_context = {}
+
+    from ..recipe import MultitenancyRecipe
 
     recipe = MultitenancyRecipe.get_instance()
 
@@ -134,7 +149,7 @@ async def associate_user_to_tenant(
     )
 
 
-async def dissociate_user_from_tenant(
+async def disassociate_user_from_tenant(
     tenant_id: str,
     recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
@@ -142,8 +157,10 @@ async def dissociate_user_from_tenant(
     if user_context is None:
         user_context = {}
 
+    from ..recipe import MultitenancyRecipe
+
     recipe = MultitenancyRecipe.get_instance()
 
-    return await recipe.recipe_implementation.dissociate_user_from_tenant(
+    return await recipe.recipe_implementation.disassociate_user_from_tenant(
         tenant_id, recipe_user_id, user_context
     )

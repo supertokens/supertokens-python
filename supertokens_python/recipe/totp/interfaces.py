@@ -13,11 +13,26 @@
 # under the License.
 
 from __future__ import annotations
-from typing import Dict, Any, Union, TYPE_CHECKING
+from typing import Dict, Any, Union, TYPE_CHECKING, Optional
 from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
-    from .types import *
+    from .types import (
+        UserIdentifierInfoOkResult,
+        UnknownUserIdError,
+        UserIdentifierInfoDoesNotExistError,
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        UpdateDeviceOkResult,
+        RemoveDeviceOkResult,
+        VerifyDeviceOkResult,
+        VerifyTOTPOkResult,
+        InvalidTOTPError,
+        LimitReachedError,
+        UnknownDeviceError,
+        ListDevicesOkResult,
+        TOTPNormalisedConfig,
+    )
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python import AppInfo
     from supertokens_python.framework import BaseRequest, BaseResponse

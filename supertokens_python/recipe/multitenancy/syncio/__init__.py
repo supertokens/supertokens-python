@@ -108,7 +108,7 @@ def associate_user_to_tenant(
     return sync(associate_user_to_tenant(tenant_id, recipe_user_id, user_context))
 
 
-def dissociate_user_from_tenant(
+def disassociate_user_from_tenant(
     tenant_id: str,
     recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
@@ -117,7 +117,7 @@ def dissociate_user_from_tenant(
         user_context = {}
 
     from supertokens_python.recipe.multitenancy.asyncio import (
-        dissociate_user_from_tenant,
+        disassociate_user_from_tenant,
     )
 
-    return sync(dissociate_user_from_tenant(tenant_id, recipe_user_id, user_context))
+    return sync(disassociate_user_from_tenant(tenant_id, recipe_user_id, user_context))

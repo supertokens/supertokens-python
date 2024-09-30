@@ -25,6 +25,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
 from supertokens_python.types import RecipeUserId
 
 from .interfaces import (
+    AssociateUserToTenantNotAllowedError,
     RecipeInterface,
     TenantConfig,
     CreateOrUpdateTenantOkResult,
@@ -254,6 +255,7 @@ class RecipeImplementation(RecipeInterface):
         AssociateUserToTenantEmailAlreadyExistsError,
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+        AssociateUserToTenantNotAllowedError,
     ]:
         response = await self.querier.send_post_request(
             NormalisedURLPath(
@@ -283,10 +285,12 @@ class RecipeImplementation(RecipeInterface):
             == AssociateUserToTenantThirdPartyUserAlreadyExistsError.status
         ):
             return AssociateUserToTenantThirdPartyUserAlreadyExistsError()
+        if response["status"] == AssociateUserToTenantNotAllowedError.status:
+            return AssociateUserToTenantNotAllowedError(response["reason"])
 
         raise Exception("Should never come here")
 
-    async def dissociate_user_from_tenant(
+    async def disassociate_user_from_tenant(
         self,
         tenant_id: Optional[str],
         recipe_user_id: RecipeUserId,
