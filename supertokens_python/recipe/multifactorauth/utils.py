@@ -37,6 +37,8 @@ if TYPE_CHECKING:
     from .types import OverrideConfig, MultiFactorAuthConfig
 
 
+# IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
+# There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 def validate_and_normalise_user_input(
     first_factors: Optional[List[str]],
     override: Union[OverrideConfig, None] = None,
@@ -69,6 +71,8 @@ class UpdateAndGetMFARelatedInfoInSessionResult:
         )
 
 
+# IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
+# There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 async def update_and_get_mfa_related_info_in_session(
     user_context: Dict[str, Any],
     input_session_recipe_user_id: Optional[RecipeUserId] = None,
@@ -259,6 +263,8 @@ async def update_and_get_mfa_related_info_in_session(
     )
 
 
+# IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
+# There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 async def is_valid_first_factor(
     tenant_id: str, factor_id: str, user_context: Dict[str, Any]
 ) -> Literal["OK", "INVALID_FIRST_FACTOR_ERROR", "TENANT_NOT_FOUND_ERROR"]:
