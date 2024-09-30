@@ -15,6 +15,21 @@
                 "FLASK_DEBUG": "1"
             },
             "jinja": true
+        },
+        {
+            "name": "Python: Flask, supertokens-auth-react tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/auth-react/flask-server/app.py",
+            "args": [
+                "--port",
+                "8083"
+            ],
+            "cwd": "${workspaceFolder}/tests/auth-react/flask-server",
+            "env": {
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true
         }
     ]
 }

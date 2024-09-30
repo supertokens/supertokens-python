@@ -912,19 +912,22 @@ async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
             factors_set_up_for_user_prom: Optional[List[str]] = None
             mfa_info_prom = None
 
-            async def get_factors_set_up_for_user():
+            async def get_factors_set_up_for_user() -> List[str]:
                 nonlocal factors_set_up_for_user_prom
                 if factors_set_up_for_user_prom is None:
                     factors_set_up_for_user_prom = await mfa_instance.recipe_implementation.get_factors_setup_for_user(
                         user=session_user, user_context=user_context
                     )
+                assert factors_set_up_for_user_prom is not None
                 return factors_set_up_for_user_prom
 
             async def get_mfa_requirements_for_auth():
                 nonlocal mfa_info_prom
                 if mfa_info_prom is None:
+
                     mfa_info_prom = await update_and_get_mfa_related_info_in_session(
-                        input_session=session, user_context=user_context
+                        input_session=session,
+                        user_context=user_context,
                     )
                 return mfa_info_prom.mfa_requirements_for_auth
 

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import importlib
 from typing import Any, Dict, Optional, Union, List
 from ..constants import DEFAULT_TENANT_ID
 
@@ -35,7 +36,9 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
-        from ...multifactorauth.utils import is_valid_first_factor
+        module = importlib.import_module(
+            "supertokens_python.recipe.multifactorauth.utils"
+        )
         from supertokens_python.recipe.thirdparty.providers.config_utils import (
             merge_providers_from_core_and_static,
             find_and_create_provider_instance,
@@ -91,7 +94,9 @@ class APIImplementation(APIInterface):
 
         valid_first_factors: List[str] = []
         for factor_id in first_factors:
-            valid_res = await is_valid_first_factor(tenant_id, factor_id, user_context)
+            valid_res = await module.is_valid_first_factor(
+                tenant_id, factor_id, user_context
+            )
             if valid_res == "OK":
                 valid_first_factors.append(factor_id)
             if valid_res == "TENANT_NOT_FOUND_ERROR":

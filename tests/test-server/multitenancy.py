@@ -203,7 +203,7 @@ def add_multitenancy_routes(app: Flask):
         user_id = data["userId"]
         user_context = data.get("userContext")
 
-        response = multitenancy.dissociate_user_from_tenant(
+        response = multitenancy.disassociate_user_from_tenant(
             tenant_id, user_id, user_context
         )
 

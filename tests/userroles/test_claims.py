@@ -135,7 +135,8 @@ async def test_should_validate_roles():
     assert e.typename == "InvalidClaimsError"
     err: ClaimValidationError
     (err,) = e.value.payload  # type: ignore
-    assert err.id == UserRoleClaim.key
+    assert isinstance(err, ClaimValidationError)
+    assert err.id_ == UserRoleClaim.key
     assert err.reason == {
         "message": "wrong value",
         "expectedToInclude": invalid_role,
@@ -196,8 +197,10 @@ async def test_should_validate_permissions():
     assert e.typename == "InvalidClaimsError"
     err: ClaimValidationError
     (err,) = e.value.payload  # type: ignore
-    assert err.id == PermissionClaim.key
+    assert isinstance(err, ClaimValidationError)
+    assert err.id_ == PermissionClaim.key
     assert err.reason is not None
+    assert isinstance(err.reason, dict)
     actual_value = err.reason.pop("actualValue")
     assert sorted(actual_value) == sorted(permissions)
     assert err.reason == {

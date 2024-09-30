@@ -12,19 +12,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-
-from typing import TYPE_CHECKING, List, Optional, Union
-from typing import Dict, Any, Union, List
+from typing import TYPE_CHECKING, List, Optional, Union, Dict, Any
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
+from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
-from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multifactorauth.types import (
     MFAClaimValue,
     MFARequirementList,
+    FactorIds,
 )
 from supertokens_python.types import RecipeUserId
 import math
@@ -36,6 +37,8 @@ if TYPE_CHECKING:
     from .types import OverrideConfig, MultiFactorAuthConfig
 
 
+# IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
+# There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 def validate_and_normalise_user_input(
     first_factors: Optional[List[str]],
     override: Union[OverrideConfig, None] = None,
@@ -43,10 +46,12 @@ def validate_and_normalise_user_input(
     if first_factors is not None and len(first_factors) == 0:
         raise ValueError("'first_factors' can be either None or a non-empty list")
 
-    if override is None:
-        override = OverrideConfig()
+    from .types import OverrideConfig as OC, MultiFactorAuthConfig as MFAC
 
-    return MultiFactorAuthConfig(
+    if override is None:
+        override = OC()
+
+    return MFAC(
         first_factors=first_factors,
         override=override,
     )
@@ -66,6 +71,8 @@ class UpdateAndGetMFARelatedInfoInSessionResult:
         )
 
 
+# IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
+# There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 async def update_and_get_mfa_related_info_in_session(
     user_context: Dict[str, Any],
     input_session_recipe_user_id: Optional[RecipeUserId] = None,
@@ -74,9 +81,6 @@ async def update_and_get_mfa_related_info_in_session(
     input_session: Optional[SessionContainer] = None,
     input_updated_factor_id: Optional[str] = None,
 ) -> UpdateAndGetMFARelatedInfoInSessionResult:
-    from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
-        MultiFactorAuthClaim,
-    )
     from supertokens_python.recipe.multifactorauth.recipe import (
         MultiFactorAuthRecipe as Recipe,
     )
@@ -259,16 +263,18 @@ async def update_and_get_mfa_related_info_in_session(
     )
 
 
+# IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
+# There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 async def is_valid_first_factor(
     tenant_id: str, factor_id: str, user_context: Dict[str, Any]
 ) -> Literal["OK", "INVALID_FIRST_FACTOR_ERROR", "TENANT_NOT_FOUND_ERROR"]:
+
+    mt_recipe = MultitenancyRecipe.get_instance()
     tenant_info = await get_tenant(tenant_id=tenant_id, user_context=user_context)
     if tenant_info is None:
         return "TENANT_NOT_FOUND_ERROR"
 
     tenant_config = tenant_info
-
-    mt_recipe = MultitenancyRecipe.get_instance()
 
     first_factors_from_mfa = mt_recipe.static_first_factors
 

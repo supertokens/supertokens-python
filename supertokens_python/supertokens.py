@@ -255,11 +255,6 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        from supertokens_python.recipe.multifactorauth.recipe import (
-            MultiFactorAuthRecipe,
-        )
-        from supertokens_python.recipe.totp.recipe import TOTPRecipe
-
         multitenancy_found = False
         totp_found = False
         user_metadata_found = False
@@ -272,9 +267,9 @@ class Supertokens:
                 multitenancy_found = True
             elif recipe_module.get_recipe_id() == "usermetadata":
                 user_metadata_found = True
-            elif recipe_module.get_recipe_id() == MultiFactorAuthRecipe.recipe_id:
+            elif recipe_module.get_recipe_id() == "multifactorauth":
                 multi_factor_auth_found = True
-            elif recipe_module.get_recipe_id() == TOTPRecipe.recipe_id:
+            elif recipe_module.get_recipe_id() == "totp":
                 totp_found = True
             return recipe_module
 

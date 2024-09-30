@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
@@ -26,20 +26,56 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
+    accountlinking,
     emailpassword,
     emailverification,
     passwordless,
     session,
     thirdparty,
+    totp,
     userroles,
+)
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.accountlinking.types import (
+    AccountInfoWithRecipeIdAndUserId,
 )
 from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
+    EmailAlreadyExistsError,
+    UnknownUserIdError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
+    UpdateEmailOrPasswordOkResult,
+)
+from supertokens_python.recipe.multifactorauth.interfaces import (
+    ResyncSessionAndFetchMFAInfoPUTOkResult,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import MFARequirementList
+from supertokens_python.recipe.multitenancy.interfaces import (
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantOkResult,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    AssociateUserToTenantUnknownUserIdError,
+    TenantConfigCreateOrUpdate,
+)
+from supertokens_python.recipe.multitenancy.syncio import (
+    associate_user_to_tenant,
+    create_or_update_tenant,
+    create_or_update_third_party_config,
+    delete_tenant,
+    disassociate_user_from_tenant,
+)
+from supertokens_python.recipe.passwordless.syncio import update_user
+from supertokens_python.recipe.session.exceptions import (
+    ClaimValidationError,
+    InvalidClaimsError,
 )
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -72,6 +108,11 @@ from supertokens_python.recipe.passwordless import (
 )
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface as PasswordlessAPIInterface,
+    EmailChangeNotAllowedError,
+    UpdateUserEmailAlreadyExistsError,
+    UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsError,
+    UpdateUserUnknownUserIdError,
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionRecipe
@@ -86,12 +127,16 @@ from supertokens_python.recipe.session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
+from supertokens_python.recipe.thirdparty import ProviderConfig, ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
+    ManuallyCreateOrUpdateUserOkResult,
+    SignInUpNotAllowed,
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.syncio import manually_create_or_update_user
+from supertokens_python.recipe.totp.recipe import TOTPRecipe
 
 from supertokens_python.recipe.userroles import (
     PermissionClaim,
@@ -104,10 +149,12 @@ from supertokens_python.recipe.userroles.syncio import (
 )
 from supertokens_python.types import (
     AccountInfo,
+    RecipeUserId,
     User,
     GeneralErrorResponse,
 )
-from supertokens_python.syncio import delete_user, list_users_by_account_info
+from supertokens_python.syncio import delete_user, get_user, list_users_by_account_info
+from supertokens_python.recipe import multifactorauth
 
 load_dotenv()
 
@@ -129,6 +176,14 @@ os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 latest_url_with_token = None
 
 code_store: Dict[str, List[Dict[str, Any]]] = {}
+accountlinking_config: Dict[str, Any] = {}
+enabled_providers: Optional[List[Any]] = None
+enabled_recipes: Optional[List[Any]] = None
+mfa_info: Dict[str, Any] = {}
+contact_method: Union[None, Literal["PHONE", "EMAIL", "EMAIL_OR_PHONE"]] = None
+flow_type: Union[
+    None, Literal["USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"]
+] = None
 
 
 class CustomPlessEmailService(
@@ -266,12 +321,11 @@ def auth0_provider_override(oi: Provider) -> Provider:
     return oi
 
 
-def custom_init(
-    contact_method: Union[None, Literal["PHONE", "EMAIL", "EMAIL_OR_PHONE"]] = None,
-    flow_type: Union[
-        None, Literal["USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"]
-    ] = None,
-):
+def custom_init():
+    global contact_method
+    global flow_type
+
+    AccountLinkingRecipe.reset()
     UserRolesRecipe.reset()
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
@@ -283,6 +337,8 @@ def custom_init(
     DashboardRecipe.reset()
     MultitenancyRecipe.reset()
     Supertokens.reset()
+    TOTPRecipe.reset()
+    MultiFactorAuthRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -659,6 +715,14 @@ def custom_init(
         ),
     ]
 
+    global enabled_providers
+    if enabled_providers is not None:
+        providers_list = [
+            provider
+            for provider in providers_list
+            if provider.config.third_party_id in enabled_providers
+        ]
+
     if contact_method is not None and flow_type is not None:
         if contact_method == "PHONE":
             passwordless_init = passwordless.init(
@@ -706,32 +770,242 @@ def custom_init(
     ) -> List[str]:
         return [tenant_id + ".example.com", "localhost"]
 
-    recipe_list = [
-        userroles.init(),
-        session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
-        emailverification.init(
-            mode="OPTIONAL",
-            email_delivery=emailverification.EmailDeliveryConfig(
-                CustomEVEmailService()
+    global mfa_info
+
+    from supertokens_python.recipe.multifactorauth.interfaces import (
+        RecipeInterface as MFARecipeInterface,
+        APIInterface as MFAApiInterface,
+        APIOptions as MFAApiOptions,
+    )
+
+    def override_mfa_functions(original_implementation: MFARecipeInterface):
+        og_get_factors_setup_for_user = (
+            original_implementation.get_factors_setup_for_user
+        )
+
+        async def get_factors_setup_for_user(
+            user: User,
+            user_context: Dict[str, Any],
+        ):
+            res = await og_get_factors_setup_for_user(user, user_context)
+            if mfa_info.get("alreadySetup"):
+                return mfa_info.get("alreadySetup", [])
+            return res
+
+        og_assert_allowed_to_setup_factor = (
+            original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
+        )
+
+        async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
+            session: SessionContainer,
+            factor_id: str,
+            mfa_requirements_for_auth: Callable[[], Awaitable[MFARequirementList]],
+            factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
+            user_context: Dict[str, Any],
+        ):
+            if mfa_info.get("allowedToSetup"):
+                if factor_id not in mfa_info["allowedToSetup"]:
+                    raise InvalidClaimsError(
+                        msg="INVALID_CLAIMS",
+                        payload=[
+                            ClaimValidationError(id_="test", reason="test override")
+                        ],
+                    )
+            else:
+                await og_assert_allowed_to_setup_factor(
+                    session,
+                    factor_id,
+                    mfa_requirements_for_auth,
+                    factors_set_up_for_user,
+                    user_context,
+                )
+
+        og_get_mfa_requirements_for_auth = (
+            original_implementation.get_mfa_requirements_for_auth
+        )
+
+        async def get_mfa_requirements_for_auth(
+            tenant_id: str,
+            access_token_payload: Dict[str, Any],
+            completed_factors: Dict[str, int],
+            user: Callable[[], Awaitable[User]],
+            factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
+            required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]],
+            required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]],
+            user_context: Dict[str, Any],
+        ) -> MFARequirementList:
+            res = await og_get_mfa_requirements_for_auth(
+                tenant_id,
+                access_token_payload,
+                completed_factors,
+                user,
+                factors_set_up_for_user,
+                required_secondary_factors_for_user,
+                required_secondary_factors_for_tenant,
+                user_context,
+            )
+            if mfa_info.get("requirements"):
+                return mfa_info["requirements"]
+            return res
+
+        original_implementation.get_mfa_requirements_for_auth = (
+            get_mfa_requirements_for_auth
+        )
+
+        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = (
+            assert_allowed_to_setup_factor_else_throw_invalid_claim_error
+        )
+
+        original_implementation.get_factors_setup_for_user = get_factors_setup_for_user
+        return original_implementation
+
+    def override_mfa_apis(original_implementation: MFAApiInterface):
+        og_resync_session_and_fetch_mfa_info_put = (
+            original_implementation.resync_session_and_fetch_mfa_info_put
+        )
+
+        async def resync_session_and_fetch_mfa_info_put(
+            api_options: MFAApiOptions,
+            session: SessionContainer,
+            user_context: Dict[str, Any],
+        ) -> Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
+            res = await og_resync_session_and_fetch_mfa_info_put(
+                api_options, session, user_context
+            )
+
+            if isinstance(res, ResyncSessionAndFetchMFAInfoPUTOkResult):
+                if mfa_info.get("alreadySetup"):
+                    res.factors.already_setup = mfa_info["alreadySetup"][:]
+
+                if mfa_info.get("noContacts"):
+                    res.emails = {}
+                    res.phone_numbers = {}
+
+            return res
+
+        original_implementation.resync_session_and_fetch_mfa_info_put = (
+            resync_session_and_fetch_mfa_info_put
+        )
+        return original_implementation
+
+    recipe_list: List[Any] = [
+        {"id": "userroles", "init": userroles.init()},
+        {
+            "id": "session",
+            "init": session.init(
+                override=session.InputOverrideConfig(apis=override_session_apis)
             ),
-            override=EVInputOverrideConfig(apis=override_email_verification_apis),
-        ),
-        emailpassword.init(
-            sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
-            email_delivery=emailpassword.EmailDeliveryConfig(CustomEPEmailService()),
-            override=emailpassword.InputOverrideConfig(
-                apis=override_email_password_apis,
+        },
+        {
+            "id": "emailverification",
+            "init": emailverification.init(
+                mode="OPTIONAL",
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEVEmailService()
+                ),
+                override=EVInputOverrideConfig(apis=override_email_verification_apis),
             ),
-        ),
-        thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
-            override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
-        ),
-        passwordless_init,
-        multitenancy.init(
-            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
-        ),
+        },
+        {
+            "id": "emailpassword",
+            "init": emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
+                email_delivery=emailpassword.EmailDeliveryConfig(
+                    CustomEPEmailService()
+                ),
+                override=emailpassword.InputOverrideConfig(
+                    apis=override_email_password_apis,
+                ),
+            ),
+        },
+        {
+            "id": "thirdparty",
+            "init": thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
+                override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
+            ),
+        },
+        {
+            "id": "passwordless",
+            "init": passwordless_init,
+        },
+        {
+            "id": "multitenancy",
+            "init": multitenancy.init(
+                get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
+            ),
+        },
+        {
+            "id": "multifactorauth",
+            "init": multifactorauth.init(
+                first_factors=mfa_info.get("firstFactors", None),
+                override=multifactorauth.OverrideConfig(
+                    functions=override_mfa_functions,
+                    apis=override_mfa_apis,
+                ),
+            ),
+        },
+        {
+            "id": "totp",
+            "init": totp.init(
+                config=totp.TOTPConfig(
+                    default_period=1,
+                    default_skew=30,
+                )
+            ),
+        },
     ]
+
+    global accountlinking_config
+
+    accountlinking_config_input = {
+        "enabled": False,
+        "shouldAutoLink": {
+            "shouldAutomaticallyLink": True,
+            "shouldRequireVerification": True,
+        },
+        **accountlinking_config,
+    }
+
+    async def should_do_automatic_account_linking(
+        _: AccountInfoWithRecipeIdAndUserId,
+        __: Optional[User],
+        ___: Optional[SessionContainer],
+        ____: str,
+        _____: Dict[str, Any],
+    ) -> Union[
+        accountlinking.ShouldNotAutomaticallyLink,
+        accountlinking.ShouldAutomaticallyLink,
+    ]:
+        should_auto_link = accountlinking_config_input["shouldAutoLink"]
+        assert isinstance(should_auto_link, dict)
+        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]
+        assert isinstance(should_automatically_link, bool)
+        if should_automatically_link:
+            should_require_verification = should_auto_link["shouldRequireVerification"]
+            assert isinstance(should_require_verification, bool)
+            return accountlinking.ShouldAutomaticallyLink(
+                should_require_verification=should_require_verification
+            )
+        return accountlinking.ShouldNotAutomaticallyLink()
+
+    if accountlinking_config_input["enabled"]:
+        recipe_list.append(
+            {
+                "id": "accountlinking",
+                "init": accountlinking.init(
+                    should_do_automatic_account_linking=should_do_automatic_account_linking
+                ),
+            }
+        )
+
+    global enabled_recipes
+    if enabled_recipes is not None:
+        recipe_list = [
+            item["init"] for item in recipe_list if item["id"] in enabled_recipes
+        ]
+    else:
+        recipe_list = [item["init"] for item in recipe_list]
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:9000"),
@@ -771,6 +1045,180 @@ def ping():
     return "success"
 
 
+@app.route("/changeEmail", methods=["POST"])  # type: ignore
+def change_email():
+    body: Union[Any, None] = request.get_json()
+    if body is None:
+        raise Exception("Should never come here")
+    from supertokens_python.recipe.emailpassword.syncio import update_email_or_password
+    from supertokens_python import convert_to_recipe_user_id
+
+    if body["rid"] == "emailpassword":
+        resp = update_email_or_password(
+            recipe_user_id=convert_to_recipe_user_id(body["recipeUserId"]),
+            email=body["email"],
+            tenant_id_for_password_policy=body["tenantId"],
+        )
+        if isinstance(resp, UpdateEmailOrPasswordOkResult):
+            return jsonify({"status": "OK"})
+        if isinstance(resp, EmailAlreadyExistsError):
+            return jsonify({"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+        if isinstance(resp, UnknownUserIdError):
+            return jsonify({"status": "UNKNOWN_USER_ID_ERROR"})
+        if isinstance(resp, UpdateEmailOrPasswordEmailChangeNotAllowedError):
+            return jsonify(
+                {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
+            )
+        # password policy violation error
+        return jsonify(resp.to_json())
+    elif body["rid"] == "thirdparty":
+        user = get_user(user_id=body["recipeUserId"])
+        assert user is not None
+        login_method = next(
+            lm
+            for lm in user.login_methods
+            if lm.recipe_user_id.get_as_string() == body["recipeUserId"]
+        )
+        assert login_method is not None
+        assert login_method.third_party is not None
+        resp = manually_create_or_update_user(
+            tenant_id=body["tenantId"],
+            third_party_id=login_method.third_party.id,
+            third_party_user_id=login_method.third_party.user_id,
+            email=body["email"],
+            is_verified=False,
+        )
+        if isinstance(resp, ManuallyCreateOrUpdateUserOkResult):
+            return jsonify(
+                {"status": "OK", "createdNewRecipeUser": resp.created_new_recipe_user}
+            )
+        if isinstance(resp, LinkingToSessionUserFailedError):
+            raise Exception("Should not come here")
+        if isinstance(resp, SignInUpNotAllowed):
+            return jsonify({"status": "SIGN_IN_UP_NOT_ALLOWED", "reason": resp.reason})
+        # EmailChangeNotAllowedError
+        return jsonify(
+            {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
+        )
+    elif body["rid"] == "passwordless":
+        resp = update_user(
+            recipe_user_id=convert_to_recipe_user_id(body["recipeUserId"]),
+            email=body.get("email"),
+            phone_number=body.get("phoneNumber"),
+        )
+
+        if isinstance(resp, UpdateUserOkResult):
+            return jsonify({"status": "OK"})
+        if isinstance(resp, UpdateUserUnknownUserIdError):
+            return jsonify({"status": "UNKNOWN_USER_ID_ERROR"})
+        if isinstance(resp, UpdateUserEmailAlreadyExistsError):
+            return jsonify({"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+        if isinstance(resp, UpdateUserPhoneNumberAlreadyExistsError):
+            return jsonify({"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"})
+        if isinstance(resp, EmailChangeNotAllowedError):
+            return jsonify(
+                {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
+            )
+        return jsonify(
+            {"status": "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
+        )
+
+    raise Exception("Should not come here")
+
+
+@app.route("/setupTenant", methods=["POST"])  # type: ignore
+def setup_tenant():
+    body = request.get_json()
+    if body is None:
+        raise Exception("Should never come here")
+    tenant_id = body["tenantId"]
+    login_methods = body["loginMethods"]
+    core_config = body["coreConfig"]
+
+    first_factors: List[str] = []
+    if login_methods.get("emailPassword", {}).get("enabled") == True:
+        first_factors.append("emailpassword")
+    if login_methods.get("thirdParty", {}).get("enabled") == True:
+        first_factors.append("thirdparty")
+    if login_methods.get("passwordless", {}).get("enabled") == True:
+        first_factors.extend(["otp-phone", "otp-email", "link-phone", "link-email"])
+
+    core_resp = create_or_update_tenant(
+        tenant_id,
+        config=TenantConfigCreateOrUpdate(
+            first_factors=first_factors,
+            core_config=core_config,
+        ),
+    )
+
+    if login_methods.get("thirdParty", {}).get("providers") is not None:
+        for provider in login_methods["thirdParty"]["providers"]:
+            if (
+                len(provider) > 1
+            ):  # TODO: remove this once all tests pass, this is just for making sure we pass the right stuff into ProviderConfig
+                raise Exception("Pass more stuff into ProviderConfig:" + str(provider))
+            create_or_update_third_party_config(
+                tenant_id,
+                config=ProviderConfig(
+                    third_party_id=provider["id"],
+                ),
+            )
+
+    return jsonify({"status": "OK", "createdNew": core_resp.created_new})
+
+
+@app.route("/addUserToTenant", methods=["POST"])  # type: ignore
+def add_user_to_tenant():
+    body = request.get_json()
+    if body is None:
+        raise Exception("Should never come here")
+    tenant_id = body["tenantId"]
+    recipe_user_id = body["recipeUserId"]
+
+    core_resp = associate_user_to_tenant(tenant_id, RecipeUserId(recipe_user_id))
+
+    if isinstance(core_resp, AssociateUserToTenantOkResult):
+        return jsonify(
+            {"status": "OK", "wasAlreadyAssociated": core_resp.was_already_associated}
+        )
+    elif isinstance(core_resp, AssociateUserToTenantUnknownUserIdError):
+        return jsonify({"status": "UNKNOWN_USER_ID_ERROR"})
+    elif isinstance(core_resp, AssociateUserToTenantEmailAlreadyExistsError):
+        return jsonify({"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+    elif isinstance(core_resp, AssociateUserToTenantPhoneNumberAlreadyExistsError):
+        return jsonify({"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"})
+    elif isinstance(core_resp, AssociateUserToTenantThirdPartyUserAlreadyExistsError):
+        return jsonify({"status": "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"})
+    return jsonify(
+        {"status": "ASSOCIATION_NOT_ALLOWED_ERROR", "reason": core_resp.reason}
+    )
+
+
+@app.route("/removeUserFromTenant", methods=["POST"])  # type: ignore
+def remove_user_from_tenant():
+    body = request.get_json()
+    if body is None:
+        raise Exception("Should never come here")
+    tenant_id = body["tenantId"]
+    recipe_user_id = body["recipeUserId"]
+
+    core_resp = disassociate_user_from_tenant(tenant_id, RecipeUserId(recipe_user_id))
+
+    return jsonify({"status": "OK", "wasAssociated": core_resp.was_associated})
+
+
+@app.route("/removeTenant", methods=["POST"])  # type: ignore
+def remove_tenant():
+    body = request.get_json()
+    if body is None:
+        raise Exception("Should never come here")
+    tenant_id = body["tenantId"]
+
+    core_resp = delete_tenant(tenant_id)
+
+    return jsonify({"status": "OK", "didExist": core_resp.did_exist})
+
+
 @app.route("/sessionInfo", methods=["GET"])  # type: ignore
 @verify_session()
 def get_session_info():
@@ -794,7 +1242,15 @@ def get_token():
 @app.route("/beforeeach", methods=["POST"])  # type: ignore
 def before_each():
     global code_store
+    global accountlinking_config
+    global enabled_providers
+    global enabled_recipes
+    global mfa_info
     code_store = dict()
+    accountlinking_config = {}
+    enabled_providers = None
+    enabled_recipes = None
+    mfa_info = {}
     custom_init()
     return ""
 
@@ -804,10 +1260,36 @@ def test_set_flow():
     body: Union[Any, None] = request.get_json()
     if body is None:
         raise Exception("Should never come here")
+    global contact_method
+    global flow_type
     contact_method = body["contactMethod"]
     flow_type = body["flowType"]
-    custom_init(contact_method=contact_method, flow_type=flow_type)
+    custom_init()
     return ""
+
+
+@app.route("/test/setAccountLinkingConfig", methods=["POST"])  # type: ignore
+def test_set_account_linking_config():
+    global accountlinking_config
+    body = request.get_json()
+    if body is None:
+        raise Exception("Invalid request body")
+    accountlinking_config = body
+    custom_init()
+    return "", 200
+
+
+@app.route("/test/setEnabledRecipes", methods=["POST"])  # type: ignore
+def test_set_enabled_recipes():
+    global enabled_recipes
+    global enabled_providers
+    body = request.get_json()
+    if body is None:
+        raise Exception("Invalid request body")
+    enabled_recipes = body.get("enabledRecipes")
+    enabled_providers = body.get("enabledProviders")
+    custom_init()
+    return "", 200
 
 
 @app.get("/test/getDevice")  # type: ignore
@@ -828,6 +1310,11 @@ def test_feature_flags():
         "generalerror",
         "userroles",
         "multitenancy",
+        "multitenancyManagementEndpoints",
+        "accountlinking",
+        "mfa",
+        "recipeConfig",
+        "accountlinking-fixes",
     ]
     return jsonify({"available": available})
 

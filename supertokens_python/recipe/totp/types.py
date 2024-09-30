@@ -75,9 +75,6 @@ class DeviceAlreadyExistsError(APIResponse):
 
 
 class UpdateDeviceOkResult(OkResult):
-    def __init__(self):
-        super().__init__()
-
     def to_json(self) -> Dict[str, Any]:
         raise NotImplementedError()
 
@@ -174,11 +171,6 @@ class LimitReachedError(APIResponse):
 
 
 class VerifyTOTPOkResult(OkResult):
-    def __init__(
-        self,
-    ):
-        super().__init__()
-
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
 

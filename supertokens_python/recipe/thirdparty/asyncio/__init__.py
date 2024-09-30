@@ -30,7 +30,7 @@ async def manually_create_or_update_user(
     third_party_user_id: str,
     email: str,
     is_verified: bool,
-    session: Optional[SessionContainer],
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[
     ManuallyCreateOrUpdateUserOkResult,

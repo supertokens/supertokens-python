@@ -27,7 +27,7 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 async def handle_resync_session_and_fetch_mfa_info_api(
-    tenant_id: str,
+    _tenant_id: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],
