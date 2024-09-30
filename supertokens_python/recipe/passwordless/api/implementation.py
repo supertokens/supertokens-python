@@ -214,13 +214,11 @@ class APIImplementation(APIInterface):
 
         if not isinstance(pre_auth_checks_result, OkResponse):
             if isinstance(pre_auth_checks_result, SignUpNotAllowedResponse):
-                reason = error_code_map["SIGN_IN_NOT_ALLOWED"]
+                reason = error_code_map["SIGN_UP_NOT_ALLOWED"]
                 assert isinstance(reason, str)
                 return SignInUpPostNotAllowedResponse(reason)
             if isinstance(pre_auth_checks_result, SignInNotAllowedResponse):
-                reason = error_code_map["SIGN_IN_NOT_ALLOWED"]
-                assert isinstance(reason, str)
-                return SignInUpPostNotAllowedResponse(reason)
+                raise Exception("Should never come here")
 
             reason_dict = error_code_map["LINKING_TO_SESSION_USER_FAILED"]
             assert isinstance(reason_dict, Dict)
