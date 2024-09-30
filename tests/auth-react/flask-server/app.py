@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import traceback
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
@@ -1426,6 +1427,7 @@ def index(_: str):
 @app.errorhandler(Exception)  # type: ignore
 def all_exception_handler(e: Exception):
     print(e)
+    print(traceback.format_exc())
     return "Error", 500
 
 

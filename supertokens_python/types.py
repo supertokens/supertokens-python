@@ -109,10 +109,11 @@ class LoginMethod(AccountInfo):
     def has_same_third_party_info_as(
         self, third_party: Union[ThirdPartyInfo, None]
     ) -> bool:
-        if third_party is None or self.third_party is None:
+        if third_party is None:
             return False
         return (
-            self.third_party.id.strip() == third_party.id.strip()
+            self.third_party is not None
+            and self.third_party.id.strip() == third_party.id.strip()
             and self.third_party.user_id.strip() == third_party.user_id.strip()
         )
 
@@ -140,7 +141,7 @@ class LoginMethod(AccountInfo):
             phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
             third_party=(
                 (
-                    TPI(json["thirdParty"]["id"], json["thirdParty"]["userId"])
+                    TPI(json["thirdParty"]["userId"], json["thirdParty"]["id"])
                     if "thirdParty" in json
                     else None
                 )

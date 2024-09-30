@@ -42,7 +42,7 @@ from .asyncio import get_user
 
 
 class LinkingToSessionUserFailedError:
-    status: Literal["LINKING_TO_SESSION_USER_FAILED"]
+    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
     reason: Literal[
         "EMAIL_VERIFICATION_REQUIRED",
         "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
@@ -76,11 +76,11 @@ class OkResponse:
 
 
 class SignUpNotAllowedResponse:
-    status: Literal["SIGN_UP_NOT_ALLOWED"]
+    status: Literal["SIGN_UP_NOT_ALLOWED"] = "SIGN_UP_NOT_ALLOWED"
 
 
 class SignInNotAllowedResponse:
-    status: Literal["SIGN_IN_NOT_ALLOWED"]
+    status: Literal["SIGN_IN_NOT_ALLOWED"] = "SIGN_IN_NOT_ALLOWED"
 
 
 async def pre_auth_checks(
@@ -325,7 +325,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                         for lm in user.login_methods
                         if lm.recipe_id == recipe_id
                         and (
-                            lm.has_same_email_as(email)
+                            (email is not None and lm.has_same_email_as(email))
                             or lm.has_same_phone_number_as(phone_number)
                             or lm.has_same_third_party_info_as(third_party)
                         )

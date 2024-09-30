@@ -16,7 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict
 from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 
-from supertokens_python.recipe.emailpassword.interfaces import SignUpPostOkResult
+from supertokens_python.recipe.emailpassword.interfaces import (
+    EmailAlreadyExistsError,
+    SignUpPostOkResult,
+)
 from supertokens_python.types import GeneralErrorResponse
 
 from ..exceptions import raise_form_field_exception
@@ -93,12 +96,14 @@ async def handle_sign_up_api(
     if isinstance(response, GeneralErrorResponse):
         return send_200_response(response.to_json(), api_options.response)
 
-    return raise_form_field_exception(
-        "EMAIL_ALREADY_EXISTS_ERROR",
-        [
-            ErrorFormField(
-                id="email",
-                error="This email already exists. Please sign in instead.",
-            )
-        ],
-    )
+    if isinstance(response, EmailAlreadyExistsError):
+        return raise_form_field_exception(
+            "EMAIL_ALREADY_EXISTS_ERROR",
+            [
+                ErrorFormField(
+                    id="email",
+                    error="This email already exists. Please sign in instead.",
+                )
+            ],
+        )
+    return send_200_response(response.to_json(), api_options.response)
