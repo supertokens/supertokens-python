@@ -13,6 +13,7 @@
 # under the License.
 
 from __future__ import annotations
+import importlib
 
 from typing import Any, Dict, Optional, Set
 
@@ -172,9 +173,11 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
             current_payload: Dict[str, Any],
             user_context: Dict[str, Any],
         ) -> MFAClaimValue:
-            from .utils import update_and_get_mfa_related_info_in_session
+            module = importlib.import_module(
+                "supertokens_python.recipe.multifactorauth.utils"
+            )
 
-            mfa_info = await update_and_get_mfa_related_info_in_session(
+            mfa_info = await module.update_and_get_mfa_related_info_in_session(
                 self,
                 input_session_recipe_user_id=recipe_user_id,
                 input_tenant_id=tenant_id,

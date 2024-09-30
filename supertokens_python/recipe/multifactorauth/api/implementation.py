@@ -17,9 +17,6 @@ import importlib
 from typing import Any, Dict, List, Union, TYPE_CHECKING
 
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.multifactorauth.utils import (
-    update_and_get_mfa_related_info_in_session,
-)
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.asyncio import get_user
 from supertokens_python.recipe.session.exceptions import (
@@ -54,6 +51,10 @@ class APIImplementation(APIInterface):
 
         MultiFactorAuthClaim: MultiFactorAuthClaimType = mfa.MultiFactorAuthClaim
 
+        module = importlib.import_module(
+            "supertokens_python.recipe.multifactorauth.utils"
+        )
+
         session_user = await get_user(session.get_user_id(), user_context)
 
         if session_user is None:
@@ -61,7 +62,7 @@ class APIImplementation(APIInterface):
                 "Session user not found",
             )
 
-        mfa_info = await update_and_get_mfa_related_info_in_session(
+        mfa_info = await module.update_and_get_mfa_related_info_in_session(
             MultiFactorAuthClaim,
             input_session=session,
             user_context=user_context,

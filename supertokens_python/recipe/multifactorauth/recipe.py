@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+import importlib
 
 from os import environ
 from typing import Any, Dict, Optional, List, Union
@@ -31,7 +32,6 @@ from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
     MultiFactorAuthClaim,
 )
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
@@ -76,9 +76,11 @@ class MultiFactorAuthRecipe(RecipeModule):
         ] = []
         self.is_get_mfa_requirements_for_auth_overridden: bool = False
 
-        from .utils import validate_and_normalise_user_input
+        module = importlib.import_module(
+            "supertokens_python.recipe.multifactorauth.utils"
+        )
 
-        self.config = validate_and_normalise_user_input(
+        self.config = module.validate_and_normalise_user_input(
             first_factors,
             override,
         )
@@ -102,6 +104,8 @@ class MultiFactorAuthRecipe(RecipeModule):
         )
 
         def callback():
+            from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
             mt_recipe = MultitenancyRecipe.get_instance()
             mt_recipe.static_first_factors = self.config.first_factors
 
