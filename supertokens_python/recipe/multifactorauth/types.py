@@ -85,10 +85,10 @@ class FactorIdsAndType:
     def __init__(
         self,
         factor_ids: List[str],
-        type: Union[Literal["string"], Literal["oneOf"], Literal["allOfInAnyOrder"]],
+        type_: Union[Literal["string"], Literal["oneOf"], Literal["allOfInAnyOrder"]],
     ):
         self.factor_ids = factor_ids
-        self.type = type
+        self.type_ = type_
 
 
 class GetFactorsSetupForUserFromOtherRecipesFunc:

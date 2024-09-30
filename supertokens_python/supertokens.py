@@ -13,6 +13,7 @@
 # under the License.
 
 from __future__ import annotations
+import importlib
 
 from os import environ
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union, Tuple
@@ -276,9 +277,11 @@ class Supertokens:
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
         if not multitenancy_found:
-            from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+            module = importlib.import_module(
+                "supertokens_python.recipe.multitenancy.recipe"
+            )
 
-            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+            self.recipe_modules.append(module.init()(self.app_info))
         if totp_found and not multi_factor_auth_found:
             raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
         if not user_metadata_found:

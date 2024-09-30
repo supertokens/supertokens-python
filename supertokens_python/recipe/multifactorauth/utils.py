@@ -12,19 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+import importlib
 
-from typing import TYPE_CHECKING, List, Optional, Union
-from typing import Dict, Any, Union, List
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from typing import TYPE_CHECKING, List, Optional, Union, Dict, Any
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
-from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multifactorauth.types import (
     MFAClaimValue,
     MFARequirementList,
+    FactorIds,
 )
 from supertokens_python.types import RecipeUserId
 import math
@@ -34,6 +32,12 @@ from supertokens_python.utils import log_debug_message
 
 if TYPE_CHECKING:
     from .types import OverrideConfig, MultiFactorAuthConfig
+    from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+        MultiFactorAuthClaimClass,
+    )
+    from supertokens_python.recipe.multitenancy.recipe import (
+        MultitenancyRecipe as MTRecipeType,
+    )
 
 
 def validate_and_normalise_user_input(
@@ -43,10 +47,12 @@ def validate_and_normalise_user_input(
     if first_factors is not None and len(first_factors) == 0:
         raise ValueError("'first_factors' can be either None or a non-empty list")
 
-    if override is None:
-        override = OverrideConfig()
+    from .types import OverrideConfig as OC, MultiFactorAuthConfig as MFAC
 
-    return MultiFactorAuthConfig(
+    if override is None:
+        override = OC()
+
+    return MFAC(
         first_factors=first_factors,
         override=override,
     )
@@ -67,6 +73,7 @@ class UpdateAndGetMFARelatedInfoInSessionResult:
 
 
 async def update_and_get_mfa_related_info_in_session(
+    MultiFactorAuthClaim: MultiFactorAuthClaimClass,
     user_context: Dict[str, Any],
     input_session_recipe_user_id: Optional[RecipeUserId] = None,
     input_tenant_id: Optional[str] = None,
@@ -74,9 +81,6 @@ async def update_and_get_mfa_related_info_in_session(
     input_session: Optional[SessionContainer] = None,
     input_updated_factor_id: Optional[str] = None,
 ) -> UpdateAndGetMFARelatedInfoInSessionResult:
-    from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
-        MultiFactorAuthClaim,
-    )
     from supertokens_python.recipe.multifactorauth.recipe import (
         MultiFactorAuthRecipe as Recipe,
     )
@@ -199,7 +203,16 @@ async def update_and_get_mfa_related_info_in_session(
     async def get_required_secondary_factors_for_tenant(
         tenant_id: str, user_context: Dict[str, Any]
     ) -> List[str]:
-        tenant_info = await get_tenant(tenant_id, user_context)
+
+        MultitenancyRecipe = importlib.import_module(
+            "supertokens_python.recipe.multitenancy.recipe"
+        )
+
+        mt_recipe: MTRecipeType = MultitenancyRecipe.get_instance()
+
+        tenant_info = await mt_recipe.recipe_implementation.get_tenant(
+            tenant_id=tenant_id, user_context=user_context
+        )
         if tenant_info is None:
             raise UnauthorisedError("Tenant not found")
         return (
@@ -262,13 +275,19 @@ async def update_and_get_mfa_related_info_in_session(
 async def is_valid_first_factor(
     tenant_id: str, factor_id: str, user_context: Dict[str, Any]
 ) -> Literal["OK", "INVALID_FIRST_FACTOR_ERROR", "TENANT_NOT_FOUND_ERROR"]:
-    tenant_info = await get_tenant(tenant_id=tenant_id, user_context=user_context)
+
+    MultitenancyRecipe = importlib.import_module(
+        "supertokens_python.recipe.multitenancy.recipe"
+    )
+
+    mt_recipe: MTRecipeType = MultitenancyRecipe.get_instance()
+    tenant_info = await mt_recipe.recipe_implementation.get_tenant(
+        tenant_id=tenant_id, user_context=user_context
+    )
     if tenant_info is None:
         return "TENANT_NOT_FOUND_ERROR"
 
     tenant_config = tenant_info
-
-    mt_recipe = MultitenancyRecipe.get_instance()
 
     first_factors_from_mfa = mt_recipe.static_first_factors
 

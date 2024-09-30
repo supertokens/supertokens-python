@@ -123,15 +123,15 @@ class APIInterface:
 
 class NextFactors:
     def __init__(
-        self, next: List[str], already_setup: List[str], allowed_to_setup: List[str]
+        self, next_: List[str], already_setup: List[str], allowed_to_setup: List[str]
     ):
-        self.next = next
+        self.next_ = next_
         self.already_setup = already_setup
         self.allowed_to_setup = allowed_to_setup
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            "next": self.next,
+            "next": self.next_,
             "alreadySetup": self.already_setup,
             "allowedToSetup": self.allowed_to_setup,
         }

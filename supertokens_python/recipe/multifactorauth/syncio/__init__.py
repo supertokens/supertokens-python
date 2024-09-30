@@ -22,7 +22,6 @@ from supertokens_python.async_to_sync_wrapper import sync
 from ..interfaces import (
     MFARequirementList,
 )
-from ..recipe import MultiFactorAuthRecipe
 
 
 def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
@@ -125,6 +124,3 @@ def remove_from_required_secondary_factors_for_user(
     )
 
     return sync(async_func(user_id, factor_id, user_context))
-
-
-init = MultiFactorAuthRecipe.init

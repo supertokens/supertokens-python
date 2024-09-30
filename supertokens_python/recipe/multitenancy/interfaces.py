@@ -136,6 +136,14 @@ class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
     status = "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
 
 
+class AssociateUserToTenantNotAllowedError:
+    status = "ASSOCIATION_NOT_ALLOWED_ERROR"
+
+    def __init__(self, reason: str):
+        self.status = "ASSOCIATION_NOT_ALLOWED_ERROR"
+        self.reason = reason
+
+
 class DisassociateUserFromTenantOkResult:
     status = "OK"
 
@@ -213,11 +221,12 @@ class RecipeInterface(ABC):
         AssociateUserToTenantEmailAlreadyExistsError,
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+        AssociateUserToTenantNotAllowedError,
     ]:
         pass
 
     @abstractmethod
-    async def dissociate_user_from_tenant(
+    async def disassociate_user_from_tenant(
         self,
         tenant_id: str,
         recipe_user_id: RecipeUserId,

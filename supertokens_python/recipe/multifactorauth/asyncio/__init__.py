@@ -21,7 +21,6 @@ from supertokens_python.recipe.session import SessionContainer
 from ..types import (
     MFARequirementList,
 )
-from ..recipe import MultiFactorAuthRecipe
 from ..utils import update_and_get_mfa_related_info_in_session
 from supertokens_python.recipe.accountlinking.asyncio import get_user
 
@@ -34,13 +33,17 @@ async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
     if user_context is None:
         user_context = {}
 
+    from ..multi_factor_auth_claim import MultiFactorAuthClaim
+
     mfa_info = await update_and_get_mfa_related_info_in_session(
+        MultiFactorAuthClaim,
         input_session=session,
         user_context=user_context,
     )
     factors_set_up_for_user = await get_factors_setup_for_user(
         session.get_user_id(), user_context
     )
+    from ..recipe import MultiFactorAuthRecipe
 
     recipe = MultiFactorAuthRecipe.get_instance_or_throw_error()
 
@@ -66,7 +69,10 @@ async def get_mfa_requirements_for_auth(
     if user_context is None:
         user_context = {}
 
+    from ..multi_factor_auth_claim import MultiFactorAuthClaim
+
     mfa_info = await update_and_get_mfa_related_info_in_session(
+        MultiFactorAuthClaim,
         input_session=session,
         user_context=user_context,
     )
@@ -81,6 +87,7 @@ async def mark_factor_as_complete_in_session(
 ) -> None:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultiFactorAuthRecipe
 
     recipe = MultiFactorAuthRecipe.get_instance_or_throw_error()
     await recipe.recipe_implementation.mark_factor_as_complete_in_session(
@@ -100,6 +107,7 @@ async def get_factors_setup_for_user(
     user = await get_user(user_id, user_context)
     if user is None:
         raise Exception("Unknown user id")
+    from ..recipe import MultiFactorAuthRecipe
 
     recipe = MultiFactorAuthRecipe.get_instance_or_throw_error()
     return await recipe.recipe_implementation.get_factors_setup_for_user(
@@ -114,6 +122,7 @@ async def get_required_secondary_factors_for_user(
 ) -> List[str]:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultiFactorAuthRecipe
 
     recipe = MultiFactorAuthRecipe.get_instance_or_throw_error()
     return await recipe.recipe_implementation.get_required_secondary_factors_for_user(
@@ -129,6 +138,7 @@ async def add_to_required_secondary_factors_for_user(
 ) -> None:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultiFactorAuthRecipe
 
     recipe = MultiFactorAuthRecipe.get_instance_or_throw_error()
     await recipe.recipe_implementation.add_to_required_secondary_factors_for_user(
@@ -145,6 +155,7 @@ async def remove_from_required_secondary_factors_for_user(
 ) -> None:
     if user_context is None:
         user_context = {}
+    from ..recipe import MultiFactorAuthRecipe
 
     recipe = MultiFactorAuthRecipe.get_instance_or_throw_error()
     await recipe.recipe_implementation.remove_from_required_secondary_factors_for_user(
@@ -152,6 +163,3 @@ async def remove_from_required_secondary_factors_for_user(
         factor_id=factor_id,
         user_context=user_context,
     )
-
-
-init = MultiFactorAuthRecipe.init

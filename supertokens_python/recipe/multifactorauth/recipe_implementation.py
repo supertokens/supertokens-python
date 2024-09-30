@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+import importlib
 
 from typing import TYPE_CHECKING, Any, Awaitable, Dict, Set, Callable, List
 
@@ -35,7 +36,6 @@ from supertokens_python.recipe.multifactorauth.types import (
 from supertokens_python.recipe.session import SessionContainer
 
 from supertokens_python.types import User
-from .utils import update_and_get_mfa_related_info_in_session
 from .interfaces import RecipeInterface
 
 if TYPE_CHECKING:
@@ -58,10 +58,10 @@ class Validator(SessionClaimValidator):
         self.factor_id = factor_id
         self.mfa_requirement_for_auth = mfa_requirement_for_auth
 
-    async def should_refetch(
+    def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
-        return True if self.claim.get_value_from_payload(payload) is None else False
+        return self.claim.get_value_from_payload(payload) is None
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -173,7 +173,12 @@ class RecipeImplementation(RecipeInterface):
     async def mark_factor_as_complete_in_session(
         self, session: SessionContainer, factor_id: str, user_context: Dict[str, Any]
     ):
-        await update_and_get_mfa_related_info_in_session(
+        module = importlib.import_module(
+            "supertokens_python.recipe.multifactorauth.utils"
+        )
+
+        await module.update_and_get_mfa_related_info_in_session(
+            MultiFactorAuthClaim,
             input_session=session,
             input_updated_factor_id=factor_id,
             user_context=user_context,
