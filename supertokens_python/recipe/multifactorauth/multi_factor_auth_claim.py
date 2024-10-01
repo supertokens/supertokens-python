@@ -259,7 +259,10 @@ class MultiFactorAuthClaimClass(SessionClaim[MFAClaimValue]):
     def get_value_from_payload(
         self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> Optional[MFAClaimValue]:
-        return payload.get(self.key)
+        value = payload.get(self.key)
+        if value is None:
+            return None
+        return MFAClaimValue(c=value["c"], v=value["v"])
 
 
 MultiFactorAuthClaim = MultiFactorAuthClaimClass()

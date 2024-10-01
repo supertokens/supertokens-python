@@ -174,7 +174,7 @@ def get_website_domain():
 
 os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 
-latest_url_with_token = None
+latest_url_with_token = ""
 
 code_store: Dict[str, List[Dict[str, Any]]] = {}
 accountlinking_config: Dict[str, Any] = {}
@@ -1286,6 +1286,8 @@ def before_each():
     global enabled_providers
     global enabled_recipes
     global mfa_info
+    global latest_url_with_token
+    latest_url_with_token = ""
     code_store = dict()
     accountlinking_config = {}
     enabled_providers = None
@@ -1319,6 +1321,16 @@ def test_set_account_linking_config():
     return "", 200
 
 
+@app.route("/setMFAInfo", methods=["POST"])  # type: ignore
+def set_mfa_info():
+    global mfa_info
+    body = request.get_json()
+    if body is None:
+        return jsonify({"error": "Invalid request body"}), 400
+    mfa_info = body
+    return jsonify({"status": "OK"})
+
+
 @app.route("/test/setEnabledRecipes", methods=["POST"])  # type: ignore
 def test_set_enabled_recipes():
     global enabled_recipes
@@ -1330,6 +1342,21 @@ def test_set_enabled_recipes():
     enabled_providers = body.get("enabledProviders")
     custom_init()
     return "", 200
+
+
+@app.route("/test/getTOTPCode", methods=["POST"])  # type: ignore
+def test_get_totp_code():
+    from pyotp import TOTP
+
+    body = request.get_json()
+    if body is None or "secret" not in body:
+        return jsonify({"error": "Invalid request body"}), 400
+
+    secret = body["secret"]
+    totp = TOTP(secret, digits=6, interval=1)
+    code = totp.now()
+
+    return jsonify({"totp": code})
 
 
 @app.get("/test/getDevice")  # type: ignore

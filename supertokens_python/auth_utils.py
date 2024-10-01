@@ -452,9 +452,9 @@ class OkFirstFactorResponse:
 
 
 class OkSecondFactorLinkedResponse:
-    status: Literal["OK"]
-    is_first_factor: Literal[False]
-    input_user_already_linked_to_session_user: Literal[True]
+    status: Literal["OK"] = "OK"
+    is_first_factor: Literal[False] = False
+    input_user_already_linked_to_session_user: Literal[True] = True
     session_user: User
 
     def __init__(self, session_user: User):
@@ -462,9 +462,9 @@ class OkSecondFactorLinkedResponse:
 
 
 class OkSecondFactorNotLinkedResponse:
-    status: Literal["OK"]
-    is_first_factor: Literal[False]
-    input_user_already_linked_to_session_user: Literal[False]
+    status: Literal["OK"] = "OK"
+    is_first_factor: Literal[False] = False
+    input_user_already_linked_to_session_user: Literal[False] = False
     session_user: User
     linking_to_session_user_requires_verification: bool
 

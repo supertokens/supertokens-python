@@ -107,10 +107,11 @@ class RecipeImplementation(RecipeInterface):
 
         data = {
             "userId": user_id,
-            "deviceName": device_name,
             "skew": skew if skew is not None else self.config.default_skew,
             "period": period if period is not None else self.config.default_period,
         }
+        if device_name is not None:
+            data["deviceName"] = device_name
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/totp/device"),
             data,
