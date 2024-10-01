@@ -828,8 +828,8 @@ def custom_init():
             user_context: Dict[str, Any],
         ):
             res = await og_get_factors_setup_for_user(user, user_context)
-            if mfa_info.get("alreadySetup"):
-                return mfa_info.get("alreadySetup", [])
+            if "alreadySetup" in mfa_info:
+                return mfa_info["alreadySetup"]
             return res
 
         og_assert_allowed_to_setup_factor = (
@@ -843,7 +843,7 @@ def custom_init():
             factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
             user_context: Dict[str, Any],
         ):
-            if mfa_info.get("allowedToSetup"):
+            if "allowedToSetup" in mfa_info:
                 if factor_id not in mfa_info["allowedToSetup"]:
                     raise InvalidClaimsError(
                         msg="INVALID_CLAIMS",
@@ -884,7 +884,7 @@ def custom_init():
                 required_secondary_factors_for_tenant,
                 user_context,
             )
-            if mfa_info.get("requirements"):
+            if "requirements" in mfa_info:
                 return mfa_info["requirements"]
             return res
 
@@ -914,10 +914,10 @@ def custom_init():
             )
 
             if isinstance(res, ResyncSessionAndFetchMFAInfoPUTOkResult):
-                if mfa_info.get("alreadySetup"):
+                if "alreadySetup" in mfa_info:
                     res.factors.already_setup = mfa_info["alreadySetup"][:]
 
-                if mfa_info.get("noContacts"):
+                if "noContacts" in mfa_info:
                     res.emails = {}
                     res.phone_numbers = {}
 
