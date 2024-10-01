@@ -57,6 +57,9 @@ from supertokens_python.recipe.multifactorauth.interfaces import (
     ResyncSessionAndFetchMFAInfoPUTOkResult,
 )
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.syncio import (
+    add_to_required_secondary_factors_for_user,
+)
 from supertokens_python.recipe.multifactorauth.types import MFARequirementList
 from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantEmailAlreadyExistsError,
@@ -1328,6 +1331,20 @@ def set_mfa_info():
     if body is None:
         return jsonify({"error": "Invalid request body"}), 400
     mfa_info = body
+    return jsonify({"status": "OK"})
+
+
+@app.route("/addRequiredFactor", methods=["POST"])  # type: ignore
+@verify_session()
+def add_required_factor():
+    session_: SessionContainer = g.supertokens  # type: ignore
+
+    body = request.get_json()
+    if body is None or "factorId" not in body:
+        return jsonify({"error": "Invalid request body"}), 400
+
+    add_to_required_secondary_factors_for_user(session_.get_user_id(), body["factorId"])
+
     return jsonify({"status": "OK"})
 
 

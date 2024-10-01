@@ -19,10 +19,6 @@ from typing import Any, Dict, Optional, List
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..interfaces import (
-    MFARequirementList,
-)
-
 
 def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
     session: SessionContainer,
@@ -42,7 +38,7 @@ def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
 def get_mfa_requirements_for_auth(
     session: SessionContainer,
     user_context: Optional[Dict[str, Any]] = None,
-) -> MFARequirementList:
+):
     if user_context is None:
         user_context = {}
 
