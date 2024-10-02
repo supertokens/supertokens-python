@@ -81,7 +81,7 @@ async def session_exception_handler(
     Usage: `app.add_exception_handler(SuperTokensError, st_exception_handler)`
     """
     base_req = FastApiRequest(request)
-    base_res = FastApiResponse(JSONResponse())
+    base_res = FastApiResponse(JSONResponse(None))
     user_context = default_user_context(base_req)
     result = await Supertokens.get_instance().handle_supertokens_error(
         base_req, exc, base_res, user_context
