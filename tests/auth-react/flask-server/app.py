@@ -1290,6 +1290,10 @@ def before_each():
     global enabled_recipes
     global mfa_info
     global latest_url_with_token
+    global contact_method
+    global flow_type
+    contact_method = "EMAIL_OR_PHONE"
+    flow_type = "USER_INPUT_CODE_AND_MAGIC_LINK"
     latest_url_with_token = ""
     code_store = dict()
     accountlinking_config = {}
