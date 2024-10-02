@@ -81,7 +81,10 @@ from supertokens_python.recipe.session.exceptions import (
     ClaimValidationError,
     InvalidClaimsError,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
+from supertokens_python.recipe.thirdparty.provider import (
+    Provider,
+    RedirectUriInfo,
+)
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIOptions as EPAPIOptions,
 )
@@ -131,7 +134,10 @@ from supertokens_python.recipe.session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from supertokens_python.recipe.thirdparty import ProviderConfig, ThirdPartyRecipe
+from supertokens_python.recipe.thirdparty import (
+    ProviderConfig,
+    ThirdPartyRecipe,
+)
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
     ManuallyCreateOrUpdateUserOkResult,
@@ -1176,7 +1182,7 @@ def setup_tenant():
         raise Exception("Should never come here")
     tenant_id = body["tenantId"]
     login_methods = body["loginMethods"]
-    core_config = body["coreConfig"]
+    core_config = "coreConfig" in body and body["coreConfig"] or {}
 
     first_factors: List[str] = []
     if login_methods.get("emailPassword", {}).get("enabled") == True:
@@ -1196,15 +1202,9 @@ def setup_tenant():
 
     if login_methods.get("thirdParty", {}).get("providers") is not None:
         for provider in login_methods["thirdParty"]["providers"]:
-            if (
-                len(provider) > 1
-            ):  # TODO: remove this once all tests pass, this is just for making sure we pass the right stuff into ProviderConfig
-                raise Exception("Pass more stuff into ProviderConfig:" + str(provider))
             create_or_update_third_party_config(
                 tenant_id,
-                config=ProviderConfig(
-                    third_party_id=provider["id"],
-                ),
+                config=ProviderConfig.from_json(provider),
             )
 
     return jsonify({"status": "OK", "createdNew": core_resp.created_new})

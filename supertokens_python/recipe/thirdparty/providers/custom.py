@@ -437,11 +437,11 @@ class GenericProvider(Provider):
 
 
 def NewProvider(
-    input: ProviderInput,  # pylint: disable=redefined-builtin
+    input_: ProviderInput,
     base_class: Callable[[ProviderConfig], Provider] = GenericProvider,
 ) -> Provider:
-    provider_instance = base_class(input.config)
-    if input.override is not None:
-        provider_instance = input.override(provider_instance)
+    provider_instance = base_class(input_.config)
+    if input_.override is not None:
+        provider_instance = input_.override(provider_instance)
 
     return provider_instance

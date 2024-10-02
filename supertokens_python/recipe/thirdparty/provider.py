@@ -144,7 +144,9 @@ class UserFields:
         return {k: v for k, v in res.items() if v is not None}
 
     @staticmethod
-    def from_json(json: Dict[str, Any]) -> UserFields:
+    def from_json(json: Optional[Dict[str, Any]]) -> Optional[UserFields]:
+        if json is None:
+            return None
         return UserFields(
             user_id=json.get("userId", None),
             email=json.get("email", None),
@@ -170,12 +172,14 @@ class UserInfoMap:
         return res
 
     @staticmethod
-    def from_json(json: Dict[str, Any]) -> UserInfoMap:
+    def from_json(json: Optional[Dict[str, Any]]) -> Optional[UserInfoMap]:
+        if json is None:
+            return None
         return UserInfoMap(
             from_id_token_payload=UserFields.from_json(
-                json.get("fromIdTokenPayload", {})
+                json.get("fromIdTokenPayload", None)
             ),
-            from_user_info_api=UserFields.from_json(json.get("fromUserInfoAPI", {})),
+            from_user_info_api=UserFields.from_json(json.get("fromUserInfoAPI", None)),
         )
 
 
@@ -394,22 +398,24 @@ class ProviderConfig(CommonProviderConfig):
     def from_json(json: Dict[str, Any]) -> ProviderConfig:
         return ProviderConfig(
             third_party_id=json.get("thirdPartyId", ""),
-            name=json.get("name", ""),
+            name=json.get("name", None),
             clients=[
                 ProviderClientConfig.from_json(c) for c in json.get("clients", [])
             ],
-            authorization_endpoint=json.get("authorizationEndpoint", ""),
+            authorization_endpoint=json.get("authorizationEndpoint", None),
             authorization_endpoint_query_params=json.get(
-                "authorizationEndpointQueryParams", {}
+                "authorizationEndpointQueryParams", None
             ),
-            token_endpoint=json.get("tokenEndpoint", ""),
-            token_endpoint_body_params=json.get("tokenEndpointBodyParams", {}),
-            user_info_endpoint=json.get("userInfoEndpoint", ""),
-            user_info_endpoint_query_params=json.get("userInfoEndpointQueryParams", {}),
-            user_info_endpoint_headers=json.get("userInfoEndpointHeaders", {}),
-            jwks_uri=json.get("jwksURI", ""),
-            oidc_discovery_endpoint=json.get("oidcDiscoveryEndpoint", ""),
-            user_info_map=UserInfoMap.from_json(json.get("userInfoMap", {})),
+            token_endpoint=json.get("tokenEndpoint", None),
+            token_endpoint_body_params=json.get("tokenEndpointBodyParams", None),
+            user_info_endpoint=json.get("userInfoEndpoint", None),
+            user_info_endpoint_query_params=json.get(
+                "userInfoEndpointQueryParams", None
+            ),
+            user_info_endpoint_headers=json.get("userInfoEndpointHeaders", None),
+            jwks_uri=json.get("jwksURI", None),
+            oidc_discovery_endpoint=json.get("oidcDiscoveryEndpoint", None),
+            user_info_map=UserInfoMap.from_json(json.get("userInfoMap", None)),
             require_email=json.get("requireEmail", None),
             validate_id_token_payload=None,
             generate_fake_email=None,
