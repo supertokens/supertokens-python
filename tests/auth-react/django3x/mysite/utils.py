@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
 from typing_extensions import Literal
@@ -9,11 +9,14 @@ from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
     emailpassword,
     emailverification,
+    multifactorauth,
     passwordless,
     session,
     thirdparty,
+    totp,
     userroles,
 )
+from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
 from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -51,6 +54,10 @@ from supertokens_python.recipe.passwordless.interfaces import (
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.session.exceptions import (
+    ClaimValidationError,
+    InvalidClaimsError,
+)
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
 )
@@ -61,12 +68,21 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
+from supertokens_python.recipe.totp.recipe import TOTPRecipe
 
 from supertokens_python.recipe.userroles import UserRolesRecipe
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types import GeneralErrorResponse, User
 
 from .store import save_code, save_url_with_token
 from supertokens_python.recipe import multitenancy
+from supertokens_python.recipe.multifactorauth.interfaces import (
+    ResyncSessionAndFetchMFAInfoPUTOkResult,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import MFARequirementList
+from supertokens_python.recipe import accountlinking
+from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 
 load_dotenv()
 
@@ -112,9 +128,7 @@ class CustomPlessEmailService(
         )
 
 
-class CustomPlessSMSService(
-    passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]
-):
+class CustomSMSService(passwordless.SMSDeliveryInterface[passwordless.SMSTemplateVars]):
     async def send_sms(
         self, template_vars: passwordless.SMSTemplateVars, user_context: Dict[str, Any]
     ) -> None:
@@ -260,12 +274,34 @@ providers_list: List[thirdparty.ProviderInput] = [
 ]
 
 
-def custom_init(
-    contact_method: Union[None, Literal["PHONE", "EMAIL", "EMAIL_OR_PHONE"]] = None,
-    flow_type: Union[
-        None, Literal["USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"]
-    ] = None,
-):
+def mock_provider_override(oi: Provider) -> Provider:
+    async def get_user_info(
+        oauth_tokens: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> UserInfo:
+        user_id = oauth_tokens.get("userId", "user")
+        email = oauth_tokens.get("email", "email@test.com")
+        is_verified = oauth_tokens.get("isVerified", "true").lower() != "false"
+
+        return UserInfo(
+            user_id, UserInfoEmail(email, is_verified), raw_user_info_from_provider=None
+        )
+
+    async def exchange_auth_code_for_oauth_tokens(
+        redirect_uri_info: RedirectUriInfo,
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return redirect_uri_info.redirect_uri_query_params
+
+    oi.exchange_auth_code_for_oauth_tokens = exchange_auth_code_for_oauth_tokens
+    oi.get_user_info = get_user_info
+    return oi
+
+
+def custom_init():
+    import mysite.store
+
+    AccountLinkingRecipe.reset()
     UserRolesRecipe.reset()
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
@@ -277,6 +313,8 @@ def custom_init(
     DashboardRecipe.reset()
     MultitenancyRecipe.reset()
     Supertokens.reset()
+    TOTPRecipe.reset()
+    MultiFactorAuthRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -601,20 +639,94 @@ def custom_init(
         original_implementation.resend_code_post = resend_code_post
         return original_implementation
 
-    if contact_method is not None and flow_type is not None:
-        if contact_method == "PHONE":
+    providers_list: List[thirdparty.ProviderInput] = [
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="google",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["GOOGLE_CLIENT_ID"],
+                        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+                    ),
+                ],
+            ),
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="github",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["GITHUB_CLIENT_ID"],
+                        client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+                    ),
+                ],
+            )
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="facebook",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["FACEBOOK_CLIENT_ID"],
+                        client_secret=os.environ["FACEBOOK_CLIENT_SECRET"],
+                    ),
+                ],
+            )
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="auth0",
+                name="Auth0",
+                authorization_endpoint=f"https://{os.environ['AUTH0_DOMAIN']}/authorize",
+                authorization_endpoint_query_params={"scope": "openid profile"},
+                token_endpoint=f"https://{os.environ['AUTH0_DOMAIN']}/oauth/token",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id=os.environ["AUTH0_CLIENT_ID"],
+                        client_secret=os.environ["AUTH0_CLIENT_SECRET"],
+                    )
+                ],
+            ),
+            override=auth0_provider_override,
+        ),
+        thirdparty.ProviderInput(
+            config=thirdparty.ProviderConfig(
+                third_party_id="mock-provider",
+                name="Mock Provider",
+                authorization_endpoint=get_website_domain() + "/mockProvider/auth",
+                token_endpoint=get_website_domain() + "/mockProvider/token",
+                clients=[
+                    thirdparty.ProviderClientConfig(
+                        client_id="supertokens",
+                        client_secret="",
+                    )
+                ],
+            ),
+            override=mock_provider_override,
+        ),
+    ]
+
+    if mysite.store.enabled_providers is not None:
+        providers_list = [
+            provider
+            for provider in providers_list
+            if provider.config.third_party_id in mysite.store.enabled_providers
+        ]
+
+    if mysite.store.contact_method is not None and mysite.store.flow_type is not None:
+        if mysite.store.contact_method == "PHONE":
             passwordless_init = passwordless.init(
                 contact_config=ContactPhoneOnlyConfig(),
-                flow_type=flow_type,
-                sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
+                flow_type=mysite.store.flow_type,
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
-        elif contact_method == "EMAIL":
+        elif mysite.store.contact_method == "EMAIL":
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(),
-                flow_type=flow_type,
+                flow_type=mysite.store.flow_type,
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
@@ -625,11 +737,11 @@ def custom_init(
         else:
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(),
-                flow_type=flow_type,
+                flow_type=mysite.store.flow_type,
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
-                sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
+                sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
                 ),
@@ -639,7 +751,7 @@ def custom_init(
             contact_config=ContactEmailOrPhoneConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
-            sms_delivery=passwordless.SMSDeliveryConfig(CustomPlessSMSService()),
+            sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
             override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
         )
 
@@ -648,34 +760,240 @@ def custom_init(
     ) -> List[str]:
         return [tenant_id + ".example.com", "localhost"]
 
-    recipe_list = [
-        multitenancy.init(
-            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
-        ),
-        userroles.init(),
-        session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
-        emailverification.init(
-            mode="OPTIONAL",
-            email_delivery=emailverification.EmailDeliveryConfig(
-                CustomEVEmailService()
+    from supertokens_python.recipe.multifactorauth.interfaces import (
+        RecipeInterface as MFARecipeInterface,
+        APIInterface as MFAApiInterface,
+        APIOptions as MFAApiOptions,
+    )
+
+    def override_mfa_functions(original_implementation: MFARecipeInterface):
+        og_get_factors_setup_for_user = (
+            original_implementation.get_factors_setup_for_user
+        )
+
+        async def get_factors_setup_for_user(
+            user: User,
+            user_context: Dict[str, Any],
+        ):
+            res = await og_get_factors_setup_for_user(user, user_context)
+            if "alreadySetup" in mysite.store.mfa_info:
+                return mysite.store.mfa_info["alreadySetup"]
+            return res
+
+        og_assert_allowed_to_setup_factor = (
+            original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
+        )
+
+        async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
+            session: SessionContainer,
+            factor_id: str,
+            mfa_requirements_for_auth: Callable[[], Awaitable[MFARequirementList]],
+            factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
+            user_context: Dict[str, Any],
+        ):
+            if "allowedToSetup" in mysite.store.mfa_info:
+                if factor_id not in mysite.store.mfa_info["allowedToSetup"]:
+                    raise InvalidClaimsError(
+                        msg="INVALID_CLAIMS",
+                        payload=[
+                            ClaimValidationError(id_="test", reason="test override")
+                        ],
+                    )
+            else:
+                await og_assert_allowed_to_setup_factor(
+                    session,
+                    factor_id,
+                    mfa_requirements_for_auth,
+                    factors_set_up_for_user,
+                    user_context,
+                )
+
+        og_get_mfa_requirements_for_auth = (
+            original_implementation.get_mfa_requirements_for_auth
+        )
+
+        async def get_mfa_requirements_for_auth(
+            tenant_id: str,
+            access_token_payload: Dict[str, Any],
+            completed_factors: Dict[str, int],
+            user: Callable[[], Awaitable[User]],
+            factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
+            required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]],
+            required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]],
+            user_context: Dict[str, Any],
+        ) -> MFARequirementList:
+            res = await og_get_mfa_requirements_for_auth(
+                tenant_id,
+                access_token_payload,
+                completed_factors,
+                user,
+                factors_set_up_for_user,
+                required_secondary_factors_for_user,
+                required_secondary_factors_for_tenant,
+                user_context,
+            )
+            if "requirements" in mysite.store.mfa_info:
+                return mysite.store.mfa_info["requirements"]
+            return res
+
+        original_implementation.get_mfa_requirements_for_auth = (
+            get_mfa_requirements_for_auth
+        )
+
+        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = (
+            assert_allowed_to_setup_factor_else_throw_invalid_claim_error
+        )
+
+        original_implementation.get_factors_setup_for_user = get_factors_setup_for_user
+        return original_implementation
+
+    def override_mfa_apis(original_implementation: MFAApiInterface):
+        og_resync_session_and_fetch_mfa_info_put = (
+            original_implementation.resync_session_and_fetch_mfa_info_put
+        )
+
+        async def resync_session_and_fetch_mfa_info_put(
+            api_options: MFAApiOptions,
+            session: SessionContainer,
+            user_context: Dict[str, Any],
+        ) -> Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
+            res = await og_resync_session_and_fetch_mfa_info_put(
+                api_options, session, user_context
+            )
+
+            if isinstance(res, ResyncSessionAndFetchMFAInfoPUTOkResult):
+                if "alreadySetup" in mysite.store.mfa_info:
+                    res.factors.already_setup = mysite.store.mfa_info["alreadySetup"][:]
+
+                if "noContacts" in mysite.store.mfa_info:
+                    res.emails = {}
+                    res.phone_numbers = {}
+
+            return res
+
+        original_implementation.resync_session_and_fetch_mfa_info_put = (
+            resync_session_and_fetch_mfa_info_put
+        )
+        return original_implementation
+
+    recipe_list: List[Any] = [
+        {"id": "userroles", "init": userroles.init()},
+        {
+            "id": "session",
+            "init": session.init(
+                override=session.InputOverrideConfig(apis=override_session_apis)
             ),
-            override=EVInputOverrideConfig(apis=override_email_verification_apis),
-        ),
-        emailpassword.init(
-            sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
-            email_delivery=emailverification.EmailDeliveryConfig(
-                CustomEPEmailService()
+        },
+        {
+            "id": "emailverification",
+            "init": emailverification.init(
+                mode="OPTIONAL",
+                email_delivery=emailverification.EmailDeliveryConfig(
+                    CustomEVEmailService()
+                ),
+                override=EVInputOverrideConfig(apis=override_email_verification_apis),
             ),
-            override=emailpassword.InputOverrideConfig(
-                apis=override_email_password_apis,
+        },
+        {
+            "id": "emailpassword",
+            "init": emailpassword.init(
+                sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
+                email_delivery=emailpassword.EmailDeliveryConfig(
+                    CustomEPEmailService()
+                ),
+                override=emailpassword.InputOverrideConfig(
+                    apis=override_email_password_apis,
+                ),
             ),
-        ),
-        thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
-            override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
-        ),
-        passwordless_init,
+        },
+        {
+            "id": "thirdparty",
+            "init": thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
+                override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
+            ),
+        },
+        {
+            "id": "passwordless",
+            "init": passwordless_init,
+        },
+        {
+            "id": "multitenancy",
+            "init": multitenancy.init(
+                get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id
+            ),
+        },
+        {
+            "id": "multifactorauth",
+            "init": multifactorauth.init(
+                first_factors=mysite.store.mfa_info.get("firstFactors", None),
+                override=multifactorauth.OverrideConfig(
+                    functions=override_mfa_functions,
+                    apis=override_mfa_apis,
+                ),
+            ),
+        },
+        {
+            "id": "totp",
+            "init": totp.init(
+                config=totp.TOTPConfig(
+                    default_period=1,
+                    default_skew=30,
+                )
+            ),
+        },
     ]
+
+    accountlinking_config_input = {
+        "enabled": False,
+        "shouldAutoLink": {
+            "shouldAutomaticallyLink": True,
+            "shouldRequireVerification": True,
+        },
+        **mysite.store.accountlinking_config,
+    }
+
+    async def should_do_automatic_account_linking(
+        _: AccountInfoWithRecipeIdAndUserId,
+        __: Optional[User],
+        ___: Optional[SessionContainer],
+        ____: str,
+        _____: Dict[str, Any],
+    ) -> Union[
+        accountlinking.ShouldNotAutomaticallyLink,
+        accountlinking.ShouldAutomaticallyLink,
+    ]:
+        should_auto_link = accountlinking_config_input["shouldAutoLink"]
+        assert isinstance(should_auto_link, dict)
+        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]
+        assert isinstance(should_automatically_link, bool)
+        if should_automatically_link:
+            should_require_verification = should_auto_link["shouldRequireVerification"]
+            assert isinstance(should_require_verification, bool)
+            return accountlinking.ShouldAutomaticallyLink(
+                should_require_verification=should_require_verification
+            )
+        return accountlinking.ShouldNotAutomaticallyLink()
+
+    if accountlinking_config_input["enabled"]:
+        recipe_list.append(
+            {
+                "id": "accountlinking",
+                "init": accountlinking.init(
+                    should_do_automatic_account_linking=should_do_automatic_account_linking
+                ),
+            }
+        )
+
+    if mysite.store.enabled_recipes is not None:
+        recipe_list = [
+            item["init"]
+            for item in recipe_list
+            if item["id"] in mysite.store.enabled_recipes
+        ]
+    else:
+        recipe_list = [item["init"] for item in recipe_list]
+
     init(
         supertokens_config=SupertokensConfig("http://localhost:9000"),
         app_info=InputAppInfo(

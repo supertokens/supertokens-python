@@ -42,6 +42,21 @@
             ],
             "cwd": "${workspaceFolder}/tests/auth-react/fastapi-server",
             "jinja": true
+        },
+        {
+            "name": "Python: Django, supertokens-auth-react tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/auth-react/django3x/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8083"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "cwd": "${workspaceFolder}/tests/auth-react/django3x",
+            "jinja": true
         }
     ]
 }

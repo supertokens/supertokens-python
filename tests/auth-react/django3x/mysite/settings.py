@@ -30,7 +30,7 @@ SECRET_KEY = "f_d6ar@t2n+e@&7b^i^**kzo68w^e*1kn9%40#sp@0v2t#=vs2"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-custom_init(None, None)
+custom_init()
 
 ALLOWED_HOSTS = ["localhost"]
 
