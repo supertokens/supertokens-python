@@ -460,7 +460,14 @@ def test_get_totp_code(request: HttpRequest):
 def before_each(request: HttpRequest):
     import mysite.store
 
+    mysite.store.contact_method = "EMAIL_OR_PHONE"
+    mysite.store.flow_type = "USER_INPUT_CODE_AND_MAGIC_LINK"
+    mysite.store.latest_url_with_token = ""
     mysite.store.code_store = dict()
+    mysite.store.accountlinking_config = {}
+    mysite.store.enabled_providers = None
+    mysite.store.enabled_recipes = None
+    mysite.store.mfa_info = {}
     custom_init()
     return HttpResponse("")
 
