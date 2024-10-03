@@ -30,6 +30,18 @@
                 "FLASK_DEBUG": "1"
             },
             "jinja": true
+        },
+        {
+            "name": "Python: FastAPI, supertokens-auth-react tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/auth-react/fastapi-server/app.py",
+            "args": [
+                "--port",
+                "8083"
+            ],
+            "cwd": "${workspaceFolder}/tests/auth-react/fastapi-server",
+            "jinja": true
         }
     ]
 }
