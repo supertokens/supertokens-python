@@ -434,7 +434,7 @@ async def login(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         user_id = request.data["userId"]  # type: ignore
 
-        session_ = await create_new_session(request, "public", user_id)  # type: ignore
+        session_ = await create_new_session(request, "public", RecipeUserId(user_id))  # type: ignore
         return Response(session_.get_user_id())  # type: ignore
     else:
         return send_options_api_response()  # type: ignore

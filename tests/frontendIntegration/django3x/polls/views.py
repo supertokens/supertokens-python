@@ -408,7 +408,7 @@ async def login(request: HttpRequest):
     if request.method == "POST":
         user_id = json.loads(request.body)["userId"]
 
-        session_ = await create_new_session(request, "public", user_id)
+        session_ = await create_new_session(request, "public", RecipeUserId(user_id))
         return HttpResponse(session_.get_user_id())
     else:
         return send_options_api_response()
