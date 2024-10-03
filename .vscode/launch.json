@@ -17,6 +17,21 @@
             "jinja": true
         },
         {
+            "name": "Python: FastAPI, supertokens-website tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/frontendIntegration/fastapi-server/app.py",
+            "args": [
+                "--port",
+                "8080"
+            ],
+            "cwd": "${workspaceFolder}/tests/frontendIntegration/fastapi-server",
+            "env": {
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true
+        },
+        {
             "name": "Python: Flask, supertokens-auth-react tests",
             "type": "python",
             "request": "launch",
