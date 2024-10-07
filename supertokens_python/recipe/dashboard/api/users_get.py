@@ -79,7 +79,7 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
         user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.id, user_context)
+        user_metadata = await get_user_metadata(user.id)
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 
