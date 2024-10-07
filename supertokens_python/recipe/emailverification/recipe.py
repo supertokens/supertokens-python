@@ -414,7 +414,7 @@ class EmailVerificationRecipe(RecipeModule):
                     await revoke_all_sessions_for_user(
                         recipe_user_id_whose_email_got_verified.get_as_string(),
                         False,
-                        session.get_tenant_id(),
+                        None,
                         user_context,
                     )
 
