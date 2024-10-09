@@ -2,6 +2,7 @@ from typing import Any, Dict
 from supertokens_python.recipe.session.claims import SessionClaim
 
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.types import RecipeUserId, User
 
 test_claims: Dict[str, SessionClaim] = {}  # type: ignore
 
@@ -56,3 +57,32 @@ def get_max_version(v1: str, v2: str) -> str:
         return v1
 
     return v2
+
+
+def serialize_user(user: User, fdi_version: str) -> Dict[str, Any]:
+    if get_max_version("1.17", fdi_version) == "1.17" or (
+        get_max_version("2.0", fdi_version) == fdi_version
+        and get_max_version("3.0", fdi_version) != fdi_version
+    ):
+        return {
+            "user": {
+                "id": user.id,
+                "email": user.emails[0],
+                "timeJoined": user.time_joined,
+                "tenantIds": user.tenant_ids,
+            }
+        }
+    else:
+        return {"user": user.to_json()}
+
+
+def serialize_recipe_user_id(
+    recipe_user_id: RecipeUserId, fdi_version: str
+) -> Dict[str, Any]:
+    if get_max_version("1.17", fdi_version) == "1.17" or (
+        get_max_version("2.0", fdi_version) == fdi_version
+        and get_max_version("3.0", fdi_version) != fdi_version
+    ):
+        return {}
+    else:
+        return {"recipeUserId": recipe_user_id.get_as_string()}

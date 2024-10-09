@@ -6,8 +6,14 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UnknownUserIdError,
     UpdateEmailOrPasswordEmailChangeNotAllowedError,
     UpdateEmailOrPasswordOkResult,
+    WrongCredentialsError,
 )
 import supertokens_python.recipe.emailpassword.syncio as emailpassword
+from session import convert_session_to_container  # pylint: disable=import-error
+from utils import (  # pylint: disable=import-error
+    serialize_user,
+    serialize_recipe_user_id,
+)  # pylint: disable=import-error
 
 
 def add_emailpassword_routes(app: Flask):
@@ -20,23 +26,35 @@ def add_emailpassword_routes(app: Flask):
         email = data["email"]
         password = data["password"]
         user_context = data.get("userContext")
+        session = (
+            convert_session_to_container(data["session"]) if "session" in data else None
+        )
 
-        response = emailpassword.sign_up(tenant_id, email, password, user_context)
+        response = emailpassword.sign_up(
+            tenant_id, email, password, session, user_context
+        )
 
         if isinstance(response, SignUpOkResult):
             return jsonify(
                 {
                     "status": "OK",
-                    "user": {
-                        "id": response.user.id,
-                        "email": response.user.emails[0],
-                        "timeJoined": response.user.time_joined,
-                        "tenantIds": response.user.tenant_ids,
-                    },
+                    **serialize_user(
+                        response.user, request.headers.get("fdi-version", "")
+                    ),
+                    **serialize_recipe_user_id(
+                        response.recipe_user_id, request.headers.get("fdi-version", "")
+                    ),
                 }
             )
-        else:
+        elif isinstance(response, EmailAlreadyExistsError):
             return jsonify({"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+        else:
+            return jsonify(
+                {
+                    "status": response.status,
+                    "reason": response.reason,
+                }
+            )
 
     @app.route("/test/emailpassword/signin", methods=["POST"])  # type: ignore
     def emailpassword_signin():  # type: ignore
@@ -55,16 +73,23 @@ def add_emailpassword_routes(app: Flask):
             return jsonify(
                 {
                     "status": "OK",
-                    "user": {
-                        "id": response.user.id,
-                        "email": response.user.emails[0],
-                        "timeJoined": response.user.time_joined,
-                        "tenantIds": response.user.tenant_ids,
-                    },
+                    **serialize_user(
+                        response.user, request.headers.get("fdi-version", "")
+                    ),
+                    **serialize_recipe_user_id(
+                        response.recipe_user_id, request.headers.get("fdi-version", "")
+                    ),
                 }
             )
-        else:
+        elif isinstance(response, WrongCredentialsError):
             return jsonify({"status": "WRONG_CREDENTIALS_ERROR"})
+        else:
+            return jsonify(
+                {
+                    "status": response.status,
+                    "reason": response.reason,
+                }
+            )
 
     @app.route("/test/emailpassword/createresetpasswordlink", methods=["POST"])  # type: ignore
     def emailpassword_create_reset_password_link():  # type: ignore

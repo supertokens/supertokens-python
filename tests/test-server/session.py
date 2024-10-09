@@ -5,7 +5,10 @@ from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
 from supertokens_python.types import RecipeUserId
-from utils import deserialize_validator, get_max_version
+from utils import (  # pylint: disable=import-error
+    deserialize_validator,
+    get_max_version,
+)
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.session_class import Session
 import supertokens_python.recipe.session.syncio as session
@@ -175,12 +178,12 @@ def convert_session_to_container(data: Any) -> Session:
     jwt_info = parse_jwt_without_signature_verification(data["session"]["accessToken"])
     jwt_payload = jwt_info.payload
 
-    user_id = jwt_info.version == 2 and jwt_payload["userId"] or jwt_payload["sub"]
+    user_id = jwt_payload["userId"] if jwt_info.version == 2 else jwt_payload["sub"]
     session_handle = jwt_payload["sessionHandle"]
 
     recipe_user_id = RecipeUserId(jwt_payload.get("rsub", user_id))
     anti_csrf_token = jwt_payload.get("antiCsrfToken")
-    tenant_id = jwt_info.version >= 4 and jwt_payload["tId"] or "public"
+    tenant_id = jwt_payload["tId"] if jwt_info.version >= 4 else "public"
 
     return Session(
         recipe_implementation=SessionRecipe.get_instance().recipe_implementation,

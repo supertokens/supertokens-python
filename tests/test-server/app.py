@@ -2,11 +2,11 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
-from supertokens_python.recipe import accountlinking
+from supertokens_python.recipe import accountlinking, multifactorauth
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
-from utils import init_test_claims
+from utils import init_test_claims  # pylint: disable=import-error
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
@@ -18,10 +18,17 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from test_functions_mapper import get_func, get_override_params, reset_override_params
-from emailpassword import add_emailpassword_routes
-from multitenancy import add_multitenancy_routes
-from session import add_session_routes
+from test_functions_mapper import (  # pylint: disable=import-error
+    get_func,
+    get_override_params,
+    reset_override_params,
+)  # pylint: disable=import-error
+from emailpassword import add_emailpassword_routes  # pylint: disable=import-error
+from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
+from emailverification import (
+    add_emailverification_routes,
+)  # pylint: disable=import-error
+from session import add_session_routes  # pylint: disable=import-error
 from supertokens_python import (
     AppInfo,
     Supertokens,
@@ -52,8 +59,11 @@ api_port = 3030
 
 
 def default_st_init():
-    def origin_func(
-        request: Optional[BaseRequest] = None, context: Dict[str, Any] = {}
+    def origin_func(  # pylint: disable=unused-argument, dangerous-default-value
+        request: Optional[BaseRequest] = None,
+        context: Dict[  # pylint: disable=unused-argument, dangerous-default-value
+            str, Any
+        ] = {},  # pylint: disable=unused-argument, dangerous-default-value
     ) -> str:
         if request is None:
             return "http://localhost:8080"
@@ -150,7 +160,9 @@ def callback_with_log(
             impl = get_func(override_name)
         else:
 
-            async def default_func(*args: Any, **kwargs: Any) -> Any:
+            async def default_func(  # pylint: disable=unused-argument
+                *args: Any, **kwargs: Any  # pylint: disable=unused-argument
+            ) -> Any:  # pylint: disable=unused-argument
                 return default_value
 
             impl = default_func
@@ -388,6 +400,21 @@ def init_st(config: Dict[str, Any]):
                 functions=override_functions
             )
             recipe_list.append(emailverification.init(**ev_config))
+        elif recipe_id == "multifactorauth":
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            recipe_list.append(
+                multifactorauth.init(
+                    first_factors=recipe_config_json.get("firstFactors", None),
+                    override=multifactorauth.OverrideConfig(
+                        functions=override_builder_with_logging(
+                            "MultifactorAuth.override.functions",
+                            recipe_config_json.get("override", {}).get(
+                                "functions", None
+                            ),
+                        ),
+                    ),
+                )
+            )
 
     interceptor_func = None
     if config.get("supertokens", {}).get("networkInterceptor") is not None:
@@ -536,13 +563,14 @@ def verify_session_route():
 
 
 @app.errorhandler(404)
-def not_found(error: Any) -> Any:
+def not_found(error: Any) -> Any:  # pylint: disable=unused-argument
     return jsonify({"error": f"Route not found: {request.method} {request.path}"}), 404
 
 
 add_emailpassword_routes(app)
 add_multitenancy_routes(app)
 add_session_routes(app)
+add_emailverification_routes(app)
 
 init_test_claims()
 

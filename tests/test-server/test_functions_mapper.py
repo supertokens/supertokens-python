@@ -26,7 +26,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
     elif eval_str.startswith("accountlinking.init.shouldDoAutomaticAccountLinking"):
 
         async def func(
-            i: Any, l: Any, o: Any, u: Any, a: Any
+            i: Any, l: Any, o: Any, u: Any, a: Any  # pylint: disable=unused-argument
         ) -> Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]:
             if (
                 "()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!1})"
