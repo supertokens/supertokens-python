@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
+from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
@@ -49,11 +50,21 @@ api_port = 3030
 
 
 def default_st_init():
+    def origin_func(
+        request: Optional[BaseRequest] = None, context: Dict[str, Any] = {}
+    ) -> str:
+        if request is None:
+            return "http://localhost:8080"
+        origin = request.get_header("origin")
+        if origin is not None:
+            return origin
+        return "http://localhost:8080"
+
     init(
         app_info=InputAppInfo(
             app_name="SuperTokens",
             api_domain="http://api.supertokens.io",
-            website_domain="http://localhost:3000",
+            origin=origin_func,
         ),
         supertokens_config=SupertokensConfig(connection_uri="http://localhost:3567"),
         framework="flask",

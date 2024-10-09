@@ -4,6 +4,7 @@ import time
 from httpx import Response
 
 from supertokens_python.framework.flask.flask_request import FlaskRequest
+from supertokens_python.types import RecipeUserId
 
 override_logs: List[Dict[str, Any]] = []
 
@@ -40,5 +41,7 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
         return "FlaskRequest"
     if isinstance(data, Response):
         return "Response"
+    if isinstance(data, RecipeUserId):
+        return data.get_as_string()
 
     return data
