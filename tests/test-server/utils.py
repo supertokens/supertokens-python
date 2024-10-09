@@ -39,3 +39,20 @@ def toSnakeCase(camel_case: str) -> str:
         else:
             result += char
     return result
+
+
+def get_max_version(v1: str, v2: str) -> str:
+    v1_split = v1.split(".")
+    v2_split = v2.split(".")
+    max_loop = min(len(v1_split), len(v2_split))
+
+    for i in range(max_loop):
+        if int(v1_split[i]) > int(v2_split[i]):
+            return v1
+        if int(v2_split[i]) > int(v1_split[i]):
+            return v2
+
+    if len(v1_split) > len(v2_split):
+        return v1
+
+    return v2

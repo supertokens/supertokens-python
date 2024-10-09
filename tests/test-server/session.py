@@ -5,7 +5,7 @@ from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
 from supertokens_python.types import RecipeUserId
-from utils import deserialize_validator
+from utils import deserialize_validator, get_max_version
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.session_class import Session
 import supertokens_python.recipe.session.syncio as session
@@ -19,7 +19,18 @@ def add_session_routes(app: Flask):
             return jsonify({"status": "MISSING_DATA_ERROR"})
 
         tenant_id = data.get("tenantId", "public")
-        user_id = data["userId"]
+        from supertokens_python import convert_to_recipe_user_id
+
+        fdi_version = request.headers.get("fdi-version")
+        assert fdi_version is not None
+        if get_max_version("1.17", fdi_version) == "1.17" or (
+            get_max_version("2.0", fdi_version) == fdi_version
+            and get_max_version("3.0", fdi_version) != fdi_version
+        ):
+            # fdi_version <= "1.17" or (fdi_version >= "2.0" and fdi_version < "3.0")
+            recipe_user_id = convert_to_recipe_user_id(data["userId"])
+        else:
+            recipe_user_id = convert_to_recipe_user_id(data["recipeUserId"])
         access_token_payload = data.get("accessTokenPayload", {})
         session_data_in_database = data.get("sessionDataInDatabase", {})
         disable_anti_csrf = data.get("disableAntiCsrf")
@@ -27,7 +38,7 @@ def add_session_routes(app: Flask):
 
         session_container = session.create_new_session_without_request_response(
             tenant_id,
-            RecipeUserId(user_id),
+            recipe_user_id,
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
