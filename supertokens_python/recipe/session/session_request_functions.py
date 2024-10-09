@@ -269,7 +269,9 @@ async def create_new_session_in_request(
             del final_access_token_payload[prop]
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, recipe_user_id, tenant_id, user_context)
+        update = await claim.build(
+            user_id, recipe_user_id, tenant_id, final_access_token_payload, user_context
+        )
         final_access_token_payload.update(update)
 
     log_debug_message("createNewSession: Access token payload built")

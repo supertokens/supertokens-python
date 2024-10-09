@@ -16,7 +16,7 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from test_functions_mapper import get_func  # type: ignore
+from test_functions_mapper import get_func, get_override_params, reset_override_params  # type: ignore
 from emailpassword import add_emailpassword_routes
 from multitenancy import add_multitenancy_routes
 from session import add_session_routes
@@ -137,6 +137,8 @@ def logging_override_func_sync(name: str, c: Any) -> Any:
 
 
 def st_reset():
+    override_logging.reset_override_logs()
+    reset_override_params()
     ProcessState.get_instance().reset()
     Supertokens.reset()
     SessionRecipe.reset()
@@ -331,7 +333,15 @@ def init_st(config):  # type: ignore
             user_context: Optional[Dict[str, Any]] = None,
         ) -> Dict[str, Any]:
             if interceptor_func is not None:
-                return interceptor_func(url, method, headers, params, body, user_context)  # type: ignore
+                resp = interceptor_func(url, method, headers, params, body, user_context)  # type: ignore
+                return {
+                    "url": resp[0],
+                    "method": resp[1],
+                    "headers": resp[2],
+                    "params": resp[3],
+                    "body": resp[4],
+                    "user_context": resp[5],
+                }
             return {
                 "url": url,
                 "method": method,
@@ -382,7 +392,7 @@ def init_handler():
 
 @app.route("/test/overrideparams", methods=["GET"])  # type: ignore
 def override_params():
-    return jsonify("TODO")
+    return jsonify(get_override_params().to_json())
 
 
 @app.route("/test/featureflag", methods=["GET"])  # type: ignore
@@ -391,8 +401,9 @@ def feature_flag():
 
 
 @app.route("/test/resetoverrideparams", methods=["POST"])  # type: ignore
-def reset_override_params():
+def reset_override_params_api():
     override_logging.reset_override_logs()
+    reset_override_params()
     return jsonify({"ok": True})
 
 
