@@ -1,5 +1,8 @@
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from utils import init_test_claims
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
@@ -136,6 +139,9 @@ def st_reset():
     DashboardRecipe.reset()
     PasswordlessRecipe.reset()
     MultitenancyRecipe.reset()
+    AccountLinkingRecipe.reset()
+    TOTPRecipe.reset()
+    MultiFactorAuthRecipe.reset()
 
 
 def init_st(config):  # type: ignore

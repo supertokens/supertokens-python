@@ -72,6 +72,19 @@
             },
             "cwd": "${workspaceFolder}/tests/auth-react/django3x",
             "jinja": true
-        }
+        },
+        {
+            "name": "Python: backend-sdk-testing repo",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/test-server/app.py",
+            "cwd": "${workspaceFolder}/tests/test-server",
+            "env": {
+                "SUPERTOKENS_ENV": "testing",
+                "API_PORT": "3030",
+                "ST_CONNECTION_URI": "http://localhost:8081"
+            },
+            "console": "integratedTerminal"
+        },
     ]
 }
