@@ -1,7 +1,12 @@
-from typing import Callable, List
+from typing import Callable, List, Union
 from typing import Dict, Any, Optional
-from supertokens_python.recipe.accountlinking import RecipeLevelUser
-from supertokens_python.types import RecipeUserId
+from supertokens_python.asyncio import list_users_by_account_info
+from supertokens_python.recipe.accountlinking import (
+    RecipeLevelUser,
+    ShouldAutomaticallyLink,
+    ShouldNotAutomaticallyLink,
+)
+from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.types import APIResponse, User
 
 
@@ -9,7 +14,7 @@ class Info:
     core_call_count = 0
 
 
-def get_func(eval_str: str) -> Callable:  # type: ignore
+def get_func(eval_str: str) -> Callable[..., Any]:
     if eval_str.startswith("supertokens.init.supertokens.networkInterceptor"):
 
         def func(*args):  # type: ignore
@@ -17,6 +22,107 @@ def get_func(eval_str: str) -> Callable:  # type: ignore
             return args  # type: ignore
 
         return func  # type: ignore
+
+    elif eval_str.startswith("accountlinking.init.shouldDoAutomaticAccountLinking"):
+
+        async def func(
+            i: Any, l: Any, o: Any, u: Any, a: Any
+        ) -> Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]:
+            if (
+                "()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!1})"
+                in eval_str
+            ):
+                return ShouldAutomaticallyLink(should_require_verification=False)
+
+            if (
+                "(i,l,o,u,a)=>a.DO_LINK?{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}:{shouldAutomaticallyLink:!1}"
+                in eval_str
+            ):
+                if a.get("DO_LINK"):
+                    return ShouldAutomaticallyLink(should_require_verification=True)
+                return ShouldNotAutomaticallyLink()
+
+            if (
+                "(i,l,o,u,a)=>a.DO_NOT_LINK?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}"
+                in eval_str
+            ):
+                if a.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+                return ShouldAutomaticallyLink(should_require_verification=False)
+
+            if (
+                "(i,l,o,u,a)=>a.DO_NOT_LINK?{shouldAutomaticallyLink:!1}:a.DO_LINK_WITHOUT_VERIFICATION?{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}"
+                in eval_str
+            ):
+                if a.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+                if a.get("DO_LINK_WITHOUT_VERIFICATION"):
+                    return ShouldAutomaticallyLink(should_require_verification=False)
+                return ShouldAutomaticallyLink(should_require_verification=True)
+
+            if (
+                '(i,l,o,a,e)=>e.DO_NOT_LINK||"test2@example.com"===i.email&&void 0===l?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}'
+                in eval_str
+            ):
+                if a.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+                if i.get("email") == "test2@example.com" and l is None:
+                    return ShouldNotAutomaticallyLink()
+                return ShouldAutomaticallyLink(should_require_verification=False)
+
+            if (
+                "(i,l,o,d,t)=>t.DO_NOT_LINK||void 0!==l&&l.id===o.getUserId()?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}"
+                in eval_str
+            ):
+                if a.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+                if l is not None and l.get("id") == o.getUserId():
+                    return ShouldNotAutomaticallyLink()
+                return ShouldAutomaticallyLink(should_require_verification=False)
+
+            if (
+                "(i,l,o,d,t)=>t.DO_NOT_LINK||void 0!==l&&l.id===o.getUserId()?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}"
+                in eval_str
+            ):
+                if a.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+                if l is not None and l.get("id") == o.getUserId():
+                    return ShouldNotAutomaticallyLink()
+                return ShouldAutomaticallyLink(should_require_verification=True)
+
+            if (
+                '(i,l,o,a,e)=>e.DO_NOT_LINK||"test2@example.com"===i.email&&void 0===l?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}'
+                in eval_str
+            ):
+                if a.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+                if i.get("email") == "test2@example.com" and l is None:
+                    return ShouldNotAutomaticallyLink()
+                return ShouldAutomaticallyLink(should_require_verification=True)
+
+            if (
+                'async(i,e)=>{if("emailpassword"===i.recipeId){if(!((await supertokens.listUsersByAccountInfo("public",{email:i.email})).length>1))return{shouldAutomaticallyLink:!1}}return{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}}'
+                in eval_str
+            ):
+                if i.get("recipeId") == "emailpassword":
+                    users = await list_users_by_account_info(
+                        "public", AccountInfo(email=i.get("email"))
+                    )
+                    if len(users) <= 1:
+                        return ShouldNotAutomaticallyLink()
+                return ShouldAutomaticallyLink(should_require_verification=True)
+
+            if (
+                "async()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!0})"
+                in eval_str
+                or "()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!0})"
+                in eval_str
+            ):
+                return ShouldAutomaticallyLink(should_require_verification=True)
+
+            return ShouldNotAutomaticallyLink()
+
+        return func
 
     raise Exception("Unknown eval string")
 

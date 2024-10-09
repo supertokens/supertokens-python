@@ -1,6 +1,8 @@
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
 from supertokens_python.framework import BaseRequest
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+from supertokens_python.recipe import accountlinking
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
@@ -16,7 +18,7 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from test_functions_mapper import get_func, get_override_params, reset_override_params  # type: ignore
+from test_functions_mapper import get_func, get_override_params, reset_override_params
 from emailpassword import add_emailpassword_routes
 from multitenancy import add_multitenancy_routes
 from session import add_session_routes
@@ -80,48 +82,52 @@ def toCamelCase(snake_case: str) -> str:
     return components[0] + "".join(x.title() for x in components[1:])
 
 
-def create_override(input, member, name):  # type: ignore
-    member_val = getattr(input, member)  # type: ignore
+def create_override(
+    oI: Any, functionName: str, name: str, override_name: Optional[str] = None
+):
+    implementation = oI if override_name is None else get_func(override_name)(oI)
+    originalFunction = getattr(implementation, functionName)
 
-    async def override(*args, **kwargs):  # type: ignore
+    async def finalFunction(*args: Any, **kwargs: Any):
         override_logging.log_override_event(
-            name + "." + toCamelCase(member),  # type: ignore
+            name + "." + toCamelCase(functionName),
             "CALL",
             {"args": args, "kwargs": kwargs},
         )
         try:
-            res = await member_val(*args, **kwargs)
+            res = await originalFunction(*args, **kwargs)
             override_logging.log_override_event(
-                name + "." + toCamelCase(member), "RES", res  # type: ignore
+                name + "." + toCamelCase(functionName), "RES", res
             )
             return res
         except Exception as e:
             override_logging.log_override_event(
-                name + "." + toCamelCase(member), "REJ", e  # type: ignore
+                name + "." + toCamelCase(functionName), "REJ", e
             )
             raise e
 
-    setattr(input, member, override)  # type: ignore
+    setattr(oI, functionName, finalFunction)
 
 
 def override_builder_with_logging(
     name: str, override_name: Optional[str] = None
 ) -> Callable[[T], T]:
-    def builder(input: T) -> T:
-        for member in dir(input):
-            if member.startswith("__"):
-                continue
+    def builder(oI: T) -> T:
+        members = [
+            attr
+            for attr in dir(oI)
+            if callable(getattr(oI, attr)) and not attr.startswith("__")
+        ]
 
-            member_val = getattr(input, member)
-            if callable(member_val):
-                create_override(input, member, name)
-        return input
+        for member in members:
+            create_override(oI, member, name, override_name)
+        return oI
 
     return builder
 
 
 def logging_override_func_sync(name: str, c: Any) -> Any:
-    def inner(*args, **kwargs):  # type: ignore
+    def inner(*args: Any, **kwargs: Any) -> Any:
         override_logging.log_override_event(
             name, "CALL", {"args": args, "kwargs": kwargs}
         )
@@ -133,7 +139,25 @@ def logging_override_func_sync(name: str, c: Any) -> Any:
             override_logging.log_override_event(name, "REJ", e)
             raise e
 
-    return inner  # type: ignore
+    return inner
+
+
+def callback_with_log(
+    name: str, override_name: Optional[str], default_value: Any = None
+) -> Callable[..., Any]:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if override_name:
+            impl = get_func(override_name)
+        else:
+
+            async def default_func(*args: Any, **kwargs: Any) -> Any:
+                return default_value
+
+            impl = default_func
+
+        return logging_override_func_sync(name, impl)(*args, **kwargs)
+
+    return wrapper
 
 
 def st_reset():
@@ -157,16 +181,16 @@ def st_reset():
     MultiFactorAuthRecipe.reset()
 
 
-def init_st(config):  # type: ignore
+def init_st(config: Dict[str, Any]):
     st_reset()
     override_logging.reset_override_logs()
 
     recipe_list: List[Callable[[AppInfo], RecipeModule]] = []
-    for recipe_config in config.get("recipeList", []):  # type: ignore
-        recipe_id = recipe_config.get("recipeId")  # type: ignore
+    for recipe_config in config.get("recipeList", []):
+        recipe_id = recipe_config.get("recipeId")
         if recipe_id == "emailpassword":
             sign_up_feature_input = None
-            recipe_config_json = json.loads(recipe_config.get("config", "{}"))  # type: ignore
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             if "signUpFeature" in recipe_config_json:
                 sign_up_feature = recipe_config_json["signUpFeature"]
                 if "formFields" in sign_up_feature:
@@ -178,11 +202,29 @@ def init_st(config):  # type: ignore
                     )
 
             recipe_list.append(
-                emailpassword.init(sign_up_feature=sign_up_feature_input)
+                emailpassword.init(
+                    sign_up_feature=sign_up_feature_input,
+                    email_delivery=EmailDeliveryConfig(
+                        override=override_builder_with_logging(
+                            "EmailPassword.emailDelivery.override",
+                            config.get("emailDelivery", {}).get("override", None),
+                        )
+                    ),
+                    override=emailpassword.InputOverrideConfig(
+                        apis=override_builder_with_logging(
+                            "EmailPassword.override.apis",
+                            config.get("override", {}).get("apis", None),
+                        ),
+                        functions=override_builder_with_logging(
+                            "EmailPassword.override.functions",
+                            config.get("override", {}).get("functions", None),
+                        ),
+                    ),
+                )
             )
 
         elif recipe_id == "session":
-            recipe_config_json = json.loads(recipe_config.get("config", "{}"))  # type: ignore
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(
                 session.init(
                     cookie_secure=recipe_config_json.get("cookieSecure"),
@@ -202,11 +244,45 @@ def init_st(config):  # type: ignore
                     use_dynamic_access_token_signing_key=recipe_config_json.get(
                         "useDynamicAccessTokenSigningKey"
                     ),
+                    override=session.InputOverrideConfig(
+                        apis=override_builder_with_logging(
+                            "Session.override.apis",
+                            recipe_config_json.get("override", {}).get("apis", None),
+                        ),
+                        functions=override_builder_with_logging(
+                            "Session.override.functions",
+                            recipe_config_json.get("override", {}).get(
+                                "functions", None
+                            ),
+                        ),
+                    ),
                 )
             )
-
+        elif recipe_id == "accountlinking":
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            recipe_list.append(
+                accountlinking.init(
+                    should_do_automatic_account_linking=callback_with_log(
+                        "AccountLinking.shouldDoAutomaticAccountLinking",
+                        recipe_config_json.get("shouldDoAutomaticAccountLinking"),
+                        accountlinking.ShouldNotAutomaticallyLink(),
+                    ),
+                    on_account_linked=callback_with_log(
+                        "AccountLinking.onAccountLinked",
+                        recipe_config_json.get("on_account_linked"),
+                    ),
+                    override=accountlinking.InputOverrideConfig(
+                        functions=override_builder_with_logging(
+                            "AccountLinking.override.functions",
+                            recipe_config_json.get("override", {}).get(
+                                "functions", None
+                            ),
+                        ),
+                    ),
+                )
+            )
         elif recipe_id == "thirdparty":
-            recipe_config_json = json.loads(recipe_config.get("config", "{}"))  # type: ignore
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             providers: List[thirdparty.ProviderInput] = []
             if "signInAndUpFeature" in recipe_config_json:
                 sign_in_up_feature = recipe_config_json["signInAndUpFeature"]
@@ -298,21 +374,26 @@ def init_st(config):  # type: ignore
             )
 
         elif recipe_id == "emailverification":
-            recipe_config_json = json.loads(recipe_config.get("config", "{}"))  # type: ignore
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             ev_config: Dict[str, Any] = {"mode": "OPTIONAL"}
             if "mode" in recipe_config_json:
                 ev_config["mode"] = recipe_config_json["mode"]
 
-            override_functions = override_builder_with_logging("EmailVerification.override.functions")  # type: ignore
+            override_functions = override_builder_with_logging(
+                "EmailVerification.override.functions",
+                config.get("override", {}).get("functions", None),
+            )
 
             ev_config["override"] = emailverification.InputOverrideConfig(
-                functions=override_functions  # type: ignore
+                functions=override_functions
             )
             recipe_list.append(emailverification.init(**ev_config))
 
-    interceptor_func = None  # type: ignore
-    if config.get("supertokens", {}).get("networkInterceptor") is not None:  # type: ignore
-        interceptor_func = get_func(config.get("supertokens", {}).get("networkInterceptor"))  # type: ignore
+    interceptor_func = None
+    if config.get("supertokens", {}).get("networkInterceptor") is not None:
+        interceptor_func = get_func(
+            config.get("supertokens", {}).get("networkInterceptor")
+        )
 
     def network_interceptor_func(
         url: str,
@@ -333,7 +414,9 @@ def init_st(config):  # type: ignore
             user_context: Optional[Dict[str, Any]] = None,
         ) -> Dict[str, Any]:
             if interceptor_func is not None:
-                resp = interceptor_func(url, method, headers, params, body, user_context)  # type: ignore
+                resp = interceptor_func(
+                    url, method, headers, params, body, user_context
+                )
                 return {
                     "url": resp[0],
                     "method": resp[1],
@@ -351,7 +434,9 @@ def init_st(config):  # type: ignore
                 "user_context": user_context,
             }
 
-        res = logging_override_func_sync("networkInterceptor", inner)(url, method, headers, params, body, user_context)  # type: ignore
+        res = logging_override_func_sync("networkInterceptor", inner)(
+            url, method, headers, params, body, user_context
+        )
         return (
             res.get("url"),
             res.get("method"),
@@ -362,12 +447,12 @@ def init_st(config):  # type: ignore
 
     init(
         app_info=InputAppInfo(
-            app_name=config["appInfo"]["appName"],  # type: ignore
-            api_domain=config["appInfo"]["apiDomain"],  # type: ignore
-            website_domain=config["appInfo"]["websiteDomain"],  # type: ignore
+            app_name=config["appInfo"]["appName"],
+            api_domain=config["appInfo"]["apiDomain"],
+            website_domain=config["appInfo"]["websiteDomain"],
         ),
         supertokens_config=SupertokensConfig(
-            connection_uri=config["supertokens"]["connectionURI"],  # type: ignore
+            connection_uri=config["supertokens"]["connectionURI"],
             network_interceptor=network_interceptor_func,
         ),
         framework="flask",
@@ -383,7 +468,9 @@ def ping():
 
 @app.route("/test/init", methods=["POST"])  # type: ignore
 def init_handler():
-    config = request.json.get("config")  # type: ignore
+    if request.json is None:
+        return jsonify({"error": "No config provided"}), 400
+    config = request.json.get("config")
     if config:
         init_st(json.loads(config))
         return jsonify({"ok": True})
@@ -417,9 +504,9 @@ def mock_external_api():
     return jsonify({"ok": True})
 
 
-# @app.route("/create", methods=["POST"])  # type: ignore
+# @app.route("/create", methods=["POST"])
 # def create_session():
-#     recipe_user_id = request.json.get("recipeUserId")  # type: ignore
+#     recipe_user_id = request.json.get("recipeUserId")
 
 #     session = session.create_new_session(request, "public", recipe_user_id)
 #     return jsonify({"status": "OK"})
@@ -434,7 +521,7 @@ def get_session():
     )
 
 
-# @app.route("/refreshsession", methods=["POST"])  # type: ignore
+# @app.route("/refreshsession", methods=["POST"])
 # def refresh_session():
 #     session: SessionContainer = session.refresh_session(request)
 #     return jsonify(
@@ -449,7 +536,7 @@ def verify_session_route():
 
 
 @app.errorhandler(404)
-def not_found(error):  # type: ignore
+def not_found(error: Any) -> Any:
     return jsonify({"error": f"Route not found: {request.method} {request.path}"}), 404
 
 
