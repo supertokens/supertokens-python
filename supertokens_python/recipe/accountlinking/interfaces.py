@@ -220,9 +220,9 @@ class LinkAccountsOkResult:
 class LinkAccountsRecipeUserIdAlreadyLinkedError:
     def __init__(
         self,
-        primary_user_id: Optional[str] = None,
-        user: Optional[User] = None,
-        description: Optional[str] = None,
+        primary_user_id: str,
+        user: User,
+        description: str,
     ):
         self.status: Literal[
             "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
@@ -236,14 +236,12 @@ class LinkAccountsAccountInfoAlreadyAssociatedError:
     def __init__(
         self,
         primary_user_id: Optional[str] = None,
-        user: Optional[User] = None,
         description: Optional[str] = None,
     ):
         self.status: Literal[
             "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ] = "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         self.primary_user_id = primary_user_id
-        self.user = user
         self.description = description
 
 

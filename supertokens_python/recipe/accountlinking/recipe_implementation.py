@@ -278,6 +278,7 @@ class RecipeImplementation(RecipeInterface):
         ):
             return LinkAccountsRecipeUserIdAlreadyLinkedError(
                 primary_user_id=response["primaryUserId"],
+                user=response["user"],
                 description=response["description"],
             )
         elif (

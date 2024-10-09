@@ -1,3 +1,4 @@
+import inspect
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
 from supertokens_python.framework import BaseRequest
@@ -24,7 +25,9 @@ from test_functions_mapper import (  # pylint: disable=import-error
     reset_override_params,
 )  # pylint: disable=import-error
 from emailpassword import add_emailpassword_routes  # pylint: disable=import-error
+from thirdparty import add_thirdparty_routes  # pylint: disable=import-error
 from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
+from accountlinking import add_accountlinking_routes  # pylint: disable=import-error
 from emailverification import (
     add_emailverification_routes,
 )  # pylint: disable=import-error
@@ -105,7 +108,10 @@ def create_override(
             {"args": args, "kwargs": kwargs},
         )
         try:
-            res = await originalFunction(*args, **kwargs)
+            if inspect.iscoroutinefunction(originalFunction):
+                res = await originalFunction(*args, **kwargs)
+            else:
+                res = originalFunction(*args, **kwargs)
             override_logging.log_override_event(
                 name + "." + toCamelCase(functionName), "RES", res
             )
@@ -255,6 +261,9 @@ def init_st(config: Dict[str, Any]):
                     ),
                     use_dynamic_access_token_signing_key=recipe_config_json.get(
                         "useDynamicAccessTokenSigningKey"
+                    ),
+                    overwrite_session_during_sign_in_up=recipe_config_json.get(
+                        "overwriteSessionDuringSignInUp", None
                     ),
                     override=session.InputOverrideConfig(
                         apis=override_builder_with_logging(
@@ -440,6 +449,14 @@ def init_st(config: Dict[str, Any]):
             body: Optional[Dict[str, Any]],
             user_context: Optional[Dict[str, Any]] = None,
         ) -> Dict[str, Any]:
+            # print(
+            #     "-------------------------------------------!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            # )
+            # print(url)
+            # import traceback
+            # print("Stack trace:")
+            # traceback.print_stack()
+
             if interceptor_func is not None:
                 resp = interceptor_func(
                     url, method, headers, params, body, user_context
@@ -571,6 +588,8 @@ add_emailpassword_routes(app)
 add_multitenancy_routes(app)
 add_session_routes(app)
 add_emailverification_routes(app)
+add_thirdparty_routes(app)
+add_accountlinking_routes(app)
 
 init_test_claims()
 
