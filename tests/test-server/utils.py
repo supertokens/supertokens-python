@@ -1,26 +1,85 @@
-from typing import Any, Dict
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
 from supertokens_python.recipe.session.claims import SessionClaim
 
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.types import RecipeUserId, User
+from override_logging import log_override_event  # pylint: disable=import-error
+from supertokens_python.recipe.session.claims import BooleanClaim
+from supertokens_python.recipe.emailverification import EmailVerificationClaim
+from supertokens_python.recipe.userroles import UserRoleClaim
+from supertokens_python.recipe.userroles import PermissionClaim
+from typing import Any, Dict
+from supertokens_python.recipe.session.claims import PrimitiveClaim
 
-test_claims: Dict[str, SessionClaim] = {}  # type: ignore
+
+def mock_claim_builder(key: str, values: Any) -> PrimitiveClaim[Any]:
+    def fetch_value(
+        user_id: str,
+        recipe_user_id: RecipeUserId,
+        tenant_id: str,
+        current_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> Any:
+        log_override_event(
+            f"claim-{key}.fetchValue",
+            "CALL",
+            {
+                "userId": user_id,
+                "recipeUserId": recipe_user_id.get_as_string(),
+                "tenantId": tenant_id,
+                "currentPayload": current_payload,
+                "userContext": user_context,
+            },
+        )
+
+        ret_val: Any = user_context.get("st-stub-arr-value") or (
+            values[0]
+            if isinstance(values, list) and isinstance(values[0], list)
+            else values
+        )
+        log_override_event(f"claim-{key}.fetchValue", "RES", ret_val)
+
+        return ret_val
+
+    return PrimitiveClaim(key=key or "st-stub-primitive", fetch_value=fetch_value)
 
 
-def init_test_claims():
-    add_builtin_claims()
+test_claim_setups: Dict[str, SessionClaim[Any]] = {
+    "st-true": BooleanClaim(
+        key="st-true",
+        fetch_value=lambda *_args, **_kwargs: True,  # type: ignore
+    ),
+    "st-undef": BooleanClaim(
+        key="st-undef",
+        fetch_value=lambda *_args, **_kwargs: None,  # type: ignore
+    ),
+}
+
+# Add all built-in claims
+for claim in [
+    EmailVerificationClaim,
+    MultiFactorAuthClaim,
+    UserRoleClaim,
+    PermissionClaim,
+]:
+    test_claim_setups[claim.key] = claim  # type: ignore
 
 
-def add_builtin_claims():
-    from supertokens_python.recipe.emailverification import EmailVerificationClaim
+def deserialize_claim(serialized_claim: Dict[str, Any]) -> SessionClaim[Any]:
+    key = serialized_claim["key"]
 
-    test_claims[EmailVerificationClaim.key] = EmailVerificationClaim
+    if key.startswith("st-stub-"):
+        return mock_claim_builder(key.replace("st-stub-", "", 1), serialized_claim)
+
+    return test_claim_setups[key]
 
 
 def deserialize_validator(validatorsInput: Any) -> SessionClaimValidator:  # type: ignore
     key = validatorsInput["key"]
-    if key in test_claims:
-        claim = test_claims[key]  # type: ignore
+    if key in test_claim_setups:
+        claim = test_claim_setups[key]
         validator_name = validatorsInput["validatorName"]
         if hasattr(claim.validators, toSnakeCase(validator_name)):  # type: ignore
             validator_func = getattr(claim.validators, toSnakeCase(validator_name))  # type: ignore

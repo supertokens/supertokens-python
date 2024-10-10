@@ -677,11 +677,8 @@ class SessionClaim(ABC, Generic[_T]):
         recipe_user_id: RecipeUserId,
         tenant_id: str,
         current_payload: Dict[str, Any],
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any],
     ) -> JSONObject:
-        if user_context is None:
-            user_context = {}
-
         value = await resolve(
             self.fetch_value(
                 user_id, recipe_user_id, tenant_id, current_payload, user_context

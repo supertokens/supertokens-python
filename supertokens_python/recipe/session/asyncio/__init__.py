@@ -123,7 +123,9 @@ async def create_new_session_without_request_response(
         user_id = user.id
 
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, recipe_user_id, tenant_id, user_context)
+        update = await claim.build(
+            user_id, recipe_user_id, tenant_id, final_access_token_payload, user_context
+        )
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(

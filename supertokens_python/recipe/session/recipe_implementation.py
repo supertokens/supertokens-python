@@ -139,7 +139,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 log_debug_message(
                     "update_claims_in_payload_if_needed %s refetch result %s",
                     validator.id,
-                    json.dumps(value),
+                    value,
                 )
                 if value is not None:
                     access_token_payload = validator.claim.add_to_payload_(
@@ -425,6 +425,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             session_info.user_id,
             session_info.recipe_user_id,
             session_info.tenant_id,
+            session_info.custom_claims_in_access_token_payload,
             user_context,
         )
         return await self.merge_into_access_token_payload(

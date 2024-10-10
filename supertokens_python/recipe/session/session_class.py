@@ -240,6 +240,7 @@ class Session(SessionContainer):
             self.get_user_id(user_context=user_context),
             self.get_recipe_user_id(user_context=user_context),
             self.get_tenant_id(user_context=user_context),
+            self.get_access_token_payload(user_context=user_context),
             user_context,
         )
         return await self.merge_into_access_token_payload(update, user_context)

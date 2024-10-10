@@ -7,7 +7,7 @@ from supertokens_python.recipe import accountlinking, multifactorauth
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
-from utils import init_test_claims  # pylint: disable=import-error
+from passwordless import add_passwordless_routes  # pylint: disable=import-error
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
@@ -590,8 +590,7 @@ add_session_routes(app)
 add_emailverification_routes(app)
 add_thirdparty_routes(app)
 add_accountlinking_routes(app)
-
-init_test_claims()
+add_passwordless_routes(app)
 
 if __name__ == "__main__":
     default_st_init()

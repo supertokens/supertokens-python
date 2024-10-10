@@ -111,6 +111,14 @@ class ConsumedDevice:
             phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
         )
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "preAuthSessionId": self.pre_auth_session_id,
+            "failedCodeInputAttemptCount": self.failed_code_input_attempt_count,
+            "email": self.email,
+            "phoneNumber": self.phone_number,
+        }
+
 
 class ConsumeCodeOkResult:
     def __init__(

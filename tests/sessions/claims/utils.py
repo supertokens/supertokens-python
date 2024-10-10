@@ -31,11 +31,15 @@ def session_functions_override_with_claim(
             tenant_id: str,
             user_context: Dict[str, Any],
         ):
-            payload_update = await claim.build(
-                user_id, RecipeUserId(user_id), tenant_id, user_context
-            )
             if access_token_payload is None:
                 access_token_payload = {}
+            payload_update = await claim.build(
+                user_id,
+                RecipeUserId(user_id),
+                tenant_id,
+                access_token_payload,
+                user_context,
+            )
             access_token_payload = {
                 **access_token_payload,
                 **payload_update,

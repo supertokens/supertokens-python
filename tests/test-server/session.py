@@ -1,5 +1,6 @@
 from typing import Any
 from flask import Flask, request, jsonify
+from override_logging import log_override_event  # pylint: disable=import-error
 from supertokens_python.recipe.session.interfaces import TokenInfo
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
@@ -12,6 +13,7 @@ from utils import (  # pylint: disable=import-error
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.session_class import Session
 import supertokens_python.recipe.session.syncio as session
+from utils import deserialize_claim  # pylint: disable=import-error
 
 
 def add_session_routes(app: Flask):
@@ -172,6 +174,43 @@ def add_session_routes(app: Flask):
                 },
             }
         )
+
+    @app.route("/test/session/sessionobject/fetchandsetclaim", methods=["POST"])  # type: ignore
+    def fetch_and_set_claim_api():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        log_override_event("sessionobject.fetchandsetclaim", "CALL", data)
+        session = convert_session_to_container(data)
+
+        claim = deserialize_claim(data["claim"])
+        user_context = data.get("userContext", {})
+
+        session.sync_fetch_and_set_claim(claim, user_context)
+        response = {
+            "updatedSession": {
+                "sessionHandle": session.get_handle(),
+                "userId": session.get_user_id(),
+                "recipeUserId": session.get_recipe_user_id().get_as_string(),
+                "tenantId": session.get_tenant_id(),
+                "userDataInAccessToken": session.get_access_token_payload(),
+                "accessToken": session.get_access_token(),
+                "frontToken": session.get_all_session_tokens_dangerously()[
+                    "frontToken"
+                ],
+                "refreshToken": session.get_all_session_tokens_dangerously()[
+                    "refreshToken"
+                ],
+                "antiCsrfToken": session.get_all_session_tokens_dangerously()[
+                    "antiCsrfToken"
+                ],
+                "accessTokenUpdated": session.get_all_session_tokens_dangerously()[
+                    "accessAndFrontTokenUpdated"
+                ],
+            }
+        }
+        return jsonify(response)
 
 
 def convert_session_to_container(data: Any) -> Session:
