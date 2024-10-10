@@ -141,7 +141,6 @@ def override_builder_with_logging(
             for attr in dir(oI)
             if callable(getattr(oI, attr)) and not attr.startswith("__")
         ]
-
         for member in members:
             create_override(oI, member, name, override_name)
         return oI
@@ -340,7 +339,7 @@ def init_st(config: Dict[str, Any]):
                                 ),
                             )
 
-                        include_in_non_public_tenants_by_default = None
+                        include_in_non_public_tenants_by_default = False
 
                         if "includeInNonPublicTenantsByDefault" in provider:
                             include_in_non_public_tenants_by_default = provider[
@@ -391,6 +390,10 @@ def init_st(config: Dict[str, Any]):
                                 ),
                             ),
                             include_in_non_public_tenants_by_default=include_in_non_public_tenants_by_default,
+                            override=override_builder_with_logging(
+                                "ThirdParty.providers.override",
+                                provider.get("override", None),
+                            ),
                         )
                         providers.append(provider_input)
             recipe_list.append(
@@ -662,6 +665,9 @@ add_thirdparty_routes(app)
 add_accountlinking_routes(app)
 add_passwordless_routes(app)
 add_totp_routes(app)
+from supertokens import add_supertokens_routes  # pylint: disable=import-error
+
+add_supertokens_routes(app)
 
 if __name__ == "__main__":
     default_st_init()

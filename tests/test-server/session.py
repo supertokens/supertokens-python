@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, Dict
 from flask import Flask, request, jsonify
 from override_logging import log_override_event  # pylint: disable=import-error
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import TokenInfo
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
@@ -50,27 +51,7 @@ def add_session_routes(app: Flask):
             user_context,
         )
 
-        return jsonify(
-            {
-                "sessionHandle": session_container.get_handle(),
-                "userId": session_container.get_user_id(),
-                "tenantId": session_container.get_tenant_id(),
-                "userDataInAccessToken": session_container.get_access_token_payload(),
-                "accessToken": session_container.get_access_token(),
-                "frontToken": session_container.get_all_session_tokens_dangerously()[
-                    "frontToken"
-                ],
-                "refreshToken": session_container.get_all_session_tokens_dangerously()[
-                    "refreshToken"
-                ],
-                "antiCsrfToken": session_container.get_all_session_tokens_dangerously()[
-                    "antiCsrfToken"
-                ],
-                "accessTokenUpdated": session_container.get_all_session_tokens_dangerously()[
-                    "accessAndFrontTokenUpdated"
-                ],
-            }
-        )
+        return jsonify(convert_session_to_json(session_container))
 
     @app.route("/test/session/getsessionwithoutrequestresponse", methods=["POST"])  # type: ignore
     def get_session_without_request_response():  # type: ignore
@@ -83,13 +64,14 @@ def add_session_routes(app: Flask):
         options = data.get("options")
         user_context = data.get("userContext", {})
 
-        try:
-            session_container = session.get_session_without_request_response(
-                access_token, anti_csrf_token, options, user_context
-            )
-            return jsonify(session_container)
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+        session_container = session.get_session_without_request_response(
+            access_token, anti_csrf_token, options, user_context
+        )
+        return jsonify(
+            None
+            if session_container is None
+            else convert_session_to_json(session_container)
+        )
 
     @app.route("/test/session/sessionobject/assertclaims", methods=["POST"])  # type: ignore
     def assert_claims():  # type: ignore
@@ -211,6 +193,28 @@ def add_session_routes(app: Flask):
             }
         }
         return jsonify(response)
+
+
+def convert_session_to_json(session_container: SessionContainer) -> Dict[str, Any]:
+    return {
+        "sessionHandle": session_container.get_handle(),
+        "userId": session_container.get_user_id(),
+        "tenantId": session_container.get_tenant_id(),
+        "userDataInAccessToken": session_container.get_access_token_payload(),
+        "accessToken": session_container.get_access_token(),
+        "frontToken": session_container.get_all_session_tokens_dangerously()[
+            "frontToken"
+        ],
+        "refreshToken": session_container.get_all_session_tokens_dangerously()[
+            "refreshToken"
+        ],
+        "antiCsrfToken": session_container.get_all_session_tokens_dangerously()[
+            "antiCsrfToken"
+        ],
+        "accessTokenUpdated": session_container.get_all_session_tokens_dangerously()[
+            "accessAndFrontTokenUpdated"
+        ],
+    }
 
 
 def convert_session_to_container(data: Any) -> Session:

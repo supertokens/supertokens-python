@@ -6,6 +6,11 @@ from supertokens_python.recipe.accountlinking import (
     ShouldAutomaticallyLink,
     ShouldNotAutomaticallyLink,
 )
+from supertokens_python.recipe.thirdparty.types import (
+    RawUserInfoFromProvider,
+    UserInfo,
+    UserInfoEmail,
+)
 from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.types import APIResponse, User
 
@@ -124,7 +129,164 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
         return func
 
-    raise Exception("Unknown eval string")
+    if eval_str.startswith("thirdparty.init.signInAndUpFeature.providers"):
+
+        def custom_provider(provider: Any):
+            if "custom-ev" in eval_str:
+
+                def exchange_auth_code_for_oauth_tokens1(
+                    redirect_uri_info: Any,  # pylint: disable=unused-argument
+                    user_context: Any,  # pylint: disable=unused-argument
+                ) -> Any:
+                    return {}
+
+                def get_user_info1(
+                    oauth_tokens: Any,
+                    user_context: Any,  # pylint: disable=unused-argument
+                ):  # pylint: disable=unused-argument
+                    return UserInfo(
+                        third_party_user_id=oauth_tokens.get("userId", "user"),
+                        email=UserInfoEmail(
+                            email=oauth_tokens.get("email", "email@test.com"),
+                            is_verified=True,
+                        ),
+                        raw_user_info_from_provider=RawUserInfoFromProvider(
+                            from_id_token_payload=None,
+                            from_user_info_api=None,
+                        ),
+                    )
+
+                provider.exchange_auth_code_for_oauth_tokens = (
+                    exchange_auth_code_for_oauth_tokens1
+                )
+                provider.get_user_info = get_user_info1
+                return provider
+
+            if "custom-no-ev" in eval_str:
+
+                def exchange_auth_code_for_oauth_tokens2(
+                    redirect_uri_info: Any,  # pylint: disable=unused-argument
+                    user_context: Any,  # pylint: disable=unused-argument
+                ) -> Any:
+                    return {}
+
+                def get_user_info2(
+                    oauth_tokens: Any, user_context: Any
+                ):  # pylint: disable=unused-argument
+                    return UserInfo(
+                        third_party_user_id=oauth_tokens.get("userId", "user"),
+                        email=UserInfoEmail(
+                            email=oauth_tokens.get("email", "email@test.com"),
+                            is_verified=False,
+                        ),
+                        raw_user_info_from_provider=RawUserInfoFromProvider(
+                            from_id_token_payload=None,
+                            from_user_info_api=None,
+                        ),
+                    )
+
+                provider.exchange_auth_code_for_oauth_tokens = (
+                    exchange_auth_code_for_oauth_tokens2
+                )
+                provider.get_user_info = get_user_info2
+                return provider
+
+            if "custom2" in eval_str:
+
+                def exchange_auth_code_for_oauth_tokens3(
+                    redirect_uri_info: Any,
+                    user_context: Any,  # pylint: disable=unused-argument
+                ) -> Any:
+                    return redirect_uri_info["redirectURIQueryParams"]
+
+                def get_user_info3(
+                    oauth_tokens: Any, user_context: Any
+                ):  # pylint: disable=unused-argument
+                    return UserInfo(
+                        third_party_user_id=f"custom2{oauth_tokens['email']}",
+                        email=UserInfoEmail(
+                            email=oauth_tokens["email"],
+                            is_verified=True,
+                        ),
+                        raw_user_info_from_provider=RawUserInfoFromProvider(
+                            from_id_token_payload=None,
+                            from_user_info_api=None,
+                        ),
+                    )
+
+                provider.exchange_auth_code_for_oauth_tokens = (
+                    exchange_auth_code_for_oauth_tokens3
+                )
+                provider.get_user_info = get_user_info3
+                return provider
+
+            if "custom3" in eval_str:
+
+                def exchange_auth_code_for_oauth_tokens4(
+                    redirect_uri_info: Any,
+                    user_context: Any,  # pylint: disable=unused-argument
+                ) -> Any:
+                    return redirect_uri_info["redirectURIQueryParams"]
+
+                def get_user_info4(
+                    oauth_tokens: Any, user_context: Any
+                ):  # pylint: disable=unused-argument
+                    return UserInfo(
+                        third_party_user_id=oauth_tokens["email"],
+                        email=UserInfoEmail(
+                            email=oauth_tokens["email"],
+                            is_verified=True,
+                        ),
+                        raw_user_info_from_provider=RawUserInfoFromProvider(
+                            from_id_token_payload=None,
+                            from_user_info_api=None,
+                        ),
+                    )
+
+                provider.exchange_auth_code_for_oauth_tokens = (
+                    exchange_auth_code_for_oauth_tokens4
+                )
+                provider.get_user_info = get_user_info4
+                return provider
+
+            if "custom" in eval_str:
+
+                def exchange_auth_code_for_oauth_tokens5(
+                    redirect_uri_info: Any,
+                    user_context: Any,  # pylint: disable=unused-argument
+                ) -> Any:
+                    return redirect_uri_info
+
+                def get_user_info5(
+                    oauth_tokens: Any, user_context: Any
+                ):  # pylint: disable=unused-argument
+                    if oauth_tokens.get("error"):
+                        raise Exception("Credentials error")
+                    return UserInfo(
+                        third_party_user_id=oauth_tokens.get("userId", "userId"),
+                        email=(
+                            None
+                            if oauth_tokens.get("email") is None
+                            else UserInfoEmail(
+                                email=oauth_tokens.get("email"),
+                                is_verified=oauth_tokens.get("isVerified", False),
+                            )
+                        ),
+                        raw_user_info_from_provider=RawUserInfoFromProvider(
+                            from_id_token_payload=None,
+                            from_user_info_api=None,
+                        ),
+                    )
+
+                provider.exchange_auth_code_for_oauth_tokens = (
+                    exchange_auth_code_for_oauth_tokens5
+                )
+                provider.get_user_info = get_user_info5
+                return provider
+
+        return custom_provider
+
+    raise Exception("Unknown eval string: " + eval_str)
 
 
 class OverrideParams(APIResponse):
