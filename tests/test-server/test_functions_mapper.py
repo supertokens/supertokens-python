@@ -71,7 +71,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ):
                 if a.get("DO_NOT_LINK"):
                     return ShouldNotAutomaticallyLink()
-                if i.get("email") == "test2@example.com" and l is None:
+                if i.email == "test2@example.com" and l is None:
                     return ShouldNotAutomaticallyLink()
                 return ShouldAutomaticallyLink(should_require_verification=False)
 
@@ -101,7 +101,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ):
                 if a.get("DO_NOT_LINK"):
                     return ShouldNotAutomaticallyLink()
-                if i.get("email") == "test2@example.com" and l is None:
+                if i.email == "test2@example.com" and l is None:
                     return ShouldNotAutomaticallyLink()
                 return ShouldAutomaticallyLink(should_require_verification=True)
 
@@ -109,9 +109,9 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 'async(i,e)=>{if("emailpassword"===i.recipeId){if(!((await supertokens.listUsersByAccountInfo("public",{email:i.email})).length>1))return{shouldAutomaticallyLink:!1}}return{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}}'
                 in eval_str
             ):
-                if i.get("recipeId") == "emailpassword":
+                if i.recipe_id == "emailpassword":
                     users = await list_users_by_account_info(
-                        "public", AccountInfo(email=i.get("email"))
+                        "public", AccountInfo(email=i.email)
                     )
                     if len(users) <= 1:
                         return ShouldNotAutomaticallyLink()

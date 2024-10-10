@@ -118,7 +118,7 @@ class RecipeImplementation(RecipeInterface):
             )
         elif (
             response["status"]
-            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_PRIMARY_USER_ID_ERROR"
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ):
             return CanCreatePrimaryUserAccountInfoAlreadyAssociatedError(
                 response["primaryUserId"], response["description"]
@@ -155,7 +155,7 @@ class RecipeImplementation(RecipeInterface):
             )
         elif (
             response["status"]
-            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_PRIMARY_USER_ID_ERROR"
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ):
             return CreatePrimaryUserAccountInfoAlreadyAssociatedError(
                 response["primaryUserId"], response["description"]
@@ -194,7 +194,7 @@ class RecipeImplementation(RecipeInterface):
             )
         elif (
             response["status"]
-            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_PRIMARY_USER_ID_ERROR"
+            == "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ):
             return CanLinkAccountsAccountInfoAlreadyAssociatedError(
                 response["primaryUserId"], response["description"]
