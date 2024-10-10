@@ -3,7 +3,13 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
-from supertokens_python.recipe import accountlinking, multifactorauth
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
+from supertokens_python.recipe import (
+    accountlinking,
+    multifactorauth,
+    passwordless,
+    totp,
+)
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
@@ -24,6 +30,7 @@ from test_functions_mapper import (  # pylint: disable=import-error
     get_override_params,
     reset_override_params,
 )  # pylint: disable=import-error
+from totp import add_totp_routes  # pylint: disable=import-error
 from emailpassword import add_emailpassword_routes  # pylint: disable=import-error
 from thirdparty import add_thirdparty_routes  # pylint: disable=import-error
 from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
@@ -424,6 +431,69 @@ def init_st(config: Dict[str, Any]):
                     ),
                 )
             )
+        elif recipe_id == "passwordless":
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            contact_config: passwordless.ContactConfig = (
+                passwordless.ContactEmailOnlyConfig()
+            )
+            if recipe_config_json.get("contactMethod") == "PHONE":
+                contact_config = passwordless.ContactPhoneOnlyConfig()
+            elif recipe_config_json.get("contactMethod") == "EMAIL_OR_PHONE":
+                contact_config = passwordless.ContactEmailOrPhoneConfig()
+
+            recipe_list.append(
+                passwordless.init(
+                    email_delivery=EmailDeliveryConfig(
+                        override=override_builder_with_logging(
+                            "Passwordless.emailDelivery.override",
+                            config.get("emailDelivery", {}).get("override", None),
+                        )
+                    ),
+                    sms_delivery=SMSDeliveryConfig(
+                        override=override_builder_with_logging(
+                            "Passwordless.smsDelivery.override",
+                            config.get("smsDelivery", {}).get("override", None),
+                        )
+                    ),
+                    contact_config=contact_config,
+                    flow_type=recipe_config_json.get("flowType"),
+                    override=passwordless.InputOverrideConfig(
+                        apis=override_builder_with_logging(
+                            "Passwordless.override.apis",
+                            recipe_config_json.get("override", {}).get("apis"),
+                        ),
+                        functions=override_builder_with_logging(
+                            "Passwordless.override.functions",
+                            recipe_config_json.get("override", {}).get("functions"),
+                        ),
+                    ),
+                )
+            )
+        elif recipe_id == "totp":
+            from supertokens_python.recipe.totp.types import (
+                OverrideConfig as TOTPOverrideConfig,
+            )
+
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            recipe_list.append(
+                totp.init(
+                    config=totp.TOTPConfig(
+                        default_period=recipe_config_json.get("defaultPeriod"),
+                        default_skew=recipe_config_json.get("defaultSkew"),
+                        issuer=recipe_config_json.get("issuer"),
+                        override=TOTPOverrideConfig(
+                            apis=override_builder_with_logging(
+                                "Multitenancy.override.apis",
+                                recipe_config_json.get("override", {}).get("apis"),
+                            ),
+                            functions=override_builder_with_logging(
+                                "Multitenancy.override.functions",
+                                recipe_config_json.get("override", {}).get("functions"),
+                            ),
+                        ),
+                    )
+                )
+            )
 
     interceptor_func = None
     if config.get("supertokens", {}).get("networkInterceptor") is not None:
@@ -591,6 +661,7 @@ add_emailverification_routes(app)
 add_thirdparty_routes(app)
 add_accountlinking_routes(app)
 add_passwordless_routes(app)
+add_totp_routes(app)
 
 if __name__ == "__main__":
     default_st_init()
