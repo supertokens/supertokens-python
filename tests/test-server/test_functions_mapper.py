@@ -81,7 +81,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ):
                 if a.get("DO_NOT_LINK"):
                     return ShouldNotAutomaticallyLink()
-                if l is not None and l.get("id") == o.getUserId():
+                if l is not None and l.id == o.get_user_id():
                     return ShouldNotAutomaticallyLink()
                 return ShouldAutomaticallyLink(should_require_verification=False)
 
@@ -91,7 +91,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ):
                 if a.get("DO_NOT_LINK"):
                     return ShouldNotAutomaticallyLink()
-                if l is not None and l.get("id") == o.getUserId():
+                if l is not None and l.id == o.get_user_id():
                     return ShouldNotAutomaticallyLink()
                 return ShouldAutomaticallyLink(should_require_verification=True)
 
