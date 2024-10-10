@@ -6,6 +6,8 @@ from supertokens_python.recipe.accountlinking import (
     ShouldAutomaticallyLink,
     ShouldNotAutomaticallyLink,
 )
+from supertokens_python.recipe.dashboard.interfaces import APIOptions
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.types import (
     RawUserInfoFromProvider,
     UserInfo,
@@ -20,6 +22,9 @@ class Info:
 
 
 def get_func(eval_str: str) -> Callable[..., Any]:
+    global store  # pylint: disable=global-variable-not-assigned
+    global send_email_inputs  # pylint: disable=global-variable-not-assigned
+    global send_sms_inputs  # pylint: disable=global-variable-not-assigned
     if eval_str.startswith("supertokens.init.supertokens.networkInterceptor"):
 
         def func(*args):  # type: ignore
@@ -27,6 +32,89 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return args  # type: ignore
 
         return func  # type: ignore
+
+    elif eval_str.startswith("passwordless.init.emailDelivery.service.sendEmail"):
+
+        def func1(
+            template_vars: Any,
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument
+        ) -> None:  # pylint: disable=unused-argument
+            # Add to store
+            jsonified = {
+                "codeLifeTime": template_vars.code_life_time,
+                "email": template_vars.email,
+                "isFirstFactor": template_vars.is_first_factor,
+                "preAuthSessionId": template_vars.pre_auth_session_id,
+                "tenantId": template_vars.tenant_id,
+                "urlWithLinkCode": template_vars.url_with_link_code,
+                "userInputCode": template_vars.user_input_code,
+            }
+            jsonified = {k: v for k, v in jsonified.items() if v is not None}
+            if "emailInputs" in store:
+                store["emailInputs"].append(jsonified)
+            else:
+                store["emailInputs"] = [jsonified]
+
+            # Add to send_email_inputs
+            send_email_inputs.append(jsonified)
+
+        return func1
+
+    elif eval_str.startswith("passwordless.init.smsDelivery.service.sendSms"):
+
+        def func2(
+            template_vars: Any, user_context: Dict[str, Any]
+        ) -> None:  # pylint: disable=unused-argument
+            jsonified = {
+                "codeLifeTime": template_vars.code_life_time,
+                "phoneNumber": template_vars.phone_number,
+                "isFirstFactor": template_vars.is_first_factor,
+                "preAuthSessionId": template_vars.pre_auth_session_id,
+                "tenantId": template_vars.tenant_id,
+                "urlWithLinkCode": template_vars.url_with_link_code,
+                "userInputCode": template_vars.user_input_code,
+            }
+            jsonified = {k: v for k, v in jsonified.items() if v is not None}
+            send_sms_inputs.append(jsonified)
+
+        return func2
+
+    elif eval_str.startswith("passwordless.init.override.apis"):
+
+        def func3(oI: Any) -> Dict[str, Any]:
+            og = oI.consume_code_post
+
+            async def consume_code_post(
+                pre_auth_session_id: str,
+                user_input_code: Union[str, None],
+                device_id: Union[str, None],
+                link_code: Union[str, None],
+                session: Optional[SessionContainer],
+                should_try_linking_with_session_user: Union[bool, None],
+                tenant_id: str,
+                api_options: APIOptions,
+                user_context: Dict[str, Any],
+            ) -> Any:
+                o = await api_options.request.json()
+                assert o is not None
+                if o.get("user_context", {}).get("DO_LINK") is not None:
+                    user_context["DO_LINK"] = o["user_context"]["DO_LINK"]
+                return await og(
+                    pre_auth_session_id,
+                    user_input_code,
+                    device_id,
+                    link_code,
+                    session,
+                    should_try_linking_with_session_user,
+                    tenant_id,
+                    api_options,
+                    user_context,
+                )
+
+            oI.consume_code_post = consume_code_post
+            return oI
+
+        return func3
 
     elif eval_str.startswith("accountlinking.init.shouldDoAutomaticAccountLinking"):
 
@@ -299,7 +387,7 @@ class OverrideParams(APIResponse):
         send_email_callback_called: Optional[bool] = None,
         send_email_to_user_email: Optional[str] = None,
         send_email_inputs: Optional[List[str]] = None,
-        send_sms_inputs: Optional[List[str]] = None,
+        send_sms_inputs: List[str] = [],  # pylint: disable=dangerous-default-value
         send_email_to_recipe_user_id: Optional[str] = None,
         user_in_callback: Optional[User] = None,
         email: Optional[str] = None,
@@ -308,7 +396,7 @@ class OverrideParams(APIResponse):
         user_id_in_callback: Optional[str] = None,
         recipe_user_id_in_callback: Optional[str] = None,
         core_call_count: int = 0,
-        store: Optional[Any] = None,
+        store: Dict[str, Any] = {},  # pylint: disable=dangerous-default-value
     ):
         self.send_email_to_user_id = send_email_to_user_id
         self.token = token
@@ -409,7 +497,7 @@ def reset_override_params():
     new_account_info_in_callback = None
     user_id_in_callback = None
     recipe_user_id_in_callback = None
-    store = None
+    store = {}
     Info.core_call_count = 0
 
 
@@ -419,8 +507,8 @@ user_post_password_reset: Optional[User] = None
 email_post_password_reset: Optional[str] = None
 send_email_callback_called: bool = False
 send_email_to_user_email: Optional[str] = None
-send_email_inputs: List[str] = []
-send_sms_inputs: List[str] = []
+send_email_inputs: List[Any] = []
+send_sms_inputs: List[Any] = []
 send_email_to_recipe_user_id: Optional[str] = None
 user_in_callback: Optional[User] = None
 email: Optional[str] = None
@@ -428,4 +516,4 @@ primary_user_in_callback: Optional[User] = None
 new_account_info_in_callback: Optional[RecipeLevelUser] = None
 user_id_in_callback: Optional[str] = None
 recipe_user_id_in_callback: Optional[RecipeUserId] = None
-store: Optional[str] = None
+store: Dict[str, Any] = {}

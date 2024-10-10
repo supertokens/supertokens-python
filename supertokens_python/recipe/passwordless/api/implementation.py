@@ -652,7 +652,7 @@ class APIImplementation(APIInterface):
 
         if not isinstance(pre_auth_checks_result, OkResponse):
             if isinstance(pre_auth_checks_result, SignUpNotAllowedResponse):
-                reason = error_code_map["SIGN_IN_NOT_ALLOWED"]
+                reason = error_code_map["SIGN_UP_NOT_ALLOWED"]
                 assert isinstance(reason, str)
                 return SignInUpPostNotAllowedResponse(reason)
             if isinstance(pre_auth_checks_result, SignInNotAllowedResponse):

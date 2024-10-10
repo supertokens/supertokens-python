@@ -444,19 +444,35 @@ def init_st(config: Dict[str, Any]):
             elif recipe_config_json.get("contactMethod") == "EMAIL_OR_PHONE":
                 contact_config = passwordless.ContactEmailOrPhoneConfig()
 
+            class EmailDeliveryCustom(passwordless.EmailDeliveryInterface[Any]):
+                async def send_email(
+                    self, template_vars: Any, user_context: Dict[str, Any]
+                ) -> None:
+                    f = get_func("passwordless.init.emailDelivery.service.sendEmail")
+                    return f(template_vars, user_context)
+
+            class SMSDeliveryCustom(passwordless.SMSDeliveryInterface[Any]):
+                async def send_sms(
+                    self, template_vars: Any, user_context: Dict[str, Any]
+                ) -> None:
+                    f = get_func("passwordless.init.smsDelivery.service.sendSms")
+                    return f(template_vars, user_context)
+
             recipe_list.append(
                 passwordless.init(
                     email_delivery=EmailDeliveryConfig(
+                        service=EmailDeliveryCustom(),
                         override=override_builder_with_logging(
                             "Passwordless.emailDelivery.override",
                             config.get("emailDelivery", {}).get("override", None),
-                        )
+                        ),
                     ),
                     sms_delivery=SMSDeliveryConfig(
+                        service=SMSDeliveryCustom(),
                         override=override_builder_with_logging(
                             "Passwordless.smsDelivery.override",
                             config.get("smsDelivery", {}).get("override", None),
-                        )
+                        ),
                     ),
                     contact_config=contact_config,
                     flow_type=recipe_config_json.get("flowType"),
@@ -655,6 +671,20 @@ def verify_session_route():
 @app.errorhandler(404)
 def not_found(error: Any) -> Any:  # pylint: disable=unused-argument
     return jsonify({"error": f"Route not found: {request.method} {request.path}"}), 404
+
+
+import traceback
+from flask import jsonify
+
+
+@app.errorhandler(Exception)  # type: ignore
+def handle_exception(e: Exception):
+    # Print the error and stack trace
+    print(f"An error occurred: {str(e)}")
+    traceback.print_exc()
+
+    # Return JSON response with 500 status code
+    return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
 
 
 add_emailpassword_routes(app)
