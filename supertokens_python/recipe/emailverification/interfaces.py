@@ -66,6 +66,9 @@ class VerifyEmailUsingTokenOkResult:
     def __init__(self, user: EmailVerificationUser):
         self.user = user
 
+    def to_json(self) -> Dict[str, Any]:
+        return {"user": self.user.to_json(), "status": self.status}
+
 
 class VerifyEmailUsingTokenInvalidTokenError:
     pass

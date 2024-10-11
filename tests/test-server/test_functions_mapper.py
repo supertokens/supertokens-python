@@ -21,6 +21,7 @@ from supertokens_python.recipe.emailpassword.types import (
     FormField,
 )
 from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 from supertokens_python.recipe.thirdparty.types import (
     RawUserInfoFromProvider,
     UserInfo,
@@ -347,13 +348,13 @@ def get_func(eval_str: str) -> Callable[..., Any]:
         def custom_provider(provider: Any):
             if "custom-ev" in eval_str:
 
-                def exchange_auth_code_for_oauth_tokens1(
-                    redirect_uri_info: Any,  # pylint: disable=unused-argument
+                async def exchange_auth_code_for_oauth_tokens1(
+                    redirect_uri_info: RedirectUriInfo,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
-                    return {}
+                    return redirect_uri_info.redirect_uri_query_params
 
-                def get_user_info1(
+                async def get_user_info1(
                     oauth_tokens: Any,
                     user_context: Any,  # pylint: disable=unused-argument
                 ):  # pylint: disable=unused-argument
@@ -377,13 +378,13 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
             if "custom-no-ev" in eval_str:
 
-                def exchange_auth_code_for_oauth_tokens2(
+                async def exchange_auth_code_for_oauth_tokens2(
                     redirect_uri_info: Any,  # pylint: disable=unused-argument
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
-                    return {}
+                    return redirect_uri_info
 
-                def get_user_info2(
+                async def get_user_info2(
                     oauth_tokens: Any, user_context: Any
                 ):  # pylint: disable=unused-argument
                     return UserInfo(
@@ -406,13 +407,13 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
             if "custom2" in eval_str:
 
-                def exchange_auth_code_for_oauth_tokens3(
+                async def exchange_auth_code_for_oauth_tokens3(
                     redirect_uri_info: Any,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
                     return redirect_uri_info["redirectURIQueryParams"]
 
-                def get_user_info3(
+                async def get_user_info3(
                     oauth_tokens: Any, user_context: Any
                 ):  # pylint: disable=unused-argument
                     return UserInfo(
@@ -435,13 +436,13 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
             if "custom3" in eval_str:
 
-                def exchange_auth_code_for_oauth_tokens4(
+                async def exchange_auth_code_for_oauth_tokens4(
                     redirect_uri_info: Any,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
                     return redirect_uri_info["redirectURIQueryParams"]
 
-                def get_user_info4(
+                async def get_user_info4(
                     oauth_tokens: Any, user_context: Any
                 ):  # pylint: disable=unused-argument
                     return UserInfo(
@@ -464,13 +465,13 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
             if "custom" in eval_str:
 
-                def exchange_auth_code_for_oauth_tokens5(
+                async def exchange_auth_code_for_oauth_tokens5(
                     redirect_uri_info: Any,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
                     return redirect_uri_info
 
-                def get_user_info5(
+                async def get_user_info5(
                     oauth_tokens: Any, user_context: Any
                 ):  # pylint: disable=unused-argument
                     if oauth_tokens.get("error"):

@@ -100,7 +100,15 @@ T = TypeVar("T")
 
 def toCamelCase(snake_case: str) -> str:
     components = snake_case.split("_")
-    return components[0] + "".join(x.title() for x in components[1:])
+    res = components[0] + "".join(x.title() for x in components[1:])
+    # Convert 'post', 'get', or 'put' at the end to uppercase
+    if res.endswith("Post"):
+        res = res[:-4] + "POST"
+    if res.endswith("Get"):
+        res = res[:-3] + "GET"
+    if res.endswith("Put"):
+        res = res[:-3] + "PUT"
+    return res
 
 
 def create_override(
@@ -110,11 +118,16 @@ def create_override(
     originalFunction = getattr(implementation, functionName)
 
     async def finalFunction(*args: Any, **kwargs: Any):
-        override_logging.log_override_event(
-            name + "." + toCamelCase(functionName),
-            "CALL",
-            {"args": args, "kwargs": kwargs},
-        )
+        if len(args) > 0:
+            override_logging.log_override_event(
+                name + "." + toCamelCase(functionName),
+                "CALL",
+                args,
+            )
+        else:
+            override_logging.log_override_event(
+                name + "." + toCamelCase(functionName), "CALL", kwargs
+            )
         try:
             if inspect.iscoroutinefunction(originalFunction):
                 res = await originalFunction(*args, **kwargs)

@@ -43,11 +43,20 @@ class RawUserInfoFromProvider:
         self.from_id_token_payload = from_id_token_payload
         self.from_user_info_api = from_user_info_api
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "fromIdTokenPayload": self.from_id_token_payload,
+            "fromUserInfoApi": self.from_user_info_api,
+        }
+
 
 class UserInfoEmail:
     def __init__(self, email: str, is_verified: bool):
         self.id: str = email
         self.is_verified: bool = is_verified
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"id": self.id, "isVerified": self.is_verified}
 
 
 class UserInfo:
@@ -62,6 +71,13 @@ class UserInfo:
         self.raw_user_info_from_provider = (
             raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
         )
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "thirdPartyUserId": self.third_party_user_id,
+            "email": self.email.to_json() if self.email is not None else None,
+            "rawUserInfoFromProvider": self.raw_user_info_from_provider.to_json(),
+        }
 
 
 class AccessTokenAPI:

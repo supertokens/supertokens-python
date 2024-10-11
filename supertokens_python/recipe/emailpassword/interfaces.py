@@ -80,6 +80,12 @@ class ConsumePasswordResetTokenOkResult:
         self.email = email
         self.user_id = user_id
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "email": self.email,
+            "userId": self.user_id,
+        }
+
 
 class PasswordResetTokenInvalidError(APIResponse):
     status: str = "RESET_PASSWORD_INVALID_TOKEN_ERROR"

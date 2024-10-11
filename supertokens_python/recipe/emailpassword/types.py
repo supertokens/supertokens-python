@@ -75,6 +75,17 @@ class PasswordResetEmailTemplateVarsUser:
         self.recipe_user_id = recipe_user_id
         self.email = email
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "recipeUserId": (
+                self.recipe_user_id.get_as_string()
+                if self.recipe_user_id is not None
+                else None
+            ),
+            "email": self.email,
+        }
+
 
 class PasswordResetEmailTemplateVars:
     def __init__(
@@ -86,6 +97,13 @@ class PasswordResetEmailTemplateVars:
         self.user = user
         self.password_reset_link = password_reset_link
         self.tenant_id = tenant_id
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "user": self.user.to_json(),
+            "passwordResetLink": self.password_reset_link,
+            "tenantId": self.tenant_id,
+        }
 
 
 # Export:

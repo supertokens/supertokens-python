@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Optional
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpPostOkResult
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
@@ -78,8 +78,9 @@ async def handle_sign_in_up_api(
 
     provider = provider_response
 
+    redirect_uri_info_parsed: Optional[RedirectUriInfo] = None
     if redirect_uri_info is not None:
-        redirect_uri_info = RedirectUriInfo(
+        redirect_uri_info_parsed = RedirectUriInfo(
             redirect_uri_on_provider_dashboard=redirect_uri_info.get(
                 "redirectURIOnProviderDashboard"
             ),
@@ -102,7 +103,7 @@ async def handle_sign_in_up_api(
 
     result = await api_implementation.sign_in_up_post(
         provider=provider,
-        redirect_uri_info=redirect_uri_info,
+        redirect_uri_info=redirect_uri_info_parsed,
         oauth_tokens=oauth_tokens,
         tenant_id=tenant_id,
         api_options=api_options,

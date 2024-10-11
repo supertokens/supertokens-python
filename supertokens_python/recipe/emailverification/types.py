@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union
+from typing import Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -27,6 +27,12 @@ class EmailVerificationUser:
     def __init__(self, recipe_user_id: RecipeUserId, email: str):
         self.recipe_user_id = recipe_user_id
         self.email = email
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "email": self.email,
+        }
 
 
 class VerificationEmailTemplateVarsUser:

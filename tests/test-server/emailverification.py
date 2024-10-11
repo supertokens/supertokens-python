@@ -62,7 +62,7 @@ def add_emailverification_routes(app: Flask):
 
         tenant_id = data.get("tenantId", "public")
         token = data["token"]
-        attempt_account_linking = data.get("attemptAccountLinking", False)
+        attempt_account_linking = data.get("attemptAccountLinking", True)
         user_context = data.get("userContext", {})
 
         response = verify_email_using_token(

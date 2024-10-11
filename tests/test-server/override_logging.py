@@ -9,11 +9,25 @@ from supertokens_python.recipe.accountlinking.interfaces import (
     LinkAccountsOkResult,
 )
 from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
-from supertokens_python.recipe.emailpassword.types import FormField
+from supertokens_python.recipe.emailpassword.types import (
+    FormField,
+    PasswordResetEmailTemplateVars,
+)
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIOptions as EmailPasswordAPIOptions,
+    ConsumePasswordResetTokenOkResult,
+    CreateResetPasswordOkResult,
+    GeneratePasswordResetTokenPostOkResult,
+    PasswordResetPostOkResult,
     SignUpOkResult,
     SignUpPostOkResult,
+    UpdateEmailOrPasswordOkResult,
+)
+from supertokens_python.recipe.emailverification.interfaces import (
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    CreateEmailVerificationTokenOkResult,
+    GetEmailForUserIdOkResult,
+    VerifyEmailUsingTokenOkResult,
 )
 from supertokens_python.recipe.session.interfaces import ClaimsValidationResult
 from supertokens_python.recipe.session.session_class import Session
@@ -23,6 +37,8 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 from supertokens_python.recipe.passwordless.interfaces import (
     APIOptions as PasswordlessAPIOptions,
 )
+from supertokens_python.recipe.thirdparty.provider import ProviderConfigForClient
+from supertokens_python.recipe.thirdparty.types import UserInfo as TPUserInfo
 from supertokens_python.types import AccountInfo, RecipeUserId, User
 
 override_logs: List[Dict[str, Any]] = []
@@ -94,4 +110,28 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
         return data.to_json()
     if isinstance(data, ClaimsValidationResult):
         return data.to_json()
+    if isinstance(data, ProviderConfigForClient):
+        return data.to_json()
+    if isinstance(data, TPUserInfo):
+        return data.to_json()
+    if isinstance(data, GeneratePasswordResetTokenPostOkResult):
+        return data.to_json()
+    if isinstance(data, CreateEmailVerificationTokenOkResult):
+        return {"token": data.token, "status": data.status}
+    if isinstance(data, GetEmailForUserIdOkResult):
+        return {"email": data.email, "status": "OK"}
+    if isinstance(data, VerifyEmailUsingTokenOkResult):
+        return {"status": data.status}
+    if isinstance(data, CreateResetPasswordOkResult):
+        return {"token": data.token, "status": "OK"}
+    if isinstance(data, PasswordResetEmailTemplateVars):
+        return data.to_json()
+    if isinstance(data, ConsumePasswordResetTokenOkResult):
+        return data.to_json()
+    if isinstance(data, UpdateEmailOrPasswordOkResult):
+        return {"status": "OK"}
+    if isinstance(data, CreateEmailVerificationTokenEmailAlreadyVerifiedError):
+        return {"status": "EMAIL_ALREADY_VERIFIED_ERROR"}
+    if isinstance(data, PasswordResetPostOkResult):
+        return {"status": "OK", "user": data.user.to_json(), "email": data.email}
     return data
