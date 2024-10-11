@@ -14,11 +14,16 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     PasswordResetTokenInvalidError,
     SignUpPostNotAllowedResponse,
     SignUpPostOkResult,
+    UnknownUserIdError,
 )
 from supertokens_python.recipe.emailpassword.types import (
     EmailDeliveryOverrideInput,
     EmailTemplateVars,
     FormField,
+)
+from supertokens_python.recipe.emailverification.interfaces import (
+    EmailDoesNotExistError,
+    GetEmailForUserIdOkResult,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
@@ -46,6 +51,39 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return args  # type: ignore
 
         return func  # type: ignore
+
+    elif eval_str.startswith("emailverification.init.emailDelivery.override"):
+        from supertokens_python.recipe.emailverification.types import (
+            EmailDeliveryOverrideInput as EVEmailDeliveryOverrideInput,
+            EmailTemplateVars as EVEmailTemplateVars,
+        )
+
+        def custom_email_delivery_override(
+            original_implementation: EVEmailDeliveryOverrideInput,
+        ) -> EVEmailDeliveryOverrideInput:
+            original_send_email = original_implementation.send_email
+
+            async def send_email(
+                template_vars: EVEmailTemplateVars, user_context: Dict[str, Any]
+            ) -> None:
+                global userInCallback  # pylint: disable=global-variable-not-assigned
+                global token  # pylint: disable=global-variable-not-assigned
+
+                if template_vars.user:
+                    userInCallback = template_vars.user
+
+                if template_vars.email_verify_link:
+                    token = template_vars.email_verify_link.split("?token=")[1].split(
+                        "&tenantId="
+                    )[0]
+
+                # Call the original implementation
+                await original_send_email(template_vars, user_context)
+
+            original_implementation.send_email = send_email
+            return original_implementation
+
+        return custom_email_delivery_override
 
     elif eval_str.startswith("emailpassword.init.emailDelivery.override"):
 
@@ -499,6 +537,27 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 return provider
 
         return custom_provider
+
+    if eval_str.startswith("emailverification.init.getEmailForRecipeUserId"):
+
+        async def get_email_for_recipe_user_id(
+            recipe_user_id: RecipeUserId,
+            user_context: Dict[str, Any],
+        ) -> Union[
+            GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError
+        ]:
+            if "random@example.com" in eval_str:
+                return GetEmailForUserIdOkResult(email="random@example.com")
+
+            if (
+                hasattr(recipe_user_id, "get_as_string")
+                and recipe_user_id.get_as_string() == "random"
+            ):
+                return GetEmailForUserIdOkResult(email="test@example.com")
+
+            return UnknownUserIdError()
+
+        return get_email_for_recipe_user_id
 
     raise Exception("Unknown eval string: " + eval_str)
 

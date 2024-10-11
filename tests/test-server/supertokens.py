@@ -22,7 +22,7 @@ def add_supertokens_routes(app: Flask):
         assert request.json is not None
         delete_user(
             request.json["userId"],
-            request.json["removeAllLinkedAccounts"],
+            request.json.get("removeAllLinkedAccounts", True),
             request.json.get("userContext"),
         )
         return jsonify({"status": "OK"})

@@ -2,7 +2,7 @@ import inspect
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
 from supertokens_python import process_state
-from supertokens_python.framework import BaseRequest
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe import (
@@ -53,7 +53,7 @@ from supertokens_python.recipe import (
     thirdparty,
     emailverification,
 )
-from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session import InputErrorHandlers, SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.thirdparty.provider import UserFields, UserInfoMap
 from supertokens_python.recipe_module import RecipeModule
@@ -267,6 +267,14 @@ def init_st(config: Dict[str, Any]):
             )
 
         elif recipe_id == "session":
+
+            async def custom_unauthorised_callback(
+                _: BaseRequest, __: str, response: BaseResponse
+            ) -> BaseResponse:
+                response.set_status_code(401)
+                response.set_json_content(content={"type": "UNAUTHORISED"})
+                return response
+
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(
                 session.init(
@@ -301,6 +309,9 @@ def init_st(config: Dict[str, Any]):
                                 "functions", None
                             ),
                         ),
+                    ),
+                    error_handlers=InputErrorHandlers(
+                        on_unauthorised=custom_unauthorised_callback
                     ),
                 )
             )
@@ -437,7 +448,28 @@ def init_st(config: Dict[str, Any]):
             ev_config["override"] = emailverification.InputOverrideConfig(
                 functions=override_functions
             )
-            recipe_list.append(emailverification.init(**ev_config))
+            from supertokens_python.recipe.emailverification.interfaces import (
+                UnknownUserIdError,
+            )
+
+            recipe_list.append(
+                emailverification.init(
+                    **ev_config,
+                    get_email_for_recipe_user_id=callback_with_log(
+                        "EmailVerification.getEmailForRecipeUserId",
+                        recipe_config_json.get("getEmailForRecipeUserId"),
+                        UnknownUserIdError(),
+                    ),
+                    email_delivery=EmailDeliveryConfig(
+                        override=override_builder_with_logging(
+                            "EmailVerification.emailDelivery.override",
+                            recipe_config_json.get("emailDelivery", {}).get(
+                                "override", None
+                            ),
+                        )
+                    ),
+                )
+            )
         elif recipe_id == "multifactorauth":
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(

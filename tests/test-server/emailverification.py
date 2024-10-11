@@ -113,21 +113,16 @@ def add_emailverification_routes(app: Flask):
         recipe_user_id_whose_email_got_verified = RecipeUserId(
             data["recipeUserIdWhoseEmailGotVerified"]["recipeUserId"]
         )
-        session = (
-            convert_session_to_container(data["session"]) if "session" in data else None
-        )
+        session = convert_session_to_container(data) if "session" in data else None
 
-        try:
-            session_resp = async_to_sync_wrapper.sync(
-                EmailVerificationRecipe.get_instance_or_throw().update_session_if_required_post_email_verification(
-                    recipe_user_id_whose_email_got_verified=recipe_user_id_whose_email_got_verified,
-                    session=session,
-                    req=FlaskRequest(request),
-                    user_context=data.get("userContext", {}),
-                )
+        session_resp = async_to_sync_wrapper.sync(
+            EmailVerificationRecipe.get_instance_or_throw().update_session_if_required_post_email_verification(
+                recipe_user_id_whose_email_got_verified=recipe_user_id_whose_email_got_verified,
+                session=session,
+                req=FlaskRequest(request),
+                user_context=data.get("userContext", {}),
             )
-            return jsonify(
-                None if session_resp is None else convert_session_to_json(session_resp)
-            )
-        except Exception as e:
-            return jsonify({"status": "ERROR", "message": str(e)}), 500
+        )
+        return jsonify(
+            None if session_resp is None else convert_session_to_json(session_resp)
+        )
