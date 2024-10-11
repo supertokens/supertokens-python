@@ -379,10 +379,10 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             if "custom-no-ev" in eval_str:
 
                 async def exchange_auth_code_for_oauth_tokens2(
-                    redirect_uri_info: Any,  # pylint: disable=unused-argument
+                    redirect_uri_info: RedirectUriInfo,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
-                    return redirect_uri_info
+                    return redirect_uri_info.redirect_uri_query_params
 
                 async def get_user_info2(
                     oauth_tokens: Any, user_context: Any
@@ -408,10 +408,10 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             if "custom2" in eval_str:
 
                 async def exchange_auth_code_for_oauth_tokens3(
-                    redirect_uri_info: Any,
+                    redirect_uri_info: RedirectUriInfo,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
-                    return redirect_uri_info["redirectURIQueryParams"]
+                    return redirect_uri_info.redirect_uri_query_params
 
                 async def get_user_info3(
                     oauth_tokens: Any, user_context: Any
@@ -437,10 +437,10 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             if "custom3" in eval_str:
 
                 async def exchange_auth_code_for_oauth_tokens4(
-                    redirect_uri_info: Any,
+                    redirect_uri_info: RedirectUriInfo,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
-                    return redirect_uri_info["redirectURIQueryParams"]
+                    return redirect_uri_info.redirect_uri_query_params
 
                 async def get_user_info4(
                     oauth_tokens: Any, user_context: Any
@@ -466,10 +466,10 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             if "custom" in eval_str:
 
                 async def exchange_auth_code_for_oauth_tokens5(
-                    redirect_uri_info: Any,
+                    redirect_uri_info: RedirectUriInfo,
                     user_context: Any,  # pylint: disable=unused-argument
                 ) -> Any:
-                    return redirect_uri_info
+                    return redirect_uri_info.redirect_uri_query_params
 
                 async def get_user_info5(
                     oauth_tokens: Any, user_context: Any
