@@ -10,6 +10,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 )
 import supertokens_python.recipe.emailpassword.syncio as emailpassword
 from session import convert_session_to_container  # pylint: disable=import-error
+from supertokens_python.types import RecipeUserId
 from utils import (  # pylint: disable=import-error
     serialize_user,
     serialize_recipe_user_id,
@@ -26,9 +27,7 @@ def add_emailpassword_routes(app: Flask):
         email = data["email"]
         password = data["password"]
         user_context = data.get("userContext")
-        session = (
-            convert_session_to_container(data["session"]) if "session" in data else None
-        )
+        session = convert_session_to_container(data) if "session" in data else None
 
         response = emailpassword.sign_up(
             tenant_id, email, password, session, user_context
@@ -66,8 +65,11 @@ def add_emailpassword_routes(app: Flask):
         email = data["email"]
         password = data["password"]
         user_context = data.get("userContext")
+        session = convert_session_to_container(data) if "session" in data else None
 
-        response = emailpassword.sign_in(tenant_id, email, password, user_context)
+        response = emailpassword.sign_in(
+            tenant_id, email, password, session, user_context
+        )
 
         if isinstance(response, SignInOkResult):
             return jsonify(
@@ -116,7 +118,7 @@ def add_emailpassword_routes(app: Flask):
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
 
-        user_id = data["userId"]
+        recipe_user_id = RecipeUserId(data["recipeUserId"])
         email = data.get("email")
         password = data.get("password")
         apply_password_policy = data.get("applyPasswordPolicy")
@@ -124,7 +126,7 @@ def add_emailpassword_routes(app: Flask):
         user_context = data.get("userContext")
 
         response = emailpassword.update_email_or_password(
-            user_id,
+            recipe_user_id,
             email,
             password,
             apply_password_policy,
@@ -139,7 +141,9 @@ def add_emailpassword_routes(app: Flask):
         elif isinstance(response, EmailAlreadyExistsError):
             return jsonify({"status": "EMAIL_ALREADY_EXISTS_ERROR"})
         elif isinstance(response, UpdateEmailOrPasswordEmailChangeNotAllowedError):
-            return jsonify({"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR"})
+            return jsonify(
+                {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": response.reason}
+            )
         else:
             return jsonify(
                 {
