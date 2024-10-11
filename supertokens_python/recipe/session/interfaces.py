@@ -135,6 +135,12 @@ class ClaimsValidationResult:
         self.invalid_claims = invalid_claims
         self.access_token_payload_update = access_token_payload_update
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "invalidClaims": [i.to_json() for i in self.invalid_claims],
+            "accessTokenPayloadUpdate": self.access_token_payload_update,
+        }
+
 
 class GetSessionTokensDangerouslyDict(TypedDict):
     accessToken: str

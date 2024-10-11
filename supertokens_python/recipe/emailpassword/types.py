@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Awaitable, Callable, Optional, TypeVar, Union, Any
+from typing import Awaitable, Callable, Dict, Optional, TypeVar, Union, Any
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -32,6 +32,9 @@ class FormField:
     def __init__(self, id: str, value: Any):  # pylint: disable=redefined-builtin
         self.id: str = id
         self.value: Any = value
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"id": self.id, "value": self.value}
 
 
 class InputFormField:

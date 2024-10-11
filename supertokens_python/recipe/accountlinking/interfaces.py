@@ -155,6 +155,13 @@ class CreatePrimaryUserOkResult:
         self.user = user
         self.was_already_a_primary_user = was_already_a_primary_user
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "user": self.user.to_json(),
+            "wasAlreadyAPrimaryUser": self.was_already_a_primary_user,
+        }
+
 
 class CreatePrimaryUserRecipeUserIdAlreadyLinkedError:
     def __init__(self, primary_user_id: str, description: Optional[str] = None):
@@ -215,6 +222,13 @@ class LinkAccountsOkResult:
         self.status: Literal["OK"] = "OK"
         self.accounts_already_linked = accounts_already_linked
         self.user = user
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "accountsAlreadyLinked": self.accounts_already_linked,
+            "user": self.user.to_json(),
+        }
 
 
 class LinkAccountsRecipeUserIdAlreadyLinkedError:

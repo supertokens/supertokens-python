@@ -48,6 +48,19 @@ class AccountInfo:
         self.phone_number = phone_number
         self.third_party = third_party
 
+    def to_json(self) -> Dict[str, Any]:
+        json_repo: Dict[str, Any] = {}
+        if self.email is not None:
+            json_repo["email"] = self.email
+        if self.phone_number is not None:
+            json_repo["phoneNumber"] = self.phone_number
+        if self.third_party is not None:
+            json_repo["thirdParty"] = {
+                "id": self.third_party.id,
+                "userId": self.third_party.user_id,
+            }
+        return json_repo
+
 
 class LoginMethod(AccountInfo):
     def __init__(

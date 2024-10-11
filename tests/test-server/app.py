@@ -1,6 +1,7 @@
 import inspect
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 from flask import Flask, request, jsonify
+from supertokens_python import process_state
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
@@ -150,9 +151,10 @@ def override_builder_with_logging(
 
 def logging_override_func_sync(name: str, c: Any) -> Any:
     def inner(*args: Any, **kwargs: Any) -> Any:
-        override_logging.log_override_event(
-            name, "CALL", {"args": args, "kwargs": kwargs}
-        )
+        if len(args) > 0:
+            override_logging.log_override_event(name, "CALL", args)
+        else:
+            override_logging.log_override_event(name, "CALL", kwargs)
         try:
             res = c(*args, **kwargs)
             override_logging.log_override_event(name, "RES", res)
@@ -666,6 +668,21 @@ def get_session():
 @verify_session()
 def verify_session_route():
     return jsonify({"status": "OK"})
+
+
+@app.route("/test/waitforevent", methods=["GET"])  # type: ignore
+def wait_for_event_api():  # type: ignore
+    event = request.args.get("event")
+    if not event:
+        raise ValueError("event query param missing")
+
+    event_enum = process_state.PROCESS_STATE(int(event))
+    instance = process_state.ProcessState.get_instance()
+    event_result = instance.wait_for_event(event_enum)
+    if event_result is None:
+        return jsonify(None)
+    else:
+        return jsonify("Found")
 
 
 @app.errorhandler(404)

@@ -89,25 +89,7 @@ def add_session_routes(app: Flask):
             return jsonify(
                 {
                     "status": "OK",
-                    "updatedSession": {
-                        "sessionHandle": session_container.get_handle(),
-                        "userId": session_container.get_user_id(),
-                        "tenantId": session_container.get_tenant_id(),
-                        "userDataInAccessToken": session_container.get_access_token_payload(),
-                        "accessToken": session_container.get_access_token(),
-                        "frontToken": session_container.get_all_session_tokens_dangerously()[
-                            "frontToken"
-                        ],
-                        "refreshToken": session_container.get_all_session_tokens_dangerously()[
-                            "refreshToken"
-                        ],
-                        "antiCsrfToken": session_container.get_all_session_tokens_dangerously()[
-                            "antiCsrfToken"
-                        ],
-                        "accessTokenUpdated": session_container.get_all_session_tokens_dangerously()[
-                            "accessAndFrontTokenUpdated"
-                        ],
-                    },
+                    "updatedSession": convert_session_to_json(session_container),
                 }
             )
         except Exception as e:
@@ -134,26 +116,7 @@ def add_session_routes(app: Flask):
         return jsonify(
             {
                 "status": "OK",
-                "updatedSession": {
-                    "sessionHandle": session_container.get_handle(),
-                    "userId": session_container.get_user_id(),
-                    "recipeUserId": session_container.get_recipe_user_id().get_as_string(),
-                    "tenantId": session_container.get_tenant_id(),
-                    "userDataInAccessToken": session_container.get_access_token_payload(),
-                    "accessToken": session_container.get_access_token(),
-                    "frontToken": session_container.get_all_session_tokens_dangerously()[
-                        "frontToken"
-                    ],
-                    "refreshToken": session_container.get_all_session_tokens_dangerously()[
-                        "refreshToken"
-                    ],
-                    "antiCsrfToken": session_container.get_all_session_tokens_dangerously()[
-                        "antiCsrfToken"
-                    ],
-                    "accessTokenUpdated": session_container.get_all_session_tokens_dangerously()[
-                        "accessAndFrontTokenUpdated"
-                    ],
-                },
+                "updatedSession": convert_session_to_json(session_container),
             }
         )
 
@@ -170,28 +133,7 @@ def add_session_routes(app: Flask):
         user_context = data.get("userContext", {})
 
         session.sync_fetch_and_set_claim(claim, user_context)
-        response = {
-            "updatedSession": {
-                "sessionHandle": session.get_handle(),
-                "userId": session.get_user_id(),
-                "recipeUserId": session.get_recipe_user_id().get_as_string(),
-                "tenantId": session.get_tenant_id(),
-                "userDataInAccessToken": session.get_access_token_payload(),
-                "accessToken": session.get_access_token(),
-                "frontToken": session.get_all_session_tokens_dangerously()[
-                    "frontToken"
-                ],
-                "refreshToken": session.get_all_session_tokens_dangerously()[
-                    "refreshToken"
-                ],
-                "antiCsrfToken": session.get_all_session_tokens_dangerously()[
-                    "antiCsrfToken"
-                ],
-                "accessTokenUpdated": session.get_all_session_tokens_dangerously()[
-                    "accessAndFrontTokenUpdated"
-                ],
-            }
-        }
+        response = {"updatedSession": convert_session_to_json(session)}
         return jsonify(response)
 
 
@@ -214,6 +156,9 @@ def convert_session_to_json(session_container: SessionContainer) -> Dict[str, An
         "accessTokenUpdated": session_container.get_all_session_tokens_dangerously()[
             "accessAndFrontTokenUpdated"
         ],
+        "recipeUserId": {
+            "recipeUserId": session_container.get_recipe_user_id().get_as_string()
+        },
     }
 
 

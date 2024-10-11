@@ -43,6 +43,12 @@ class AccountInfoWithRecipeId(AccountInfo):
             "emailpassword", "thirdparty", "passwordless"
         ] = recipe_id
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            **super().to_json(),
+            "recipeId": self.recipe_id,
+        }
+
 
 class RecipeLevelUser(AccountInfoWithRecipeId):
     def __init__(

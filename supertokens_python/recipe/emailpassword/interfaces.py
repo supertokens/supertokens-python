@@ -42,6 +42,13 @@ class SignUpOkResult:
         self.user = user
         self.recipe_user_id = recipe_user_id
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "user": self.user.to_json(),
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+        }
+
 
 class EmailAlreadyExistsError(APIResponse):
     status: str = "EMAIL_ALREADY_EXISTS_ERROR"

@@ -101,7 +101,7 @@ def get_info_from_access_token(
             user_data = payload
 
         session_handle = sanitize_string(payload.get("sessionHandle"))
-        recipe_user_id = sanitize_string(payload.get("recipeUserId", user_id))
+        recipe_user_id = sanitize_string(payload.get("rsub", user_id))
         refresh_token_hash_1 = sanitize_string(payload.get("refreshTokenHash1"))
         parent_refresh_token_hash_1 = sanitize_string(
             payload.get("parentRefreshTokenHash1")

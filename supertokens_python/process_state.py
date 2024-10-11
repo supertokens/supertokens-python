@@ -54,3 +54,23 @@ class ProcessState:
             if event == state:
                 return event
         return None
+
+    def wait_for_event(
+        self, state: PROCESS_STATE, time_in_ms: int = 7000
+    ) -> Optional[PROCESS_STATE]:
+        from time import time, sleep
+
+        start_time = time()
+
+        def try_and_get() -> Optional[PROCESS_STATE]:
+            result = self.get_event_by_last_event_by_name(state)
+            if result is None:
+                if (time() - start_time) * 1000 > time_in_ms:
+                    return None
+                else:
+                    sleep(1)
+                    return try_and_get()
+            else:
+                return result
+
+        return try_and_get()
