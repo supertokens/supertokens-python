@@ -257,7 +257,7 @@ class PasswordResetPostOkResult(APIResponse):
         self.user = user
 
     def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "email": self.email, "user": self.user.to_json()}
+        return {"status": self.status}
 
 
 class SignInPostOkResult(APIResponse):

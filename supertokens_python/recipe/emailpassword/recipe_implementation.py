@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union, Callable
+from typing import TYPE_CHECKING, Any, Dict, Union
 from supertokens_python.asyncio import get_user
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -52,11 +52,11 @@ class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         querier: Querier,
-        get_emailpassword_config: Callable[[], EmailPasswordConfig],
+        ep_config: EmailPasswordConfig,
     ):
         super().__init__()
         self.querier = querier
-        self.get_emailpassword_config = get_emailpassword_config
+        self.ep_config = ep_config
 
     async def sign_up(
         self,
@@ -283,9 +283,7 @@ class RecipeImplementation(RecipeInterface):
 
         if password is not None:
             if apply_password_policy is None or apply_password_policy:
-                form_fields = (
-                    self.get_emailpassword_config().sign_up_feature.form_fields
-                )
+                form_fields = self.ep_config.sign_up_feature.form_fields
                 password_field = next(
                     field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
                 )

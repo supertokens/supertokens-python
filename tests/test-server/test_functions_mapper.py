@@ -7,13 +7,26 @@ from supertokens_python.recipe.accountlinking import (
     ShouldNotAutomaticallyLink,
 )
 from supertokens_python.recipe.dashboard.interfaces import APIOptions
+from supertokens_python.recipe.emailpassword.interfaces import (
+    EmailAlreadyExistsError,
+    PasswordPolicyViolationError,
+    PasswordResetPostOkResult,
+    PasswordResetTokenInvalidError,
+    SignUpPostNotAllowedResponse,
+    SignUpPostOkResult,
+)
+from supertokens_python.recipe.emailpassword.types import (
+    EmailDeliveryOverrideInput,
+    EmailTemplateVars,
+    FormField,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.types import (
     RawUserInfoFromProvider,
     UserInfo,
     UserInfoEmail,
 )
-from supertokens_python.types import AccountInfo, RecipeUserId
+from supertokens_python.types import AccountInfo, GeneralErrorResponse, RecipeUserId
 from supertokens_python.types import APIResponse, User
 
 
@@ -33,6 +46,49 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
         return func  # type: ignore
 
+    elif eval_str.startswith("emailpassword.init.emailDelivery.override"):
+
+        def custom_email_deliver(
+            original_implementation: EmailDeliveryOverrideInput,
+        ) -> EmailDeliveryOverrideInput:
+            original_send_email = original_implementation.send_email
+
+            async def send_email(
+                template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            ) -> None:
+                global send_email_callback_called  # pylint: disable=global-variable-not-assigned
+                global send_email_to_user_id  # pylint: disable=global-variable-not-assigned
+                global send_email_to_user_email  # pylint: disable=global-variable-not-assigned
+                global send_email_to_recipe_user_id  # pylint: disable=global-variable-not-assigned
+                global token  # pylint: disable=global-variable-not-assigned
+                send_email_callback_called = True
+
+                if template_vars.user:
+                    send_email_to_user_id = template_vars.user.id
+
+                    if template_vars.user.email:
+                        send_email_to_user_email = template_vars.user.email
+
+                    if template_vars.user.recipe_user_id:
+                        send_email_to_recipe_user_id = (
+                            template_vars.user.recipe_user_id.get_as_string()
+                        )
+
+                if template_vars.password_reset_link:
+                    token = (
+                        template_vars.password_reset_link.split("?")[1]
+                        .split("&")[0]
+                        .split("=")[1]
+                    )
+
+                # Use the original implementation which calls the default service,
+                # or a service that you may have specified in the email_delivery object.
+                return await original_send_email(template_vars, user_context)
+
+            original_implementation.send_email = send_email
+            return original_implementation
+
+        return custom_email_deliver
     elif eval_str.startswith("passwordless.init.emailDelivery.service.sendEmail"):
 
         def func1(
@@ -115,6 +171,75 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return oI
 
         return func3
+
+    elif eval_str.startswith("emailpassword.init.override.apis"):
+        from supertokens_python.recipe.emailpassword.interfaces import (
+            APIInterface as EmailPasswordAPIInterface,
+            APIOptions as EmailPasswordAPIOptions,
+        )
+
+        def ep_override_apis(
+            original_implementation: EmailPasswordAPIInterface,
+        ) -> EmailPasswordAPIInterface:
+
+            og_password_reset_post = original_implementation.password_reset_post
+            og_sign_up_post = original_implementation.sign_up_post
+
+            async def password_reset_post(
+                form_fields: List[FormField],
+                token: str,
+                tenant_id: str,
+                api_options: EmailPasswordAPIOptions,
+                user_context: Dict[str, Any],
+            ) -> Union[
+                PasswordResetPostOkResult,
+                PasswordResetTokenInvalidError,
+                PasswordPolicyViolationError,
+                GeneralErrorResponse,
+            ]:
+                if "DO_NOT_LINK" in eval_str:
+                    user_context["DO_NOT_LINK"] = True
+                t = await og_password_reset_post(
+                    form_fields, token, tenant_id, api_options, user_context
+                )
+                if isinstance(t, PasswordResetPostOkResult):
+                    global email_post_password_reset, user_post_password_reset
+                    email_post_password_reset = t.email
+                    user_post_password_reset = t.user
+                return t
+
+            async def sign_up_post(
+                form_fields: List[FormField],
+                tenant_id: str,
+                session: Union[SessionContainer, None],
+                should_try_linking_with_session_user: Union[bool, None],
+                api_options: EmailPasswordAPIOptions,
+                user_context: Dict[str, Any],
+            ) -> Union[
+                SignUpPostOkResult,
+                EmailAlreadyExistsError,
+                SignUpPostNotAllowedResponse,
+                GeneralErrorResponse,
+            ]:
+                if "signUpPOST" in eval_str:
+                    n = await api_options.request.json()
+                    assert n is not None
+                    if n.get("user_context", {}).get("DO_LINK") is not None:
+                        user_context["DO_LINK"] = n["user_context"]["DO_LINK"]
+                return await og_sign_up_post(
+                    form_fields,
+                    tenant_id,
+                    session,
+                    should_try_linking_with_session_user,
+                    api_options,
+                    user_context,
+                )
+
+            original_implementation.password_reset_post = password_reset_post
+            original_implementation.sign_up_post = sign_up_post
+            return original_implementation
+
+        return ep_override_apis
 
     elif eval_str.startswith("accountlinking.init.shouldDoAutomaticAccountLinking"):
 
@@ -417,7 +542,7 @@ class OverrideParams(APIResponse):
         self.store = store
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        respon_json = {
             "sendEmailToUserId": self.send_email_to_user_id,
             "token": self.token,
             "userPostPasswordReset": (
@@ -430,7 +555,11 @@ class OverrideParams(APIResponse):
             "sendEmailToUserEmail": self.send_email_to_user_email,
             "sendEmailInputs": self.send_email_inputs,
             "sendSmsInputs": self.send_sms_inputs,
-            "sendEmailToRecipeUserId": self.send_email_to_recipe_user_id,
+            "sendEmailToRecipeUserId": (
+                {"recipeUserId": self.send_email_to_recipe_user_id}
+                if self.send_email_to_recipe_user_id is not None
+                else None
+            ),
             "userInCallback": (
                 self.user_in_callback.to_json()
                 if self.user_in_callback is not None
@@ -450,6 +579,9 @@ class OverrideParams(APIResponse):
             },
             "store": self.store,
         }
+        # Filter out items that are None
+        respon_json = {k: v for k, v in respon_json.items() if v is not None}
+        return respon_json
 
 
 def get_override_params() -> OverrideParams:

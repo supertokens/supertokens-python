@@ -233,17 +233,21 @@ def init_st(config: Dict[str, Any]):
                     email_delivery=EmailDeliveryConfig(
                         override=override_builder_with_logging(
                             "EmailPassword.emailDelivery.override",
-                            config.get("emailDelivery", {}).get("override", None),
+                            recipe_config_json.get("emailDelivery", {}).get(
+                                "override", None
+                            ),
                         )
                     ),
                     override=emailpassword.InputOverrideConfig(
                         apis=override_builder_with_logging(
                             "EmailPassword.override.apis",
-                            config.get("override", {}).get("apis", None),
+                            recipe_config_json.get("override", {}).get("apis", None),
                         ),
                         functions=override_builder_with_logging(
                             "EmailPassword.override.functions",
-                            config.get("override", {}).get("functions", None),
+                            recipe_config_json.get("override", {}).get(
+                                "functions", None
+                            ),
                         ),
                     ),
                 )

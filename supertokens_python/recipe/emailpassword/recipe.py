@@ -71,7 +71,6 @@ from .utils import (
     InputOverrideConfig,
     InputSignUpFeature,
     validate_and_normalise_user_input,
-    EmailPasswordConfig,
 )
 
 
@@ -97,11 +96,8 @@ class EmailPasswordRecipe(RecipeModule):
             email_delivery,
         )
 
-        def get_emailpassword_config() -> EmailPasswordConfig:
-            return self.config
-
         recipe_implementation = RecipeImplementation(
-            Querier.get_instance(recipe_id), get_emailpassword_config
+            Querier.get_instance(recipe_id), self.config
         )
         self.recipe_implementation = (
             recipe_implementation
