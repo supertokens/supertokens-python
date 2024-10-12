@@ -137,7 +137,7 @@ class LoginMethod(AccountInfo):
             "tenantIds": self.tenant_ids,
             "email": self.email,
             "phoneNumber": self.phone_number,
-            "thirdParty": self.third_party.__dict__ if self.third_party else None,
+            "thirdParty": self.third_party.to_json() if self.third_party else None,
             "timeJoined": self.time_joined,
             "verified": self.verified,
         }
@@ -150,12 +150,18 @@ class LoginMethod(AccountInfo):
             recipe_id=json["recipeId"],
             recipe_user_id=json["recipeUserId"],
             tenant_ids=json["tenantIds"],
-            email=json["email"] if "email" in json else None,
-            phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
+            email=(
+                json["email"] if "email" in json and json["email"] is not None else None
+            ),
+            phone_number=(
+                json["phoneNumber"]
+                if "phoneNumber" in json and json["phoneNumber"] is not None
+                else None
+            ),
             third_party=(
                 (
                     TPI(json["thirdParty"]["userId"], json["thirdParty"]["id"])
-                    if "thirdParty" in json
+                    if "thirdParty" in json and json["thirdParty"] is not None
                     else None
                 )
             ),

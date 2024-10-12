@@ -33,6 +33,9 @@ class ThirdPartyInfo:
             and self.id == other.id
         )
 
+    def to_json(self) -> Dict[str, Any]:
+        return {"userId": self.user_id, "id": self.id}
+
 
 class RawUserInfoFromProvider:
     def __init__(

@@ -39,16 +39,14 @@ def add_supertokens_routes(app: Flask):
                     None
                     if "thirdParty" not in request.json["accountInfo"]
                     else ThirdPartyInfo(
-                        third_party_id=request.json["accountInfo"]["thirdParty"][
-                            "thirdPartyId"
-                        ],
+                        third_party_id=request.json["accountInfo"]["thirdParty"]["id"],
                         third_party_user_id=request.json["accountInfo"]["thirdParty"][
-                            "id"
+                            "userId"
                         ],
                     )
                 ),
             ),
-            request.json["doUnionOfAccountInfo"],
+            request.json.get("doUnionOfAccountInfo", False),
             request.json.get("userContext"),
         )
 
