@@ -326,7 +326,7 @@ def init_st(config: Dict[str, Any]):
                     ),
                     on_account_linked=callback_with_log(
                         "AccountLinking.onAccountLinked",
-                        recipe_config_json.get("on_account_linked"),
+                        recipe_config_json.get("onAccountLinked"),
                     ),
                     override=accountlinking.InputOverrideConfig(
                         functions=override_builder_with_logging(

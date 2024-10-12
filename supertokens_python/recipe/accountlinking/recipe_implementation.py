@@ -290,9 +290,7 @@ class RecipeImplementation(RecipeInterface):
                 description=response["description"],
             )
         elif response["status"] == "INPUT_USER_IS_NOT_A_PRIMARY_USER":
-            return LinkAccountsInputUserNotPrimaryError(
-                description=response["description"],
-            )
+            return LinkAccountsInputUserNotPrimaryError()
         else:
             raise Exception(f"Unknown response status: {response['status']}")
 

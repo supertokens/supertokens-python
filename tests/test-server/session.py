@@ -53,6 +53,24 @@ def add_session_routes(app: Flask):
 
         return jsonify(convert_session_to_json(session_container))
 
+    @app.route("/test/session/getallsessionhandlesforuser", methods=["POST"])  # type: ignore
+    def get_all_session_handles_for_user_api():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        user_id = data["userId"]
+        fetch_sessions_for_all_linked_accounts = data.get(
+            "fetchSessionsForAllLinkedAccounts", True
+        )
+        tenant_id = data.get("tenantId", "public")
+        user_context = data.get("userContext", {})
+
+        response = session.get_all_session_handles_for_user(
+            user_id, fetch_sessions_for_all_linked_accounts, tenant_id, user_context
+        )
+        return jsonify(response)
+
     @app.route("/test/session/getsessionwithoutrequestresponse", methods=["POST"])  # type: ignore
     def get_session_without_request_response():  # type: ignore
         data = request.json

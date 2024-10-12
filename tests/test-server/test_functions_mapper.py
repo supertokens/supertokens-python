@@ -59,6 +59,18 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
         return func  # type: ignore
 
+    elif eval_str.startswith("accountlinking.init.onAccountLinked"):
+
+        async def on_account_linked(
+            user: User, recipe_level_user: RecipeLevelUser, user_context: Dict[str, Any]
+        ) -> None:
+            global primary_user_in_callback
+            global new_account_info_in_callback
+            primary_user_in_callback = user
+            new_account_info_in_callback = recipe_level_user
+
+        return on_account_linked
+
     elif eval_str.startswith("emailverification.init.emailDelivery.override"):
         from supertokens_python.recipe.emailverification.types import (
             EmailDeliveryOverrideInput as EVEmailDeliveryOverrideInput,
@@ -712,7 +724,11 @@ class OverrideParams(APIResponse):
                 else None
             ),
             "email": self.email,
-            "newAccountInfoInCallback": self.new_account_info_in_callback,
+            "newAccountInfoInCallback": (
+                self.new_account_info_in_callback.to_json()
+                if self.new_account_info_in_callback is not None
+                else None
+            ),
             "primaryUserInCallback": (
                 self.primary_user_in_callback.to_json()
                 if self.primary_user_in_callback is not None

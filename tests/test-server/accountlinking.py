@@ -114,7 +114,6 @@ def add_accountlinking_routes(app: Flask):
         else:
             return jsonify(
                 {
-                    "description": response.description,
                     "status": response.status,
                 }
             )

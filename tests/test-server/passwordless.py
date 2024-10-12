@@ -70,6 +70,7 @@ def add_passwordless_routes(app: Flask):
         )
         return jsonify(
             {
+                "status": "OK",
                 "codeId": response.code_id,
                 "preAuthSessionId": response.pre_auth_session_id,
                 "codeLifeTime": response.code_life_time,
@@ -89,10 +90,10 @@ def add_passwordless_routes(app: Flask):
             session = convert_session_to_container(body)
 
         response = consume_code(
-            device_id=body["deviceId"],
-            pre_auth_session_id=body["preAuthSessionId"],
+            device_id=body.get("deviceId"),
+            pre_auth_session_id=body.get("preAuthSessionId"),
             user_input_code=body.get("userInputCode"),
-            link_code=body["linkCode"],
+            link_code=body.get("linkCode", None),
             tenant_id=body.get("tenantId", "public"),
             user_context=body.get("userContext"),
             session=session,

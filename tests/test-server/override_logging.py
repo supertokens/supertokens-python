@@ -4,6 +4,7 @@ import time
 from httpx import Response
 
 from supertokens_python.framework.flask.flask_request import FlaskRequest
+from supertokens_python.recipe.accountlinking import RecipeLevelUser
 from supertokens_python.recipe.accountlinking.interfaces import (
     CreatePrimaryUserOkResult,
     LinkAccountsOkResult,
@@ -134,4 +135,6 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
         return {"status": "EMAIL_ALREADY_VERIFIED_ERROR"}
     if isinstance(data, PasswordResetPostOkResult):
         return {"status": "OK", "user": data.user.to_json(), "email": data.email}
+    if isinstance(data, RecipeLevelUser):
+        return data.to_json()
     return data
