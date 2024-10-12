@@ -436,17 +436,9 @@ def init_st(config: Dict[str, Any]):
 
         elif recipe_id == "emailverification":
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
-            ev_config: Dict[str, Any] = {"mode": "OPTIONAL"}
-            if "mode" in recipe_config_json:
-                ev_config["mode"] = recipe_config_json["mode"]
 
-            override_functions = override_builder_with_logging(
-                "EmailVerification.override.functions",
-                config.get("override", {}).get("functions", None),
-            )
-
-            ev_config["override"] = emailverification.InputOverrideConfig(
-                functions=override_functions
+            from supertokens_python.recipe.emailverification.utils import (
+                OverrideConfig as EmailVerificationOverrideConfig,
             )
             from supertokens_python.recipe.emailverification.interfaces import (
                 UnknownUserIdError,
@@ -454,7 +446,23 @@ def init_st(config: Dict[str, Any]):
 
             recipe_list.append(
                 emailverification.init(
-                    **ev_config,
+                    mode=(
+                        recipe_config_json["mode"]
+                        if "mode" in recipe_config_json
+                        else "OPTIONAL"
+                    ),
+                    override=EmailVerificationOverrideConfig(
+                        apis=override_builder_with_logging(
+                            "EmailVerification.override.apis",
+                            recipe_config_json.get("override", {}).get("apis", None),
+                        ),
+                        functions=override_builder_with_logging(
+                            "EmailVerification.override.functions",
+                            recipe_config_json.get("override", {}).get(
+                                "functions", None
+                            ),
+                        ),
+                    ),
                     get_email_for_recipe_user_id=callback_with_log(
                         "EmailVerification.getEmailForRecipeUserId",
                         recipe_config_json.get("getEmailForRecipeUserId"),

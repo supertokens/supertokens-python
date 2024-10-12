@@ -120,6 +120,31 @@ def add_session_routes(app: Flask):
             }
         )
 
+    @app.route("/test/session/getsessioninformation", methods=["POST"])  # type: ignore
+    def get_session_information_api():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        session_handle = data["sessionHandle"]
+        user_context = data.get("userContext", {})
+
+        response = session.get_session_information(session_handle, user_context)
+        if response is None:
+            return jsonify(None)
+        return jsonify(
+            {
+                "customClaimsInAccessTokenPayload": response.custom_claims_in_access_token_payload,
+                "sessionDataInDatabase": response.session_data_in_database,
+                "expiry": response.expiry,
+                "sessionHandle": response.session_handle,
+                "recipeUserId": response.recipe_user_id.get_as_string(),
+                "tenantId": response.tenant_id,
+                "timeCreated": response.time_created,
+                "userId": response.user_id,
+            }
+        )
+
     @app.route("/test/session/sessionobject/fetchandsetclaim", methods=["POST"])  # type: ignore
     def fetch_and_set_claim_api():  # type: ignore
         data = request.json
@@ -135,6 +160,30 @@ def add_session_routes(app: Flask):
         session.sync_fetch_and_set_claim(claim, user_context)
         response = {"updatedSession": convert_session_to_json(session)}
         return jsonify(response)
+
+    @app.route("/test/session/sessionobject/getclaimvalue", methods=["POST"])  # type: ignore
+    def get_claim_value_api():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        log_override_event("sessionobject.getclaimvalue", "CALL", data)
+        session = convert_session_to_container(data)
+
+        claim = deserialize_claim(data["claim"])
+        user_context = data.get("userContext", {})
+
+        try:
+            ret_val = session.sync_get_claim_value(claim, user_context)
+            response = {
+                "retVal": ret_val,
+                "updatedSession": convert_session_to_json(session),
+            }
+            log_override_event("sessionobject.getclaimvalue", "RES", ret_val)
+            return jsonify(response)
+        except Exception as e:
+            log_override_event("sessionobject.getclaimvalue", "REJ", str(e))
+            raise e
 
 
 def convert_session_to_json(session_container: SessionContainer) -> Dict[str, Any]:
@@ -157,6 +206,7 @@ def convert_session_to_json(session_container: SessionContainer) -> Dict[str, An
             "accessAndFrontTokenUpdated"
         ],
         "recipeUserId": {
+            # this is intentionally done this way cause the test in the test suite expects this way.
             "recipeUserId": session_container.get_recipe_user_id().get_as_string()
         },
     }
@@ -197,6 +247,7 @@ def convert_session_to_container(data: Any) -> Session:
                 ),
             )
             if "refreshToken" in data["session"]
+            and data["session"]["refreshToken"] is not None
             else None
         ),
         anti_csrf_token=anti_csrf_token,

@@ -76,6 +76,7 @@ def add_emailverification_routes(app: Flask):
                     "user": {
                         "email": response.user.email,
                         "recipeUserId": {
+                            # this is intentionally done this way cause the test in the test suite expects this way.
                             "recipeUserId": response.user.recipe_user_id.get_as_string()
                         },
                     },

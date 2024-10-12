@@ -187,13 +187,25 @@ def add_accountlinking_routes(app: Flask):
             request.json["tenantId"],
             AccountInfoWithRecipeId(
                 recipe_id=request.json["newUser"]["recipeId"],
-                email=request.json["newUser"]["email"],
-                phone_number=request.json["newUser"]["phoneNumber"],
-                third_party=ThirdPartyInfo(
-                    third_party_user_id=request.json["newUser"]["thirdParty"]["id"],
-                    third_party_id=request.json["newUser"]["thirdParty"][
-                        "thirdPartyId"
-                    ],
+                email=(
+                    request.json["newUser"]["email"]
+                    if "email" in request.json["newUser"]
+                    else None
+                ),
+                phone_number=(
+                    request.json["newUser"]["phoneNumber"]
+                    if "phoneNumber" in request.json["newUser"]
+                    else None
+                ),
+                third_party=(
+                    ThirdPartyInfo(
+                        third_party_user_id=request.json["newUser"]["thirdParty"]["id"],
+                        third_party_id=request.json["newUser"]["thirdParty"][
+                            "thirdPartyId"
+                        ],
+                    )
+                    if "thirdParty" in request.json["newUser"]
+                    else None
                 ),
             ),
             request.json["isVerified"],

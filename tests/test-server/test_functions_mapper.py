@@ -14,7 +14,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     PasswordResetTokenInvalidError,
     SignUpPostNotAllowedResponse,
     SignUpPostOkResult,
-    UnknownUserIdError,
 )
 from supertokens_python.recipe.emailpassword.types import (
     EmailDeliveryOverrideInput,
@@ -25,8 +24,16 @@ from supertokens_python.recipe.emailverification.interfaces import (
     EmailDoesNotExistError,
     GetEmailForUserIdOkResult,
 )
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVarsUser,
+)
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
+from supertokens_python.recipe.thirdparty.interfaces import (
+    SignInUpNotAllowed,
+    SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpPostOkResult,
+)
+from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.thirdparty.types import (
     RawUserInfoFromProvider,
     UserInfo,
@@ -66,11 +73,11 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             async def send_email(
                 template_vars: EVEmailTemplateVars, user_context: Dict[str, Any]
             ) -> None:
-                global userInCallback  # pylint: disable=global-variable-not-assigned
+                global user_in_callback  # pylint: disable=global-variable-not-assigned
                 global token  # pylint: disable=global-variable-not-assigned
 
                 if template_vars.user:
-                    userInCallback = template_vars.user
+                    user_in_callback = template_vars.user
 
                 if template_vars.email_verify_link:
                     token = template_vars.email_verify_link.split("?token=")[1].split(
@@ -279,6 +286,81 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return original_implementation
 
         return ep_override_apis
+
+    elif eval_str.startswith("emailverification.init.override.functions"):
+        from supertokens_python.recipe.emailverification.interfaces import (
+            RecipeInterface as EmailVerificationRecipeInterface,
+        )
+
+        def ev_override_functions(
+            original_implementation: EmailVerificationRecipeInterface,
+        ) -> EmailVerificationRecipeInterface:
+            og_is_email_verified = original_implementation.is_email_verified
+
+            async def is_email_verified(
+                recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
+            ) -> bool:
+                global email_param
+                email_param = email
+                return await og_is_email_verified(recipe_user_id, email, user_context)
+
+            original_implementation.is_email_verified = is_email_verified
+            return original_implementation
+
+        return ev_override_functions
+
+    elif eval_str.startswith("thirdparty.init.override.apis"):
+        from supertokens_python.recipe.thirdparty.interfaces import (
+            APIInterface as ThirdPartyAPIInterface,
+            APIOptions as ThirdPartyAPIOptions,
+        )
+
+        def tp_override_apis(
+            original_implementation: ThirdPartyAPIInterface,
+        ) -> ThirdPartyAPIInterface:
+            async def sign_in_up_post(
+                provider: Provider,
+                redirect_uri_info: Optional[RedirectUriInfo],
+                oauth_tokens: Optional[Dict[str, Any]],
+                session: Optional[SessionContainer],
+                should_try_linking_with_session_user: Union[bool, None],
+                tenant_id: str,
+                api_options: ThirdPartyAPIOptions,
+                user_context: Dict[str, Any],
+            ) -> Union[
+                SignInUpPostOkResult,
+                SignInUpPostNoEmailGivenByProviderResponse,
+                SignInUpNotAllowed,
+                GeneralErrorResponse,
+            ]:
+                json_body = await api_options.request.json()
+                if (
+                    json_body is not None
+                    and json_body.get("userContext", {}).get("DO_LINK") is not None
+                ):
+                    user_context["DO_LINK"] = json_body["userContext"]["DO_LINK"]
+
+                result = await original_implementation.sign_in_up_post(
+                    provider,
+                    redirect_uri_info,
+                    oauth_tokens,
+                    session,
+                    should_try_linking_with_session_user,
+                    tenant_id,
+                    api_options,
+                    user_context,
+                )
+
+                if isinstance(result, SignInUpPostOkResult):
+                    global user_in_callback
+                    user_in_callback = result.user
+
+                return result
+
+            original_implementation.sign_in_up_post = sign_in_up_post
+            return original_implementation
+
+        return tp_override_apis
 
     elif eval_str.startswith("accountlinking.init.shouldDoAutomaticAccountLinking"):
 
@@ -539,13 +621,14 @@ def get_func(eval_str: str) -> Callable[..., Any]:
         return custom_provider
 
     if eval_str.startswith("emailverification.init.getEmailForRecipeUserId"):
+        from supertokens_python.recipe.emailverification.interfaces import (
+            UnknownUserIdError as EVUnknownUserId,
+        )
 
         async def get_email_for_recipe_user_id(
             recipe_user_id: RecipeUserId,
             user_context: Dict[str, Any],
-        ) -> Union[
-            GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError
-        ]:
+        ) -> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, EVUnknownUserId]:
             if "random@example.com" in eval_str:
                 return GetEmailForUserIdOkResult(email="random@example.com")
 
@@ -555,7 +638,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ):
                 return GetEmailForUserIdOkResult(email="test@example.com")
 
-            return UnknownUserIdError()
+            return EVUnknownUserId()
 
         return get_email_for_recipe_user_id
 
@@ -574,7 +657,9 @@ class OverrideParams(APIResponse):
         send_email_inputs: Optional[List[str]] = None,
         send_sms_inputs: List[str] = [],  # pylint: disable=dangerous-default-value
         send_email_to_recipe_user_id: Optional[str] = None,
-        user_in_callback: Optional[User] = None,
+        user_in_callback: Optional[
+            Union[User, VerificationEmailTemplateVarsUser]
+        ] = None,
         email: Optional[str] = None,
         new_account_info_in_callback: Optional[RecipeLevelUser] = None,
         primary_user_in_callback: Optional[User] = None,
@@ -616,6 +701,7 @@ class OverrideParams(APIResponse):
             "sendEmailInputs": self.send_email_inputs,
             "sendSmsInputs": self.send_sms_inputs,
             "sendEmailToRecipeUserId": (
+                # this is intentionally done this way cause the test in the test suite expects this way.
                 {"recipeUserId": self.send_email_to_recipe_user_id}
                 if self.send_email_to_recipe_user_id is not None
                 else None
@@ -656,7 +742,7 @@ def get_override_params() -> OverrideParams:
         send_sms_inputs=send_sms_inputs,
         send_email_to_recipe_user_id=send_email_to_recipe_user_id,
         user_in_callback=user_in_callback,
-        email=email,
+        email=email_param,
         new_account_info_in_callback=new_account_info_in_callback,
         primary_user_in_callback=(
             primary_user_in_callback if primary_user_in_callback else None
@@ -673,7 +759,7 @@ def get_override_params() -> OverrideParams:
 
 
 def reset_override_params():
-    global send_email_to_user_id, token, user_post_password_reset, email_post_password_reset, send_email_callback_called, send_email_to_user_email, send_email_inputs, send_sms_inputs, send_email_to_recipe_user_id, user_in_callback, email, primary_user_in_callback, new_account_info_in_callback, user_id_in_callback, recipe_user_id_in_callback, store
+    global send_email_to_user_id, token, user_post_password_reset, email_post_password_reset, send_email_callback_called, send_email_to_user_email, send_email_inputs, send_sms_inputs, send_email_to_recipe_user_id, user_in_callback, email_param, primary_user_in_callback, new_account_info_in_callback, user_id_in_callback, recipe_user_id_in_callback, store
     send_email_to_user_id = None
     token = None
     user_post_password_reset = None
@@ -684,7 +770,7 @@ def reset_override_params():
     send_sms_inputs = []
     send_email_to_recipe_user_id = None
     user_in_callback = None
-    email = None
+    email_param = None
     primary_user_in_callback = None
     new_account_info_in_callback = None
     user_id_in_callback = None
@@ -702,8 +788,8 @@ send_email_to_user_email: Optional[str] = None
 send_email_inputs: List[Any] = []
 send_sms_inputs: List[Any] = []
 send_email_to_recipe_user_id: Optional[str] = None
-user_in_callback: Optional[User] = None
-email: Optional[str] = None
+user_in_callback: Optional[Union[User, VerificationEmailTemplateVarsUser]] = None
+email_param: Optional[str] = None
 primary_user_in_callback: Optional[User] = None
 new_account_info_in_callback: Optional[RecipeLevelUser] = None
 user_id_in_callback: Optional[str] = None

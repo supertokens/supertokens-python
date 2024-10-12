@@ -41,6 +41,13 @@ class VerificationEmailTemplateVarsUser:
         self.recipe_user_id = recipe_user_id
         self.email = email
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "email": self.email,
+        }
+
 
 class VerificationEmailTemplateVars:
     def __init__(
