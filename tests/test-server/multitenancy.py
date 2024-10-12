@@ -10,6 +10,7 @@ from supertokens_python.recipe.thirdparty import (
     ProviderInput,
 )
 from supertokens_python.recipe.thirdparty.provider import UserFields, UserInfoMap
+from supertokens_python.types import RecipeUserId
 
 
 def add_multitenancy_routes(app: Flask):
@@ -177,11 +178,11 @@ def add_multitenancy_routes(app: Flask):
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
         tenant_id = data["tenantId"]
-        user_id = data["userId"]
+        recipe_user_id = RecipeUserId(data["recipeUserId"])
         user_context = data.get("userContext")
 
         response = multitenancy.associate_user_to_tenant(
-            tenant_id, user_id, user_context
+            tenant_id, recipe_user_id, user_context
         )
 
         if isinstance(response, AssociateUserToTenantOkResult):

@@ -158,6 +158,13 @@ def add_passwordless_routes(app: Flask):
         elif isinstance(response, UpdateUserPhoneNumberAlreadyExistsError):
             return jsonify({"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"})
         elif isinstance(response, EmailChangeNotAllowedError):
-            return jsonify({"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR"})
+            return jsonify(
+                {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": response.reason}
+            )
         else:
-            return jsonify({"status": "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR"})
+            return jsonify(
+                {
+                    "status": "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR",
+                    "reason": response.reason,
+                }
+            )
