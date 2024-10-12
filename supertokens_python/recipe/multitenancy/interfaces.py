@@ -64,10 +64,12 @@ class TenantConfigCreateOrUpdate:
         core_config: Dict[str, Any] = {},
         first_factors: Optional[List[str]] = [
             "NO_CHANGE"
-        ],  # A default value here means that if the user does not set this, it will not make any change in the core
+        ],  # A default value here means that if the user does not set this, it will not make any change in the core. This is different from None,
+        # which means that the user wants to unset it in the core.
         required_secondary_factors: Optional[List[str]] = [
             "NO_CHANGE"
-        ],  # A default value here means that if the user does not set this, it will not make any change in the core
+        ],  # A default value here means that if the user does not set this, it will not make any change in the core. This is different from None,
+        # which means that the user wants to unset it in the core.
     ):
         self.core_config = core_config
         self._first_factors = first_factors
