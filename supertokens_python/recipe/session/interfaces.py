@@ -60,6 +60,15 @@ class SessionObj:
         self.tenant_id = tenant_id
         self.recipe_user_id = recipe_user_id
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "handle": self.handle,
+            "userId": self.user_id,
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "tenantId": self.tenant_id,
+            "userDataInJWT": self.user_data_in_jwt,
+        }
+
 
 class AccessTokenObj:
     def __init__(self, token: str, expiry: int, created_time: int):
@@ -67,11 +76,26 @@ class AccessTokenObj:
         self.expiry = expiry
         self.created_time = created_time
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "token": self.token,
+            "expiry": self.expiry,
+            "createdTime": self.created_time,
+        }
+
 
 class RegenerateAccessTokenOkResult:
     def __init__(self, session: SessionObj, access_token: Union[AccessTokenObj, None]):
         self.session = session
         self.access_token = access_token
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "session": self.session.to_json(),
+            "accessToken": (
+                self.access_token.to_json() if self.access_token is not None else None
+            ),
+        }
 
 
 class SessionInformationResult:
@@ -96,6 +120,18 @@ class SessionInformationResult:
         self.time_created = time_created
         self.tenant_id = tenant_id
         self.recipe_user_id = recipe_user_id
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "sessionHandle": self.session_handle,
+            "userId": self.user_id,
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "sessionDataInDatabase": self.session_data_in_database,
+            "expiry": self.expiry,
+            "customClaimsInAccessTokenPayload": self.custom_claims_in_access_token_payload,
+            "timeCreated": self.time_created,
+            "tenantId": self.tenant_id,
+        }
 
 
 class ReqResInfo:
@@ -137,6 +173,7 @@ class ClaimsValidationResult:
 
     def to_json(self) -> Dict[str, Any]:
         return {
+            "status": "OK",
             "invalidClaims": [i.to_json() for i in self.invalid_claims],
             "accessTokenPayloadUpdate": self.access_token_payload_update,
         }
@@ -396,6 +433,13 @@ class TokenInfo:
         self.token = token
         self.expiry = expiry
         self.created_time = created_time
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "token": self.token,
+            "expiry": self.expiry,
+            "createdTime": self.created_time,
+        }
 
 
 class SessionContainer(ABC):  # pylint: disable=too-many-public-methods

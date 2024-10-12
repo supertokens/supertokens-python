@@ -2,7 +2,11 @@ from typing import Any, Dict
 from flask import Flask, request, jsonify
 from override_logging import log_override_event  # pylint: disable=import-error
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.interfaces import TokenInfo
+from supertokens_python.recipe.session.exceptions import TokenTheftError
+from supertokens_python.recipe.session.interfaces import (
+    SessionDoesNotExistError,
+    TokenInfo,
+)
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
@@ -71,6 +75,59 @@ def add_session_routes(app: Flask):
         )
         return jsonify(response)
 
+    @app.route("/test/session/revokeallsessionsforuser", methods=["POST"])  # type: ignore
+    def revoke_all_sessions_for_user_api():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        user_id = data["userId"]
+        revoke_sessions_for_linked_accounts = data.get(
+            "revokeSessionsForLinkedAccounts", True
+        )
+        tenant_id = data.get("tenantId", None)
+        user_context = data.get("userContext", {})
+
+        response = session.revoke_all_sessions_for_user(
+            user_id, revoke_sessions_for_linked_accounts, tenant_id, user_context
+        )
+        return jsonify(response)
+
+    @app.route("/test/session/refreshsessionwithoutrequestresponse", methods=["POST"])  # type: ignore
+    def refresh_session_without_request_response():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        refresh_token = data["refreshToken"]
+        disable_anti_csrf = data.get("disableAntiCsrf")
+        anti_csrf_token = data.get("antiCsrfToken")
+        user_context = data.get("userContext", {})
+
+        try:
+            response = session.refresh_session_without_request_response(
+                refresh_token, disable_anti_csrf, anti_csrf_token, user_context
+            )
+            return jsonify(convert_session_to_json(response))
+        except Exception as e:
+            if isinstance(e, TokenTheftError):
+                return (
+                    jsonify(
+                        {
+                            "type": "TOKEN_THEFT_DETECTED",
+                            "payload": {
+                                "recipeUserId": {
+                                    # this is done this way cause the frontend test suite expects the json in this format
+                                    "recipeUserId": e.recipe_user_id.get_as_string()
+                                },
+                                "userId": e.user_id,
+                            },
+                        }
+                    ),
+                    500,
+                )
+            return jsonify({"message": str(e)}), 500
+
     @app.route("/test/session/getsessionwithoutrequestresponse", methods=["POST"])  # type: ignore
     def get_session_without_request_response():  # type: ignore
         data = request.json
@@ -138,6 +195,50 @@ def add_session_routes(app: Flask):
             }
         )
 
+    @app.route("/test/session/mergeintoaccesspayload", methods=["POST"])  # type: ignore
+    def merge_into_access_payload():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        session_handle = data["sessionHandle"]
+        access_token_payload_update = data["accessTokenPayloadUpdate"]
+        user_context = data.get("userContext", {})
+
+        try:
+            response = session.merge_into_access_token_payload(
+                session_handle, access_token_payload_update, user_context
+            )
+            return jsonify(response)
+        except Exception as e:
+            return jsonify({"status": "ERROR", "message": str(e)}), 500
+
+    @app.route("/test/session/validateclaimsforsessionhandle", methods=["POST"])  # type: ignore
+    def validate_claims_for_session_handle():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        session_handle = data["sessionHandle"]
+        override_global_claim_validators = None
+        if "overrideGlobalClaimValidators" in data:
+            from test_functions_mapper import get_func
+
+            override_global_claim_validators = get_func(
+                data["overrideGlobalClaimValidators"]
+            )
+        user_context = data.get("userContext", {})
+
+        try:
+            response = session.validate_claims_for_session_handle(
+                session_handle, override_global_claim_validators, user_context
+            )
+            if isinstance(response, SessionDoesNotExistError):
+                return jsonify({"status": "SESSION_DOES_NOT_EXIST"})
+            return jsonify(response.to_json())
+        except Exception as e:
+            return jsonify({"status": "ERROR", "message": str(e)}), 500
+
     @app.route("/test/session/getsessioninformation", methods=["POST"])  # type: ignore
     def get_session_information_api():  # type: ignore
         data = request.json
@@ -164,7 +265,7 @@ def add_session_routes(app: Flask):
         )
 
     @app.route("/test/session/sessionobject/fetchandsetclaim", methods=["POST"])  # type: ignore
-    def fetch_and_set_claim_api():  # type: ignore
+    def session_object_fetch_and_set_claim_api():  # type: ignore
         data = request.json
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
@@ -178,6 +279,23 @@ def add_session_routes(app: Flask):
         session.sync_fetch_and_set_claim(claim, user_context)
         response = {"updatedSession": convert_session_to_json(session)}
         return jsonify(response)
+
+    @app.route("/test/session/fetchandsetclaim", methods=["POST"])  # type: ignore
+    def fetch_and_set_claim_api():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        log_override_event("session.fetchandsetclaim", "CALL", data)
+        session_handle = data["sessionHandle"]
+        claim = deserialize_claim(data["claim"])
+        user_context = data.get("userContext", {})
+
+        try:
+            response = session.fetch_and_set_claim(session_handle, claim, user_context)
+            return jsonify(response)
+        except Exception as e:
+            return jsonify({"status": "ERROR", "message": str(e)}), 500
 
     @app.route("/test/session/sessionobject/getclaimvalue", methods=["POST"])  # type: ignore
     def get_claim_value_api():  # type: ignore
@@ -214,9 +332,11 @@ def convert_session_to_json(session_container: SessionContainer) -> Dict[str, An
         "frontToken": session_container.get_all_session_tokens_dangerously()[
             "frontToken"
         ],
-        "refreshToken": session_container.get_all_session_tokens_dangerously()[
-            "refreshToken"
-        ],
+        "refreshToken": (
+            session_container.refresh_token.to_json()
+            if session_container.refresh_token is not None
+            else None
+        ),
         "antiCsrfToken": session_container.get_all_session_tokens_dangerously()[
             "antiCsrfToken"
         ],

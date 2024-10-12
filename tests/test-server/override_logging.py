@@ -30,7 +30,12 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     VerifyEmailUsingTokenOkResult,
 )
-from supertokens_python.recipe.session.interfaces import ClaimsValidationResult
+from supertokens_python.recipe.session.claims import PrimitiveClaim
+from supertokens_python.recipe.session.interfaces import (
+    ClaimsValidationResult,
+    RegenerateAccessTokenOkResult,
+    SessionInformationResult,
+)
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIOptions as ThirdPartyAPIOptions,
@@ -136,5 +141,11 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
     if isinstance(data, PasswordResetPostOkResult):
         return {"status": "OK", "user": data.user.to_json(), "email": data.email}
     if isinstance(data, RecipeLevelUser):
+        return data.to_json()
+    if isinstance(data, RegenerateAccessTokenOkResult):
+        return data.to_json()
+    if isinstance(data, PrimitiveClaim):
+        return "PrimitiveClaim"
+    if isinstance(data, SessionInformationResult):
         return data.to_json()
     return data

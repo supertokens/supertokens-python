@@ -28,6 +28,7 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVarsUser,
 )
 from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
     SignInUpPostNoEmailGivenByProviderResponse,
@@ -103,6 +104,66 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return original_implementation
 
         return custom_email_delivery_override
+
+    elif eval_str.startswith("session.override.functions"):
+        from supertokens_python.recipe.session.interfaces import (
+            RecipeInterface as SessionRecipeInterface,
+        )
+
+        def session_override_functions(
+            original_implementation: SessionRecipeInterface,
+        ) -> SessionRecipeInterface:
+            original_create_new_session = original_implementation.create_new_session
+
+            async def create_new_session(
+                user_id: str,
+                recipe_user_id: RecipeUserId,
+                access_token_payload: Optional[Dict[str, Any]],
+                session_data_in_database: Optional[Dict[str, Any]],
+                disable_anti_csrf: Optional[bool],
+                tenant_id: str,
+                user_context: Dict[str, Any],
+            ) -> SessionContainer:
+                async def fetch_value(
+                    _user_id: str,
+                    recipe_user_id: RecipeUserId,
+                    tenant_id: str,
+                    current_payload: Dict[str, Any],
+                    user_context: Dict[str, Any],
+                ) -> None:
+                    global user_id_in_callback
+                    global recipe_user_id_in_callback
+                    user_id_in_callback = user_id
+                    recipe_user_id_in_callback = recipe_user_id
+                    return None
+
+                claim = PrimitiveClaim[Any](key="some-key", fetch_value=fetch_value)
+
+                if access_token_payload is None:
+                    access_token_payload = {}
+                json_update = await claim.build(
+                    user_id,
+                    recipe_user_id,
+                    tenant_id,
+                    access_token_payload,
+                    user_context,
+                )
+                access_token_payload.update(json_update)
+
+                return await original_create_new_session(
+                    user_id,
+                    recipe_user_id,
+                    access_token_payload,
+                    session_data_in_database,
+                    disable_anti_csrf,
+                    tenant_id,
+                    user_context,
+                )
+
+            original_implementation.create_new_session = create_new_session
+            return original_implementation
+
+        return session_override_functions
 
     elif eval_str.startswith("emailpassword.init.emailDelivery.override"):
 

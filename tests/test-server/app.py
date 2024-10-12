@@ -26,6 +26,7 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
+from supertokens_python.types import RecipeUserId
 from test_functions_mapper import (  # pylint: disable=import-error
     get_func,
     get_override_params,
@@ -696,29 +697,45 @@ def mock_external_api():
     return jsonify({"ok": True})
 
 
-# @app.route("/create", methods=["POST"])
-# def create_session():
-#     recipe_user_id = request.json.get("recipeUserId")
+@app.route("/create", methods=["POST"])  # type: ignore
+def create_session_api():  # type: ignore
+    data = request.json
+    if data is None:
+        return jsonify({"status": "MISSING_DATA_ERROR"})
+    recipe_user_id = RecipeUserId(data.get("recipeUserId"))
 
-#     session = session.create_new_session(request, "public", recipe_user_id)
-#     return jsonify({"status": "OK"})
+    from supertokens_python.recipe.session.syncio import create_new_session
+
+    create_new_session(request, "public", recipe_user_id)
+    return jsonify({"status": "OK"})
 
 
 @app.route("/getsession", methods=["POST"])  # type: ignore
 @verify_session()
 def get_session():
-    session: SessionContainer = request.environ["session"]
+    from supertokens_python.recipe.session.syncio import get_session
+
+    session = get_session(request)
+    assert session is not None
     return jsonify(
-        {"userId": session.get_user_id(), "recipeUserId": session.get_user_id()}
+        {
+            "userId": session.get_user_id(),
+            "recipeUserId": session.get_recipe_user_id().get_as_string(),
+        }
     )
 
 
-# @app.route("/refreshsession", methods=["POST"])
-# def refresh_session():
-#     session: SessionContainer = session.refresh_session(request)
-#     return jsonify(
-#         {"userId": session.get_user_id(), "recipeUserId": session.get_user_id()}
-#     )
+@app.route("/refreshsession", methods=["POST"])  # type: ignore
+def refresh_session_api():  # type: ignore
+    from supertokens_python.recipe.session.syncio import refresh_session
+
+    session: SessionContainer = refresh_session(request)
+    return jsonify(
+        {
+            "userId": session.get_user_id(),
+            "recipeUserId": session.get_recipe_user_id().get_as_string(),
+        }
+    )
 
 
 @app.route("/verify", methods=["GET"])  # type: ignore

@@ -523,9 +523,9 @@ class Querier:
                 raise Exception(
                     "SuperTokens core threw an error for a "
                     + method
-                    + " request to path: "
+                    + " request to path: '"
                     + path.get_as_string_dangerous()
-                    + " with status code: "
+                    + "' with status code: "
                     + str(response.status_code)
                     + " and message: "
                     + response.text  # type: ignore
