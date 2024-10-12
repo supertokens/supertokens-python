@@ -30,13 +30,11 @@ class ActiveDirectoryImpl(GenericProvider):
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if (
-            config.additional_config is None
-            or config.additional_config.get("directoryId") is None
+            config.additional_config is not None
+            and config.additional_config.get("directoryId") is not None
         ):
-            if not config.oidc_discovery_endpoint:
-                raise Exception(
-                    "Please provide the directoryId in the additionalConfig of the Active Directory provider."
-                )
+            config.oidc_discovery_endpoint = f"https://login.microsoftonline.com/{config.additional_config['directoryId']}/v2.0/.well-known/openid-configuration"
+
         if config.oidc_discovery_endpoint is not None:
             config.oidc_discovery_endpoint = (
                 normalise_oidc_endpoint_to_include_well_known(

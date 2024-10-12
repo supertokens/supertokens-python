@@ -62,19 +62,45 @@ class TenantConfigCreateOrUpdate:
     def __init__(
         self,
         core_config: Dict[str, Any] = {},
-        first_factors: Optional[List[str]] = None,
-        required_secondary_factors: Optional[List[str]] = None,
+        first_factors: Optional[List[str]] = [
+            "NO_CHANGE"
+        ],  # A default value here means that if the user does not set this, it will not make any change in the core
+        required_secondary_factors: Optional[List[str]] = [
+            "NO_CHANGE"
+        ],  # A default value here means that if the user does not set this, it will not make any change in the core
     ):
         self.core_config = core_config
-        self.first_factors = first_factors
-        self.required_secondary_factors = required_secondary_factors
+        self._first_factors = first_factors
+        self._required_secondary_factors = required_secondary_factors
+
+    def is_first_factors_unchanged(self) -> bool:
+        return self._first_factors == ["NO_CHANGE"]
+
+    def is_required_secondary_factors_unchanged(self) -> bool:
+        return self._required_secondary_factors == ["NO_CHANGE"]
+
+    def get_first_factors_for_update(self) -> Optional[List[str]]:
+        if self._first_factors == ["NO_CHANGE"]:
+            raise Exception(
+                "First check if the value of first_factors is not NO_CHANGE"
+            )
+        return self._first_factors
+
+    def get_required_secondary_factors_for_update(self) -> Optional[List[str]]:
+        if self._required_secondary_factors == ["NO_CHANGE"]:
+            raise Exception(
+                "First check if the value of required_secondary_factors is not NO_CHANGE"
+            )
+        return self._required_secondary_factors
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> TenantConfigCreateOrUpdate:
         return TenantConfigCreateOrUpdate(
             core_config=json.get("coreConfig", {}),
-            first_factors=json.get("firstFactors", []),
-            required_secondary_factors=json.get("requiredSecondaryFactors", []),
+            first_factors=json.get("firstFactors", ["NO_CHANGE"]),
+            required_secondary_factors=json.get(
+                "requiredSecondaryFactors", ["NO_CHANGE"]
+            ),
         )
 
 

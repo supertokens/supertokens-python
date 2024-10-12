@@ -61,8 +61,10 @@ class ProviderConfigResponse(APIResponse):
             "isExchangeAuthCodeForOAuthTokensOverridden"
         ] = self.is_exchange_auth_code_for_oauth_tokens_overridden
         json_response["isGetUserInfoOverridden"] = self.is_get_user_info_overridden
-        json_response["status"] = "OK"
-        return json_response
+        return {
+            "status": "OK",
+            "providerConfig": json_response,
+        }
 
 
 class GetThirdPartyConfigUnknownTenantError(APIResponse):

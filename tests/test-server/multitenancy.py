@@ -20,13 +20,18 @@ def add_multitenancy_routes(app: Flask):
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
         tenant_id = data["tenantId"]
-        config = data["config"]
         user_context = data.get("userContext")
 
-        config = TenantConfigCreateOrUpdate(
-            first_factors=config.get("firstFactors"),
-            required_secondary_factors=config.get("requiredSecondaryFactors"),
-            core_config=config.get("coreConfig"),
+        config = (
+            TenantConfigCreateOrUpdate(
+                first_factors=data["config"].get("firstFactors"),
+                required_secondary_factors=data["config"].get(
+                    "requiredSecondaryFactors"
+                ),
+                core_config=data["config"].get("coreConfig", {}),
+            )
+            if "config" in data
+            else None
         )
 
         response = multitenancy.create_or_update_tenant(tenant_id, config, user_context)

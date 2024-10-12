@@ -132,21 +132,21 @@ class RecipeImplementation(RecipeInterface):
         config: Optional[TenantConfigCreateOrUpdate],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
+        json_body: Dict[str, Any] = {
+            "tenantId": tenant_id,
+        }
+        if config is not None:
+            if not config.is_first_factors_unchanged():
+                json_body["firstFactors"] = config.get_first_factors_for_update()
+            if not config.is_required_secondary_factors_unchanged():
+                json_body[
+                    "requiredSecondaryFactors"
+                ] = config.get_required_secondary_factors_for_update()
+            json_body["coreConfig"] = config.core_config
+
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/multitenancy/tenant/v2"),
-            {
-                "tenantId": tenant_id,
-                "firstFactors": (
-                    config.first_factors
-                    if config and config.first_factors is not None
-                    else None
-                ),
-                "requiredSecondaryFactors": (
-                    config.required_secondary_factors
-                    if config and config.required_secondary_factors is not None
-                    else None
-                ),
-            },
+            json_body,
             user_context=user_context,
         )
         return CreateOrUpdateTenantOkResult(

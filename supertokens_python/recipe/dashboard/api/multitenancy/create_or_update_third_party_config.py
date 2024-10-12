@@ -155,7 +155,7 @@ async def handle_create_or_update_third_party_config(
             provider_config["clients"][0]["clientSecret"] = resp["clientSecret"]
 
     third_party_res = await create_or_update_third_party_config(
-        tenant_id, provider_config, None, user_context
+        tenant_id, ProviderConfig.from_json(provider_config), None, user_context
     )
 
     return CreateOrUpdateThirdPartyConfigOkResult(third_party_res.created_new)

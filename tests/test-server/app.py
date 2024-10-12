@@ -7,6 +7,7 @@ from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConf
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe import (
     accountlinking,
+    dashboard,
     multifactorauth,
     passwordless,
     totp,
@@ -225,7 +226,9 @@ def init_st(config: Dict[str, Any]):
     st_reset()
     override_logging.reset_override_logs()
 
-    recipe_list: List[Callable[[AppInfo], RecipeModule]] = []
+    recipe_list: List[Callable[[AppInfo], RecipeModule]] = [
+        dashboard.init(api_key="test")
+    ]
     for recipe_config in config.get("recipeList", []):
         recipe_id = recipe_config.get("recipeId")
         if recipe_id == "emailpassword":

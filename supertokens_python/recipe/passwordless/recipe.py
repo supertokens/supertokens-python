@@ -72,6 +72,7 @@ from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
     OverrideConfig,
+    get_enabled_pwless_factors,
     validate_and_normalise_user_input,
 )
 from ...post_init_callbacks import PostSTInitCallbacks
@@ -155,12 +156,7 @@ class PasswordlessRecipe(RecipeModule):
 
         def callback():
             mfa_instance = MultiFactorAuthRecipe.get_instance()
-            all_factors = [
-                FactorIds.OTP_EMAIL,
-                FactorIds.LINK_EMAIL,
-                FactorIds.OTP_PHONE,
-                FactorIds.LINK_PHONE,
-            ]
+            all_factors = get_enabled_pwless_factors(self.config)
             if mfa_instance is not None:
 
                 async def f1(_: TenantConfig):

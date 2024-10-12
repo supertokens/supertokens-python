@@ -68,3 +68,23 @@ def add_thirdparty_routes(app: Flask):
                     "reason": response.reason,
                 }
             )
+
+    @app.route("/test/thirdparty/getprovider", methods=["POST"])  # type: ignore
+    def get_provider():  # type: ignore
+        data = request.get_json()
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        tenant_id = data.get("tenantId", "public")
+        third_party_id = data["thirdPartyId"]
+        client_type = data.get("clientType", None)
+        user_context = data.get("userContext", {})
+
+        from supertokens_python.recipe.thirdparty.syncio import get_provider
+
+        provider = get_provider(tenant_id, third_party_id, client_type, user_context)
+
+        if provider is None:
+            return jsonify({})
+
+        return jsonify({"id": provider.id, "config": provider.config.to_json()})
