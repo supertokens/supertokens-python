@@ -391,6 +391,9 @@ def get_func(eval_str: str) -> Callable[..., Any]:
         def tp_override_apis(
             original_implementation: ThirdPartyAPIInterface,
         ) -> ThirdPartyAPIInterface:
+
+            og_sign_in_up_post = original_implementation.sign_in_up_post
+
             async def sign_in_up_post(
                 provider: Provider,
                 redirect_uri_info: Optional[RedirectUriInfo],
@@ -413,7 +416,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 ):
                     user_context["DO_LINK"] = json_body["userContext"]["DO_LINK"]
 
-                result = await original_implementation.sign_in_up_post(
+                result = await og_sign_in_up_post(
                     provider,
                     redirect_uri_info,
                     oauth_tokens,

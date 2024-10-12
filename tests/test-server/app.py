@@ -431,7 +431,19 @@ def init_st(config: Dict[str, Any]):
                 thirdparty.init(
                     sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                         providers=providers
-                    )
+                    ),
+                    override=thirdparty.InputOverrideConfig(
+                        functions=override_builder_with_logging(
+                            "ThirdParty.override.functions",
+                            recipe_config_json.get("override", {}).get(
+                                "functions", None
+                            ),
+                        ),
+                        apis=override_builder_with_logging(
+                            "ThirdParty.override.apis",
+                            recipe_config_json.get("override", {}).get("apis", None),
+                        ),
+                    ),
                 )
             )
 
