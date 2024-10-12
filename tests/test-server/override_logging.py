@@ -30,6 +30,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     VerifyEmailUsingTokenOkResult,
 )
+from supertokens_python.recipe.emailverification.recipe import IsVerifiedSCV
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
@@ -148,4 +149,5 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
         return "PrimitiveClaim"
     if isinstance(data, SessionInformationResult):
         return data.to_json()
-    return data
+    if isinstance(data, IsVerifiedSCV):
+        return "IsVerifiedSCV"
