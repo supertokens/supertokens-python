@@ -1,6 +1,7 @@
 from typing import Callable, List, Union
 from typing import Dict, Any, Optional
 from supertokens_python.asyncio import list_users_by_account_info
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.accountlinking import (
     RecipeLevelUser,
     ShouldAutomaticallyLink,
@@ -35,6 +36,7 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
+    SignInUpOkResult,
     SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResult,
 )
@@ -308,6 +310,54 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             send_email_inputs.append(jsonified)
 
         return func1
+
+    if eval_str.startswith("thirdparty.init.override.functions"):
+        if "setIsVerifiedInSignInUp" in eval_str:
+            from supertokens_python.recipe.thirdparty.interfaces import (
+                RecipeInterface as ThirdPartyRecipeInterface,
+            )
+
+            def custom_override(
+                original_implementation: ThirdPartyRecipeInterface,
+            ) -> ThirdPartyRecipeInterface:
+                og_sign_in_up = original_implementation.sign_in_up
+
+                async def sign_in_up(
+                    third_party_id: str,
+                    third_party_user_id: str,
+                    email: str,
+                    is_verified: bool,
+                    oauth_tokens: Dict[str, Any],
+                    raw_user_info_from_provider: RawUserInfoFromProvider,
+                    session: Optional[SessionContainer],
+                    should_try_linking_with_session_user: Union[bool, None],
+                    tenant_id: str,
+                    user_context: Dict[str, Any],
+                ) -> Union[
+                    SignInUpOkResult,
+                    SignInUpNotAllowed,
+                    LinkingToSessionUserFailedError,
+                ]:
+                    user_context[
+                        "isVerified"
+                    ] = is_verified  # this information comes from the third party provider
+                    return await og_sign_in_up(
+                        third_party_id,
+                        third_party_user_id,
+                        email,
+                        is_verified,
+                        oauth_tokens,
+                        raw_user_info_from_provider,
+                        session,
+                        should_try_linking_with_session_user,
+                        tenant_id,
+                        user_context,
+                    )
+
+                original_implementation.sign_in_up = sign_in_up
+                return original_implementation
+
+            return custom_override
 
     elif eval_str.startswith("passwordless.init.smsDelivery.service.sendSms"):
 

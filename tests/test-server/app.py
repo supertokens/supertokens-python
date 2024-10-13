@@ -5,6 +5,7 @@ from supertokens_python import process_state
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
+from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.recipe import (
     accountlinking,
     dashboard,
@@ -202,6 +203,7 @@ def callback_with_log(
 
 
 def st_reset():
+    PostSTInitCallbacks.reset()
     override_logging.reset_override_logs()
     reset_override_params()
     ProcessState.get_instance().reset()

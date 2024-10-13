@@ -1,3 +1,4 @@
+import json
 from typing import Any, Callable, Coroutine, Dict, List, Set, Union
 import time
 
@@ -151,5 +152,15 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
         return data.to_json()
     if isinstance(data, IsVerifiedSCV):
         return "IsVerifiedSCV"
+    if is_jsonable(data):
+        return data
 
-    return data
+    return "Some custom object"
+
+
+def is_jsonable(x: Any) -> bool:
+    try:
+        json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False

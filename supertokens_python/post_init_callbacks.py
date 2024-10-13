@@ -29,3 +29,7 @@ class PostSTInitCallbacks:
         for cb in PostSTInitCallbacks.post_init_callbacks:
             cb()
         PostSTInitCallbacks.post_init_callbacks = []
+
+    @staticmethod
+    def reset():
+        PostSTInitCallbacks.post_init_callbacks = []
