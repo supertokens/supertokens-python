@@ -56,10 +56,10 @@ def add_supertokens_routes(app: Flask):
     def get_users_newest_first_api():  # type: ignore
         assert request.json is not None
         response = get_users_newest_first(
-            include_recipe_ids=request.json["includeRecipeIds"],
-            limit=request.json["limit"],
-            pagination_token=request.json["paginationToken"],
-            tenant_id=request.json["tenantId"],
+            include_recipe_ids=request.json.get("includeRecipeIds"),
+            limit=request.json.get("limit"),
+            pagination_token=request.json.get("paginationToken"),
+            tenant_id=request.json.get("tenantId"),
             user_context=request.json.get("userContext"),
         )
         return jsonify(
@@ -73,10 +73,10 @@ def add_supertokens_routes(app: Flask):
     def get_users_oldest_first_api():  # type: ignore
         assert request.json is not None
         response = get_users_oldest_first(
-            include_recipe_ids=request.json["includeRecipeIds"],
-            limit=request.json["limit"],
-            pagination_token=request.json["paginationToken"],
-            tenant_id=request.json["tenantId"],
+            include_recipe_ids=request.json.get("includeRecipeIds"),
+            limit=request.json.get("limit"),
+            pagination_token=request.json.get("paginationToken"),
+            tenant_id=request.json.get("tenantId"),
             user_context=request.json.get("userContext"),
         )
         return jsonify(

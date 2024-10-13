@@ -657,19 +657,24 @@ def init_st(config: Dict[str, Any]):
             res.get("body"),
         )
 
-    init(
-        app_info=InputAppInfo(
-            app_name=config["appInfo"]["appName"],
-            api_domain=config["appInfo"]["apiDomain"],
-            website_domain=config["appInfo"]["websiteDomain"],
-        ),
-        supertokens_config=SupertokensConfig(
-            connection_uri=config["supertokens"]["connectionURI"],
-            network_interceptor=network_interceptor_func,
-        ),
-        framework="flask",
-        recipe_list=recipe_list,
-    )
+    try:
+        init(
+            app_info=InputAppInfo(
+                app_name=config["appInfo"]["appName"],
+                api_domain=config["appInfo"]["apiDomain"],
+                website_domain=config["appInfo"]["websiteDomain"],
+            ),
+            supertokens_config=SupertokensConfig(
+                connection_uri=config["supertokens"]["connectionURI"],
+                network_interceptor=network_interceptor_func,
+            ),
+            framework="flask",
+            recipe_list=recipe_list,
+        )
+    except Exception as e:
+        st_reset()
+        default_st_init()
+        raise e
 
 
 # Routes
@@ -808,6 +813,13 @@ add_totp_routes(app)
 from supertokens import add_supertokens_routes  # pylint: disable=import-error
 
 add_supertokens_routes(app)
+from usermetadata import add_usermetadata_routes
+
+add_usermetadata_routes(app)
+
+from multifactorauth import add_multifactorauth_routes
+
+add_multifactorauth_routes(app)
 
 if __name__ == "__main__":
     default_st_init()
