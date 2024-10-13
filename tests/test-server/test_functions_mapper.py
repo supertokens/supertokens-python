@@ -346,8 +346,8 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ) -> Any:
                 o = await api_options.request.json()
                 assert o is not None
-                if o.get("user_context", {}).get("DO_LINK") is not None:
-                    user_context["DO_LINK"] = o["user_context"]["DO_LINK"]
+                if o.get("userContext", {}).get("DO_LINK") is not None:
+                    user_context["DO_LINK"] = o["userContext"]["DO_LINK"]
                 return await og(
                     pre_auth_session_id,
                     user_input_code,
@@ -417,8 +417,8 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 if "signUpPOST" in eval_str:
                     n = await api_options.request.json()
                     assert n is not None
-                    if n.get("user_context", {}).get("DO_LINK") is not None:
-                        user_context["DO_LINK"] = n["user_context"]["DO_LINK"]
+                    if n.get("userContext", {}).get("DO_LINK") is not None:
+                        user_context["DO_LINK"] = n["userContext"]["DO_LINK"]
                 return await og_sign_up_post(
                     form_fields,
                     tenant_id,

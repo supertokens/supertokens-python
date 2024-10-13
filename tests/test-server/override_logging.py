@@ -151,3 +151,5 @@ def transform_logged_data(data: Any, visited: Union[Set[Any], None] = None) -> A
         return data.to_json()
     if isinstance(data, IsVerifiedSCV):
         return "IsVerifiedSCV"
+
+    return data
