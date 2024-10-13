@@ -27,6 +27,10 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVarsUser,
 )
+from supertokens_python.recipe.multifactorauth.interfaces import (
+    ResyncSessionAndFetchMFAInfoPUTOkResult,
+)
+from supertokens_python.recipe.multifactorauth.types import MFARequirementList
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.thirdparty.interfaces import (
@@ -71,6 +75,76 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             new_account_info_in_callback = recipe_level_user
 
         return on_account_linked
+
+    elif eval_str.startswith("multifactorauth.init.override.apis"):
+        from supertokens_python.recipe.multifactorauth.interfaces import (
+            APIInterface as MFAAPIInterface,
+            APIOptions as MFAAPIOptions,
+        )
+
+        def mfa_override_apis(
+            original_implementation: MFAAPIInterface,
+        ) -> MFAAPIInterface:
+            original_resync_session_and_fetch_mfa_info_put = (
+                original_implementation.resync_session_and_fetch_mfa_info_put
+            )
+
+            async def resync_session_and_fetch_mfa_info_put(
+                api_options: MFAAPIOptions,
+                session: SessionContainer,
+                user_context: Dict[str, Any],
+            ) -> Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
+                json_body = await api_options.request.json()
+                if (
+                    json_body is not None
+                    and json_body.get("userContext", {}).get("requireFactor")
+                    is not None
+                ):
+                    user_context["requireFactor"] = json_body["userContext"][
+                        "requireFactor"
+                    ]
+
+                return await original_resync_session_and_fetch_mfa_info_put(
+                    api_options, session, user_context
+                )
+
+            original_implementation.resync_session_and_fetch_mfa_info_put = (
+                resync_session_and_fetch_mfa_info_put
+            )
+            return original_implementation
+
+        return mfa_override_apis
+
+    elif eval_str.startswith("multifactorauth.init.override.functions"):
+        from supertokens_python.recipe.multifactorauth.interfaces import (
+            RecipeInterface as MFARecipeInterface,
+        )
+
+        def mfa_override_functions(
+            original_implementation: MFARecipeInterface,
+        ) -> MFARecipeInterface:
+            async def get_mfa_requirements_for_auth(
+                tenant_id: str,
+                access_token_payload: Dict[str, Any],
+                completed_factors: Dict[str, int],
+                user: Any,
+                factors_set_up_for_user: Any,
+                required_secondary_factors_for_user: Any,
+                required_secondary_factors_for_tenant: Any,
+                user_context: Dict[str, Any],
+            ) -> MFARequirementList:
+                return (
+                    MFARequirementList("otp-phone")
+                    if user_context.get("requireFactor")
+                    else MFARequirementList()
+                )
+
+            original_implementation.get_mfa_requirements_for_auth = (
+                get_mfa_requirements_for_auth
+            )
+            return original_implementation
+
+        return mfa_override_functions
 
     elif eval_str.startswith("emailverification.init.emailDelivery.override"):
         from supertokens_python.recipe.emailverification.types import (

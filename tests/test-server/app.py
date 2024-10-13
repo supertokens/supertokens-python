@@ -506,6 +506,10 @@ def init_st(config: Dict[str, Any]):
                                 "functions", None
                             ),
                         ),
+                        apis=override_builder_with_logging(
+                            "MultifactorAuth.override.apis",
+                            recipe_config_json.get("override", {}).get("apis", None),
+                        ),
                     ),
                 )
             )
