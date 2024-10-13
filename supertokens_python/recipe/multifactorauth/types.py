@@ -22,24 +22,9 @@ if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
 
 
-class MFARequirementList(List[Union[Dict[str, List[str]], str]]):
-    def __init__(
-        self,
-        *args: Union[
-            str, Dict[Union[Literal["oneOf"], Literal["allOfInAnyOrder"]], List[str]]
-        ],
-    ):
-        super().__init__()
-        for arg in args:
-            if isinstance(arg, str):
-                self.append(arg)
-            else:
-                if "oneOf" in arg:
-                    self.append({"oneOf": arg["oneOf"]})
-                elif "allOfInAnyOrder" in arg:
-                    self.append({"allOfInAnyOrder": arg["allOfInAnyOrder"]})
-                else:
-                    raise ValueError("Invalid dictionary format")
+MFARequirementList = List[
+    Union[str, Dict[Union[Literal["oneOf"], Literal["allOfInAnyOrder"]], List[str]]]
+]
 
 
 class MFAClaimValue:

@@ -147,7 +147,7 @@ class RecipeImplementation(RecipeInterface):
             all_factors.add(factor)
         for factor in await required_secondary_factors_for_tenant():
             all_factors.add(factor)
-        return MFARequirementList({"oneOf": list(all_factors)})
+        return [{"oneOf": list(all_factors)}]
 
     async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
         self,

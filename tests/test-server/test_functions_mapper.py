@@ -135,11 +135,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 required_secondary_factors_for_tenant: Any,
                 user_context: Dict[str, Any],
             ) -> MFARequirementList:
-                return (
-                    MFARequirementList("otp-phone")
-                    if user_context.get("requireFactor")
-                    else MFARequirementList()
-                )
+                return ["otp-phone"] if user_context.get("requireFactor") else []
 
             original_implementation.get_mfa_requirements_for_auth = (
                 get_mfa_requirements_for_auth
