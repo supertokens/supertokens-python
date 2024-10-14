@@ -176,11 +176,50 @@ class APIImplementation(APIInterface):
             None,
         )
 
-        primary_user_associated_with_email = next(
-            (u for u in users if u.is_primary_user), None
+        linking_candidate = next((u for u in users if u.is_primary_user), None)
+
+        # first we check if there even exists a primary user that has the input email
+        log_debug_message(
+            f"generatePasswordResetTokenPOST: primary linking candidate: {linking_candidate.id if linking_candidate else None}"
+        )
+        log_debug_message(
+            f"generatePasswordResetTokenPOST: linking candidate count {len(users)}"
         )
 
-        if primary_user_associated_with_email is None:
+        # If there is no existing primary user and there is a single option to link
+        # we see if that user can become primary (and a candidate for linking)
+        if linking_candidate is None and len(users) > 0:
+            # If the only user that exists with this email is a non-primary emailpassword user, then we can just let them reset their password, because:
+            # we are not going to link anything and there is no risk of account takeover.
+            if (
+                email_password_account is not None
+                and len(users) == 1
+                and users[0].login_methods[0].recipe_user_id.get_as_string()
+                == email_password_account.recipe_user_id.get_as_string()
+            ):
+                return await generate_and_send_password_reset_token(
+                    email_password_account.recipe_user_id.get_as_string(),
+                    email_password_account.recipe_user_id,
+                )
+
+            oldest_user = min(users, key=lambda u: u.time_joined)
+            log_debug_message(
+                f"generatePasswordResetTokenPOST: oldest recipe level-linking candidate: {oldest_user.id} (w/ {'verified' if oldest_user.login_methods[0].verified else 'unverified'} email)"
+            )
+            # Otherwise, we check if the user can become primary.
+            should_become_primary_user = (
+                await AccountLinkingRecipe.get_instance().should_become_primary_user(
+                    oldest_user, tenant_id, None, user_context
+                )
+            )
+
+            log_debug_message(
+                f"generatePasswordResetTokenPOST: recipe level-linking candidate {'can' if should_become_primary_user else 'can not'} become primary"
+            )
+            if should_become_primary_user:
+                linking_candidate = oldest_user
+
+        if linking_candidate is None:
             if email_password_account is None:
                 log_debug_message(
                     f"Password reset email not sent, unknown user email: {email}"
@@ -193,13 +232,13 @@ class APIImplementation(APIInterface):
 
         email_verified = any(
             lm.has_same_email_as(email) and lm.verified
-            for lm in primary_user_associated_with_email.login_methods
+            for lm in linking_candidate.login_methods
         )
 
         has_other_email_or_phone = any(
             (lm.email is not None and not lm.has_same_email_as(email))
             or lm.phone_number is not None
-            for lm in primary_user_associated_with_email.login_methods
+            for lm in linking_candidate.login_methods
         )
 
         if not email_verified and has_other_email_or_phone:
@@ -207,12 +246,27 @@ class APIImplementation(APIInterface):
                 "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)"
             )
 
+        if linking_candidate.is_primary_user and email_password_account is not None:
+            # If a primary user has the input email as verified or has no other emails then it is always allowed to reset their own password:
+            # - there is no risk of account takeover, because they have verified this email or haven't linked it to anything else (checked above this block)
+            # - there will be no linking as a result of this action, so we do not need to check for linking (checked here by seeing that the two accounts are already linked)
+            are_the_two_accounts_linked = any(
+                lm.recipe_user_id.get_as_string()
+                == email_password_account.recipe_user_id.get_as_string()
+                for lm in linking_candidate.login_methods
+            )
+
+            if are_the_two_accounts_linked:
+                return await generate_and_send_password_reset_token(
+                    linking_candidate.id, email_password_account.recipe_user_id
+                )
+
         should_do_account_linking_response = await AccountLinkingRecipe.get_instance().config.should_do_automatic_account_linking(
             AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
                 email_password_account
                 or AccountInfoWithRecipeId(email=email, recipe_id="emailpassword")
             ),
-            primary_user_associated_with_email,
+            linking_candidate,
             None,
             tenant_id,
             user_context,
@@ -240,7 +294,7 @@ class APIImplementation(APIInterface):
             )
             if is_sign_up_allowed:
                 return await generate_and_send_password_reset_token(
-                    primary_user_associated_with_email.id, None
+                    linking_candidate.id, None
                 )
             else:
                 log_debug_message(
@@ -248,32 +302,14 @@ class APIImplementation(APIInterface):
                 )
                 return GeneratePasswordResetTokenPostOkResult()
 
-        are_the_two_accounts_linked = any(
-            lm.recipe_user_id.get_as_string()
-            == email_password_account.recipe_user_id.get_as_string()
-            for lm in primary_user_associated_with_email.login_methods
-        )
-
-        if are_the_two_accounts_linked:
-            return await generate_and_send_password_reset_token(
-                primary_user_associated_with_email.id,
-                email_password_account.recipe_user_id,
-            )
-
         if isinstance(should_do_account_linking_response, ShouldNotAutomaticallyLink):
             return await generate_and_send_password_reset_token(
                 email_password_account.recipe_user_id.get_as_string(),
                 email_password_account.recipe_user_id,
             )
 
-        if not should_do_account_linking_response.should_require_verification:
-            return await generate_and_send_password_reset_token(
-                primary_user_associated_with_email.id,
-                email_password_account.recipe_user_id,
-            )
-
         return await generate_and_send_password_reset_token(
-            primary_user_associated_with_email.id, email_password_account.recipe_user_id
+            linking_candidate.id, email_password_account.recipe_user_id
         )
 
     async def password_reset_post(
@@ -388,69 +424,98 @@ class APIImplementation(APIInterface):
         user_id_for_whom_token_was_generated = token_consumption_response.user_id
         email_for_whom_token_was_generated = token_consumption_response.email
 
-        existing_user = await get_user(token_consumption_response.user_id, user_context)
+        existing_user = await get_user(
+            user_id_for_whom_token_was_generated, user_context
+        )
 
         if existing_user is None:
             return PasswordResetTokenInvalidError()
 
-        if existing_user.is_primary_user:
-            email_password_user_is_linked_to_existing_user = any(
-                lm.recipe_user_id.get_as_string()
-                == user_id_for_whom_token_was_generated
-                and lm.recipe_id == "emailpassword"
-                for lm in existing_user.login_methods
-            )
+        token_generated_for_email_password_user = any(
+            lm.recipe_user_id.get_as_string() == user_id_for_whom_token_was_generated
+            and lm.recipe_id == "emailpassword"
+            for lm in existing_user.login_methods
+        )
 
-            if email_password_user_is_linked_to_existing_user:
+        if token_generated_for_email_password_user:
+            if not existing_user.is_primary_user:
+                # If this is a recipe level emailpassword user, we can always allow them to reset their password.
                 return await do_update_password_and_verify_email_and_try_link_if_not_primary(
                     RecipeUserId(user_id_for_whom_token_was_generated)
                 )
-            else:
-                create_user_response = (
-                    await api_options.recipe_implementation.create_new_recipe_user(
-                        tenant_id=tenant_id,
-                        email=token_consumption_response.email,
-                        password=new_password,
-                        user_context=user_context,
-                    )
+
+            # If the user is a primary user resetting the password of an emailpassword user linked to it
+            # we need to check for account takeover risk (similar to what we do when generating the token)
+
+            # We check if there is any login method in which the input email is verified.
+            # If that is the case, then it's proven that the user owns the email and we can
+            # trust linking of the email password account.
+            email_verified = any(
+                lm.has_same_email_as(email_for_whom_token_was_generated) and lm.verified
+                for lm in existing_user.login_methods
+            )
+
+            # finally, we check if the primary user has any other email / phone number
+            # associated with this account - and if it does, then it means that
+            # there is a risk of account takeover, so we do not allow the token to be generated
+            has_other_email_or_phone = any(
+                (
+                    lm.email is not None
+                    and not lm.has_same_email_as(email_for_whom_token_was_generated)
                 )
-                if isinstance(create_user_response, EmailAlreadyExistsError):
-                    return PasswordResetTokenInvalidError()
-                else:
-                    await mark_email_as_verified(
-                        create_user_response.user.login_methods[0].recipe_user_id,
-                        token_consumption_response.email,
-                    )
-                    updated_user = await get_user(
-                        create_user_response.user.id,
-                        user_context,
-                    )
-                    if updated_user is None:
-                        raise Exception(
-                            "Should never happen - user deleted after during password reset"
-                        )
-                    create_user_response.user = updated_user
-                    link_res = await AccountLinkingRecipe.get_instance().try_linking_by_account_info_or_create_primary_user(
-                        tenant_id=tenant_id,
-                        input_user=create_user_response.user,
-                        session=None,
-                        user_context=user_context,
-                    )
-                    user_after_linking = (
-                        link_res.user
-                        if link_res.status == "OK"
-                        else create_user_response.user
-                    )
-                    assert user_after_linking is not None
-                    return PasswordResetPostOkResult(
-                        user=user_after_linking,
-                        email=token_consumption_response.email,
-                    )
-        else:
+                or lm.phone_number is not None
+                for lm in existing_user.login_methods
+            )
+
+            if not email_verified and has_other_email_or_phone:
+                # We can return an invalid token error, because in this case the token should not have been created
+                # whenever they try to re-create it they'll see the appropriate error message
+                return PasswordResetTokenInvalidError()
+
+            # since this doesn't result in linking and there is no risk of account takeover, we can allow the password reset to proceed
             return (
                 await do_update_password_and_verify_email_and_try_link_if_not_primary(
                     RecipeUserId(user_id_for_whom_token_was_generated)
                 )
+            )
+
+        create_user_response = (
+            await api_options.recipe_implementation.create_new_recipe_user(
+                tenant_id=tenant_id,
+                email=token_consumption_response.email,
+                password=new_password,
+                user_context=user_context,
+            )
+        )
+        if isinstance(create_user_response, EmailAlreadyExistsError):
+            return PasswordResetTokenInvalidError()
+        else:
+            await mark_email_as_verified(
+                create_user_response.user.login_methods[0].recipe_user_id,
+                token_consumption_response.email,
+            )
+            updated_user = await get_user(
+                create_user_response.user.id,
+                user_context,
+            )
+            if updated_user is None:
+                raise Exception(
+                    "Should never happen - user deleted after during password reset"
+                )
+            create_user_response.user = updated_user
+            link_res = await AccountLinkingRecipe.get_instance().try_linking_by_account_info_or_create_primary_user(
+                tenant_id=tenant_id,
+                input_user=create_user_response.user,
+                session=None,
+                user_context=user_context,
+            )
+            user_after_linking = (
+                link_res.user if link_res.status == "OK" else create_user_response.user
+            )
+            assert user_after_linking is not None
+            return PasswordResetPostOkResult(
+                user=user_after_linking,
+                email=token_consumption_response.email,
             )
 
     async def sign_in_post(

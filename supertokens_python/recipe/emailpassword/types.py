@@ -76,7 +76,7 @@ class PasswordResetEmailTemplateVarsUser:
         self.email = email
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        resp_json = {
             "id": self.id,
             "recipeUserId": (
                 self.recipe_user_id.get_as_string()
@@ -85,6 +85,8 @@ class PasswordResetEmailTemplateVarsUser:
             ),
             "email": self.email,
         }
+        # Remove items that are None
+        return {k: v for k, v in resp_json.items() if v is not None}
 
 
 class PasswordResetEmailTemplateVars:
@@ -100,6 +102,7 @@ class PasswordResetEmailTemplateVars:
 
     def to_json(self) -> Dict[str, Any]:
         return {
+            "type": "PASSWORD_RESET",
             "user": self.user.to_json(),
             "passwordResetLink": self.password_reset_link,
             "tenantId": self.tenant_id,

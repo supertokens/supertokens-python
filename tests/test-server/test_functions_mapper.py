@@ -559,6 +559,29 @@ def get_func(eval_str: str) -> Callable[..., Any]:
         return tp_override_apis
 
     elif eval_str.startswith("accountlinking.init.shouldDoAutomaticAccountLinking"):
+        if "onlyLinkIfNewUserVerified" in eval_str:
+
+            async def func4(
+                new_user_account: Any,
+                existing_user: Any,
+                session: Any,
+                tenant_id: Any,
+                user_context: Dict[str, Any],
+            ) -> Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]:
+                if user_context.get("DO_NOT_LINK"):
+                    return ShouldNotAutomaticallyLink()
+
+                if (
+                    new_user_account.third_party is not None
+                    and existing_user is not None
+                ):
+                    if user_context.get("isVerified"):
+                        return ShouldAutomaticallyLink(should_require_verification=True)
+                    return ShouldNotAutomaticallyLink()
+
+                return ShouldAutomaticallyLink(should_require_verification=True)
+
+            return func4
 
         async def func(
             i: Any, l: Any, o: Any, u: Any, a: Any  # pylint: disable=unused-argument
