@@ -391,7 +391,6 @@ class SessionConfig:
         use_dynamic_access_token_signing_key: bool,
         expose_access_token_to_frontend_in_cookie_based_auth: bool,
         jwks_refresh_interval_sec: int,
-        overwrite_session_during_sign_in_up: bool,
     ):
         self.session_expired_status_code = session_expired_status_code
         self.invalid_claim_status_code = invalid_claim_status_code
@@ -412,7 +411,6 @@ class SessionConfig:
         self.framework = framework
         self.mode = mode
         self.jwks_refresh_interval_sec = jwks_refresh_interval_sec
-        self.overwrite_session_during_sign_in_up = overwrite_session_during_sign_in_up
 
 
 def validate_and_normalise_user_input(
@@ -436,7 +434,6 @@ def validate_and_normalise_user_input(
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     jwks_refresh_interval_sec: Union[int, None] = None,
-    overwrite_session_during_sign_in_up: Union[bool, None] = None,
 ):
     _ = cookie_same_site  # we have this otherwise pylint complains that cookie_same_site is unused, but it is being used in the get_cookie_same_site function.
     if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
@@ -564,11 +561,6 @@ def validate_and_normalise_user_input(
         use_dynamic_access_token_signing_key,
         expose_access_token_to_frontend_in_cookie_based_auth,
         jwks_refresh_interval_sec,
-        (
-            overwrite_session_during_sign_in_up
-            if overwrite_session_during_sign_in_up is not None
-            else False
-        ),
     )
 
 

@@ -21,7 +21,6 @@ from supertokens_python.recipe.multifactorauth.utils import (
 )
 from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_tenant
 from supertokens_python.recipe.session.interfaces import SessionContainer
-from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session, get_session
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
@@ -249,17 +248,13 @@ async def post_auth_checks(
             # If the new user wasn't linked to the current one, we check the config and overwrite the session if required
             # Note: we could also get here if MFA is enabled, but the app didn't want to link the user to the session user.
             # This is intentional, since the MFA and overwriteSessionDuringSignInUp configs should work independently.
-            overwrite_session_during_sign_in_up = (
-                SessionRecipe.get_instance().config.overwrite_session_during_sign_in_up
+            resp_session = await create_new_session(
+                request, tenant_id, recipe_user_id, {}, {}, user_context
             )
-            if overwrite_session_during_sign_in_up:
-                resp_session = await create_new_session(
-                    request, tenant_id, recipe_user_id, {}, {}, user_context
+            if mfa_instance is not None:
+                await mark_factor_as_complete_in_session(
+                    resp_session, factor_id, user_context
                 )
-                if mfa_instance is not None:
-                    await mark_factor_as_complete_in_session(
-                        resp_session, factor_id, user_context
-                    )
     else:
         log_debug_message("postAuthChecks creating session for first factor sign in/up")
         # If there is no input session, we do not need to do anything other checks and create a new session
@@ -993,14 +988,7 @@ async def load_session_in_auth_api_if_needed(
     user_context: Dict[str, Any],
 ) -> Optional[SessionContainer]:
 
-    overwrite_session_during_sign_in_up = (
-        SessionRecipe.get_instance().config.overwrite_session_during_sign_in_up
-    )
-
-    if (
-        should_try_linking_with_session_user is not False
-        or not overwrite_session_during_sign_in_up
-    ):
+    if should_try_linking_with_session_user is not False:
         return await get_session(
             request,
             session_required=should_try_linking_with_session_user is True,
