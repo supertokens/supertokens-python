@@ -301,9 +301,6 @@ def init_st(config: Dict[str, Any]):
                     use_dynamic_access_token_signing_key=recipe_config_json.get(
                         "useDynamicAccessTokenSigningKey"
                     ),
-                    overwrite_session_during_sign_in_up=recipe_config_json.get(
-                        "overwriteSessionDuringSignInUp", None
-                    ),
                     override=session.InputOverrideConfig(
                         apis=override_builder_with_logging(
                             "Session.override.apis",
@@ -703,7 +700,7 @@ def override_params():
 
 @app.route("/test/featureflag", methods=["GET"])  # type: ignore
 def feature_flag():
-    return jsonify([])
+    return jsonify(["removedOverwriteSessionDuringSignInUp"])
 
 
 @app.route("/test/resetoverrideparams", methods=["POST"])  # type: ignore

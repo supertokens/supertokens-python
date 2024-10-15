@@ -93,7 +93,6 @@ class SessionRecipe(RecipeModule):
         use_dynamic_access_token_signing_key: Union[bool, None] = None,
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
         jwks_refresh_interval_sec: Union[int, None] = None,
-        overwrite_session_during_sign_in_up: Union[bool, None] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
@@ -111,7 +110,6 @@ class SessionRecipe(RecipeModule):
             use_dynamic_access_token_signing_key,
             expose_access_token_to_frontend_in_cookie_based_auth,
             jwks_refresh_interval_sec,
-            overwrite_session_during_sign_in_up,
         )
         self.openid_recipe = OpenIdRecipe(
             recipe_id,
@@ -312,7 +310,6 @@ class SessionRecipe(RecipeModule):
         use_dynamic_access_token_signing_key: Union[bool, None] = None,
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
         jwks_refresh_interval_sec: Union[int, None] = None,
-        overwrite_session_during_sign_in_up: Union[bool, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
@@ -332,7 +329,6 @@ class SessionRecipe(RecipeModule):
                     use_dynamic_access_token_signing_key,
                     expose_access_token_to_frontend_in_cookie_based_auth,
                     jwks_refresh_interval_sec,
-                    overwrite_session_during_sign_in_up,
                 )
                 return SessionRecipe.__instance
             raise_general_exception(
