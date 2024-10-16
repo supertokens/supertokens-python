@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.24.4] - 2024-10-16
+
+- Fixes dependency downgrade for `phonenumbers` and `twilio`
+
 ## [0.24.3] - 2024-09-24
 
 - Adds support for form field related improvements by making fields accept any type of values
