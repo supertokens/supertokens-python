@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.24.4] - 2024-10-16
 
-- Fixes dependency downgrade for `phonenumbers` and `twilio`
+- Updates `phonenumbers` and `twilio` to latest versions
 
 ## [0.24.3] - 2024-09-24
 
