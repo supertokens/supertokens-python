@@ -41,7 +41,7 @@ nodeenv==1.6.0
 packaging==21.3
 pathspec==0.9.0
 pdoc3==0.10.0
-phonenumbers==8.12.48
+phonenumbers==8.13.47
 pkce==1.0.3
 platformdirs==2.5.1
 pluggy==1.0.0
@@ -75,7 +75,7 @@ starlette==0.14.2
 tldextract==3.1.0
 toml==0.10.2
 tomli==2.0.1
-twilio==7.9.1
+twilio==9.3.3
 types-pytz==2021.3.6
 types-PyYAML==6.0.5
 typing_extensions==4.1.1
