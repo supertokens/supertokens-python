@@ -20,6 +20,7 @@ jobs:
                 node-version: '12'
             - name: Create virtual environment and install dependencies
               run: |
+                sudo apt-get install -y python3-setuptools
                 python3 -m venv venv
                 source venv/bin/activate
                 pip install "cython<3.0.0" wheel
