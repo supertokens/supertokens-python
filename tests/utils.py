@@ -157,6 +157,7 @@ def setup_multitenancy_feature(host: str = "localhost", port: str = "3567"):
         json={
             "licenseKey": OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
         },
+        timeout=10,
     )
 
 

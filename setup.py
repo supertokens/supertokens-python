@@ -83,7 +83,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.24.3",
+    version="0.24.4",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -121,8 +121,8 @@ setup(
         "asgiref>=3.4.1,<4",
         "typing_extensions>=4.1.1,<5.0.0",
         "Deprecated==1.2.13",
-        "phonenumbers==8.12.48",
-        "twilio==7.9.1",
+        "phonenumbers==8.13.47",
+        "twilio==9.3.3",
         "aiosmtplib>=1.1.6,<4.0.0",
         "pkce==1.0.3",
     ],
