@@ -392,7 +392,7 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
         async def send_raw_email_override(
             content: EmailContent,
-            user_context: Dict[
+            user_context: Dict[  # pylint: disable=unused-argument
                 str, Any
             ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ):
