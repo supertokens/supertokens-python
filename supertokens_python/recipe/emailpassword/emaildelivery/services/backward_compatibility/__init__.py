@@ -24,13 +24,17 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     EmailTemplateVars,
     RecipeInterface,
 )
-from supertokens_python.recipe.emailpassword.types import User
+from supertokens_python.recipe.emailpassword.types import (
+    PasswordResetEmailTemplateVarsUser,
+)
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 
 async def create_and_send_email_using_supertokens_service(
-    app_info: AppInfo, user: User, password_reset_url_with_token: str
+    app_info: AppInfo,
+    user: PasswordResetEmailTemplateVarsUser,
+    password_reset_url_with_token: str,
 ) -> None:
     if ("SUPERTOKENS_ENV" in environ) and (environ["SUPERTOKENS_ENV"] == "testing"):
         return
@@ -66,19 +70,12 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         template_vars: EmailTemplateVars,
         user_context: Dict[str, Any],
     ) -> None:
-        user = await self.recipe_interface_impl.get_user_by_id(
-            user_id=template_vars.user.id, user_context=user_context
-        )
-        if user is None:
-            raise Exception("Should never come here")
-
         # we add this here cause the user may have overridden the sendEmail function
         # to change the input email and if we don't do this, the input email
         # will get reset by the getUserById call above.
-        user.email = template_vars.user.email
         try:
             await create_and_send_email_using_supertokens_service(
-                self.app_info, user, template_vars.password_reset_link
+                self.app_info, template_vars.user, template_vars.password_reset_link
             )
         except Exception:
             pass

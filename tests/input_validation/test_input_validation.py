@@ -17,6 +17,7 @@ from supertokens_python.recipe import (
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
 )
+from supertokens_python.types import RecipeUserId
 
 
 @pytest.mark.asyncio
@@ -53,7 +54,7 @@ async def test_init_validation_emailpassword():
     )
 
 
-async def get_email_for_user_id(_: str, __: Dict[str, Any]):
+async def get_email_for_user_id(_: RecipeUserId, __: Dict[str, Any]):
     return GetEmailForUserIdOkResult("foo@example.com")
 
 
@@ -89,7 +90,7 @@ async def test_init_validation_emailverification():
             recipe_list=[
                 emailverification.init(
                     mode="OPTIONAL",
-                    get_email_for_user_id=get_email_for_user_id,
+                    get_email_for_recipe_user_id=get_email_for_user_id,
                     override="override",  # type: ignore
                 )
             ],

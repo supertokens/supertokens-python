@@ -263,7 +263,7 @@ class SessionRecipe(RecipeModule):
                 response, self, request, user_context
             )
             return await self.config.error_handlers.on_token_theft_detected(
-                request, err.session_handle, err.user_id, response
+                request, err.session_handle, err.user_id, err.recipe_user_id, response
             )
         if isinstance(err, InvalidClaimsError):
             log_debug_message("errorHandler: returning INVALID_CLAIMS")

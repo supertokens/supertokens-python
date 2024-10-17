@@ -13,6 +13,7 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     SessionDoesNotExistError,
 )
+from supertokens_python.types import RecipeUserId
 from tests.sessions.claims.utils import (
     get_st_init_args,
     NoneClaim,
@@ -31,7 +32,7 @@ async def test_should_return_the_right_validation_errors():
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "public", "someId")
+    s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
 
     failing_validator = NoneClaim.validators.has_value(True)
     res = await validate_claims_for_session_handle(
@@ -40,7 +41,7 @@ async def test_should_return_the_right_validation_errors():
     )
 
     assert isinstance(res, ClaimsValidationResult) and len(res.invalid_claims) == 1
-    assert res.invalid_claims[0].id == failing_validator.id
+    assert res.invalid_claims[0].id_ == failing_validator.id
     assert res.invalid_claims[0].reason == {
         "message": "value does not exist",
         "actualValue": None,

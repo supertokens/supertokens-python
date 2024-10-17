@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
+from supertokens_python.auth_utils import is_fake_email
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -23,12 +24,19 @@ from supertokens_python.recipe.emailpassword.types import (
     EmailPasswordIngredients,
     EmailTemplateVars,
 )
-from supertokens_python.recipe_module import APIHandled, RecipeModule
-from ..emailverification.interfaces import (
-    UnknownUserIdError,
-    GetEmailForUserIdOkResult,
-    EmailDoesNotExistError,
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import (
+    FactorIds,
+    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
+    GetEmailsForFactorOkResult,
+    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
 )
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python.types import User, RecipeUserId
 
 from .api.implementation import APIImplementation
 from .exceptions import FieldError, SuperTokensEmailPasswordError
@@ -43,7 +51,6 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 
 from .api import (
     handle_email_exists_api,
@@ -64,7 +71,6 @@ from .utils import (
     InputOverrideConfig,
     InputSignUpFeature,
     validate_and_normalise_user_input,
-    EmailPasswordConfig,
 )
 
 
@@ -90,11 +96,8 @@ class EmailPasswordRecipe(RecipeModule):
             email_delivery,
         )
 
-        def get_emailpassword_config() -> EmailPasswordConfig:
-            return self.config
-
         recipe_implementation = RecipeImplementation(
-            Querier.get_instance(recipe_id), get_emailpassword_config
+            Querier.get_instance(recipe_id), self.config
         )
         self.recipe_implementation = (
             recipe_implementation
@@ -118,9 +121,145 @@ class EmailPasswordRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+            mfa_instance = MultiFactorAuthRecipe.get_instance()
+            if mfa_instance is not None:
+
+                async def f1(_: TenantConfig):
+                    return ["emailpassword"]
+
+                mfa_instance.add_func_to_get_all_available_secondary_factor_ids_from_other_recipes(
+                    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc(f1)
+                )
+
+                async def get_factors_setup_for_user(
+                    user: User, _: Dict[str, Any]
+                ) -> List[str]:
+                    for login_method in user.login_methods:
+                        # We don't check for tenant_id here because if we find the user
+                        # with emailpassword login_method from different tenant, then
+                        # we assume the factor is setup for this user. And as part of factor
+                        # completion, we associate that login_method with the session's tenant_id
+                        if login_method.recipe_id == EmailPasswordRecipe.recipe_id:
+                            return ["emailpassword"]
+                    return []
+
+                mfa_instance.add_func_to_get_factors_setup_for_user_from_other_recipes(
+                    GetFactorsSetupForUserFromOtherRecipesFunc(
+                        get_factors_setup_for_user
+                    )
+                )
+
+                async def get_emails_for_factor(
+                    user: User, session_recipe_user_id: RecipeUserId
+                ) -> Union[
+                    GetEmailsForFactorOkResult,
+                    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+                ]:
+                    # This function is called in the MFA info endpoint API.
+                    # Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+
+                    # preparing some reusable variables for the logic below...
+                    session_login_method = next(
+                        (
+                            lm
+                            for lm in user.login_methods
+                            if lm.recipe_user_id.get_as_string()
+                            == session_recipe_user_id.get_as_string()
+                        ),
+                        None,
+                    )
+                    if session_login_method is None:
+                        return GetEmailsForFactorUnknownSessionRecipeUserIdResult()
+
+                    # We order the login methods based on time_joined (oldest first)
+                    ordered_login_methods = sorted(
+                        user.login_methods, key=lambda lm: lm.time_joined
+                    )
+                    # Then we take the ones that belong to this recipe
+                    recipe_login_methods = [
+                        lm
+                        for lm in ordered_login_methods
+                        if lm.recipe_id == EmailPasswordRecipe.recipe_id
+                    ]
+
+                    if recipe_login_methods:
+                        # If there are login methods belonging to this recipe, the factor is set up
+                        # In this case we only list email addresses that have a password associated with them
+                        result = (
+                            # First we take the verified real emails associated with emailpassword login methods ordered by time_joined (oldest first)
+                            [
+                                lm.email
+                                for lm in recipe_login_methods
+                                if lm.email
+                                and not is_fake_email(lm.email)
+                                and lm.verified
+                            ]
+                            +
+                            # Then we take the non-verified real emails associated with emailpassword login methods ordered by time_joined (oldest first)
+                            [
+                                lm.email
+                                for lm in recipe_login_methods
+                                if lm.email
+                                and not is_fake_email(lm.email)
+                                and not lm.verified
+                            ]
+                            +
+                            # Lastly, fake emails associated with emailpassword login methods ordered by time_joined (oldest first)
+                            [
+                                lm.email
+                                for lm in recipe_login_methods
+                                if lm.email and is_fake_email(lm.email)
+                            ]
+                        )
+                    else:
+                        # This factor hasn't been set up, we list all emails belonging to the user
+                        if any(
+                            lm.email and not is_fake_email(lm.email)
+                            for lm in ordered_login_methods
+                        ):
+                            # If there is at least one real email address linked to the user, we only suggest real addresses
+                            result = [
+                                lm.email
+                                for lm in ordered_login_methods
+                                if lm.email and not is_fake_email(lm.email)
+                            ]
+                        else:
+                            # Else we use the fake ones
+                            result = [
+                                lm.email
+                                for lm in ordered_login_methods
+                                if lm.email and is_fake_email(lm.email)
+                            ]
+
+                        # Since in this case emails are not guaranteed to be unique, we de-duplicate the results, keeping the oldest one in the list.
+                        result = list(dict.fromkeys(result))
+
+                    # If the login_method associated with the session has an email address, we move it to the top of the list (if it's already in the list)
+                    if (
+                        session_login_method.email
+                        and session_login_method.email in result
+                    ):
+                        result.remove(session_login_method.email)
+                        result.insert(0, session_login_method.email)
+
+                    # If the list is empty we generate an email address to make the flow where the user is never asked for
+                    # an email address easier to implement.
+                    if not result:
+                        result.append(
+                            f"{session_recipe_user_id}@stfakeemail.supertokens.com"
+                        )
+
+                    return GetEmailsForFactorOkResult(
+                        factor_id_to_emails_map={"emailpassword": result}
+                    )
+
+                mfa_instance.add_func_to_get_emails_for_factor_from_other_recipes(
+                    GetEmailsForFactorFromOtherRecipesFunc(get_emails_for_factor)
+                )
+
+            mt_recipe = MultitenancyRecipe.get_instance_optional()
+            if mt_recipe is not None:
+                mt_recipe.all_available_first_factors.append(FactorIds.EMAILPASSWORD)
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -269,16 +408,3 @@ class EmailPasswordRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         EmailPasswordRecipe.__instance = None
-
-    # instance functions below...............
-
-    async def get_email_for_user_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[UnknownUserIdError, GetEmailForUserIdOkResult, EmailDoesNotExistError]:
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is not None:
-            return GetEmailForUserIdOkResult(user_info.email)
-
-        return UnknownUserIdError()

@@ -7,6 +7,7 @@ from supertokens_python.recipe.session.asyncio import (
     refresh_session_without_request_response,
 )
 from supertokens_python.recipe.session.session_class import SessionContainer
+from supertokens_python.types import RecipeUserId
 from tests.utils import (
     get_st_init_args,
     setup_function,
@@ -31,7 +32,7 @@ async def test_dynamic_key_switching():
 
     # Create a new session without an actual HTTP request-response flow
     create_res: SessionContainer = await create_new_session_without_request_response(
-        "public", "test-user-id", {"tokenProp": True}, {"dbProp": True}
+        "public", RecipeUserId("test-user-id"), {"tokenProp": True}, {"dbProp": True}
     )
 
     # Extract session tokens for further testing
@@ -67,7 +68,7 @@ async def test_refresh_session():
 
     # Create a new session without an actual HTTP request-response flow
     create_res: SessionContainer = await create_new_session_without_request_response(
-        "public", "test-user-id", {"tokenProp": True}, {"dbProp": True}
+        "public", RecipeUserId("test-user-id"), {"tokenProp": True}, {"dbProp": True}
     )
 
     # Extract session tokens for further testing

@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional, Union
 from typing_extensions import Literal
 
 from fastapi import Depends, FastAPI, Request
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import init
@@ -33,7 +34,9 @@ async def app():
     @fast.post("/create")
     async def _create(request: Request):  # type: ignore
         body = await request.json()
-        session = await create_new_session(request, "public", "userId", body, {})
+        session = await create_new_session(
+            request, "public", RecipeUserId("userId"), body, {}
+        )
         return {"message": True, "sessionHandle": session.get_handle()}
 
     @fast.get("/update-payload")

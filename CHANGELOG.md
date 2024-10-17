@@ -8,14 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+
+## [0.25.0] - 2024-09-18
+
+### Breaking changes
+- `supertokens_python.recipe.emailverification.types.User` has been renamed to `supertokens_python.recipe.emailverification.types.EmailVerificationUser`
+- The user object has been changed to be a global one, containing information about all emails, phone numbers, third party info and login methods associated with that user.
+- Type of `get_email_for_user_id` in `emailverification.init` has changed
+- Session recipe's error handlers take an extra param of recipe_user_id as well
+- Session recipe, removes `validate_claims_in_jwt_payload` that is exposed to the user.
+- TODO..
+
 ## [0.24.4] - 2024-10-16
 
 - Updates `phonenumbers` and `twilio` to latest versions
 
+>>>>>>> 0.24
 ## [0.24.3] - 2024-09-24
 
 - Adds support for form field related improvements by making fields accept any type of values
 - Adds support for optional fields to properly optional
+>>>>>>> 0.24
 
 ### Migration
 

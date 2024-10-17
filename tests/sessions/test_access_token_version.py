@@ -17,6 +17,7 @@ from supertokens_python.recipe.session.access_token import (
     validate_access_token_structure,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.types import RecipeUserId
 from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
@@ -30,7 +31,9 @@ async def test_access_token_v4():
     start_st()
 
     access_token = (
-        await create_new_session_without_request_response("public", "user-id")
+        await create_new_session_without_request_response(
+            "public", RecipeUserId("user-id")
+        )
     ).get_access_token()
     s = await get_session_without_request_response(access_token)
     assert s is not None
@@ -44,7 +47,7 @@ async def test_access_token_v4():
         False,
     )
     assert res["userId"] == "user-id"
-    assert parsed_info.version == 4
+    assert parsed_info.version == 5
 
 
 async def test_parsing_access_token_v2():
@@ -79,7 +82,9 @@ async def app():
         except Exception:
             pass
 
-        session = await create_new_session(request, "public", "userId", body, {})
+        session = await create_new_session(
+            request, "public", RecipeUserId("userId"), body, {}
+        )
         return {"message": True, "sessionHandle": session.get_handle()}
 
     @fast.get("/merge-into-payload")
@@ -212,7 +217,7 @@ async def test_ignore_protected_props_in_create_session():
 
     s = await create_new_session_without_request_response(
         "public",
-        "user1",
+        RecipeUserId("user1"),
         {"foo": "bar"},
     )
     payload = parse_jwt_without_signature_verification(s.access_token).payload
@@ -220,7 +225,7 @@ async def test_ignore_protected_props_in_create_session():
     assert payload["sub"] == "user1"
 
     s2 = await create_new_session_without_request_response(
-        "public", "user2", s.get_access_token_payload()
+        "public", RecipeUserId("user2"), s.get_access_token_payload()
     )
     payload = parse_jwt_without_signature_verification(s2.access_token).payload
     assert payload["foo"] == "bar"

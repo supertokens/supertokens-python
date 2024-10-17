@@ -11,31 +11,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
 
+from __future__ import annotations
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
-
 from .utils import is_an_ip_address
+from .exceptions import raise_general_exception
 
 if TYPE_CHECKING:
     pass
-from .exceptions import raise_general_exception
 
 
 class NormalisedURLDomain:
     def __init__(self, url: str):
-        self.__value = normalise_domain_path_or_throw_error(url)
+        self.__value = normalise_url_domain_or_throw_error(url)
 
     def get_as_string_dangerous(self):
         return self.__value
 
 
-def normalise_domain_path_or_throw_error(
+def normalise_url_domain_or_throw_error(
     input_str: str, ignore_protocol: bool = False
 ) -> str:
     input_str = input_str.strip().lower()
-
     try:
         if (
             (not input_str.startswith("http://"))
@@ -44,7 +42,6 @@ def normalise_domain_path_or_throw_error(
         ):
             raise Exception("converting to proper URL")
         url_obj = urlparse(input_str)
-
         if ignore_protocol:
             if url_obj.hostname is None:
                 raise Exception("Should never come here")
@@ -56,17 +53,13 @@ def normalise_domain_path_or_throw_error(
                 input_str = "https://" + url_obj.netloc
         else:
             input_str = url_obj.scheme + "://" + url_obj.netloc
-
         return input_str
     except Exception:
         pass
-
     if input_str.startswith("/"):
         raise_general_exception("Please provide a valid domain name")
-
     if input_str.startswith("."):
         input_str = input_str[1:]
-
     if (
         ("." in input_str or input_str.startswith("localhost"))
         and (not input_str.startswith("http://"))
@@ -75,7 +68,7 @@ def normalise_domain_path_or_throw_error(
         input_str = "https://" + input_str
         try:
             urlparse(input_str)
-            return normalise_domain_path_or_throw_error(input_str, True)
+            return normalise_url_domain_or_throw_error(input_str, True)
         except Exception:
             pass
     raise_general_exception("Please provide a valid domain name")

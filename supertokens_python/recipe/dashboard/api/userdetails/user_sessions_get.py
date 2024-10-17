@@ -28,9 +28,7 @@ async def handle_sessions_get(
 
     # Passing tenant id as None sets fetch_across_all_tenants to True
     # which is what we want here.
-    session_handles = await get_all_session_handles_for_user(
-        user_id, None, user_context
-    )
+    session_handles = await get_all_session_handles_for_user(user_id)
     sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
 
     async def call_(i: int, session_handle: str):

@@ -47,9 +47,10 @@ class GitlabImpl(GenericProvider):
                 oidc_domain.get_as_string_dangerous()
                 + oidc_path.get_as_string_dangerous()
             )
-
-        if not config.oidc_discovery_endpoint:
-            raise Exception("should never come here")
+        elif config.oidc_discovery_endpoint is None:
+            config.oidc_discovery_endpoint = (
+                "https://gitlab.com/.well-known/openid-configuration"
+            )
 
         # The config could be coming from core where we didn't add the well-known previously
         config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(

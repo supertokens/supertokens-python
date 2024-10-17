@@ -56,7 +56,6 @@ ST_CONNECTION_URI=http://localhost:8081
 
 # start test-server
 pushd tests/test-server
-sh setup-for-test.sh
 SUPERTOKENS_ENV=testing API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI python3 app.py &
 popd
 

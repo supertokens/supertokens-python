@@ -20,7 +20,6 @@ from supertokens_python.recipe.openid.interfaces import (
 from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     GetClaimValueOkResult,
-    JSONObject,
     SessionClaim,
     SessionClaimValidator,
     SessionContainer,
@@ -28,7 +27,7 @@ from supertokens_python.recipe.session.interfaces import (
     SessionInformationResult,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import FRAMEWORKS, resolve
 
 from ...jwt.interfaces import (
@@ -45,6 +44,7 @@ from ..constants import protected_props
 from ..utils import get_required_claim_validators
 
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.asyncio import get_user
 
 _T = TypeVar("_T")
 
@@ -52,7 +52,7 @@ _T = TypeVar("_T")
 async def create_new_session(
     request: Any,
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -68,12 +68,18 @@ async def create_new_session(
     config = recipe_instance.config
     app_info = recipe_instance.app_info
 
+    user = await get_user(recipe_user_id.get_as_string(), user_context)
+    user_id = recipe_user_id.get_as_string()
+    if user is not None:
+        user_id = user.id
+
     return await create_new_session_in_request(
         request,
         user_context,
         recipe_instance,
         access_token_payload,
         user_id,
+        recipe_user_id,
         config,
         app_info,
         session_data_in_database,
@@ -83,7 +89,7 @@ async def create_new_session(
 
 async def create_new_session_without_request_response(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data_in_database: Union[Dict[str, Any], None] = None,
     disable_anti_csrf: bool = False,
@@ -111,12 +117,20 @@ async def create_new_session_without_request_response(
         if prop in final_access_token_payload:
             del final_access_token_payload[prop]
 
+    user = await get_user(recipe_user_id.get_as_string(), user_context)
+    user_id = recipe_user_id.get_as_string()
+    if user is not None:
+        user_id = user.id
+
     for claim in claims_added_by_other_recipes:
-        update = await claim.build(user_id, tenant_id, user_context)
+        update = await claim.build(
+            user_id, recipe_user_id, tenant_id, final_access_token_payload, user_context
+        )
         final_access_token_payload = {**final_access_token_payload, **update}
 
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
         user_id,
+        recipe_user_id,
         final_access_token_payload,
         session_data_in_database,
         disable_anti_csrf,
@@ -157,6 +171,7 @@ async def validate_claims_for_session_handle(
         recipe_impl.get_global_claim_validators(
             session_info.tenant_id,
             session_info.user_id,
+            session_info.recipe_user_id,
             claim_validators_added_by_other_recipes,
             user_context,
         )
@@ -173,6 +188,7 @@ async def validate_claims_for_session_handle(
 
     claim_validation_res = await recipe_impl.validate_claims(
         session_info.user_id,
+        session_info.recipe_user_id,
         session_info.custom_claims_in_access_token_payload,
         claim_validators,
         user_context,
@@ -188,53 +204,6 @@ async def validate_claims_for_session_handle(
             return SessionDoesNotExistError()
 
     return ClaimsValidationResult(claim_validation_res.invalid_claims)
-
-
-async def validate_claims_in_jwt_payload(
-    tenant_id: str,
-    user_id: str,
-    jwt_payload: JSONObject,
-    override_global_claim_validators: Optional[
-        Callable[
-            [
-                List[SessionClaimValidator],
-                str,
-                Dict[str, Any],
-            ],
-            MaybeAwaitable[List[SessionClaimValidator]],
-        ]
-    ] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    recipe_impl = SessionRecipe.get_instance().recipe_implementation
-
-    claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
-    )
-    global_claim_validators = await resolve(
-        recipe_impl.get_global_claim_validators(
-            tenant_id,
-            user_id,
-            claim_validators_added_by_other_recipes,
-            user_context,
-        )
-    )
-
-    if override_global_claim_validators is not None:
-        claim_validators = await resolve(
-            override_global_claim_validators(
-                global_claim_validators, user_id, user_context
-            )
-        )
-    else:
-        claim_validators = global_claim_validators
-
-    return await recipe_impl.validate_claims_in_jwt_payload(
-        user_id, jwt_payload, claim_validators, user_context
-    )
 
 
 async def fetch_and_set_claim(
@@ -435,25 +404,35 @@ async def revoke_session(
 
 async def revoke_all_sessions_for_user(
     user_id: str,
+    revoke_sessions_for_linked_accounts: bool = True,
     tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
-        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
+        user_id,
+        revoke_sessions_for_linked_accounts,
+        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id is None,
+        user_context,
     )
 
 
 async def get_all_session_handles_for_user(
     user_id: str,
+    fetch_sessions_for_linked_accounts: bool = True,
     tenant_id: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> List[str]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
-        user_id, tenant_id or DEFAULT_TENANT_ID, tenant_id is None, user_context
+        user_id,
+        fetch_sessions_for_linked_accounts,
+        tenant_id or DEFAULT_TENANT_ID,
+        tenant_id is None,
+        user_context,
     )
 
 

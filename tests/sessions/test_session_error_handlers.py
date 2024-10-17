@@ -17,6 +17,7 @@ from typing import List
 from fastapi import FastAPI
 from fastapi.requests import Request
 from pytest import fixture, mark
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 
 from supertokens_python import init
@@ -66,7 +67,7 @@ async def driver_config_client():
 
     @app.post("/test/token-theft")
     async def test_token_theft(_request: Request):  # type: ignore
-        raise TokenTheftError("", "")
+        raise TokenTheftError("", RecipeUserId(""), "")
 
     @app.post("/test/claim-validation")
     async def test_claim_validation(_request: Request):  # type: ignore
@@ -88,7 +89,11 @@ async def test_session_error_handlers_are_getting_overridden(
         return res
 
     def token_theft_f(
-        _req: BaseRequest, _session_handle: str, _user_id: str, res: BaseResponse
+        _req: BaseRequest,
+        _session_handle: str,
+        _user_id: str,
+        _rid: RecipeUserId,
+        res: BaseResponse,
     ):
         res.set_status_code(403)
         res.set_json_content({"message": "token theft detected from errorHandler"})

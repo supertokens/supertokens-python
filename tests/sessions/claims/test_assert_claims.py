@@ -16,6 +16,7 @@ from supertokens_python.recipe.session.interfaces import (
 )
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python import init
+from supertokens_python.types import RecipeUserId
 from tests.utils import (
     get_st_init_args,
     setup_function,
@@ -58,6 +59,7 @@ async def test_should_not_throw_for_empty_array():
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,
         False,  # access_token_updated
@@ -96,6 +98,7 @@ async def test_should_call_validate_with_the_same_payload_object():
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         payload,  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
@@ -120,7 +123,9 @@ async def test_should_call_validate_with_the_same_payload_object():
         def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
             return False
 
-    dummy_claim = PrimitiveClaim("st-claim", lambda _, __, ___: "Hello world")
+    dummy_claim = PrimitiveClaim(
+        "st-claim", lambda _, __, ___, ____, _____: "Hello world"
+    )
 
     dummy_claim_validator = DummyClaimValidator(dummy_claim)
 
@@ -142,5 +147,7 @@ async def test_assert_claims_should_work():
     start_st()
 
     validator = TrueClaim.validators.is_true(1)
-    s = await create_new_session_without_request_response("public", "userid", {})
+    s = await create_new_session_without_request_response(
+        "public", RecipeUserId("userid"), {}
+    )
     await s.assert_claims([validator])

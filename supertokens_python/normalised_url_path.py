@@ -13,13 +13,12 @@
 # under the License.
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
+from .exceptions import raise_general_exception
 
 if TYPE_CHECKING:
     pass
-from .exceptions import raise_general_exception
 
 
 class NormalisedURLPath:
@@ -40,33 +39,26 @@ class NormalisedURLPath:
 
     def is_a_recipe_path(self) -> bool:
         parts = self.__value.split("/")
-        return (len(parts) > 1 and parts[1] == "recipe") or (
-            len(parts) > 2 and parts[2] == "recipe"
-        )
+        return parts[1] == "recipe" or (len(parts) > 2 and parts[2] == "recipe")
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
     input_str = input_str.strip().lower()
-
     try:
-        if (not input_str.startswith("http://")) and (
-            not input_str.startswith("https://")
-        ):
+        if not input_str.startswith("http://") and not input_str.startswith("https://"):
             raise Exception("converting to proper URL")
         url_obj = urlparse(input_str)
         input_str = url_obj.path
-
         if input_str.endswith("/"):
             return input_str[:-1]
-
         return input_str
     except Exception:
         pass
 
     if (
         (domain_given(input_str) or input_str.startswith("localhost"))
-        and (not input_str.startswith("http://"))
-        and (not input_str.startswith("https://"))
+        and not input_str.startswith("http://")
+        and not input_str.startswith("https://")
     ):
         input_str = "http://" + input_str
         return normalise_url_path_or_throw_error(input_str)
@@ -82,23 +74,18 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
 
 
 def domain_given(input_str: str) -> bool:
-    if ("." not in input_str) or (input_str.startswith("/")):
+    if "." not in input_str or input_str.startswith("/"):
         return False
-
     try:
+        if not "http://" in input_str and not "https://" in input_str:
+            raise Exception("Trying with http")
         url = urlparse(input_str)
-        if url.hostname is None:
-            raise Exception("Should never come here")
-        return url.hostname.find(".") != -1
+        return url.hostname is not None and "." in url.hostname
     except Exception:
         pass
-
     try:
         url = urlparse("http://" + input_str)
-        if url.hostname is None:
-            raise Exception("Should never come here")
-        return url.hostname.find(".") != -1
+        return url.hostname is not None and "." in url.hostname
     except Exception:
         pass
-
     return False

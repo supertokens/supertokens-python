@@ -16,15 +16,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ...types import APIResponse, GeneralErrorResponse
+from ...types import APIResponse, User, GeneralErrorResponse, RecipeUserId
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
-    from .types import User, RawUserInfoFromProvider
+    from .types import RawUserInfoFromProvider
     from .utils import ThirdPartyConfig
 
 
@@ -32,24 +33,28 @@ class SignInUpOkResult:
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        recipe_user_id: RecipeUserId,
+        created_new_recipe_user: bool,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.created_new_recipe_user = created_new_recipe_user
         self.oauth_tokens = oauth_tokens
         self.raw_user_info_from_provider = raw_user_info_from_provider
+        self.recipe_user_id = recipe_user_id
 
 
 class ManuallyCreateOrUpdateUserOkResult:
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        recipe_user_id: RecipeUserId,
+        created_new_recipe_user: bool,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.recipe_user_id = recipe_user_id
+        self.created_new_recipe_user = created_new_recipe_user
 
 
 class GetProviderOkResult:
@@ -57,30 +62,24 @@ class GetProviderOkResult:
         self.provider = provider
 
 
+class SignInUpNotAllowed(APIResponse):
+    status: str = "SIGN_IN_UP_NOT_ALLOWED"
+    reason: str
+
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "reason": self.reason}
+
+
+class EmailChangeNotAllowedError:
+    def __init__(self, reason: str):
+        self.reason = reason
+
+
 class RecipeInterface(ABC):
     def __init__(self):
-        pass
-
-    @abstractmethod
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def get_users_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> List[User]:
-        pass
-
-    @abstractmethod
-    async def get_user_by_thirdparty_info(
-        self,
-        third_party_id: str,
-        third_party_user_id: str,
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -> Union[User, None]:
         pass
 
     @abstractmethod
@@ -89,9 +88,17 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        is_verified: bool,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -> ManuallyCreateOrUpdateUserOkResult:
+    ) -> Union[
+        ManuallyCreateOrUpdateUserOkResult,
+        LinkingToSessionUserFailedError,
+        SignInUpNotAllowed,
+        EmailChangeNotAllowedError,
+    ]:
         pass
 
     @abstractmethod
@@ -100,11 +107,14 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        is_verified: bool,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -> SignInUpOkResult:
+    ) -> Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
         pass
 
     @abstractmethod
@@ -144,13 +154,13 @@ class SignInUpPostOkResult(APIResponse):
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        created_new_recipe_user: bool,
         session: SessionContainer,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.created_new_recipe_user = created_new_recipe_user
         self.session = session
         self.oauth_tokens = oauth_tokens
         self.raw_user_info_from_provider = raw_user_info_from_provider
@@ -158,16 +168,8 @@ class SignInUpPostOkResult(APIResponse):
     def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
-            "user": {
-                "id": self.user.user_id,
-                "email": self.user.email,
-                "timeJoined": self.user.time_joined,
-                "thirdParty": {
-                    "id": self.user.third_party_info.id,
-                    "userId": self.user.third_party_info.user_id,
-                },
-            },
-            "createdNewUser": self.created_new_user,
+            "user": self.user.to_json(),
+            "createdNewRecipeUser": self.created_new_recipe_user,
         }
 
 
@@ -217,12 +219,15 @@ class APIInterface:
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         SignInUpPostOkResult,
         SignInUpPostNoEmailGivenByProviderResponse,
+        SignInUpNotAllowed,
         GeneralErrorResponse,
     ]:
         pass
