@@ -20,7 +20,7 @@ test:
 	pytest -vv --reruns 3 --reruns-delay 5 ./tests/
 
 dev-install:
-	python -m pip install -r dev-requirements.txt
+	pip install -r dev-requirements.txt
 
 freeze-dev-requirements:
 	pip freeze > dev-requirements.txt
