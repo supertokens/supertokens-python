@@ -26,6 +26,7 @@ jobs:
                 python3 -m pip install "cython<3.0.0" wheel
                 python3 -m pip install "PyYAML==5.4.1" --no-build-isolation
                 make dev-install && rm -rf src
+                python3 -m pip install pylint==3.3.1
             - name: Make a dummy change to README.md
               run: |
                 echo "# Dummy change for PR check" >> README.md
