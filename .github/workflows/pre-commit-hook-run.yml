@@ -14,10 +14,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: Set up node
-              uses: actions/setup-node@v1
+            - uses: actions/setup-python@v5
               with:
-                node-version: '12'
+                python-version: '3.7' 
             - name: Create virtual environment and install dependencies
               run: |
                 python3 -m venv venv
@@ -26,7 +25,6 @@ jobs:
                 python3 -m pip install "cython<3.0.0" wheel
                 python3 -m pip install "PyYAML==5.4.1" --no-build-isolation
                 make dev-install && rm -rf src
-                python3 -m pip install pylint==3.3.1
             - name: Make a dummy change to README.md
               run: |
                 echo "# Dummy change for PR check" >> README.md

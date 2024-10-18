@@ -10,7 +10,7 @@ format:
 	black .
 
 check-lint:
-	pyright supertokens_python tests examples && pylint --disable=too-many-positional-arguments --load-plugins=pylint.extensions.no_self_use supertokens_python tests examples 
+	pyright supertokens_python tests examples && pylint supertokens_python tests examples 
 
 set-up-hooks:
 	cp hooks/pre-commit.sh .git/hooks/pre-commit
