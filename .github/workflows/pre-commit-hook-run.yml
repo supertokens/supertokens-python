@@ -14,10 +14,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: Set up node
-              uses: actions/setup-node@v1
+            - uses: actions/setup-python@v5
               with:
-                node-version: '12'
+                python-version: '3.7' 
             - name: Create virtual environment and install dependencies
               run: |
                 python3 -m venv venv
