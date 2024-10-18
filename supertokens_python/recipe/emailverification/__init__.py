@@ -43,12 +43,12 @@ from .utils import MODE_TYPE, OverrideConfig
 def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
-        get_email_for_user_id,
+        get_email_for_recipe_user_id,
         override,
     )

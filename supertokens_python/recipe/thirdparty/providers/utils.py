@@ -48,7 +48,7 @@ async def do_get_request(
 
 async def do_post_request(
     url: str,
-    body_params: Optional[Dict[str, str]] = None,
+    body_params: Optional[Dict[str, Any]] = None,
     headers: Optional[Dict[str, str]] = None,
 ) -> Tuple[int, Dict[str, Any]]:
     if body_params is None:
@@ -64,7 +64,10 @@ async def do_post_request(
         log_debug_message(
             "Received response with status %s and body %s", res.status_code, res.text
         )
-        return res.status_code, res.json()
+        try:
+            return res.status_code, res.json()
+        except Exception:
+            return res.status_code, {"message": res.text}
 
 
 def normalise_oidc_endpoint_to_include_well_known(url: str) -> str:

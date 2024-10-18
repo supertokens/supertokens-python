@@ -14,7 +14,7 @@
 
 from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic, List
 
-from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import (
@@ -267,7 +267,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,

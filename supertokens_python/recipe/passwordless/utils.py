@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union, List
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -25,6 +25,7 @@ from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig,
     SMSDeliveryConfigWithService,
 )
+from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginSMSTemplateVars,
 )
@@ -187,9 +188,9 @@ def validate_and_normalise_user_input(
     if override is None:
         override = OverrideConfig()
 
-    def get_email_delivery_config() -> EmailDeliveryConfigWithService[
-        PasswordlessLoginEmailTemplateVars
-    ]:
+    def get_email_delivery_config() -> (
+        EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
+    ):
         email_service = email_delivery.service if email_delivery is not None else None
 
         if email_service is None:
@@ -202,9 +203,9 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[
-        PasswordlessLoginSMSTemplateVars
-    ]:
+    def get_sms_delivery_config() -> (
+        SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
+    ):
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if sms_service is None:
@@ -240,3 +241,38 @@ def validate_and_normalise_user_input(
         get_sms_delivery_config=get_sms_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code,
     )
+
+
+def get_enabled_pwless_factors(
+    config: PasswordlessConfig,
+) -> List[str]:
+    all_factors: List[str] = []
+
+    if config.flow_type == "MAGIC_LINK":
+        if config.contact_config.contact_method == "EMAIL":
+            all_factors = [FactorIds.LINK_EMAIL]
+        elif config.contact_config.contact_method == "PHONE":
+            all_factors = [FactorIds.LINK_PHONE]
+        else:
+            all_factors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE]
+    elif config.flow_type == "USER_INPUT_CODE":
+        if config.contact_config.contact_method == "EMAIL":
+            all_factors = [FactorIds.OTP_EMAIL]
+        elif config.contact_config.contact_method == "PHONE":
+            all_factors = [FactorIds.OTP_PHONE]
+        else:
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE]
+    else:
+        if config.contact_config.contact_method == "EMAIL":
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL]
+        elif config.contact_config.contact_method == "PHONE":
+            all_factors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE]
+        else:
+            all_factors = [
+                FactorIds.OTP_EMAIL,
+                FactorIds.OTP_PHONE,
+                FactorIds.LINK_EMAIL,
+                FactorIds.LINK_PHONE,
+            ]
+
+    return all_factors

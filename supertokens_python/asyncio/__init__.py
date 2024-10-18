@@ -24,7 +24,9 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import UsersResponse
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
+from supertokens_python.types import AccountInfo, User
 
 
 async def get_users_oldest_first(
@@ -34,15 +36,17 @@ async def get_users_oldest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
-    return await Supertokens.get_instance().get_users(
+) -> GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        "ASC",
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
+        time_joined_order="ASC",
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
     )
 
 
@@ -53,15 +57,17 @@ async def get_users_newest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
-    return await Supertokens.get_instance().get_users(
+) -> GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        "DESC",
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
+        time_joined_order="DESC",
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
     )
 
 
@@ -76,9 +82,27 @@ async def get_user_count(
 
 
 async def delete_user(
-    user_id: str, user_context: Optional[Dict[str, Any]] = None
+    user_id: str,
+    remove_all_linked_accounts: bool = True,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> None:
-    return await Supertokens.get_instance().delete_user(user_id, user_context)
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.delete_user(
+        user_id,
+        remove_all_linked_accounts=remove_all_linked_accounts,
+        user_context=user_context,
+    )
+
+
+async def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -> Optional[User]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        user_id=user_id, user_context=user_context
+    )
 
 
 async def create_user_id_mapping(
@@ -130,4 +154,20 @@ async def update_or_delete_user_id_mapping_info(
 ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
     return await Supertokens.get_instance().update_or_delete_user_id_mapping_info(
         user_id, user_id_type, external_user_id_info, user_context
+    )
+
+
+async def list_users_by_account_info(
+    tenant_id: str,
+    account_info: AccountInfo,
+    do_union_of_account_info: bool = False,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> List[User]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
+        tenant_id,
+        account_info,
+        do_union_of_account_info,
+        user_context,
     )

@@ -52,6 +52,7 @@ from supertokens_python.recipe.session.interfaces import (
     RecipeInterface,
 )
 from supertokens_python.constants import VERSION
+from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.querier import Querier
@@ -136,6 +137,7 @@ def functions_override_session(param: RecipeInterface):
 
     async def create_new_session_custom(
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Union[Dict[str, Any], None],
         session_data_in_database: Union[Dict[str, Any], None],
         disable_anti_csrf: Union[bool, None],
@@ -147,6 +149,7 @@ def functions_override_session(param: RecipeInterface):
         access_token_payload = {**access_token_payload, "customClaim": "customValue"}
         return await original_create_new_session(
             user_id,
+            recipe_user_id,
             access_token_payload,
             session_data_in_database,
             disable_anti_csrf,
@@ -270,7 +273,7 @@ def login_options():
 @app.post("/login")
 async def login(request: Request):
     user_id = (await request.json())["userId"]
-    _session = await create_new_session(request, "public", user_id)
+    _session = await create_new_session(request, "public", RecipeUserId(user_id))
     return PlainTextResponse(content=_session.get_user_id())
 
 

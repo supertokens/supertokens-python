@@ -26,7 +26,7 @@ from supertokens_python.logger import (
 )
 
 
-from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, USER_DELETE, USERS
+from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
 from .exceptions import SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
@@ -42,7 +42,6 @@ from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
-from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     get_rid_from_header,
     get_top_level_domain_for_same_site_resolution,
@@ -256,22 +255,36 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-
         multitenancy_found = False
+        totp_found = False
+        user_metadata_found = False
+        multi_factor_auth_found = False
 
         def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
-            nonlocal multitenancy_found
+            nonlocal multitenancy_found, totp_found, user_metadata_found, multi_factor_auth_found
             recipe_module = recipe(self.app_info)
-            if recipe_module.get_recipe_id() == MultitenancyRecipe.recipe_id:
+            if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True
+            elif recipe_module.get_recipe_id() == "usermetadata":
+                user_metadata_found = True
+            elif recipe_module.get_recipe_id() == "multifactorauth":
+                multi_factor_auth_found = True
+            elif recipe_module.get_recipe_id() == "totp":
+                totp_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
         if not multitenancy_found:
-            recipe = MultitenancyRecipe.init()(self.app_info)
-            self.recipe_modules.append(recipe)
+            from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+
+            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+        if totp_found and not multi_factor_auth_found:
+            raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
+        if not user_metadata_found:
+            from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+
+            self.recipe_modules.append(UserMetadataRecipe.init()(self.app_info))
 
         self.telemetry = (
             telemetry
@@ -307,6 +320,9 @@ class Supertokens:
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
             raise_general_exception("calling testing function in non testing env")
+        from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+
+        UserMetadataRecipe.reset()
         Querier.reset()
         Supertokens.__instance = None
 
@@ -350,87 +366,6 @@ class Supertokens:
         )
 
         return int(response["count"])
-
-    async def delete_user(  # pylint: disable=no-self-use
-        self,
-        user_id: str,
-        user_context: Optional[Dict[str, Any]],
-    ) -> None:
-        querier = Querier.get_instance(None)
-
-        cdi_version = await querier.get_api_version(user_context)
-
-        if is_version_gte(cdi_version, "2.10"):
-            await querier.send_post_request(
-                NormalisedURLPath(USER_DELETE),
-                {"userId": user_id},
-                user_context=user_context,
-            )
-
-            return None
-        raise_general_exception("Please upgrade the SuperTokens core to >= 3.7.0")
-
-    async def get_users(  # pylint: disable=no-self-use
-        self,
-        tenant_id: str,
-        time_joined_order: Literal["ASC", "DESC"],
-        limit: Union[int, None],
-        pagination_token: Union[str, None],
-        include_recipe_ids: Union[None, List[str]],
-        query: Union[Dict[str, str], None],
-        user_context: Optional[Dict[str, Any]],
-    ) -> UsersResponse:
-
-        querier = Querier.get_instance(None)
-        params = {"timeJoinedOrder": time_joined_order}
-        if limit is not None:
-            params = {"limit": limit, **params}
-        if pagination_token is not None:
-            params = {"paginationToken": pagination_token, **params}
-
-        include_recipe_ids_str = None
-        if include_recipe_ids is not None:
-            include_recipe_ids_str = ",".join(include_recipe_ids)
-            params = {"includeRecipeIds": include_recipe_ids_str, **params}
-
-        if query is not None:
-            params = {**params, **query}
-
-        response = await querier.send_get_request(
-            NormalisedURLPath(f"/{tenant_id}{USERS}"), params, user_context=user_context
-        )
-        next_pagination_token = None
-        if "nextPaginationToken" in response:
-            next_pagination_token = response["nextPaginationToken"]
-        users_list = response["users"]
-        users: List[User] = []
-        for user in users_list:
-            recipe_id = user["recipeId"]
-            user_obj = user["user"]
-            third_party = None
-            if "thirdParty" in user_obj:
-                third_party = ThirdPartyInfo(
-                    user_obj["thirdParty"]["userId"], user_obj["thirdParty"]["id"]
-                )
-            email = None
-            if "email" in user_obj:
-                email = user_obj["email"]
-            phone_number = None
-            if "phoneNumber" in user_obj:
-                phone_number = user_obj["phoneNumber"]
-            users.append(
-                User(
-                    recipe_id,
-                    user_obj["id"],
-                    user_obj["timeJoined"],
-                    email,
-                    phone_number,
-                    third_party,
-                    user_obj["tenantIds"],
-                )
-            )
-
-        return UsersResponse(users, next_pagination_token)
 
     async def create_user_id_mapping(  # pylint: disable=no-self-use
         self,

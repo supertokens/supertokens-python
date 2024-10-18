@@ -25,32 +25,6 @@ from supertokens_python.ingredients.smsdelivery.types import (
 )
 
 
-class User:
-    def __init__(
-        self,
-        user_id: str,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        time_joined: int,
-        tenant_ids: List[str],
-    ):
-        self.user_id = user_id
-        self.email = email
-        self.phone_number = phone_number
-        self.time_joined = time_joined
-        self.tenant_ids = tenant_ids
-
-    def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self.user_id == other.user_id
-            and self.email == other.email
-            and self.phone_number == other.phone_number
-            and self.time_joined == other.time_joined
-            and self.tenant_ids == other.tenant_ids
-        )
-
-
 class DeviceCode:
     def __init__(self, code_id: str, time_created: str, code_life_time: int):
         self.code_id = code_id
@@ -81,6 +55,7 @@ class CreateAndSendCustomEmailParameters:
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -90,6 +65,7 @@ class CreateAndSendCustomEmailParameters:
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
         self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor
 
 
 PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
@@ -102,6 +78,7 @@ class CreateAndSendCustomTextMessageParameters:
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -111,6 +88,7 @@ class CreateAndSendCustomTextMessageParameters:
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
         self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor
 
 
 PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters
