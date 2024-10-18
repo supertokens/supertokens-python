@@ -50,7 +50,6 @@ pycparser==2.21
 pycryptodome==3.10.4
 pydantic==1.9.0
 PyJWT==2.6.0
-pylint==3.3.1
 pyparsing==3.0.7
 pyright==1.1.236
 pyrsistent==0.18.1
