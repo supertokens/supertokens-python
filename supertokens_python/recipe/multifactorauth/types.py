@@ -28,7 +28,7 @@ MFARequirementList = List[
 
 
 class MFAClaimValue:
-    c: Dict[str, Any]
+    c: Dict[str, int]
     v: bool
 
     def __init__(self, c: Dict[str, Any], v: bool):
