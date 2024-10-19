@@ -20,12 +20,15 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 )
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
     add_role_to_user,
     get_roles_for_user,
 )
+from supertokens_python.types import RecipeUserId
 
 from tests.utils import get_st_init_args
 from tests.utils import (
@@ -56,17 +59,23 @@ async def test_multitenancy_in_user_roles():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t2", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
 
     user = await sign_up("public", "test@example.com", "password1")
     assert isinstance(user, SignUpOkResult)
-    user_id = user.user.user_id
+    user_id = user.user.id
 
-    await associate_user_to_tenant("t1", user_id)
-    await associate_user_to_tenant("t2", user_id)
-    await associate_user_to_tenant("t3", user_id)
+    await associate_user_to_tenant("t1", RecipeUserId(user_id))
+    await associate_user_to_tenant("t2", RecipeUserId(user_id))
+    await associate_user_to_tenant("t3", RecipeUserId(user_id))
 
     await create_new_role_or_add_permissions("role1", [])
     await create_new_role_or_add_permissions("role2", [])

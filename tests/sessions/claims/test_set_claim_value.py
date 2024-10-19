@@ -10,6 +10,7 @@ from supertokens_python.recipe.session.asyncio import (
     set_claim_value,
 )
 from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.types import RecipeUserId
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
 from tests.utils import AsyncMock, setup_function, start_st, teardown_function
 
@@ -38,6 +39,7 @@ async def test_should_merge_the_right_value(timestamp: int):
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
@@ -57,17 +59,17 @@ async def test_should_overwrite_claim_value(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "public", "someId")
+    s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await s.set_claim_value(TrueClaim, False)
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"t": timestamp, "v": False}
 
 
@@ -76,10 +78,10 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s = await create_new_session(dummy_req, "public", "someId")
+    s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
 
     payload = s.get_access_token_payload()
-    assert len(payload) == 10
+    assert len(payload) == 11
     assert payload["st-true"] == {"t": timestamp, "v": True}
 
     await set_claim_value(s.get_handle(), TrueClaim, False)

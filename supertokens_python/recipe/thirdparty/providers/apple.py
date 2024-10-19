@@ -12,14 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+import json
 
 from re import sub
 from typing import Any, Dict, Optional
 from jwt import encode  # type: ignore
 from time import time
 
+from supertokens_python.recipe.thirdparty.types import UserInfo
+
 from .custom import GenericProvider, NewProvider
-from ..provider import Provider, ProviderConfigForClient, ProviderInput
+from ..provider import Provider, ProviderConfigForClient, ProviderInput, RedirectUriInfo
 from .utils import (
     get_actual_client_id_from_development_client_id,
     normalise_oidc_endpoint_to_include_well_known,
@@ -75,6 +78,47 @@ class AppleImpl(GenericProvider):
             algorithm="ES256",
             headers=headers,
         )  # type: ignore
+
+    async def exchange_auth_code_for_oauth_tokens(
+        self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        response = await super().exchange_auth_code_for_oauth_tokens(
+            redirect_uri_info, user_context
+        )
+
+        user = redirect_uri_info.redirect_uri_query_params.get("user")
+        if user is not None:
+            if isinstance(user, str):
+                response["user"] = json.loads(user)
+            elif isinstance(user, dict):
+                response["user"] = user
+
+        return response
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> UserInfo:
+        response = await super().get_user_info(oauth_tokens, user_context)
+        user = oauth_tokens.get("user")
+
+        user_dict: Dict[str, Any] = {}
+
+        if user is not None:
+            if isinstance(user, str):
+                user_dict = json.loads(user)
+            elif isinstance(user, dict):
+                user_dict = user
+            else:
+                return response
+
+            if response.raw_user_info_from_provider.from_id_token_payload is None:
+                response.raw_user_info_from_provider.from_id_token_payload = {}
+
+            response.raw_user_info_from_provider.from_id_token_payload[
+                "user"
+            ] = user_dict
+
+        return response
 
 
 def Apple(input: ProviderInput) -> Provider:  # pylint: disable=redefined-builtin

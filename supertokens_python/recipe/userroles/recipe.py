@@ -27,6 +27,7 @@ from supertokens_python.recipe.userroles.recipe_implementation import (
 from supertokens_python.recipe.userroles.utils import validate_and_normalise_user_input
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.types import RecipeUserId
 
 from ...post_init_callbacks import PostSTInitCallbacks
 from ..session import SessionRecipe
@@ -151,7 +152,11 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
         default_max_age_in_sec = 300
 
         async def fetch_value(
-            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+            user_id: str,
+            _recipe_user_id: RecipeUserId,
+            tenant_id: str,
+            _current_payload: Dict[str, Any],
+            user_context: Dict[str, Any],
         ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
 
@@ -186,7 +191,11 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
         default_max_age_in_sec = 300
 
         async def fetch_value(
-            user_id: str, tenant_id: str, user_context: Dict[str, Any]
+            user_id: str,
+            _recipe_user_id: RecipeUserId,
+            tenant_id: str,
+            _current_payload: Dict[str, Any],
+            user_context: Dict[str, Any],
         ) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
             res = await recipe.recipe_implementation.get_roles_for_user(

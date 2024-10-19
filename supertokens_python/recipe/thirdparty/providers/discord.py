@@ -45,7 +45,7 @@ def Discord(input: ProviderInput) -> Provider:  # pylint: disable=redefined-buil
         input.config.name = "Discord"
 
     if not input.config.authorization_endpoint:
-        input.config.authorization_endpoint = "https://discord.com/api/oauth2/authorize"
+        input.config.authorization_endpoint = "https://discord.com/oauth2/authorize"
 
     if not input.config.token_endpoint:
         input.config.token_endpoint = "https://discord.com/api/oauth2/token"

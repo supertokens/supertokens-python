@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 from typing import List, Set, Union
 
-from .process_state import AllowedProcessStates, ProcessState
+from .process_state import PROCESS_STATE, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 from sniffio import AsyncLibraryNotFoundError
 from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
@@ -74,7 +74,6 @@ class Querier:
     def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
         self.__rid_to_core = None
-        self.__global_cache_tag = get_timestamp_ms()
         if rid_to_core is not None:
             self.__rid_to_core = rid_to_core
 
@@ -131,7 +130,7 @@ class Querier:
             return Querier.api_version
 
         ProcessState.get_instance().add_state(
-            AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION
         )
 
         async def f(url: str, method: str) -> Response:
@@ -277,7 +276,7 @@ class Querier:
             if user_context is not None:
                 if (
                     user_context.get("_default", {}).get("global_cache_tag", -1)
-                    != self.__global_cache_tag
+                    != Querier.__global_cache_tag
                 ):
                     self.invalidate_core_call_cache(user_context, False)
 
@@ -316,7 +315,7 @@ class Querier:
                         **user_context.get("_default", {}).get("core_call_cache", {}),
                         unique_key: response,
                     },
-                    "global_cache_tag": self.__global_cache_tag,
+                    "global_cache_tag": Querier.__global_cache_tag,
                 }
 
             return response
@@ -443,7 +442,7 @@ class Querier:
             user_context.get("_default", {}).get("keep_cache_alive", False) is not True
         ):
             # there can be race conditions here, but i think we can ignore them.
-            self.__global_cache_tag = get_timestamp_ms()
+            Querier.__global_cache_tag = get_timestamp_ms()
 
         user_context["_default"] = {
             **user_context.get("_default", {}),
@@ -498,7 +497,7 @@ class Querier:
                 retry_info_map[url] = max_retries
 
             ProcessState.get_instance().add_state(
-                AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER
             )
             response = await http_function(url, method)
             if ("SUPERTOKENS_ENV" in environ) and (
@@ -524,9 +523,9 @@ class Querier:
                 raise Exception(
                     "SuperTokens core threw an error for a "
                     + method
-                    + " request to path: "
+                    + " request to path: '"
                     + path.get_as_string_dangerous()
-                    + " with status code: "
+                    + "' with status code: "
                     + str(response.status_code)
                     + " and message: "
                     + response.text  # type: ignore

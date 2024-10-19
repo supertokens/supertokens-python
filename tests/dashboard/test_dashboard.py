@@ -2,6 +2,9 @@ from typing import Any, Dict, List
 
 from fastapi import FastAPI
 from pytest import fixture, mark
+from supertokens_python.recipe.thirdparty.interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
+)
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from supertokens_python import init
 from supertokens_python.constants import DASHBOARD_VERSION
@@ -133,9 +136,9 @@ async def test_dashboard_users_get(app: TestClient):
     res = app.get(url="/auth/dashboard/api/users?limit=5")
     body = res.json()
     assert res.status_code == 200
-    assert body["users"][0]["user"]["firstName"] == "User2"
-    assert body["users"][1]["user"]["lastName"] == "Foo"
-    assert body["users"][1]["user"]["firstName"] == "User1"
+    assert body["users"][0]["firstName"] == "User2"
+    assert body["users"][1]["lastName"] == "Foo"
+    assert body["users"][1]["firstName"] == "User1"
 
 
 async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
@@ -248,8 +251,10 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
     start_st()
 
     pluser = await manually_create_or_update_user(
-        "public", "google", "googleid", "test@example.com"
+        "public", "google", "googleid", "test@example.com", True, None
     )
+
+    assert isinstance(pluser, ManuallyCreateOrUpdateUserOkResult)
 
     res = app.get(
         url="/auth/dashboard/api/user",
@@ -264,10 +269,10 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
     res = app.get(
         url="/auth/dashboard/api/user",
         params={
-            "userId": pluser.user.user_id,
+            "userId": pluser.user.id,
             "recipeId": "thirdparty",
         },
     )
     res_json = res.json()
     assert res_json["status"] == "OK"
-    assert res_json["user"]["id"] == pluser.user.user_id
+    assert res_json["user"]["id"] == pluser.user.id
