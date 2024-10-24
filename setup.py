@@ -20,7 +20,7 @@ extras_require = {
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
             "pyotp<3",
-            "aiofiles==24.1.0",
+            "aiofiles==23.2.1",
         ]
     ),
     "flask": (
