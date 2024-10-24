@@ -51,16 +51,16 @@ async def test_get_users_pagination():
 
     # Get all the users (No limit)
     response = await get_users_newest_first("public")
-    assert [user.email for user in response.users] == [
+    assert [user.emails[0] for user in response.users] == [
         f"dummy{i}@gmail.com" for i in range(5)
     ][::-1]
 
     # Get only the oldest user
     response = await get_users_oldest_first("public", limit=1)
-    assert [user.email for user in response.users] == ["dummy0@gmail.com"]
+    assert [user.emails[0] for user in response.users] == ["dummy0@gmail.com"]
 
     # Test pagination
     response = await get_users_oldest_first(
         "public", limit=1, pagination_token=response.next_pagination_token
     )
-    assert [user.email for user in response.users] == ["dummy1@gmail.com"]
+    assert [user.emails[0] for user in response.users] == ["dummy1@gmail.com"]

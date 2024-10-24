@@ -111,6 +111,17 @@ class ProviderClientConfig:
 
         return {k: v for k, v in res.items() if v is not None}
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> ProviderClientConfig:
+        return ProviderClientConfig(
+            client_id=json.get("clientId", ""),
+            client_secret=json.get("clientSecret", None),
+            client_type=json.get("clientType", None),
+            scope=json.get("scope", None),
+            force_pkce=json.get("forcePKCE", None),
+            additional_config=json.get("additionalConfig", None),
+        )
+
 
 class UserFields:
     def __init__(
@@ -132,6 +143,16 @@ class UserFields:
 
         return {k: v for k, v in res.items() if v is not None}
 
+    @staticmethod
+    def from_json(json: Optional[Dict[str, Any]]) -> Optional[UserFields]:
+        if json is None:
+            return None
+        return UserFields(
+            user_id=json.get("userId", None),
+            email=json.get("email", None),
+            email_verified=json.get("emailVerified", None),
+        )
+
 
 class UserInfoMap:
     def __init__(
@@ -149,6 +170,17 @@ class UserInfoMap:
         if self.from_user_info_api:
             res["fromUserInfoAPI"] = self.from_user_info_api.to_json()
         return res
+
+    @staticmethod
+    def from_json(json: Optional[Dict[str, Any]]) -> Optional[UserInfoMap]:
+        if json is None:
+            return None
+        return UserInfoMap(
+            from_id_token_payload=UserFields.from_json(
+                json.get("fromIdTokenPayload", None)
+            ),
+            from_user_info_api=UserFields.from_json(json.get("fromUserInfoAPI", None)),
+        )
 
 
 class CommonProviderConfig:
@@ -213,9 +245,9 @@ class CommonProviderConfig:
             "userInfoEndpointHeaders": self.user_info_endpoint_headers,
             "jwksURI": self.jwks_uri,
             "oidcDiscoveryEndpoint": self.oidc_discovery_endpoint,
-            "userInfoMap": self.user_info_map.to_json()
-            if self.user_info_map is not None
-            else None,
+            "userInfoMap": (
+                self.user_info_map.to_json() if self.user_info_map is not None else None
+            ),
             "requireEmail": self.require_email,
         }
 
@@ -361,6 +393,34 @@ class ProviderConfig(CommonProviderConfig):
             d["clients"] = [c.to_json() for c in self.clients]
 
         return d
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> ProviderConfig:
+        return ProviderConfig(
+            third_party_id=json.get("thirdPartyId", ""),
+            name=json.get("name", None),
+            clients=[
+                ProviderClientConfig.from_json(c) for c in json.get("clients", [])
+            ],
+            authorization_endpoint=json.get("authorizationEndpoint", None),
+            authorization_endpoint_query_params=json.get(
+                "authorizationEndpointQueryParams", None
+            ),
+            token_endpoint=json.get("tokenEndpoint", None),
+            token_endpoint_body_params=json.get("tokenEndpointBodyParams", None),
+            user_info_endpoint=json.get("userInfoEndpoint", None),
+            user_info_endpoint_query_params=json.get(
+                "userInfoEndpointQueryParams", None
+            ),
+            user_info_endpoint_headers=json.get("userInfoEndpointHeaders", None),
+            jwks_uri=json.get("jwksURI", None),
+            oidc_discovery_endpoint=json.get("oidcDiscoveryEndpoint", None),
+            user_info_map=UserInfoMap.from_json(json.get("userInfoMap", None)),
+            require_email=json.get("requireEmail", None),
+            validate_id_token_payload=None,
+            generate_fake_email=None,
+            validate_access_token=None,
+        )
 
 
 class ProviderInput:

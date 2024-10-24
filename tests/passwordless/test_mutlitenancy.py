@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
+from supertokens_python.asyncio import get_user, list_users_by_account_info
 from supertokens_python.recipe import session, multitenancy, passwordless
 from supertokens_python import init
 from supertokens_python.recipe.multitenancy.asyncio import (
@@ -20,11 +21,12 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 from supertokens_python.recipe.passwordless.asyncio import (
     create_code,
     consume_code,
-    get_user_by_id,
-    get_user_by_email,
     ConsumeCodeOkResult,
 )
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
+from supertokens_python.types import AccountInfo
 
 from tests.utils import get_st_init_args
 from tests.utils import (
@@ -57,9 +59,24 @@ async def test_multitenancy_functions():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(passwordless_enabled=True))
+    await create_or_update_tenant(
+        "t1",
+        TenantConfigCreateOrUpdate(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant(
+        "t2",
+        TenantConfigCreateOrUpdate(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant(
+        "t3",
+        TenantConfigCreateOrUpdate(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
 
     code1 = await create_code(
         tenant_id="t1", email="test@example.com", user_input_code="123456"
@@ -94,28 +111,34 @@ async def test_multitenancy_functions():
     assert isinstance(user2, ConsumeCodeOkResult)
     assert isinstance(user3, ConsumeCodeOkResult)
 
-    assert user1.user.user_id != user2.user.user_id
-    assert user2.user.user_id != user3.user.user_id
-    assert user3.user.user_id != user1.user.user_id
+    assert user1.user.id != user2.user.id
+    assert user2.user.id != user3.user.id
+    assert user3.user.id != user1.user.id
 
     assert user1.user.tenant_ids == ["t1"]
     assert user2.user.tenant_ids == ["t2"]
     assert user3.user.tenant_ids == ["t3"]
 
     # get user by id:
-    g_user1 = await get_user_by_id(user1.user.user_id)
-    g_user2 = await get_user_by_id(user2.user.user_id)
-    g_user3 = await get_user_by_id(user3.user.user_id)
+    g_user1 = await get_user(user1.user.id)
+    g_user2 = await get_user(user2.user.id)
+    g_user3 = await get_user(user3.user.id)
 
     assert g_user1 == user1.user
     assert g_user2 == user2.user
     assert g_user3 == user3.user
 
     # get user by email:
-    by_email_user1 = await get_user_by_email("t1", "test@example.com")
-    by_email_user2 = await get_user_by_email("t2", "test@example.com")
-    by_email_user3 = await get_user_by_email("t3", "test@example.com")
+    by_email_user1 = await list_users_by_account_info(
+        "t1", AccountInfo(email="test@example.com")
+    )
+    by_email_user2 = await list_users_by_account_info(
+        "t2", AccountInfo(email="test@example.com")
+    )
+    by_email_user3 = await list_users_by_account_info(
+        "t3", AccountInfo(email="test@example.com")
+    )
 
-    assert by_email_user1 == user1.user
-    assert by_email_user2 == user2.user
-    assert by_email_user3 == user3.user
+    assert by_email_user1 == [user1.user]
+    assert by_email_user2 == [user2.user]
+    assert by_email_user3 == [user3.user]

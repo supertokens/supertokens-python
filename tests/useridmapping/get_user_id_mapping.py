@@ -62,7 +62,7 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
     sign_up_res = await sign_up("public", "test@example.com", "password")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    supertokens_user_id = sign_up_res.user.user_id
+    supertokens_user_id = sign_up_res.user.id
     external_user_id = "externalId"
     external_id_info = "externalIdInfo" if use_external_id_info else None
 

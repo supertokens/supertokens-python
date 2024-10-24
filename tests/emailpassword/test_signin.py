@@ -30,6 +30,7 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
+from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
@@ -61,7 +62,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -179,7 +180,7 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"] == user_info["emails"]
 
 
 @mark.asyncio
@@ -224,7 +225,7 @@ async def test_singinAPI_works_when_input_is_fine_when_rid_is_tpep(
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"] == user_info["emails"]
 
 
 @mark.asyncio
@@ -269,7 +270,7 @@ async def test_singinAPI_works_when_input_is_fine_when_rid_is_emailpassword(
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"] == user_info["emails"]
 
 
 @mark.asyncio

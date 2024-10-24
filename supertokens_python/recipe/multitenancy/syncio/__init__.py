@@ -15,14 +15,16 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate
+from supertokens_python.types import RecipeUserId
 
 if TYPE_CHECKING:
-    from ..interfaces import TenantConfig, ProviderConfig
+    from ..interfaces import ProviderConfig
 
 
 def create_or_update_tenant(
     tenant_id: str,
-    config: Optional[TenantConfig],
+    config: Optional[TenantConfigCreateOrUpdate],
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -95,7 +97,7 @@ def delete_third_party_config(
 
 def associate_user_to_tenant(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:
@@ -103,19 +105,19 @@ def associate_user_to_tenant(
 
     from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_tenant
 
-    return sync(associate_user_to_tenant(tenant_id, user_id, user_context))
+    return sync(associate_user_to_tenant(tenant_id, recipe_user_id, user_context))
 
 
-def dissociate_user_from_tenant(
+def disassociate_user_from_tenant(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     user_context: Optional[Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
 
     from supertokens_python.recipe.multitenancy.asyncio import (
-        dissociate_user_from_tenant,
+        disassociate_user_from_tenant,
     )
 
-    return sync(dissociate_user_from_tenant(tenant_id, user_id, user_context))
+    return sync(disassociate_user_from_tenant(tenant_id, recipe_user_id, user_context))

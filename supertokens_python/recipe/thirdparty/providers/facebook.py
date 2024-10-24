@@ -44,12 +44,55 @@ class FacebookImpl(GenericProvider):
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -> UserInfo:
+        fields_permission_map = {
+            "public_profile": [
+                "first_name",
+                "last_name",
+                "middle_name",
+                "name",
+                "name_format",
+                "picture",
+                "short_name",
+            ],
+            "email": ["id", "email"],
+            "user_birthday": ["birthday"],
+            "user_videos": ["videos"],
+            "user_posts": ["posts"],
+            "user_photos": ["photos"],
+            "user_location": ["location"],
+            "user_link": ["link"],
+            "user_likes": ["likes"],
+            "user_hometown": ["hometown"],
+            "user_gender": ["gender"],
+            "user_friends": ["friends"],
+            "user_age_range": ["age_range"],
+        }
+        scope_values = self.config.scope
+
+        fields = (
+            ",".join(
+                [
+                    field
+                    for scope in scope_values
+                    for field in fields_permission_map.get(scope, [])
+                ]
+            )
+            if scope_values
+            else "id,email"
+        )
+
         self.config.user_info_endpoint_query_params = {
             "access_token": str(oauth_tokens["access_token"]),
-            "fields": "id,email",
+            "fields": fields,
             "format": "json",
             **(self.config.user_info_endpoint_query_params or {}),
         }
+
+        self.config.user_info_endpoint_headers = {
+            **(self.config.user_info_endpoint_headers or {}),
+            "Authorization": None,
+        }
+
         return await super().get_user_info(oauth_tokens, user_context)
 
 

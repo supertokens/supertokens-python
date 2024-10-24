@@ -25,6 +25,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.interfaces import APIInterface, RecipeInterface
 from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.types import RecipeUserId
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -50,7 +51,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"userId": user_id}
 
     return TestClient(app)

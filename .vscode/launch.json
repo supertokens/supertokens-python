@@ -1,0 +1,90 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask, supertokens-website tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/frontendIntegration/flask-server/app.py",
+            "args": [
+                "--port",
+                "8080"
+            ],
+            "cwd": "${workspaceFolder}/tests/frontendIntegration/flask-server",
+            "env": {
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true
+        },
+        {
+            "name": "Python: FastAPI, supertokens-website tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/frontendIntegration/fastapi-server/app.py",
+            "args": [
+                "--port",
+                "8080"
+            ],
+            "cwd": "${workspaceFolder}/tests/frontendIntegration/fastapi-server",
+            "env": {
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true
+        },
+        {
+            "name": "Python: Flask, supertokens-auth-react tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/auth-react/flask-server/app.py",
+            "args": [
+                "--port",
+                "8083"
+            ],
+            "cwd": "${workspaceFolder}/tests/auth-react/flask-server",
+            "env": {
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true
+        },
+        {
+            "name": "Python: FastAPI, supertokens-auth-react tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/auth-react/fastapi-server/app.py",
+            "args": [
+                "--port",
+                "8083"
+            ],
+            "cwd": "${workspaceFolder}/tests/auth-react/fastapi-server",
+            "jinja": true
+        },
+        {
+            "name": "Python: Django, supertokens-auth-react tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/auth-react/django3x/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8083"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "cwd": "${workspaceFolder}/tests/auth-react/django3x",
+            "jinja": true
+        },
+        {
+            "name": "Python: backend-sdk-testing repo",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/test-server/app.py",
+            "cwd": "${workspaceFolder}/tests/test-server",
+            "env": {
+                "SUPERTOKENS_ENV": "testing",
+                "API_PORT": "3030",
+                "ST_CONNECTION_URI": "http://localhost:8081"
+            },
+            "console": "integratedTerminal"
+        },
+    ]
+}

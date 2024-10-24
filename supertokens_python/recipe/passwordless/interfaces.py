@@ -14,14 +14,20 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types import (
+    APIResponse,
+    User,
+    GeneralErrorResponse,
+    RecipeUserId,
+)
 
 from ...supertokens import AppInfo
 
@@ -31,7 +37,6 @@ from .types import (
     PasswordlessLoginEmailTemplateVars,
     PasswordlessLoginSMSTemplateVars,
     SMSDeliveryIngredient,
-    User,
 )
 from .utils import PasswordlessConfig
 
@@ -84,10 +89,49 @@ class CreateNewCodeForDeviceUserInputCodeAlreadyUsedError:
     pass
 
 
+class ConsumedDevice:
+    def __init__(
+        self,
+        pre_auth_session_id: str,
+        failed_code_input_attempt_count: int,
+        email: Optional[str] = None,
+        phone_number: Optional[str] = None,
+    ):
+        self.pre_auth_session_id = pre_auth_session_id
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.email = email
+        self.phone_number = phone_number
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> ConsumedDevice:
+        return ConsumedDevice(
+            pre_auth_session_id=json["preAuthSessionId"],
+            failed_code_input_attempt_count=json["failedCodeInputAttemptCount"],
+            email=json["email"] if "email" in json else None,
+            phone_number=json["phoneNumber"] if "phoneNumber" in json else None,
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "preAuthSessionId": self.pre_auth_session_id,
+            "failedCodeInputAttemptCount": self.failed_code_input_attempt_count,
+            "email": self.email,
+            "phoneNumber": self.phone_number,
+        }
+
+
 class ConsumeCodeOkResult:
-    def __init__(self, created_new_user: bool, user: User):
-        self.created_new_user = created_new_user
+    def __init__(
+        self,
+        created_new_recipe_user: bool,
+        user: User,
+        recipe_user_id: RecipeUserId,
+        consumed_device: ConsumedDevice,
+    ):
+        self.created_new_recipe_user = created_new_recipe_user
         self.user = user
+        self.recipe_user_id = recipe_user_id
+        self.consumed_device = consumed_device
 
 
 class ConsumeCodeIncorrectUserInputCodeError:
@@ -126,20 +170,40 @@ class UpdateUserPhoneNumberAlreadyExistsError:
     pass
 
 
-class DeleteUserInfoOkResult:
-    pass
-
-
-class DeleteUserInfoUnknownUserIdError:
-    pass
-
-
 class RevokeAllCodesOkResult:
     pass
 
 
 class RevokeCodeOkResult:
     pass
+
+
+class CheckCodeOkResult:
+    def __init__(self, consumed_device: ConsumedDevice):
+        self.status = "OK"
+        self.consumed_device = consumed_device
+
+
+class CheckCodeIncorrectUserInputCodeError(ConsumeCodeIncorrectUserInputCodeError):
+    pass
+
+
+class CheckCodeExpiredUserInputCodeError(ConsumeCodeExpiredUserInputCodeError):
+    pass
+
+
+class CheckCodeRestartFlowError(ConsumeCodeRestartFlowError):
+    pass
+
+
+class EmailChangeNotAllowedError:
+    def __init__(self, reason: str):
+        self.reason = reason
+
+
+class PhoneNumberChangeNotAllowedError:
+    def __init__(self, reason: str):
+        self.reason = reason
 
 
 class RecipeInterface(ABC):
@@ -152,6 +216,8 @@ class RecipeInterface(ABC):
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> CreateCodeOkResult:
@@ -178,6 +244,8 @@ class RecipeInterface(ABC):
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -185,31 +253,31 @@ class RecipeInterface(ABC):
         ConsumeCodeIncorrectUserInputCodeError,
         ConsumeCodeExpiredUserInputCodeError,
         ConsumeCodeRestartFlowError,
+        LinkingToSessionUserFailedError,
     ]:
         pass
 
     @abstractmethod
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def get_user_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def get_user_by_phone_number(
-        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Union[User, None]:
+    async def check_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[
+        CheckCodeOkResult,
+        CheckCodeIncorrectUserInputCodeError,
+        CheckCodeExpiredUserInputCodeError,
+        CheckCodeRestartFlowError,
+    ]:
         pass
 
     @abstractmethod
     async def update_user(
         self,
-        user_id: str,
+        recipe_user_id: RecipeUserId,
         email: Union[str, None],
         phone_number: Union[str, None],
         user_context: Dict[str, Any],
@@ -218,19 +286,21 @@ class RecipeInterface(ABC):
         UpdateUserUnknownUserIdError,
         UpdateUserEmailAlreadyExistsError,
         UpdateUserPhoneNumberAlreadyExistsError,
+        EmailChangeNotAllowedError,
+        PhoneNumberChangeNotAllowedError,
     ]:
         pass
 
     @abstractmethod
     async def delete_email_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
         pass
 
     @abstractmethod
     async def delete_phone_number_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
         pass
 
     @abstractmethod
@@ -337,21 +407,21 @@ class ResendCodePostRestartFlowError(APIResponse):
 class ConsumeCodePostOkResult(APIResponse):
     status: str = "OK"
 
-    def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
-        self.created_new_user = created_new_user
+    def __init__(
+        self,
+        created_new_recipe_user: bool,
+        user: User,
+        session: SessionContainer,
+    ):
+        self.created_new_recipe_user = created_new_recipe_user
         self.user = user
         self.session = session
 
     def to_json(self):
-        user = {"id": self.user.user_id, "time_joined": self.user.time_joined}
-        if self.user.email is not None:
-            user = {**user, "email": self.user.email}
-        if self.user.phone_number is not None:
-            user = {**user, "phoneNumber": self.user.phone_number}
         return {
             "status": self.status,
-            "createdNewUser": self.created_new_user,
-            "user": user,
+            "user": self.user.to_json(),
+            "createdNewRecipeUser": self.created_new_recipe_user,
         }
 
 
@@ -416,6 +486,16 @@ class EmailExistsGetOkResult(APIResponse):
         return {"status": self.status, "exists": self.exists}
 
 
+class SignInUpPostNotAllowedResponse(APIResponse):
+    status: str = "SIGN_IN_UP_NOT_ALLOWED"
+
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "reason": self.reason}
+
+
 class APIInterface:
     def __init__(self):
         self.disable_create_code_post = False
@@ -429,10 +509,14 @@ class APIInterface:
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
+    ) -> Union[
+        CreateCodePostOkResult, SignInUpPostNotAllowedResponse, GeneralErrorResponse
+    ]:
         pass
 
     @abstractmethod
@@ -440,6 +524,8 @@ class APIInterface:
         self,
         device_id: str,
         pre_auth_session_id: str,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
@@ -455,6 +541,8 @@ class APIInterface:
         user_input_code: Union[str, None],
         device_id: Union[str, None],
         link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
@@ -464,6 +552,7 @@ class APIInterface:
         GeneralErrorResponse,
         ConsumeCodePostIncorrectUserInputCodeError,
         ConsumeCodePostExpiredUserInputCodeError,
+        SignInUpPostNotAllowedResponse,
     ]:
         pass
 
