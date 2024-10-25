@@ -26,12 +26,12 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, Optional, Union
+<pre><code class="python">from typing import Any, Dict, Union
+from typing_extensions import Literal
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.utils import (
     get_user_for_recipe_id,
-    is_valid_recipe_id,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -39,159 +39,241 @@ from supertokens_python.recipe.emailpassword.asyncio import (
 )
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
 from supertokens_python.recipe.emailpassword.interfaces import (
-    UpdateEmailOrPasswordEmailAlreadyExistsError,
+    EmailAlreadyExistsError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
 )
-from supertokens_python.recipe.passwordless import PasswordlessRecipe
+from supertokens_python.recipe.passwordless import (
+    ContactEmailOnlyConfig,
+    ContactEmailOrPhoneConfig,
+    ContactPhoneOnlyConfig,
+    PasswordlessRecipe,
+)
 from supertokens_python.recipe.passwordless.asyncio import (
     update_user as pless_update_user,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
-    UpdateUserEmailAlreadyExistsError as EmailAlreadyExistsErrorResponse,
-)
-from supertokens_python.recipe.passwordless.interfaces import (
-    UpdateUserPhoneNumberAlreadyExistsError as PhoneNumberAlreadyExistsError,
-)
-from supertokens_python.recipe.passwordless.interfaces import (
-    UpdateUserUnknownUserIdError as PlessUpdateUserUnknownUserIdError,
+    UpdateUserEmailAlreadyExistsError,
+    UpdateUserPhoneNumberAlreadyExistsError,
+    UpdateUserUnknownUserIdError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
 )
 from supertokens_python.recipe.passwordless.utils import (
-    ContactEmailOnlyConfig,
-    ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig,
     default_validate_email,
     default_validate_phone_number,
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
+from supertokens_python.types import RecipeUserId
 
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    UserPutAPIEmailAlreadyExistsErrorResponse,
-    UserPutAPIInvalidEmailErrorResponse,
-    UserPutAPIInvalidPhoneErrorResponse,
-    UserPutAPIOkResponse,
-    UserPutPhoneAlreadyExistsAPIResponse,
+    APIResponse,
 )
+
+
+class OkResponse(APIResponse):
+    status: Literal[&#34;OK&#34;]
+
+    def __init__(self):
+        self.status = &#34;OK&#34;
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status}
+
+
+class EmailAlreadyExistsErrorResponse(APIResponse):
+    status: Literal[&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;]
+
+    def __init__(self):
+        self.status = &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status}
+
+
+class InvalidEmailErrorResponse(APIResponse):
+    status: Literal[&#34;INVALID_EMAIL_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;INVALID_EMAIL_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}
+
+
+class PhoneAlreadyExistsErrorResponse(APIResponse):
+    status: Literal[&#34;PHONE_ALREADY_EXISTS_ERROR&#34;]
+
+    def __init__(self):
+        self.status = &#34;PHONE_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status}
+
+
+class InvalidPhoneErrorResponse(APIResponse):
+    status: Literal[&#34;INVALID_PHONE_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;INVALID_PHONE_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}
+
+
+class EmailChangeNotAllowedErrorResponse(APIResponse):
+    status: Literal[&#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}
+
+
+class PhoneNumberChangeNotAllowedErrorResponse(APIResponse):
+    status: Literal[&#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}
 
 
 async def update_email_for_recipe_id(
     recipe_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: str,
     tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
-    UserPutAPIOkResponse,
-    UserPutAPIInvalidEmailErrorResponse,
-    UserPutAPIEmailAlreadyExistsErrorResponse,
+    OkResponse,
+    InvalidEmailErrorResponse,
+    EmailAlreadyExistsErrorResponse,
+    EmailChangeNotAllowedErrorResponse,
 ]:
-    validation_error: Optional[str] = None
-
     if recipe_id == &#34;emailpassword&#34;:
-        form_fields = (
-            EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields
-        )
         email_form_fields = [
-            form_field
-            for form_field in form_fields
-            if form_field.id == FORM_FIELD_EMAIL_ID
+            field
+            for field in EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields
+            if field.id == FORM_FIELD_EMAIL_ID
         ]
 
         validation_error = await email_form_fields[0].validate(email, tenant_id)
 
         if validation_error is not None:
-            return UserPutAPIInvalidEmailErrorResponse(validation_error)
+            return InvalidEmailErrorResponse(validation_error)
 
         email_update_response = await ep_update_email_or_password(
-            user_id, email, user_context=user_context
+            recipe_user_id, email=email, user_context=user_context
         )
 
-        if isinstance(
-            email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
+        if isinstance(email_update_response, EmailAlreadyExistsError):
+            return EmailAlreadyExistsErrorResponse()
+        elif isinstance(
+            email_update_response, UpdateEmailOrPasswordEmailChangeNotAllowedError
         ):
-            return UserPutAPIEmailAlreadyExistsErrorResponse()
+            return EmailChangeNotAllowedErrorResponse(email_update_response.reason)
 
-        return UserPutAPIOkResponse()
+        return OkResponse()
 
     if recipe_id == &#34;passwordless&#34;:
-        validation_error = None
+        passwordless_config = PasswordlessRecipe.get_instance().config
 
-        passwordless_config = PasswordlessRecipe.get_instance().config.contact_config
-
-        if isinstance(passwordless_config.contact_method, ContactPhoneOnlyConfig):
+        if isinstance(passwordless_config.contact_config, ContactPhoneOnlyConfig):
             validation_error = await default_validate_email(email, tenant_id)
-
-        elif isinstance(
-            passwordless_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            validation_error = await passwordless_config.validate_email_address(
-                email, tenant_id
-            )
+        else:
+            if isinstance(
+                passwordless_config.contact_config,
+                (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig),
+            ):
+                validation_error = (
+                    await passwordless_config.contact_config.validate_email_address(
+                        email, tenant_id
+                    )
+                )
+            else:
+                raise Exception(&#34;Should never come here&#34;)
 
         if validation_error is not None:
-            return UserPutAPIInvalidEmailErrorResponse(validation_error)
+            return InvalidEmailErrorResponse(validation_error)
 
         update_result = await pless_update_user(
-            user_id, email, user_context=user_context
+            recipe_user_id, email=email, user_context=user_context
         )
 
-        if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
+        if isinstance(update_result, UpdateUserUnknownUserIdError):
             raise Exception(&#34;Should never come here&#34;)
+        elif isinstance(update_result, UpdateUserEmailAlreadyExistsError):
+            return EmailAlreadyExistsErrorResponse()
+        elif isinstance(
+            update_result,
+            (
+                EmailChangeNotAllowedError,
+                PhoneNumberChangeNotAllowedError,
+            ),
+        ):
+            return EmailChangeNotAllowedErrorResponse(update_result.reason)
 
-        if isinstance(update_result, EmailAlreadyExistsErrorResponse):
-            return UserPutAPIEmailAlreadyExistsErrorResponse()
-
-        return UserPutAPIOkResponse()
+        return OkResponse()
 
     # If it comes here then the user is a third party user in which case the UI should not have allowed this
     raise Exception(&#34;Should never come here&#34;)
 
 
 async def update_phone_for_recipe_id(
-    recipe_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     phone: str,
     tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
-    UserPutAPIOkResponse,
-    UserPutAPIInvalidPhoneErrorResponse,
-    UserPutPhoneAlreadyExistsAPIResponse,
+    OkResponse,
+    InvalidPhoneErrorResponse,
+    PhoneAlreadyExistsErrorResponse,
+    PhoneNumberChangeNotAllowedErrorResponse,
 ]:
-    validation_error: Optional[str] = None
+    passwordless_config = PasswordlessRecipe.get_instance().config
 
-    if recipe_id == &#34;passwordless&#34;:
-        validation_error = None
-
-        passwordless_config = PasswordlessRecipe.get_instance().config.contact_config
-
-        if isinstance(passwordless_config, ContactEmailOnlyConfig):
-            validation_error = await default_validate_phone_number(phone, tenant_id)
-        elif isinstance(
-            passwordless_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            validation_error = await passwordless_config.validate_phone_number(
+    if isinstance(passwordless_config.contact_config, ContactEmailOnlyConfig):
+        validation_error = await default_validate_phone_number(phone, tenant_id)
+    elif isinstance(
+        passwordless_config.contact_config,
+        (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig),
+    ):
+        validation_error = (
+            await passwordless_config.contact_config.validate_phone_number(
                 phone, tenant_id
             )
-
-        if validation_error is not None:
-            return UserPutAPIInvalidPhoneErrorResponse(validation_error)
-
-        update_result = await pless_update_user(
-            user_id, phone_number=phone, user_context=user_context
         )
+    else:
+        raise Exception(&#34;Invalid contact config&#34;)
 
-        if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
-            raise Exception(&#34;Should never come here&#34;)
+    if validation_error is not None:
+        return InvalidPhoneErrorResponse(validation_error)
 
-        if isinstance(update_result, PhoneNumberAlreadyExistsError):
-            return UserPutPhoneAlreadyExistsAPIResponse()
+    update_result = await pless_update_user(
+        recipe_user_id, phone_number=phone, user_context=user_context
+    )
 
-        return UserPutAPIOkResponse()
+    if isinstance(update_result, UpdateUserUnknownUserIdError):
+        raise Exception(&#34;Should never come here&#34;)
+    elif isinstance(update_result, UpdateUserPhoneNumberAlreadyExistsError):
+        return PhoneAlreadyExistsErrorResponse()
+    elif isinstance(update_result, PhoneNumberChangeNotAllowedError):
+        return PhoneNumberChangeNotAllowedErrorResponse(update_result.reason)
 
-    # If it comes here then the user is a third party user in which case the UI should not have allowed this
-    raise Exception(&#34;Should never come here&#34;)
+    return OkResponse()
 
 
 async def handle_user_put(
@@ -200,66 +282,63 @@ async def handle_user_put(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
-    UserPutAPIOkResponse,
-    UserPutAPIInvalidEmailErrorResponse,
-    UserPutAPIEmailAlreadyExistsErrorResponse,
-    UserPutAPIInvalidPhoneErrorResponse,
-    UserPutPhoneAlreadyExistsAPIResponse,
+    OkResponse,
+    InvalidEmailErrorResponse,
+    EmailAlreadyExistsErrorResponse,
+    InvalidPhoneErrorResponse,
+    PhoneAlreadyExistsErrorResponse,
+    EmailChangeNotAllowedErrorResponse,
+    PhoneNumberChangeNotAllowedErrorResponse,
 ]:
-    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
-    user_id: Optional[str] = request_body.get(&#34;userId&#34;)
-    recipe_id: Optional[str] = request_body.get(&#34;recipeId&#34;)
-    first_name: Optional[str] = request_body.get(&#34;firstName&#34;)
-    last_name: Optional[str] = request_body.get(&#34;lastName&#34;)
-    email: Optional[str] = request_body.get(&#34;email&#34;)
-    phone: Optional[str] = request_body.get(&#34;phone&#34;)
+    request_body = await api_options.request.json()
+    if request_body is None:
+        raise_bad_input_exception(&#34;Request body is missing&#34;)
+    recipe_user_id = request_body.get(&#34;recipeUserId&#34;)
+    recipe_id = request_body.get(&#34;recipeId&#34;)
+    first_name = request_body.get(&#34;firstName&#34;)
+    last_name = request_body.get(&#34;lastName&#34;)
+    email = request_body.get(&#34;email&#34;)
+    phone = request_body.get(&#34;phone&#34;)
 
-    if not isinstance(user_id, str):
-        return raise_bad_input_exception(
-            &#34;Required parameter &#39;userId&#39; is missing or has an invalid type&#34;
+    if not isinstance(recipe_user_id, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;recipeUserId&#39; is missing or has an invalid type&#34;
         )
 
     if not isinstance(recipe_id, str):
-        return raise_bad_input_exception(
+        raise_bad_input_exception(
             &#34;Required parameter &#39;recipeId&#39; is missing or has an invalid type&#34;
         )
 
-    if not is_valid_recipe_id(recipe_id):
-        raise_bad_input_exception(&#34;Invalid recipe id&#34;)
-
-    if first_name is None and not isinstance(first_name, str):
+    if not isinstance(first_name, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;firstName&#39; is missing or has an invalid type&#34;
         )
 
-    if last_name is None and not isinstance(last_name, str):
+    if not isinstance(last_name, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;lastName&#39; is missing or has an invalid type&#34;
         )
 
-    if email is None and not isinstance(email, str):
+    if not isinstance(email, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;email&#39; is missing or has an invalid type&#34;
         )
 
-    if phone is None and not isinstance(phone, str):
+    if not isinstance(phone, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;phone&#39; is missing or has an invalid type&#34;
         )
 
-    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    user_response = await get_user_for_recipe_id(
+        RecipeUserId(recipe_user_id), recipe_id, user_context
+    )
 
-    if user_response is None:
+    if user_response.user is None or user_response.recipe is None:
         raise Exception(&#34;Should never come here&#34;)
 
-    first_name = first_name.strip()
-    last_name = last_name.strip()
-    email = email.strip()
-    phone = phone.strip()
-
-    if first_name != &#34;&#34; or last_name != &#34;&#34;:
+    if first_name.strip() or last_name.strip():
         is_recipe_initialized = False
-
         try:
             UserMetadataRecipe.get_instance()
             is_recipe_initialized = True
@@ -269,31 +348,40 @@ async def handle_user_put(
         if is_recipe_initialized:
             metadata_update: Dict[str, Any] = {}
 
-            if first_name != &#34;&#34;:
-                metadata_update[&#34;first_name&#34;] = first_name
+            if first_name.strip():
+                metadata_update[&#34;first_name&#34;] = first_name.strip()
 
-            if last_name != &#34;&#34;:
-                metadata_update[&#34;last_name&#34;] = last_name
+            if last_name.strip():
+                metadata_update[&#34;last_name&#34;] = last_name.strip()
 
-            await update_user_metadata(user_id, metadata_update, user_context)
+            await update_user_metadata(
+                user_response.user.user.id, metadata_update, user_context
+            )
 
-    if email != &#34;&#34;:
+    if email.strip():
         email_update_response = await update_email_for_recipe_id(
-            user_response.recipe, user_id, email, tenant_id, user_context
+            user_response.recipe,
+            RecipeUserId(recipe_user_id),
+            email.strip(),
+            tenant_id,
+            user_context,
         )
 
-        if not isinstance(email_update_response, UserPutAPIOkResponse):
+        if not isinstance(email_update_response, OkResponse):
             return email_update_response
 
-    if phone != &#34;&#34;:
+    if phone.strip():
         phone_update_response = await update_phone_for_recipe_id(
-            user_response.recipe, user_id, phone, tenant_id, user_context
+            RecipeUserId(recipe_user_id),
+            phone.strip(),
+            tenant_id,
+            user_context,
         )
 
-        if not isinstance(phone_update_response, UserPutAPIOkResponse):
+        if not isinstance(phone_update_response, OkResponse):
             return phone_update_response
 
-    return UserPutAPIOkResponse()</code></pre>
+    return OkResponse()</code></pre>
 </details>
 </section>
 <section>
@@ -304,7 +392,7 @@ async def handle_user_put(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.handle_user_put"><code class="name flex">
-<span>async def <span class="ident">handle_user_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse">UserPutAPIInvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse">UserPutAPIEmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse">UserPutAPIInvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse">UserPutPhoneAlreadyExistsAPIResponse</a>]</span>
+<span>async def <span class="ident">handle_user_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse">InvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse">PhoneAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse">EmailChangeNotAllowedErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse">PhoneNumberChangeNotAllowedErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -318,66 +406,63 @@ async def handle_user_put(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
-    UserPutAPIOkResponse,
-    UserPutAPIInvalidEmailErrorResponse,
-    UserPutAPIEmailAlreadyExistsErrorResponse,
-    UserPutAPIInvalidPhoneErrorResponse,
-    UserPutPhoneAlreadyExistsAPIResponse,
+    OkResponse,
+    InvalidEmailErrorResponse,
+    EmailAlreadyExistsErrorResponse,
+    InvalidPhoneErrorResponse,
+    PhoneAlreadyExistsErrorResponse,
+    EmailChangeNotAllowedErrorResponse,
+    PhoneNumberChangeNotAllowedErrorResponse,
 ]:
-    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
-    user_id: Optional[str] = request_body.get(&#34;userId&#34;)
-    recipe_id: Optional[str] = request_body.get(&#34;recipeId&#34;)
-    first_name: Optional[str] = request_body.get(&#34;firstName&#34;)
-    last_name: Optional[str] = request_body.get(&#34;lastName&#34;)
-    email: Optional[str] = request_body.get(&#34;email&#34;)
-    phone: Optional[str] = request_body.get(&#34;phone&#34;)
+    request_body = await api_options.request.json()
+    if request_body is None:
+        raise_bad_input_exception(&#34;Request body is missing&#34;)
+    recipe_user_id = request_body.get(&#34;recipeUserId&#34;)
+    recipe_id = request_body.get(&#34;recipeId&#34;)
+    first_name = request_body.get(&#34;firstName&#34;)
+    last_name = request_body.get(&#34;lastName&#34;)
+    email = request_body.get(&#34;email&#34;)
+    phone = request_body.get(&#34;phone&#34;)
 
-    if not isinstance(user_id, str):
-        return raise_bad_input_exception(
-            &#34;Required parameter &#39;userId&#39; is missing or has an invalid type&#34;
+    if not isinstance(recipe_user_id, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;recipeUserId&#39; is missing or has an invalid type&#34;
         )
 
     if not isinstance(recipe_id, str):
-        return raise_bad_input_exception(
+        raise_bad_input_exception(
             &#34;Required parameter &#39;recipeId&#39; is missing or has an invalid type&#34;
         )
 
-    if not is_valid_recipe_id(recipe_id):
-        raise_bad_input_exception(&#34;Invalid recipe id&#34;)
-
-    if first_name is None and not isinstance(first_name, str):
+    if not isinstance(first_name, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;firstName&#39; is missing or has an invalid type&#34;
         )
 
-    if last_name is None and not isinstance(last_name, str):
+    if not isinstance(last_name, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;lastName&#39; is missing or has an invalid type&#34;
         )
 
-    if email is None and not isinstance(email, str):
+    if not isinstance(email, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;email&#39; is missing or has an invalid type&#34;
         )
 
-    if phone is None and not isinstance(phone, str):
+    if not isinstance(phone, str):
         raise_bad_input_exception(
             &#34;Required parameter &#39;phone&#39; is missing or has an invalid type&#34;
         )
 
-    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    user_response = await get_user_for_recipe_id(
+        RecipeUserId(recipe_user_id), recipe_id, user_context
+    )
 
-    if user_response is None:
+    if user_response.user is None or user_response.recipe is None:
         raise Exception(&#34;Should never come here&#34;)
 
-    first_name = first_name.strip()
-    last_name = last_name.strip()
-    email = email.strip()
-    phone = phone.strip()
-
-    if first_name != &#34;&#34; or last_name != &#34;&#34;:
+    if first_name.strip() or last_name.strip():
         is_recipe_initialized = False
-
         try:
             UserMetadataRecipe.get_instance()
             is_recipe_initialized = True
@@ -387,35 +472,44 @@ async def handle_user_put(
         if is_recipe_initialized:
             metadata_update: Dict[str, Any] = {}
 
-            if first_name != &#34;&#34;:
-                metadata_update[&#34;first_name&#34;] = first_name
+            if first_name.strip():
+                metadata_update[&#34;first_name&#34;] = first_name.strip()
 
-            if last_name != &#34;&#34;:
-                metadata_update[&#34;last_name&#34;] = last_name
+            if last_name.strip():
+                metadata_update[&#34;last_name&#34;] = last_name.strip()
 
-            await update_user_metadata(user_id, metadata_update, user_context)
+            await update_user_metadata(
+                user_response.user.user.id, metadata_update, user_context
+            )
 
-    if email != &#34;&#34;:
+    if email.strip():
         email_update_response = await update_email_for_recipe_id(
-            user_response.recipe, user_id, email, tenant_id, user_context
+            user_response.recipe,
+            RecipeUserId(recipe_user_id),
+            email.strip(),
+            tenant_id,
+            user_context,
         )
 
-        if not isinstance(email_update_response, UserPutAPIOkResponse):
+        if not isinstance(email_update_response, OkResponse):
             return email_update_response
 
-    if phone != &#34;&#34;:
+    if phone.strip():
         phone_update_response = await update_phone_for_recipe_id(
-            user_response.recipe, user_id, phone, tenant_id, user_context
+            RecipeUserId(recipe_user_id),
+            phone.strip(),
+            tenant_id,
+            user_context,
         )
 
-        if not isinstance(phone_update_response, UserPutAPIOkResponse):
+        if not isinstance(phone_update_response, OkResponse):
             return phone_update_response
 
-    return UserPutAPIOkResponse()</code></pre>
+    return OkResponse()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.update_email_for_recipe_id"><code class="name flex">
-<span>async def <span class="ident">update_email_for_recipe_id</span></span>(<span>recipe_id: str, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse">UserPutAPIInvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse">UserPutAPIEmailAlreadyExistsErrorResponse</a>]</span>
+<span>async def <span class="ident">update_email_for_recipe_id</span></span>(<span>recipe_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse">EmailChangeNotAllowedErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -425,79 +519,87 @@ async def handle_user_put(
 </summary>
 <pre><code class="python">async def update_email_for_recipe_id(
     recipe_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: str,
     tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
-    UserPutAPIOkResponse,
-    UserPutAPIInvalidEmailErrorResponse,
-    UserPutAPIEmailAlreadyExistsErrorResponse,
+    OkResponse,
+    InvalidEmailErrorResponse,
+    EmailAlreadyExistsErrorResponse,
+    EmailChangeNotAllowedErrorResponse,
 ]:
-    validation_error: Optional[str] = None
-
     if recipe_id == &#34;emailpassword&#34;:
-        form_fields = (
-            EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields
-        )
         email_form_fields = [
-            form_field
-            for form_field in form_fields
-            if form_field.id == FORM_FIELD_EMAIL_ID
+            field
+            for field in EmailPasswordRecipe.get_instance().config.sign_up_feature.form_fields
+            if field.id == FORM_FIELD_EMAIL_ID
         ]
 
         validation_error = await email_form_fields[0].validate(email, tenant_id)
 
         if validation_error is not None:
-            return UserPutAPIInvalidEmailErrorResponse(validation_error)
+            return InvalidEmailErrorResponse(validation_error)
 
         email_update_response = await ep_update_email_or_password(
-            user_id, email, user_context=user_context
+            recipe_user_id, email=email, user_context=user_context
         )
 
-        if isinstance(
-            email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
+        if isinstance(email_update_response, EmailAlreadyExistsError):
+            return EmailAlreadyExistsErrorResponse()
+        elif isinstance(
+            email_update_response, UpdateEmailOrPasswordEmailChangeNotAllowedError
         ):
-            return UserPutAPIEmailAlreadyExistsErrorResponse()
+            return EmailChangeNotAllowedErrorResponse(email_update_response.reason)
 
-        return UserPutAPIOkResponse()
+        return OkResponse()
 
     if recipe_id == &#34;passwordless&#34;:
-        validation_error = None
+        passwordless_config = PasswordlessRecipe.get_instance().config
 
-        passwordless_config = PasswordlessRecipe.get_instance().config.contact_config
-
-        if isinstance(passwordless_config.contact_method, ContactPhoneOnlyConfig):
+        if isinstance(passwordless_config.contact_config, ContactPhoneOnlyConfig):
             validation_error = await default_validate_email(email, tenant_id)
-
-        elif isinstance(
-            passwordless_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            validation_error = await passwordless_config.validate_email_address(
-                email, tenant_id
-            )
+        else:
+            if isinstance(
+                passwordless_config.contact_config,
+                (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig),
+            ):
+                validation_error = (
+                    await passwordless_config.contact_config.validate_email_address(
+                        email, tenant_id
+                    )
+                )
+            else:
+                raise Exception(&#34;Should never come here&#34;)
 
         if validation_error is not None:
-            return UserPutAPIInvalidEmailErrorResponse(validation_error)
+            return InvalidEmailErrorResponse(validation_error)
 
         update_result = await pless_update_user(
-            user_id, email, user_context=user_context
+            recipe_user_id, email=email, user_context=user_context
         )
 
-        if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
+        if isinstance(update_result, UpdateUserUnknownUserIdError):
             raise Exception(&#34;Should never come here&#34;)
+        elif isinstance(update_result, UpdateUserEmailAlreadyExistsError):
+            return EmailAlreadyExistsErrorResponse()
+        elif isinstance(
+            update_result,
+            (
+                EmailChangeNotAllowedError,
+                PhoneNumberChangeNotAllowedError,
+            ),
+        ):
+            return EmailChangeNotAllowedErrorResponse(update_result.reason)
 
-        if isinstance(update_result, EmailAlreadyExistsErrorResponse):
-            return UserPutAPIEmailAlreadyExistsErrorResponse()
-
-        return UserPutAPIOkResponse()
+        return OkResponse()
 
     # If it comes here then the user is a third party user in which case the UI should not have allowed this
     raise Exception(&#34;Should never come here&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.update_phone_for_recipe_id"><code class="name flex">
-<span>async def <span class="ident">update_phone_for_recipe_id</span></span>(<span>recipe_id: str, user_id: str, phone: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse">UserPutAPIInvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse">UserPutPhoneAlreadyExistsAPIResponse</a>]</span>
+<span>async def <span class="ident">update_phone_for_recipe_id</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, phone: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse">InvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse">PhoneAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse">PhoneNumberChangeNotAllowedErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -506,54 +608,419 @@ async def handle_user_put(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def update_phone_for_recipe_id(
-    recipe_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     phone: str,
     tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
-    UserPutAPIOkResponse,
-    UserPutAPIInvalidPhoneErrorResponse,
-    UserPutPhoneAlreadyExistsAPIResponse,
+    OkResponse,
+    InvalidPhoneErrorResponse,
+    PhoneAlreadyExistsErrorResponse,
+    PhoneNumberChangeNotAllowedErrorResponse,
 ]:
-    validation_error: Optional[str] = None
+    passwordless_config = PasswordlessRecipe.get_instance().config
 
-    if recipe_id == &#34;passwordless&#34;:
-        validation_error = None
-
-        passwordless_config = PasswordlessRecipe.get_instance().config.contact_config
-
-        if isinstance(passwordless_config, ContactEmailOnlyConfig):
-            validation_error = await default_validate_phone_number(phone, tenant_id)
-        elif isinstance(
-            passwordless_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)
-        ):
-            validation_error = await passwordless_config.validate_phone_number(
+    if isinstance(passwordless_config.contact_config, ContactEmailOnlyConfig):
+        validation_error = await default_validate_phone_number(phone, tenant_id)
+    elif isinstance(
+        passwordless_config.contact_config,
+        (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig),
+    ):
+        validation_error = (
+            await passwordless_config.contact_config.validate_phone_number(
                 phone, tenant_id
             )
-
-        if validation_error is not None:
-            return UserPutAPIInvalidPhoneErrorResponse(validation_error)
-
-        update_result = await pless_update_user(
-            user_id, phone_number=phone, user_context=user_context
         )
+    else:
+        raise Exception(&#34;Invalid contact config&#34;)
 
-        if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
-            raise Exception(&#34;Should never come here&#34;)
+    if validation_error is not None:
+        return InvalidPhoneErrorResponse(validation_error)
 
-        if isinstance(update_result, PhoneNumberAlreadyExistsError):
-            return UserPutPhoneAlreadyExistsAPIResponse()
+    update_result = await pless_update_user(
+        recipe_user_id, phone_number=phone, user_context=user_context
+    )
 
-        return UserPutAPIOkResponse()
+    if isinstance(update_result, UpdateUserUnknownUserIdError):
+        raise Exception(&#34;Should never come here&#34;)
+    elif isinstance(update_result, UpdateUserPhoneNumberAlreadyExistsError):
+        return PhoneAlreadyExistsErrorResponse()
+    elif isinstance(update_result, PhoneNumberChangeNotAllowedError):
+        return PhoneNumberChangeNotAllowedErrorResponse(update_result.reason)
 
-    # If it comes here then the user is a third party user in which case the UI should not have allowed this
-    raise Exception(&#34;Should never come here&#34;)</code></pre>
+    return OkResponse()</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse"><code class="flex name class">
+<span>class <span class="ident">EmailAlreadyExistsErrorResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailAlreadyExistsErrorResponse(APIResponse):
+    status: Literal[&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;]
+
+    def __init__(self):
+        self.status = &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_EXISTS_ERROR']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse"><code class="flex name class">
+<span>class <span class="ident">EmailChangeNotAllowedErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailChangeNotAllowedErrorResponse(APIResponse):
+    status: Literal[&#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.error"><code class="name">var <span class="ident">error</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_CHANGE_NOT_ALLOWED_ERROR']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse"><code class="flex name class">
+<span>class <span class="ident">InvalidEmailErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidEmailErrorResponse(APIResponse):
+    status: Literal[&#34;INVALID_EMAIL_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;INVALID_EMAIL_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.error"><code class="name">var <span class="ident">error</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['INVALID_EMAIL_ERROR']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse"><code class="flex name class">
+<span>class <span class="ident">InvalidPhoneErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidPhoneErrorResponse(APIResponse):
+    status: Literal[&#34;INVALID_PHONE_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;INVALID_PHONE_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.error"><code class="name">var <span class="ident">error</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['INVALID_PHONE_ERROR']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse"><code class="flex name class">
+<span>class <span class="ident">OkResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OkResponse(APIResponse):
+    status: Literal[&#34;OK&#34;]
+
+    def __init__(self):
+        self.status = &#34;OK&#34;
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse"><code class="flex name class">
+<span>class <span class="ident">PhoneAlreadyExistsErrorResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PhoneAlreadyExistsErrorResponse(APIResponse):
+    status: Literal[&#34;PHONE_ALREADY_EXISTS_ERROR&#34;]
+
+    def __init__(self):
+        self.status = &#34;PHONE_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['PHONE_ALREADY_EXISTS_ERROR']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse"><code class="flex name class">
+<span>class <span class="ident">PhoneNumberChangeNotAllowedErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PhoneNumberChangeNotAllowedErrorResponse(APIResponse):
+    status: Literal[&#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;]
+    error: str
+
+    def __init__(self, error: str):
+        self.status = &#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;
+        self.error = error
+
+    def to_json(self):
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.error"><code class="name">var <span class="ident">error</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -572,6 +1039,63 @@ async def handle_user_put(
 <li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.handle_user_put" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.handle_user_put">handle_user_put</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.update_email_for_recipe_id" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.update_email_for_recipe_id">update_email_for_recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.update_phone_for_recipe_id" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.update_phone_for_recipe_id">update_phone_for_recipe_id</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse">EmailChangeNotAllowedErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.error" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.error">error</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.error" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.error">error</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse">InvalidPhoneErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.error" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.error">error</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse">PhoneAlreadyExistsErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse">PhoneNumberChangeNotAllowedErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.error" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.error">error</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.status" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

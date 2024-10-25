@@ -172,6 +172,8 @@ __all__ = [
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
+    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
+
     if api_implementation.disable_sign_in_up_post:
         return None
 
@@ -214,8 +216,9 @@ __all__ = [
 
     provider = provider_response
 
+    redirect_uri_info_parsed: Optional[RedirectUriInfo] = None
     if redirect_uri_info is not None:
-        redirect_uri_info = RedirectUriInfo(
+        redirect_uri_info_parsed = RedirectUriInfo(
             redirect_uri_on_provider_dashboard=redirect_uri_info.get(
                 &#34;redirectURIOnProviderDashboard&#34;
             ),
@@ -223,14 +226,45 @@ __all__ = [
             pkce_code_verifier=redirect_uri_info.get(&#34;pkceCodeVerifier&#34;),
         )
 
+    should_try_linking_with_session_user = (
+        get_normalised_should_try_linking_with_session_user_flag(
+            api_options.request, body
+        )
+    )
+
+    session = await load_session_in_auth_api_if_needed(
+        api_options.request, should_try_linking_with_session_user, user_context
+    )
+
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     result = await api_implementation.sign_in_up_post(
         provider=provider,
-        redirect_uri_info=redirect_uri_info,
+        redirect_uri_info=redirect_uri_info_parsed,
         oauth_tokens=oauth_tokens,
         tenant_id=tenant_id,
         api_options=api_options,
         user_context=user_context,
+        session=session,
+        should_try_linking_with_session_user=should_try_linking_with_session_user,
     )
+
+    if isinstance(result, SignInUpPostOkResult):
+        return send_200_response(
+            {
+                &#34;status&#34;: &#34;OK&#34;,
+                **get_backwards_compatible_user_info(
+                    req=api_options.request,
+                    user_info=result.user,
+                    session_container=result.session,
+                    created_new_recipe_user=result.created_new_recipe_user,
+                    user_context=user_context,
+                ),
+            },
+            api_options.response,
+        )
+
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </dd>

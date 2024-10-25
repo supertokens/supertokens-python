@@ -43,7 +43,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, Union, Optional, Dict, Any
+from typing import List, Union, Optional, Dict, Any, TYPE_CHECKING
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -59,7 +59,9 @@ from supertokens_python.recipe.usermetadata.utils import (
     validate_and_normalise_user_input,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from supertokens_python.supertokens import AppInfo
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
 
 from .utils import InputOverrideConfig
 

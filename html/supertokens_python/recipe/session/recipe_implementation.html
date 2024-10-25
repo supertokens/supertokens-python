@@ -48,7 +48,7 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import resolve
 
-from ...types import MaybeAwaitable
+from ...types import MaybeAwaitable, RecipeUserId
 from . import session_functions
 from .access_token import validate_access_token_structure
 from .cookie_and_header import build_front_token
@@ -57,7 +57,6 @@ from .interfaces import (
     AccessTokenObj,
     ClaimsValidationResult,
     GetClaimValueOkResult,
-    JSONObject,
     RecipeInterface,
     RegenerateAccessTokenOkResult,
     SessionClaim,
@@ -90,6 +89,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def create_new_session(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
@@ -101,7 +101,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         result = await session_functions.create_new_session(
             self,
             tenant_id,
-            user_id,
+            recipe_user_id,
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
@@ -124,6 +124,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             result.antiCsrfToken,
             result.session.handle,
             result.session.userId,
+            recipe_user_id,
             payload,
             None,
             True,
@@ -135,6 +136,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def validate_claims(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Dict[str, Any],
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
@@ -156,14 +158,16 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 value = await resolve(
                     validator.claim.fetch_value(
                         user_id,
+                        recipe_user_id,
                         access_token_payload.get(&#34;tId&#34;, DEFAULT_TENANT_ID),
+                        access_token_payload,
                         user_context,
                     )
                 )
                 log_debug_message(
                     &#34;update_claims_in_payload_if_needed %s refetch result %s&#34;,
                     validator.id,
-                    json.dumps(value),
+                    value,
                 )
                 if value is not None:
                     access_token_payload = validator.claim.add_to_payload_(
@@ -178,21 +182,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         )
 
         return ClaimsValidationResult(invalid_claims, access_token_payload_update)
-
-    async def validate_claims_in_jwt_payload(
-        self,
-        user_id: str,
-        jwt_payload: JSONObject,
-        claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
-    ) -&gt; ClaimsValidationResult:
-        invalid_claims = await validate_claims_in_payload(
-            claim_validators,
-            jwt_payload,
-            user_context,
-        )
-
-        return ClaimsValidationResult(invalid_claims)
 
     async def get_session(
         self,
@@ -294,6 +283,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             anti_csrf_token,
             response.session.handle,
             response.session.userId,
+            response.session.recipe_user_id,
             payload,
             None,
             access_token_updated,
@@ -348,6 +338,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             response.antiCsrfToken,
             response.session.handle,
             response.session.userId,
+            response.session.recipe_user_id,
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
@@ -366,23 +357,35 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def revoke_all_sessions_for_user(
         self,
         user_id: str,
+        revoke_sessions_for_linked_accounts: bool,
         tenant_id: Optional[str],
         revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -&gt; List[str]:
         return await session_functions.revoke_all_sessions_for_user(
-            self, user_id, tenant_id, revoke_across_all_tenants, user_context
+            self,
+            user_id,
+            revoke_sessions_for_linked_accounts,
+            tenant_id,
+            revoke_across_all_tenants,
+            user_context,
         )
 
     async def get_all_session_handles_for_user(
         self,
         user_id: str,
+        fetch_sessions_for_linked_accounts: bool,
         tenant_id: Optional[str],
         fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -&gt; List[str]:
         return await session_functions.get_all_session_handles_for_user(
-            self, user_id, tenant_id, fetch_across_all_tenants, user_context
+            self,
+            user_id,
+            fetch_sessions_for_linked_accounts,
+            tenant_id,
+            fetch_across_all_tenants,
+            user_context,
         )
 
     async def revoke_multiple_sessions(
@@ -447,7 +450,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             return False
 
         access_token_payload_update = await claim.build(
-            session_info.user_id, session_info.tenant_id, user_context
+            session_info.user_id,
+            session_info.recipe_user_id,
+            session_info.tenant_id,
+            session_info.custom_claims_in_access_token_payload,
+            user_context,
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context
@@ -485,6 +492,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         tenant_id: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
@@ -526,6 +534,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session = SessionObj(
             response[&#34;session&#34;][&#34;handle&#34;],
             response[&#34;session&#34;][&#34;userId&#34;],
+            RecipeUserId(response[&#34;session&#34;][&#34;recipeUserId&#34;]),
             response[&#34;session&#34;][&#34;userDataInJWT&#34;],
             response[&#34;session&#34;][&#34;tenantId&#34;],
         )
@@ -562,6 +571,7 @@ inheritance.</p></div>
     async def create_new_session(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
@@ -573,7 +583,7 @@ inheritance.</p></div>
         result = await session_functions.create_new_session(
             self,
             tenant_id,
-            user_id,
+            recipe_user_id,
             disable_anti_csrf is True,
             access_token_payload,
             session_data_in_database,
@@ -596,6 +606,7 @@ inheritance.</p></div>
             result.antiCsrfToken,
             result.session.handle,
             result.session.userId,
+            recipe_user_id,
             payload,
             None,
             True,
@@ -607,6 +618,7 @@ inheritance.</p></div>
     async def validate_claims(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Dict[str, Any],
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
@@ -628,14 +640,16 @@ inheritance.</p></div>
                 value = await resolve(
                     validator.claim.fetch_value(
                         user_id,
+                        recipe_user_id,
                         access_token_payload.get(&#34;tId&#34;, DEFAULT_TENANT_ID),
+                        access_token_payload,
                         user_context,
                     )
                 )
                 log_debug_message(
                     &#34;update_claims_in_payload_if_needed %s refetch result %s&#34;,
                     validator.id,
-                    json.dumps(value),
+                    value,
                 )
                 if value is not None:
                     access_token_payload = validator.claim.add_to_payload_(
@@ -650,21 +664,6 @@ inheritance.</p></div>
         )
 
         return ClaimsValidationResult(invalid_claims, access_token_payload_update)
-
-    async def validate_claims_in_jwt_payload(
-        self,
-        user_id: str,
-        jwt_payload: JSONObject,
-        claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
-    ) -&gt; ClaimsValidationResult:
-        invalid_claims = await validate_claims_in_payload(
-            claim_validators,
-            jwt_payload,
-            user_context,
-        )
-
-        return ClaimsValidationResult(invalid_claims)
 
     async def get_session(
         self,
@@ -766,6 +765,7 @@ inheritance.</p></div>
             anti_csrf_token,
             response.session.handle,
             response.session.userId,
+            response.session.recipe_user_id,
             payload,
             None,
             access_token_updated,
@@ -820,6 +820,7 @@ inheritance.</p></div>
             response.antiCsrfToken,
             response.session.handle,
             response.session.userId,
+            response.session.recipe_user_id,
             user_data_in_access_token=payload,
             req_res_info=None,
             access_token_updated=True,
@@ -838,23 +839,35 @@ inheritance.</p></div>
     async def revoke_all_sessions_for_user(
         self,
         user_id: str,
+        revoke_sessions_for_linked_accounts: bool,
         tenant_id: Optional[str],
         revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -&gt; List[str]:
         return await session_functions.revoke_all_sessions_for_user(
-            self, user_id, tenant_id, revoke_across_all_tenants, user_context
+            self,
+            user_id,
+            revoke_sessions_for_linked_accounts,
+            tenant_id,
+            revoke_across_all_tenants,
+            user_context,
         )
 
     async def get_all_session_handles_for_user(
         self,
         user_id: str,
+        fetch_sessions_for_linked_accounts: bool,
         tenant_id: Optional[str],
         fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
     ) -&gt; List[str]:
         return await session_functions.get_all_session_handles_for_user(
-            self, user_id, tenant_id, fetch_across_all_tenants, user_context
+            self,
+            user_id,
+            fetch_sessions_for_linked_accounts,
+            tenant_id,
+            fetch_across_all_tenants,
+            user_context,
         )
 
     async def revoke_multiple_sessions(
@@ -919,7 +932,11 @@ inheritance.</p></div>
             return False
 
         access_token_payload_update = await claim.build(
-            session_info.user_id, session_info.tenant_id, user_context
+            session_info.user_id,
+            session_info.recipe_user_id,
+            session_info.tenant_id,
+            session_info.custom_claims_in_access_token_payload,
+            user_context,
         )
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context
@@ -957,6 +974,7 @@ inheritance.</p></div>
         self,
         tenant_id: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
@@ -998,6 +1016,7 @@ inheritance.</p></div>
         session = SessionObj(
             response[&#34;session&#34;][&#34;handle&#34;],
             response[&#34;session&#34;][&#34;userId&#34;],
+            RecipeUserId(response[&#34;session&#34;][&#34;recipeUserId&#34;]),
             response[&#34;session&#34;][&#34;userDataInJWT&#34;],
             response[&#34;session&#34;][&#34;tenantId&#34;],
         )
@@ -1011,7 +1030,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, user_id: str, access_token_payload: Optional[Dict[str, Any]], session_data_in_database: Optional[Dict[str, Any]], disable_anti_csrf: Optional[bool], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, user_id: str, recipe_user_id: RecipeUserId, access_token_payload: Optional[Dict[str, Any]], session_data_in_database: Optional[Dict[str, Any]], disable_anti_csrf: Optional[bool], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1022,6 +1041,7 @@ inheritance.</p></div>
 <pre><code class="python">async def create_new_session(
     self,
     user_id: str,
+    recipe_user_id: RecipeUserId,
     access_token_payload: Optional[Dict[str, Any]],
     session_data_in_database: Optional[Dict[str, Any]],
     disable_anti_csrf: Optional[bool],
@@ -1033,7 +1053,7 @@ inheritance.</p></div>
     result = await session_functions.create_new_session(
         self,
         tenant_id,
-        user_id,
+        recipe_user_id,
         disable_anti_csrf is True,
         access_token_payload,
         session_data_in_database,
@@ -1056,6 +1076,7 @@ inheritance.</p></div>
         result.antiCsrfToken,
         result.session.handle,
         result.session.userId,
+        recipe_user_id,
         payload,
         None,
         True,
@@ -1085,7 +1106,11 @@ inheritance.</p></div>
         return False
 
     access_token_payload_update = await claim.build(
-        session_info.user_id, session_info.tenant_id, user_context
+        session_info.user_id,
+        session_info.recipe_user_id,
+        session_info.tenant_id,
+        session_info.custom_claims_in_access_token_payload,
+        user_context,
     )
     return await self.merge_into_access_token_payload(
         session_handle, access_token_payload_update, user_context
@@ -1093,7 +1118,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>self, user_id: str, tenant_id: Optional[str], fetch_across_all_tenants: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>self, user_id: str, fetch_sessions_for_linked_accounts: bool, tenant_id: Optional[str], fetch_across_all_tenants: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1104,12 +1129,18 @@ inheritance.</p></div>
 <pre><code class="python">async def get_all_session_handles_for_user(
     self,
     user_id: str,
+    fetch_sessions_for_linked_accounts: bool,
     tenant_id: Optional[str],
     fetch_across_all_tenants: bool,
     user_context: Dict[str, Any],
 ) -&gt; List[str]:
     return await session_functions.get_all_session_handles_for_user(
-        self, user_id, tenant_id, fetch_across_all_tenants, user_context
+        self,
+        user_id,
+        fetch_sessions_for_linked_accounts,
+        tenant_id,
+        fetch_across_all_tenants,
+        user_context,
     )</code></pre>
 </details>
 </dd>
@@ -1140,7 +1171,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_global_claim_validators"><code class="name flex">
-<span>def <span class="ident">get_global_claim_validators</span></span>(<span>self, tenant_id: str, user_id: str, claim_validators_added_by_other_recipes: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> MaybeAwaitable[List[SessionClaimValidator]]</span>
+<span>def <span class="ident">get_global_claim_validators</span></span>(<span>self, tenant_id: str, user_id: str, recipe_user_id: RecipeUserId, claim_validators_added_by_other_recipes: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> MaybeAwaitable[List[SessionClaimValidator]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1152,6 +1183,7 @@ inheritance.</p></div>
     self,
     tenant_id: str,
     user_id: str,
+    recipe_user_id: RecipeUserId,
     claim_validators_added_by_other_recipes: List[SessionClaimValidator],
     user_context: Dict[str, Any],
 ) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
@@ -1267,6 +1299,7 @@ inheritance.</p></div>
         anti_csrf_token,
         response.session.handle,
         response.session.userId,
+        response.session.recipe_user_id,
         payload,
         None,
         access_token_updated,
@@ -1385,6 +1418,7 @@ inheritance.</p></div>
         response.antiCsrfToken,
         response.session.handle,
         response.session.userId,
+        response.session.recipe_user_id,
         user_data_in_access_token=payload,
         req_res_info=None,
         access_token_updated=True,
@@ -1428,6 +1462,7 @@ inheritance.</p></div>
     session = SessionObj(
         response[&#34;session&#34;][&#34;handle&#34;],
         response[&#34;session&#34;][&#34;userId&#34;],
+        RecipeUserId(response[&#34;session&#34;][&#34;recipeUserId&#34;]),
         response[&#34;session&#34;][&#34;userDataInJWT&#34;],
         response[&#34;session&#34;][&#34;tenantId&#34;],
     )
@@ -1456,7 +1491,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>self, user_id: str, tenant_id: Optional[str], revoke_across_all_tenants: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>self, user_id: str, revoke_sessions_for_linked_accounts: bool, tenant_id: Optional[str], revoke_across_all_tenants: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1467,12 +1502,18 @@ inheritance.</p></div>
 <pre><code class="python">async def revoke_all_sessions_for_user(
     self,
     user_id: str,
+    revoke_sessions_for_linked_accounts: bool,
     tenant_id: Optional[str],
     revoke_across_all_tenants: bool,
     user_context: Dict[str, Any],
 ) -&gt; List[str]:
     return await session_functions.revoke_all_sessions_for_user(
-        self, user_id, tenant_id, revoke_across_all_tenants, user_context
+        self,
+        user_id,
+        revoke_sessions_for_linked_accounts,
+        tenant_id,
+        revoke_across_all_tenants,
+        user_context,
     )</code></pre>
 </details>
 </dd>
@@ -1553,7 +1594,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims"><code class="name flex">
-<span>async def <span class="ident">validate_claims</span></span>(<span>self, user_id: str, access_token_payload: Dict[str, Any], claim_validators: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> ClaimsValidationResult</span>
+<span>async def <span class="ident">validate_claims</span></span>(<span>self, user_id: str, recipe_user_id: RecipeUserId, access_token_payload: Dict[str, Any], claim_validators: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> ClaimsValidationResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1564,6 +1605,7 @@ inheritance.</p></div>
 <pre><code class="python">async def validate_claims(
     self,
     user_id: str,
+    recipe_user_id: RecipeUserId,
     access_token_payload: Dict[str, Any],
     claim_validators: List[SessionClaimValidator],
     user_context: Dict[str, Any],
@@ -1585,14 +1627,16 @@ inheritance.</p></div>
             value = await resolve(
                 validator.claim.fetch_value(
                     user_id,
+                    recipe_user_id,
                     access_token_payload.get(&#34;tId&#34;, DEFAULT_TENANT_ID),
+                    access_token_payload,
                     user_context,
                 )
             )
             log_debug_message(
                 &#34;update_claims_in_payload_if_needed %s refetch result %s&#34;,
                 validator.id,
-                json.dumps(value),
+                value,
             )
             if value is not None:
                 access_token_payload = validator.claim.add_to_payload_(
@@ -1607,31 +1651,6 @@ inheritance.</p></div>
     )
 
     return ClaimsValidationResult(invalid_claims, access_token_payload_update)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims_in_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">validate_claims_in_jwt_payload</span></span>(<span>self, user_id: str, jwt_payload: JSONObject, claim_validators: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> ClaimsValidationResult</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate_claims_in_jwt_payload(
-    self,
-    user_id: str,
-    jwt_payload: JSONObject,
-    claim_validators: List[SessionClaimValidator],
-    user_context: Dict[str, Any],
-) -&gt; ClaimsValidationResult:
-    invalid_claims = await validate_claims_in_payload(
-        claim_validators,
-        jwt_payload,
-        user_context,
-    )
-
-    return ClaimsValidationResult(invalid_claims)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1672,7 +1691,6 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.set_claim_value" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.set_claim_value">set_claim_value</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data_in_database" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data_in_database">update_session_data_in_database</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims">validate_claims</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims_in_jwt_payload" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims_in_jwt_payload">validate_claims_in_jwt_payload</a></code></li>
 </ul>
 </li>
 </ul>

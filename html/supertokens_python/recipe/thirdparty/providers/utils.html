@@ -76,7 +76,7 @@ async def do_get_request(
 
 async def do_post_request(
     url: str,
-    body_params: Optional[Dict[str, str]] = None,
+    body_params: Optional[Dict[str, Any]] = None,
     headers: Optional[Dict[str, str]] = None,
 ) -&gt; Tuple[int, Dict[str, Any]]:
     if body_params is None:
@@ -92,7 +92,10 @@ async def do_post_request(
         log_debug_message(
             &#34;Received response with status %s and body %s&#34;, res.status_code, res.text
         )
-        return res.status_code, res.json()
+        try:
+            return res.status_code, res.json()
+        except Exception:
+            return res.status_code, {&#34;message&#34;: res.text}
 
 
 def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
@@ -154,7 +157,7 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.utils.do_post_request"><code class="name flex">
-<span>async def <span class="ident">do_post_request</span></span>(<span>url: str, body_params: Optional[Dict[str, str]] = None, headers: Optional[Dict[str, str]] = None) ‑> Tuple[int, Dict[str, Any]]</span>
+<span>async def <span class="ident">do_post_request</span></span>(<span>url: str, body_params: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None) ‑> Tuple[int, Dict[str, Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,7 +167,7 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
 </summary>
 <pre><code class="python">async def do_post_request(
     url: str,
-    body_params: Optional[Dict[str, str]] = None,
+    body_params: Optional[Dict[str, Any]] = None,
     headers: Optional[Dict[str, str]] = None,
 ) -&gt; Tuple[int, Dict[str, Any]]:
     if body_params is None:
@@ -180,7 +183,10 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
         log_debug_message(
             &#34;Received response with status %s and body %s&#34;, res.status_code, res.text
         )
-        return res.status_code, res.json()</code></pre>
+        try:
+            return res.status_code, res.json()
+        except Exception:
+            return res.status_code, {&#34;message&#34;: res.text}</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.utils.get_actual_client_id_from_development_client_id"><code class="name flex">

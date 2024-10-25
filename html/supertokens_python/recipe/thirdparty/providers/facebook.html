@@ -72,12 +72,55 @@ class FacebookImpl(GenericProvider):
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; UserInfo:
+        fields_permission_map = {
+            &#34;public_profile&#34;: [
+                &#34;first_name&#34;,
+                &#34;last_name&#34;,
+                &#34;middle_name&#34;,
+                &#34;name&#34;,
+                &#34;name_format&#34;,
+                &#34;picture&#34;,
+                &#34;short_name&#34;,
+            ],
+            &#34;email&#34;: [&#34;id&#34;, &#34;email&#34;],
+            &#34;user_birthday&#34;: [&#34;birthday&#34;],
+            &#34;user_videos&#34;: [&#34;videos&#34;],
+            &#34;user_posts&#34;: [&#34;posts&#34;],
+            &#34;user_photos&#34;: [&#34;photos&#34;],
+            &#34;user_location&#34;: [&#34;location&#34;],
+            &#34;user_link&#34;: [&#34;link&#34;],
+            &#34;user_likes&#34;: [&#34;likes&#34;],
+            &#34;user_hometown&#34;: [&#34;hometown&#34;],
+            &#34;user_gender&#34;: [&#34;gender&#34;],
+            &#34;user_friends&#34;: [&#34;friends&#34;],
+            &#34;user_age_range&#34;: [&#34;age_range&#34;],
+        }
+        scope_values = self.config.scope
+
+        fields = (
+            &#34;,&#34;.join(
+                [
+                    field
+                    for scope in scope_values
+                    for field in fields_permission_map.get(scope, [])
+                ]
+            )
+            if scope_values
+            else &#34;id,email&#34;
+        )
+
         self.config.user_info_endpoint_query_params = {
             &#34;access_token&#34;: str(oauth_tokens[&#34;access_token&#34;]),
-            &#34;fields&#34;: &#34;id,email&#34;,
+            &#34;fields&#34;: fields,
             &#34;format&#34;: &#34;json&#34;,
             **(self.config.user_info_endpoint_query_params or {}),
         }
+
+        self.config.user_info_endpoint_headers = {
+            **(self.config.user_info_endpoint_headers or {}),
+            &#34;Authorization&#34;: None,
+        }
+
         return await super().get_user_info(oauth_tokens, user_context)
 
 
@@ -184,12 +227,55 @@ def Facebook(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; UserInfo:
+        fields_permission_map = {
+            &#34;public_profile&#34;: [
+                &#34;first_name&#34;,
+                &#34;last_name&#34;,
+                &#34;middle_name&#34;,
+                &#34;name&#34;,
+                &#34;name_format&#34;,
+                &#34;picture&#34;,
+                &#34;short_name&#34;,
+            ],
+            &#34;email&#34;: [&#34;id&#34;, &#34;email&#34;],
+            &#34;user_birthday&#34;: [&#34;birthday&#34;],
+            &#34;user_videos&#34;: [&#34;videos&#34;],
+            &#34;user_posts&#34;: [&#34;posts&#34;],
+            &#34;user_photos&#34;: [&#34;photos&#34;],
+            &#34;user_location&#34;: [&#34;location&#34;],
+            &#34;user_link&#34;: [&#34;link&#34;],
+            &#34;user_likes&#34;: [&#34;likes&#34;],
+            &#34;user_hometown&#34;: [&#34;hometown&#34;],
+            &#34;user_gender&#34;: [&#34;gender&#34;],
+            &#34;user_friends&#34;: [&#34;friends&#34;],
+            &#34;user_age_range&#34;: [&#34;age_range&#34;],
+        }
+        scope_values = self.config.scope
+
+        fields = (
+            &#34;,&#34;.join(
+                [
+                    field
+                    for scope in scope_values
+                    for field in fields_permission_map.get(scope, [])
+                ]
+            )
+            if scope_values
+            else &#34;id,email&#34;
+        )
+
         self.config.user_info_endpoint_query_params = {
             &#34;access_token&#34;: str(oauth_tokens[&#34;access_token&#34;]),
-            &#34;fields&#34;: &#34;id,email&#34;,
+            &#34;fields&#34;: fields,
             &#34;format&#34;: &#34;json&#34;,
             **(self.config.user_info_endpoint_query_params or {}),
         }
+
+        self.config.user_info_endpoint_headers = {
+            **(self.config.user_info_endpoint_headers or {}),
+            &#34;Authorization&#34;: None,
+        }
+
         return await super().get_user_info(oauth_tokens, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -231,12 +317,55 @@ def Facebook(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
 <pre><code class="python">async def get_user_info(
     self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
 ) -&gt; UserInfo:
+    fields_permission_map = {
+        &#34;public_profile&#34;: [
+            &#34;first_name&#34;,
+            &#34;last_name&#34;,
+            &#34;middle_name&#34;,
+            &#34;name&#34;,
+            &#34;name_format&#34;,
+            &#34;picture&#34;,
+            &#34;short_name&#34;,
+        ],
+        &#34;email&#34;: [&#34;id&#34;, &#34;email&#34;],
+        &#34;user_birthday&#34;: [&#34;birthday&#34;],
+        &#34;user_videos&#34;: [&#34;videos&#34;],
+        &#34;user_posts&#34;: [&#34;posts&#34;],
+        &#34;user_photos&#34;: [&#34;photos&#34;],
+        &#34;user_location&#34;: [&#34;location&#34;],
+        &#34;user_link&#34;: [&#34;link&#34;],
+        &#34;user_likes&#34;: [&#34;likes&#34;],
+        &#34;user_hometown&#34;: [&#34;hometown&#34;],
+        &#34;user_gender&#34;: [&#34;gender&#34;],
+        &#34;user_friends&#34;: [&#34;friends&#34;],
+        &#34;user_age_range&#34;: [&#34;age_range&#34;],
+    }
+    scope_values = self.config.scope
+
+    fields = (
+        &#34;,&#34;.join(
+            [
+                field
+                for scope in scope_values
+                for field in fields_permission_map.get(scope, [])
+            ]
+        )
+        if scope_values
+        else &#34;id,email&#34;
+    )
+
     self.config.user_info_endpoint_query_params = {
         &#34;access_token&#34;: str(oauth_tokens[&#34;access_token&#34;]),
-        &#34;fields&#34;: &#34;id,email&#34;,
+        &#34;fields&#34;: fields,
         &#34;format&#34;: &#34;json&#34;,
         **(self.config.user_info_endpoint_query_params or {}),
     }
+
+    self.config.user_info_endpoint_headers = {
+        **(self.config.user_info_endpoint_headers or {}),
+        &#34;Authorization&#34;: None,
+    }
+
     return await super().get_user_info(oauth_tokens, user_context)</code></pre>
 </details>
 </dd>

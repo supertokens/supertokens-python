@@ -42,24 +42,17 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List
+from typing_extensions import Literal
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
-from supertokens_python.recipe.emailpassword.asyncio import (
-    get_user_by_id as ep_get_user_by_id,
-)
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
-from supertokens_python.recipe.passwordless.asyncio import (
-    get_user_by_id as pless_get_user_by_id,
-)
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.recipe.thirdparty.asyncio import (
-    get_user_by_id as tp_get_user_by_idx,
-)
-from supertokens_python.types import User
-from supertokens_python.utils import Awaitable, log_debug_message, normalise_email
+from supertokens_python.types import User, RecipeUserId
+from supertokens_python.utils import log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
@@ -84,15 +77,9 @@ if TYPE_CHECKING:
 
 
 class UserWithMetadata:
-    user_id: str
-    time_joined: int
-    recipe_id: Optional[str] = None
-    email: Optional[str] = None
-    phone_number: Optional[str] = None
-    tp_info: Optional[Dict[str, Any]] = None
+    user: User
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    tenant_ids: List[str]
 
     def from_user(
         self,
@@ -100,78 +87,15 @@ class UserWithMetadata:
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ):
-        self.first_name = first_name
-        self.last_name = last_name
-
-        self.user_id = user.user_id
-        # from_user() is called in /api/users (note extra s)
-        # here we DashboardUsersGetResponse() doesn&#39;t maintain
-        # recipe id for each user on its own. That&#39;s why we need
-        # to set self.recipe_id here.
-        self.recipe_id = user.recipe_id
-        self.time_joined = user.time_joined
-        self.email = user.email
-        self.phone_number = user.phone_number
-        self.tp_info = (
-            None if user.third_party_info is None else user.third_party_info.__dict__
-        )
-        self.tenant_ids = user.tenant_ids
-
-        return self
-
-    def from_dict(
-        self,
-        user_obj_dict: Dict[str, Any],
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-    ):
-        self.first_name = first_name
-        self.last_name = last_name
-
-        self.user_id = user_obj_dict[&#34;user_id&#34;]
-        # from_dict() is used in `/api/user` where
-        # recipe_id is already passed seperately to
-        # GetUserForRecipeIdResult object
-        # So we set recipe_id to None here
-        self.recipe_id = None
-        self.time_joined = user_obj_dict[&#34;time_joined&#34;]
-        self.tenant_ids = user_obj_dict.get(&#34;tenant_ids&#34;, [])
-
-        self.email = user_obj_dict.get(&#34;email&#34;)
-        self.phone_number = user_obj_dict.get(&#34;phone_number&#34;)
-        self.tp_info = (
-            None
-            if user_obj_dict.get(&#34;third_party_info&#34;) is None
-            else user_obj_dict[&#34;third_party_info&#34;].__dict__
-        )
-
+        self.first_name = first_name or &#34;&#34;
+        self.last_name = last_name or &#34;&#34;
+        self.user = user
         return self
 
     def to_json(self) -&gt; Dict[str, Any]:
-        user_json: Dict[str, Any] = {
-            &#34;id&#34;: self.user_id,
-            &#34;timeJoined&#34;: self.time_joined,
-            &#34;tenantIds&#34;: self.tenant_ids,
-        }
-        if self.tp_info is not None:
-            user_json[&#34;thirdParty&#34;] = {
-                &#34;id&#34;: self.tp_info[&#34;id&#34;],
-                &#34;userId&#34;: self.tp_info[&#34;user_id&#34;],
-            }
-        if self.phone_number is not None:
-            user_json[&#34;phoneNumber&#34;] = self.phone_number
-        if self.email is not None:
-            user_json[&#34;email&#34;] = self.email
-        if self.first_name is not None:
-            user_json[&#34;firstName&#34;] = self.first_name
-        if self.last_name is not None:
-            user_json[&#34;lastName&#34;] = self.last_name
-
-        if self.recipe_id is not None:
-            return {
-                &#34;recipeId&#34;: self.recipe_id,
-                &#34;user&#34;: user_json,
-            }
+        user_json = self.user.to_json()
+        user_json[&#34;firstName&#34;] = self.first_name
+        user_json[&#34;lastName&#34;] = self.last_name
         return user_json
 
 
@@ -287,103 +211,81 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -&gt; Optional[str]
     return None
 
 
-def is_valid_recipe_id(recipe_id: str) -&gt; bool:
-    return recipe_id in (&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;)
-
-
-class GetUserForRecipeIdResult:
-    def __init__(self, user: UserWithMetadata, recipe: str):
+class GetUserForRecipeIdHelperResult:
+    def __init__(self, user: Optional[User] = None, recipe: Optional[str] = None):
         self.user = user
         self.recipe = recipe
 
 
-if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.types import User as EmailPasswordUser
-    from supertokens_python.recipe.passwordless.types import User as PasswordlessUser
-    from supertokens_python.recipe.thirdparty.types import User as ThirdPartyUser
-
-    GetUserResult = Union[
-        EmailPasswordUser,
-        ThirdPartyUser,
-        PasswordlessUser,
-        None,
-    ]
+class GetUserForRecipeIdResult:
+    def __init__(
+        self, user: Optional[UserWithMetadata] = None, recipe: Optional[str] = None
+    ):
+        self.user = user
+        self.recipe = recipe
 
 
 async def get_user_for_recipe_id(
-    user_id: str, recipe_id: str
-) -&gt; Optional[GetUserForRecipeIdResult]:
-    user: Optional[UserWithMetadata] = None
-    recipe: Optional[str] = None
+    recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
+) -&gt; GetUserForRecipeIdResult:
+    user_response = await _get_user_for_recipe_id(
+        recipe_user_id, recipe_id, user_context
+    )
 
-    async def update_user_dict(
-        get_user_funcs: List[Callable[[str], Awaitable[GetUserResult]]],
-        recipes: List[str],
-    ):
-        nonlocal user, user_id, recipe
+    user = None
+    if user_response.user is not None:
+        user = UserWithMetadata().from_user(
+            user_response.user, first_name=&#34;&#34;, last_name=&#34;&#34;
+        )
 
-        for get_user_func, recipe_id in zip(get_user_funcs, recipes):
-            try:
-                recipe_user = await get_user_func(user_id)  # type: ignore
+    return GetUserForRecipeIdResult(user=user, recipe=user_response.recipe)
 
-                if recipe_user is not None:
-                    user = UserWithMetadata().from_dict(
-                        recipe_user.__dict__, first_name=&#34;&#34;, last_name=&#34;&#34;
-                    )
-                    recipe = recipe_id
-                    break
-            except Exception:
-                pass
+
+async def _get_user_for_recipe_id(
+    recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
+) -&gt; GetUserForRecipeIdHelperResult:
+    recipe: Optional[Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;]] = None
+
+    user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        recipe_user_id.get_as_string(), user_context
+    )
+
+    if user is None:
+        return GetUserForRecipeIdHelperResult(user=None, recipe=None)
+
+    login_method = next(
+        (
+            m
+            for m in user.login_methods
+            if m.recipe_id == recipe_id
+            and m.recipe_user_id.get_as_string() == recipe_user_id.get_as_string()
+        ),
+        None,
+    )
+
+    if login_method is None:
+        return GetUserForRecipeIdHelperResult(user=None, recipe=None)
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
-        await update_user_dict(
-            [ep_get_user_by_id],
-            [&#34;emailpassword&#34;],
-        )
-
-    elif recipe_id == ThirdPartyRecipe.recipe_id:
-        await update_user_dict(
-            [tp_get_user_by_idx],
-            [&#34;thirdparty&#34;],
-        )
-
-    elif recipe_id == PasswordlessRecipe.recipe_id:
-        await update_user_dict(
-            [pless_get_user_by_id],
-            [&#34;passwordless&#34;],
-        )
-
-    if user is not None and recipe is not None:
-        return GetUserForRecipeIdResult(user, recipe)
-
-    return None
-
-
-def is_recipe_initialised(recipeId: str) -&gt; bool:
-    isRecipeInitialised: bool = False
-
-    if recipeId == EmailPasswordRecipe.recipe_id:
         try:
             EmailPasswordRecipe.get_instance()
-            isRecipeInitialised = True
+            recipe = &#34;emailpassword&#34;
         except Exception:
             pass
-
-    elif recipeId == PasswordlessRecipe.recipe_id:
-        try:
-            PasswordlessRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    elif recipeId == ThirdPartyRecipe.recipe_id:
+    elif recipe_id == ThirdPartyRecipe.recipe_id:
         try:
             ThirdPartyRecipe.get_instance()
-            isRecipeInitialised = True
+            recipe = &#34;thirdparty&#34;
+        except Exception:
+            pass
+    elif recipe_id == PasswordlessRecipe.recipe_id:
+        try:
+            PasswordlessRecipe.get_instance()
+            recipe = &#34;passwordless&#34;
         except Exception:
             pass
 
-    return isRecipeInitialised
+    return GetUserForRecipeIdHelperResult(user=user, recipe=recipe)
 
 
 async def validate_api_key(
@@ -464,7 +366,7 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.get_user_for_recipe_id"><code class="name flex">
-<span>async def <span class="ident">get_user_for_recipe_id</span></span>(<span>user_id: str, recipe_id: str) ‑> Optional[<a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult">GetUserForRecipeIdResult</a>]</span>
+<span>async def <span class="ident">get_user_for_recipe_id</span></span>(<span>recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult">GetUserForRecipeIdResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -473,52 +375,19 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_user_for_recipe_id(
-    user_id: str, recipe_id: str
-) -&gt; Optional[GetUserForRecipeIdResult]:
-    user: Optional[UserWithMetadata] = None
-    recipe: Optional[str] = None
+    recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
+) -&gt; GetUserForRecipeIdResult:
+    user_response = await _get_user_for_recipe_id(
+        recipe_user_id, recipe_id, user_context
+    )
 
-    async def update_user_dict(
-        get_user_funcs: List[Callable[[str], Awaitable[GetUserResult]]],
-        recipes: List[str],
-    ):
-        nonlocal user, user_id, recipe
-
-        for get_user_func, recipe_id in zip(get_user_funcs, recipes):
-            try:
-                recipe_user = await get_user_func(user_id)  # type: ignore
-
-                if recipe_user is not None:
-                    user = UserWithMetadata().from_dict(
-                        recipe_user.__dict__, first_name=&#34;&#34;, last_name=&#34;&#34;
-                    )
-                    recipe = recipe_id
-                    break
-            except Exception:
-                pass
-
-    if recipe_id == EmailPasswordRecipe.recipe_id:
-        await update_user_dict(
-            [ep_get_user_by_id],
-            [&#34;emailpassword&#34;],
+    user = None
+    if user_response.user is not None:
+        user = UserWithMetadata().from_user(
+            user_response.user, first_name=&#34;&#34;, last_name=&#34;&#34;
         )
 
-    elif recipe_id == ThirdPartyRecipe.recipe_id:
-        await update_user_dict(
-            [tp_get_user_by_idx],
-            [&#34;thirdparty&#34;],
-        )
-
-    elif recipe_id == PasswordlessRecipe.recipe_id:
-        await update_user_dict(
-            [pless_get_user_by_id],
-            [&#34;passwordless&#34;],
-        )
-
-    if user is not None and recipe is not None:
-        return GetUserForRecipeIdResult(user, recipe)
-
-    return None</code></pre>
+    return GetUserForRecipeIdResult(user=user, recipe=user_response.recipe)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.is_api_path"><code class="name flex">
@@ -545,55 +414,6 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
         return True
 
     return False</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.is_recipe_initialised"><code class="name flex">
-<span>def <span class="ident">is_recipe_initialised</span></span>(<span>recipeId: str) ‑> bool</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_recipe_initialised(recipeId: str) -&gt; bool:
-    isRecipeInitialised: bool = False
-
-    if recipeId == EmailPasswordRecipe.recipe_id:
-        try:
-            EmailPasswordRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    elif recipeId == PasswordlessRecipe.recipe_id:
-        try:
-            PasswordlessRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    elif recipeId == ThirdPartyRecipe.recipe_id:
-        try:
-            ThirdPartyRecipe.get_instance()
-            isRecipeInitialised = True
-        except Exception:
-            pass
-
-    return isRecipeInitialised</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.is_valid_recipe_id"><code class="name flex">
-<span>def <span class="ident">is_valid_recipe_id</span></span>(<span>recipe_id: str) ‑> bool</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_valid_recipe_id(recipe_id: str) -&gt; bool:
-    return recipe_id in (&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_and_normalise_user_input"><code class="name flex">
@@ -682,9 +502,25 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
         self.auth_mode = auth_mode</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdHelperResult"><code class="flex name class">
+<span>class <span class="ident">GetUserForRecipeIdHelperResult</span></span>
+<span>(</span><span>user: Optional[User] = None, recipe: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetUserForRecipeIdHelperResult:
+    def __init__(self, user: Optional[User] = None, recipe: Optional[str] = None):
+        self.user = user
+        self.recipe = recipe</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult"><code class="flex name class">
 <span>class <span class="ident">GetUserForRecipeIdResult</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata">UserWithMetadata</a>, recipe: str)</span>
+<span>(</span><span>user: Optional[<a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata">UserWithMetadata</a>] = None, recipe: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -693,7 +529,9 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class GetUserForRecipeIdResult:
-    def __init__(self, user: UserWithMetadata, recipe: str):
+    def __init__(
+        self, user: Optional[UserWithMetadata] = None, recipe: Optional[str] = None
+    ):
         self.user = user
         self.recipe = recipe</code></pre>
 </details>
@@ -748,15 +586,9 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UserWithMetadata:
-    user_id: str
-    time_joined: int
-    recipe_id: Optional[str] = None
-    email: Optional[str] = None
-    phone_number: Optional[str] = None
-    tp_info: Optional[Dict[str, Any]] = None
+    user: User
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    tenant_ids: List[str]
 
     def from_user(
         self,
@@ -764,86 +596,19 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ):
-        self.first_name = first_name
-        self.last_name = last_name
-
-        self.user_id = user.user_id
-        # from_user() is called in /api/users (note extra s)
-        # here we DashboardUsersGetResponse() doesn&#39;t maintain
-        # recipe id for each user on its own. That&#39;s why we need
-        # to set self.recipe_id here.
-        self.recipe_id = user.recipe_id
-        self.time_joined = user.time_joined
-        self.email = user.email
-        self.phone_number = user.phone_number
-        self.tp_info = (
-            None if user.third_party_info is None else user.third_party_info.__dict__
-        )
-        self.tenant_ids = user.tenant_ids
-
-        return self
-
-    def from_dict(
-        self,
-        user_obj_dict: Dict[str, Any],
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-    ):
-        self.first_name = first_name
-        self.last_name = last_name
-
-        self.user_id = user_obj_dict[&#34;user_id&#34;]
-        # from_dict() is used in `/api/user` where
-        # recipe_id is already passed seperately to
-        # GetUserForRecipeIdResult object
-        # So we set recipe_id to None here
-        self.recipe_id = None
-        self.time_joined = user_obj_dict[&#34;time_joined&#34;]
-        self.tenant_ids = user_obj_dict.get(&#34;tenant_ids&#34;, [])
-
-        self.email = user_obj_dict.get(&#34;email&#34;)
-        self.phone_number = user_obj_dict.get(&#34;phone_number&#34;)
-        self.tp_info = (
-            None
-            if user_obj_dict.get(&#34;third_party_info&#34;) is None
-            else user_obj_dict[&#34;third_party_info&#34;].__dict__
-        )
-
+        self.first_name = first_name or &#34;&#34;
+        self.last_name = last_name or &#34;&#34;
+        self.user = user
         return self
 
     def to_json(self) -&gt; Dict[str, Any]:
-        user_json: Dict[str, Any] = {
-            &#34;id&#34;: self.user_id,
-            &#34;timeJoined&#34;: self.time_joined,
-            &#34;tenantIds&#34;: self.tenant_ids,
-        }
-        if self.tp_info is not None:
-            user_json[&#34;thirdParty&#34;] = {
-                &#34;id&#34;: self.tp_info[&#34;id&#34;],
-                &#34;userId&#34;: self.tp_info[&#34;user_id&#34;],
-            }
-        if self.phone_number is not None:
-            user_json[&#34;phoneNumber&#34;] = self.phone_number
-        if self.email is not None:
-            user_json[&#34;email&#34;] = self.email
-        if self.first_name is not None:
-            user_json[&#34;firstName&#34;] = self.first_name
-        if self.last_name is not None:
-            user_json[&#34;lastName&#34;] = self.last_name
-
-        if self.recipe_id is not None:
-            return {
-                &#34;recipeId&#34;: self.recipe_id,
-                &#34;user&#34;: user_json,
-            }
+        user_json = self.user.to_json()
+        user_json[&#34;firstName&#34;] = self.first_name
+        user_json[&#34;lastName&#34;] = self.last_name
         return user_json</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.email"><code class="name">var <span class="ident">email</span> : Optional[str]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.first_name"><code class="name">var <span class="ident">first_name</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
@@ -852,71 +617,13 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.phone_number"><code class="name">var <span class="ident">phone_number</span> : Optional[str]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.recipe_id"><code class="name">var <span class="ident">recipe_id</span> : Optional[str]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.tenant_ids"><code class="name">var <span class="ident">tenant_ids</span> : List[str]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.time_joined"><code class="name">var <span class="ident">time_joined</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.tp_info"><code class="name">var <span class="ident">tp_info</span> : Optional[Dict[str, Any]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.user_id"><code class="name">var <span class="ident">user_id</span> : str</code></dt>
+<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.User" href="../../types.html#supertokens_python.types.User">User</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.from_dict"><code class="name flex">
-<span>def <span class="ident">from_dict</span></span>(<span>self, user_obj_dict: Dict[str, Any], first_name: Optional[str] = None, last_name: Optional[str] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def from_dict(
-    self,
-    user_obj_dict: Dict[str, Any],
-    first_name: Optional[str] = None,
-    last_name: Optional[str] = None,
-):
-    self.first_name = first_name
-    self.last_name = last_name
-
-    self.user_id = user_obj_dict[&#34;user_id&#34;]
-    # from_dict() is used in `/api/user` where
-    # recipe_id is already passed seperately to
-    # GetUserForRecipeIdResult object
-    # So we set recipe_id to None here
-    self.recipe_id = None
-    self.time_joined = user_obj_dict[&#34;time_joined&#34;]
-    self.tenant_ids = user_obj_dict.get(&#34;tenant_ids&#34;, [])
-
-    self.email = user_obj_dict.get(&#34;email&#34;)
-    self.phone_number = user_obj_dict.get(&#34;phone_number&#34;)
-    self.tp_info = (
-        None
-        if user_obj_dict.get(&#34;third_party_info&#34;) is None
-        else user_obj_dict[&#34;third_party_info&#34;].__dict__
-    )
-
-    return self</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.from_user"><code class="name flex">
 <span>def <span class="ident">from_user</span></span>(<span>self, user: User, first_name: Optional[str] = None, last_name: Optional[str] = None)</span>
 </code></dt>
@@ -932,23 +639,9 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
     first_name: Optional[str] = None,
     last_name: Optional[str] = None,
 ):
-    self.first_name = first_name
-    self.last_name = last_name
-
-    self.user_id = user.user_id
-    # from_user() is called in /api/users (note extra s)
-    # here we DashboardUsersGetResponse() doesn&#39;t maintain
-    # recipe id for each user on its own. That&#39;s why we need
-    # to set self.recipe_id here.
-    self.recipe_id = user.recipe_id
-    self.time_joined = user.time_joined
-    self.email = user.email
-    self.phone_number = user.phone_number
-    self.tp_info = (
-        None if user.third_party_info is None else user.third_party_info.__dict__
-    )
-    self.tenant_ids = user.tenant_ids
-
+    self.first_name = first_name or &#34;&#34;
+    self.last_name = last_name or &#34;&#34;
+    self.user = user
     return self</code></pre>
 </details>
 </dd>
@@ -962,30 +655,9 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    user_json: Dict[str, Any] = {
-        &#34;id&#34;: self.user_id,
-        &#34;timeJoined&#34;: self.time_joined,
-        &#34;tenantIds&#34;: self.tenant_ids,
-    }
-    if self.tp_info is not None:
-        user_json[&#34;thirdParty&#34;] = {
-            &#34;id&#34;: self.tp_info[&#34;id&#34;],
-            &#34;userId&#34;: self.tp_info[&#34;user_id&#34;],
-        }
-    if self.phone_number is not None:
-        user_json[&#34;phoneNumber&#34;] = self.phone_number
-    if self.email is not None:
-        user_json[&#34;email&#34;] = self.email
-    if self.first_name is not None:
-        user_json[&#34;firstName&#34;] = self.first_name
-    if self.last_name is not None:
-        user_json[&#34;lastName&#34;] = self.last_name
-
-    if self.recipe_id is not None:
-        return {
-            &#34;recipeId&#34;: self.recipe_id,
-            &#34;user&#34;: user_json,
-        }
+    user_json = self.user.to_json()
+    user_json[&#34;firstName&#34;] = self.first_name
+    user_json[&#34;lastName&#34;] = self.last_name
     return user_json</code></pre>
 </details>
 </dd>
@@ -1011,8 +683,6 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <li><code><a title="supertokens_python.recipe.dashboard.utils.get_api_path_with_dashboard_base" href="#supertokens_python.recipe.dashboard.utils.get_api_path_with_dashboard_base">get_api_path_with_dashboard_base</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.get_user_for_recipe_id" href="#supertokens_python.recipe.dashboard.utils.get_user_for_recipe_id">get_user_for_recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.is_api_path" href="#supertokens_python.recipe.dashboard.utils.is_api_path">is_api_path</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.is_recipe_initialised" href="#supertokens_python.recipe.dashboard.utils.is_recipe_initialised">is_recipe_initialised</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.is_valid_recipe_id" href="#supertokens_python.recipe.dashboard.utils.is_valid_recipe_id">is_valid_recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.dashboard.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.validate_api_key" href="#supertokens_python.recipe.dashboard.utils.validate_api_key">validate_api_key</a></code></li>
 </ul>
@@ -1021,6 +691,9 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <ul>
 <li>
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdHelperResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdHelperResult">GetUserForRecipeIdHelperResult</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult">GetUserForRecipeIdResult</a></code></h4>
@@ -1033,19 +706,12 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata">UserWithMetadata</a></code></h4>
-<ul class="two-column">
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.email" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.email">email</a></code></li>
+<ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.first_name" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.first_name">first_name</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.from_dict" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.from_dict">from_dict</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.from_user" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.from_user">from_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.last_name" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.last_name">last_name</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.phone_number" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.phone_number">phone_number</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.recipe_id" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.recipe_id">recipe_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.tenant_ids" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.tenant_ids">tenant_ids</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.time_joined" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.time_joined">time_joined</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.to_json" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.to_json">to_json</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.tp_info" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.tp_info">tp_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.user_id" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.user_id">user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata.user" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata.user">user</a></code></li>
 </ul>
 </li>
 </ul>

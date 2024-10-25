@@ -75,9 +75,10 @@ class GitlabImpl(GenericProvider):
                 oidc_domain.get_as_string_dangerous()
                 + oidc_path.get_as_string_dangerous()
             )
-
-        if not config.oidc_discovery_endpoint:
-            raise Exception(&#34;should never come here&#34;)
+        elif config.oidc_discovery_endpoint is None:
+            config.oidc_discovery_endpoint = (
+                &#34;https://gitlab.com/.well-known/openid-configuration&#34;
+            )
 
         # The config could be coming from core where we didn&#39;t add the well-known previously
         config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
@@ -162,9 +163,10 @@ def Gitlab(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bu
                 oidc_domain.get_as_string_dangerous()
                 + oidc_path.get_as_string_dangerous()
             )
-
-        if not config.oidc_discovery_endpoint:
-            raise Exception(&#34;should never come here&#34;)
+        elif config.oidc_discovery_endpoint is None:
+            config.oidc_discovery_endpoint = (
+                &#34;https://gitlab.com/.well-known/openid-configuration&#34;
+            )
 
         # The config could be coming from core where we didn&#39;t add the well-known previously
         config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
@@ -208,9 +210,10 @@ def Gitlab(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bu
             oidc_domain.get_as_string_dangerous()
             + oidc_path.get_as_string_dangerous()
         )
-
-    if not config.oidc_discovery_endpoint:
-        raise Exception(&#34;should never come here&#34;)
+    elif config.oidc_discovery_endpoint is None:
+        config.oidc_discovery_endpoint = (
+            &#34;https://gitlab.com/.well-known/openid-configuration&#34;
+        )
 
     # The config could be coming from core where we didn&#39;t add the well-known previously
     config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(

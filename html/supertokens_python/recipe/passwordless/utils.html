@@ -43,7 +43,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union, List
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -53,6 +53,7 @@ from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig,
     SMSDeliveryConfigWithService,
 )
+from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginSMSTemplateVars,
 )
@@ -215,9 +216,9 @@ def validate_and_normalise_user_input(
     if override is None:
         override = OverrideConfig()
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
-        PasswordlessLoginEmailTemplateVars
-    ]:
+    def get_email_delivery_config() -&gt; (
+        EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
+    ):
         email_service = email_delivery.service if email_delivery is not None else None
 
         if email_service is None:
@@ -230,9 +231,9 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[
-        PasswordlessLoginSMSTemplateVars
-    ]:
+    def get_sms_delivery_config() -&gt; (
+        SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
+    ):
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if sms_service is None:
@@ -267,7 +268,42 @@ def validate_and_normalise_user_input(
         get_email_delivery_config=get_email_delivery_config,
         get_sms_delivery_config=get_sms_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code,
-    )</code></pre>
+    )
+
+
+def get_enabled_pwless_factors(
+    config: PasswordlessConfig,
+) -&gt; List[str]:
+    all_factors: List[str] = []
+
+    if config.flow_type == &#34;MAGIC_LINK&#34;:
+        if config.contact_config.contact_method == &#34;EMAIL&#34;:
+            all_factors = [FactorIds.LINK_EMAIL]
+        elif config.contact_config.contact_method == &#34;PHONE&#34;:
+            all_factors = [FactorIds.LINK_PHONE]
+        else:
+            all_factors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE]
+    elif config.flow_type == &#34;USER_INPUT_CODE&#34;:
+        if config.contact_config.contact_method == &#34;EMAIL&#34;:
+            all_factors = [FactorIds.OTP_EMAIL]
+        elif config.contact_config.contact_method == &#34;PHONE&#34;:
+            all_factors = [FactorIds.OTP_PHONE]
+        else:
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE]
+    else:
+        if config.contact_config.contact_method == &#34;EMAIL&#34;:
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL]
+        elif config.contact_config.contact_method == &#34;PHONE&#34;:
+            all_factors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE]
+        else:
+            all_factors = [
+                FactorIds.OTP_EMAIL,
+                FactorIds.OTP_PHONE,
+                FactorIds.LINK_EMAIL,
+                FactorIds.LINK_PHONE,
+            ]
+
+    return all_factors</code></pre>
 </details>
 </section>
 <section>
@@ -310,8 +346,52 @@ def validate_and_normalise_user_input(
         return &#34;Phone number is invalid&#34;</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.passwordless.utils.get_enabled_pwless_factors"><code class="name flex">
+<span>def <span class="ident">get_enabled_pwless_factors</span></span>(<span>config: <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a>) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_enabled_pwless_factors(
+    config: PasswordlessConfig,
+) -&gt; List[str]:
+    all_factors: List[str] = []
+
+    if config.flow_type == &#34;MAGIC_LINK&#34;:
+        if config.contact_config.contact_method == &#34;EMAIL&#34;:
+            all_factors = [FactorIds.LINK_EMAIL]
+        elif config.contact_config.contact_method == &#34;PHONE&#34;:
+            all_factors = [FactorIds.LINK_PHONE]
+        else:
+            all_factors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE]
+    elif config.flow_type == &#34;USER_INPUT_CODE&#34;:
+        if config.contact_config.contact_method == &#34;EMAIL&#34;:
+            all_factors = [FactorIds.OTP_EMAIL]
+        elif config.contact_config.contact_method == &#34;PHONE&#34;:
+            all_factors = [FactorIds.OTP_PHONE]
+        else:
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE]
+    else:
+        if config.contact_config.contact_method == &#34;EMAIL&#34;:
+            all_factors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL]
+        elif config.contact_config.contact_method == &#34;PHONE&#34;:
+            all_factors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE]
+        else:
+            all_factors = [
+                FactorIds.OTP_EMAIL,
+                FactorIds.OTP_PHONE,
+                FactorIds.LINK_EMAIL,
+                FactorIds.LINK_PHONE,
+            ]
+
+    return all_factors</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.passwordless.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal[('USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK')]", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -340,9 +420,9 @@ def validate_and_normalise_user_input(
     if override is None:
         override = OverrideConfig()
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
-        PasswordlessLoginEmailTemplateVars
-    ]:
+    def get_email_delivery_config() -&gt; (
+        EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
+    ):
         email_service = email_delivery.service if email_delivery is not None else None
 
         if email_service is None:
@@ -355,9 +435,9 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[
-        PasswordlessLoginSMSTemplateVars
-    ]:
+    def get_sms_delivery_config() -&gt; (
+        SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
+    ):
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if sms_service is None:
@@ -402,7 +482,7 @@ def validate_and_normalise_user_input(
 <dl>
 <dt id="supertokens_python.recipe.passwordless.utils.ContactConfig"><code class="flex name class">
 <span>class <span class="ident">ContactConfig</span></span>
-<span>(</span><span>contact_method: "Literal[('PHONE', 'EMAIL', 'EMAIL_OR_PHONE')]")</span>
+<span>(</span><span>contact_method: "Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']")</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -549,7 +629,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.PasswordlessConfig"><code class="flex name class">
 <span>class <span class="ident">PasswordlessConfig</span></span>
-<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal[('USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK')]", get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]], get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]], get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None)</span>
+<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]], get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]], get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -619,6 +699,7 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.passwordless.utils.default_validate_email" href="#supertokens_python.recipe.passwordless.utils.default_validate_email">default_validate_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.utils.default_validate_phone_number" href="#supertokens_python.recipe.passwordless.utils.default_validate_phone_number">default_validate_phone_number</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.get_enabled_pwless_factors" href="#supertokens_python.recipe.passwordless.utils.get_enabled_pwless_factors">get_enabled_pwless_factors</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.passwordless.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>
 </ul>
 </li>

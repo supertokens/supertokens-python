@@ -39,31 +39,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
 
+from __future__ import annotations
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
-
 from .utils import is_an_ip_address
+from .exceptions import raise_general_exception
 
 if TYPE_CHECKING:
     pass
-from .exceptions import raise_general_exception
 
 
 class NormalisedURLDomain:
     def __init__(self, url: str):
-        self.__value = normalise_domain_path_or_throw_error(url)
+        self.__value = normalise_url_domain_or_throw_error(url)
 
     def get_as_string_dangerous(self):
         return self.__value
 
 
-def normalise_domain_path_or_throw_error(
+def normalise_url_domain_or_throw_error(
     input_str: str, ignore_protocol: bool = False
 ) -&gt; str:
     input_str = input_str.strip().lower()
-
     try:
         if (
             (not input_str.startswith(&#34;http://&#34;))
@@ -72,7 +70,6 @@ def normalise_domain_path_or_throw_error(
         ):
             raise Exception(&#34;converting to proper URL&#34;)
         url_obj = urlparse(input_str)
-
         if ignore_protocol:
             if url_obj.hostname is None:
                 raise Exception(&#34;Should never come here&#34;)
@@ -84,17 +81,13 @@ def normalise_domain_path_or_throw_error(
                 input_str = &#34;https://&#34; + url_obj.netloc
         else:
             input_str = url_obj.scheme + &#34;://&#34; + url_obj.netloc
-
         return input_str
     except Exception:
         pass
-
     if input_str.startswith(&#34;/&#34;):
         raise_general_exception(&#34;Please provide a valid domain name&#34;)
-
     if input_str.startswith(&#34;.&#34;):
         input_str = input_str[1:]
-
     if (
         (&#34;.&#34; in input_str or input_str.startswith(&#34;localhost&#34;))
         and (not input_str.startswith(&#34;http://&#34;))
@@ -103,7 +96,7 @@ def normalise_domain_path_or_throw_error(
         input_str = &#34;https://&#34; + input_str
         try:
             urlparse(input_str)
-            return normalise_domain_path_or_throw_error(input_str, True)
+            return normalise_url_domain_or_throw_error(input_str, True)
         except Exception:
             pass
     raise_general_exception(&#34;Please provide a valid domain name&#34;)</code></pre>
@@ -116,8 +109,8 @@ def normalise_domain_path_or_throw_error(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.normalised_url_domain.normalise_domain_path_or_throw_error"><code class="name flex">
-<span>def <span class="ident">normalise_domain_path_or_throw_error</span></span>(<span>input_str: str, ignore_protocol: bool = False) ‑> str</span>
+<dt id="supertokens_python.normalised_url_domain.normalise_url_domain_or_throw_error"><code class="name flex">
+<span>def <span class="ident">normalise_url_domain_or_throw_error</span></span>(<span>input_str: str, ignore_protocol: bool = False) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -125,11 +118,10 @@ def normalise_domain_path_or_throw_error(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def normalise_domain_path_or_throw_error(
+<pre><code class="python">def normalise_url_domain_or_throw_error(
     input_str: str, ignore_protocol: bool = False
 ) -&gt; str:
     input_str = input_str.strip().lower()
-
     try:
         if (
             (not input_str.startswith(&#34;http://&#34;))
@@ -138,7 +130,6 @@ def normalise_domain_path_or_throw_error(
         ):
             raise Exception(&#34;converting to proper URL&#34;)
         url_obj = urlparse(input_str)
-
         if ignore_protocol:
             if url_obj.hostname is None:
                 raise Exception(&#34;Should never come here&#34;)
@@ -150,17 +141,13 @@ def normalise_domain_path_or_throw_error(
                 input_str = &#34;https://&#34; + url_obj.netloc
         else:
             input_str = url_obj.scheme + &#34;://&#34; + url_obj.netloc
-
         return input_str
     except Exception:
         pass
-
     if input_str.startswith(&#34;/&#34;):
         raise_general_exception(&#34;Please provide a valid domain name&#34;)
-
     if input_str.startswith(&#34;.&#34;):
         input_str = input_str[1:]
-
     if (
         (&#34;.&#34; in input_str or input_str.startswith(&#34;localhost&#34;))
         and (not input_str.startswith(&#34;http://&#34;))
@@ -169,7 +156,7 @@ def normalise_domain_path_or_throw_error(
         input_str = &#34;https://&#34; + input_str
         try:
             urlparse(input_str)
-            return normalise_domain_path_or_throw_error(input_str, True)
+            return normalise_url_domain_or_throw_error(input_str, True)
         except Exception:
             pass
     raise_general_exception(&#34;Please provide a valid domain name&#34;)</code></pre>
@@ -192,7 +179,7 @@ def normalise_domain_path_or_throw_error(
 </summary>
 <pre><code class="python">class NormalisedURLDomain:
     def __init__(self, url: str):
-        self.__value = normalise_domain_path_or_throw_error(url)
+        self.__value = normalise_url_domain_or_throw_error(url)
 
     def get_as_string_dangerous(self):
         return self.__value</code></pre>
@@ -230,7 +217,7 @@ def normalise_domain_path_or_throw_error(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.normalised_url_domain.normalise_domain_path_or_throw_error" href="#supertokens_python.normalised_url_domain.normalise_domain_path_or_throw_error">normalise_domain_path_or_throw_error</a></code></li>
+<li><code><a title="supertokens_python.normalised_url_domain.normalise_url_domain_or_throw_error" href="#supertokens_python.normalised_url_domain.normalise_url_domain_or_throw_error">normalise_url_domain_or_throw_error</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

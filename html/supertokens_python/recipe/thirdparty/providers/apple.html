@@ -40,14 +40,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+import json
 
 from re import sub
 from typing import Any, Dict, Optional
 from jwt import encode  # type: ignore
 from time import time
 
+from supertokens_python.recipe.thirdparty.types import UserInfo
+
 from .custom import GenericProvider, NewProvider
-from ..provider import Provider, ProviderConfigForClient, ProviderInput
+from ..provider import Provider, ProviderConfigForClient, ProviderInput, RedirectUriInfo
 from .utils import (
     get_actual_client_id_from_development_client_id,
     normalise_oidc_endpoint_to_include_well_known,
@@ -103,6 +106,47 @@ class AppleImpl(GenericProvider):
             algorithm=&#34;ES256&#34;,
             headers=headers,
         )  # type: ignore
+
+    async def exchange_auth_code_for_oauth_tokens(
+        self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
+    ) -&gt; Dict[str, Any]:
+        response = await super().exchange_auth_code_for_oauth_tokens(
+            redirect_uri_info, user_context
+        )
+
+        user = redirect_uri_info.redirect_uri_query_params.get(&#34;user&#34;)
+        if user is not None:
+            if isinstance(user, str):
+                response[&#34;user&#34;] = json.loads(user)
+            elif isinstance(user, dict):
+                response[&#34;user&#34;] = user
+
+        return response
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        response = await super().get_user_info(oauth_tokens, user_context)
+        user = oauth_tokens.get(&#34;user&#34;)
+
+        user_dict: Dict[str, Any] = {}
+
+        if user is not None:
+            if isinstance(user, str):
+                user_dict = json.loads(user)
+            elif isinstance(user, dict):
+                user_dict = user
+            else:
+                return response
+
+            if response.raw_user_info_from_provider.from_id_token_payload is None:
+                response.raw_user_info_from_provider.from_id_token_payload = {}
+
+            response.raw_user_info_from_provider.from_id_token_payload[
+                &#34;user&#34;
+            ] = user_dict
+
+        return response
 
 
 def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
@@ -218,7 +262,48 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
             sub(r&#34;\\n&#34;, &#34;\n&#34;, config.additional_config.get(&#34;privateKey&#34;)),  # type: ignore
             algorithm=&#34;ES256&#34;,
             headers=headers,
-        )  # type: ignore</code></pre>
+        )  # type: ignore
+
+    async def exchange_auth_code_for_oauth_tokens(
+        self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
+    ) -&gt; Dict[str, Any]:
+        response = await super().exchange_auth_code_for_oauth_tokens(
+            redirect_uri_info, user_context
+        )
+
+        user = redirect_uri_info.redirect_uri_query_params.get(&#34;user&#34;)
+        if user is not None:
+            if isinstance(user, str):
+                response[&#34;user&#34;] = json.loads(user)
+            elif isinstance(user, dict):
+                response[&#34;user&#34;] = user
+
+        return response
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        response = await super().get_user_info(oauth_tokens, user_context)
+        user = oauth_tokens.get(&#34;user&#34;)
+
+        user_dict: Dict[str, Any] = {}
+
+        if user is not None:
+            if isinstance(user, str):
+                user_dict = json.loads(user)
+            elif isinstance(user, dict):
+                user_dict = user
+            else:
+                return response
+
+            if response.raw_user_info_from_provider.from_id_token_payload is None:
+                response.raw_user_info_from_provider.from_id_token_payload = {}
+
+            response.raw_user_info_from_provider.from_id_token_payload[
+                &#34;user&#34;
+            ] = user_dict
+
+        return response</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -227,6 +312,32 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.exchange_auth_code_for_oauth_tokens"><code class="name flex">
+<span>async def <span class="ident">exchange_auth_code_for_oauth_tokens</span></span>(<span>self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def exchange_auth_code_for_oauth_tokens(
+    self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
+) -&gt; Dict[str, Any]:
+    response = await super().exchange_auth_code_for_oauth_tokens(
+        redirect_uri_info, user_context
+    )
+
+    user = redirect_uri_info.redirect_uri_query_params.get(&#34;user&#34;)
+    if user is not None:
+        if isinstance(user, str):
+            response[&#34;user&#34;] = json.loads(user)
+        elif isinstance(user, dict):
+            response[&#34;user&#34;] = user
+
+    return response</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_config_for_client_type"><code class="name flex">
 <span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
@@ -258,6 +369,41 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
     return config</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_user_info"><code class="name flex">
+<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_user_info(
+    self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+) -&gt; UserInfo:
+    response = await super().get_user_info(oauth_tokens, user_context)
+    user = oauth_tokens.get(&#34;user&#34;)
+
+    user_dict: Dict[str, Any] = {}
+
+    if user is not None:
+        if isinstance(user, str):
+            user_dict = json.loads(user)
+        elif isinstance(user, dict):
+            user_dict = user
+        else:
+            return response
+
+        if response.raw_user_info_from_provider.from_id_token_payload is None:
+            response.raw_user_info_from_provider.from_id_token_payload = {}
+
+        response.raw_user_info_from_provider.from_id_token_payload[
+            &#34;user&#34;
+        ] = user_dict
+
+    return response</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -284,7 +430,9 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl" href="#supertokens_python.recipe.thirdparty.providers.apple.AppleImpl">AppleImpl</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.exchange_auth_code_for_oauth_tokens" href="#supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.exchange_auth_code_for_oauth_tokens">exchange_auth_code_for_oauth_tokens</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_config_for_client_type" href="#supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_config_for_client_type">get_config_for_client_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_user_info" href="#supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_user_info">get_user_info</a></code></li>
 </ul>
 </li>
 </ul>

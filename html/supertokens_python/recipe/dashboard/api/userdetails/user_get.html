@@ -27,9 +27,12 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from typing import Union, Dict, Any
+from supertokens_python.asyncio import get_user
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
+from supertokens_python.recipe.dashboard.utils import (
+    UserWithMetadata,
+)
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
 
@@ -38,9 +41,7 @@ from ...interfaces import (
     APIOptions,
     UserGetAPINoUserFoundError,
     UserGetAPIOkResponse,
-    UserGetAPIRecipeNotInitialisedError,
 )
-from ...utils import is_recipe_initialised, is_valid_recipe_id
 
 
 async def handle_user_get(
@@ -48,48 +49,34 @@ async def handle_user_get(
     _tenant_id: str,
     api_options: APIOptions,
     _user_context: Dict[str, Any],
-) -&gt; Union[
-    UserGetAPINoUserFoundError,
-    UserGetAPIOkResponse,
-    UserGetAPIRecipeNotInitialisedError,
-]:
+) -&gt; Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse,]:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
-    recipe_id = api_options.request.get_query_param(&#34;recipeId&#34;)
 
     if user_id is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
 
-    if recipe_id is None:
-        raise_bad_input_exception(&#34;Missing required parameter &#39;recipeId&#39;&#34;)
-
-    if not is_valid_recipe_id(recipe_id):
-        raise_bad_input_exception(&#34;Invalid recipe id&#34;)
-
-    if not is_recipe_initialised(recipe_id):
-        return UserGetAPIRecipeNotInitialisedError()
-
-    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    user_response = await get_user(user_id, _user_context)
     if user_response is None:
         return UserGetAPINoUserFoundError()
 
-    user = user_response.user
+    user_with_metadata: UserWithMetadata = UserWithMetadata().from_user(user_response)
 
     try:
         UserMetadataRecipe.get_instance()
     except Exception:
-        user.first_name = &#34;FEATURE_NOT_ENABLED&#34;
-        user.last_name = &#34;FEATURE_NOT_ENABLED&#34;
+        user_with_metadata.first_name = &#34;FEATURE_NOT_ENABLED&#34;
+        user_with_metadata.last_name = &#34;FEATURE_NOT_ENABLED&#34;
 
-        return UserGetAPIOkResponse(recipe_id, user)
+        return UserGetAPIOkResponse(user_with_metadata)
 
     user_metadata = await get_user_metadata(user_id, user_context=_user_context)
     first_name = user_metadata.metadata.get(&#34;first_name&#34;, &#34;&#34;)
     last_name = user_metadata.metadata.get(&#34;last_name&#34;, &#34;&#34;)
 
-    user.first_name = first_name
-    user.last_name = last_name
+    user_with_metadata.first_name = first_name
+    user_with_metadata.last_name = last_name
 
-    return UserGetAPIOkResponse(recipe_id, user)</code></pre>
+    return UserGetAPIOkResponse(user_with_metadata)</code></pre>
 </details>
 </section>
 <section>
@@ -100,7 +87,7 @@ async def handle_user_get(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_get.handle_user_get"><code class="name flex">
-<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, _user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError">UserGetAPIRecipeNotInitialisedError</a>]</span>
+<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, _user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -113,48 +100,34 @@ async def handle_user_get(
     _tenant_id: str,
     api_options: APIOptions,
     _user_context: Dict[str, Any],
-) -&gt; Union[
-    UserGetAPINoUserFoundError,
-    UserGetAPIOkResponse,
-    UserGetAPIRecipeNotInitialisedError,
-]:
+) -&gt; Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse,]:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
-    recipe_id = api_options.request.get_query_param(&#34;recipeId&#34;)
 
     if user_id is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
 
-    if recipe_id is None:
-        raise_bad_input_exception(&#34;Missing required parameter &#39;recipeId&#39;&#34;)
-
-    if not is_valid_recipe_id(recipe_id):
-        raise_bad_input_exception(&#34;Invalid recipe id&#34;)
-
-    if not is_recipe_initialised(recipe_id):
-        return UserGetAPIRecipeNotInitialisedError()
-
-    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    user_response = await get_user(user_id, _user_context)
     if user_response is None:
         return UserGetAPINoUserFoundError()
 
-    user = user_response.user
+    user_with_metadata: UserWithMetadata = UserWithMetadata().from_user(user_response)
 
     try:
         UserMetadataRecipe.get_instance()
     except Exception:
-        user.first_name = &#34;FEATURE_NOT_ENABLED&#34;
-        user.last_name = &#34;FEATURE_NOT_ENABLED&#34;
+        user_with_metadata.first_name = &#34;FEATURE_NOT_ENABLED&#34;
+        user_with_metadata.last_name = &#34;FEATURE_NOT_ENABLED&#34;
 
-        return UserGetAPIOkResponse(recipe_id, user)
+        return UserGetAPIOkResponse(user_with_metadata)
 
     user_metadata = await get_user_metadata(user_id, user_context=_user_context)
     first_name = user_metadata.metadata.get(&#34;first_name&#34;, &#34;&#34;)
     last_name = user_metadata.metadata.get(&#34;last_name&#34;, &#34;&#34;)
 
-    user.first_name = first_name
-    user.last_name = last_name
+    user_with_metadata.first_name = first_name
+    user_with_metadata.last_name = last_name
 
-    return UserGetAPIOkResponse(recipe_id, user)</code></pre>
+    return UserGetAPIOkResponse(user_with_metadata)</code></pre>
 </details>
 </dd>
 </dl>

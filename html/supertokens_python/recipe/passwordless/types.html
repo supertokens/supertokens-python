@@ -53,32 +53,6 @@ from supertokens_python.ingredients.smsdelivery.types import (
 )
 
 
-class User:
-    def __init__(
-        self,
-        user_id: str,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        time_joined: int,
-        tenant_ids: List[str],
-    ):
-        self.user_id = user_id
-        self.email = email
-        self.phone_number = phone_number
-        self.time_joined = time_joined
-        self.tenant_ids = tenant_ids
-
-    def __eq__(self, other: object) -&gt; bool:
-        return (
-            isinstance(other, self.__class__)
-            and self.user_id == other.user_id
-            and self.email == other.email
-            and self.phone_number == other.phone_number
-            and self.time_joined == other.time_joined
-            and self.tenant_ids == other.tenant_ids
-        )
-
-
 class DeviceCode:
     def __init__(self, code_id: str, time_created: str, code_life_time: int):
         self.code_id = code_id
@@ -109,6 +83,7 @@ class CreateAndSendCustomEmailParameters:
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -118,6 +93,7 @@ class CreateAndSendCustomEmailParameters:
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
         self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor
 
 
 PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
@@ -130,6 +106,7 @@ class CreateAndSendCustomTextMessageParameters:
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -139,6 +116,7 @@ class CreateAndSendCustomTextMessageParameters:
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
         self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor
 
 
 PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters
@@ -176,7 +154,7 @@ class PasswordlessIngredients:
 <dl>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters"><code class="flex name class">
 <span>class <span class="ident">CreateAndSendCustomEmailParameters</span></span>
-<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -191,6 +169,7 @@ class PasswordlessIngredients:
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -199,12 +178,13 @@ class PasswordlessIngredients:
         self.pre_auth_session_id = pre_auth_session_id
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
-        self.tenant_id = tenant_id</code></pre>
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters"><code class="flex name class">
 <span>class <span class="ident">PasswordlessLoginEmailTemplateVars</span></span>
-<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -219,6 +199,7 @@ class PasswordlessIngredients:
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -227,12 +208,13 @@ class PasswordlessIngredients:
         self.pre_auth_session_id = pre_auth_session_id
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
-        self.tenant_id = tenant_id</code></pre>
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters"><code class="flex name class">
 <span>class <span class="ident">EmailTemplateVars</span></span>
-<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -247,6 +229,7 @@ class PasswordlessIngredients:
         code_life_time: int,
         pre_auth_session_id: str,
         email: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -255,12 +238,13 @@ class PasswordlessIngredients:
         self.pre_auth_session_id = pre_auth_session_id
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
-        self.tenant_id = tenant_id</code></pre>
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
 <span>class <span class="ident">CreateAndSendCustomTextMessageParameters</span></span>
-<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -275,6 +259,7 @@ class PasswordlessIngredients:
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -283,12 +268,13 @@ class PasswordlessIngredients:
         self.phone_number = phone_number
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
-        self.tenant_id = tenant_id</code></pre>
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
 <span>class <span class="ident">PasswordlessLoginSMSTemplateVars</span></span>
-<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -303,6 +289,7 @@ class PasswordlessIngredients:
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -311,12 +298,13 @@ class PasswordlessIngredients:
         self.phone_number = phone_number
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
-        self.tenant_id = tenant_id</code></pre>
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
 <span>class <span class="ident">SMSTemplateVars</span></span>
-<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -331,6 +319,7 @@ class PasswordlessIngredients:
         code_life_time: int,
         pre_auth_session_id: str,
         phone_number: str,
+        is_first_factor: bool,
         user_input_code: Union[str, None] = None,
         url_with_link_code: Union[str, None] = None,
     ):
@@ -339,7 +328,8 @@ class PasswordlessIngredients:
         self.phone_number = phone_number
         self.user_input_code = user_input_code
         self.url_with_link_code = url_with_link_code
-        self.tenant_id = tenant_id</code></pre>
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.DeviceCode"><code class="flex name class">
@@ -405,42 +395,6 @@ class PasswordlessIngredients:
         self.sms_delivery = sms_delivery</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.types.User"><code class="flex name class">
-<span>class <span class="ident">User</span></span>
-<span>(</span><span>user_id: str, email: Optional[str], phone_number: Optional[str], time_joined: int, tenant_ids: List[str])</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class User:
-    def __init__(
-        self,
-        user_id: str,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        time_joined: int,
-        tenant_ids: List[str],
-    ):
-        self.user_id = user_id
-        self.email = email
-        self.phone_number = phone_number
-        self.time_joined = time_joined
-        self.tenant_ids = tenant_ids
-
-    def __eq__(self, other: object) -&gt; bool:
-        return (
-            isinstance(other, self.__class__)
-            and self.user_id == other.user_id
-            and self.email == other.email
-            and self.phone_number == other.phone_number
-            and self.time_joined == other.time_joined
-            and self.tenant_ids == other.tenant_ids
-        )</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 </article>
@@ -483,9 +437,6 @@ class PasswordlessIngredients:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.types.PasswordlessIngredients" href="#supertokens_python.recipe.passwordless.types.PasswordlessIngredients">PasswordlessIngredients</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.types.User" href="#supertokens_python.recipe.passwordless.types.User">User</a></code></h4>
 </li>
 </ul>
 </li>

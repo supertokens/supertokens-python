@@ -465,12 +465,12 @@ class GenericProvider(Provider):
 
 
 def NewProvider(
-    input: ProviderInput,  # pylint: disable=redefined-builtin
+    input_: ProviderInput,
     base_class: Callable[[ProviderConfig], Provider] = GenericProvider,
 ) -&gt; Provider:
-    provider_instance = base_class(input.config)
-    if input.override is not None:
-        provider_instance = input.override(provider_instance)
+    provider_instance = base_class(input_.config)
+    if input_.override is not None:
+        provider_instance = input_.override(provider_instance)
 
     return provider_instance</code></pre>
 </details>
@@ -483,7 +483,7 @@ def NewProvider(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.NewProvider"><code class="name flex">
-<span>def <span class="ident">NewProvider</span></span>(<span>input: <a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a>, base_class: Callable[[<a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>], <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>] = supertokens_python.recipe.thirdparty.providers.custom.GenericProvider) ‑> <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></span>
+<span>def <span class="ident">NewProvider</span></span>(<span>input_: <a title="supertokens_python.recipe.thirdparty.provider.ProviderInput" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderInput">ProviderInput</a>, base_class: Callable[[<a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>], <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>] = supertokens_python.recipe.thirdparty.providers.custom.GenericProvider) ‑> <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -492,12 +492,12 @@ def NewProvider(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def NewProvider(
-    input: ProviderInput,  # pylint: disable=redefined-builtin
+    input_: ProviderInput,
     base_class: Callable[[ProviderConfig], Provider] = GenericProvider,
 ) -&gt; Provider:
-    provider_instance = base_class(input.config)
-    if input.override is not None:
-        provider_instance = input.override(provider_instance)
+    provider_instance = base_class(input_.config)
+    if input_.override is not None:
+        provider_instance = input_.override(provider_instance)
 
     return provider_instance</code></pre>
 </details>

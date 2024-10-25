@@ -41,13 +41,12 @@
 # under the License.
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
+from .exceptions import raise_general_exception
 
 if TYPE_CHECKING:
     pass
-from .exceptions import raise_general_exception
 
 
 class NormalisedURLPath:
@@ -68,33 +67,26 @@ class NormalisedURLPath:
 
     def is_a_recipe_path(self) -&gt; bool:
         parts = self.__value.split(&#34;/&#34;)
-        return (len(parts) &gt; 1 and parts[1] == &#34;recipe&#34;) or (
-            len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;
-        )
+        return parts[1] == &#34;recipe&#34; or (len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;)
 
 
 def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
     input_str = input_str.strip().lower()
-
     try:
-        if (not input_str.startswith(&#34;http://&#34;)) and (
-            not input_str.startswith(&#34;https://&#34;)
-        ):
+        if not input_str.startswith(&#34;http://&#34;) and not input_str.startswith(&#34;https://&#34;):
             raise Exception(&#34;converting to proper URL&#34;)
         url_obj = urlparse(input_str)
         input_str = url_obj.path
-
         if input_str.endswith(&#34;/&#34;):
             return input_str[:-1]
-
         return input_str
     except Exception:
         pass
 
     if (
         (domain_given(input_str) or input_str.startswith(&#34;localhost&#34;))
-        and (not input_str.startswith(&#34;http://&#34;))
-        and (not input_str.startswith(&#34;https://&#34;))
+        and not input_str.startswith(&#34;http://&#34;)
+        and not input_str.startswith(&#34;https://&#34;)
     ):
         input_str = &#34;http://&#34; + input_str
         return normalise_url_path_or_throw_error(input_str)
@@ -110,25 +102,20 @@ def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
 
 
 def domain_given(input_str: str) -&gt; bool:
-    if (&#34;.&#34; not in input_str) or (input_str.startswith(&#34;/&#34;)):
+    if &#34;.&#34; not in input_str or input_str.startswith(&#34;/&#34;):
         return False
-
     try:
+        if not &#34;http://&#34; in input_str and not &#34;https://&#34; in input_str:
+            raise Exception(&#34;Trying with http&#34;)
         url = urlparse(input_str)
-        if url.hostname is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return url.hostname.find(&#34;.&#34;) != -1
+        return url.hostname is not None and &#34;.&#34; in url.hostname
     except Exception:
         pass
-
     try:
         url = urlparse(&#34;http://&#34; + input_str)
-        if url.hostname is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return url.hostname.find(&#34;.&#34;) != -1
+        return url.hostname is not None and &#34;.&#34; in url.hostname
     except Exception:
         pass
-
     return False</code></pre>
 </details>
 </section>
@@ -149,25 +136,20 @@ def domain_given(input_str: str) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def domain_given(input_str: str) -&gt; bool:
-    if (&#34;.&#34; not in input_str) or (input_str.startswith(&#34;/&#34;)):
+    if &#34;.&#34; not in input_str or input_str.startswith(&#34;/&#34;):
         return False
-
     try:
+        if not &#34;http://&#34; in input_str and not &#34;https://&#34; in input_str:
+            raise Exception(&#34;Trying with http&#34;)
         url = urlparse(input_str)
-        if url.hostname is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return url.hostname.find(&#34;.&#34;) != -1
+        return url.hostname is not None and &#34;.&#34; in url.hostname
     except Exception:
         pass
-
     try:
         url = urlparse(&#34;http://&#34; + input_str)
-        if url.hostname is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return url.hostname.find(&#34;.&#34;) != -1
+        return url.hostname is not None and &#34;.&#34; in url.hostname
     except Exception:
         pass
-
     return False</code></pre>
 </details>
 </dd>
@@ -182,26 +164,21 @@ def domain_given(input_str: str) -&gt; bool:
 </summary>
 <pre><code class="python">def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
     input_str = input_str.strip().lower()
-
     try:
-        if (not input_str.startswith(&#34;http://&#34;)) and (
-            not input_str.startswith(&#34;https://&#34;)
-        ):
+        if not input_str.startswith(&#34;http://&#34;) and not input_str.startswith(&#34;https://&#34;):
             raise Exception(&#34;converting to proper URL&#34;)
         url_obj = urlparse(input_str)
         input_str = url_obj.path
-
         if input_str.endswith(&#34;/&#34;):
             return input_str[:-1]
-
         return input_str
     except Exception:
         pass
 
     if (
         (domain_given(input_str) or input_str.startswith(&#34;localhost&#34;))
-        and (not input_str.startswith(&#34;http://&#34;))
-        and (not input_str.startswith(&#34;https://&#34;))
+        and not input_str.startswith(&#34;http://&#34;)
+        and not input_str.startswith(&#34;https://&#34;)
     ):
         input_str = &#34;http://&#34; + input_str
         return normalise_url_path_or_throw_error(input_str)
@@ -249,9 +226,7 @@ def domain_given(input_str: str) -&gt; bool:
 
     def is_a_recipe_path(self) -&gt; bool:
         parts = self.__value.split(&#34;/&#34;)
-        return (len(parts) &gt; 1 and parts[1] == &#34;recipe&#34;) or (
-            len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;
-        )</code></pre>
+        return parts[1] == &#34;recipe&#34; or (len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -305,9 +280,7 @@ def domain_given(input_str: str) -&gt; bool:
 </summary>
 <pre><code class="python">def is_a_recipe_path(self) -&gt; bool:
     parts = self.__value.split(&#34;/&#34;)
-    return (len(parts) &gt; 1 and parts[1] == &#34;recipe&#34;) or (
-        len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;
-    )</code></pre>
+    return parts[1] == &#34;recipe&#34; or (len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.startswith"><code class="name flex">

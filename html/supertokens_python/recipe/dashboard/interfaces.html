@@ -43,8 +43,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
-
-from supertokens_python.types import User
+from typing_extensions import Literal
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from ...types import APIResponse
 
@@ -54,12 +54,6 @@ if TYPE_CHECKING:
 
     from supertokens_python.recipe.session.interfaces import SessionInformationResult
     from supertokens_python.framework import BaseRequest, BaseResponse
-
-    from supertokens_python.recipe.multitenancy.interfaces import (
-        EmailPasswordConfig,
-        PasswordlessConfig,
-        ThirdPartyConfig,
-    )
 
 
 class SessionInfo:
@@ -122,7 +116,7 @@ class DashboardUsersGetResponse(APIResponse):
 
     def __init__(
         self,
-        users: Union[List[User], List[UserWithMetadata]],
+        users: List[UserWithMetadata],
         next_pagination_token: Optional[str],
     ):
         self.users = users
@@ -137,27 +131,13 @@ class DashboardUsersGetResponse(APIResponse):
 
 
 class DashboardListTenantItem:
-    def __init__(
-        self,
-        tenant_id: str,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-    ):
-        self.tenant_id = tenant_id
-        self.emailpassword = emailpassword
-        self.passwordless = passwordless
-        self.third_party = third_party
+    def __init__(self, tenant_config: TenantConfig):
+        self.tenant_config = tenant_config
 
-    def to_json(self):
-        res = {
-            &#34;tenantId&#34;: self.tenant_id,
-            &#34;emailPassword&#34;: self.emailpassword.to_json(),
-            &#34;passwordless&#34;: self.passwordless.to_json(),
-            &#34;thirdParty&#34;: self.third_party.to_json(),
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;tenantId&#34;: self.tenant_config.tenant_id,
         }
-
-        return res
 
 
 class DashboardListTenantsGetResponse(APIResponse):
@@ -186,27 +166,18 @@ class UserCountGetAPIResponse(APIResponse):
 class UserGetAPIOkResponse(APIResponse):
     status: str = &#34;OK&#34;
 
-    def __init__(self, recipe_id: str, user: UserWithMetadata):
-        self.recipe_id = recipe_id
+    def __init__(self, user: UserWithMetadata):
         self.user = user
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
             &#34;status&#34;: self.status,
-            &#34;recipeId&#34;: self.recipe_id,
             &#34;user&#34;: self.user.to_json(),
         }
 
 
 class UserGetAPINoUserFoundError(APIResponse):
     status: str = &#34;NO_USER_FOUND_ERROR&#34;
-
-    def to_json(self) -&gt; Dict[str, Any]:
-        return {&#34;status&#34;: self.status}
-
-
-class UserGetAPIRecipeNotInitialisedError(APIResponse):
-    status: str = &#34;RECIPE_NOT_INITIALISED&#34;
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {&#34;status&#34;: self.status}
@@ -238,7 +209,6 @@ class UserSessionsGetAPIResponse(APIResponse):
                 &#34;accessTokenPayload&#34;: s.access_token_payload,
                 &#34;expiry&#34;: s.expiry,
                 &#34;sessionDataInDatabase&#34;: s.session_data_in_database,
-                &#34;tenantId&#34;: s.tenant_id,
                 &#34;timeCreated&#34;: s.time_created,
                 &#34;userId&#34;: s.user_id,
                 &#34;sessionHandle&#34;: s.session_handle,
@@ -382,7 +352,64 @@ class AnalyticsResponse(APIResponse):
     status: str = &#34;OK&#34;
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {&#34;status&#34;: self.status}</code></pre>
+        return {&#34;status&#34;: self.status}
+
+
+class CoreConfigFieldInfo:
+    def __init__(
+        self,
+        key: str,
+        value_type: Literal[&#34;string&#34;, &#34;boolean&#34;, &#34;number&#34;],
+        value: Union[str, int, float, bool, None],
+        description: str,
+        is_different_across_tenants: bool,
+        possible_values: Union[List[str], None] = None,
+        is_nullable: bool = False,
+        default_value: Union[str, int, float, bool, None] = None,
+        is_plugin_property: bool = False,
+        is_plugin_property_editable: bool = False,
+    ):
+        self.key = key
+        self.value_type = value_type
+        self.value = value
+        self.description = description
+        self.is_different_across_tenants = is_different_across_tenants
+        self.possible_values = possible_values
+        self.is_nullable = is_nullable
+        self.default_value = default_value
+        self.is_plugin_property = is_plugin_property
+        self.is_plugin_property_editable = is_plugin_property_editable
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        result: Dict[str, Any] = {
+            &#34;key&#34;: self.key,
+            &#34;valueType&#34;: self.value_type,
+            &#34;value&#34;: self.value,
+            &#34;description&#34;: self.description,
+            &#34;isDifferentAcrossTenants&#34;: self.is_different_across_tenants,
+            &#34;isNullable&#34;: self.is_nullable,
+            &#34;defaultValue&#34;: self.default_value,
+            &#34;isPluginProperty&#34;: self.is_plugin_property,
+            &#34;isPluginPropertyEditable&#34;: self.is_plugin_property_editable,
+        }
+        if self.possible_values is not None:
+            result[&#34;possibleValues&#34;] = self.possible_values
+        return result
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -&gt; CoreConfigFieldInfo:
+        return CoreConfigFieldInfo(
+            key=json[&#34;key&#34;],
+            value_type=json[&#34;valueType&#34;],
+            value=json[&#34;value&#34;],
+            description=json[&#34;description&#34;],
+            is_different_across_tenants=json[&#34;isDifferentAcrossTenants&#34;],
+            possible_values=json[&#34;possibleValues&#34;],
+            is_nullable=json[&#34;isNullable&#34;],
+            default_value=json[&#34;defaultValue&#34;],
+            is_plugin_property=json[&#34;isPluginProperty&#34;],
+            is_plugin_property_editable=json[&#34;isPluginPropertyEditable&#34;],
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -488,9 +515,133 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo"><code class="flex name class">
+<span>class <span class="ident">CoreConfigFieldInfo</span></span>
+<span>(</span><span>key: str, value_type: "Literal['string', 'boolean', 'number']", value: Union[str, int, float, bool, None], description: str, is_different_across_tenants: bool, possible_values: Union[List[str], None] = None, is_nullable: bool = False, default_value: Union[str, int, float, bool, None] = None, is_plugin_property: bool = False, is_plugin_property_editable: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CoreConfigFieldInfo:
+    def __init__(
+        self,
+        key: str,
+        value_type: Literal[&#34;string&#34;, &#34;boolean&#34;, &#34;number&#34;],
+        value: Union[str, int, float, bool, None],
+        description: str,
+        is_different_across_tenants: bool,
+        possible_values: Union[List[str], None] = None,
+        is_nullable: bool = False,
+        default_value: Union[str, int, float, bool, None] = None,
+        is_plugin_property: bool = False,
+        is_plugin_property_editable: bool = False,
+    ):
+        self.key = key
+        self.value_type = value_type
+        self.value = value
+        self.description = description
+        self.is_different_across_tenants = is_different_across_tenants
+        self.possible_values = possible_values
+        self.is_nullable = is_nullable
+        self.default_value = default_value
+        self.is_plugin_property = is_plugin_property
+        self.is_plugin_property_editable = is_plugin_property_editable
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        result: Dict[str, Any] = {
+            &#34;key&#34;: self.key,
+            &#34;valueType&#34;: self.value_type,
+            &#34;value&#34;: self.value,
+            &#34;description&#34;: self.description,
+            &#34;isDifferentAcrossTenants&#34;: self.is_different_across_tenants,
+            &#34;isNullable&#34;: self.is_nullable,
+            &#34;defaultValue&#34;: self.default_value,
+            &#34;isPluginProperty&#34;: self.is_plugin_property,
+            &#34;isPluginPropertyEditable&#34;: self.is_plugin_property_editable,
+        }
+        if self.possible_values is not None:
+            result[&#34;possibleValues&#34;] = self.possible_values
+        return result
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -&gt; CoreConfigFieldInfo:
+        return CoreConfigFieldInfo(
+            key=json[&#34;key&#34;],
+            value_type=json[&#34;valueType&#34;],
+            value=json[&#34;value&#34;],
+            description=json[&#34;description&#34;],
+            is_different_across_tenants=json[&#34;isDifferentAcrossTenants&#34;],
+            possible_values=json[&#34;possibleValues&#34;],
+            is_nullable=json[&#34;isNullable&#34;],
+            default_value=json[&#34;defaultValue&#34;],
+            is_plugin_property=json[&#34;isPluginProperty&#34;],
+            is_plugin_property_editable=json[&#34;isPluginPropertyEditable&#34;],
+        )</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>json: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo" href="#supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo">CoreConfigFieldInfo</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def from_json(json: Dict[str, Any]) -&gt; CoreConfigFieldInfo:
+    return CoreConfigFieldInfo(
+        key=json[&#34;key&#34;],
+        value_type=json[&#34;valueType&#34;],
+        value=json[&#34;value&#34;],
+        description=json[&#34;description&#34;],
+        is_different_across_tenants=json[&#34;isDifferentAcrossTenants&#34;],
+        possible_values=json[&#34;possibleValues&#34;],
+        is_nullable=json[&#34;isNullable&#34;],
+        default_value=json[&#34;defaultValue&#34;],
+        is_plugin_property=json[&#34;isPluginProperty&#34;],
+        is_plugin_property_editable=json[&#34;isPluginPropertyEditable&#34;],
+    )</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    result: Dict[str, Any] = {
+        &#34;key&#34;: self.key,
+        &#34;valueType&#34;: self.value_type,
+        &#34;value&#34;: self.value,
+        &#34;description&#34;: self.description,
+        &#34;isDifferentAcrossTenants&#34;: self.is_different_across_tenants,
+        &#34;isNullable&#34;: self.is_nullable,
+        &#34;defaultValue&#34;: self.default_value,
+        &#34;isPluginProperty&#34;: self.is_plugin_property,
+        &#34;isPluginPropertyEditable&#34;: self.is_plugin_property_editable,
+    }
+    if self.possible_values is not None:
+        result[&#34;possibleValues&#34;] = self.possible_values
+    return result</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantItem"><code class="flex name class">
 <span>class <span class="ident">DashboardListTenantItem</span></span>
-<span>(</span><span>tenant_id: str, emailpassword: EmailPasswordConfig, passwordless: PasswordlessConfig, third_party: ThirdPartyConfig)</span>
+<span>(</span><span>tenant_config: TenantConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -499,32 +650,18 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DashboardListTenantItem:
-    def __init__(
-        self,
-        tenant_id: str,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-    ):
-        self.tenant_id = tenant_id
-        self.emailpassword = emailpassword
-        self.passwordless = passwordless
-        self.third_party = third_party
+    def __init__(self, tenant_config: TenantConfig):
+        self.tenant_config = tenant_config
 
-    def to_json(self):
-        res = {
-            &#34;tenantId&#34;: self.tenant_id,
-            &#34;emailPassword&#34;: self.emailpassword.to_json(),
-            &#34;passwordless&#34;: self.passwordless.to_json(),
-            &#34;thirdParty&#34;: self.third_party.to_json(),
-        }
-
-        return res</code></pre>
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;tenantId&#34;: self.tenant_config.tenant_id,
+        }</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantItem.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -532,15 +669,10 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def to_json(self):
-    res = {
-        &#34;tenantId&#34;: self.tenant_id,
-        &#34;emailPassword&#34;: self.emailpassword.to_json(),
-        &#34;passwordless&#34;: self.passwordless.to_json(),
-        &#34;thirdParty&#34;: self.third_party.to_json(),
-    }
-
-    return res</code></pre>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;tenantId&#34;: self.tenant_config.tenant_id,
+    }</code></pre>
 </details>
 </dd>
 </dl>
@@ -602,7 +734,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse"><code class="flex name class">
 <span>class <span class="ident">DashboardUsersGetResponse</span></span>
-<span>(</span><span>users: Union[List[User], List[UserWithMetadata]], next_pagination_token: Optional[str])</span>
+<span>(</span><span>users: List[UserWithMetadata], next_pagination_token: Optional[str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -616,7 +748,7 @@ inheritance.</p></div>
 
     def __init__(
         self,
-        users: Union[List[User], List[UserWithMetadata]],
+        users: List[UserWithMetadata],
         next_pagination_token: Optional[str],
     ):
         self.users = users
@@ -1224,7 +1356,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse"><code class="flex name class">
 <span>class <span class="ident">UserGetAPIOkResponse</span></span>
-<span>(</span><span>recipe_id: str, user: UserWithMetadata)</span>
+<span>(</span><span>user: UserWithMetadata)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1236,14 +1368,12 @@ inheritance.</p></div>
 <pre><code class="python">class UserGetAPIOkResponse(APIResponse):
     status: str = &#34;OK&#34;
 
-    def __init__(self, recipe_id: str, user: UserWithMetadata):
-        self.recipe_id = recipe_id
+    def __init__(self, user: UserWithMetadata):
         self.user = user
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
             &#34;status&#34;: self.status,
-            &#34;recipeId&#34;: self.recipe_id,
             &#34;user&#34;: self.user.to_json(),
         }</code></pre>
 </details>
@@ -1273,54 +1403,8 @@ inheritance.</p></div>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
     return {
         &#34;status&#34;: self.status,
-        &#34;recipeId&#34;: self.recipe_id,
         &#34;user&#34;: self.user.to_json(),
     }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError"><code class="flex name class">
-<span>class <span class="ident">UserGetAPIRecipeNotInitialisedError</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class UserGetAPIRecipeNotInitialisedError(APIResponse):
-    status: str = &#34;RECIPE_NOT_INITIALISED&#34;
-
-    def to_json(self) -&gt; Dict[str, Any]:
-        return {&#34;status&#34;: self.status}</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
 </details>
 </dd>
 </dl>
@@ -1766,7 +1850,6 @@ inheritance.</p></div>
                 &#34;accessTokenPayload&#34;: s.access_token_payload,
                 &#34;expiry&#34;: s.expiry,
                 &#34;sessionDataInDatabase&#34;: s.session_data_in_database,
-                &#34;tenantId&#34;: s.tenant_id,
                 &#34;timeCreated&#34;: s.time_created,
                 &#34;userId&#34;: s.user_id,
                 &#34;sessionHandle&#34;: s.session_handle,
@@ -1881,6 +1964,13 @@ inheritance.</p></div>
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo" href="#supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo">CoreConfigFieldInfo</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo.from_json" href="#supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo.to_json" href="#supertokens_python.recipe.dashboard.interfaces.CoreConfigFieldInfo.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantItem" href="#supertokens_python.recipe.dashboard.interfaces.DashboardListTenantItem">DashboardListTenantItem</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantItem.to_json" href="#supertokens_python.recipe.dashboard.interfaces.DashboardListTenantItem.to_json">to_json</a></code></li>
@@ -1986,13 +2076,6 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.status">status</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError">UserGetAPIRecipeNotInitialisedError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError.status" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError.status">status</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>

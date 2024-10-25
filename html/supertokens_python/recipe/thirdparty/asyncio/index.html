@@ -40,49 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.thirdparty.interfaces import (
+    EmailChangeNotAllowedError,
+    ManuallyCreateOrUpdateUserOkResult,
+    SignInUpNotAllowed,
+)
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
-
-from ..types import User
-
-
-async def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(
-        user_id, user_context
-    )
-
-
-async def get_users_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; List[User]:
-    if user_context is None:
-        user_context = {}
-    return (
-        await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(
-            email, tenant_id, user_context
-        )
-    )
-
-
-async def get_user_by_third_party_info(
-    tenant_id: str,
-    third_party_id: str,
-    third_party_user_id: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
-        third_party_id,
-        third_party_user_id,
-        tenant_id,
-        user_context,
-    )
 
 
 async def manually_create_or_update_user(
@@ -90,16 +57,26 @@ async def manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    is_verified: bool,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-):
+) -&gt; Union[
+    ManuallyCreateOrUpdateUserOkResult,
+    LinkingToSessionUserFailedError,
+    SignInUpNotAllowed,
+    EmailChangeNotAllowedError,
+]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.manually_create_or_update_user(
-        third_party_id,
-        third_party_user_id,
-        email,
-        tenant_id,
-        user_context,
+        third_party_id=third_party_id,
+        third_party_user_id=third_party_user_id,
+        email=email,
+        is_verified=is_verified,
+        session=session,
+        tenant_id=tenant_id,
+        user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )
 
 
@@ -145,73 +122,8 @@ async def get_provider(
     )</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.asyncio.get_user_by_id"><code class="name flex">
-<span>async def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(
-        user_id, user_context
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.asyncio.get_user_by_third_party_info"><code class="name flex">
-<span>async def <span class="ident">get_user_by_third_party_info</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_third_party_info(
-    tenant_id: str,
-    third_party_id: str,
-    third_party_user_id: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
-        third_party_id,
-        third_party_user_id,
-        tenant_id,
-        user_context,
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.asyncio.get_users_by_email"><code class="name flex">
-<span>async def <span class="ident">get_users_by_email</span></span>(<span>tenant_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_users_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; List[User]:
-    if user_context is None:
-        user_context = {}
-    return (
-        await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(
-            email, tenant_id, user_context
-        )
-    )</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdparty.asyncio.manually_create_or_update_user"><code class="name flex">
-<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -224,16 +136,26 @@ async def get_provider(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    is_verified: bool,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-):
+) -&gt; Union[
+    ManuallyCreateOrUpdateUserOkResult,
+    LinkingToSessionUserFailedError,
+    SignInUpNotAllowed,
+    EmailChangeNotAllowedError,
+]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.manually_create_or_update_user(
-        third_party_id,
-        third_party_user_id,
-        email,
-        tenant_id,
-        user_context,
+        third_party_id=third_party_id,
+        third_party_user_id=third_party_user_id,
+        email=email,
+        is_verified=is_verified,
+        session=session,
+        tenant_id=tenant_id,
+        user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )</code></pre>
 </details>
 </dd>
@@ -256,9 +178,6 @@ async def get_provider(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.asyncio.get_provider" href="#supertokens_python.recipe.thirdparty.asyncio.get_provider">get_provider</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.asyncio.get_user_by_id" href="#supertokens_python.recipe.thirdparty.asyncio.get_user_by_id">get_user_by_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.asyncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdparty.asyncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.asyncio.get_users_by_email" href="#supertokens_python.recipe.thirdparty.asyncio.get_users_by_email">get_users_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.asyncio.manually_create_or_update_user" href="#supertokens_python.recipe.thirdparty.asyncio.manually_create_or_update_user">manually_create_or_update_user</a></code></li>
 </ul>
 </li>

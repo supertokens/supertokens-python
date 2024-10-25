@@ -40,26 +40,149 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, Union, Optional
+from typing_extensions import Literal
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.emailpassword.interfaces import (
+    SignUpOkResult,
+    EmailAlreadyExistsError,
+    LinkingToSessionUserFailedError,
+    SignInOkResult,
+    WrongCredentialsError,
+    CreateResetPasswordOkResult,
+    ConsumePasswordResetTokenOkResult,
+    PasswordResetTokenInvalidError,
+    UpdateEmailOrPasswordOkResult,
+    UnknownUserIdError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
+    PasswordPolicyViolationError,
+)
+from supertokens_python.recipe.emailpassword.types import (
+    EmailTemplateVars,
+)
+from supertokens_python.types import RecipeUserId
 
-from ..interfaces import SignInOkResult, SignInWrongCredentialsError
-from ..types import EmailTemplateVars, User
+
+def sign_up(
+    tenant_id: str,
+    email: str,
+    password: str,
+    session: Optional[SessionContainer] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[SignUpOkResult, EmailAlreadyExistsError, LinkingToSessionUserFailedError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import sign_up as async_sign_up
+
+    return sync(async_sign_up(tenant_id, email, password, session, user_context))
+
+
+def sign_in(
+    tenant_id: str,
+    email: str,
+    password: str,
+    session: Optional[SessionContainer] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import sign_in as async_sign_in
+
+    return sync(async_sign_in(tenant_id, email, password, session, user_context))
+
+
+def verify_credentials(
+    tenant_id: str,
+    email: str,
+    password: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[SignInOkResult, WrongCredentialsError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        verify_credentials as async_verify_credentials,
+    )
+
+    return sync(async_verify_credentials(tenant_id, email, password, user_context))
+
+
+def create_reset_password_token(
+    tenant_id: str,
+    user_id: str,
+    email: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[CreateResetPasswordOkResult, UnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        create_reset_password_token as async_create_reset_password_token,
+    )
+
+    return sync(
+        async_create_reset_password_token(tenant_id, user_id, email, user_context)
+    )
+
+
+def reset_password_using_token(
+    tenant_id: str,
+    token: str,
+    new_password: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[
+    UpdateEmailOrPasswordOkResult,
+    PasswordPolicyViolationError,
+    PasswordResetTokenInvalidError,
+    UnknownUserIdError,
+]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        reset_password_using_token as async_reset_password_using_token,
+    )
+
+    return sync(
+        async_reset_password_using_token(tenant_id, token, new_password, user_context)
+    )
+
+
+def consume_password_reset_token(
+    tenant_id: str,
+    token: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[ConsumePasswordResetTokenOkResult, PasswordResetTokenInvalidError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        consume_password_reset_token as async_consume_password_reset_token,
+    )
+
+    return sync(async_consume_password_reset_token(tenant_id, token, user_context))
 
 
 def update_email_or_password(
-    user_id: str,
-    email: Union[str, None] = None,
-    password: Union[str, None] = None,
-    apply_password_policy: Union[bool, None] = None,
+    recipe_user_id: RecipeUserId,
+    email: Optional[str] = None,
+    password: Optional[str] = None,
+    apply_password_policy: Optional[bool] = None,
     tenant_id_for_password_policy: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[
+    UpdateEmailOrPasswordOkResult,
+    EmailAlreadyExistsError,
+    UnknownUserIdError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
+    PasswordPolicyViolationError,
+]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        update_email_or_password as async_update_email_or_password,
+    )
 
     return sync(
-        update_email_or_password(
-            user_id,
+        async_update_email_or_password(
+            recipe_user_id,
             email,
             password,
             apply_password_policy,
@@ -69,104 +192,51 @@ def update_email_or_password(
     )
 
 
-def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[None, User]:
-    from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
-
-    return sync(get_user_by_id(user_id, user_context))
-
-
-def get_user_by_email(
-    tenant_id: str,
-    email: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[None, User]:
-    from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
-
-    return sync(get_user_by_email(tenant_id, email, user_context))
-
-
-def create_reset_password_token(
-    tenant_id: str,
-    user_id: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import (
-        create_reset_password_token,
-    )
-
-    return sync(create_reset_password_token(tenant_id, user_id, user_context))
-
-
-def reset_password_using_token(
-    tenant_id: str,
-    token: str,
-    new_password: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import (
-        reset_password_using_token,
-    )
-
-    return sync(
-        reset_password_using_token(tenant_id, token, new_password, user_context)
-    )
-
-
-def sign_in(
-    tenant_id: str,
-    email: str,
-    password: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[SignInOkResult, SignInWrongCredentialsError]:
-    from supertokens_python.recipe.emailpassword.asyncio import sign_in
-
-    return sync(sign_in(tenant_id, email, password, user_context))
-
-
-def sign_up(
-    tenant_id: str,
-    email: str,
-    password: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import sign_up
-
-    return sync(sign_up(tenant_id, email, password, user_context))
-
-
-def send_email(
-    input_: EmailTemplateVars,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import send_email
-
-    return sync(send_email(input_, user_context))
-
-
 def create_reset_password_link(
     tenant_id: str,
     user_id: str,
+    email: str,
     user_context: Optional[Dict[str, Any]] = None,
-):
+) -&gt; Union[str, UnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailpassword.asyncio import (
-        create_reset_password_link,
+        create_reset_password_link as async_create_reset_password_link,
     )
 
-    return sync(create_reset_password_link(tenant_id, user_id, user_context))
+    return sync(
+        async_create_reset_password_link(tenant_id, user_id, email, user_context)
+    )
 
 
 def send_reset_password_email(
     tenant_id: str,
     user_id: str,
+    email: str,
     user_context: Optional[Dict[str, Any]] = None,
-):
+) -&gt; Union[Literal[&#34;UNKNOWN_USER_ID_ERROR&#34;], Literal[&#34;OK&#34;]]:
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailpassword.asyncio import (
-        send_reset_password_email,
+        send_reset_password_email as async_send_reset_password_email,
     )
 
-    return sync(send_reset_password_email(tenant_id, user_id, user_context))</code></pre>
+    return sync(
+        async_send_reset_password_email(tenant_id, user_id, email, user_context)
+    )
+
+
+def send_email(
+    input_: EmailTemplateVars,
+    user_context: Optional[Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        send_email as async_send_email,
+    )
+
+    return sync(async_send_email(input_, user_context))</code></pre>
 </details>
 </section>
 <section>
@@ -176,8 +246,31 @@ def send_reset_password_email(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.emailpassword.syncio.consume_password_reset_token"><code class="name flex">
+<span>def <span class="ident">consume_password_reset_token</span></span>(<span>tenant_id: str, token: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.ConsumePasswordResetTokenOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.ConsumePasswordResetTokenOkResult">ConsumePasswordResetTokenOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetTokenInvalidError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetTokenInvalidError">PasswordResetTokenInvalidError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def consume_password_reset_token(
+    tenant_id: str,
+    token: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[ConsumePasswordResetTokenOkResult, PasswordResetTokenInvalidError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        consume_password_reset_token as async_consume_password_reset_token,
+    )
+
+    return sync(async_consume_password_reset_token(tenant_id, token, user_context))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.create_reset_password_link"><code class="name flex">
-<span>def <span class="ident">create_reset_password_link</span></span>(<span>tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">create_reset_password_link</span></span>(<span>tenant_id: str, user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[str, <a title="supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError">UnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -188,17 +281,22 @@ def send_reset_password_email(
 <pre><code class="python">def create_reset_password_link(
     tenant_id: str,
     user_id: str,
+    email: str,
     user_context: Optional[Dict[str, Any]] = None,
-):
+) -&gt; Union[str, UnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailpassword.asyncio import (
-        create_reset_password_link,
+        create_reset_password_link as async_create_reset_password_link,
     )
 
-    return sync(create_reset_password_link(tenant_id, user_id, user_context))</code></pre>
+    return sync(
+        async_create_reset_password_link(tenant_id, user_id, email, user_context)
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.create_reset_password_token"><code class="name flex">
-<span>def <span class="ident">create_reset_password_token</span></span>(<span>tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">create_reset_password_token</span></span>(<span>tenant_id: str, user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult">CreateResetPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError">UnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -209,53 +307,22 @@ def send_reset_password_email(
 <pre><code class="python">def create_reset_password_token(
     tenant_id: str,
     user_id: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
+    email: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[CreateResetPasswordOkResult, UnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailpassword.asyncio import (
-        create_reset_password_token,
+        create_reset_password_token as async_create_reset_password_token,
     )
 
-    return sync(create_reset_password_token(tenant_id, user_id, user_context))</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.emailpassword.syncio.get_user_by_email"><code class="name flex">
-<span>def <span class="ident">get_user_by_email</span></span>(<span>tenant_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_user_by_email(
-    tenant_id: str,
-    email: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[None, User]:
-    from supertokens_python.recipe.emailpassword.asyncio import get_user_by_email
-
-    return sync(get_user_by_email(tenant_id, email, user_context))</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.emailpassword.syncio.get_user_by_id"><code class="name flex">
-<span>def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[None, User]:
-    from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
-
-    return sync(get_user_by_id(user_id, user_context))</code></pre>
+    return sync(
+        async_create_reset_password_token(tenant_id, user_id, email, user_context)
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.reset_password_using_token"><code class="name flex">
-<span>def <span class="ident">reset_password_using_token</span></span>(<span>tenant_id: str, token: str, new_password: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">reset_password_using_token</span></span>(<span>tenant_id: str, token: str, new_password: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordPolicyViolationError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordPolicyViolationError">PasswordPolicyViolationError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetTokenInvalidError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetTokenInvalidError">PasswordResetTokenInvalidError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError">UnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -267,14 +334,21 @@ def send_reset_password_email(
     tenant_id: str,
     token: str,
     new_password: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[
+    UpdateEmailOrPasswordOkResult,
+    PasswordPolicyViolationError,
+    PasswordResetTokenInvalidError,
+    UnknownUserIdError,
+]:
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailpassword.asyncio import (
-        reset_password_using_token,
+        reset_password_using_token as async_reset_password_using_token,
     )
 
     return sync(
-        reset_password_using_token(tenant_id, token, new_password, user_context)
+        async_reset_password_using_token(tenant_id, token, new_password, user_context)
     )</code></pre>
 </details>
 </dd>
@@ -289,15 +363,19 @@ def send_reset_password_email(
 </summary>
 <pre><code class="python">def send_email(
     input_: EmailTemplateVars,
-    user_context: Union[None, Dict[str, Any]] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.emailpassword.asyncio import send_email
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        send_email as async_send_email,
+    )
 
-    return sync(send_email(input_, user_context))</code></pre>
+    return sync(async_send_email(input_, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.send_reset_password_email"><code class="name flex">
-<span>def <span class="ident">send_reset_password_email</span></span>(<span>tenant_id: str, user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">send_reset_password_email</span></span>(<span>tenant_id: str, user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[Literal['UNKNOWN_USER_ID_ERROR'], Literal['OK']]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -308,17 +386,22 @@ def send_reset_password_email(
 <pre><code class="python">def send_reset_password_email(
     tenant_id: str,
     user_id: str,
+    email: str,
     user_context: Optional[Dict[str, Any]] = None,
-):
+) -&gt; Union[Literal[&#34;UNKNOWN_USER_ID_ERROR&#34;], Literal[&#34;OK&#34;]]:
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailpassword.asyncio import (
-        send_reset_password_email,
+        send_reset_password_email as async_send_reset_password_email,
     )
 
-    return sync(send_reset_password_email(tenant_id, user_id, user_context))</code></pre>
+    return sync(
+        async_send_reset_password_email(tenant_id, user_id, email, user_context)
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.sign_in"><code class="name flex">
-<span>def <span class="ident">sign_in</span></span>(<span>tenant_id: str, email: str, password: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError">SignInWrongCredentialsError</a>]</span>
+<span>def <span class="ident">sign_in</span></span>(<span>tenant_id: str, email: str, password: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError">WrongCredentialsError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -330,15 +413,18 @@ def send_reset_password_email(
     tenant_id: str,
     email: str,
     password: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[SignInOkResult, SignInWrongCredentialsError]:
-    from supertokens_python.recipe.emailpassword.asyncio import sign_in
+    session: Optional[SessionContainer] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import sign_in as async_sign_in
 
-    return sync(sign_in(tenant_id, email, password, user_context))</code></pre>
+    return sync(async_sign_in(tenant_id, email, password, session, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.sign_up"><code class="name flex">
-<span>def <span class="ident">sign_up</span></span>(<span>tenant_id: str, email: str, password: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">sign_up</span></span>(<span>tenant_id: str, email: str, password: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -350,15 +436,18 @@ def send_reset_password_email(
     tenant_id: str,
     email: str,
     password: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import sign_up
+    session: Optional[SessionContainer] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[SignUpOkResult, EmailAlreadyExistsError, LinkingToSessionUserFailedError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import sign_up as async_sign_up
 
-    return sync(sign_up(tenant_id, email, password, user_context))</code></pre>
+    return sync(async_sign_up(tenant_id, email, password, session, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.update_email_or_password"><code class="name flex">
-<span>def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, apply_password_policy: Optional[bool] = None, tenant_id_for_password_policy: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">update_email_or_password</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, password: Optional[str] = None, apply_password_policy: Optional[bool] = None, tenant_id_for_password_policy: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailChangeNotAllowedError">UpdateEmailOrPasswordEmailChangeNotAllowedError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordPolicyViolationError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordPolicyViolationError">PasswordPolicyViolationError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -367,18 +456,28 @@ def send_reset_password_email(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def update_email_or_password(
-    user_id: str,
-    email: Union[str, None] = None,
-    password: Union[str, None] = None,
-    apply_password_policy: Union[bool, None] = None,
+    recipe_user_id: RecipeUserId,
+    email: Optional[str] = None,
+    password: Optional[str] = None,
+    apply_password_policy: Optional[bool] = None,
     tenant_id_for_password_policy: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[
+    UpdateEmailOrPasswordOkResult,
+    EmailAlreadyExistsError,
+    UnknownUserIdError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
+    PasswordPolicyViolationError,
+]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        update_email_or_password as async_update_email_or_password,
+    )
 
     return sync(
-        update_email_or_password(
-            user_id,
+        async_update_email_or_password(
+            recipe_user_id,
             email,
             password,
             apply_password_policy,
@@ -386,6 +485,30 @@ def send_reset_password_email(
             user_context,
         )
     )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.emailpassword.syncio.verify_credentials"><code class="name flex">
+<span>def <span class="ident">verify_credentials</span></span>(<span>tenant_id: str, email: str, password: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError">WrongCredentialsError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def verify_credentials(
+    tenant_id: str,
+    email: str,
+    password: str,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Union[SignInOkResult, WrongCredentialsError]:
+    if user_context is None:
+        user_context = {}
+    from supertokens_python.recipe.emailpassword.asyncio import (
+        verify_credentials as async_verify_credentials,
+    )
+
+    return sync(async_verify_credentials(tenant_id, email, password, user_context))</code></pre>
 </details>
 </dd>
 </dl>
@@ -406,16 +529,16 @@ def send_reset_password_email(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.emailpassword.syncio.consume_password_reset_token" href="#supertokens_python.recipe.emailpassword.syncio.consume_password_reset_token">consume_password_reset_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.create_reset_password_link" href="#supertokens_python.recipe.emailpassword.syncio.create_reset_password_link">create_reset_password_link</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.create_reset_password_token" href="#supertokens_python.recipe.emailpassword.syncio.create_reset_password_token">create_reset_password_token</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword.syncio.get_user_by_email" href="#supertokens_python.recipe.emailpassword.syncio.get_user_by_email">get_user_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword.syncio.get_user_by_id" href="#supertokens_python.recipe.emailpassword.syncio.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.reset_password_using_token" href="#supertokens_python.recipe.emailpassword.syncio.reset_password_using_token">reset_password_using_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.send_email" href="#supertokens_python.recipe.emailpassword.syncio.send_email">send_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.send_reset_password_email" href="#supertokens_python.recipe.emailpassword.syncio.send_reset_password_email">send_reset_password_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.sign_in" href="#supertokens_python.recipe.emailpassword.syncio.sign_in">sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.sign_up" href="#supertokens_python.recipe.emailpassword.syncio.sign_up">sign_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.update_email_or_password" href="#supertokens_python.recipe.emailpassword.syncio.update_email_or_password">update_email_or_password</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailpassword.syncio.verify_credentials" href="#supertokens_python.recipe.emailpassword.syncio.verify_credentials">verify_credentials</a></code></li>
 </ul>
 </li>
 </ul>

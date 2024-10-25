@@ -39,10 +39,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from supertokens_python import get_request_from_user_context
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
 from supertokens_python.recipe.passwordless.interfaces import (
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeOkResult,
+    CheckCodeRestartFlowError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeOkResult,
@@ -51,8 +56,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    DeleteUserInfoOkResult,
-    DeleteUserInfoUnknownUserIdError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
     RevokeAllCodesOkResult,
     RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsError,
@@ -65,8 +70,9 @@ from supertokens_python.recipe.passwordless.types import (
     DeviceType,
     EmailTemplateVars,
     SMSTemplateVars,
-    User,
 )
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import RecipeUserId
 
 
 async def create_code(
@@ -74,6 +80,7 @@ async def create_code(
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; CreateCodeOkResult:
     if user_context is None:
@@ -83,7 +90,9 @@ async def create_code(
         phone_number=phone_number,
         user_input_code=user_input_code,
         tenant_id=tenant_id,
+        session=session,
         user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )
 
 
@@ -113,12 +122,14 @@ async def consume_code(
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
     link_code: Union[str, None] = None,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; Union[
     ConsumeCodeOkResult,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeRestartFlowError,
+    LinkingToSessionUserFailedError,
 ]:
     if user_context is None:
         user_context = {}
@@ -128,48 +139,14 @@ async def consume_code(
         device_id=device_id,
         link_code=link_code,
         tenant_id=tenant_id,
-        user_context=user_context,
-    )
-
-
-async def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(
-        user_id=user_id, user_context=user_context
-    )
-
-
-async def get_user_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return (
-        await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_email(
-            email=email,
-            tenant_id=tenant_id,
-            user_context=user_context,
-        )
-    )
-
-
-async def get_user_by_phone_number(
-    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
-        phone_number=phone_number,
-        tenant_id=tenant_id,
+        session=session,
+        should_try_linking_with_session_user=session is not None,
         user_context=user_context,
     )
 
 
 async def update_user(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -178,11 +155,13 @@ async def update_user(
     UpdateUserUnknownUserIdError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserPhoneNumberAlreadyExistsError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
 ]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.update_user(
-        user_id=user_id,
+        recipe_user_id=recipe_user_id,
         email=email,
         phone_number=phone_number,
         user_context=user_context,
@@ -190,22 +169,51 @@ async def update_user(
 
 
 async def delete_email_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(
-        user_id=user_id, user_context=user_context
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
     )
 
 
 async def delete_phone_number_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
-        user_id=user_id, user_context=user_context
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+
+
+async def check_code(
+    tenant_id: str,
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None] = None,
+    device_id: Union[str, None] = None,
+    link_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    CheckCodeOkResult,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeRestartFlowError,
+]:
+    if user_context is None:
+        user_context = {}
+    return await PasswordlessRecipe.get_instance().recipe_implementation.check_code(
+        pre_auth_session_id=pre_auth_session_id,
+        user_input_code=user_input_code,
+        device_id=device_id,
+        link_code=link_code,
+        tenant_id=tenant_id,
+        user_context=user_context,
     )
 
 
@@ -309,6 +317,7 @@ async def signinup(
     tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; ConsumeCodeOkResult:
     if user_context is None:
@@ -318,6 +327,7 @@ async def signinup(
         phone_number=phone_number,
         tenant_id=tenant_id,
         user_context=user_context,
+        session=session,
     )
 
 
@@ -352,8 +362,42 @@ async def send_sms(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.passwordless.asyncio.check_code"><code class="name flex">
+<span>async def <span class="ident">check_code</span></span>(<span>tenant_id: str, pre_auth_session_id: str, user_input_code: Optional[str] = None, device_id: Optional[str] = None, link_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeOkResult">CheckCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeIncorrectUserInputCodeError">CheckCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeExpiredUserInputCodeError">CheckCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeRestartFlowError">CheckCodeRestartFlowError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def check_code(
+    tenant_id: str,
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None] = None,
+    device_id: Union[str, None] = None,
+    link_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    CheckCodeOkResult,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeRestartFlowError,
+]:
+    if user_context is None:
+        user_context = {}
+    return await PasswordlessRecipe.get_instance().recipe_implementation.check_code(
+        pre_auth_session_id=pre_auth_session_id,
+        user_input_code=user_input_code,
+        device_id=device_id,
+        link_code=link_code,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.consume_code"><code class="name flex">
-<span>async def <span class="ident">consume_code</span></span>(<span>tenant_id: str, pre_auth_session_id: str, user_input_code: Optional[str] = None, device_id: Optional[str] = None, link_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
+<span>async def <span class="ident">consume_code</span></span>(<span>tenant_id: str, pre_auth_session_id: str, user_input_code: Optional[str] = None, device_id: Optional[str] = None, link_code: Optional[str] = None, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -367,12 +411,14 @@ async def send_sms(
     user_input_code: Union[str, None] = None,
     device_id: Union[str, None] = None,
     link_code: Union[str, None] = None,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; Union[
     ConsumeCodeOkResult,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeRestartFlowError,
+    LinkingToSessionUserFailedError,
 ]:
     if user_context is None:
         user_context = {}
@@ -382,12 +428,14 @@ async def send_sms(
         device_id=device_id,
         link_code=link_code,
         tenant_id=tenant_id,
+        session=session,
+        should_try_linking_with_session_user=session is not None,
         user_context=user_context,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.create_code"><code class="name flex">
-<span>async def <span class="ident">create_code</span></span>(<span>tenant_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_input_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
+<span>async def <span class="ident">create_code</span></span>(<span>tenant_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_input_code: Optional[str] = None, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -400,6 +448,7 @@ async def send_sms(
     email: Union[None, str] = None,
     phone_number: Union[None, str] = None,
     user_input_code: Union[None, str] = None,
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; CreateCodeOkResult:
     if user_context is None:
@@ -409,7 +458,9 @@ async def send_sms(
         phone_number=phone_number,
         user_input_code=user_input_code,
         tenant_id=tenant_id,
+        session=session,
         user_context=user_context,
+        should_try_linking_with_session_user=session is not None,
     )</code></pre>
 </details>
 </dd>
@@ -470,7 +521,7 @@ async def send_sms(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.delete_email_for_user"><code class="name flex">
-<span>async def <span class="ident">delete_email_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+<span>async def <span class="ident">delete_email_for_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -479,17 +530,19 @@ async def send_sms(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def delete_email_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(
-        user_id=user_id, user_context=user_context
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.delete_phone_number_for_user"><code class="name flex">
-<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -498,74 +551,13 @@ async def send_sms(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def delete_phone_number_for_user(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    recipe_user_id: RecipeUserId,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
-        user_id=user_id, user_context=user_context
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.asyncio.get_user_by_email"><code class="name flex">
-<span>async def <span class="ident">get_user_by_email</span></span>(<span>tenant_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return (
-        await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_email(
-            email=email,
-            tenant_id=tenant_id,
-            user_context=user_context,
-        )
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.asyncio.get_user_by_id"><code class="name flex">
-<span>async def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_id(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(
-        user_id=user_id, user_context=user_context
-    )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.asyncio.get_user_by_phone_number"><code class="name flex">
-<span>async def <span class="ident">get_user_by_phone_number</span></span>(<span>tenant_id: str, phone_number: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_phone_number(
-    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
-        phone_number=phone_number,
-        tenant_id=tenant_id,
+        recipe_user_id=recipe_user_id,
         user_context=user_context,
     )</code></pre>
 </details>
@@ -745,7 +737,7 @@ async def send_sms(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.signinup"><code class="name flex">
-<span>async def <span class="ident">signinup</span></span>(<span>tenant_id: str, email: Optional[str], phone_number: Optional[str], user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
+<span>async def <span class="ident">signinup</span></span>(<span>tenant_id: str, email: Optional[str], phone_number: Optional[str], session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -757,6 +749,7 @@ async def send_sms(
     tenant_id: str,
     email: Union[str, None],
     phone_number: Union[str, None],
+    session: Optional[SessionContainer] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; ConsumeCodeOkResult:
     if user_context is None:
@@ -766,11 +759,12 @@ async def send_sms(
         phone_number=phone_number,
         tenant_id=tenant_id,
         user_context=user_context,
+        session=session,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.update_user"><code class="name flex">
-<span>async def <span class="ident">update_user</span></span>(<span>user_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>]</span>
+<span>async def <span class="ident">update_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.EmailChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberChangeNotAllowedError">PhoneNumberChangeNotAllowedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -779,7 +773,7 @@ async def send_sms(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def update_user(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Union[str, None] = None,
     phone_number: Union[str, None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
@@ -788,11 +782,13 @@ async def send_sms(
     UpdateUserUnknownUserIdError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserPhoneNumberAlreadyExistsError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
 ]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.update_user(
-        user_id=user_id,
+        recipe_user_id=recipe_user_id,
         email=email,
         phone_number=phone_number,
         user_context=user_context,
@@ -817,15 +813,13 @@ async def send_sms(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.asyncio.check_code" href="#supertokens_python.recipe.passwordless.asyncio.check_code">check_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.consume_code" href="#supertokens_python.recipe.passwordless.asyncio.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.create_code" href="#supertokens_python.recipe.passwordless.asyncio.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.create_magic_link" href="#supertokens_python.recipe.passwordless.asyncio.create_magic_link">create_magic_link</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.create_new_code_for_device" href="#supertokens_python.recipe.passwordless.asyncio.create_new_code_for_device">create_new_code_for_device</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.delete_email_for_user" href="#supertokens_python.recipe.passwordless.asyncio.delete_email_for_user">delete_email_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.delete_phone_number_for_user" href="#supertokens_python.recipe.passwordless.asyncio.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.asyncio.get_user_by_email" href="#supertokens_python.recipe.passwordless.asyncio.get_user_by_email">get_user_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.asyncio.get_user_by_id" href="#supertokens_python.recipe.passwordless.asyncio.get_user_by_id">get_user_by_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.asyncio.get_user_by_phone_number" href="#supertokens_python.recipe.passwordless.asyncio.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.list_codes_by_device_id" href="#supertokens_python.recipe.passwordless.asyncio.list_codes_by_device_id">list_codes_by_device_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.list_codes_by_email" href="#supertokens_python.recipe.passwordless.asyncio.list_codes_by_email">list_codes_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.asyncio.list_codes_by_phone_number" href="#supertokens_python.recipe.passwordless.asyncio.list_codes_by_phone_number">list_codes_by_phone_number</a></code></li>

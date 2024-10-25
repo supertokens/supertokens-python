@@ -43,9 +43,6 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
-from typing_extensions import Literal
-
-from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
@@ -57,9 +54,9 @@ if TYPE_CHECKING:
         APIOptions,
         APIInterface,
     )
-    from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
+from supertokens_python.asyncio import get_users_newest_first, get_users_oldest_first
 
 
 async def handle_users_get_api(
@@ -67,38 +64,40 @@ async def handle_users_get_api(
     tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
-) -&gt; APIResponse:
+) -&gt; DashboardUsersGetResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param(&#34;limit&#34;)
     if limit is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;limit&#39;&#34;)
 
-    time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;] = api_options.request.get_query_param(  # type: ignore
-        &#34;timeJoinedOrder&#34;, &#34;DESC&#34;
-    )
+    time_joined_order = api_options.request.get_query_param(&#34;timeJoinedOrder&#34;, &#34;DESC&#34;)
     if time_joined_order not in [&#34;ASC&#34;, &#34;DESC&#34;]:
-        raise_bad_input_exception(&#34;Invalid value recieved for &#39;timeJoinedOrder&#39;&#34;)
+        raise_bad_input_exception(&#34;Invalid value received for &#39;timeJoinedOrder&#39;&#34;)
 
     pagination_token = api_options.request.get_query_param(&#34;paginationToken&#34;)
+    query = get_search_params_from_url(api_options.request.get_original_url())
 
-    users_response = await Supertokens.get_instance().get_users(
+    users_response = await (
+        get_users_newest_first
+        if time_joined_order == &#34;DESC&#34;
+        else get_users_oldest_first
+    )(
         tenant_id,
-        time_joined_order=time_joined_order,
         limit=int(limit),
         pagination_token=pagination_token,
-        include_recipe_ids=None,
-        query=api_options.request.get_query_params(),
+        query=query,
         user_context=user_context,
     )
-
-    # user metadata bulk fetch with batches:
 
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
+        users_with_metadata: List[UserWithMetadata] = [
+            UserWithMetadata().from_user(user) for user in users_response.users
+        ]
         return DashboardUsersGetResponse(
-            users_response.users, users_response.next_pagination_token
+            users_with_metadata, users_response.next_pagination_token
         )
 
     users_with_metadata: List[UserWithMetadata] = [
@@ -108,15 +107,13 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
         user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id, user_context)
+        user_metadata = await get_user_metadata(user.id)
         first_name = user_metadata.metadata.get(&#34;first_name&#34;)
         last_name = user_metadata.metadata.get(&#34;last_name&#34;)
 
-        # None becomes null which is acceptable for the dashboard.
         users_with_metadata[user_idx].first_name = first_name
         users_with_metadata[user_idx].last_name = last_name
 
-    # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
         metadata_fetch_awaitables.append(get_user_metadata_and_update_user(i))
 
@@ -136,13 +133,25 @@ async def handle_users_get_api(
             )
         ]
         await asyncio.gather(*promises_to_call)
-
         promise_arr_start_position += batch_size
 
     return DashboardUsersGetResponse(
         users_with_metadata,
         users_response.next_pagination_token,
-    )</code></pre>
+    )
+
+
+def get_search_params_from_url(path: str) -&gt; Dict[str, str]:
+    from urllib.parse import urlparse, parse_qs
+
+    url_object = urlparse(&#34;https://example.com&#34; + path)
+    params = parse_qs(url_object.query)
+    search_query = {
+        key: value[0]
+        for key, value in params.items()
+        if key not in [&#34;limit&#34;, &#34;timeJoinedOrder&#34;, &#34;paginationToken&#34;]
+    }
+    return search_query</code></pre>
 </details>
 </section>
 <section>
@@ -152,8 +161,30 @@ async def handle_users_get_api(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.dashboard.api.users_get.get_search_params_from_url"><code class="name flex">
+<span>def <span class="ident">get_search_params_from_url</span></span>(<span>path: str) ‑> Dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_search_params_from_url(path: str) -&gt; Dict[str, str]:
+    from urllib.parse import urlparse, parse_qs
+
+    url_object = urlparse(&#34;https://example.com&#34; + path)
+    params = parse_qs(url_object.query)
+    search_query = {
+        key: value[0]
+        for key, value in params.items()
+        if key not in [&#34;limit&#34;, &#34;timeJoinedOrder&#34;, &#34;paginationToken&#34;]
+    }
+    return search_query</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api"><code class="name flex">
-<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, tenant_id: str, api_options: APIOptions, user_context: Dict[str, Any]) ‑> APIResponse</span>
+<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, tenant_id: str, api_options: APIOptions, user_context: Dict[str, Any]) ‑> DashboardUsersGetResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -166,38 +197,40 @@ async def handle_users_get_api(
     tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
-) -&gt; APIResponse:
+) -&gt; DashboardUsersGetResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param(&#34;limit&#34;)
     if limit is None:
         raise_bad_input_exception(&#34;Missing required parameter &#39;limit&#39;&#34;)
 
-    time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;] = api_options.request.get_query_param(  # type: ignore
-        &#34;timeJoinedOrder&#34;, &#34;DESC&#34;
-    )
+    time_joined_order = api_options.request.get_query_param(&#34;timeJoinedOrder&#34;, &#34;DESC&#34;)
     if time_joined_order not in [&#34;ASC&#34;, &#34;DESC&#34;]:
-        raise_bad_input_exception(&#34;Invalid value recieved for &#39;timeJoinedOrder&#39;&#34;)
+        raise_bad_input_exception(&#34;Invalid value received for &#39;timeJoinedOrder&#39;&#34;)
 
     pagination_token = api_options.request.get_query_param(&#34;paginationToken&#34;)
+    query = get_search_params_from_url(api_options.request.get_original_url())
 
-    users_response = await Supertokens.get_instance().get_users(
+    users_response = await (
+        get_users_newest_first
+        if time_joined_order == &#34;DESC&#34;
+        else get_users_oldest_first
+    )(
         tenant_id,
-        time_joined_order=time_joined_order,
         limit=int(limit),
         pagination_token=pagination_token,
-        include_recipe_ids=None,
-        query=api_options.request.get_query_params(),
+        query=query,
         user_context=user_context,
     )
-
-    # user metadata bulk fetch with batches:
 
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
+        users_with_metadata: List[UserWithMetadata] = [
+            UserWithMetadata().from_user(user) for user in users_response.users
+        ]
         return DashboardUsersGetResponse(
-            users_response.users, users_response.next_pagination_token
+            users_with_metadata, users_response.next_pagination_token
         )
 
     users_with_metadata: List[UserWithMetadata] = [
@@ -207,15 +240,13 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
         user = users_response.users[user_idx]
-        user_metadata = await get_user_metadata(user.user_id, user_context)
+        user_metadata = await get_user_metadata(user.id)
         first_name = user_metadata.metadata.get(&#34;first_name&#34;)
         last_name = user_metadata.metadata.get(&#34;last_name&#34;)
 
-        # None becomes null which is acceptable for the dashboard.
         users_with_metadata[user_idx].first_name = first_name
         users_with_metadata[user_idx].last_name = last_name
 
-    # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
         metadata_fetch_awaitables.append(get_user_metadata_and_update_user(i))
 
@@ -235,7 +266,6 @@ async def handle_users_get_api(
             )
         ]
         await asyncio.gather(*promises_to_call)
-
         promise_arr_start_position += batch_size
 
     return DashboardUsersGetResponse(
@@ -262,6 +292,7 @@ async def handle_users_get_api(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.api.users_get.get_search_params_from_url" href="#supertokens_python.recipe.dashboard.api.users_get.get_search_params_from_url">get_search_params_from_url</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api" href="#supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api">handle_users_get_api</a></code></li>
 </ul>
 </li>

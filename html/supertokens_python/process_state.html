@@ -40,22 +40,27 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from os import environ
-from typing import List
+from typing import List, Optional
 from enum import Enum
 
 
-class AllowedProcessStates(Enum):
-    CALLING_SERVICE_IN_VERIFY = 1
-    CALLING_SERVICE_IN_GET_HANDSHAKE_INFO = 2
-    CALLING_SERVICE_IN_GET_API_VERSION = 3
-    CALLING_SERVICE_IN_REQUEST_HELPER = 4
+class PROCESS_STATE(Enum):
+    CALLING_SERVICE_IN_VERIFY = 0
+    CALLING_SERVICE_IN_GET_API_VERSION = 1
+    CALLING_SERVICE_IN_REQUEST_HELPER = 2
+    MULTI_JWKS_VALIDATION = 3
+    IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS = 4
+    IS_SIGN_UP_ALLOWED_CALLED = 5
+    IS_SIGN_IN_ALLOWED_CALLED = 6
+    IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED = 7
+    ADDING_NO_CACHE_HEADER_IN_FETCH = 8
 
 
 class ProcessState:
     __instance = None
 
     def __init__(self):
-        self.history: List[AllowedProcessStates] = []
+        self.history: List[PROCESS_STATE] = []
 
     @staticmethod
     def get_instance():
@@ -63,12 +68,40 @@ class ProcessState:
             ProcessState.__instance = ProcessState()
         return ProcessState.__instance
 
-    def add_state(self, state: AllowedProcessStates):
+    def add_state(self, state: PROCESS_STATE):
         if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
             self.history.append(state)
 
     def reset(self):
-        self.history = []</code></pre>
+        self.history = []
+
+    def get_event_by_last_event_by_name(
+        self, state: PROCESS_STATE
+    ) -&gt; Optional[PROCESS_STATE]:
+        for event in reversed(self.history):
+            if event == state:
+                return event
+        return None
+
+    def wait_for_event(
+        self, state: PROCESS_STATE, time_in_ms: int = 7000
+    ) -&gt; Optional[PROCESS_STATE]:
+        from time import time, sleep
+
+        start_time = time()
+
+        def try_and_get() -&gt; Optional[PROCESS_STATE]:
+            result = self.get_event_by_last_event_by_name(state)
+            if result is None:
+                if (time() - start_time) * 1000 &gt; time_in_ms:
+                    return None
+                else:
+                    sleep(1)
+                    return try_and_get()
+            else:
+                return result
+
+        return try_and_get()</code></pre>
 </details>
 </section>
 <section>
@@ -80,8 +113,8 @@ class ProcessState:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.process_state.AllowedProcessStates"><code class="flex name class">
-<span>class <span class="ident">AllowedProcessStates</span></span>
+<dt id="supertokens_python.process_state.PROCESS_STATE"><code class="flex name class">
+<span>class <span class="ident">PROCESS_STATE</span></span>
 <span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
 </code></dt>
 <dd>
@@ -90,11 +123,16 @@ class ProcessState:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class AllowedProcessStates(Enum):
-    CALLING_SERVICE_IN_VERIFY = 1
-    CALLING_SERVICE_IN_GET_HANDSHAKE_INFO = 2
-    CALLING_SERVICE_IN_GET_API_VERSION = 3
-    CALLING_SERVICE_IN_REQUEST_HELPER = 4</code></pre>
+<pre><code class="python">class PROCESS_STATE(Enum):
+    CALLING_SERVICE_IN_VERIFY = 0
+    CALLING_SERVICE_IN_GET_API_VERSION = 1
+    CALLING_SERVICE_IN_REQUEST_HELPER = 2
+    MULTI_JWKS_VALIDATION = 3
+    IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS = 4
+    IS_SIGN_UP_ALLOWED_CALLED = 5
+    IS_SIGN_IN_ALLOWED_CALLED = 6
+    IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED = 7
+    ADDING_NO_CACHE_HEADER_IN_FETCH = 8</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -102,19 +140,39 @@ class ProcessState:
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION"><code class="name">var <span class="ident">CALLING_SERVICE_IN_GET_API_VERSION</span></code></dt>
+<dt id="supertokens_python.process_state.PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH"><code class="name">var <span class="ident">ADDING_NO_CACHE_HEADER_IN_FETCH</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO"><code class="name">var <span class="ident">CALLING_SERVICE_IN_GET_HANDSHAKE_INFO</span></code></dt>
+<dt id="supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION"><code class="name">var <span class="ident">CALLING_SERVICE_IN_GET_API_VERSION</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER"><code class="name">var <span class="ident">CALLING_SERVICE_IN_REQUEST_HELPER</span></code></dt>
+<dt id="supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER"><code class="name">var <span class="ident">CALLING_SERVICE_IN_REQUEST_HELPER</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_VERIFY"><code class="name">var <span class="ident">CALLING_SERVICE_IN_VERIFY</span></code></dt>
+<dt id="supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_VERIFY"><code class="name">var <span class="ident">CALLING_SERVICE_IN_VERIFY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED"><code class="name">var <span class="ident">IS_SIGN_IN_ALLOWED_CALLED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED"><code class="name">var <span class="ident">IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS"><code class="name">var <span class="ident">IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED"><code class="name">var <span class="ident">IS_SIGN_UP_ALLOWED_CALLED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.process_state.PROCESS_STATE.MULTI_JWKS_VALIDATION"><code class="name">var <span class="ident">MULTI_JWKS_VALIDATION</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -133,7 +191,7 @@ class ProcessState:
     __instance = None
 
     def __init__(self):
-        self.history: List[AllowedProcessStates] = []
+        self.history: List[PROCESS_STATE] = []
 
     @staticmethod
     def get_instance():
@@ -141,12 +199,40 @@ class ProcessState:
             ProcessState.__instance = ProcessState()
         return ProcessState.__instance
 
-    def add_state(self, state: AllowedProcessStates):
+    def add_state(self, state: PROCESS_STATE):
         if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
             self.history.append(state)
 
     def reset(self):
-        self.history = []</code></pre>
+        self.history = []
+
+    def get_event_by_last_event_by_name(
+        self, state: PROCESS_STATE
+    ) -&gt; Optional[PROCESS_STATE]:
+        for event in reversed(self.history):
+            if event == state:
+                return event
+        return None
+
+    def wait_for_event(
+        self, state: PROCESS_STATE, time_in_ms: int = 7000
+    ) -&gt; Optional[PROCESS_STATE]:
+        from time import time, sleep
+
+        start_time = time()
+
+        def try_and_get() -&gt; Optional[PROCESS_STATE]:
+            result = self.get_event_by_last_event_by_name(state)
+            if result is None:
+                if (time() - start_time) * 1000 &gt; time_in_ms:
+                    return None
+                else:
+                    sleep(1)
+                    return try_and_get()
+            else:
+                return result
+
+        return try_and_get()</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -170,7 +256,7 @@ def get_instance():
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.process_state.ProcessState.add_state"><code class="name flex">
-<span>def <span class="ident">add_state</span></span>(<span>self, state: <a title="supertokens_python.process_state.AllowedProcessStates" href="#supertokens_python.process_state.AllowedProcessStates">AllowedProcessStates</a>)</span>
+<span>def <span class="ident">add_state</span></span>(<span>self, state: <a title="supertokens_python.process_state.PROCESS_STATE" href="#supertokens_python.process_state.PROCESS_STATE">PROCESS_STATE</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -178,9 +264,27 @@ def get_instance():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_state(self, state: AllowedProcessStates):
+<pre><code class="python">def add_state(self, state: PROCESS_STATE):
     if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
         self.history.append(state)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.process_state.ProcessState.get_event_by_last_event_by_name"><code class="name flex">
+<span>def <span class="ident">get_event_by_last_event_by_name</span></span>(<span>self, state: <a title="supertokens_python.process_state.PROCESS_STATE" href="#supertokens_python.process_state.PROCESS_STATE">PROCESS_STATE</a>) ‑> Optional[<a title="supertokens_python.process_state.PROCESS_STATE" href="#supertokens_python.process_state.PROCESS_STATE">PROCESS_STATE</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_event_by_last_event_by_name(
+    self, state: PROCESS_STATE
+) -&gt; Optional[PROCESS_STATE]:
+    for event in reversed(self.history):
+        if event == state:
+            return event
+    return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.process_state.ProcessState.reset"><code class="name flex">
@@ -194,6 +298,36 @@ def get_instance():
 </summary>
 <pre><code class="python">def reset(self):
     self.history = []</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.process_state.ProcessState.wait_for_event"><code class="name flex">
+<span>def <span class="ident">wait_for_event</span></span>(<span>self, state: <a title="supertokens_python.process_state.PROCESS_STATE" href="#supertokens_python.process_state.PROCESS_STATE">PROCESS_STATE</a>, time_in_ms: int = 7000) ‑> Optional[<a title="supertokens_python.process_state.PROCESS_STATE" href="#supertokens_python.process_state.PROCESS_STATE">PROCESS_STATE</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wait_for_event(
+    self, state: PROCESS_STATE, time_in_ms: int = 7000
+) -&gt; Optional[PROCESS_STATE]:
+    from time import time, sleep
+
+    start_time = time()
+
+    def try_and_get() -&gt; Optional[PROCESS_STATE]:
+        result = self.get_event_by_last_event_by_name(state)
+        if result is None:
+            if (time() - start_time) * 1000 &gt; time_in_ms:
+                return None
+            else:
+                sleep(1)
+                return try_and_get()
+        else:
+            return result
+
+    return try_and_get()</code></pre>
 </details>
 </dd>
 </dl>
@@ -215,20 +349,27 @@ def get_instance():
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.process_state.AllowedProcessStates" href="#supertokens_python.process_state.AllowedProcessStates">AllowedProcessStates</a></code></h4>
+<h4><code><a title="supertokens_python.process_state.PROCESS_STATE" href="#supertokens_python.process_state.PROCESS_STATE">PROCESS_STATE</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION" href="#supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION">CALLING_SERVICE_IN_GET_API_VERSION</a></code></li>
-<li><code><a title="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO" href="#supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO">CALLING_SERVICE_IN_GET_HANDSHAKE_INFO</a></code></li>
-<li><code><a title="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER" href="#supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER">CALLING_SERVICE_IN_REQUEST_HELPER</a></code></li>
-<li><code><a title="supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_VERIFY" href="#supertokens_python.process_state.AllowedProcessStates.CALLING_SERVICE_IN_VERIFY">CALLING_SERVICE_IN_VERIFY</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH" href="#supertokens_python.process_state.PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH">ADDING_NO_CACHE_HEADER_IN_FETCH</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION" href="#supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION">CALLING_SERVICE_IN_GET_API_VERSION</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER" href="#supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER">CALLING_SERVICE_IN_REQUEST_HELPER</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_VERIFY" href="#supertokens_python.process_state.PROCESS_STATE.CALLING_SERVICE_IN_VERIFY">CALLING_SERVICE_IN_VERIFY</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED" href="#supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED">IS_SIGN_IN_ALLOWED_CALLED</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED" href="#supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED">IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS" href="#supertokens_python.process_state.PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS">IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED" href="#supertokens_python.process_state.PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED">IS_SIGN_UP_ALLOWED_CALLED</a></code></li>
+<li><code><a title="supertokens_python.process_state.PROCESS_STATE.MULTI_JWKS_VALIDATION" href="#supertokens_python.process_state.PROCESS_STATE.MULTI_JWKS_VALIDATION">MULTI_JWKS_VALIDATION</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.process_state.ProcessState" href="#supertokens_python.process_state.ProcessState">ProcessState</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.process_state.ProcessState.add_state" href="#supertokens_python.process_state.ProcessState.add_state">add_state</a></code></li>
+<li><code><a title="supertokens_python.process_state.ProcessState.get_event_by_last_event_by_name" href="#supertokens_python.process_state.ProcessState.get_event_by_last_event_by_name">get_event_by_last_event_by_name</a></code></li>
 <li><code><a title="supertokens_python.process_state.ProcessState.get_instance" href="#supertokens_python.process_state.ProcessState.get_instance">get_instance</a></code></li>
 <li><code><a title="supertokens_python.process_state.ProcessState.reset" href="#supertokens_python.process_state.ProcessState.reset">reset</a></code></li>
+<li><code><a title="supertokens_python.process_state.ProcessState.wait_for_event" href="#supertokens_python.process_state.ProcessState.wait_for_event">wait_for_event</a></code></li>
 </ul>
 </li>
 </ul>

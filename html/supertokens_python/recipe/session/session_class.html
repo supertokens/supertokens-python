@@ -45,6 +45,7 @@ from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
+from supertokens_python.types import RecipeUserId
 from .jwt import parse_jwt_without_signature_verification
 from .utils import TokenTransferMethod
 
@@ -167,6 +168,11 @@ class Session(SessionContainer):
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
 
+    def get_recipe_user_id(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; RecipeUserId:
+        return self.recipe_user_id
+
     def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.tenant_id
 
@@ -185,9 +191,9 @@ class Session(SessionContainer):
         return {
             &#34;accessToken&#34;: self.access_token,
             &#34;accessAndFrontTokenUpdated&#34;: self.access_token_updated,
-            &#34;refreshToken&#34;: None
-            if self.refresh_token is None
-            else self.refresh_token.token,
+            &#34;refreshToken&#34;: (
+                None if self.refresh_token is None else self.refresh_token.token
+            ),
             &#34;frontToken&#34;: self.front_token,
             &#34;antiCsrfToken&#34;: self.anti_csrf_token,
         }
@@ -232,6 +238,7 @@ class Session(SessionContainer):
 
         validate_claim_res = await self.recipe_implementation.validate_claims(
             self.get_user_id(user_context),
+            self.get_recipe_user_id(user_context),
             self.get_access_token_payload(user_context),
             claim_validators,
             user_context,
@@ -258,7 +265,11 @@ class Session(SessionContainer):
             user_context = {}
 
         update = await claim.build(
-            self.get_user_id(), self.get_tenant_id(), user_context
+            self.get_user_id(user_context=user_context),
+            self.get_recipe_user_id(user_context=user_context),
+            self.get_tenant_id(user_context=user_context),
+            self.get_access_token_payload(user_context=user_context),
+            user_context,
         )
         return await self.merge_into_access_token_payload(update, user_context)
 
@@ -374,7 +385,7 @@ class Session(SessionContainer):
 <dl>
 <dt id="supertokens_python.recipe.session.session_class.Session"><code class="flex name class">
 <span>class <span class="ident">Session</span></span>
-<span>(</span><span>recipe_implementation: RecipeInterface, config: SessionConfig, access_token: str, front_token: str, refresh_token: Optional[TokenInfo], anti_csrf_token: Optional[str], session_handle: str, user_id: str, user_data_in_access_token: Optional[Dict[str, Any]], req_res_info: Optional[ReqResInfo], access_token_updated: bool, tenant_id: str)</span>
+<span>(</span><span>recipe_implementation: RecipeInterface, config: SessionConfig, access_token: str, front_token: str, refresh_token: Optional[TokenInfo], anti_csrf_token: Optional[str], session_handle: str, user_id: str, recipe_user_id: RecipeUserId, user_data_in_access_token: Optional[Dict[str, Any]], req_res_info: Optional[ReqResInfo], access_token_updated: bool, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -481,6 +492,11 @@ inheritance.</p></div>
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
 
+    def get_recipe_user_id(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; RecipeUserId:
+        return self.recipe_user_id
+
     def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.tenant_id
 
@@ -499,9 +515,9 @@ inheritance.</p></div>
         return {
             &#34;accessToken&#34;: self.access_token,
             &#34;accessAndFrontTokenUpdated&#34;: self.access_token_updated,
-            &#34;refreshToken&#34;: None
-            if self.refresh_token is None
-            else self.refresh_token.token,
+            &#34;refreshToken&#34;: (
+                None if self.refresh_token is None else self.refresh_token.token
+            ),
             &#34;frontToken&#34;: self.front_token,
             &#34;antiCsrfToken&#34;: self.anti_csrf_token,
         }
@@ -546,6 +562,7 @@ inheritance.</p></div>
 
         validate_claim_res = await self.recipe_implementation.validate_claims(
             self.get_user_id(user_context),
+            self.get_recipe_user_id(user_context),
             self.get_access_token_payload(user_context),
             claim_validators,
             user_context,
@@ -572,7 +589,11 @@ inheritance.</p></div>
             user_context = {}
 
         update = await claim.build(
-            self.get_user_id(), self.get_tenant_id(), user_context
+            self.get_user_id(user_context=user_context),
+            self.get_recipe_user_id(user_context=user_context),
+            self.get_tenant_id(user_context=user_context),
+            self.get_access_token_payload(user_context=user_context),
+            user_context,
         )
         return await self.merge_into_access_token_payload(update, user_context)
 
@@ -702,6 +723,7 @@ inheritance.</p></div>
 
     validate_claim_res = await self.recipe_implementation.validate_claims(
         self.get_user_id(user_context),
+        self.get_recipe_user_id(user_context),
         self.get_access_token_payload(user_context),
         claim_validators,
         user_context,
@@ -723,7 +745,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.attach_to_request_response"><code class="name flex">
-<span>async def <span class="ident">attach_to_request_response</span></span>(<span>self, request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, transfer_method: typing_extensions.Literal['cookie', 'header'], user_context: Optional[Dict[str, Any]]) ‑> None</span>
+<span>async def <span class="ident">attach_to_request_response</span></span>(<span>self, request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, transfer_method: Literal['cookie', 'header'], user_context: Optional[Dict[str, Any]]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -786,7 +808,11 @@ inheritance.</p></div>
         user_context = {}
 
     update = await claim.build(
-        self.get_user_id(), self.get_tenant_id(), user_context
+        self.get_user_id(user_context=user_context),
+        self.get_recipe_user_id(user_context=user_context),
+        self.get_tenant_id(user_context=user_context),
+        self.get_access_token_payload(user_context=user_context),
+        user_context,
     )
     return await self.merge_into_access_token_payload(update, user_context)</code></pre>
 </details>
@@ -832,9 +858,9 @@ inheritance.</p></div>
     return {
         &#34;accessToken&#34;: self.access_token,
         &#34;accessAndFrontTokenUpdated&#34;: self.access_token_updated,
-        &#34;refreshToken&#34;: None
-        if self.refresh_token is None
-        else self.refresh_token.token,
+        &#34;refreshToken&#34;: (
+            None if self.refresh_token is None else self.refresh_token.token
+        ),
         &#34;frontToken&#34;: self.front_token,
         &#34;antiCsrfToken&#34;: self.anti_csrf_token,
     }</code></pre>
@@ -895,6 +921,21 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
     return self.session_handle</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.session_class.Session.get_recipe_user_id"><code class="name flex">
+<span>def <span class="ident">get_recipe_user_id</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.types.RecipeUserId" href="../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_recipe_user_id(
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; RecipeUserId:
+    return self.recipe_user_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_session_data_from_database"><code class="name flex">
@@ -1185,6 +1226,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_claim_value" href="#supertokens_python.recipe.session.session_class.Session.get_claim_value">get_claim_value</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_expiry" href="#supertokens_python.recipe.session.session_class.Session.get_expiry">get_expiry</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_handle" href="#supertokens_python.recipe.session.session_class.Session.get_handle">get_handle</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_class.Session.get_recipe_user_id" href="#supertokens_python.recipe.session.session_class.Session.get_recipe_user_id">get_recipe_user_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_session_data_from_database" href="#supertokens_python.recipe.session.session_class.Session.get_session_data_from_database">get_session_data_from_database</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_tenant_id" href="#supertokens_python.recipe.session.session_class.Session.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_time_created" href="#supertokens_python.recipe.session.session_class.Session.get_time_created">get_time_created</a></code></li>

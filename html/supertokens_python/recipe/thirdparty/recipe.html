@@ -51,7 +51,6 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 from .api.implementation import APIImplementation
 from .interfaces import APIInterface, APIOptions, RecipeInterface
 from .recipe_implementation import RecipeImplementation
-from ..emailverification.interfaces import GetEmailForUserIdOkResult, UnknownUserIdError
 from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
@@ -61,7 +60,6 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
 from .api import (
@@ -109,13 +107,10 @@ class ThirdPartyRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
-
             mt_recipe = MultitenancyRecipe.get_instance_optional()
             if mt_recipe:
                 mt_recipe.static_third_party_providers = self.providers
+                mt_recipe.all_available_first_factors.append(&#34;thirdparty&#34;)
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -232,16 +227,7 @@ class ThirdPartyRecipe(RecipeModule):
             raise_general_exception(&#34;calling testing function in non testing env&#34;)
         ThirdPartyRecipe.__instance = None
 
-    # instance functions below...............
-
-    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is not None:
-            return GetEmailForUserIdOkResult(user_info.email)
-
-        return UnknownUserIdError()</code></pre>
+    # instance functions below...............</code></pre>
 </details>
 </section>
 <section>
@@ -298,13 +284,10 @@ inheritance.</p></div>
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
-
             mt_recipe = MultitenancyRecipe.get_instance_optional()
             if mt_recipe:
                 mt_recipe.static_third_party_providers = self.providers
+                mt_recipe.all_available_first_factors.append(&#34;thirdparty&#34;)
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -421,16 +404,7 @@ inheritance.</p></div>
             raise_general_exception(&#34;calling testing function in non testing env&#34;)
         ThirdPartyRecipe.__instance = None
 
-    # instance functions below...............
-
-    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is not None:
-            return GetEmailForUserIdOkResult(user_info.email)
-
-        return UnknownUserIdError()</code></pre>
+    # instance functions below...............</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -566,25 +540,6 @@ def reset():
     ]</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_email_for_user_id"><code class="name flex">
-<span>async def <span class="ident">get_email_for_user_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any])</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
-    user_info = await self.recipe_implementation.get_user_by_id(
-        user_id, user_context
-    )
-    if user_info is not None:
-        return GetEmailForUserIdOkResult(user_info.email)
-
-    return UnknownUserIdError()</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_api_request"><code class="name flex">
 <span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
@@ -688,7 +643,6 @@ def reset():
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_all_cors_headers" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_apis_handled" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_apis_handled">get_apis_handled</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_email_for_user_id" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_email_for_user_id">get_email_for_user_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_instance" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_instance">get_instance</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_tenant_id" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_api_request" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_api_request">handle_api_request</a></code></li>

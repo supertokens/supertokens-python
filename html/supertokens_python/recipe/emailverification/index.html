@@ -71,13 +71,13 @@ from .utils import MODE_TYPE, OverrideConfig
 def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
-        get_email_for_user_id,
+        get_email_for_recipe_user_id,
         override,
     )</code></pre>
 </details>
@@ -98,10 +98,6 @@ def init(
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.emailverification.emaildelivery" href="emaildelivery/index.html">supertokens_python.recipe.emailverification.emaildelivery</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.emailverification.ev_claim_validators" href="ev_claim_validators.html">supertokens_python.recipe.emailverification.ev_claim_validators</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -141,7 +137,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[OverrideConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[OverrideConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -152,13 +148,13 @@ def init(
 <pre><code class="python">def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
-        get_email_for_user_id,
+        get_email_for_recipe_user_id,
         override,
     )</code></pre>
 </details>
@@ -185,7 +181,6 @@ def init(
 <li><code><a title="supertokens_python.recipe.emailverification.asyncio" href="asyncio/index.html">supertokens_python.recipe.emailverification.asyncio</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.constants" href="constants.html">supertokens_python.recipe.emailverification.constants</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.emaildelivery" href="emaildelivery/index.html">supertokens_python.recipe.emailverification.emaildelivery</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailverification.ev_claim_validators" href="ev_claim_validators.html">supertokens_python.recipe.emailverification.ev_claim_validators</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.exceptions" href="exceptions.html">supertokens_python.recipe.emailverification.exceptions</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.interfaces" href="interfaces.html">supertokens_python.recipe.emailverification.interfaces</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.recipe" href="recipe.html">supertokens_python.recipe.emailverification.recipe</a></code></li>

@@ -39,9 +39,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Callable, Dict, List, Union, Optional
+from __future__ import annotations
+
+from typing import Any, Callable, Dict, Union, Optional, TYPE_CHECKING
 
 from supertokens_python.framework.request import BaseRequest
+
+if TYPE_CHECKING:
+    from supertokens_python.types import User
 
 
 class ThirdPartyInfo:
@@ -56,6 +61,9 @@ class ThirdPartyInfo:
             and self.id == other.id
         )
 
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;userId&#34;: self.user_id, &#34;id&#34;: self.id}
+
 
 class RawUserInfoFromProvider:
     def __init__(
@@ -66,37 +74,20 @@ class RawUserInfoFromProvider:
         self.from_id_token_payload = from_id_token_payload
         self.from_user_info_api = from_user_info_api
 
-
-class User:
-    def __init__(
-        self,
-        user_id: str,
-        email: str,
-        time_joined: int,
-        tenant_ids: List[str],
-        third_party_info: ThirdPartyInfo,
-    ):
-        self.user_id: str = user_id
-        self.email: str = email
-        self.time_joined: int = time_joined
-        self.tenant_ids = tenant_ids
-        self.third_party_info: ThirdPartyInfo = third_party_info
-
-    def __eq__(self, other: object) -&gt; bool:
-        return (
-            isinstance(other, self.__class__)
-            and self.user_id == other.user_id
-            and self.email == other.email
-            and self.time_joined == other.time_joined
-            and self.tenant_ids == other.tenant_ids
-            and self.third_party_info == other.third_party_info
-        )
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;fromIdTokenPayload&#34;: self.from_id_token_payload,
+            &#34;fromUserInfoApi&#34;: self.from_user_info_api,
+        }
 
 
 class UserInfoEmail:
     def __init__(self, email: str, is_verified: bool):
         self.id: str = email
         self.is_verified: bool = is_verified
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;id&#34;: self.id, &#34;isVerified&#34;: self.is_verified}
 
 
 class UserInfo:
@@ -111,6 +102,13 @@ class UserInfo:
         self.raw_user_info_from_provider = (
             raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
         )
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;thirdPartyUserId&#34;: self.third_party_user_id,
+            &#34;email&#34;: self.email.to_json() if self.email is not None else None,
+            &#34;rawUserInfoFromProvider&#34;: self.raw_user_info_from_provider.to_json(),
+        }
 
 
 class AccessTokenAPI:
@@ -131,12 +129,6 @@ class SignInUpResponse:
     def __init__(self, user: User, is_new_user: bool):
         self.user = user
         self.is_new_user = is_new_user
-
-
-class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token
 
 
 class ThirdPartyIngredients:
@@ -170,7 +162,7 @@ class ThirdPartyIngredients:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI"><code class="flex name class">
 <span>class <span class="ident">AuthorisationRedirectAPI</span></span>
-<span>(</span><span>url: str, params: Dict[str, Union[Callable[[<a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>], str], str]])</span>
+<span>(</span><span>url: str, params: Dict[str, Union[Callable[[BaseRequest], str], str]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -203,12 +195,37 @@ class ThirdPartyIngredients:
         from_user_info_api: Optional[Dict[str, Any]],
     ):
         self.from_id_token_payload = from_id_token_payload
-        self.from_user_info_api = from_user_info_api</code></pre>
+        self.from_user_info_api = from_user_info_api
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;fromIdTokenPayload&#34;: self.from_id_token_payload,
+            &#34;fromUserInfoApi&#34;: self.from_user_info_api,
+        }</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;fromIdTokenPayload&#34;: self.from_id_token_payload,
+        &#34;fromUserInfoApi&#34;: self.from_user_info_api,
+    }</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.SignInUpResponse"><code class="flex name class">
 <span>class <span class="ident">SignInUpResponse</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.thirdparty.types.User" href="#supertokens_python.recipe.thirdparty.types.User">User</a>, is_new_user: bool)</span>
+<span>(</span><span>user: User, is_new_user: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -242,8 +259,27 @@ class ThirdPartyIngredients:
             isinstance(other, self.__class__)
             and self.user_id == other.user_id
             and self.id == other.id
-        )</code></pre>
+        )
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;userId&#34;: self.user_id, &#34;id&#34;: self.id}</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;userId&#34;: self.user_id, &#34;id&#34;: self.id}</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyIngredients</span></span>
@@ -258,45 +294,9 @@ class ThirdPartyIngredients:
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.types.User"><code class="flex name class">
-<span>class <span class="ident">User</span></span>
-<span>(</span><span>user_id: str, email: str, time_joined: int, tenant_ids: List[str], third_party_info: <a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class User:
-    def __init__(
-        self,
-        user_id: str,
-        email: str,
-        time_joined: int,
-        tenant_ids: List[str],
-        third_party_info: ThirdPartyInfo,
-    ):
-        self.user_id: str = user_id
-        self.email: str = email
-        self.time_joined: int = time_joined
-        self.tenant_ids = tenant_ids
-        self.third_party_info: ThirdPartyInfo = third_party_info
-
-    def __eq__(self, other: object) -&gt; bool:
-        return (
-            isinstance(other, self.__class__)
-            and self.user_id == other.user_id
-            and self.email == other.email
-            and self.time_joined == other.time_joined
-            and self.tenant_ids == other.tenant_ids
-            and self.third_party_info == other.third_party_info
-        )</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdparty.types.UserInfo"><code class="flex name class">
 <span>class <span class="ident">UserInfo</span></span>
-<span>(</span><span>third_party_user_id: str, email: Optional[<a title="supertokens_python.recipe.thirdparty.types.UserInfoEmail" href="#supertokens_python.recipe.thirdparty.types.UserInfoEmail">UserInfoEmail</a>] = None, raw_user_info_from_provider: Optional[<a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider" href="#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider">RawUserInfoFromProvider</a>] = None)</span>
+<span>(</span><span>third_party_user_id: str, email: Union[<a title="supertokens_python.recipe.thirdparty.types.UserInfoEmail" href="#supertokens_python.recipe.thirdparty.types.UserInfoEmail">UserInfoEmail</a>, None] = None, raw_user_info_from_provider: Optional[<a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider" href="#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider">RawUserInfoFromProvider</a>] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -315,8 +315,35 @@ class ThirdPartyIngredients:
         self.email: Union[UserInfoEmail, None] = email
         self.raw_user_info_from_provider = (
             raw_user_info_from_provider or RawUserInfoFromProvider({}, {})
-        )</code></pre>
+        )
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;thirdPartyUserId&#34;: self.third_party_user_id,
+            &#34;email&#34;: self.email.to_json() if self.email is not None else None,
+            &#34;rawUserInfoFromProvider&#34;: self.raw_user_info_from_provider.to_json(),
+        }</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.types.UserInfo.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;thirdPartyUserId&#34;: self.third_party_user_id,
+        &#34;email&#34;: self.email.to_json() if self.email is not None else None,
+        &#34;rawUserInfoFromProvider&#34;: self.raw_user_info_from_provider.to_json(),
+    }</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.UserInfoEmail"><code class="flex name class">
 <span>class <span class="ident">UserInfoEmail</span></span>
@@ -331,12 +358,15 @@ class ThirdPartyIngredients:
 <pre><code class="python">class UserInfoEmail:
     def __init__(self, email: str, is_verified: bool):
         self.id: str = email
-        self.is_verified: bool = is_verified</code></pre>
+        self.is_verified: bool = is_verified
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;id&#34;: self.id, &#34;isVerified&#34;: self.is_verified}</code></pre>
 </details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.types.UsersResponse"><code class="flex name class">
-<span>class <span class="ident">UsersResponse</span></span>
-<span>(</span><span>users: List[<a title="supertokens_python.recipe.thirdparty.types.User" href="#supertokens_python.recipe.thirdparty.types.User">User</a>], next_pagination_token: Optional[str])</span>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.types.UserInfoEmail.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -344,11 +374,11 @@ class ThirdPartyIngredients:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token</code></pre>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;id&#34;: self.id, &#34;isVerified&#34;: self.is_verified}</code></pre>
 </details>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -374,27 +404,33 @@ class ThirdPartyIngredients:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider" href="#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider">RawUserInfoFromProvider</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider.to_json" href="#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider.to_json">to_json</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.SignInUpResponse" href="#supertokens_python.recipe.thirdparty.types.SignInUpResponse">SignInUpResponse</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.to_json" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.to_json">to_json</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients">ThirdPartyIngredients</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.types.User" href="#supertokens_python.recipe.thirdparty.types.User">User</a></code></h4>
-</li>
-<li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.types.UserInfo.to_json" href="#supertokens_python.recipe.thirdparty.types.UserInfo.to_json">to_json</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.UserInfoEmail" href="#supertokens_python.recipe.thirdparty.types.UserInfoEmail">UserInfoEmail</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.types.UsersResponse" href="#supertokens_python.recipe.thirdparty.types.UsersResponse">UsersResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.types.UserInfoEmail.to_json" href="#supertokens_python.recipe.thirdparty.types.UserInfoEmail.to_json">to_json</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

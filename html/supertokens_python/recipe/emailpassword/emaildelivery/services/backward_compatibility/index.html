@@ -52,13 +52,17 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     EmailTemplateVars,
     RecipeInterface,
 )
-from supertokens_python.recipe.emailpassword.types import User
+from supertokens_python.recipe.emailpassword.types import (
+    PasswordResetEmailTemplateVarsUser,
+)
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 
 async def create_and_send_email_using_supertokens_service(
-    app_info: AppInfo, user: User, password_reset_url_with_token: str
+    app_info: AppInfo,
+    user: PasswordResetEmailTemplateVarsUser,
+    password_reset_url_with_token: str,
 ) -&gt; None:
     if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
         return
@@ -94,19 +98,12 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         template_vars: EmailTemplateVars,
         user_context: Dict[str, Any],
     ) -&gt; None:
-        user = await self.recipe_interface_impl.get_user_by_id(
-            user_id=template_vars.user.id, user_context=user_context
-        )
-        if user is None:
-            raise Exception(&#34;Should never come here&#34;)
-
         # we add this here cause the user may have overridden the sendEmail function
         # to change the input email and if we don&#39;t do this, the input email
         # will get reset by the getUserById call above.
-        user.email = template_vars.user.email
         try:
             await create_and_send_email_using_supertokens_service(
-                self.app_info, user, template_vars.password_reset_link
+                self.app_info, template_vars.user, template_vars.password_reset_link
             )
         except Exception:
             pass</code></pre>
@@ -120,7 +117,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility.create_and_send_email_using_supertokens_service"><code class="name flex">
-<span>async def <span class="ident">create_and_send_email_using_supertokens_service</span></span>(<span>app_info: AppInfo, user: User, password_reset_url_with_token: str) ‑> None</span>
+<span>async def <span class="ident">create_and_send_email_using_supertokens_service</span></span>(<span>app_info: AppInfo, user: PasswordResetEmailTemplateVarsUser, password_reset_url_with_token: str) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -129,7 +126,9 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_and_send_email_using_supertokens_service(
-    app_info: AppInfo, user: User, password_reset_url_with_token: str
+    app_info: AppInfo,
+    user: PasswordResetEmailTemplateVarsUser,
+    password_reset_url_with_token: str,
 ) -&gt; None:
     if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
         return
@@ -181,19 +180,12 @@ inheritance.</p></div>
         template_vars: EmailTemplateVars,
         user_context: Dict[str, Any],
     ) -&gt; None:
-        user = await self.recipe_interface_impl.get_user_by_id(
-            user_id=template_vars.user.id, user_context=user_context
-        )
-        if user is None:
-            raise Exception(&#34;Should never come here&#34;)
-
         # we add this here cause the user may have overridden the sendEmail function
         # to change the input email and if we don&#39;t do this, the input email
         # will get reset by the getUserById call above.
-        user.email = template_vars.user.email
         try:
             await create_and_send_email_using_supertokens_service(
-                self.app_info, user, template_vars.password_reset_link
+                self.app_info, template_vars.user, template_vars.password_reset_link
             )
         except Exception:
             pass</code></pre>
@@ -227,19 +219,12 @@ inheritance.</p></div>
     template_vars: EmailTemplateVars,
     user_context: Dict[str, Any],
 ) -&gt; None:
-    user = await self.recipe_interface_impl.get_user_by_id(
-        user_id=template_vars.user.id, user_context=user_context
-    )
-    if user is None:
-        raise Exception(&#34;Should never come here&#34;)
-
     # we add this here cause the user may have overridden the sendEmail function
     # to change the input email and if we don&#39;t do this, the input email
     # will get reset by the getUserById call above.
-    user.email = template_vars.user.email
     try:
         await create_and_send_email_using_supertokens_service(
-            self.app_info, user, template_vars.password_reset_link
+            self.app_info, template_vars.user, template_vars.password_reset_link
         )
     except Exception:
         pass</code></pre>

@@ -44,15 +44,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ...types import APIResponse, GeneralErrorResponse
+from ...types import APIResponse, User, GeneralErrorResponse, RecipeUserId
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
-    from .types import User, RawUserInfoFromProvider
+    from .types import RawUserInfoFromProvider
     from .utils import ThirdPartyConfig
 
 
@@ -60,24 +61,28 @@ class SignInUpOkResult:
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        recipe_user_id: RecipeUserId,
+        created_new_recipe_user: bool,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.created_new_recipe_user = created_new_recipe_user
         self.oauth_tokens = oauth_tokens
         self.raw_user_info_from_provider = raw_user_info_from_provider
+        self.recipe_user_id = recipe_user_id
 
 
 class ManuallyCreateOrUpdateUserOkResult:
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        recipe_user_id: RecipeUserId,
+        created_new_recipe_user: bool,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.recipe_user_id = recipe_user_id
+        self.created_new_recipe_user = created_new_recipe_user
 
 
 class GetProviderOkResult:
@@ -85,30 +90,24 @@ class GetProviderOkResult:
         self.provider = provider
 
 
+class SignInUpNotAllowed(APIResponse):
+    status: str = &#34;SIGN_IN_UP_NOT_ALLOWED&#34;
+    reason: str
+
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;reason&#34;: self.reason}
+
+
+class EmailChangeNotAllowedError:
+    def __init__(self, reason: str):
+        self.reason = reason
+
+
 class RecipeInterface(ABC):
     def __init__(self):
-        pass
-
-    @abstractmethod
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def get_users_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; List[User]:
-        pass
-
-    @abstractmethod
-    async def get_user_by_thirdparty_info(
-        self,
-        third_party_id: str,
-        third_party_user_id: str,
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
@@ -117,9 +116,17 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        is_verified: bool,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -&gt; ManuallyCreateOrUpdateUserOkResult:
+    ) -&gt; Union[
+        ManuallyCreateOrUpdateUserOkResult,
+        LinkingToSessionUserFailedError,
+        SignInUpNotAllowed,
+        EmailChangeNotAllowedError,
+    ]:
         pass
 
     @abstractmethod
@@ -128,11 +135,14 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        is_verified: bool,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -&gt; SignInUpOkResult:
+    ) -&gt; Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
         pass
 
     @abstractmethod
@@ -172,13 +182,13 @@ class SignInUpPostOkResult(APIResponse):
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        created_new_recipe_user: bool,
         session: SessionContainer,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.created_new_recipe_user = created_new_recipe_user
         self.session = session
         self.oauth_tokens = oauth_tokens
         self.raw_user_info_from_provider = raw_user_info_from_provider
@@ -186,16 +196,8 @@ class SignInUpPostOkResult(APIResponse):
     def to_json(self) -&gt; Dict[str, Any]:
         return {
             &#34;status&#34;: self.status,
-            &#34;user&#34;: {
-                &#34;id&#34;: self.user.user_id,
-                &#34;email&#34;: self.user.email,
-                &#34;timeJoined&#34;: self.user.time_joined,
-                &#34;thirdParty&#34;: {
-                    &#34;id&#34;: self.user.third_party_info.id,
-                    &#34;userId&#34;: self.user.third_party_info.user_id,
-                },
-            },
-            &#34;createdNewUser&#34;: self.created_new_user,
+            &#34;user&#34;: self.user.to_json(),
+            &#34;createdNewRecipeUser&#34;: self.created_new_recipe_user,
         }
 
 
@@ -245,12 +247,15 @@ class APIInterface:
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         SignInUpPostOkResult,
         SignInUpPostNoEmailGivenByProviderResponse,
+        SignInUpNotAllowed,
         GeneralErrorResponse,
     ]:
         pass
@@ -305,12 +310,15 @@ class APIInterface:
         provider: Provider,
         redirect_uri_info: Optional[RedirectUriInfo],
         oauth_tokens: Optional[Dict[str, Any]],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; Union[
         SignInUpPostOkResult,
         SignInUpPostNoEmailGivenByProviderResponse,
+        SignInUpNotAllowed,
         GeneralErrorResponse,
     ]:
         pass
@@ -370,7 +378,7 @@ async def authorisation_url_get(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIInterface.sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, provider: Provider, redirect_uri_info: Optional[RedirectUriInfo], oauth_tokens: Optional[Dict[str, Any]], tenant_id: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, provider: Provider, redirect_uri_info: Optional[RedirectUriInfo], oauth_tokens: Optional[Dict[str, Any]], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, GeneralErrorResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -384,12 +392,15 @@ async def sign_in_up_post(
     provider: Provider,
     redirect_uri_info: Optional[RedirectUriInfo],
     oauth_tokens: Optional[Dict[str, Any]],
+    session: Optional[SessionContainer],
+    should_try_linking_with_session_user: Union[bool, None],
     tenant_id: str,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Union[
     SignInUpPostOkResult,
     SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpNotAllowed,
     GeneralErrorResponse,
 ]:
     pass</code></pre>
@@ -487,6 +498,21 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError"><code class="flex name class">
+<span>class <span class="ident">EmailChangeNotAllowedError</span></span>
+<span>(</span><span>reason: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailChangeNotAllowedError:
+    def __init__(self, reason: str):
+        self.reason = reason</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.GetProviderOkResult"><code class="flex name class">
 <span>class <span class="ident">GetProviderOkResult</span></span>
 <span>(</span><span>provider: Provider)</span>
@@ -504,7 +530,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult"><code class="flex name class">
 <span>class <span class="ident">ManuallyCreateOrUpdateUserOkResult</span></span>
-<span>(</span><span>user: User, created_new_user: bool)</span>
+<span>(</span><span>user: User, recipe_user_id: RecipeUserId, created_new_recipe_user: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -516,10 +542,12 @@ inheritance.</p></div>
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        recipe_user_id: RecipeUserId,
+        created_new_recipe_user: bool,
     ):
         self.user = user
-        self.created_new_user = created_new_user</code></pre>
+        self.recipe_user_id = recipe_user_id
+        self.created_new_recipe_user = created_new_recipe_user</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface"><code class="flex name class">
@@ -537,36 +565,22 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def get_users_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; List[User]:
-        pass
-
-    @abstractmethod
-    async def get_user_by_thirdparty_info(
-        self,
-        third_party_id: str,
-        third_party_user_id: str,
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -&gt; Union[User, None]:
-        pass
-
-    @abstractmethod
     async def manually_create_or_update_user(
         self,
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        is_verified: bool,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -&gt; ManuallyCreateOrUpdateUserOkResult:
+    ) -&gt; Union[
+        ManuallyCreateOrUpdateUserOkResult,
+        LinkingToSessionUserFailedError,
+        SignInUpNotAllowed,
+        EmailChangeNotAllowedError,
+    ]:
         pass
 
     @abstractmethod
@@ -575,11 +589,14 @@ inheritance.</p></div>
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        is_verified: bool,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
-    ) -&gt; SignInUpOkResult:
+    ) -&gt; Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
         pass
 
     @abstractmethod
@@ -622,60 +639,8 @@ async def get_provider(
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_user_by_id"><code class="name flex">
-<span>async def <span class="ident">get_user_by_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[User, None]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_user_by_id(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Union[User, None]:
-    pass</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_user_by_thirdparty_info"><code class="name flex">
-<span>async def <span class="ident">get_user_by_thirdparty_info</span></span>(<span>self, third_party_id: str, third_party_user_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[User, None]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_user_by_thirdparty_info(
-    self,
-    third_party_id: str,
-    third_party_user_id: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[User, None]:
-    pass</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_users_by_email"><code class="name flex">
-<span>async def <span class="ident">get_users_by_email</span></span>(<span>self, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> List[User]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_users_by_email(
-    self, email: str, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; List[User]:
-    pass</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.manually_create_or_update_user"><code class="name flex">
-<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a></span>
+<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a>, LinkingToSessionUserFailedError, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError" href="#supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -689,14 +654,22 @@ async def manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    is_verified: bool,
+    session: Optional[SessionContainer],
+    should_try_linking_with_session_user: Union[bool, None],
     tenant_id: str,
     user_context: Dict[str, Any],
-) -&gt; ManuallyCreateOrUpdateUserOkResult:
+) -&gt; Union[
+    ManuallyCreateOrUpdateUserOkResult,
+    LinkingToSessionUserFailedError,
+    SignInUpNotAllowed,
+    EmailChangeNotAllowedError,
+]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, LinkingToSessionUserFailedError]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -710,19 +683,76 @@ async def sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
+    is_verified: bool,
     oauth_tokens: Dict[str, Any],
     raw_user_info_from_provider: RawUserInfoFromProvider,
+    session: Optional[SessionContainer],
+    should_try_linking_with_session_user: Union[bool, None],
     tenant_id: str,
     user_context: Dict[str, Any],
-) -&gt; SignInUpOkResult:
+) -&gt; Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
     pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed"><code class="flex name class">
+<span>class <span class="ident">SignInUpNotAllowed</span></span>
+<span>(</span><span>reason: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SignInUpNotAllowed(APIResponse):
+    status: str = &#34;SIGN_IN_UP_NOT_ALLOWED&#34;
+    reason: str
+
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;reason&#34;: self.reason}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.reason"><code class="name">var <span class="ident">reason</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;reason&#34;: self.reason}</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult"><code class="flex name class">
 <span>class <span class="ident">SignInUpOkResult</span></span>
-<span>(</span><span>user: User, created_new_user: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider)</span>
+<span>(</span><span>user: User, recipe_user_id: RecipeUserId, created_new_recipe_user: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -734,14 +764,16 @@ async def sign_in_up(
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        recipe_user_id: RecipeUserId,
+        created_new_recipe_user: bool,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.created_new_recipe_user = created_new_recipe_user
         self.oauth_tokens = oauth_tokens
-        self.raw_user_info_from_provider = raw_user_info_from_provider</code></pre>
+        self.raw_user_info_from_provider = raw_user_info_from_provider
+        self.recipe_user_id = recipe_user_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse"><code class="flex name class">
@@ -791,7 +823,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult"><code class="flex name class">
 <span>class <span class="ident">SignInUpPostOkResult</span></span>
-<span>(</span><span>user: User, created_new_user: bool, session: SessionContainer, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider)</span>
+<span>(</span><span>user: User, created_new_recipe_user: bool, session: SessionContainer, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -806,13 +838,13 @@ inheritance.</p></div>
     def __init__(
         self,
         user: User,
-        created_new_user: bool,
+        created_new_recipe_user: bool,
         session: SessionContainer,
         oauth_tokens: Dict[str, Any],
         raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
-        self.created_new_user = created_new_user
+        self.created_new_recipe_user = created_new_recipe_user
         self.session = session
         self.oauth_tokens = oauth_tokens
         self.raw_user_info_from_provider = raw_user_info_from_provider
@@ -820,16 +852,8 @@ inheritance.</p></div>
     def to_json(self) -&gt; Dict[str, Any]:
         return {
             &#34;status&#34;: self.status,
-            &#34;user&#34;: {
-                &#34;id&#34;: self.user.user_id,
-                &#34;email&#34;: self.user.email,
-                &#34;timeJoined&#34;: self.user.time_joined,
-                &#34;thirdParty&#34;: {
-                    &#34;id&#34;: self.user.third_party_info.id,
-                    &#34;userId&#34;: self.user.third_party_info.user_id,
-                },
-            },
-            &#34;createdNewUser&#34;: self.created_new_user,
+            &#34;user&#34;: self.user.to_json(),
+            &#34;createdNewRecipeUser&#34;: self.created_new_recipe_user,
         }</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -858,16 +882,8 @@ inheritance.</p></div>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
     return {
         &#34;status&#34;: self.status,
-        &#34;user&#34;: {
-            &#34;id&#34;: self.user.user_id,
-            &#34;email&#34;: self.user.email,
-            &#34;timeJoined&#34;: self.user.time_joined,
-            &#34;thirdParty&#34;: {
-                &#34;id&#34;: self.user.third_party_info.id,
-                &#34;userId&#34;: self.user.third_party_info.user_id,
-            },
-        },
-        &#34;createdNewUser&#34;: self.created_new_user,
+        &#34;user&#34;: self.user.to_json(),
+        &#34;createdNewRecipeUser&#34;: self.created_new_recipe_user,
     }</code></pre>
 </details>
 </dd>
@@ -908,6 +924,9 @@ inheritance.</p></div>
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError" href="#supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.GetProviderOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.GetProviderOkResult">GetProviderOkResult</a></code></h4>
 </li>
 <li>
@@ -917,11 +936,16 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface">RecipeInterface</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_provider" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_provider">get_provider</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_user_by_id" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_user_by_id">get_user_by_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_user_by_thirdparty_info" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_user_by_thirdparty_info">get_user_by_thirdparty_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_users_by_email" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.get_users_by_email">get_users_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.manually_create_or_update_user" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.manually_create_or_update_user">manually_create_or_update_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.sign_in_up" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.sign_in_up">sign_in_up</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.reason" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.status" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.to_json" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>

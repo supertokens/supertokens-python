@@ -42,7 +42,7 @@
 
 from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic, List
 
-from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import (
@@ -295,7 +295,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,
@@ -593,7 +593,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveArrayClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, str, Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, None]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, str, Dict[str, Any], Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -617,7 +617,7 @@ don't want to add the claim to the session automatically</dd>
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[PrimitiveList]],
         ],
         default_max_age_in_sec: Optional[int] = None,

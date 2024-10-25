@@ -44,13 +44,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
+from supertokens_python.types import RecipeUserId
 
 if TYPE_CHECKING:
     from .interfaces import ResponseMutator
 
 
-def raise_token_theft_exception(user_id: str, session_handle: str) -&gt; NoReturn:
-    raise TokenTheftError(user_id, session_handle)
+def raise_token_theft_exception(
+    user_id: str, recipe_user_id: RecipeUserId, session_handle: str
+) -&gt; NoReturn:
+    raise TokenTheftError(user_id, recipe_user_id, session_handle)
 
 
 def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
@@ -88,9 +91,10 @@ class SuperTokensSessionError(SuperTokensError):
 
 
 class TokenTheftError(SuperTokensSessionError):
-    def __init__(self, user_id: str, session_handle: str):
+    def __init__(self, user_id: str, recipe_user_id: RecipeUserId, session_handle: str):
         super().__init__(&#34;token theft detected&#34;)
         self.user_id = user_id
+        self.recipe_user_id = recipe_user_id
         self.session_handle = session_handle
 
 
@@ -111,12 +115,15 @@ class InvalidClaimsError(SuperTokensSessionError):
 
 
 class ClaimValidationError:
-    def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
-        self.id = id_
-        self.reason = reason
+    id_: str
+    reason: Optional[Union[str, Dict[str, Any]]]
+
+    def __init__(self, id_: str, reason: Optional[Union[str, Dict[str, Any]]]):
+        self.id_: str = id_
+        self.reason: Optional[Union[str, Dict[str, Any]]] = reason
 
     def to_json(self):
-        result: Dict[str, Any] = {&#34;id&#34;: self.id}
+        result: Dict[str, Any] = {&#34;id&#34;: self.id_}
         if self.reason is not None:
             result[&#34;reason&#34;] = self.reason
 
@@ -169,7 +176,7 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_token_theft_exception"><code class="name flex">
-<span>def <span class="ident">raise_token_theft_exception</span></span>(<span>user_id: str, session_handle: str) ‑> NoReturn</span>
+<span>def <span class="ident">raise_token_theft_exception</span></span>(<span>user_id: str, recipe_user_id: RecipeUserId, session_handle: str) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -177,8 +184,10 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_token_theft_exception(user_id: str, session_handle: str) -&gt; NoReturn:
-    raise TokenTheftError(user_id, session_handle)</code></pre>
+<pre><code class="python">def raise_token_theft_exception(
+    user_id: str, recipe_user_id: RecipeUserId, session_handle: str
+) -&gt; NoReturn:
+    raise TokenTheftError(user_id, recipe_user_id, session_handle)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_try_refresh_token_exception"><code class="name flex">
@@ -226,7 +235,7 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <dl>
 <dt id="supertokens_python.recipe.session.exceptions.ClaimValidationError"><code class="flex name class">
 <span>class <span class="ident">ClaimValidationError</span></span>
-<span>(</span><span>id_: str, reason: Optional[Dict[str, Any]])</span>
+<span>(</span><span>id_: str, reason: Optional[Union[str, Dict[str, Any]]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -235,17 +244,31 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ClaimValidationError:
-    def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
-        self.id = id_
-        self.reason = reason
+    id_: str
+    reason: Optional[Union[str, Dict[str, Any]]]
+
+    def __init__(self, id_: str, reason: Optional[Union[str, Dict[str, Any]]]):
+        self.id_: str = id_
+        self.reason: Optional[Union[str, Dict[str, Any]]] = reason
 
     def to_json(self):
-        result: Dict[str, Any] = {&#34;id&#34;: self.id}
+        result: Dict[str, Any] = {&#34;id&#34;: self.id_}
         if self.reason is not None:
             result[&#34;reason&#34;] = self.reason
 
         return result</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.ClaimValidationError.id_"><code class="name">var <span class="ident">id_</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.session.exceptions.ClaimValidationError.reason"><code class="name">var <span class="ident">reason</span> : Union[str, Dict[str, Any], ForwardRef(None)]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.exceptions.ClaimValidationError.to_json"><code class="name flex">
@@ -258,7 +281,7 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self):
-    result: Dict[str, Any] = {&#34;id&#34;: self.id}
+    result: Dict[str, Any] = {&#34;id&#34;: self.id_}
     if self.reason is not None:
         result[&#34;reason&#34;] = self.reason
 
@@ -343,7 +366,7 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.TokenTheftError"><code class="flex name class">
 <span>class <span class="ident">TokenTheftError</span></span>
-<span>(</span><span>user_id: str, session_handle: str)</span>
+<span>(</span><span>user_id: str, recipe_user_id: RecipeUserId, session_handle: str)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
@@ -352,9 +375,10 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TokenTheftError(SuperTokensSessionError):
-    def __init__(self, user_id: str, session_handle: str):
+    def __init__(self, user_id: str, recipe_user_id: RecipeUserId, session_handle: str):
         super().__init__(&#34;token theft detected&#34;)
         self.user_id = user_id
+        self.recipe_user_id = recipe_user_id
         self.session_handle = session_handle</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -437,6 +461,8 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.ClaimValidationError" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError">ClaimValidationError</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.ClaimValidationError.id_" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError.id_">id_</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.exceptions.ClaimValidationError.reason" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError.reason">reason</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.exceptions.ClaimValidationError.to_json" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError.to_json">to_json</a></code></li>
 </ul>
 </li>

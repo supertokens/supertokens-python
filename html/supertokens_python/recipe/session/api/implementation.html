@@ -77,12 +77,11 @@ class APIImplementation(APIInterface):
 
     async def signout_post(
         self,
-        session: Optional[SessionContainer],
+        session: SessionContainer,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; SignOutOkayResponse:
-        if session is not None:
-            await session.revoke_session(user_context)
+        await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
     async def verify_session(
@@ -159,12 +158,11 @@ inheritance.</p></div>
 
     async def signout_post(
         self,
-        session: Optional[SessionContainer],
+        session: SessionContainer,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -&gt; SignOutOkayResponse:
-        if session is not None:
-            await session.revoke_session(user_context)
+        await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
     async def verify_session(
@@ -236,7 +234,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.signout_post"><code class="name flex">
-<span>async def <span class="ident">signout_post</span></span>(<span>self, session: Optional[SessionContainer], api_options: APIOptions, user_context: Dict[str, Any]) ‑> SignOutOkayResponse</span>
+<span>async def <span class="ident">signout_post</span></span>(<span>self, session: SessionContainer, api_options: APIOptions, user_context: Dict[str, Any]) ‑> SignOutOkayResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -246,12 +244,11 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def signout_post(
     self,
-    session: Optional[SessionContainer],
+    session: SessionContainer,
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; SignOutOkayResponse:
-    if session is not None:
-        await session.revoke_session(user_context)
+    await session.revoke_session(user_context)
     return SignOutOkayResponse()</code></pre>
 </details>
 </dd>

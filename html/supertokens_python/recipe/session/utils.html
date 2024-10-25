@@ -58,7 +58,7 @@ from supertokens_python.utils import (
     send_non_200_response_with_message,
 )
 
-from ...types import MaybeAwaitable
+from ...types import MaybeAwaitable, RecipeUserId
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
 from .exceptions import ClaimValidationError
 
@@ -128,7 +128,7 @@ class ErrorHandlers:
     def __init__(
         self,
         on_token_theft_detected: Callable[
-            [BaseRequest, str, str, BaseResponse],
+            [BaseRequest, str, str, RecipeUserId, BaseResponse],
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
         on_try_refresh_token: Callable[
@@ -159,10 +159,13 @@ class ErrorHandlers:
         request: BaseRequest,
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         response: BaseResponse,
     ) -&gt; BaseResponse:
         return await resolve(
-            self.__on_token_theft_detected(request, session_handle, user_id, response)
+            self.__on_token_theft_detected(
+                request, session_handle, user_id, recipe_user_id, response
+            )
         )
 
     async def on_try_refresh_token(
@@ -210,7 +213,7 @@ class InputErrorHandlers(ErrorHandlers):
         on_token_theft_detected: Union[
             None,
             Callable[
-                [BaseRequest, str, str, BaseResponse],
+                [BaseRequest, str, str, RecipeUserId, BaseResponse],
                 Union[BaseResponse, Awaitable[BaseResponse]],
             ],
         ] = None,
@@ -289,7 +292,11 @@ async def default_try_refresh_token_callback(
 
 
 async def default_token_theft_detected_callback(
-    _: BaseRequest, session_handle: str, __: str, response: BaseResponse
+    _: BaseRequest,
+    session_handle: str,
+    __: str,
+    ___: RecipeUserId,
+    response: BaseResponse,
 ) -&gt; BaseResponse:
     from .recipe import SessionRecipe
 
@@ -604,6 +611,7 @@ async def get_required_claim_validators(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
             session.get_tenant_id(),
             session.get_user_id(),
+            session.get_recipe_user_id(),
             claim_validators_added_by_other_recipes,
             user_context,
         )
@@ -695,7 +703,7 @@ async def validate_claims_in_payload(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.default_token_theft_detected_callback"><code class="name flex">
-<span>async def <span class="ident">default_token_theft_detected_callback</span></span>(<span>_: BaseRequest, session_handle: str, __: str, response: BaseResponse) ‑> BaseResponse</span>
+<span>async def <span class="ident">default_token_theft_detected_callback</span></span>(<span>_: BaseRequest, session_handle: str, __: str, ___: RecipeUserId, response: BaseResponse) ‑> BaseResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -704,7 +712,11 @@ async def validate_claims_in_payload(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def default_token_theft_detected_callback(
-    _: BaseRequest, session_handle: str, __: str, response: BaseResponse
+    _: BaseRequest,
+    session_handle: str,
+    __: str,
+    ___: RecipeUserId,
+    response: BaseResponse,
 ) -&gt; BaseResponse:
     from .recipe import SessionRecipe
 
@@ -804,6 +816,7 @@ async def validate_claims_in_payload(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
             session.get_tenant_id(),
             session.get_user_id(),
+            session.get_recipe_user_id(),
             claim_validators_added_by_other_recipes,
             user_context,
         )
@@ -861,7 +874,7 @@ async def validate_claims_in_payload(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.normalise_same_site"><code class="name flex">
-<span>def <span class="ident">normalise_same_site</span></span>(<span>same_site: str) ‑> typing_extensions.Literal['strict', 'lax', 'none']</span>
+<span>def <span class="ident">normalise_same_site</span></span>(<span>same_site: str) ‑> Literal['strict', 'lax', 'none']</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -918,7 +931,7 @@ async def validate_claims_in_payload(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal[('lax', 'strict', 'none')], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal[('VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE')], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[<a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, None] = None, override: Union[<a title="supertokens_python.recipe.session.utils.InputOverrideConfig" href="#supertokens_python.recipe.session.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'strict', 'none'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[<a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, None] = None, override: Union[<a title="supertokens_python.recipe.session.utils.InputOverrideConfig" href="#supertokens_python.recipe.session.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1116,7 +1129,7 @@ async def validate_claims_in_payload(
 <dl>
 <dt id="supertokens_python.recipe.session.utils.ErrorHandlers"><code class="flex name class">
 <span>class <span class="ident">ErrorHandlers</span></span>
-<span>(</span><span>on_token_theft_detected: Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_invalid_claim: Callable[[BaseRequest, List[ClaimValidationError], BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_clear_duplicate_session_cookies: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]])</span>
+<span>(</span><span>on_token_theft_detected: Callable[[BaseRequest, str, str, RecipeUserId, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_invalid_claim: Callable[[BaseRequest, List[ClaimValidationError], BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_clear_duplicate_session_cookies: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1128,7 +1141,7 @@ async def validate_claims_in_payload(
     def __init__(
         self,
         on_token_theft_detected: Callable[
-            [BaseRequest, str, str, BaseResponse],
+            [BaseRequest, str, str, RecipeUserId, BaseResponse],
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
         on_try_refresh_token: Callable[
@@ -1159,10 +1172,13 @@ async def validate_claims_in_payload(
         request: BaseRequest,
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         response: BaseResponse,
     ) -&gt; BaseResponse:
         return await resolve(
-            self.__on_token_theft_detected(request, session_handle, user_id, response)
+            self.__on_token_theft_detected(
+                request, session_handle, user_id, recipe_user_id, response
+            )
         )
 
     async def on_try_refresh_token(
@@ -1254,7 +1270,7 @@ async def validate_claims_in_payload(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.ErrorHandlers.on_token_theft_detected"><code class="name flex">
-<span>async def <span class="ident">on_token_theft_detected</span></span>(<span>self, request: BaseRequest, session_handle: str, user_id: str, response: BaseResponse) ‑> BaseResponse</span>
+<span>async def <span class="ident">on_token_theft_detected</span></span>(<span>self, request: BaseRequest, session_handle: str, user_id: str, recipe_user_id: RecipeUserId, response: BaseResponse) ‑> BaseResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1267,10 +1283,13 @@ async def validate_claims_in_payload(
     request: BaseRequest,
     session_handle: str,
     user_id: str,
+    recipe_user_id: RecipeUserId,
     response: BaseResponse,
 ) -&gt; BaseResponse:
     return await resolve(
-        self.__on_token_theft_detected(request, session_handle, user_id, response)
+        self.__on_token_theft_detected(
+            request, session_handle, user_id, recipe_user_id, response
+        )
     )</code></pre>
 </details>
 </dd>
@@ -1312,7 +1331,7 @@ async def validate_claims_in_payload(
 </dd>
 <dt id="supertokens_python.recipe.session.utils.InputErrorHandlers"><code class="flex name class">
 <span>class <span class="ident">InputErrorHandlers</span></span>
-<span>(</span><span>on_token_theft_detected: Union[None, Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None, on_try_refresh_token: Union[None, Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None, on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None, on_invalid_claim: Union[Callable[[BaseRequest, List[ClaimValidationError], BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None, on_clear_duplicate_session_cookies: Union[None, Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None)</span>
+<span>(</span><span>on_token_theft_detected: Union[None, Callable[[BaseRequest, str, str, RecipeUserId, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None, on_try_refresh_token: Union[None, Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None, on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None, on_invalid_claim: Union[Callable[[BaseRequest, List[ClaimValidationError], BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None, on_clear_duplicate_session_cookies: Union[None, Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1326,7 +1345,7 @@ async def validate_claims_in_payload(
         on_token_theft_detected: Union[
             None,
             Callable[
-                [BaseRequest, str, str, BaseResponse],
+                [BaseRequest, str, str, RecipeUserId, BaseResponse],
                 Union[BaseResponse, Awaitable[BaseResponse]],
             ],
         ] = None,
@@ -1428,7 +1447,7 @@ async def validate_claims_in_payload(
 </dd>
 <dt id="supertokens_python.recipe.session.utils.SessionConfig"><code class="flex name class">
 <span>class <span class="ident">SessionConfig</span></span>
-<span>(</span><span>refresh_token_path: NormalisedURLPath, cookie_domain: Union[None, str], older_cookie_domain: Union[None, str], get_cookie_same_site: "Callable[[Optional[BaseRequest], Dict[str, Any]], Literal[('lax', 'strict', 'none')]]", cookie_secure: bool, session_expired_status_code: int, error_handlers: <a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, anti_csrf_function_or_string: "Union[Callable[[Optional[BaseRequest], Dict[str, Any]], Literal[('VIA_CUSTOM_HEADER', 'NONE')]], Literal[('VIA_CUSTOM_HEADER', 'NONE', 'VIA_TOKEN')]]", get_token_transfer_method: "Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]]", override: <a title="supertokens_python.recipe.session.utils.OverrideConfig" href="#supertokens_python.recipe.session.utils.OverrideConfig">OverrideConfig</a>, framework: str, mode: str, invalid_claim_status_code: int, use_dynamic_access_token_signing_key: bool, expose_access_token_to_frontend_in_cookie_based_auth: bool, jwks_refresh_interval_sec: int)</span>
+<span>(</span><span>refresh_token_path: NormalisedURLPath, cookie_domain: Union[None, str], older_cookie_domain: Union[None, str], get_cookie_same_site: "Callable[[Optional[BaseRequest], Dict[str, Any]], Literal['lax', 'strict', 'none']]", cookie_secure: bool, session_expired_status_code: int, error_handlers: <a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, anti_csrf_function_or_string: "Union[Callable[[Optional[BaseRequest], Dict[str, Any]], Literal['VIA_CUSTOM_HEADER', 'NONE']], Literal['VIA_CUSTOM_HEADER', 'NONE', 'VIA_TOKEN']]", get_token_transfer_method: "Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]]", override: <a title="supertokens_python.recipe.session.utils.OverrideConfig" href="#supertokens_python.recipe.session.utils.OverrideConfig">OverrideConfig</a>, framework: str, mode: str, invalid_claim_status_code: int, use_dynamic_access_token_signing_key: bool, expose_access_token_to_frontend_in_cookie_based_auth: bool, jwks_refresh_interval_sec: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

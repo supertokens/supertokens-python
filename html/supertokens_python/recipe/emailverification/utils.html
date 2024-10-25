@@ -83,20 +83,20 @@ class EmailVerificationConfig:
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
         ],
-        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction],
+        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction],
         override: OverrideConfig,
     ):
         self.mode = mode
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
-        self.get_email_for_user_id = get_email_for_user_id
+        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
 ) -&gt; EmailVerificationConfig:
     if mode not in [&#34;REQUIRED&#34;, &#34;OPTIONAL&#34;]:
@@ -126,7 +126,7 @@ def validate_and_normalise_user_input(
     return EmailVerificationConfig(
         mode,
         get_email_delivery_config,
-        get_email_for_user_id,
+        get_email_for_recipe_user_id,
         override,
     )
 
@@ -184,7 +184,7 @@ def get_email_verify_link(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -196,7 +196,7 @@ def get_email_verify_link(
     app_info: AppInfo,
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
 ) -&gt; EmailVerificationConfig:
     if mode not in [&#34;REQUIRED&#34;, &#34;OPTIONAL&#34;]:
@@ -226,7 +226,7 @@ def get_email_verify_link(
     return EmailVerificationConfig(
         mode,
         get_email_delivery_config,
-        get_email_for_user_id,
+        get_email_for_recipe_user_id,
         override,
     )</code></pre>
 </details>
@@ -238,7 +238,7 @@ def get_email_verify_link(
 <dl>
 <dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationConfig</span></span>
-<span>(</span><span>mode: MODE_TYPE, get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]], get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction], override: <a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>mode: MODE_TYPE, get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]], get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction], override: <a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -253,13 +253,13 @@ def get_email_verify_link(
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
         ],
-        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction],
+        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction],
         override: OverrideConfig,
     ):
         self.mode = mode
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
-        self.get_email_for_user_id = get_email_for_user_id</code></pre>
+        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.OverrideConfig"><code class="flex name class">

@@ -52,7 +52,9 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import UsersResponse
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
+from supertokens_python.types import AccountInfo, User
 
 
 async def get_users_oldest_first(
@@ -62,15 +64,17 @@ async def get_users_oldest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -&gt; UsersResponse:
-    return await Supertokens.get_instance().get_users(
+) -&gt; GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        &#34;ASC&#34;,
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
+        time_joined_order=&#34;ASC&#34;,
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
     )
 
 
@@ -81,15 +85,17 @@ async def get_users_newest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -&gt; UsersResponse:
-    return await Supertokens.get_instance().get_users(
+) -&gt; GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        &#34;DESC&#34;,
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
+        time_joined_order=&#34;DESC&#34;,
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
     )
 
 
@@ -104,9 +110,27 @@ async def get_user_count(
 
 
 async def delete_user(
-    user_id: str, user_context: Optional[Dict[str, Any]] = None
+    user_id: str,
+    remove_all_linked_accounts: bool = True,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; None:
-    return await Supertokens.get_instance().delete_user(user_id, user_context)
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.delete_user(
+        user_id,
+        remove_all_linked_accounts=remove_all_linked_accounts,
+        user_context=user_context,
+    )
+
+
+async def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -&gt; Optional[User]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        user_id=user_id, user_context=user_context
+    )
 
 
 async def create_user_id_mapping(
@@ -158,6 +182,22 @@ async def update_or_delete_user_id_mapping_info(
 ) -&gt; Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
     return await Supertokens.get_instance().update_or_delete_user_id_mapping_info(
         user_id, user_id_type, external_user_id_info, user_context
+    )
+
+
+async def list_users_by_account_info(
+    tenant_id: str,
+    account_info: AccountInfo,
+    do_union_of_account_info: bool = False,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; List[User]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
+        tenant_id,
+        account_info,
+        do_union_of_account_info,
+        user_context,
     )</code></pre>
 </details>
 </section>
@@ -198,7 +238,7 @@ async def update_or_delete_user_id_mapping_info(
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.delete_user"><code class="name flex">
-<span>async def <span class="ident">delete_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+<span>async def <span class="ident">delete_user</span></span>(<span>user_id: str, remove_all_linked_accounts: bool = True, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -207,13 +247,21 @@ async def update_or_delete_user_id_mapping_info(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def delete_user(
-    user_id: str, user_context: Optional[Dict[str, Any]] = None
+    user_id: str,
+    remove_all_linked_accounts: bool = True,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; None:
-    return await Supertokens.get_instance().delete_user(user_id, user_context)</code></pre>
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.delete_user(
+        user_id,
+        remove_all_linked_accounts=remove_all_linked_accounts,
+        user_context=user_context,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.delete_user_id_mapping"><code class="name flex">
-<span>async def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[typing_extensions.Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
+<span>async def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -229,6 +277,25 @@ async def update_or_delete_user_id_mapping_info(
 ) -&gt; DeleteUserIdMappingOkResult:
     return await Supertokens.get_instance().delete_user_id_mapping(
         user_id, user_id_type, force, user_context
+    )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.asyncio.get_user"><code class="name flex">
+<span>async def <span class="ident">get_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.types.User" href="../types.html#supertokens_python.types.User">User</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -&gt; Optional[User]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+        user_id=user_id, user_context=user_context
     )</code></pre>
 </details>
 </dd>
@@ -252,7 +319,7 @@ async def update_or_delete_user_id_mapping_info(
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_user_id_mapping"><code class="name flex">
-<span>async def <span class="ident">get_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[typing_extensions.Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.GetUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.GetUserIdMappingOkResult">GetUserIdMappingOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
+<span>async def <span class="ident">get_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.GetUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.GetUserIdMappingOkResult">GetUserIdMappingOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -271,7 +338,7 @@ async def update_or_delete_user_id_mapping_info(
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_users_newest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_newest_first</span></span>(<span>tenant_id: str, limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users_newest_first</span></span>(<span>tenant_id: str, limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.GetUsersResult" href="../recipe/accountlinking/interfaces.html#supertokens_python.recipe.accountlinking.interfaces.GetUsersResult">GetUsersResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -286,20 +353,22 @@ async def update_or_delete_user_id_mapping_info(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -&gt; UsersResponse:
-    return await Supertokens.get_instance().get_users(
+) -&gt; GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        &#34;DESC&#34;,
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
-        user_context,
+        time_joined_order=&#34;DESC&#34;,
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_users_oldest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_oldest_first</span></span>(<span>tenant_id: str, limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="../types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users_oldest_first</span></span>(<span>tenant_id: str, limit: Optional[int] = None, pagination_token: Optional[str] = None, include_recipe_ids: Optional[None] = None, query: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.GetUsersResult" href="../recipe/accountlinking/interfaces.html#supertokens_python.recipe.accountlinking.interfaces.GetUsersResult">GetUsersResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -314,20 +383,47 @@ async def update_or_delete_user_id_mapping_info(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -&gt; UsersResponse:
-    return await Supertokens.get_instance().get_users(
+) -&gt; GetUsersResult:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.get_users(
         tenant_id,
-        &#34;ASC&#34;,
-        limit,
-        pagination_token,
-        include_recipe_ids,
-        query,
+        time_joined_order=&#34;ASC&#34;,
+        limit=limit,
+        pagination_token=pagination_token,
+        include_recipe_ids=include_recipe_ids,
+        query=query,
+        user_context=user_context,
+    )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.asyncio.list_users_by_account_info"><code class="name flex">
+<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>tenant_id: str, account_info: <a title="supertokens_python.types.AccountInfo" href="../types.html#supertokens_python.types.AccountInfo">AccountInfo</a>, do_union_of_account_info: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.types.User" href="../types.html#supertokens_python.types.User">User</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def list_users_by_account_info(
+    tenant_id: str,
+    account_info: AccountInfo,
+    do_union_of_account_info: bool = False,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; List[User]:
+    if user_context is None:
+        user_context = {}
+    return await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
+        tenant_id,
+        account_info,
+        do_union_of_account_info,
         user_context,
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.update_or_delete_user_id_mapping_info"><code class="name flex">
-<span>async def <span class="ident">update_or_delete_user_id_mapping_info</span></span>(<span>user_id: str, user_id_type: Optional[typing_extensions.Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, external_user_id_info: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="../interfaces.html#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
+<span>async def <span class="ident">update_or_delete_user_id_mapping_info</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, external_user_id_info: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="../interfaces.html#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -367,10 +463,12 @@ async def update_or_delete_user_id_mapping_info(
 <li><code><a title="supertokens_python.asyncio.create_user_id_mapping" href="#supertokens_python.asyncio.create_user_id_mapping">create_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.asyncio.delete_user" href="#supertokens_python.asyncio.delete_user">delete_user</a></code></li>
 <li><code><a title="supertokens_python.asyncio.delete_user_id_mapping" href="#supertokens_python.asyncio.delete_user_id_mapping">delete_user_id_mapping</a></code></li>
+<li><code><a title="supertokens_python.asyncio.get_user" href="#supertokens_python.asyncio.get_user">get_user</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user_count" href="#supertokens_python.asyncio.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user_id_mapping" href="#supertokens_python.asyncio.get_user_id_mapping">get_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_users_newest_first" href="#supertokens_python.asyncio.get_users_newest_first">get_users_newest_first</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_users_oldest_first" href="#supertokens_python.asyncio.get_users_oldest_first">get_users_oldest_first</a></code></li>
+<li><code><a title="supertokens_python.asyncio.list_users_by_account_info" href="#supertokens_python.asyncio.list_users_by_account_info">list_users_by_account_info</a></code></li>
 <li><code><a title="supertokens_python.asyncio.update_or_delete_user_id_mapping_info" href="#supertokens_python.asyncio.update_or_delete_user_id_mapping_info">update_or_delete_user_id_mapping_info</a></code></li>
 </ul>
 </li>

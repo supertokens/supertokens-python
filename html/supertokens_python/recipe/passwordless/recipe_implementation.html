@@ -41,25 +41,32 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
+from supertokens_python.asyncio import get_user
+from supertokens_python.auth_utils import (
+    LinkingToSessionUserFailedError,
+    link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
+)
 
 from supertokens_python.querier import Querier
-
-from .types import DeviceCode, DeviceType, User
-
 from supertokens_python.normalised_url_path import NormalisedURLPath
-
-from .interfaces import (
+from supertokens_python.recipe.passwordless.types import DeviceCode, DeviceType
+from supertokens_python.recipe.passwordless.interfaces import (
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeOkResult,
+    CheckCodeRestartFlowError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeOkResult,
     ConsumeCodeRestartFlowError,
+    ConsumedDevice,
     CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    DeleteUserInfoOkResult,
-    DeleteUserInfoUnknownUserIdError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
     RecipeInterface,
     RevokeAllCodesOkResult,
     RevokeCodeOkResult,
@@ -68,6 +75,11 @@ from .interfaces import (
     UpdateUserPhoneNumberAlreadyExistsError,
     UpdateUserUnknownUserIdError,
 )
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import User, RecipeUserId
+from supertokens_python.utils import log_debug_message
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
 
 class RecipeImplementation(RecipeInterface):
@@ -75,34 +87,166 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
+    async def consume_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ConsumeCodeOkResult,
+        ConsumeCodeIncorrectUserInputCodeError,
+        ConsumeCodeExpiredUserInputCodeError,
+        ConsumeCodeRestartFlowError,
+        LinkingToSessionUserFailedError,
+    ]:
+        input_dict = {
+            &#34;preAuthSessionId&#34;: pre_auth_session_id,
+        }
+        if link_code is not None:
+            input_dict[&#34;linkCode&#34;] = link_code
+        else:
+            if user_input_code is None or device_id is None:
+                return ConsumeCodeRestartFlowError()
+            input_dict[&#34;userInputCode&#34;] = user_input_code
+            input_dict[&#34;deviceId&#34;] = device_id
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;),
+            input_dict,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
+            return ConsumeCodeIncorrectUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;EXPIRED_USER_INPUT_CODE_ERROR&#34;:
+            return ConsumeCodeExpiredUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
+            return ConsumeCodeRestartFlowError()
+
+        # status == &#34;OK&#34;
+
+        log_debug_message(&#34;Passwordless.consumeCode code consumed OK&#34;)
+
+        recipe_user_id = RecipeUserId(response[&#34;recipeUserId&#34;])
+
+        updated_user = User.from_json(response[&#34;user&#34;])
+
+        link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
+            tenant_id=tenant_id,
+            input_user=updated_user,
+            recipe_user_id=recipe_user_id,
+            session=session,
+            user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
+        )
+
+        if isinstance(link_result, LinkingToSessionUserFailedError):
+            return link_result
+
+        updated_user = link_result.user
+
+        response[&#34;user&#34;] = updated_user
+
+        return ConsumeCodeOkResult(
+            user=updated_user,
+            recipe_user_id=recipe_user_id,
+            consumed_device=ConsumedDevice.from_json(response[&#34;consumedDevice&#34;]),
+            created_new_recipe_user=response[&#34;createdNewUser&#34;],
+        )
+
+    async def check_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        CheckCodeOkResult,
+        CheckCodeIncorrectUserInputCodeError,
+        CheckCodeExpiredUserInputCodeError,
+        CheckCodeRestartFlowError,
+    ]:
+        input_dict = {
+            &#34;preAuthSessionId&#34;: pre_auth_session_id,
+        }
+        if link_code is not None:
+            input_dict[&#34;linkCode&#34;] = link_code
+        else:
+            if user_input_code is None or device_id is None:
+                return CheckCodeRestartFlowError()
+            input_dict[&#34;userInputCode&#34;] = user_input_code
+            input_dict[&#34;deviceId&#34;] = device_id
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/check&#34;),
+            input_dict,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
+            return CheckCodeIncorrectUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;EXPIRED_USER_INPUT_CODE_ERROR&#34;:
+            return CheckCodeExpiredUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
+            return CheckCodeRestartFlowError()
+
+        # status == &#34;OK&#34;
+        log_debug_message(&#34;Passwordless.checkCode code verified&#34;)
+
+        return CheckCodeOkResult(
+            consumed_device=ConsumedDevice.from_json(response[&#34;consumedDevice&#34;])
+        )
+
     async def create_code(
         self,
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; CreateCodeOkResult:
-        data: Dict[str, Any] = {}
-        if user_input_code is not None:
-            data = {**data, &#34;userInputCode&#34;: user_input_code}
-        if email is not None:
-            data = {**data, &#34;email&#34;: email}
-        if phone_number is not None:
-            data = {**data, &#34;phoneNumber&#34;: phone_number}
-        result = await self.querier.send_post_request(
+        input_dict = {}
+        if email:
+            input_dict[&#34;email&#34;] = email
+        if phone_number:
+            input_dict[&#34;phoneNumber&#34;] = phone_number
+        if user_input_code:
+            input_dict[&#34;userInputCode&#34;] = user_input_code
+
+        response = await self.querier.send_post_request(
             NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;),
-            data,
+            input_dict,
             user_context=user_context,
         )
         return CreateCodeOkResult(
-            pre_auth_session_id=result[&#34;preAuthSessionId&#34;],
-            code_id=result[&#34;codeId&#34;],
-            device_id=result[&#34;deviceId&#34;],
-            user_input_code=result[&#34;userInputCode&#34;],
-            link_code=result[&#34;linkCode&#34;],
-            time_created=result[&#34;timeCreated&#34;],
-            code_life_time=result[&#34;codeLifetime&#34;],
+            pre_auth_session_id=response[&#34;preAuthSessionId&#34;],
+            code_id=response[&#34;codeId&#34;],
+            device_id=response[&#34;deviceId&#34;],
+            user_input_code=response[&#34;userInputCode&#34;],
+            link_code=response[&#34;linkCode&#34;],
+            code_life_time=response[&#34;codeLifetime&#34;],
+            time_created=response[&#34;timeCreated&#34;],
         )
 
     async def create_new_code_for_device(
@@ -138,225 +282,42 @@ class RecipeImplementation(RecipeInterface):
             time_created=result[&#34;timeCreated&#34;],
         )
 
-    async def consume_code(
-        self,
-        pre_auth_session_id: str,
-        user_input_code: Union[str, None],
-        device_id: Union[str, None],
-        link_code: Union[str, None],
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -&gt; Union[
-        ConsumeCodeOkResult,
-        ConsumeCodeIncorrectUserInputCodeError,
-        ConsumeCodeExpiredUserInputCodeError,
-        ConsumeCodeRestartFlowError,
-    ]:
-        data = {&#34;preAuthSessionId&#34;: pre_auth_session_id}
-        if device_id is not None:
-            data = {**data, &#34;deviceId&#34;: device_id, &#34;userInputCode&#34;: user_input_code}
-        else:
-            data = {**data, &#34;linkCode&#34;: link_code}
-        result = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;),
-            data,
+    async def list_codes_by_device_id(
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[DeviceType, None]:
+        param = {&#34;deviceId&#34;: device_id}
+        result = await self.querier.send_get_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;),
+            param,
             user_context=user_context,
         )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
+        if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
+            codes: List[DeviceCode] = []
+            if &#34;code&#34; in result[&#34;devices&#34;][0]:
+                for code in result[&#34;devices&#34;][0]:
+                    codes.append(
+                        DeviceCode(
+                            code_id=code[&#34;codeId&#34;],
+                            time_created=code[&#34;timeCreated&#34;],
+                            code_life_time=code[&#34;codeLifetime&#34;],
+                        )
+                    )
             email = None
             phone_number = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            user = User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
+            if &#34;email&#34; in result[&#34;devices&#34;][0]:
+                email = result[&#34;devices&#34;][0][&#34;email&#34;]
+            if &#34;phoneNumber&#34; in result[&#34;devices&#34;][0]:
+                phone_number = result[&#34;devices&#34;][0][&#34;phoneNumber&#34;]
+            return DeviceType(
+                pre_auth_session_id=result[&#34;devices&#34;][0][&#34;preAuthSessionId&#34;],
+                failed_code_input_attempt_count=result[&#34;devices&#34;][0][
+                    &#34;failedCodeInputAttemptCount&#34;
+                ],
+                codes=codes,
                 email=email,
                 phone_number=phone_number,
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-            )
-            return ConsumeCodeOkResult(result[&#34;createdNewUser&#34;], user)
-        if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
-            return ConsumeCodeRestartFlowError()
-        if result[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
-            return ConsumeCodeIncorrectUserInputCodeError(
-                failed_code_input_attempt_count=result[&#34;failedCodeInputAttemptCount&#34;],
-                maximum_code_input_attempts=result[&#34;maximumCodeInputAttempts&#34;],
-            )
-        return ConsumeCodeExpiredUserInputCodeError(
-            failed_code_input_attempt_count=result[&#34;failedCodeInputAttemptCount&#34;],
-            maximum_code_input_attempts=result[&#34;maximumCodeInputAttempts&#34;],
-        )
-
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        param = {&#34;userId&#34;: user_id}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            param,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            email = None
-            phone_number = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            return User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
-                email=email,
-                phone_number=phone_number,
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
-
-    async def get_user_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        param = {&#34;email&#34;: email}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
-            param,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            email_resp = None
-            phone_number_resp = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email_resp = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number_resp = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            return User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
-                email=email_resp,
-                phone_number=phone_number_resp,
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-            )
-        return None
-
-    async def get_user_by_phone_number(
-        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        param = {&#34;phoneNumber&#34;: phone_number}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
-            param,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            email_resp = None
-            phone_number_resp = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email_resp = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number_resp = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            return User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
-                email=email_resp,
-                phone_number=phone_number_resp,
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-            )
-        return None
-
-    async def update_user(
-        self,
-        user_id: str,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        user_context: Dict[str, Any],
-    ) -&gt; Union[
-        UpdateUserOkResult,
-        UpdateUserUnknownUserIdError,
-        UpdateUserEmailAlreadyExistsError,
-        UpdateUserPhoneNumberAlreadyExistsError,
-    ]:
-        data = {&#34;userId&#34;: user_id}
-        if email is not None:
-            data = {**data, &#34;email&#34;: email}
-        if phone_number is not None:
-            data = {**data, &#34;phoneNumber&#34;: phone_number}
-        result = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            data,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            return UpdateUserOkResult()
-        if result[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
-            return UpdateUserUnknownUserIdError()
-        if result[&#34;status&#34;] == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
-            return UpdateUserEmailAlreadyExistsError()
-        return UpdateUserPhoneNumberAlreadyExistsError()
-
-    async def delete_email_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-        data = {&#34;userId&#34;: user_id, &#34;email&#34;: None}
-        result = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            data,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            return DeleteUserInfoOkResult()
-        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        return DeleteUserInfoUnknownUserIdError()
-
-    async def delete_phone_number_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-        data = {&#34;userId&#34;: user_id, &#34;phoneNumber&#34;: None}
-        result = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            data,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            return DeleteUserInfoOkResult()
-        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        return DeleteUserInfoUnknownUserIdError()
-
-    async def revoke_all_codes(
-        self,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -&gt; RevokeAllCodesOkResult:
-        data: Dict[str, Any] = {}
-        if email is not None:
-            data = {**data, &#34;email&#34;: email}
-        if phone_number is not None:
-            data = {**data, &#34;email&#34;: phone_number}
-        await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;),
-            data,
-            user_context=user_context,
-        )
-        return RevokeAllCodesOkResult()
-
-    async def revoke_code(
-        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; RevokeCodeOkResult:
-        data = {&#34;codeId&#34;: code_id}
-        await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;),
-            data,
-            user_context=user_context,
-        )
-        return RevokeCodeOkResult()
 
     async def list_codes_by_email(
         self, email: str, tenant_id: str, user_context: Dict[str, Any]
@@ -440,43 +401,6 @@ class RecipeImplementation(RecipeInterface):
                 )
         return devices
 
-    async def list_codes_by_device_id(
-        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[DeviceType, None]:
-        param = {&#34;deviceId&#34;: device_id}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;),
-            param,
-            user_context=user_context,
-        )
-        if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
-            codes: List[DeviceCode] = []
-            if &#34;code&#34; in result[&#34;devices&#34;][0]:
-                for code in result[&#34;devices&#34;][0]:
-                    codes.append(
-                        DeviceCode(
-                            code_id=code[&#34;codeId&#34;],
-                            time_created=code[&#34;timeCreated&#34;],
-                            code_life_time=code[&#34;codeLifetime&#34;],
-                        )
-                    )
-            email = None
-            phone_number = None
-            if &#34;email&#34; in result[&#34;devices&#34;][0]:
-                email = result[&#34;devices&#34;][0][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;devices&#34;][0]:
-                phone_number = result[&#34;devices&#34;][0][&#34;phoneNumber&#34;]
-            return DeviceType(
-                pre_auth_session_id=result[&#34;devices&#34;][0][&#34;preAuthSessionId&#34;],
-                failed_code_input_attempt_count=result[&#34;devices&#34;][0][
-                    &#34;failedCodeInputAttemptCount&#34;
-                ],
-                codes=codes,
-                email=email,
-                phone_number=phone_number,
-            )
-        return None
-
     async def list_codes_by_pre_auth_session_id(
         self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[DeviceType, None]:
@@ -512,7 +436,150 @@ class RecipeImplementation(RecipeInterface):
                 email=email,
                 phone_number=phone_number,
             )
-        return None</code></pre>
+        return None
+
+    async def revoke_all_codes(
+        self,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; RevokeAllCodesOkResult:
+        data: Dict[str, Any] = {}
+        if email is not None:
+            data = {**data, &#34;email&#34;: email}
+        if phone_number is not None:
+            data = {**data, &#34;email&#34;: phone_number}
+        await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;),
+            data,
+            user_context=user_context,
+        )
+        return RevokeAllCodesOkResult()
+
+    async def revoke_code(
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; RevokeCodeOkResult:
+        data = {&#34;codeId&#34;: code_id}
+        await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;),
+            data,
+            user_context=user_context,
+        )
+        return RevokeCodeOkResult()
+
+    async def delete_email_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: None}
+        result = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            data,
+            user_context=user_context,
+        )
+        if result[&#34;status&#34;] == &#34;OK&#34;:
+            return UpdateUserOkResult()
+        return UpdateUserUnknownUserIdError()
+
+    async def delete_phone_number_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string(), &#34;phoneNumber&#34;: None}
+        result = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            data,
+            user_context=user_context,
+        )
+        if result[&#34;status&#34;] == &#34;OK&#34;:
+            return UpdateUserOkResult()
+        return UpdateUserUnknownUserIdError()
+
+    async def update_user(
+        self,
+        recipe_user_id: RecipeUserId,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        UpdateUserOkResult,
+        UpdateUserUnknownUserIdError,
+        UpdateUserEmailAlreadyExistsError,
+        UpdateUserPhoneNumberAlreadyExistsError,
+        EmailChangeNotAllowedError,
+        PhoneNumberChangeNotAllowedError,
+    ]:
+        account_linking = AccountLinkingRecipe.get_instance()
+        if email:
+            user = await get_user(recipe_user_id.get_as_string(), user_context)
+            if user is None:
+                return UpdateUserUnknownUserIdError()
+
+            ev_instance = EmailVerificationRecipe.get_instance_optional()
+            is_email_verified = False
+            if ev_instance:
+                is_email_verified = (
+                    await ev_instance.recipe_implementation.is_email_verified(
+                        recipe_user_id=recipe_user_id,
+                        email=email,
+                        user_context=user_context,
+                    )
+                )
+
+            is_email_change_allowed = await account_linking.is_email_change_allowed(
+                user=user,
+                is_verified=is_email_verified,
+                new_email=email,
+                session=None,
+                user_context=user_context,
+            )
+            if not is_email_change_allowed.allowed:
+                return EmailChangeNotAllowedError(
+                    reason=(
+                        &#34;New email cannot be applied to existing account because of account takeover risks.&#34;
+                        if is_email_change_allowed.reason == &#34;ACCOUNT_TAKEOVER_RISK&#34;
+                        else &#34;New email cannot be applied to existing account because there is another primary user with the same email address.&#34;
+                    ),
+                )
+
+        input_dict = {
+            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
+        }
+        if email:
+            input_dict = {**input_dict, &#34;email&#34;: email}
+        if phone_number:
+            input_dict = {**input_dict, &#34;phoneNumber&#34;: phone_number}
+
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            input_dict,
+            user_context=user_context,
+        )
+        if response[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
+            return UpdateUserUnknownUserIdError()
+        elif response[&#34;status&#34;] == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
+            return UpdateUserEmailAlreadyExistsError()
+        elif response[&#34;status&#34;] == &#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;:
+            return UpdateUserPhoneNumberAlreadyExistsError()
+        elif response[&#34;status&#34;] == &#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;:
+            return EmailChangeNotAllowedError(
+                reason=response[&#34;reason&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;:
+            return PhoneNumberChangeNotAllowedError(
+                reason=response[&#34;reason&#34;],
+            )
+
+        # status is OK
+        user = await get_user(recipe_user_id.get_as_string(), user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdError()
+
+        await account_linking.verify_email_for_recipe_user_if_linked_accounts_are_verified(
+            user=user,
+            recipe_user_id=recipe_user_id,
+            user_context=user_context,
+        )
+        return UpdateUserOkResult()</code></pre>
 </details>
 </section>
 <section>
@@ -540,34 +607,166 @@ inheritance.</p></div>
         super().__init__()
         self.querier = querier
 
+    async def consume_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ConsumeCodeOkResult,
+        ConsumeCodeIncorrectUserInputCodeError,
+        ConsumeCodeExpiredUserInputCodeError,
+        ConsumeCodeRestartFlowError,
+        LinkingToSessionUserFailedError,
+    ]:
+        input_dict = {
+            &#34;preAuthSessionId&#34;: pre_auth_session_id,
+        }
+        if link_code is not None:
+            input_dict[&#34;linkCode&#34;] = link_code
+        else:
+            if user_input_code is None or device_id is None:
+                return ConsumeCodeRestartFlowError()
+            input_dict[&#34;userInputCode&#34;] = user_input_code
+            input_dict[&#34;deviceId&#34;] = device_id
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;),
+            input_dict,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
+            return ConsumeCodeIncorrectUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;EXPIRED_USER_INPUT_CODE_ERROR&#34;:
+            return ConsumeCodeExpiredUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
+            return ConsumeCodeRestartFlowError()
+
+        # status == &#34;OK&#34;
+
+        log_debug_message(&#34;Passwordless.consumeCode code consumed OK&#34;)
+
+        recipe_user_id = RecipeUserId(response[&#34;recipeUserId&#34;])
+
+        updated_user = User.from_json(response[&#34;user&#34;])
+
+        link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
+            tenant_id=tenant_id,
+            input_user=updated_user,
+            recipe_user_id=recipe_user_id,
+            session=session,
+            user_context=user_context,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
+        )
+
+        if isinstance(link_result, LinkingToSessionUserFailedError):
+            return link_result
+
+        updated_user = link_result.user
+
+        response[&#34;user&#34;] = updated_user
+
+        return ConsumeCodeOkResult(
+            user=updated_user,
+            recipe_user_id=recipe_user_id,
+            consumed_device=ConsumedDevice.from_json(response[&#34;consumedDevice&#34;]),
+            created_new_recipe_user=response[&#34;createdNewUser&#34;],
+        )
+
+    async def check_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        CheckCodeOkResult,
+        CheckCodeIncorrectUserInputCodeError,
+        CheckCodeExpiredUserInputCodeError,
+        CheckCodeRestartFlowError,
+    ]:
+        input_dict = {
+            &#34;preAuthSessionId&#34;: pre_auth_session_id,
+        }
+        if link_code is not None:
+            input_dict[&#34;linkCode&#34;] = link_code
+        else:
+            if user_input_code is None or device_id is None:
+                return CheckCodeRestartFlowError()
+            input_dict[&#34;userInputCode&#34;] = user_input_code
+            input_dict[&#34;deviceId&#34;] = device_id
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/check&#34;),
+            input_dict,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
+            return CheckCodeIncorrectUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;EXPIRED_USER_INPUT_CODE_ERROR&#34;:
+            return CheckCodeExpiredUserInputCodeError(
+                failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+                maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
+            return CheckCodeRestartFlowError()
+
+        # status == &#34;OK&#34;
+        log_debug_message(&#34;Passwordless.checkCode code verified&#34;)
+
+        return CheckCodeOkResult(
+            consumed_device=ConsumedDevice.from_json(response[&#34;consumedDevice&#34;])
+        )
+
     async def create_code(
         self,
         email: Union[None, str],
         phone_number: Union[None, str],
         user_input_code: Union[None, str],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -&gt; CreateCodeOkResult:
-        data: Dict[str, Any] = {}
-        if user_input_code is not None:
-            data = {**data, &#34;userInputCode&#34;: user_input_code}
-        if email is not None:
-            data = {**data, &#34;email&#34;: email}
-        if phone_number is not None:
-            data = {**data, &#34;phoneNumber&#34;: phone_number}
-        result = await self.querier.send_post_request(
+        input_dict = {}
+        if email:
+            input_dict[&#34;email&#34;] = email
+        if phone_number:
+            input_dict[&#34;phoneNumber&#34;] = phone_number
+        if user_input_code:
+            input_dict[&#34;userInputCode&#34;] = user_input_code
+
+        response = await self.querier.send_post_request(
             NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;),
-            data,
+            input_dict,
             user_context=user_context,
         )
         return CreateCodeOkResult(
-            pre_auth_session_id=result[&#34;preAuthSessionId&#34;],
-            code_id=result[&#34;codeId&#34;],
-            device_id=result[&#34;deviceId&#34;],
-            user_input_code=result[&#34;userInputCode&#34;],
-            link_code=result[&#34;linkCode&#34;],
-            time_created=result[&#34;timeCreated&#34;],
-            code_life_time=result[&#34;codeLifetime&#34;],
+            pre_auth_session_id=response[&#34;preAuthSessionId&#34;],
+            code_id=response[&#34;codeId&#34;],
+            device_id=response[&#34;deviceId&#34;],
+            user_input_code=response[&#34;userInputCode&#34;],
+            link_code=response[&#34;linkCode&#34;],
+            code_life_time=response[&#34;codeLifetime&#34;],
+            time_created=response[&#34;timeCreated&#34;],
         )
 
     async def create_new_code_for_device(
@@ -603,225 +802,42 @@ inheritance.</p></div>
             time_created=result[&#34;timeCreated&#34;],
         )
 
-    async def consume_code(
-        self,
-        pre_auth_session_id: str,
-        user_input_code: Union[str, None],
-        device_id: Union[str, None],
-        link_code: Union[str, None],
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -&gt; Union[
-        ConsumeCodeOkResult,
-        ConsumeCodeIncorrectUserInputCodeError,
-        ConsumeCodeExpiredUserInputCodeError,
-        ConsumeCodeRestartFlowError,
-    ]:
-        data = {&#34;preAuthSessionId&#34;: pre_auth_session_id}
-        if device_id is not None:
-            data = {**data, &#34;deviceId&#34;: device_id, &#34;userInputCode&#34;: user_input_code}
-        else:
-            data = {**data, &#34;linkCode&#34;: link_code}
-        result = await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;),
-            data,
+    async def list_codes_by_device_id(
+        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[DeviceType, None]:
+        param = {&#34;deviceId&#34;: device_id}
+        result = await self.querier.send_get_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;),
+            param,
             user_context=user_context,
         )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
+        if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
+            codes: List[DeviceCode] = []
+            if &#34;code&#34; in result[&#34;devices&#34;][0]:
+                for code in result[&#34;devices&#34;][0]:
+                    codes.append(
+                        DeviceCode(
+                            code_id=code[&#34;codeId&#34;],
+                            time_created=code[&#34;timeCreated&#34;],
+                            code_life_time=code[&#34;codeLifetime&#34;],
+                        )
+                    )
             email = None
             phone_number = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            user = User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
+            if &#34;email&#34; in result[&#34;devices&#34;][0]:
+                email = result[&#34;devices&#34;][0][&#34;email&#34;]
+            if &#34;phoneNumber&#34; in result[&#34;devices&#34;][0]:
+                phone_number = result[&#34;devices&#34;][0][&#34;phoneNumber&#34;]
+            return DeviceType(
+                pre_auth_session_id=result[&#34;devices&#34;][0][&#34;preAuthSessionId&#34;],
+                failed_code_input_attempt_count=result[&#34;devices&#34;][0][
+                    &#34;failedCodeInputAttemptCount&#34;
+                ],
+                codes=codes,
                 email=email,
                 phone_number=phone_number,
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-            )
-            return ConsumeCodeOkResult(result[&#34;createdNewUser&#34;], user)
-        if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
-            return ConsumeCodeRestartFlowError()
-        if result[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
-            return ConsumeCodeIncorrectUserInputCodeError(
-                failed_code_input_attempt_count=result[&#34;failedCodeInputAttemptCount&#34;],
-                maximum_code_input_attempts=result[&#34;maximumCodeInputAttempts&#34;],
-            )
-        return ConsumeCodeExpiredUserInputCodeError(
-            failed_code_input_attempt_count=result[&#34;failedCodeInputAttemptCount&#34;],
-            maximum_code_input_attempts=result[&#34;maximumCodeInputAttempts&#34;],
-        )
-
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        param = {&#34;userId&#34;: user_id}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            param,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            email = None
-            phone_number = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            return User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
-                email=email,
-                phone_number=phone_number,
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
             )
         return None
-
-    async def get_user_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        param = {&#34;email&#34;: email}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
-            param,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            email_resp = None
-            phone_number_resp = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email_resp = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number_resp = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            return User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
-                email=email_resp,
-                phone_number=phone_number_resp,
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-            )
-        return None
-
-    async def get_user_by_phone_number(
-        self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[User, None]:
-        param = {&#34;phoneNumber&#34;: phone_number}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
-            param,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            email_resp = None
-            phone_number_resp = None
-            if &#34;email&#34; in result[&#34;user&#34;]:
-                email_resp = result[&#34;user&#34;][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-                phone_number_resp = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-            return User(
-                user_id=result[&#34;user&#34;][&#34;id&#34;],
-                email=email_resp,
-                phone_number=phone_number_resp,
-                time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-                tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-            )
-        return None
-
-    async def update_user(
-        self,
-        user_id: str,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        user_context: Dict[str, Any],
-    ) -&gt; Union[
-        UpdateUserOkResult,
-        UpdateUserUnknownUserIdError,
-        UpdateUserEmailAlreadyExistsError,
-        UpdateUserPhoneNumberAlreadyExistsError,
-    ]:
-        data = {&#34;userId&#34;: user_id}
-        if email is not None:
-            data = {**data, &#34;email&#34;: email}
-        if phone_number is not None:
-            data = {**data, &#34;phoneNumber&#34;: phone_number}
-        result = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            data,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            return UpdateUserOkResult()
-        if result[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
-            return UpdateUserUnknownUserIdError()
-        if result[&#34;status&#34;] == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
-            return UpdateUserEmailAlreadyExistsError()
-        return UpdateUserPhoneNumberAlreadyExistsError()
-
-    async def delete_email_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-        data = {&#34;userId&#34;: user_id, &#34;email&#34;: None}
-        result = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            data,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            return DeleteUserInfoOkResult()
-        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        return DeleteUserInfoUnknownUserIdError()
-
-    async def delete_phone_number_for_user(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-        data = {&#34;userId&#34;: user_id, &#34;phoneNumber&#34;: None}
-        result = await self.querier.send_put_request(
-            NormalisedURLPath(&#34;/recipe/user&#34;),
-            data,
-            user_context=user_context,
-        )
-        if result[&#34;status&#34;] == &#34;OK&#34;:
-            return DeleteUserInfoOkResult()
-        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
-            raise Exception(&#34;Should never come here&#34;)
-        return DeleteUserInfoUnknownUserIdError()
-
-    async def revoke_all_codes(
-        self,
-        email: Union[str, None],
-        phone_number: Union[str, None],
-        tenant_id: str,
-        user_context: Dict[str, Any],
-    ) -&gt; RevokeAllCodesOkResult:
-        data: Dict[str, Any] = {}
-        if email is not None:
-            data = {**data, &#34;email&#34;: email}
-        if phone_number is not None:
-            data = {**data, &#34;email&#34;: phone_number}
-        await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;),
-            data,
-            user_context=user_context,
-        )
-        return RevokeAllCodesOkResult()
-
-    async def revoke_code(
-        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; RevokeCodeOkResult:
-        data = {&#34;codeId&#34;: code_id}
-        await self.querier.send_post_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;),
-            data,
-            user_context=user_context,
-        )
-        return RevokeCodeOkResult()
 
     async def list_codes_by_email(
         self, email: str, tenant_id: str, user_context: Dict[str, Any]
@@ -905,43 +921,6 @@ inheritance.</p></div>
                 )
         return devices
 
-    async def list_codes_by_device_id(
-        self, device_id: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -&gt; Union[DeviceType, None]:
-        param = {&#34;deviceId&#34;: device_id}
-        result = await self.querier.send_get_request(
-            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes&#34;),
-            param,
-            user_context=user_context,
-        )
-        if &#34;devices&#34; in result and len(result[&#34;devices&#34;]) == 1:
-            codes: List[DeviceCode] = []
-            if &#34;code&#34; in result[&#34;devices&#34;][0]:
-                for code in result[&#34;devices&#34;][0]:
-                    codes.append(
-                        DeviceCode(
-                            code_id=code[&#34;codeId&#34;],
-                            time_created=code[&#34;timeCreated&#34;],
-                            code_life_time=code[&#34;codeLifetime&#34;],
-                        )
-                    )
-            email = None
-            phone_number = None
-            if &#34;email&#34; in result[&#34;devices&#34;][0]:
-                email = result[&#34;devices&#34;][0][&#34;email&#34;]
-            if &#34;phoneNumber&#34; in result[&#34;devices&#34;][0]:
-                phone_number = result[&#34;devices&#34;][0][&#34;phoneNumber&#34;]
-            return DeviceType(
-                pre_auth_session_id=result[&#34;devices&#34;][0][&#34;preAuthSessionId&#34;],
-                failed_code_input_attempt_count=result[&#34;devices&#34;][0][
-                    &#34;failedCodeInputAttemptCount&#34;
-                ],
-                codes=codes,
-                email=email,
-                phone_number=phone_number,
-            )
-        return None
-
     async def list_codes_by_pre_auth_session_id(
         self, pre_auth_session_id: str, tenant_id: str, user_context: Dict[str, Any]
     ) -&gt; Union[DeviceType, None]:
@@ -977,7 +956,150 @@ inheritance.</p></div>
                 email=email,
                 phone_number=phone_number,
             )
-        return None</code></pre>
+        return None
+
+    async def revoke_all_codes(
+        self,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; RevokeAllCodesOkResult:
+        data: Dict[str, Any] = {}
+        if email is not None:
+            data = {**data, &#34;email&#34;: email}
+        if phone_number is not None:
+            data = {**data, &#34;email&#34;: phone_number}
+        await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;),
+            data,
+            user_context=user_context,
+        )
+        return RevokeAllCodesOkResult()
+
+    async def revoke_code(
+        self, code_id: str, tenant_id: str, user_context: Dict[str, Any]
+    ) -&gt; RevokeCodeOkResult:
+        data = {&#34;codeId&#34;: code_id}
+        await self.querier.send_post_request(
+            NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/remove&#34;),
+            data,
+            user_context=user_context,
+        )
+        return RevokeCodeOkResult()
+
+    async def delete_email_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: None}
+        result = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            data,
+            user_context=user_context,
+        )
+        if result[&#34;status&#34;] == &#34;OK&#34;:
+            return UpdateUserOkResult()
+        return UpdateUserUnknownUserIdError()
+
+    async def delete_phone_number_for_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+        data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string(), &#34;phoneNumber&#34;: None}
+        result = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            data,
+            user_context=user_context,
+        )
+        if result[&#34;status&#34;] == &#34;OK&#34;:
+            return UpdateUserOkResult()
+        return UpdateUserUnknownUserIdError()
+
+    async def update_user(
+        self,
+        recipe_user_id: RecipeUserId,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        UpdateUserOkResult,
+        UpdateUserUnknownUserIdError,
+        UpdateUserEmailAlreadyExistsError,
+        UpdateUserPhoneNumberAlreadyExistsError,
+        EmailChangeNotAllowedError,
+        PhoneNumberChangeNotAllowedError,
+    ]:
+        account_linking = AccountLinkingRecipe.get_instance()
+        if email:
+            user = await get_user(recipe_user_id.get_as_string(), user_context)
+            if user is None:
+                return UpdateUserUnknownUserIdError()
+
+            ev_instance = EmailVerificationRecipe.get_instance_optional()
+            is_email_verified = False
+            if ev_instance:
+                is_email_verified = (
+                    await ev_instance.recipe_implementation.is_email_verified(
+                        recipe_user_id=recipe_user_id,
+                        email=email,
+                        user_context=user_context,
+                    )
+                )
+
+            is_email_change_allowed = await account_linking.is_email_change_allowed(
+                user=user,
+                is_verified=is_email_verified,
+                new_email=email,
+                session=None,
+                user_context=user_context,
+            )
+            if not is_email_change_allowed.allowed:
+                return EmailChangeNotAllowedError(
+                    reason=(
+                        &#34;New email cannot be applied to existing account because of account takeover risks.&#34;
+                        if is_email_change_allowed.reason == &#34;ACCOUNT_TAKEOVER_RISK&#34;
+                        else &#34;New email cannot be applied to existing account because there is another primary user with the same email address.&#34;
+                    ),
+                )
+
+        input_dict = {
+            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
+        }
+        if email:
+            input_dict = {**input_dict, &#34;email&#34;: email}
+        if phone_number:
+            input_dict = {**input_dict, &#34;phoneNumber&#34;: phone_number}
+
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;),
+            input_dict,
+            user_context=user_context,
+        )
+        if response[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
+            return UpdateUserUnknownUserIdError()
+        elif response[&#34;status&#34;] == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
+            return UpdateUserEmailAlreadyExistsError()
+        elif response[&#34;status&#34;] == &#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;:
+            return UpdateUserPhoneNumberAlreadyExistsError()
+        elif response[&#34;status&#34;] == &#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;:
+            return EmailChangeNotAllowedError(
+                reason=response[&#34;reason&#34;],
+            )
+        elif response[&#34;status&#34;] == &#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;:
+            return PhoneNumberChangeNotAllowedError(
+                reason=response[&#34;reason&#34;],
+            )
+
+        # status is OK
+        user = await get_user(recipe_user_id.get_as_string(), user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdError()
+
+        await account_linking.verify_email_for_recipe_user_if_linked_accounts_are_verified(
+            user=user,
+            recipe_user_id=recipe_user_id,
+            user_context=user_context,
+        )
+        return UpdateUserOkResult()</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -986,8 +1108,69 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.check_code"><code class="name flex">
+<span>async def <span class="ident">check_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeOkResult">CheckCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeIncorrectUserInputCodeError">CheckCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeExpiredUserInputCodeError">CheckCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CheckCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CheckCodeRestartFlowError">CheckCodeRestartFlowError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def check_code(
+    self,
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None],
+    device_id: Union[str, None],
+    link_code: Union[str, None],
+    tenant_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    CheckCodeOkResult,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeRestartFlowError,
+]:
+    input_dict = {
+        &#34;preAuthSessionId&#34;: pre_auth_session_id,
+    }
+    if link_code is not None:
+        input_dict[&#34;linkCode&#34;] = link_code
+    else:
+        if user_input_code is None or device_id is None:
+            return CheckCodeRestartFlowError()
+        input_dict[&#34;userInputCode&#34;] = user_input_code
+        input_dict[&#34;deviceId&#34;] = device_id
+
+    response = await self.querier.send_post_request(
+        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/check&#34;),
+        input_dict,
+        user_context=user_context,
+    )
+
+    if response[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
+        return CheckCodeIncorrectUserInputCodeError(
+            failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+            maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+        )
+    elif response[&#34;status&#34;] == &#34;EXPIRED_USER_INPUT_CODE_ERROR&#34;:
+        return CheckCodeExpiredUserInputCodeError(
+            failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+            maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+        )
+    elif response[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
+        return CheckCodeRestartFlowError()
+
+    # status == &#34;OK&#34;
+    log_debug_message(&#34;Passwordless.checkCode code verified&#34;)
+
+    return CheckCodeOkResult(
+        consumed_device=ConsumedDevice.from_json(response[&#34;consumedDevice&#34;])
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code"><code class="name flex">
-<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
+<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1001,6 +1184,8 @@ inheritance.</p></div>
     user_input_code: Union[str, None],
     device_id: Union[str, None],
     link_code: Union[str, None],
+    session: Optional[SessionContainer],
+    should_try_linking_with_session_user: Union[bool, None],
     tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; Union[
@@ -1008,47 +1193,72 @@ inheritance.</p></div>
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeRestartFlowError,
+    LinkingToSessionUserFailedError,
 ]:
-    data = {&#34;preAuthSessionId&#34;: pre_auth_session_id}
-    if device_id is not None:
-        data = {**data, &#34;deviceId&#34;: device_id, &#34;userInputCode&#34;: user_input_code}
+    input_dict = {
+        &#34;preAuthSessionId&#34;: pre_auth_session_id,
+    }
+    if link_code is not None:
+        input_dict[&#34;linkCode&#34;] = link_code
     else:
-        data = {**data, &#34;linkCode&#34;: link_code}
-    result = await self.querier.send_post_request(
+        if user_input_code is None or device_id is None:
+            return ConsumeCodeRestartFlowError()
+        input_dict[&#34;userInputCode&#34;] = user_input_code
+        input_dict[&#34;deviceId&#34;] = device_id
+
+    response = await self.querier.send_post_request(
         NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code/consume&#34;),
-        data,
+        input_dict,
         user_context=user_context,
     )
-    if result[&#34;status&#34;] == &#34;OK&#34;:
-        email = None
-        phone_number = None
-        if &#34;email&#34; in result[&#34;user&#34;]:
-            email = result[&#34;user&#34;][&#34;email&#34;]
-        if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-            phone_number = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-        user = User(
-            user_id=result[&#34;user&#34;][&#34;id&#34;],
-            email=email,
-            phone_number=phone_number,
-            time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-        )
-        return ConsumeCodeOkResult(result[&#34;createdNewUser&#34;], user)
-    if result[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
-        return ConsumeCodeRestartFlowError()
-    if result[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
+
+    if response[&#34;status&#34;] == &#34;INCORRECT_USER_INPUT_CODE_ERROR&#34;:
         return ConsumeCodeIncorrectUserInputCodeError(
-            failed_code_input_attempt_count=result[&#34;failedCodeInputAttemptCount&#34;],
-            maximum_code_input_attempts=result[&#34;maximumCodeInputAttempts&#34;],
+            failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+            maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
         )
-    return ConsumeCodeExpiredUserInputCodeError(
-        failed_code_input_attempt_count=result[&#34;failedCodeInputAttemptCount&#34;],
-        maximum_code_input_attempts=result[&#34;maximumCodeInputAttempts&#34;],
+    elif response[&#34;status&#34;] == &#34;EXPIRED_USER_INPUT_CODE_ERROR&#34;:
+        return ConsumeCodeExpiredUserInputCodeError(
+            failed_code_input_attempt_count=response[&#34;failedCodeInputAttemptCount&#34;],
+            maximum_code_input_attempts=response[&#34;maximumCodeInputAttempts&#34;],
+        )
+    elif response[&#34;status&#34;] == &#34;RESTART_FLOW_ERROR&#34;:
+        return ConsumeCodeRestartFlowError()
+
+    # status == &#34;OK&#34;
+
+    log_debug_message(&#34;Passwordless.consumeCode code consumed OK&#34;)
+
+    recipe_user_id = RecipeUserId(response[&#34;recipeUserId&#34;])
+
+    updated_user = User.from_json(response[&#34;user&#34;])
+
+    link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
+        tenant_id=tenant_id,
+        input_user=updated_user,
+        recipe_user_id=recipe_user_id,
+        session=session,
+        user_context=user_context,
+        should_try_linking_with_session_user=should_try_linking_with_session_user,
+    )
+
+    if isinstance(link_result, LinkingToSessionUserFailedError):
+        return link_result
+
+    updated_user = link_result.user
+
+    response[&#34;user&#34;] = updated_user
+
+    return ConsumeCodeOkResult(
+        user=updated_user,
+        recipe_user_id=recipe_user_id,
+        consumed_device=ConsumedDevice.from_json(response[&#34;consumedDevice&#34;]),
+        created_new_recipe_user=response[&#34;createdNewUser&#34;],
     )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_code"><code class="name flex">
-<span>async def <span class="ident">create_code</span></span>(<span>self, email: Union[None, str], phone_number: Union[None, str], user_input_code: Union[None, str], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
+<span>async def <span class="ident">create_code</span></span>(<span>self, email: Union[None, str], phone_number: Union[None, str], user_input_code: Union[None, str], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1061,29 +1271,32 @@ inheritance.</p></div>
     email: Union[None, str],
     phone_number: Union[None, str],
     user_input_code: Union[None, str],
+    session: Optional[SessionContainer],
+    should_try_linking_with_session_user: Union[bool, None],
     tenant_id: str,
     user_context: Dict[str, Any],
 ) -&gt; CreateCodeOkResult:
-    data: Dict[str, Any] = {}
-    if user_input_code is not None:
-        data = {**data, &#34;userInputCode&#34;: user_input_code}
-    if email is not None:
-        data = {**data, &#34;email&#34;: email}
-    if phone_number is not None:
-        data = {**data, &#34;phoneNumber&#34;: phone_number}
-    result = await self.querier.send_post_request(
+    input_dict = {}
+    if email:
+        input_dict[&#34;email&#34;] = email
+    if phone_number:
+        input_dict[&#34;phoneNumber&#34;] = phone_number
+    if user_input_code:
+        input_dict[&#34;userInputCode&#34;] = user_input_code
+
+    response = await self.querier.send_post_request(
         NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/code&#34;),
-        data,
+        input_dict,
         user_context=user_context,
     )
     return CreateCodeOkResult(
-        pre_auth_session_id=result[&#34;preAuthSessionId&#34;],
-        code_id=result[&#34;codeId&#34;],
-        device_id=result[&#34;deviceId&#34;],
-        user_input_code=result[&#34;userInputCode&#34;],
-        link_code=result[&#34;linkCode&#34;],
-        time_created=result[&#34;timeCreated&#34;],
-        code_life_time=result[&#34;codeLifetime&#34;],
+        pre_auth_session_id=response[&#34;preAuthSessionId&#34;],
+        code_id=response[&#34;codeId&#34;],
+        device_id=response[&#34;deviceId&#34;],
+        user_input_code=response[&#34;userInputCode&#34;],
+        link_code=response[&#34;linkCode&#34;],
+        code_life_time=response[&#34;codeLifetime&#34;],
+        time_created=response[&#34;timeCreated&#34;],
     )</code></pre>
 </details>
 </dd>
@@ -1131,7 +1344,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_email_for_user"><code class="name flex">
-<span>async def <span class="ident">delete_email_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+<span>async def <span class="ident">delete_email_for_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1140,25 +1353,21 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def delete_email_for_user(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-    data = {&#34;userId&#34;: user_id, &#34;email&#34;: None}
+    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+    data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: None}
     result = await self.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/user&#34;),
         data,
         user_context=user_context,
     )
     if result[&#34;status&#34;] == &#34;OK&#34;:
-        return DeleteUserInfoOkResult()
-    if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
-        raise Exception(&#34;Should never come here&#34;)
-    if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
-        raise Exception(&#34;Should never come here&#34;)
-    return DeleteUserInfoUnknownUserIdError()</code></pre>
+        return UpdateUserOkResult()
+    return UpdateUserUnknownUserIdError()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_phone_number_for_user"><code class="name flex">
-<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1167,126 +1376,17 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def delete_phone_number_for_user(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-    data = {&#34;userId&#34;: user_id, &#34;phoneNumber&#34;: None}
+    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
+    data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string(), &#34;phoneNumber&#34;: None}
     result = await self.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/user&#34;),
         data,
         user_context=user_context,
     )
     if result[&#34;status&#34;] == &#34;OK&#34;:
-        return DeleteUserInfoOkResult()
-    if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
-        raise Exception(&#34;Should never come here&#34;)
-    if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
-        raise Exception(&#34;Should never come here&#34;)
-    return DeleteUserInfoUnknownUserIdError()</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email"><code class="name flex">
-<span>async def <span class="ident">get_user_by_email</span></span>(<span>self, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_email(
-    self, email: str, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; Union[User, None]:
-    param = {&#34;email&#34;: email}
-    result = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
-        param,
-        user_context=user_context,
-    )
-    if result[&#34;status&#34;] == &#34;OK&#34;:
-        email_resp = None
-        phone_number_resp = None
-        if &#34;email&#34; in result[&#34;user&#34;]:
-            email_resp = result[&#34;user&#34;][&#34;email&#34;]
-        if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-            phone_number_resp = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-        return User(
-            user_id=result[&#34;user&#34;][&#34;id&#34;],
-            email=email_resp,
-            phone_number=phone_number_resp,
-            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-            time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-        )
-    return None</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_id"><code class="name flex">
-<span>async def <span class="ident">get_user_by_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_id(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Union[User, None]:
-    param = {&#34;userId&#34;: user_id}
-    result = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user&#34;),
-        param,
-        user_context=user_context,
-    )
-    if result[&#34;status&#34;] == &#34;OK&#34;:
-        email = None
-        phone_number = None
-        if &#34;email&#34; in result[&#34;user&#34;]:
-            email = result[&#34;user&#34;][&#34;email&#34;]
-        if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-            phone_number = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-        return User(
-            user_id=result[&#34;user&#34;][&#34;id&#34;],
-            email=email,
-            phone_number=phone_number,
-            time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-        )
-    return None</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_phone_number"><code class="name flex">
-<span>async def <span class="ident">get_user_by_phone_number</span></span>(<span>self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_by_phone_number(
-    self, phone_number: str, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; Union[User, None]:
-    param = {&#34;phoneNumber&#34;: phone_number}
-    result = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user&#34;),
-        param,
-        user_context=user_context,
-    )
-    if result[&#34;status&#34;] == &#34;OK&#34;:
-        email_resp = None
-        phone_number_resp = None
-        if &#34;email&#34; in result[&#34;user&#34;]:
-            email_resp = result[&#34;user&#34;][&#34;email&#34;]
-        if &#34;phoneNumber&#34; in result[&#34;user&#34;]:
-            phone_number_resp = result[&#34;user&#34;][&#34;phoneNumber&#34;]
-        return User(
-            user_id=result[&#34;user&#34;][&#34;id&#34;],
-            email=email_resp,
-            phone_number=phone_number_resp,
-            time_joined=result[&#34;user&#34;][&#34;timeJoined&#34;],
-            tenant_ids=result[&#34;user&#34;][&#34;tenantIds&#34;],
-        )
-    return None</code></pre>
+        return UpdateUserOkResult()
+    return UpdateUserUnknownUserIdError()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_device_id"><code class="name flex">
@@ -1536,7 +1636,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.update_user"><code class="name flex">
-<span>async def <span class="ident">update_user</span></span>(<span>self, user_id: str, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>]</span>
+<span>async def <span class="ident">update_user</span></span>(<span>self, recipe_user_id: RecipeUserId, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.EmailChangeNotAllowedError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberChangeNotAllowedError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberChangeNotAllowedError">PhoneNumberChangeNotAllowedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1546,7 +1646,7 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def update_user(
     self,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Union[str, None],
     phone_number: Union[str, None],
     user_context: Dict[str, Any],
@@ -1555,24 +1655,81 @@ inheritance.</p></div>
     UpdateUserUnknownUserIdError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserPhoneNumberAlreadyExistsError,
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
 ]:
-    data = {&#34;userId&#34;: user_id}
-    if email is not None:
-        data = {**data, &#34;email&#34;: email}
-    if phone_number is not None:
-        data = {**data, &#34;phoneNumber&#34;: phone_number}
-    result = await self.querier.send_put_request(
+    account_linking = AccountLinkingRecipe.get_instance()
+    if email:
+        user = await get_user(recipe_user_id.get_as_string(), user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdError()
+
+        ev_instance = EmailVerificationRecipe.get_instance_optional()
+        is_email_verified = False
+        if ev_instance:
+            is_email_verified = (
+                await ev_instance.recipe_implementation.is_email_verified(
+                    recipe_user_id=recipe_user_id,
+                    email=email,
+                    user_context=user_context,
+                )
+            )
+
+        is_email_change_allowed = await account_linking.is_email_change_allowed(
+            user=user,
+            is_verified=is_email_verified,
+            new_email=email,
+            session=None,
+            user_context=user_context,
+        )
+        if not is_email_change_allowed.allowed:
+            return EmailChangeNotAllowedError(
+                reason=(
+                    &#34;New email cannot be applied to existing account because of account takeover risks.&#34;
+                    if is_email_change_allowed.reason == &#34;ACCOUNT_TAKEOVER_RISK&#34;
+                    else &#34;New email cannot be applied to existing account because there is another primary user with the same email address.&#34;
+                ),
+            )
+
+    input_dict = {
+        &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
+    }
+    if email:
+        input_dict = {**input_dict, &#34;email&#34;: email}
+    if phone_number:
+        input_dict = {**input_dict, &#34;phoneNumber&#34;: phone_number}
+
+    response = await self.querier.send_put_request(
         NormalisedURLPath(&#34;/recipe/user&#34;),
-        data,
+        input_dict,
         user_context=user_context,
     )
-    if result[&#34;status&#34;] == &#34;OK&#34;:
-        return UpdateUserOkResult()
-    if result[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
+    if response[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
         return UpdateUserUnknownUserIdError()
-    if result[&#34;status&#34;] == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
+    elif response[&#34;status&#34;] == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
         return UpdateUserEmailAlreadyExistsError()
-    return UpdateUserPhoneNumberAlreadyExistsError()</code></pre>
+    elif response[&#34;status&#34;] == &#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;:
+        return UpdateUserPhoneNumberAlreadyExistsError()
+    elif response[&#34;status&#34;] == &#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;:
+        return EmailChangeNotAllowedError(
+            reason=response[&#34;reason&#34;],
+        )
+    elif response[&#34;status&#34;] == &#34;PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR&#34;:
+        return PhoneNumberChangeNotAllowedError(
+            reason=response[&#34;reason&#34;],
+        )
+
+    # status is OK
+    user = await get_user(recipe_user_id.get_as_string(), user_context)
+    if user is None:
+        return UpdateUserUnknownUserIdError()
+
+    await account_linking.verify_email_for_recipe_user_if_linked_accounts_are_verified(
+        user=user,
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+    return UpdateUserOkResult()</code></pre>
 </details>
 </dd>
 </dl>
@@ -1596,14 +1753,12 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation">RecipeImplementation</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.check_code" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.check_code">check_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_code" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_new_code_for_device" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_new_code_for_device">create_new_code_for_device</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_email_for_user" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_email_for_user">delete_email_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_phone_number_for_user" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email">get_user_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_id" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_id">get_user_by_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_phone_number" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_device_id" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_device_id">list_codes_by_device_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_email" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_email">list_codes_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_phone_number" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.list_codes_by_phone_number">list_codes_by_phone_number</a></code></li>
