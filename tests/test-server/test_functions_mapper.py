@@ -298,12 +298,12 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             }
             jsonified = {k: v for k, v in jsonified.items() if v is not None}
             if "emailInputs" in store:
-                store["emailInputs"].append(jsonified)
+                store["emailInputs"].append(jsonified)  # type: ignore
             else:
                 store["emailInputs"] = [jsonified]
 
             # Add to send_email_inputs
-            send_email_inputs.append(jsonified)
+            send_email_inputs.append(jsonified)  # type: ignore
 
         return func1
 
@@ -370,7 +370,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 "userInputCode": template_vars.user_input_code,
             }
             jsonified = {k: v for k, v in jsonified.items() if v is not None}
-            send_sms_inputs.append(jsonified)
+            send_sms_inputs.append(jsonified)  # type: ignore
 
         return func2
 
@@ -961,8 +961,8 @@ def get_override_params() -> OverrideParams:
         email_post_password_reset=email_post_password_reset,
         send_email_callback_called=send_email_callback_called,
         send_email_to_user_email=send_email_to_user_email,
-        send_email_inputs=send_email_inputs,
-        send_sms_inputs=send_sms_inputs,
+        send_email_inputs=send_email_inputs,  # type: ignore
+        send_sms_inputs=send_sms_inputs,  # type: ignore
         send_email_to_recipe_user_id=send_email_to_recipe_user_id,
         user_in_callback=user_in_callback,
         email=email_param,
@@ -977,7 +977,7 @@ def get_override_params() -> OverrideParams:
             else None
         ),
         core_call_count=Info.core_call_count,
-        store=store,
+        store=store,  # type: ignore
     )
 
 
@@ -1019,21 +1019,3 @@ new_account_info_in_callback = None
 user_id_in_callback = None
 recipe_user_id_in_callback = None
 store = {}
-
-# Type annotations (if needed)
-send_email_to_user_id: Optional[str]
-token: Optional[str]
-user_post_password_reset: Optional[User]
-email_post_password_reset: Optional[str]
-send_email_callback_called: bool
-send_email_to_user_email: Optional[str]
-send_email_inputs: List[Any]
-send_sms_inputs: List[Any]
-send_email_to_recipe_user_id: Optional[str]
-user_in_callback: Optional[Union[User, VerificationEmailTemplateVarsUser]]
-email_param: Optional[str]
-primary_user_in_callback: Optional[User]
-new_account_info_in_callback: Optional[RecipeLevelUser]
-user_id_in_callback: Optional[str]
-recipe_user_id_in_callback: Optional[RecipeUserId]
-store: Dict[str, Any]
