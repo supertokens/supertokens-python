@@ -49,12 +49,11 @@ class APIImplementation(APIInterface):
 
     async def signout_post(
         self,
-        session: Optional[SessionContainer],
+        session: SessionContainer,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
-        if session is not None:
-            await session.revoke_session(user_context)
+        await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
     async def verify_session(

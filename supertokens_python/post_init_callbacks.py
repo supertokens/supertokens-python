@@ -18,15 +18,18 @@ from typing import Callable, List
 class PostSTInitCallbacks:
     """Callbacks that are called after the SuperTokens instance is initialized."""
 
-    callbacks: List[Callable[[], None]] = []
+    post_init_callbacks: List[Callable[[], None]] = []
 
     @staticmethod
     def add_post_init_callback(cb: Callable[[], None]) -> None:
-        PostSTInitCallbacks.callbacks.append(cb)
+        PostSTInitCallbacks.post_init_callbacks.append(cb)
 
     @staticmethod
     def run_post_init_callbacks() -> None:
-        for cb in PostSTInitCallbacks.callbacks:
+        for cb in PostSTInitCallbacks.post_init_callbacks:
             cb()
+        PostSTInitCallbacks.post_init_callbacks = []
 
-        PostSTInitCallbacks.callbacks = []
+    @staticmethod
+    def reset():
+        PostSTInitCallbacks.post_init_callbacks = []

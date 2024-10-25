@@ -22,21 +22,18 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
     DisassociateUserFromTenantOkResult,
 )
+from supertokens_python.types import RecipeUserId
 
 from .interfaces import (
+    AssociateUserToTenantNotAllowedError,
     RecipeInterface,
     TenantConfig,
     CreateOrUpdateTenantOkResult,
     DeleteTenantOkResult,
-    TenantConfigResponse,
-    GetTenantOkResult,
-    EmailPasswordConfig,
-    PasswordlessConfig,
-    ThirdPartyConfig,
     ListAllTenantsOkResult,
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
-    ListAllTenantsItem,
+    TenantConfigCreateOrUpdate,
 )
 
 if TYPE_CHECKING:
@@ -48,7 +45,7 @@ from supertokens_python.querier import NormalisedURLPath
 from .constants import DEFAULT_TENANT_ID
 
 
-def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
+def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfig:
     from supertokens_python.recipe.thirdparty.provider import (
         UserInfoMap,
         UserFields,
@@ -109,14 +106,12 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfigResponse:
             )
         )
 
-    return TenantConfigResponse(
-        emailpassword=EmailPasswordConfig(tenant["emailPassword"]["enabled"]),
-        passwordless=PasswordlessConfig(tenant["passwordless"]["enabled"]),
-        third_party=ThirdPartyConfig(
-            tenant["thirdParty"]["enabled"],
-            providers,
-        ),
+    return TenantConfig(
+        tenant_id=tenant["tenantId"],
+        third_party_providers=providers,
         core_config=tenant["coreConfig"],
+        first_factors=tenant.get("firstFactors"),
+        required_secondary_factors=tenant.get("requiredSecondaryFactors"),
     )
 
 
@@ -134,15 +129,24 @@ class RecipeImplementation(RecipeInterface):
     async def create_or_update_tenant(
         self,
         tenant_id: str,
-        config: Optional[TenantConfig],
+        config: Optional[TenantConfigCreateOrUpdate],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
+        json_body: Dict[str, Any] = {
+            "tenantId": tenant_id,
+        }
+        if config is not None:
+            if not config.is_first_factors_unchanged():
+                json_body["firstFactors"] = config.get_first_factors_for_update()
+            if not config.is_required_secondary_factors_unchanged():
+                json_body[
+                    "requiredSecondaryFactors"
+                ] = config.get_required_secondary_factors_for_update()
+            json_body["coreConfig"] = config.core_config
+
         response = await self.querier.send_put_request(
-            NormalisedURLPath("/recipe/multitenancy/tenant"),
-            {
-                "tenantId": tenant_id,
-                **(config.to_json() if config is not None else {}),
-            },
+            NormalisedURLPath("/recipe/multitenancy/tenant/v2"),
+            json_body,
             user_context=user_context,
         )
         return CreateOrUpdateTenantOkResult(
@@ -163,10 +167,10 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_tenant(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
-    ) -> Optional[GetTenantOkResult]:
+    ) -> Optional[TenantConfig]:
         res = await self.querier.send_get_request(
             NormalisedURLPath(
-                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant"
+                f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/v2"
             ),
             None,
             user_context=user_context,
@@ -177,34 +181,22 @@ class RecipeImplementation(RecipeInterface):
 
         tenant_config = parse_tenant_config(res)
 
-        return GetTenantOkResult(
-            emailpassword=tenant_config.emailpassword,
-            passwordless=tenant_config.passwordless,
-            third_party=tenant_config.third_party,
-            core_config=tenant_config.core_config,
-        )
+        return tenant_config
 
     async def list_all_tenants(
         self, user_context: Dict[str, Any]
     ) -> ListAllTenantsOkResult:
         response = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/multitenancy/tenant/list"),
+            NormalisedURLPath("/recipe/multitenancy/tenant/list/v2"),
             {},
             user_context=user_context,
         )
 
-        tenant_items: List[ListAllTenantsItem] = []
+        tenant_items: List[TenantConfig] = []
 
         for tenant in response["tenants"]:
             config = parse_tenant_config(tenant)
-            item = ListAllTenantsItem(
-                tenant["tenantId"],
-                config.emailpassword,
-                config.passwordless,
-                config.third_party,
-                config.core_config,
-            )
-            tenant_items.append(item)
+            tenant_items.append(config)
 
         return ListAllTenantsOkResult(
             tenants=tenant_items,
@@ -253,20 +245,24 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def associate_user_to_tenant(
-        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
+        self,
+        tenant_id: Optional[str],
+        recipe_user_id: RecipeUserId,
+        user_context: Dict[str, Any],
     ) -> Union[
         AssociateUserToTenantOkResult,
         AssociateUserToTenantUnknownUserIdError,
         AssociateUserToTenantEmailAlreadyExistsError,
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+        AssociateUserToTenantNotAllowedError,
     ]:
         response = await self.querier.send_post_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user"
             ),
             {
-                "userId": user_id,
+                "recipeUserId": recipe_user_id.get_as_string(),
             },
             user_context=user_context,
         )
@@ -289,18 +285,23 @@ class RecipeImplementation(RecipeInterface):
             == AssociateUserToTenantThirdPartyUserAlreadyExistsError.status
         ):
             return AssociateUserToTenantThirdPartyUserAlreadyExistsError()
+        if response["status"] == AssociateUserToTenantNotAllowedError.status:
+            return AssociateUserToTenantNotAllowedError(response["reason"])
 
         raise Exception("Should never come here")
 
-    async def dissociate_user_from_tenant(
-        self, tenant_id: Optional[str], user_id: str, user_context: Dict[str, Any]
+    async def disassociate_user_from_tenant(
+        self,
+        tenant_id: Optional[str],
+        recipe_user_id: RecipeUserId,
+        user_context: Dict[str, Any],
     ) -> DisassociateUserFromTenantOkResult:
         response = await self.querier.send_post_request(
             NormalisedURLPath(
                 f"{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove"
             ),
             {
-                "userId": user_id,
+                "recipeUserId": recipe_user_id.get_as_string(),
             },
             user_context=user_context,
         )

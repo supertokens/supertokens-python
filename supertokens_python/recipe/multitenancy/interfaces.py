@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional, List
 
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse, RecipeUserId
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -28,29 +28,82 @@ if TYPE_CHECKING:
 
 
 class TenantConfig:
+    # pylint: disable=dangerous-default-value
     def __init__(
         self,
-        email_password_enabled: Union[bool, None] = None,
-        passwordless_enabled: Union[bool, None] = None,
-        third_party_enabled: Union[bool, None] = None,
-        core_config: Union[Dict[str, Any], None] = None,
+        tenant_id: str = "",
+        third_party_providers: List[ProviderConfig] = [],
+        core_config: Dict[str, Any] = {},
+        first_factors: Optional[List[str]] = None,
+        required_secondary_factors: Optional[List[str]] = None,
     ):
-        self.email_password_enabled = email_password_enabled
-        self.passwordless_enabled = passwordless_enabled
-        self.third_party_enabled = third_party_enabled
+        self.tenant_id = tenant_id
         self.core_config = core_config
+        self.first_factors = first_factors
+        self.required_secondary_factors = required_secondary_factors
+        self.third_party_providers = third_party_providers
 
-    def to_json(self) -> Dict[str, Any]:
-        res: Dict[str, Any] = {}
-        if self.email_password_enabled is not None:
-            res["emailPasswordEnabled"] = self.email_password_enabled
-        if self.passwordless_enabled is not None:
-            res["passwordlessEnabled"] = self.passwordless_enabled
-        if self.third_party_enabled is not None:
-            res["thirdPartyEnabled"] = self.third_party_enabled
-        if self.core_config is not None:
-            res["coreConfig"] = self.core_config
-        return res
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> TenantConfig:
+        return TenantConfig(
+            tenant_id=json.get("tenantId", ""),
+            third_party_providers=[
+                ProviderConfig.from_json(provider)
+                for provider in json.get("thirdPartyProviders", [])
+            ],
+            core_config=json.get("coreConfig", {}),
+            first_factors=json.get("firstFactors", []),
+            required_secondary_factors=json.get("requiredSecondaryFactors", []),
+        )
+
+
+class TenantConfigCreateOrUpdate:
+    # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        core_config: Dict[str, Any] = {},
+        first_factors: Optional[List[str]] = [
+            "NO_CHANGE"
+        ],  # A default value here means that if the user does not set this, it will not make any change in the core. This is different from None,
+        # which means that the user wants to unset it in the core.
+        required_secondary_factors: Optional[List[str]] = [
+            "NO_CHANGE"
+        ],  # A default value here means that if the user does not set this, it will not make any change in the core. This is different from None,
+        # which means that the user wants to unset it in the core.
+    ):
+        self.core_config = core_config
+        self._first_factors = first_factors
+        self._required_secondary_factors = required_secondary_factors
+
+    def is_first_factors_unchanged(self) -> bool:
+        return self._first_factors == ["NO_CHANGE"]
+
+    def is_required_secondary_factors_unchanged(self) -> bool:
+        return self._required_secondary_factors == ["NO_CHANGE"]
+
+    def get_first_factors_for_update(self) -> Optional[List[str]]:
+        if self._first_factors == ["NO_CHANGE"]:
+            raise Exception(
+                "First check if the value of first_factors is not NO_CHANGE"
+            )
+        return self._first_factors
+
+    def get_required_secondary_factors_for_update(self) -> Optional[List[str]]:
+        if self._required_secondary_factors == ["NO_CHANGE"]:
+            raise Exception(
+                "First check if the value of required_secondary_factors is not NO_CHANGE"
+            )
+        return self._required_secondary_factors
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> TenantConfigCreateOrUpdate:
+        return TenantConfigCreateOrUpdate(
+            core_config=json.get("coreConfig", {}),
+            first_factors=json.get("firstFactors", ["NO_CHANGE"]),
+            required_secondary_factors=json.get(
+                "requiredSecondaryFactors", ["NO_CHANGE"]
+            ),
+        )
 
 
 class CreateOrUpdateTenantOkResult:
@@ -67,80 +120,10 @@ class DeleteTenantOkResult:
         self.did_exist = did_exist
 
 
-class EmailPasswordConfig:
-    def __init__(self, enabled: bool):
-        self.enabled = enabled
-
-    def to_json(self):
-        return {"enabled": self.enabled}
-
-
-class PasswordlessConfig:
-    def __init__(self, enabled: bool):
-        self.enabled = enabled
-
-    def to_json(self):
-        return {"enabled": self.enabled}
-
-
-class ThirdPartyConfig:
-    def __init__(self, enabled: bool, providers: List[ProviderConfig]):
-        self.enabled = enabled
-        self.providers = providers
-
-    def to_json(self):
-        return {
-            "enabled": self.enabled,
-            "providers": [provider.to_json() for provider in self.providers],
-        }
-
-
-class TenantConfigResponse:
-    def __init__(
-        self,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-        core_config: Dict[str, Any],
-    ):
-        self.emailpassword = emailpassword
-        self.passwordless = passwordless
-        self.third_party = third_party
-        self.core_config = core_config
-
-
-class GetTenantOkResult(TenantConfigResponse):
-    status = "OK"
-
-
-class ListAllTenantsItem(TenantConfigResponse):
-    def __init__(
-        self,
-        tenant_id: str,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-        core_config: Dict[str, Any],
-    ):
-        super().__init__(emailpassword, passwordless, third_party, core_config)
-        self.tenant_id = tenant_id
-
-    def to_json(self):
-        res = {
-            "tenantId": self.tenant_id,
-            "emailPassword": self.emailpassword.to_json(),
-            "passwordless": self.passwordless.to_json(),
-            "thirdParty": self.third_party.to_json(),
-            "coreConfig": self.core_config,
-        }
-
-        return res
-
-
 class ListAllTenantsOkResult:
     status = "OK"
 
-    def __init__(self, tenants: List[ListAllTenantsItem]):
+    def __init__(self, tenants: List[TenantConfig]):
         self.tenants = tenants
 
 
@@ -181,6 +164,14 @@ class AssociateUserToTenantThirdPartyUserAlreadyExistsError:
     status = "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
 
 
+class AssociateUserToTenantNotAllowedError:
+    status = "ASSOCIATION_NOT_ALLOWED_ERROR"
+
+    def __init__(self, reason: str):
+        self.status = "ASSOCIATION_NOT_ALLOWED_ERROR"
+        self.reason = reason
+
+
 class DisassociateUserFromTenantOkResult:
     status = "OK"
 
@@ -202,7 +193,7 @@ class RecipeInterface(ABC):
     async def create_or_update_tenant(
         self,
         tenant_id: str,
-        config: Optional[TenantConfig],
+        config: Optional[TenantConfigCreateOrUpdate],
         user_context: Dict[str, Any],
     ) -> CreateOrUpdateTenantOkResult:
         pass
@@ -216,7 +207,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_tenant(
         self, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Optional[GetTenantOkResult]:
+    ) -> Optional[TenantConfig]:
         pass
 
     @abstractmethod
@@ -250,7 +241,7 @@ class RecipeInterface(ABC):
     async def associate_user_to_tenant(
         self,
         tenant_id: str,
-        user_id: str,
+        recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> Union[
         AssociateUserToTenantOkResult,
@@ -258,14 +249,15 @@ class RecipeInterface(ABC):
         AssociateUserToTenantEmailAlreadyExistsError,
         AssociateUserToTenantPhoneNumberAlreadyExistsError,
         AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+        AssociateUserToTenantNotAllowedError,
     ]:
         pass
 
     @abstractmethod
-    async def dissociate_user_from_tenant(
+    async def disassociate_user_from_tenant(
         self,
         tenant_id: str,
-        user_id: str,
+        recipe_user_id: RecipeUserId,
         user_context: Dict[str, Any],
     ) -> DisassociateUserFromTenantOkResult:
         pass
@@ -280,6 +272,8 @@ class APIOptions:
         config: MultitenancyConfig,
         recipe_implementation: RecipeInterface,
         static_third_party_providers: List[ProviderInput],
+        all_available_first_factors: List[str],
+        static_first_factors: Optional[List[str]],
     ):
         self.request = request
         self.response = response
@@ -287,6 +281,8 @@ class APIOptions:
         self.config = config
         self.recipe_implementation = recipe_implementation
         self.static_third_party_providers = static_third_party_providers
+        self.static_first_factors = static_first_factors
+        self.all_available_first_factors = all_available_first_factors
 
 
 class ThirdPartyProvider:
@@ -341,11 +337,13 @@ class LoginMethodsGetOkResult(APIResponse):
         email_password: LoginMethodEmailPassword,
         passwordless: LoginMethodPasswordless,
         third_party: LoginMethodThirdParty,
+        first_factors: List[str],
     ):
         self.status = "OK"
         self.email_password = email_password
         self.passwordless = passwordless
         self.third_party = third_party
+        self.first_factors = first_factors
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -353,6 +351,7 @@ class LoginMethodsGetOkResult(APIResponse):
             "emailPassword": self.email_password.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
+            "firstFactors": self.first_factors,
         }
 
 

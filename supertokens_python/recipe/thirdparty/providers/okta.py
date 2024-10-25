@@ -32,14 +32,9 @@ class OktaImpl(GenericProvider):
         config = await super().get_config_for_client_type(client_type, user_context)
 
         if (
-            config.additional_config is None
-            or config.additional_config.get("oktaDomain") is None
+            config.additional_config is not None
+            and config.additional_config.get("oktaDomain") is not None
         ):
-            if not config.oidc_discovery_endpoint:
-                raise Exception(
-                    "Please provide the oktaDomain in the additionalConfig of the Okta provider."
-                )
-        else:
             okta_domain = config.additional_config["oktaDomain"]
             oidc_domain = NormalisedURLDomain(okta_domain)
             oidc_path = NormalisedURLPath("/.well-known/openid-configuration")
@@ -48,13 +43,12 @@ class OktaImpl(GenericProvider):
                 + oidc_path.get_as_string_dangerous()
             )
 
-        if not config.oidc_discovery_endpoint:
-            raise Exception("should never happen")
-
-        # The config could be coming from core where we didn't add the well-known previously
-        config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
-            config.oidc_discovery_endpoint
-        )
+        if config.oidc_discovery_endpoint is not None:
+            config.oidc_discovery_endpoint = (
+                normalise_oidc_endpoint_to_include_well_known(
+                    config.oidc_discovery_endpoint
+                )
+            )
 
         if config.scope is None:
             config.scope = ["openid", "email"]

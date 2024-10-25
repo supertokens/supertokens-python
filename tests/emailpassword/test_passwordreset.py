@@ -18,6 +18,8 @@ from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.requests import Request
+from supertokens_python.types import RecipeUserId
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises
 
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -26,7 +28,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import create_reset_password_link
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordLinkUnknownUserIdError,
+    UnknownUserIdError,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
@@ -34,7 +36,6 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
 
 
@@ -57,7 +58,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -398,7 +399,7 @@ async def test_valid_token_input_and_passoword_has_changed(
     dict_response = json.loads(response_4.text)
     assert dict_response["status"] == "OK"
     assert dict_response["user"]["id"] == user_info["id"]
-    assert dict_response["user"]["email"] == user_info["email"]
+    assert dict_response["user"]["emails"] == user_info["emails"]
 
 
 @mark.asyncio
@@ -428,19 +429,20 @@ async def test_create_reset_password_link(
     dict_response = json.loads(response_1.text)
     user_info = dict_response["user"]
     assert dict_response["status"] == "OK"
-    link = await create_reset_password_link("public", user_info["id"])
-    url = urlparse(link.link)  # type: ignore
+    link = await create_reset_password_link("public", user_info["id"], "")
+    assert isinstance(link, str)
+    url = urlparse(link)
     queries = url.query.strip("&").split("&")
     assert url.path == "/auth/reset-password"
     assert "token=" in queries[0]
     assert "tenantId=public" in queries
     assert "rid=emailpassword" not in queries
 
-    link = await create_reset_password_link("public", "invalidUserId")
-    assert isinstance(link, CreateResetPasswordLinkUnknownUserIdError)
+    link = await create_reset_password_link("public", "invalidUserId", "")
+    assert isinstance(link, UnknownUserIdError)
 
     with raises(Exception) as err:
-        await create_reset_password_link("invalidTenantId", user_info["id"])
+        await create_reset_password_link("invalidTenantId", user_info["id"], "")
     assert "status code: 400" in str(err.value)
 
 

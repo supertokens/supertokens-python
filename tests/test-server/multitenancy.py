@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantOkResult,
-    TenantConfig,
+    TenantConfigCreateOrUpdate,
 )
 import supertokens_python.recipe.multitenancy.syncio as multitenancy
 from supertokens_python.recipe.thirdparty import (
@@ -10,6 +10,7 @@ from supertokens_python.recipe.thirdparty import (
     ProviderInput,
 )
 from supertokens_python.recipe.thirdparty.provider import UserFields, UserInfoMap
+from supertokens_python.types import RecipeUserId
 
 
 def add_multitenancy_routes(app: Flask):
@@ -19,14 +20,18 @@ def add_multitenancy_routes(app: Flask):
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
         tenant_id = data["tenantId"]
-        config = data["config"]
         user_context = data.get("userContext")
 
-        config = TenantConfig(
-            email_password_enabled=config.get("emailPasswordEnabled"),
-            passwordless_enabled=config.get("passwordlessEnabled"),
-            third_party_enabled=config.get("thirdPartyEnabled"),
-            core_config=config.get("coreConfig"),
+        config = (
+            TenantConfigCreateOrUpdate(
+                first_factors=data["config"].get("firstFactors"),
+                required_secondary_factors=data["config"].get(
+                    "requiredSecondaryFactors"
+                ),
+                core_config=data["config"].get("coreConfig", {}),
+            )
+            if "config" in data
+            else None
         )
 
         response = multitenancy.create_or_update_tenant(tenant_id, config, user_context)
@@ -62,9 +67,9 @@ def add_multitenancy_routes(app: Flask):
             {
                 "status": "OK",
                 "tenant": {
-                    "emailPassword": response.emailpassword.to_json(),
-                    "thirdParty": response.third_party.to_json(),
-                    "passwordless": response.passwordless.to_json(),
+                    "firstFactors": response.first_factors,
+                    "requiredSecondaryFactors": response.required_secondary_factors,
+                    "thirdPartyProviders": response.third_party_providers,
                     "coreConfig": response.core_config,
                 },
             }
@@ -119,32 +124,34 @@ def add_multitenancy_routes(app: Flask):
                 user_info_endpoint_headers=config.get("userInfoEndpointHeaders"),
                 jwks_uri=config.get("jwksURI"),
                 oidc_discovery_endpoint=config.get("oidcDiscoveryEndpoint"),
-                user_info_map=UserInfoMap(
-                    from_id_token_payload=UserFields(
-                        user_id=config.get("userInfoMap", {})
-                        .get("fromIdTokenPayload", {})
-                        .get("userId"),
-                        email=config.get("userInfoMap", {})
-                        .get("fromIdTokenPayload", {})
-                        .get("email"),
-                        email_verified=config.get("userInfoMap", {})
-                        .get("fromIdTokenPayload", {})
-                        .get("emailVerified"),
-                    ),
-                    from_user_info_api=UserFields(
-                        user_id=config.get("userInfoMap", {})
-                        .get("fromUserInfoAPI", {})
-                        .get("userId"),
-                        email=config.get("userInfoMap", {})
-                        .get("fromUserInfoAPI", {})
-                        .get("email"),
-                        email_verified=config.get("userInfoMap", {})
-                        .get("fromUserInfoAPI", {})
-                        .get("emailVerified"),
-                    ),
-                )
-                if "userInfoMap" in config
-                else None,
+                user_info_map=(
+                    UserInfoMap(
+                        from_id_token_payload=UserFields(
+                            user_id=config.get("userInfoMap", {})
+                            .get("fromIdTokenPayload", {})
+                            .get("userId"),
+                            email=config.get("userInfoMap", {})
+                            .get("fromIdTokenPayload", {})
+                            .get("email"),
+                            email_verified=config.get("userInfoMap", {})
+                            .get("fromIdTokenPayload", {})
+                            .get("emailVerified"),
+                        ),
+                        from_user_info_api=UserFields(
+                            user_id=config.get("userInfoMap", {})
+                            .get("fromUserInfoAPI", {})
+                            .get("userId"),
+                            email=config.get("userInfoMap", {})
+                            .get("fromUserInfoAPI", {})
+                            .get("email"),
+                            email_verified=config.get("userInfoMap", {})
+                            .get("fromUserInfoAPI", {})
+                            .get("emailVerified"),
+                        ),
+                    )
+                    if "userInfoMap" in config
+                    else None
+                ),
                 require_email=config.get("requireEmail", True),
             )
         )
@@ -176,11 +183,11 @@ def add_multitenancy_routes(app: Flask):
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
         tenant_id = data["tenantId"]
-        user_id = data["userId"]
+        recipe_user_id = RecipeUserId(data["recipeUserId"])
         user_context = data.get("userContext")
 
         response = multitenancy.associate_user_to_tenant(
-            tenant_id, user_id, user_context
+            tenant_id, recipe_user_id, user_context
         )
 
         if isinstance(response, AssociateUserToTenantOkResult):
@@ -202,7 +209,7 @@ def add_multitenancy_routes(app: Flask):
         user_id = data["userId"]
         user_context = data.get("userContext")
 
-        response = multitenancy.dissociate_user_from_tenant(
+        response = multitenancy.disassociate_user_from_tenant(
             tenant_id, user_id, user_context
         )
 

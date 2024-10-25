@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
+from supertokens_python.asyncio import get_user, list_users_by_account_info
 from supertokens_python.recipe import session, userroles, emailpassword, multitenancy
 from supertokens_python import init
 from supertokens_python.recipe.multitenancy.asyncio import (
@@ -20,8 +21,6 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 from supertokens_python.recipe.emailpassword.asyncio import (
     sign_up,
     sign_in,
-    get_user_by_id,
-    get_user_by_email,
     create_reset_password_token,
     reset_password_using_token,
 )
@@ -30,7 +29,10 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignInOkResult,
     CreateResetPasswordOkResult,
 )
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
+from supertokens_python.types import AccountInfo
 
 from tests.utils import get_st_init_args
 from tests.utils import (
@@ -62,9 +64,15 @@ async def test_multitenancy_in_emailpassword():
 
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(email_password_enabled=True))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t2", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
 
     user1 = await sign_up("t1", "test@example.com", "password1")
     user2 = await sign_up("t2", "test@example.com", "password2")
@@ -74,9 +82,9 @@ async def test_multitenancy_in_emailpassword():
     assert isinstance(user2, SignUpOkResult)
     assert isinstance(user3, SignUpOkResult)
 
-    assert user1.user.user_id != user2.user.user_id
-    assert user2.user.user_id != user3.user.user_id
-    assert user3.user.user_id != user1.user.user_id
+    assert user1.user.id != user2.user.id
+    assert user2.user.id != user3.user.id
+    assert user3.user.id != user1.user.id
 
     assert user1.user.tenant_ids == ["t1"]
     assert user2.user.tenant_ids == ["t2"]
@@ -91,32 +99,44 @@ async def test_multitenancy_in_emailpassword():
     assert isinstance(ep_user2, SignInOkResult)
     assert isinstance(ep_user3, SignInOkResult)
 
-    assert ep_user1.user.user_id == user1.user.user_id
-    assert ep_user2.user.user_id == user2.user.user_id
-    assert ep_user3.user.user_id == user3.user.user_id
+    assert ep_user1.user.id == user1.user.id
+    assert ep_user2.user.id == user2.user.id
+    assert ep_user3.user.id == user3.user.id
 
     # get user by id:
-    g_user1 = await get_user_by_id(user1.user.user_id)
-    g_user2 = await get_user_by_id(user2.user.user_id)
-    g_user3 = await get_user_by_id(user3.user.user_id)
+    g_user1 = await get_user(user1.user.id)
+    g_user2 = await get_user(user2.user.id)
+    g_user3 = await get_user(user3.user.id)
 
     assert g_user1 == user1.user
     assert g_user2 == user2.user
     assert g_user3 == user3.user
 
     # get user by email:
-    by_email_user1 = await get_user_by_email("t1", "test@example.com")
-    by_email_user2 = await get_user_by_email("t2", "test@example.com")
-    by_email_user3 = await get_user_by_email("t3", "test@example.com")
+    by_email_user1 = await list_users_by_account_info(
+        "t1", AccountInfo(email="test@example.com")
+    )
+    by_email_user2 = await list_users_by_account_info(
+        "t2", AccountInfo(email="test@example.com")
+    )
+    by_email_user3 = await list_users_by_account_info(
+        "t3", AccountInfo(email="test@example.com")
+    )
 
-    assert by_email_user1 == user1.user
-    assert by_email_user2 == user2.user
-    assert by_email_user3 == user3.user
+    assert by_email_user1[0] == user1.user
+    assert by_email_user2[0] == user2.user
+    assert by_email_user3[0] == user3.user
 
     # create password reset token:
-    pless_reset_link1 = await create_reset_password_token("t1", user1.user.user_id)
-    pless_reset_link2 = await create_reset_password_token("t2", user2.user.user_id)
-    pless_reset_link3 = await create_reset_password_token("t3", user3.user.user_id)
+    pless_reset_link1 = await create_reset_password_token(
+        "t1", user1.user.id, user1.user.emails[0]
+    )
+    pless_reset_link2 = await create_reset_password_token(
+        "t2", user2.user.id, user2.user.emails[0]
+    )
+    pless_reset_link3 = await create_reset_password_token(
+        "t3", user3.user.id, user3.user.emails[0]
+    )
 
     assert isinstance(pless_reset_link1, CreateResetPasswordOkResult)
     assert isinstance(pless_reset_link2, CreateResetPasswordOkResult)

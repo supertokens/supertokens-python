@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
-
-from supertokens_python.types import User
+from typing_extensions import Literal
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
 from ...types import APIResponse
 
@@ -26,12 +26,6 @@ if TYPE_CHECKING:
 
     from supertokens_python.recipe.session.interfaces import SessionInformationResult
     from supertokens_python.framework import BaseRequest, BaseResponse
-
-    from supertokens_python.recipe.multitenancy.interfaces import (
-        EmailPasswordConfig,
-        PasswordlessConfig,
-        ThirdPartyConfig,
-    )
 
 
 class SessionInfo:
@@ -94,7 +88,7 @@ class DashboardUsersGetResponse(APIResponse):
 
     def __init__(
         self,
-        users: Union[List[User], List[UserWithMetadata]],
+        users: List[UserWithMetadata],
         next_pagination_token: Optional[str],
     ):
         self.users = users
@@ -109,27 +103,13 @@ class DashboardUsersGetResponse(APIResponse):
 
 
 class DashboardListTenantItem:
-    def __init__(
-        self,
-        tenant_id: str,
-        emailpassword: EmailPasswordConfig,
-        passwordless: PasswordlessConfig,
-        third_party: ThirdPartyConfig,
-    ):
-        self.tenant_id = tenant_id
-        self.emailpassword = emailpassword
-        self.passwordless = passwordless
-        self.third_party = third_party
+    def __init__(self, tenant_config: TenantConfig):
+        self.tenant_config = tenant_config
 
-    def to_json(self):
-        res = {
-            "tenantId": self.tenant_id,
-            "emailPassword": self.emailpassword.to_json(),
-            "passwordless": self.passwordless.to_json(),
-            "thirdParty": self.third_party.to_json(),
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "tenantId": self.tenant_config.tenant_id,
         }
-
-        return res
 
 
 class DashboardListTenantsGetResponse(APIResponse):
@@ -158,27 +138,18 @@ class UserCountGetAPIResponse(APIResponse):
 class UserGetAPIOkResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, recipe_id: str, user: UserWithMetadata):
-        self.recipe_id = recipe_id
+    def __init__(self, user: UserWithMetadata):
         self.user = user
 
     def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
-            "recipeId": self.recipe_id,
             "user": self.user.to_json(),
         }
 
 
 class UserGetAPINoUserFoundError(APIResponse):
     status: str = "NO_USER_FOUND_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class UserGetAPIRecipeNotInitialisedError(APIResponse):
-    status: str = "RECIPE_NOT_INITIALISED"
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
@@ -210,7 +181,6 @@ class UserSessionsGetAPIResponse(APIResponse):
                 "accessTokenPayload": s.access_token_payload,
                 "expiry": s.expiry,
                 "sessionDataInDatabase": s.session_data_in_database,
-                "tenantId": s.tenant_id,
                 "timeCreated": s.time_created,
                 "userId": s.user_id,
                 "sessionHandle": s.session_handle,
@@ -355,3 +325,60 @@ class AnalyticsResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
+
+
+class CoreConfigFieldInfo:
+    def __init__(
+        self,
+        key: str,
+        value_type: Literal["string", "boolean", "number"],
+        value: Union[str, int, float, bool, None],
+        description: str,
+        is_different_across_tenants: bool,
+        possible_values: Union[List[str], None] = None,
+        is_nullable: bool = False,
+        default_value: Union[str, int, float, bool, None] = None,
+        is_plugin_property: bool = False,
+        is_plugin_property_editable: bool = False,
+    ):
+        self.key = key
+        self.value_type = value_type
+        self.value = value
+        self.description = description
+        self.is_different_across_tenants = is_different_across_tenants
+        self.possible_values = possible_values
+        self.is_nullable = is_nullable
+        self.default_value = default_value
+        self.is_plugin_property = is_plugin_property
+        self.is_plugin_property_editable = is_plugin_property_editable
+
+    def to_json(self) -> Dict[str, Any]:
+        result: Dict[str, Any] = {
+            "key": self.key,
+            "valueType": self.value_type,
+            "value": self.value,
+            "description": self.description,
+            "isDifferentAcrossTenants": self.is_different_across_tenants,
+            "isNullable": self.is_nullable,
+            "defaultValue": self.default_value,
+            "isPluginProperty": self.is_plugin_property,
+            "isPluginPropertyEditable": self.is_plugin_property_editable,
+        }
+        if self.possible_values is not None:
+            result["possibleValues"] = self.possible_values
+        return result
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> CoreConfigFieldInfo:
+        return CoreConfigFieldInfo(
+            key=json["key"],
+            value_type=json["valueType"],
+            value=json["value"],
+            description=json["description"],
+            is_different_across_tenants=json["isDifferentAcrossTenants"],
+            possible_values=json["possibleValues"],
+            is_nullable=json["isNullable"],
+            default_value=json["defaultValue"],
+            is_plugin_property=json["isPluginProperty"],
+            is_plugin_property_editable=json["isPluginPropertyEditable"],
+        )

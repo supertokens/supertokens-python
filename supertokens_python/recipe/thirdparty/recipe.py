@@ -23,7 +23,6 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 from .api.implementation import APIImplementation
 from .interfaces import APIInterface, APIOptions, RecipeInterface
 from .recipe_implementation import RecipeImplementation
-from ..emailverification.interfaces import GetEmailForUserIdOkResult, UnknownUserIdError
 from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
@@ -33,7 +32,6 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
 from .api import (
@@ -81,13 +79,10 @@ class ThirdPartyRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
-
             mt_recipe = MultitenancyRecipe.get_instance_optional()
             if mt_recipe:
                 mt_recipe.static_third_party_providers = self.providers
+                mt_recipe.all_available_first_factors.append("thirdparty")
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -205,12 +200,3 @@ class ThirdPartyRecipe(RecipeModule):
         ThirdPartyRecipe.__instance = None
 
     # instance functions below...............
-
-    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is not None:
-            return GetEmailForUserIdOkResult(user_info.email)
-
-        return UnknownUserIdError()

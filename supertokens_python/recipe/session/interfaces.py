@@ -28,7 +28,12 @@ from typing import (
 from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
+from supertokens_python.types import (
+    APIResponse,
+    GeneralErrorResponse,
+    MaybeAwaitable,
+    RecipeUserId,
+)
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
@@ -45,6 +50,7 @@ class SessionObj:
         self,
         handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         user_data_in_jwt: Dict[str, Any],
         tenant_id: str,
     ):
@@ -52,6 +58,16 @@ class SessionObj:
         self.user_id = user_id
         self.user_data_in_jwt = user_data_in_jwt
         self.tenant_id = tenant_id
+        self.recipe_user_id = recipe_user_id
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "handle": self.handle,
+            "userId": self.user_id,
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "tenantId": self.tenant_id,
+            "userDataInJWT": self.user_data_in_jwt,
+        }
 
 
 class AccessTokenObj:
@@ -60,11 +76,26 @@ class AccessTokenObj:
         self.expiry = expiry
         self.created_time = created_time
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "token": self.token,
+            "expiry": self.expiry,
+            "createdTime": self.created_time,
+        }
+
 
 class RegenerateAccessTokenOkResult:
     def __init__(self, session: SessionObj, access_token: Union[AccessTokenObj, None]):
         self.session = session
         self.access_token = access_token
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "session": self.session.to_json(),
+            "accessToken": (
+                self.access_token.to_json() if self.access_token is not None else None
+            ),
+        }
 
 
 class SessionInformationResult:
@@ -72,6 +103,7 @@ class SessionInformationResult:
         self,
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         session_data_in_database: Dict[str, Any],
         expiry: int,
         custom_claims_in_access_token_payload: Dict[str, Any],
@@ -87,6 +119,19 @@ class SessionInformationResult:
         )
         self.time_created = time_created
         self.tenant_id = tenant_id
+        self.recipe_user_id = recipe_user_id
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "sessionHandle": self.session_handle,
+            "userId": self.user_id,
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+            "sessionDataInDatabase": self.session_data_in_database,
+            "expiry": self.expiry,
+            "customClaimsInAccessTokenPayload": self.custom_claims_in_access_token_payload,
+            "timeCreated": self.time_created,
+            "tenantId": self.tenant_id,
+        }
 
 
 class ReqResInfo:
@@ -126,6 +171,13 @@ class ClaimsValidationResult:
         self.invalid_claims = invalid_claims
         self.access_token_payload_update = access_token_payload_update
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "invalidClaims": [i.to_json() for i in self.invalid_claims],
+            "accessTokenPayloadUpdate": self.access_token_payload_update,
+        }
+
 
 class GetSessionTokensDangerouslyDict(TypedDict):
     accessToken: str
@@ -143,6 +195,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def create_new_session(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Optional[Dict[str, Any]],
         session_data_in_database: Optional[Dict[str, Any]],
         disable_anti_csrf: Optional[bool],
@@ -156,6 +209,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         tenant_id: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> MaybeAwaitable[List[SessionClaimValidator]]:
@@ -183,17 +237,8 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def validate_claims(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         access_token_payload: Dict[str, Any],
-        claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
-    ) -> ClaimsValidationResult:
-        pass
-
-    @abstractmethod
-    async def validate_claims_in_jwt_payload(
-        self,
-        user_id: str,
-        jwt_payload: JSONObject,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> ClaimsValidationResult:
@@ -219,6 +264,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def revoke_all_sessions_for_user(
         self,
         user_id: str,
+        revoke_sessions_for_linked_accounts: bool,
         tenant_id: str,
         revoke_across_all_tenants: bool,
         user_context: Dict[str, Any],
@@ -229,6 +275,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def get_all_session_handles_for_user(
         self,
         user_id: str,
+        fetch_sessions_for_linked_accounts: bool,
         tenant_id: str,
         fetch_across_all_tenants: bool,
         user_context: Dict[str, Any],
@@ -354,7 +401,7 @@ class APIInterface(ABC):
     @abstractmethod
     async def signout_post(
         self,
-        session: Optional[SessionContainer],
+        session: SessionContainer,
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[SignOutOkayResponse, GeneralErrorResponse]:
@@ -387,6 +434,13 @@ class TokenInfo:
         self.expiry = expiry
         self.created_time = created_time
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "token": self.token,
+            "expiry": self.expiry,
+            "createdTime": self.created_time,
+        }
+
 
 class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
@@ -399,6 +453,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         anti_csrf_token: Optional[str],
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         user_data_in_access_token: Optional[Dict[str, Any]],
         req_res_info: Optional[ReqResInfo],
         access_token_updated: bool,
@@ -416,7 +471,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.req_res_info: Optional[ReqResInfo] = req_res_info
         self.access_token_updated = access_token_updated
         self.tenant_id = tenant_id
-
+        self.recipe_user_id = recipe_user_id
         self.response_mutators: List[ResponseMutator] = []
 
     @abstractmethod
@@ -458,6 +513,12 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_recipe_user_id(
+        self, user_context: Optional[Dict[str, Any]] = None
+    ) -> RecipeUserId:
         pass
 
     @abstractmethod
@@ -601,11 +662,11 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_attach_to_request_response(
         self,
         request: BaseRequest,
-        token_transfer: TokenTransferMethod,
+        transfer_method: TokenTransferMethod,
         user_context: Dict[str, Any],
     ) -> None:
         return sync(
-            self.attach_to_request_response(request, token_transfer, user_context)
+            self.attach_to_request_response(request, transfer_method, user_context)
         )
 
     # This is there so that we can do session["..."] to access some of the members of this class
@@ -618,7 +679,7 @@ class SessionClaim(ABC, Generic[_T]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[_T]],
         ],
     ) -> None:
@@ -663,13 +724,16 @@ class SessionClaim(ABC, Generic[_T]):
     async def build(
         self,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         tenant_id: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        current_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
     ) -> JSONObject:
-        if user_context is None:
-            user_context = {}
-
-        value = await resolve(self.fetch_value(user_id, tenant_id, user_context))
+        value = await resolve(
+            self.fetch_value(
+                user_id, recipe_user_id, tenant_id, current_payload, user_context
+            )
+        )
 
         if value is None:
             return {}

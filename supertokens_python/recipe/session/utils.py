@@ -30,7 +30,7 @@ from supertokens_python.utils import (
     send_non_200_response_with_message,
 )
 
-from ...types import MaybeAwaitable
+from ...types import MaybeAwaitable, RecipeUserId
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
 from .exceptions import ClaimValidationError
 
@@ -100,7 +100,7 @@ class ErrorHandlers:
     def __init__(
         self,
         on_token_theft_detected: Callable[
-            [BaseRequest, str, str, BaseResponse],
+            [BaseRequest, str, str, RecipeUserId, BaseResponse],
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
         on_try_refresh_token: Callable[
@@ -131,10 +131,13 @@ class ErrorHandlers:
         request: BaseRequest,
         session_handle: str,
         user_id: str,
+        recipe_user_id: RecipeUserId,
         response: BaseResponse,
     ) -> BaseResponse:
         return await resolve(
-            self.__on_token_theft_detected(request, session_handle, user_id, response)
+            self.__on_token_theft_detected(
+                request, session_handle, user_id, recipe_user_id, response
+            )
         )
 
     async def on_try_refresh_token(
@@ -182,7 +185,7 @@ class InputErrorHandlers(ErrorHandlers):
         on_token_theft_detected: Union[
             None,
             Callable[
-                [BaseRequest, str, str, BaseResponse],
+                [BaseRequest, str, str, RecipeUserId, BaseResponse],
                 Union[BaseResponse, Awaitable[BaseResponse]],
             ],
         ] = None,
@@ -261,7 +264,11 @@ async def default_try_refresh_token_callback(
 
 
 async def default_token_theft_detected_callback(
-    _: BaseRequest, session_handle: str, __: str, response: BaseResponse
+    _: BaseRequest,
+    session_handle: str,
+    __: str,
+    ___: RecipeUserId,
+    response: BaseResponse,
 ) -> BaseResponse:
     from .recipe import SessionRecipe
 
@@ -576,6 +583,7 @@ async def get_required_claim_validators(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
             session.get_tenant_id(),
             session.get_user_id(),
+            session.get_recipe_user_id(),
             claim_validators_added_by_other_recipes,
             user_context,
         )

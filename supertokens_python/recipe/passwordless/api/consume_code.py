@@ -12,9 +12,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict
+from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import send_200_response
+from supertokens_python.recipe.passwordless.interfaces import (
+    APIInterface,
+    APIOptions,
+    ConsumeCodePostOkResult,
+)
+from supertokens_python.utils import (
+    get_backwards_compatible_user_info,
+    get_normalised_should_try_linking_with_session_user_flag,
+    send_200_response,
+)
 
 
 async def consume_code(
@@ -56,13 +65,44 @@ async def consume_code(
 
     pre_auth_session_id = body["preAuthSessionId"]
 
+    should_try_linking_with_session_user = (
+        get_normalised_should_try_linking_with_session_user_flag(
+            api_options.request, body
+        )
+    )
+
+    session = await load_session_in_auth_api_if_needed(
+        api_options.request, should_try_linking_with_session_user, user_context
+    )
+
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     result = await api_implementation.consume_code_post(
         pre_auth_session_id,
         user_input_code,
         device_id,
         link_code,
+        session,
+        should_try_linking_with_session_user,
         tenant_id,
         api_options,
         user_context,
     )
+
+    if isinstance(result, ConsumeCodePostOkResult):
+        return send_200_response(
+            {
+                "status": "OK",
+                **get_backwards_compatible_user_info(
+                    req=api_options.request,
+                    user_info=result.user,
+                    session_container=result.session,
+                    created_new_recipe_user=result.created_new_recipe_user,
+                    user_context=user_context,
+                ),
+            },
+            api_options.response,
+        )
+
     return send_200_response(result.to_json(), api_options.response)

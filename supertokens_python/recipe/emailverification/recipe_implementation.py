@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, Union, Optional, Callable
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -25,28 +25,48 @@ from .interfaces import (
     UnverifyEmailOkResult,
     VerifyEmailUsingTokenInvalidTokenError,
     VerifyEmailUsingTokenOkResult,
+    GetEmailForUserIdOkResult,
+    EmailDoesNotExistError,
+    UnknownUserIdError,
 )
-from .types import User
+from .types import EmailVerificationUser
+from supertokens_python.asyncio import get_user
+from supertokens_python.types import RecipeUserId, User
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
-    from .utils import EmailVerificationConfig
-
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, config: EmailVerificationConfig):
+    def __init__(
+        self,
+        querier: Querier,
+        get_email_for_recipe_user_id: Callable[
+            [Optional[User], RecipeUserId, Dict[str, Any]],
+            Awaitable[
+                Union[
+                    GetEmailForUserIdOkResult,
+                    EmailDoesNotExistError,
+                    UnknownUserIdError,
+                ]
+            ],
+        ],
+    ):
         super().__init__()
         self.querier = querier
-        self.config = config
+        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id
 
     async def create_email_verification_token(
-        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
+        self,
+        recipe_user_id: RecipeUserId,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> Union[
         CreateEmailVerificationTokenOkResult,
         CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     ]:
-        data = {"userId": user_id, "email": email}
+        data = {"userId": recipe_user_id.get_as_string(), "email": email}
         response = await self.querier.send_post_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token"),
             data,
@@ -57,7 +77,11 @@ class RecipeImplementation(RecipeInterface):
         return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
 
     async def verify_email_using_token(
-        self, token: str, tenant_id: str, user_context: Dict[str, Any]
+        self,
+        token: str,
+        tenant_id: str,
+        attempt_account_linking: bool,
+        user_context: Dict[str, Any],
     ) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         data = {"method": "token", "token": token}
         response = await self.querier.send_post_request(
@@ -65,25 +89,55 @@ class RecipeImplementation(RecipeInterface):
             data,
             user_context,
         )
-        if "status" in response and response["status"] == "OK":
+        if response["status"] == "OK":
+            recipe_user_id = RecipeUserId(response["userId"])
+            if attempt_account_linking:
+                updated_user = await get_user(
+                    recipe_user_id.get_as_string(), user_context
+                )
+
+                if updated_user:
+                    # Check if the verified email is currently associated with the user ID
+                    email_info = await self.get_email_for_recipe_user_id(
+                        updated_user, recipe_user_id, user_context
+                    )
+                    if (
+                        isinstance(email_info, GetEmailForUserIdOkResult)
+                        and email_info.email == response["email"]
+                    ):
+                        from ..accountlinking.recipe import AccountLinkingRecipe
+
+                        account_linking = AccountLinkingRecipe.get_instance()
+                        await account_linking.try_linking_by_account_info_or_create_primary_user(
+                            tenant_id=tenant_id,
+                            input_user=updated_user,
+                            session=None,
+                            user_context=user_context,
+                        )
+
             return VerifyEmailUsingTokenOkResult(
-                User(response["userId"], response["email"])
+                EmailVerificationUser(recipe_user_id, response["email"])
             )
-        return VerifyEmailUsingTokenInvalidTokenError()
+        else:
+            return VerifyEmailUsingTokenInvalidTokenError()
 
     async def is_email_verified(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
     ) -> bool:
-        params = {"userId": user_id, "email": email}
+        params = {"userId": recipe_user_id.get_as_string(), "email": email}
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/user/email/verify"), params, user_context
         )
         return response["isVerified"]
 
     async def revoke_email_verification_tokens(
-        self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
+        self,
+        recipe_user_id: RecipeUserId,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
     ) -> RevokeEmailVerificationTokensOkResult:
-        data = {"userId": user_id, "email": email}
+        data = {"userId": recipe_user_id.get_as_string(), "email": email}
         await self.querier.send_post_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/email/verify/token/remove"),
             data,
@@ -92,9 +146,9 @@ class RecipeImplementation(RecipeInterface):
         return RevokeEmailVerificationTokensOkResult()
 
     async def unverify_email(
-        self, user_id: str, email: str, user_context: Dict[str, Any]
+        self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
     ) -> UnverifyEmailOkResult:
-        data = {"userId": user_id, "email": email}
+        data = {"userId": recipe_user_id.get_as_string(), "email": email}
         await self.querier.send_post_request(
             NormalisedURLPath("/recipe/user/email/verify/remove"), data, user_context
         )

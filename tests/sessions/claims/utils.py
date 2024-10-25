@@ -6,10 +6,11 @@ from supertokens_python.recipe.session.claims import (
     SessionClaim,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.types import RecipeUserId
 from tests.utils import st_init_common_args
 
-TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___: True)  # type: ignore
-NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___: None)  # type: ignore
+TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___, _____, ______: True)
+NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___, _____, ______: None)
 
 
 def session_functions_override_with_claim(
@@ -23,15 +24,22 @@ def session_functions_override_with_claim(
 
         async def new_create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Union[None, Dict[str, Any]],
             session_data_in_database: Union[None, Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
             tenant_id: str,
             user_context: Dict[str, Any],
         ):
-            payload_update = await claim.build(user_id, tenant_id, user_context)
             if access_token_payload is None:
                 access_token_payload = {}
+            payload_update = await claim.build(
+                user_id,
+                RecipeUserId(user_id),
+                tenant_id,
+                access_token_payload,
+                user_context,
+            )
             access_token_payload = {
                 **access_token_payload,
                 **payload_update,
@@ -40,6 +48,7 @@ def session_functions_override_with_claim(
 
             return await oi_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,

@@ -13,7 +13,7 @@
 # under the License.
 from typing import Any, Callable, Dict, Optional
 
-from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
 
 from .primitive_claim import PrimitiveClaim, PrimitiveClaimValidators
 
@@ -31,7 +31,7 @@ class BooleanClaim(PrimitiveClaim[bool]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, str, Dict[str, Any]],
+            [str, RecipeUserId, str, Dict[str, Any], Dict[str, Any]],
             MaybeAwaitable[Optional[bool]],
         ],
         default_max_age_in_sec: Optional[int] = None,

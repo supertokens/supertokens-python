@@ -20,10 +20,7 @@ from supertokens_python.recipe import (
     thirdparty,
 )
 from supertokens_python import InputAppInfo
-from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id, sign_up
-from supertokens_python.recipe.thirdparty.asyncio import (
-    get_user_by_id as tp_get_user_by_id,
-)
+from supertokens_python.recipe.emailpassword.asyncio import get_user, sign_up
 import asyncio
 import respx
 import httpx
@@ -236,29 +233,29 @@ async def test_caching_works():
     )  # type: ignore
     start_st()
     user_context: Dict[str, Any] = {}
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
-    user = await tp_get_user_by_id("random", user_context)
+    user = await get_user("random2", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await tp_get_user_by_id("random", user_context)
+    user = await get_user("random2", user_context)
     assert user is None
     assert not called_core
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
@@ -299,22 +296,22 @@ async def test_caching_gets_clear_with_non_get():
     )  # type: ignore
     start_st()
     user_context: Dict[str, Any] = {}
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
-    await sign_up("public", "test@example.com", "abcd1234", user_context)
+    await sign_up("public", "test@example.com", "abcd1234", None, user_context)
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
@@ -357,14 +354,14 @@ async def test_no_caching_if_disabled_by_user():
     )  # type: ignore
     start_st()
     user_context: Dict[str, Any] = {}
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 
@@ -407,20 +404,20 @@ async def test_no_caching_if_headers_are_different():
     )  # type: ignore
     start_st()
     user_context: Dict[str, Any] = {}
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
     called_core = False
 
-    user = await tp_get_user_by_id("random", user_context)
+    user = await get_user("random2", user_context)
     assert user is None
     assert called_core
 
@@ -461,7 +458,7 @@ async def test_caching_gets_clear_when_query_without_user_context():
     )  # type: ignore
     start_st()
     user_context: Dict[str, Any] = {}
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
@@ -470,7 +467,7 @@ async def test_caching_gets_clear_when_query_without_user_context():
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 
@@ -513,33 +510,33 @@ async def test_caching_does_not_get_clear_with_non_get_if_keep_alive():
     user_context: Dict[str, Any] = {"_default": {"keep_cache_alive": True}}
     user_context_2: Dict[str, Any] = {}
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context_2)
+    user = await get_user("random", user_context_2)
 
     assert user is None
     assert called_core
 
-    await sign_up("public", "test@example.com", "abcd1234", user_context)
+    await sign_up("public", "test@example.com", "abcd1234", None, user_context)
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
-    user = await get_user_by_id("random", user_context_2)
+    user = await get_user("random", user_context_2)
 
     assert user is None
     assert not called_core
@@ -583,33 +580,33 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_false():
     user_context: Dict[str, Any] = {"_default": {"keep_cache_alive": False}}
     user_context_2: Dict[str, Any] = {}
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context_2)
+    user = await get_user("random", user_context_2)
 
     assert user is None
     assert called_core
 
-    await sign_up("public", "test@example.com", "abcd1234", user_context)
+    await sign_up("public", "test@example.com", "abcd1234", None, user_context)
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
-    user = await get_user_by_id("random", user_context_2)
+    user = await get_user("random", user_context_2)
 
     assert user is None
     assert called_core
@@ -653,33 +650,33 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_not_set():
     user_context: Dict[str, Any] = {}
     user_context_2: Dict[str, Any] = {}
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
 
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context_2)
+    user = await get_user("random", user_context_2)
 
     assert user is None
     assert called_core
 
-    await sign_up("public", "test@example.com", "abcd1234", user_context)
+    await sign_up("public", "test@example.com", "abcd1234", None, user_context)
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert called_core
 
     called_core = False
 
-    user = await get_user_by_id("random", user_context)
+    user = await get_user("random", user_context)
     assert user is None
     assert not called_core
 
-    user = await get_user_by_id("random", user_context_2)
+    user = await get_user("random", user_context_2)
 
     assert user is None
     assert called_core

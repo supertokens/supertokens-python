@@ -11,10 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
-SUPPORTED_CDI_VERSIONS = ["3.0"]
-VERSION = "0.24.4"
+SUPPORTED_CDI_VERSIONS = ["5.1"]
+VERSION = "0.25.0"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
@@ -27,6 +28,6 @@ RID_KEY_HEADER = "rid"
 FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.7"
+DASHBOARD_VERSION = "0.13"
 ONE_YEAR_IN_MS = 31536000000
 RATE_LIMIT_STATUS_CODE = 429

@@ -11,6 +11,7 @@ from supertokens_python.recipe.session.asyncio import (
     remove_claim,
 )
 from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.types import RecipeUserId
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
 from tests.utils import AsyncMock, setup_function, start_st, teardown_function
 
@@ -37,6 +38,7 @@ async def test_should_attempt_to_set_claim_to_none():
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
@@ -56,7 +58,9 @@ async def test_should_clear_previously_set_claim(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s: SessionContainer = await create_new_session(dummy_req, "public", "someId")
+    s: SessionContainer = await create_new_session(
+        dummy_req, "public", RecipeUserId("someId")
+    )
 
     payload = s.get_access_token_payload()
 
@@ -68,7 +72,9 @@ async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
-    s: SessionContainer = await create_new_session(dummy_req, "public", "someId")
+    s: SessionContainer = await create_new_session(
+        dummy_req, "public", RecipeUserId("someId")
+    )
 
     payload = s.get_access_token_payload()
     assert payload["st-true"] == {"v": True, "t": timestamp}

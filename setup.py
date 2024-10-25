@@ -19,6 +19,8 @@ extras_require = {
             "Fastapi",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
+            "pyotp<3",
+            "aiofiles==23.2.1",
         ]
     ),
     "flask": (
@@ -26,6 +28,7 @@ extras_require = {
             "flask_cors",
             "Flask",
             "python-dotenv==0.19.2",
+            "pyotp<3",
         ]
     ),
     "django": (
@@ -35,6 +38,7 @@ extras_require = {
             "django-stubs==1.9.0",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
+            "pyotp<3",
         ]
     ),
     "django2x": (
@@ -44,6 +48,7 @@ extras_require = {
             "django-stubs==1.9.0",
             "gunicorn==20.1.0",
             "python-dotenv==0.19.2",
+            "pyotp<3",
         ]
     ),
     "drf": (
@@ -57,6 +62,7 @@ extras_require = {
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
             "tzdata==2021.5",
+            "pyotp<3",
         ]
     ),
 }
@@ -83,7 +89,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.24.4",
+    version="0.25.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -121,10 +127,11 @@ setup(
         "asgiref>=3.4.1,<4",
         "typing_extensions>=4.1.1,<5.0.0",
         "Deprecated==1.2.13",
-        "phonenumbers==8.13.47",
-        "twilio==9.3.3",
+        "phonenumbers<9",
+        "twilio<10",
         "aiosmtplib>=1.1.6,<4.0.0",
         "pkce==1.0.3",
+        "pyotp<3",
     ],
     python_requires=">=3.7",
     include_package_data=True,

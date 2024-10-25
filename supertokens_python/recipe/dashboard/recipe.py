@@ -17,6 +17,69 @@ from os import environ
 from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Dict, Any
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.dashboard.api.multitenancy.create_or_update_third_party_config import (
+    handle_create_or_update_third_party_config,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.create_tenant import (
+    create_tenant,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.delete_tenant import (
+    delete_tenant_api,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.delete_third_party_config import (
+    delete_third_party_config_api,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.get_tenant_info import (
+    get_tenant_info,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.get_third_party_config import (
+    get_third_party_config,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.list_all_tenants_with_login_methods import (
+    list_all_tenants_with_login_methods,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config import (
+    update_tenant_core_config,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor import (
+    update_tenant_first_factor,
+)
+from supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_secondary_factor import (
+    update_tenant_secondary_factor,
+)
+from supertokens_python.recipe.dashboard.api.user.create.emailpassword_user import (
+    create_email_password_user,
+)
+from supertokens_python.recipe.dashboard.api.user.create.passwordless_user import (
+    create_passwordless_user,
+)
+from supertokens_python.recipe.dashboard.api.userdetails.user_unlink_get import (
+    handle_user_unlink_get,
+)
+from supertokens_python.recipe.dashboard.api.userroles.add_role_to_user import (
+    add_role_to_user_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.get_role_to_user import (
+    get_roles_for_user_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role import (
+    get_permissions_for_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.permissions.remove_permissions_from_role import (
+    remove_permissions_from_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.remove_user_role import (
+    remove_user_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.roles.create_role_or_add_permissions import (
+    create_role_or_add_permissions_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.roles.delete_role import (
+    delete_role_api,
+)
+from supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles import (
+    get_all_roles_api,
+)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api import (
@@ -40,7 +103,6 @@ from .api import (
     handle_users_count_get_api,
     handle_users_get_api,
     handle_validate_key_api,
-    handle_list_tenants_api,
 )
 from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
@@ -71,7 +133,19 @@ from .constants import (
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
-    TENANTS_LIST_API,
+    TENANT_THIRD_PARTY_CONFIG_API,
+    TENANT_API,
+    LIST_TENANTS_WITH_LOGIN_METHODS,
+    UPDATE_TENANT_CORE_CONFIG_API,
+    UPDATE_TENANT_FIRST_FACTOR_API,
+    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
+    CREATE_EMAIL_PASSWORD_USER,
+    CREATE_PASSWORDLESS_USER,
+    UNLINK_USER,
+    USERROLES_PERMISSIONS_API,
+    USERROLES_REMOVE_PERMISSIONS_API,
+    USERROLES_ROLE_API,
+    USERROLES_USER_API,
 )
 from .utils import (
     InputOverrideConfig,
@@ -247,9 +321,161 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
-                NormalisedURLPath(get_api_path_with_dashboard_base(TENANTS_LIST_API)),
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
+                "post",
+                TENANT_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
+                "delete",
+                TENANT_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
                 "get",
-                TENANTS_LIST_API,
+                TENANT_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                "put",
+                TENANT_THIRD_PARTY_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                "delete",
+                TENANT_THIRD_PARTY_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                "get",
+                TENANT_THIRD_PARTY_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(LIST_TENANTS_WITH_LOGIN_METHODS)
+                ),
+                "get",
+                LIST_TENANTS_WITH_LOGIN_METHODS,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(UPDATE_TENANT_CORE_CONFIG_API)
+                ),
+                "put",
+                UPDATE_TENANT_CORE_CONFIG_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(UPDATE_TENANT_FIRST_FACTOR_API)
+                ),
+                "put",
+                UPDATE_TENANT_FIRST_FACTOR_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(
+                        UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API
+                    )
+                ),
+                "put",
+                UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(CREATE_EMAIL_PASSWORD_USER)
+                ),
+                "post",
+                CREATE_EMAIL_PASSWORD_USER,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(CREATE_PASSWORDLESS_USER)
+                ),
+                "post",
+                CREATE_PASSWORDLESS_USER,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(UNLINK_USER)),
+                "get",
+                UNLINK_USER,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USERROLES_PERMISSIONS_API)
+                ),
+                "get",
+                USERROLES_PERMISSIONS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USERROLES_PERMISSIONS_API)
+                ),
+                "put",
+                USERROLES_PERMISSIONS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(
+                    get_api_path_with_dashboard_base(USERROLES_REMOVE_PERMISSIONS_API)
+                ),
+                "put",
+                USERROLES_REMOVE_PERMISSIONS_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
+                "put",
+                USERROLES_ROLE_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
+                "delete",
+                USERROLES_ROLE_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
+                "get",
+                USERROLES_ROLE_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
+                "get",
+                USERROLES_USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
+                "put",
+                USERROLES_USER_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
+                "delete",
+                USERROLES_USER_API,
                 False,
             ),
         ]
@@ -329,8 +555,52 @@ class DashboardRecipe(RecipeModule):
         elif request_id == DASHBOARD_ANALYTICS_API:
             if method == "post":
                 api_function = handle_analytics_post
-        elif request_id == TENANTS_LIST_API:
-            api_function = handle_list_tenants_api
+        elif request_id == TENANT_API:
+            if method == "post":
+                api_function = create_tenant
+            if method == "delete":
+                api_function = delete_tenant_api
+            if method == "get":
+                api_function = get_tenant_info
+        elif request_id == TENANT_THIRD_PARTY_CONFIG_API:
+            if method == "put":
+                api_function = handle_create_or_update_third_party_config
+            if method == "delete":
+                api_function = delete_third_party_config_api
+            if method == "get":
+                api_function = get_third_party_config
+        elif request_id == LIST_TENANTS_WITH_LOGIN_METHODS:
+            api_function = list_all_tenants_with_login_methods
+        elif request_id == UPDATE_TENANT_CORE_CONFIG_API:
+            api_function = update_tenant_core_config
+        elif request_id == UPDATE_TENANT_FIRST_FACTOR_API:
+            api_function = update_tenant_first_factor
+        elif request_id == UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API:
+            api_function = update_tenant_secondary_factor
+        elif request_id == CREATE_EMAIL_PASSWORD_USER:
+            api_function = create_email_password_user
+        elif request_id == CREATE_PASSWORDLESS_USER:
+            api_function = create_passwordless_user
+        elif request_id == UNLINK_USER:
+            api_function = handle_user_unlink_get
+        elif request_id == USERROLES_PERMISSIONS_API:
+            api_function = get_permissions_for_role_api
+        elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
+            api_function = remove_permissions_from_role_api
+        elif request_id == USERROLES_ROLE_API:
+            if method == "put":
+                api_function = create_role_or_add_permissions_api
+            if method == "delete":
+                api_function = delete_role_api
+            if method == "get":
+                api_function = get_all_roles_api
+        elif request_id == USERROLES_USER_API:
+            if method == "get":
+                api_function = get_roles_for_user_api
+            if method == "put":
+                api_function = add_role_to_user_api
+            if method == "delete":
+                api_function = remove_user_role_api
 
         if api_function is not None:
             return await api_key_protector(

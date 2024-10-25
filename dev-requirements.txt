@@ -85,3 +85,5 @@ uvicorn==0.18.2
 Werkzeug==2.0.3
 wrapt==1.13.3
 zipp==3.7.0
+pyotp==2.9.0
+aiofiles==23.2.1

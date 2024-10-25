@@ -16,11 +16,12 @@ from typing import Any, Dict, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
+from supertokens_python.types import RecipeUserId
 
 
 def create_email_verification_token(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
@@ -29,35 +30,40 @@ def create_email_verification_token(
     )
 
     return sync(
-        create_email_verification_token(tenant_id, user_id, email, user_context)
+        create_email_verification_token(tenant_id, recipe_user_id, email, user_context)
     )
 
 
 def verify_email_using_token(
     tenant_id: str,
     token: str,
+    attempt_account_linking: bool = True,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         verify_email_using_token,
     )
 
-    return sync(verify_email_using_token(tenant_id, token, user_context))
+    return sync(
+        verify_email_using_token(
+            tenant_id, token, attempt_account_linking, user_context
+        )
+    )
 
 
 def is_email_verified(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 
-    return sync(is_email_verified(user_id, email, user_context))
+    return sync(is_email_verified(recipe_user_id, email, user_context))
 
 
 def revoke_email_verification_tokens(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ):
@@ -66,18 +72,18 @@ def revoke_email_verification_tokens(
     )
 
     return sync(
-        revoke_email_verification_tokens(tenant_id, user_id, email, user_context)
+        revoke_email_verification_tokens(tenant_id, recipe_user_id, email, user_context)
     )
 
 
 def unverify_email(
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import unverify_email
 
-    return sync(unverify_email(user_id, email, user_context))
+    return sync(unverify_email(recipe_user_id, email, user_context))
 
 
 def send_email(
@@ -91,7 +97,7 @@ def send_email(
 
 def create_email_verification_link(
     tenant_id: str,
-    user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str],
     user_context: Optional[Dict[str, Any]] = None,
 ):
@@ -99,12 +105,15 @@ def create_email_verification_link(
         create_email_verification_link,
     )
 
-    return sync(create_email_verification_link(tenant_id, user_id, email, user_context))
+    return sync(
+        create_email_verification_link(tenant_id, recipe_user_id, email, user_context)
+    )
 
 
 def send_email_verification_email(
     tenant_id: str,
     user_id: str,
+    recipe_user_id: RecipeUserId,
     email: Optional[str],
     user_context: Optional[Dict[str, Any]] = None,
 ):
@@ -112,4 +121,8 @@ def send_email_verification_email(
         send_email_verification_email,
     )
 
-    return sync(send_email_verification_email(tenant_id, user_id, email, user_context))
+    return sync(
+        send_email_verification_email(
+            tenant_id, user_id, recipe_user_id, email, user_context
+        )
+    )

@@ -15,37 +15,59 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 from ...supertokens import AppInfo
-
-from ...types import APIResponse, GeneralErrorResponse
+from ...types import (
+    APIResponse,
+    GeneralErrorResponse,
+    RecipeUserId,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
 
-    from .types import FormField, User
+    from .types import FormField
+    from ...types import User
     from .utils import EmailPasswordConfig
 
 
 class SignUpOkResult:
-    def __init__(self, user: User):
+    status: str = "OK"
+
+    def __init__(self, user: User, recipe_user_id: RecipeUserId):
         self.user = user
+        self.recipe_user_id = recipe_user_id
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "user": self.user.to_json(),
+            "recipeUserId": self.recipe_user_id.get_as_string(),
+        }
 
 
-class SignUpEmailAlreadyExistsError:
-    pass
+class EmailAlreadyExistsError(APIResponse):
+    status: str = "EMAIL_ALREADY_EXISTS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
 
 class SignInOkResult:
-    def __init__(self, user: User):
+    def __init__(self, user: User, recipe_user_id: RecipeUserId):
         self.user = user
+        self.recipe_user_id = recipe_user_id
 
 
-class SignInWrongCredentialsError:
-    pass
+class WrongCredentialsError(APIResponse):
+    status: str = "WRONG_CREDENTIALS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
 
 class CreateResetPasswordOkResult:
@@ -53,53 +75,47 @@ class CreateResetPasswordOkResult:
         self.token = token
 
 
-class CreateResetPasswordWrongUserIdError:
-    pass
-
-
-class CreateResetPasswordLinkOkResult:
-    def __init__(self, link: str):
-        self.link = link
-
-
-class CreateResetPasswordLinkUnknownUserIdError:
-    pass
-
-
-class SendResetPasswordEmailOkResult:
-    pass
-
-
-class SendResetPasswordEmailUnknownUserIdError:
-    pass
-
-
-class ResetPasswordUsingTokenOkResult:
-    def __init__(self, user_id: Union[str, None]):
+class ConsumePasswordResetTokenOkResult:
+    def __init__(self, email: str, user_id: str):
+        self.email = email
         self.user_id = user_id
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "email": self.email,
+            "userId": self.user_id,
+        }
 
-class ResetPasswordUsingTokenInvalidTokenError:
-    pass
+
+class PasswordResetTokenInvalidError(APIResponse):
+    status: str = "RESET_PASSWORD_INVALID_TOKEN_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
 
 
 class UpdateEmailOrPasswordOkResult:
     pass
 
 
-class UpdateEmailOrPasswordEmailAlreadyExistsError:
+class UnknownUserIdError:
     pass
 
 
-class UpdateEmailOrPasswordUnknownUserIdError:
-    pass
+class UpdateEmailOrPasswordEmailChangeNotAllowedError:
+    def __init__(self, reason: str):
+        self.reason = reason
 
 
-class UpdateEmailOrPasswordPasswordPolicyViolationError:
-    failure_reason: str
-
+class PasswordPolicyViolationError(APIResponse):
     def __init__(self, failure_reason: str):
         self.failure_reason = failure_reason
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "PASSWORD_POLICY_VIOLATED_ERROR",
+            "failureReason": self.failure_reason,
+        }
 
 
 class RecipeInterface(ABC):
@@ -107,51 +123,76 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def get_user_by_email(
-        self, email: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Union[User, None]:
-        pass
-
-    @abstractmethod
-    async def create_reset_password_token(
-        self, user_id: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
-        pass
-
-    @abstractmethod
-    async def reset_password_using_token(
+    async def sign_up(
         self,
-        token: str,
-        new_password: str,
+        email: str,
+        password: str,
         tenant_id: str,
+        session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         user_context: Dict[str, Any],
     ) -> Union[
-        ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError
+        SignUpOkResult,
+        EmailAlreadyExistsError,
+        LinkingToSessionUserFailedError,
     ]:
         pass
 
     @abstractmethod
-    async def sign_in(
-        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Union[SignInOkResult, SignInWrongCredentialsError]:
+    async def create_new_recipe_user(
+        self,
+        email: str,
+        password: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[SignUpOkResult, EmailAlreadyExistsError]:
         pass
 
     @abstractmethod
-    async def sign_up(
-        self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
+    async def sign_in(
+        self,
+        email: str,
+        password: str,
+        tenant_id: str,
+        session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
+        user_context: Dict[str, Any],
+    ) -> Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError,]:
+        pass
+
+    @abstractmethod
+    async def verify_credentials(
+        self,
+        email: str,
+        password: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[SignInOkResult, WrongCredentialsError]:
+        pass
+
+    @abstractmethod
+    async def create_reset_password_token(
+        self,
+        user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[CreateResetPasswordOkResult, UnknownUserIdError]:
+        pass
+
+    @abstractmethod
+    async def consume_password_reset_token(
+        self,
+        token: str,
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[ConsumePasswordResetTokenOkResult, PasswordResetTokenInvalidError]:
         pass
 
     @abstractmethod
     async def update_email_or_password(
         self,
-        user_id: str,
+        recipe_user_id: RecipeUserId,
         email: Union[str, None],
         password: Union[str, None],
         apply_password_policy: Union[bool, None],
@@ -159,9 +200,10 @@ class RecipeInterface(ABC):
         user_context: Dict[str, Any],
     ) -> Union[
         UpdateEmailOrPasswordOkResult,
-        UpdateEmailOrPasswordEmailAlreadyExistsError,
-        UpdateEmailOrPasswordUnknownUserIdError,
-        UpdateEmailOrPasswordPasswordPolicyViolationError,
+        EmailAlreadyExistsError,
+        UnknownUserIdError,
+        UpdateEmailOrPasswordEmailChangeNotAllowedError,
+        PasswordPolicyViolationError,
     ]:
         pass
 
@@ -203,18 +245,22 @@ class GeneratePasswordResetTokenPostOkResult(APIResponse):
         return {"status": self.status}
 
 
+class GeneratePasswordResetTokenPostNotAllowedResponse(APIResponse):
+    status: str = "PASSWORD_RESET_NOT_ALLOWED"
+
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "reason": self.reason}
+
+
 class PasswordResetPostOkResult(APIResponse):
     status: str = "OK"
 
-    def __init__(self, user_id: Union[str, None]):
-        self.user_id = user_id
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class PasswordResetPostInvalidTokenResponse(APIResponse):
-    status: str = "RESET_PASSWORD_INVALID_TOKEN_ERROR"
+    def __init__(self, email: str, user: User):
+        self.email = email
+        self.user = user
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
@@ -230,19 +276,18 @@ class SignInPostOkResult(APIResponse):
     def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
-            "user": {
-                "id": self.user.user_id,
-                "email": self.user.email,
-                "timeJoined": self.user.time_joined,
-            },
+            "user": self.user.to_json(),
         }
 
 
-class SignInPostWrongCredentialsError(APIResponse):
-    status: str = "WRONG_CREDENTIALS_ERROR"
+class SignInPostNotAllowedResponse(APIResponse):
+    status: str = "SIGN_IN_NOT_ALLOWED"
+
+    def __init__(self, reason: str):
+        self.reason = reason
 
     def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
+        return {"status": self.status, "reason": self.reason}
 
 
 class SignUpPostOkResult(APIResponse):
@@ -253,21 +298,17 @@ class SignUpPostOkResult(APIResponse):
         self.session = session
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            "status": self.status,
-            "user": {
-                "id": self.user.user_id,
-                "email": self.user.email,
-                "timeJoined": self.user.time_joined,
-            },
-        }
+        return {"status": self.status, "user": self.user.to_json()}
 
 
-class SignUpPostEmailAlreadyExistsError(APIResponse):
-    status: str = "EMAIL_ALREADY_EXISTS_ERROR"
+class SignUpPostNotAllowedResponse(APIResponse):
+    status: str = "SIGN_UP_NOT_ALLOWED"
+
+    def __init__(self, reason: str):
+        self.reason = reason
 
     def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
+        return {"status": self.status, "reason": self.reason}
 
 
 class APIInterface:
@@ -295,7 +336,11 @@ class APIInterface:
         tenant_id: str,
         api_options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
+    ) -> Union[
+        GeneratePasswordResetTokenPostOkResult,
+        GeneratePasswordResetTokenPostNotAllowedResponse,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
@@ -308,7 +353,8 @@ class APIInterface:
         user_context: Dict[str, Any],
     ) -> Union[
         PasswordResetPostOkResult,
-        PasswordResetPostInvalidTokenResponse,
+        PasswordResetTokenInvalidError,
+        PasswordPolicyViolationError,
         GeneralErrorResponse,
     ]:
         pass
@@ -318,10 +364,15 @@ class APIInterface:
         self,
         form_fields: List[FormField],
         tenant_id: str,
+        session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
-        SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse
+        SignInPostOkResult,
+        WrongCredentialsError,
+        SignInPostNotAllowedResponse,
+        GeneralErrorResponse,
     ]:
         pass
 
@@ -330,9 +381,14 @@ class APIInterface:
         self,
         form_fields: List[FormField],
         tenant_id: str,
+        session: Union[SessionContainer, None],
+        should_try_linking_with_session_user: Union[bool, None],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
-        SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse
+        SignUpPostOkResult,
+        EmailAlreadyExistsError,
+        SignUpPostNotAllowedResponse,
+        GeneralErrorResponse,
     ]:
         pass

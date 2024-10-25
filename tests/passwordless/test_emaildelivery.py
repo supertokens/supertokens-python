@@ -59,7 +59,7 @@ from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenOkResult,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
 )
 
 
@@ -181,13 +181,14 @@ async def test_email_verify_for_pless_user_no_callback():
     if not is_version_gte(version, "2.11"):
         return
 
-    pless_response = await signinup("public", "test@example.com", None, {})
+    pless_response = await signinup("public", "test@example.com", None, None, {})
     create_token = await create_email_verification_token(
-        "public", pless_response.user.user_id
+        "public", pless_response.recipe_user_id
     )
 
-    assert isinstance(create_token, CreateEmailVerificationTokenOkResult)
-    # TODO: Replaced CreateEmailVerificationTokenEmailAlreadyVerifiedError. Confirm if this is correct.
+    assert isinstance(
+        create_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
+    )
 
     assert (
         all([outer_override_called, get_content_called, send_raw_email_called]) is False

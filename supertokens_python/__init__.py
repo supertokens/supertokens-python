@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Optional
 from typing_extensions import Literal
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.types import RecipeUserId
 
 from . import supertokens
 from .recipe_module import RecipeModule
@@ -49,3 +50,7 @@ def get_request_from_user_context(
     user_context: Optional[Dict[str, Any]],
 ) -> Optional[BaseRequest]:
     return Supertokens.get_instance().get_request_from_user_context(user_context)
+
+
+def convert_to_recipe_user_id(user_id: str) -> RecipeUserId:
+    return RecipeUserId(user_id)

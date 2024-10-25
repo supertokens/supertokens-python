@@ -396,4 +396,7 @@ async def test_signinup_generating_fake_email(
     assert res.status_code == 200
     res_json = res.json()
     assert res_json["status"] == "OK"
-    assert res_json["user"]["email"] == "customid.custom@stfakeemail.supertokens.com"
+    assert (
+        res_json["user"]["emails"][0] == "customid.custom@stfakeemail.supertokens.com"
+    )
+    assert len(res_json["user"]["emails"]) == 1

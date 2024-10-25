@@ -11,10 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
 
 from fastapi import FastAPI
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 
@@ -73,12 +74,19 @@ async def test_user_context(driver_config_client: TestClient):
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             user_context = {"preSignInPOST": True}
             response = await og_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
             if (
                 "preSignInPOST" in user_context
@@ -99,20 +107,44 @@ async def test_user_context(driver_config_client: TestClient):
         og_sign_up = param.sign_up
 
         async def sign_up_(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
+            user_context: Dict[str, Any],
         ):
             if "manualCall" in user_context:
                 global signUpContextWorks
                 signUpContextWorks = True
-            response = await og_sign_up(email, password, tenant_id, user_context)
+            response = await og_sign_up(
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
+            )
             return response
 
         async def sign_in(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
+            user_context: Dict[str, Any],
         ):
             if "preSignInPOST" in user_context:
                 user_context["preSignIn"] = True
-            response = await og_sign_in(email, password, tenant_id, user_context)
+            response = await og_sign_in(
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
+            )
             if "preSignInPOST" in user_context and "preSignIn" in user_context:
                 user_context["postSignIn"] = True
             return response
@@ -126,6 +158,7 @@ async def test_user_context(driver_config_client: TestClient):
 
         async def create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -140,6 +173,7 @@ async def test_user_context(driver_config_client: TestClient):
                 user_context["preCreateNewSession"] = True
             response = await og_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
@@ -182,7 +216,9 @@ async def test_user_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
+    await sign_up(
+        "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
+    )
 
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
     assert res.status_code == 200
@@ -204,6 +240,8 @@ async def test_default_context(driver_config_client: TestClient):
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
@@ -213,7 +251,12 @@ async def test_default_context(driver_config_client: TestClient):
                 signin_api_context_works = True
 
             return await og_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
 
         param.sign_in_post = sign_in_post
@@ -223,14 +266,26 @@ async def test_default_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
 
         async def sign_in(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
+            user_context: Dict[str, Any],
         ):
             req = user_context.get("_default", {}).get("request")
             if req:
                 nonlocal signin_context_works
                 signin_context_works = True
 
-            return await og_sign_in(email, password, tenant_id, user_context)
+            return await og_sign_in(
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
+            )
 
         param.sign_in = sign_in
         return param
@@ -240,6 +295,7 @@ async def test_default_context(driver_config_client: TestClient):
 
         async def create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -253,6 +309,7 @@ async def test_default_context(driver_config_client: TestClient):
 
             response = await og_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
@@ -288,7 +345,9 @@ async def test_default_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
+    await sign_up(
+        "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
+    )
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
 
     assert res.status_code == 200
@@ -315,6 +374,8 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         async def sign_in_post(
             form_fields: List[FormField],
             tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
@@ -326,7 +387,12 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
                 signin_api_context_works = True
 
             return await og_sign_in_post(
-                form_fields, tenant_id, api_options, user_context
+                form_fields,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                api_options,
+                user_context,
             )
 
         param.sign_in_post = sign_in_post
@@ -336,7 +402,12 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
 
         async def sign_in(
-            email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
+            email: str,
+            password: str,
+            tenant_id: str,
+            session: Optional[session.SessionContainer],
+            should_try_linking_with_session_user: Union[bool, None],
+            user_context: Dict[str, Any],
         ):
             req = get_request_from_user_context(user_context)
             if req:
@@ -353,7 +424,14 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
             user_context["_default"]["request"] = orginal_request
 
-            return await og_sign_in(email, password, tenant_id, user_context)
+            return await og_sign_in(
+                email,
+                password,
+                tenant_id,
+                session,
+                should_try_linking_with_session_user,
+                user_context,
+            )
 
         param.sign_in = sign_in
         return param
@@ -363,6 +441,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
         async def create_new_session(
             user_id: str,
+            recipe_user_id: RecipeUserId,
             access_token_payload: Optional[Dict[str, Any]],
             session_data_in_database: Optional[Dict[str, Any]],
             disable_anti_csrf: Optional[bool],
@@ -378,6 +457,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
 
             response = await og_create_new_session(
                 user_id,
+                recipe_user_id,
                 access_token_payload,
                 session_data_in_database,
                 disable_anti_csrf,
@@ -413,7 +493,9 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
     )
     start_st()
 
-    await sign_up("public", "random@gmail.com", "validpass123", {"manualCall": True})
+    await sign_up(
+        "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
+    )
     res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
 
     assert res.status_code == 200

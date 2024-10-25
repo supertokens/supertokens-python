@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import importlib
 from typing import Any, Dict, Optional, Union, List
 from ..constants import DEFAULT_TENANT_ID
 
@@ -35,6 +36,9 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
+        module = importlib.import_module(
+            "supertokens_python.recipe.multifactorauth.utils"
+        )
         from supertokens_python.recipe.thirdparty.providers.config_utils import (
             merge_providers_from_core_and_static,
             find_and_create_provider_instance,
@@ -52,7 +56,7 @@ class APIImplementation(APIInterface):
             raise Exception("Tenant not found")
 
         provider_inputs_from_static = api_options.static_third_party_providers
-        provider_configs_from_core = tenant_config.third_party.providers
+        provider_configs_from_core = tenant_config.third_party_providers
 
         merged_providers = merge_providers_from_core_and_static(
             provider_configs_from_core,
@@ -80,12 +84,37 @@ class APIImplementation(APIInterface):
                 ThirdPartyProvider(provider_instance.id, provider_instance.config.name)
             )
 
+        first_factors: List[str] = []
+        if tenant_config.first_factors is not None:
+            first_factors = tenant_config.first_factors
+        elif api_options.static_first_factors is not None:
+            first_factors = api_options.static_first_factors
+        else:
+            first_factors = list(set(api_options.all_available_first_factors))
+
+        valid_first_factors: List[str] = []
+        for factor_id in first_factors:
+            valid_res = await module.is_valid_first_factor(
+                tenant_id, factor_id, user_context
+            )
+            if valid_res == "OK":
+                valid_first_factors.append(factor_id)
+            if valid_res == "TENANT_NOT_FOUND_ERROR":
+                raise Exception("Tenant not found")
+
         return LoginMethodsGetOkResult(
             email_password=LoginMethodEmailPassword(
-                tenant_config.emailpassword.enabled
+                enabled="emailpassword" in valid_first_factors
             ),
-            passwordless=LoginMethodPasswordless(tenant_config.passwordless.enabled),
+            passwordless=LoginMethodPasswordless(
+                enabled=any(
+                    factor in valid_first_factors
+                    for factor in ["otp-email", "otp-phone", "link-email", "link-phone"]
+                )
+            ),
             third_party=LoginMethodThirdParty(
-                tenant_config.third_party.enabled, final_provider_list
+                enabled="thirdparty" in valid_first_factors,
+                providers=final_provider_list,
             ),
+            first_factors=valid_first_factors,
         )

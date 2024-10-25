@@ -16,6 +16,7 @@ from typing import Any, Dict, Union
 
 from fastapi import Depends, FastAPI
 from fastapi.requests import Request
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -91,7 +92,7 @@ async def driver_config_client():
     @app.get("/login")
     async def login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"userId": user_id}
 
     @app.post("/refresh")
@@ -135,12 +136,12 @@ async def driver_config_client():
 
     @app.post("/create")
     async def _create(request: Request):  # type: ignore
-        await create_new_session(request, "public", "userId", {}, {})
+        await create_new_session(request, "public", RecipeUserId("userId"), {}, {})
         return ""
 
     @app.post("/create-throw")
     async def _create_throw(request: Request):  # type: ignore
-        await create_new_session(request, "public", "userId", {}, {})
+        await create_new_session(request, "public", RecipeUserId("userId"), {}, {})
         raise UnauthorisedError("unauthorised")
 
     return TestClient(app)

@@ -28,6 +28,7 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
 )
 from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.types import RecipeUserId
 from tests.sessions.claims.utils import TrueClaim, NoneClaim
 from tests.utils import (
     setup_function,
@@ -50,8 +51,9 @@ def st_init_generator_with_overriden_global_validators(
 ):
     def session_function_override(oi: RecipeInterface) -> RecipeInterface:
         async def new_get_global_claim_validators(
-            _user_id: str,
             _tenant_id: str,
+            _user_id: str,
+            _recipe_user_id: RecipeUserId,
             _claim_validators_added_by_other_recipes: List[SessionClaimValidator],
             _user_context: Dict[str, Any],
         ):
@@ -77,8 +79,9 @@ def st_init_generator_with_overriden_global_validators(
 def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidator):
     def session_function_override(oi: RecipeInterface) -> RecipeInterface:
         async def new_get_global_claim_validators(
-            _user_id: str,
             _tenant_id: str,
+            _user_id: str,
+            _recipe_user_id: RecipeUserId,
             claim_validators_added_by_other_recipes: List[SessionClaimValidator],
             _user_context: Dict[str, Any],
         ):
@@ -138,13 +141,13 @@ async def fastapi_client():
     @app.post("/login")
     async def _login(request: Request):  # type: ignore
         user_id = "userId"
-        await create_new_session(request, "public", user_id, {}, {})
+        await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         return {"userId": user_id}
 
     @app.post("/create-with-claim")
     async def _create_with_claim(request: Request):  # type: ignore
         user_id = "userId"
-        _ = await create_new_session(request, "public", user_id, {}, {})
+        _ = await create_new_session(request, "public", RecipeUserId(user_id), {}, {})
         key: str = (await request.json())["key"]
         # PrimitiveClaim(key, fetch_value="Value").add_to_session(session, "value")
         return {"userId": key}
@@ -377,6 +380,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
@@ -426,6 +430,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         None,  # anti csrf token
         "test_session_handle",
         "test_user_id",
+        RecipeUserId("test_user_id"),
         {},  # user_data_in_access_token
         None,  # req_res_info
         False,  # access_token_updated
@@ -442,7 +447,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         assert validators == [validator]
         assert ctx["_default"]["request"]
         recipe_impl_mock.validate_claims.assert_called_once_with(  # type: ignore
-            "test_user_id", {}, [validator], ctx
+            "test_user_id", RecipeUserId("test_user_id"), {}, [validator], ctx
         )
 
 

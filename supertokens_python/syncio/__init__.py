@@ -25,7 +25,7 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import UsersResponse
+from supertokens_python.types import AccountInfo, User
 
 
 def get_users_oldest_first(
@@ -35,11 +35,12 @@ def get_users_oldest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
+):
+    from supertokens_python.asyncio import get_users_oldest_first
+
     return sync(
-        Supertokens.get_instance().get_users(
+        get_users_oldest_first(
             tenant_id,
-            "ASC",
             limit,
             pagination_token,
             include_recipe_ids,
@@ -56,11 +57,12 @@ def get_users_newest_first(
     include_recipe_ids: Union[None, List[str]] = None,
     query: Union[None, Dict[str, str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> UsersResponse:
+):
+    from supertokens_python.asyncio import get_users_newest_first
+
     return sync(
-        Supertokens.get_instance().get_users(
+        get_users_newest_first(
             tenant_id,
-            "DESC",
             limit,
             pagination_token,
             include_recipe_ids,
@@ -82,8 +84,22 @@ def get_user_count(
     )
 
 
-def delete_user(user_id: str, user_context: Optional[Dict[str, Any]] = None) -> None:
-    return sync(Supertokens.get_instance().delete_user(user_id, user_context))
+def delete_user(
+    user_id: str,
+    remove_all_linked_accounts: bool = True,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> None:
+    from supertokens_python.asyncio import delete_user
+
+    return sync(delete_user(user_id, remove_all_linked_accounts, user_context))
+
+
+def get_user(
+    user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -> Optional[User]:
+    from supertokens_python.asyncio import get_user as async_get_user
+
+    return sync(async_get_user(user_id, user_context))
 
 
 def create_user_id_mapping(
@@ -142,5 +158,22 @@ def update_or_delete_user_id_mapping_info(
     return sync(
         Supertokens.get_instance().update_or_delete_user_id_mapping_info(
             user_id, user_id_type, external_user_id_info, user_context
+        )
+    )
+
+
+def list_users_by_account_info(
+    tenant_id: str,
+    account_info: AccountInfo,
+    do_union_of_account_info: bool = False,
+    user_context: Optional[Dict[str, Any]] = None,
+) -> List[User]:
+    from supertokens_python.asyncio import (
+        list_users_by_account_info as async_list_users_by_account_info,
+    )
+
+    return sync(
+        async_list_users_by_account_info(
+            tenant_id, account_info, do_union_of_account_info, user_context
         )
     )

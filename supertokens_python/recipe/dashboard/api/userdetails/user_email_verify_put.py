@@ -11,6 +11,8 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenInvalidTokenError,
 )
 
+from supertokens_python.types import RecipeUserId
+
 from ...interfaces import (
     APIInterface,
     APIOptions,
@@ -25,12 +27,12 @@ async def handle_user_email_verify_put(
     user_context: Dict[str, Any],
 ) -> UserEmailVerifyPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
-    user_id = request_body.get("userId")
+    recipe_user_id = request_body.get("recipeUserId")
     verified = request_body.get("verified")
 
-    if user_id is None or not isinstance(user_id, str):
+    if recipe_user_id is None or not isinstance(recipe_user_id, str):
         raise_bad_input_exception(
-            "Required parameter 'userId' is missing or has an invalid type"
+            "Required parameter 'recipeUserId' is missing or has an invalid type"
         )
 
     if verified is None or not isinstance(verified, bool):
@@ -40,7 +42,10 @@ async def handle_user_email_verify_put(
 
     if verified:
         token_response = await create_email_verification_token(
-            tenant_id=tenant_id, user_id=user_id, email=None, user_context=user_context
+            tenant_id=tenant_id,
+            recipe_user_id=RecipeUserId(recipe_user_id),
+            email=None,
+            user_context=user_context,
         )
 
         if isinstance(
@@ -57,6 +62,6 @@ async def handle_user_email_verify_put(
             raise Exception("Should not come here")
 
     else:
-        await unverify_email(user_id, user_context=user_context)
+        await unverify_email(RecipeUserId(recipe_user_id), user_context=user_context)
 
     return UserEmailVerifyPutAPIResponse()

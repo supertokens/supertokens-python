@@ -15,16 +15,34 @@ from __future__ import annotations
 
 from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union, Optional
+from supertokens_python.auth_utils import is_fake_email
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import (
+    FactorIds,
+    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
+    GetEmailsForFactorOkResult,
+    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsOkResult,
+    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+)
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessIngredients,
     PasswordlessLoginSMSTemplateVars,
 )
 from typing_extensions import Literal
+
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import User, RecipeUserId
 
 from .api import (
     consume_code,
@@ -54,13 +72,8 @@ from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
     OverrideConfig,
+    get_enabled_pwless_factors,
     validate_and_normalise_user_input,
-)
-from ..emailverification import EmailVerificationRecipe
-from ..emailverification.interfaces import (
-    GetEmailForUserIdOkResult,
-    EmailDoesNotExistError,
-    UnknownUserIdError,
 )
 from ...post_init_callbacks import PostSTInitCallbacks
 
@@ -142,9 +155,244 @@ class PasswordlessRecipe(RecipeModule):
         )
 
         def callback():
-            ev_recipe = EmailVerificationRecipe.get_instance_optional()
-            if ev_recipe:
-                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+            mfa_instance = MultiFactorAuthRecipe.get_instance()
+            all_factors = get_enabled_pwless_factors(self.config)
+            if mfa_instance is not None:
+
+                async def f1(_: TenantConfig):
+                    return all_factors
+
+                mfa_instance.add_func_to_get_all_available_secondary_factor_ids_from_other_recipes(
+                    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc(f1)
+                )
+
+                async def get_factors_setup_for_user(
+                    user: User, _: Dict[str, Any]
+                ) -> List[str]:
+                    def is_factor_setup_for_user(user: User, factor_id: str) -> bool:
+                        for login_method in user.login_methods:
+                            if login_method.recipe_id != "passwordless":
+                                continue
+
+                            if login_method.email is not None and not is_fake_email(
+                                login_method.email
+                            ):
+                                if factor_id in [
+                                    FactorIds.OTP_EMAIL,
+                                    FactorIds.LINK_EMAIL,
+                                ]:
+                                    return True
+
+                            if login_method.phone_number is not None:
+                                if factor_id in [
+                                    FactorIds.OTP_PHONE,
+                                    FactorIds.LINK_PHONE,
+                                ]:
+                                    return True
+                        return False
+
+                    return [
+                        factor_id
+                        for factor_id in all_factors
+                        if is_factor_setup_for_user(user, factor_id)
+                    ]
+
+                mfa_instance.add_func_to_get_factors_setup_for_user_from_other_recipes(
+                    GetFactorsSetupForUserFromOtherRecipesFunc(
+                        get_factors_setup_for_user
+                    )
+                )
+
+                async def get_emails_for_factor(
+                    user: User, session_recipe_user_id: RecipeUserId
+                ) -> Union[
+                    GetEmailsForFactorOkResult,
+                    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+                ]:
+                    session_login_method = next(
+                        (
+                            lm
+                            for lm in user.login_methods
+                            if lm.recipe_user_id.get_as_string()
+                            == session_recipe_user_id.get_as_string()
+                        ),
+                        None,
+                    )
+                    if session_login_method is None:
+                        return GetEmailsForFactorUnknownSessionRecipeUserIdResult()
+
+                    ordered_login_methods = sorted(
+                        user.login_methods, key=lambda lm: lm.time_joined
+                    )
+
+                    # MAIN LOGIC FOR THE FUNCTION STARTS HERE
+                    non_fake_emails_passwordless = [
+                        lm.email
+                        for lm in ordered_login_methods
+                        if lm.recipe_id == "passwordless"
+                        and lm.email is not None
+                        and not is_fake_email(lm.email)
+                    ]
+
+                    if not non_fake_emails_passwordless:
+                        # This factor is not set up for email-based factors.
+                        # We check for emails from other loginMethods and return those.
+                        emails_result = []
+                        if (
+                            session_login_method.email is not None
+                            and not is_fake_email(session_login_method.email)
+                        ):
+                            emails_result = [session_login_method.email]
+
+                        emails_result.extend(
+                            [
+                                lm.email
+                                for lm in ordered_login_methods
+                                if lm.email is not None
+                                and not is_fake_email(lm.email)
+                                and lm.email not in emails_result
+                            ]
+                        )
+                        factor_id_to_emails_map = {}
+                        if FactorIds.OTP_EMAIL in all_factors:
+                            factor_id_to_emails_map[FactorIds.OTP_EMAIL] = emails_result
+                        if FactorIds.LINK_EMAIL in all_factors:
+                            factor_id_to_emails_map[
+                                FactorIds.LINK_EMAIL
+                            ] = emails_result
+                        return GetEmailsForFactorOkResult(
+                            factor_id_to_emails_map=factor_id_to_emails_map
+                        )
+                    elif len(non_fake_emails_passwordless) == 1:
+                        # Return just this email to avoid creating more loginMethods
+                        factor_id_to_emails_map = {}
+                        if FactorIds.OTP_EMAIL in all_factors:
+                            factor_id_to_emails_map[
+                                FactorIds.OTP_EMAIL
+                            ] = non_fake_emails_passwordless
+                        if FactorIds.LINK_EMAIL in all_factors:
+                            factor_id_to_emails_map[
+                                FactorIds.LINK_EMAIL
+                            ] = non_fake_emails_passwordless
+                        return GetEmailsForFactorOkResult(
+                            factor_id_to_emails_map=factor_id_to_emails_map
+                        )
+
+                    # Return all emails with passwordless login method, prioritizing session's email
+                    emails_result = []
+                    if (
+                        session_login_method.email is not None
+                        and session_login_method.email in non_fake_emails_passwordless
+                    ):
+                        emails_result = [session_login_method.email]
+
+                    emails_result.extend(
+                        [
+                            email
+                            for email in non_fake_emails_passwordless
+                            if email not in emails_result
+                        ]
+                    )
+
+                    factor_id_to_emails_map = {}
+                    if FactorIds.OTP_EMAIL in all_factors:
+                        factor_id_to_emails_map[FactorIds.OTP_EMAIL] = emails_result
+                    if FactorIds.LINK_EMAIL in all_factors:
+                        factor_id_to_emails_map[FactorIds.LINK_EMAIL] = emails_result
+
+                    return GetEmailsForFactorOkResult(
+                        factor_id_to_emails_map=factor_id_to_emails_map
+                    )
+
+                mfa_instance.add_func_to_get_emails_for_factor_from_other_recipes(
+                    GetEmailsForFactorFromOtherRecipesFunc(get_emails_for_factor)
+                )
+
+                async def get_phone_numbers_for_factors(
+                    user: User, session_recipe_user_id: RecipeUserId
+                ) -> Union[
+                    GetPhoneNumbersForFactorsOkResult,
+                    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+                ]:
+                    session_login_method = next(
+                        (
+                            lm
+                            for lm in user.login_methods
+                            if lm.recipe_user_id.get_as_string()
+                            == session_recipe_user_id.get_as_string()
+                        ),
+                        None,
+                    )
+                    if session_login_method is None:
+                        return (
+                            GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult()
+                        )
+
+                    ordered_login_methods = sorted(
+                        user.login_methods, key=lambda lm: lm.time_joined
+                    )
+
+                    phone_numbers = [
+                        lm.phone_number
+                        for lm in ordered_login_methods
+                        if lm.recipe_id == "passwordless"
+                        and lm.phone_number is not None
+                    ]
+
+                    if not phone_numbers:
+                        phones_result = []
+                        if session_login_method.phone_number is not None:
+                            phones_result = [session_login_method.phone_number]
+
+                        phones_result.extend(
+                            [
+                                lm.phone_number
+                                for lm in ordered_login_methods
+                                if lm.phone_number is not None
+                                and lm.phone_number not in phones_result
+                            ]
+                        )
+                    elif len(phone_numbers) == 1:
+                        phones_result = phone_numbers
+                    else:
+                        phones_result = []
+                        if (
+                            session_login_method.phone_number is not None
+                            and session_login_method.phone_number in phone_numbers
+                        ):
+                            phones_result = [session_login_method.phone_number]
+                        phones_result.extend(
+                            [
+                                phone
+                                for phone in phone_numbers
+                                if phone not in phones_result
+                            ]
+                        )
+
+                    factor_id_to_phone_number_map = {}
+                    if FactorIds.OTP_PHONE in all_factors:
+                        factor_id_to_phone_number_map[
+                            FactorIds.OTP_PHONE
+                        ] = phones_result
+                    if FactorIds.LINK_PHONE in all_factors:
+                        factor_id_to_phone_number_map[
+                            FactorIds.LINK_PHONE
+                        ] = phones_result
+
+                    return GetPhoneNumbersForFactorsOkResult(
+                        factor_id_to_phone_number_map=factor_id_to_phone_number_map
+                    )
+
+                mfa_instance.add_func_to_get_phone_numbers_for_factors_from_other_recipes(
+                    GetPhoneNumbersForFactorsFromOtherRecipesFunc(
+                        get_phone_numbers_for_factors
+                    )
+                )
+
+            mt_recipe = MultitenancyRecipe.get_instance_optional()
+            if mt_recipe is not None:
+                for factor_id in all_factors:
+                    mt_recipe.all_available_first_factors.append(factor_id)
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
@@ -330,6 +578,8 @@ class PasswordlessRecipe(RecipeModule):
             tenant_id=tenant_id,
             user_input_code=user_input_code,
             user_context=user_context,
+            session=None,
+            should_try_linking_with_session_user=False,
         )
 
         app_info = self.get_app_info()
@@ -351,6 +601,7 @@ class PasswordlessRecipe(RecipeModule):
         self,
         email: Union[str, None],
         phone_number: Union[str, None],
+        session: Optional[SessionContainer],
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> ConsumeCodeOkResult:
@@ -360,6 +611,8 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=None,
             tenant_id=tenant_id,
             user_context=user_context,
+            session=session,
+            should_try_linking_with_session_user=False,
         )
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
@@ -368,19 +621,9 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=code_info.user_input_code,
             tenant_id=tenant_id,
             user_context=user_context,
+            session=session,
+            should_try_linking_with_session_user=False,
         )
         if isinstance(consume_code_result, ConsumeCodeOkResult):
             return consume_code_result
         raise Exception("Failed to create user. Please retry")
-
-    async def get_email_for_user_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is not None:
-            if user_info.email is not None:
-                return GetEmailForUserIdOkResult(user_info.email)
-            return EmailDoesNotExistError()
-        return UnknownUserIdError()

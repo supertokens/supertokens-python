@@ -17,8 +17,10 @@ from starlette.testclient import TestClient
 from typing import Any, Dict
 
 from supertokens_python import init
+from supertokens_python.asyncio import get_user
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, multitenancy, session
+from supertokens_python.types import RecipeUserId
 from tests.utils import (
     setup_function,
     teardown_function,
@@ -40,11 +42,13 @@ from supertokens_python.recipe.multitenancy.asyncio import (
     create_or_update_third_party_config,
     delete_third_party_config,
     associate_user_to_tenant,
-    dissociate_user_from_tenant,
+    disassociate_user_from_tenant,
 )
-from supertokens_python.recipe.emailpassword.asyncio import sign_up, get_user_by_id
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
-from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.recipe.multitenancy.interfaces import (
+    TenantConfigCreateOrUpdate,
+)
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderConfig,
     ProviderClientConfig,
@@ -67,51 +71,72 @@ async def test_tenant_crud():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t2",
+        TenantConfigCreateOrUpdate(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
 
     tenants = await list_all_tenants()
     assert len(tenants.tenants) == 4
 
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config.emailpassword.enabled is True
-    assert t1_config.passwordless.enabled is False
-    assert t1_config.third_party.enabled is False
+    assert t1_config.first_factors is not None
+    assert "emailpassword" in t1_config.first_factors
+    assert len(t1_config.first_factors) == 1
     assert t1_config.core_config == {}
 
     t2_config = await get_tenant("t2")
     assert t2_config is not None
-    assert t2_config.emailpassword.enabled is False
-    assert t2_config.passwordless.enabled is True
-    assert t2_config.third_party.enabled is False
+    assert t2_config.first_factors is not None
+    assert "otp-email" in t2_config.first_factors
+    assert "otp-phone" in t2_config.first_factors
+    assert "link-email" in t2_config.first_factors
+    assert "link-phone" in t2_config.first_factors
+    assert len(t2_config.first_factors) == 4
     assert t2_config.core_config == {}
 
     t3_config = await get_tenant("t3")
     assert t3_config is not None
-    assert t3_config.emailpassword.enabled is False
-    assert t3_config.passwordless.enabled is False
-    assert t3_config.third_party.enabled is True
+    assert t3_config.first_factors is not None
+    assert "thirdparty" in t3_config.first_factors
+    assert len(t3_config.first_factors) == 1
     assert t3_config.core_config == {}
 
     # update tenant1 to add passwordless:
-    await create_or_update_tenant("t1", TenantConfig(passwordless_enabled=True))
+    await create_or_update_tenant(
+        "t1",
+        TenantConfigCreateOrUpdate(
+            first_factors=[
+                "otp-email",
+            ]
+        ),
+    )
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config.emailpassword.enabled is True
-    assert t1_config.passwordless.enabled is True
-    assert t1_config.third_party.enabled is False
+    assert t1_config.first_factors is not None
+    assert "otp-email" in t1_config.first_factors
+    assert len(t1_config.first_factors) == 1
     assert t1_config.core_config == {}
 
     # update tenant1 to add thirdparty:
-    await create_or_update_tenant("t1", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty", "otp-email"])
+    )
     t1_config = await get_tenant("t1")
     assert t1_config is not None
-    assert t1_config is not None
-    assert t1_config.emailpassword.enabled is True
-    assert t1_config.passwordless.enabled is True
-    assert t1_config.third_party.enabled is True
+    assert t1_config.first_factors is not None
+    assert "otp-email" in t1_config.first_factors
+    assert "thirdparty" in t1_config.first_factors
+    assert len(t1_config.first_factors) == 2
     assert t1_config.core_config == {}
 
     # delete tenant2:
@@ -126,7 +151,9 @@ async def test_tenant_thirdparty_config():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
     await create_or_update_third_party_config(
         "t1",
         config=ProviderConfig(
@@ -139,8 +166,8 @@ async def test_tenant_thirdparty_config():
     tenant_config = await get_tenant("t1")
     assert tenant_config is not None
 
-    assert len(tenant_config.third_party.providers) == 1
-    provider = tenant_config.third_party.providers[0]
+    assert len(tenant_config.third_party_providers) == 1
+    provider = tenant_config.third_party_providers[0]
     assert provider.third_party_id == "google"
     assert provider.clients is not None
     assert len(provider.clients) == 1
@@ -197,8 +224,8 @@ async def test_tenant_thirdparty_config():
 
     tenant_config = await get_tenant("t1")
     assert tenant_config is not None
-    assert len(tenant_config.third_party.providers) == 1
-    provider = tenant_config.third_party.providers[0]
+    assert len(tenant_config.third_party_providers) == 1
+    provider = tenant_config.third_party_providers[0]
     assert provider.third_party_id == "google"
     assert provider.name == "Custom name"
     assert provider.clients is not None
@@ -244,7 +271,7 @@ async def test_tenant_thirdparty_config():
 
     tenant_config = await get_tenant("t1")
     assert tenant_config is not None
-    assert len(tenant_config.third_party.providers) == 0
+    assert len(tenant_config.third_party_providers) == 0
 
 
 async def test_user_association_and_disassociation_with_tenants():
@@ -253,26 +280,35 @@ async def test_user_association_and_disassociation_with_tenants():
     start_st()
     setup_multitenancy_feature()
 
-    await create_or_update_tenant("t1", TenantConfig(email_password_enabled=True))
-    await create_or_update_tenant("t2", TenantConfig(passwordless_enabled=True))
-    await create_or_update_tenant("t3", TenantConfig(third_party_enabled=True))
+    await create_or_update_tenant(
+        "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
+    )
+    await create_or_update_tenant(
+        "t2",
+        TenantConfigCreateOrUpdate(
+            first_factors=["otp-email", "otp-phone", "link-email", "link-phone"]
+        ),
+    )
+    await create_or_update_tenant(
+        "t3", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
+    )
 
     signup_response = await sign_up("public", "test@example.com", "password1")
     assert isinstance(signup_response, SignUpOkResult)
-    user_id = signup_response.user.user_id
+    user_id = signup_response.user.id
 
-    await associate_user_to_tenant("t1", user_id)
-    await associate_user_to_tenant("t2", user_id)
-    await associate_user_to_tenant("t3", user_id)
+    await associate_user_to_tenant("t1", RecipeUserId(user_id))
+    await associate_user_to_tenant("t2", RecipeUserId(user_id))
+    await associate_user_to_tenant("t3", RecipeUserId(user_id))
 
-    user = await get_user_by_id(user_id)
+    user = await get_user(user_id)
     assert user is not None
     assert len(user.tenant_ids) == 4  # public + 3 tenants
 
-    await dissociate_user_from_tenant("t1", user_id)
-    await dissociate_user_from_tenant("t2", user_id)
-    await dissociate_user_from_tenant("t3", user_id)
+    await disassociate_user_from_tenant("t1", RecipeUserId(user_id))
+    await disassociate_user_from_tenant("t2", RecipeUserId(user_id))
+    await disassociate_user_from_tenant("t3", RecipeUserId(user_id))
 
-    user = await get_user_by_id(user_id)
+    user = await get_user(user_id)
     assert user is not None
     assert len(user.tenant_ids) == 1  # public only

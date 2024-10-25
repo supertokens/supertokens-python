@@ -41,6 +41,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
 
 import pytest
+from supertokens_python.types import RecipeUserId
 from tests.utils import (
     clean_st,
     reset,
@@ -86,7 +87,7 @@ def get_cookies(response: HttpResponse) -> Dict[str, Any]:
 
 
 async def create_new_session_view(request: HttpRequest):
-    await create_new_session(request, "public", "user_id")
+    await create_new_session(request, "public", RecipeUserId("user_id"))
     return JsonResponse({"foo": "bar"})
 
 
@@ -501,6 +502,7 @@ class SupertokensTest(TestCase):
             f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}",
         )
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_multiple_emails(self):
         init(
@@ -553,6 +555,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 1)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_email_t(self):
         init(
@@ -603,6 +606,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 5)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_email_iresh(self):
         init(
@@ -655,6 +659,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 0)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_phone_plus_one(self):
         init(
@@ -710,6 +715,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 3)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_phone_one_bracket(self):
         init(
@@ -765,6 +771,7 @@ class SupertokensTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(data_json["users"]), 0)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_provider_google(self):
         init(
@@ -859,6 +866,7 @@ class SupertokensTest(TestCase):
         data_json = json.loads(response.content)
         self.assertEqual(len(data_json["users"]), 3)
 
+    @override_settings(ALLOWED_HOSTS=["testserver"])
     @pytest.mark.asyncio
     async def test_search_with_provider_google_and_phone_one(self):
         init(
@@ -979,7 +987,7 @@ class SupertokensTest(TestCase):
 
         # Create a session and get access token
         s = await create_new_session_without_request_response(
-            "public", "userId", {}, {}
+            "public", RecipeUserId("userId"), {}, {}
         )
         access_token = s.get_access_token()
         headers = {"HTTP_AUTHORIZATION": "Bearer " + access_token}

@@ -44,9 +44,13 @@ from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
 
-from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session import SessionContainer
+
+from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER, FDI_KEY_HEADER
 from .exceptions import raise_general_exception
 from .types import MaybeAwaitable
+from supertokens_python.types import User
 
 _T = TypeVar("_T")
 
@@ -179,6 +183,13 @@ def utf_base64decode(s: str, urlsafe: bool) -> str:
     return b64decode(s.encode("utf-8")).decode("utf-8")
 
 
+def encode_base64(value: str) -> str:
+    """
+    Encode the passed value to base64 and return the encoded value.
+    """
+    return b64encode(value.encode()).decode()
+
+
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
     return list(filter(func, given_list))
 
@@ -286,7 +297,81 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
             "Please make sure that the apiDomain and websiteDomain have correct values"
         )
 
-    return parsed_url.domain + "." + parsed_url.suffix  # type: ignore
+    return parsed_url.domain + "." + parsed_url.suffix
+
+
+def get_backwards_compatible_user_info(
+    req: BaseRequest,
+    user_info: User,
+    session_container: SessionContainer,
+    created_new_recipe_user: Union[bool, None],
+    user_context: Dict[str, Any],
+) -> Dict[str, Any]:
+    resp: Dict[str, Any] = {}
+    # (>= 1.18 && < 2.0) || >= 3.0: This is because before 1.18, and between 2 and 3, FDI does not
+    # support account linking.
+    if (
+        has_greater_than_equal_to_fdi(req, "1.18")
+        and not has_greater_than_equal_to_fdi(req, "2.0")
+    ) or has_greater_than_equal_to_fdi(req, "3.0"):
+        resp = {"user": user_info.to_json()}
+
+        if created_new_recipe_user is not None:
+            resp["createdNewRecipeUser"] = created_new_recipe_user
+        return resp
+
+    login_method = next(
+        (
+            lm
+            for lm in user_info.login_methods
+            if lm.recipe_user_id.get_as_string()
+            == session_container.get_recipe_user_id(user_context).get_as_string()
+        ),
+        None,
+    )
+
+    if login_method is None:
+        # we pick the oldest login method here for the user.
+        # this can happen in case the user is implementing something like
+        # MFA where the session remains the same during the second factor as well.
+        login_method = min(user_info.login_methods, key=lambda lm: lm.time_joined)
+
+    user_obj: Dict[str, Any] = {
+        "id": user_info.id,  # we purposely use this instead of the loginmethod's recipeUserId because if the oldest login method is deleted, then this userID should remain the same.
+        "timeJoined": login_method.time_joined,
+    }
+    if login_method.third_party:
+        user_obj["thirdParty"] = login_method.third_party
+    if login_method.email:
+        user_obj["email"] = login_method.email
+    if login_method.phone_number:
+        user_obj["phoneNumber"] = login_method.phone_number
+
+    resp = {"user": user_obj}
+
+    if created_new_recipe_user is not None:
+        resp["createdNewUser"] = created_new_recipe_user
+
+    return resp
+
+
+def get_latest_fdi_version_from_fdi_list(fdi_header_value: str) -> str:
+    versions = fdi_header_value.split(",")
+    max_version_str = versions[0]
+    for version in versions[1:]:
+        max_version_str = _get_max_version(max_version_str, version)
+    return max_version_str
+
+
+def has_greater_than_equal_to_fdi(req: BaseRequest, version: str) -> bool:
+    request_fdi = req.get_header(FDI_KEY_HEADER)
+    if request_fdi is None:
+        # By default we assume they want to use the latest FDI, this also helps with tests
+        return True
+    request_fdi = get_latest_fdi_version_from_fdi_list(request_fdi)
+    if request_fdi == version or _get_max_version(version, request_fdi) != version:
+        return True
+    return False
 
 
 class RWMutex:
@@ -345,3 +430,11 @@ class RWLockContext:
 
 def normalise_email(email: str) -> str:
     return email.strip().lower()
+
+
+def get_normalised_should_try_linking_with_session_user_flag(
+    req: BaseRequest, body: Dict[str, Any]
+) -> Optional[bool]:
+    if has_greater_than_equal_to_fdi(req, "3.1"):
+        return body.get("shouldTryLinkingWithSessionUser", False)
+    return None

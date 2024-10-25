@@ -61,19 +61,19 @@ async def test_supertokens_functions():
     for e in emails:
         signup_resp = await ep_asyncio.sign_up("public", e, "secret_pass")
         assert isinstance(signup_resp, SignUpOkResult)
-        user_ids.append(signup_resp.user.user_id)
+        user_ids.append(signup_resp.user.id)
 
     # Get user count
     assert await st_asyncio.get_user_count() == len(emails)
 
     # Get users in ascending order by joining time
     users_asc = (await st_asyncio.get_users_oldest_first("public", limit=10)).users
-    emails_asc = [user.email for user in users_asc]
+    emails_asc = [user.emails[0] for user in users_asc]
     assert emails_asc == emails
 
     # Get users in descending order by joining time
     users_desc = (await st_asyncio.get_users_newest_first("public", limit=10)).users
-    emails_desc = [user.email for user in users_desc]
+    emails_desc = [user.emails[0] for user in users_desc]
     assert emails_desc == emails[::-1]
 
     version = await Querier.get_instance().get_api_version()
@@ -87,7 +87,7 @@ async def test_supertokens_functions():
     # Again, get users in ascending order by joining time
     # We expect that the 2nd user (bar@example.com) must be absent.
     users_asc = (await st_asyncio.get_users_oldest_first("public", limit=10)).users
-    emails_asc = [user.email for user in users_asc]
+    emails_asc = [user.emails[0] for user in users_asc]
     assert emails[1] not in emails_asc  # The 2nd user must be deleted now.
 
     if not is_version_gte(version, "2.20"):
@@ -103,8 +103,8 @@ async def test_supertokens_functions():
             "public", limit=10, query={"email": "baz"}
         )
     ).users
-    emails_asc = [user.email for user in users_asc]
-    emails_desc = [user.email for user in users_desc]
+    emails_asc = [user.emails[0] for user in users_asc]
+    emails_desc = [user.emails[0] for user in users_desc]
     assert len(emails_asc) == 1
     assert len(emails_desc) == 1
 
@@ -118,7 +118,7 @@ async def test_supertokens_functions():
             "public", limit=10, query={"email": "john"}
         )
     ).users
-    emails_asc = [user.email for user in users_asc]
-    emails_desc = [user.email for user in users_desc]
+    emails_asc = [user.emails[0] for user in users_asc]
+    emails_desc = [user.emails[0] for user in users_desc]
     assert len(emails_asc) == 0
     assert len(emails_desc) == 0

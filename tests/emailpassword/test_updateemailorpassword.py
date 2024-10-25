@@ -15,6 +15,7 @@ import json
 from typing import Any
 
 from fastapi import FastAPI
+from supertokens_python.types import RecipeUserId
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -73,7 +74,7 @@ async def test_update_email_or_password_with_default_validator(
     user_id = dict_response["user"]["id"]
 
     r = await update_email_or_password(
-        user_id=user_id,
+        recipe_user_id=RecipeUserId(user_id),
         email=None,
         password="test",
         user_context={},
@@ -126,7 +127,7 @@ async def test_update_email_or_password_with_custom_validator(
     user_id = dict_response["user"]["id"]
 
     r = await update_email_or_password(
-        user_id=user_id,
+        recipe_user_id=RecipeUserId(user_id),
         email=None,
         password="te",
         user_context={},

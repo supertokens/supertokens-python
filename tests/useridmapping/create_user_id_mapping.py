@@ -55,7 +55,7 @@ async def test_create_user_id_mapping():
     sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    supertokens_user_id = sign_up_res.user.user_id
+    supertokens_user_id = sign_up_res.user.id
     external_user_id = "externalId"
     external_user_info = "externalIdInfo"
 
@@ -87,7 +87,7 @@ async def test_create_user_id_mapping_without_and_with_force():
     sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    supertokens_user_id = sign_up_res.user.user_id
+    supertokens_user_id = sign_up_res.user.id
     external_user_id = "externalId"
 
     # Add metadata to the user:
@@ -146,7 +146,7 @@ async def create_user_id_mapping_when_mapping_already_exists():
     sign_up_res = await sign_up("public", "test@example.com", "testPass123")
     assert isinstance(sign_up_res, SignUpOkResult)
 
-    supertokens_user_id = sign_up_res.user.user_id
+    supertokens_user_id = sign_up_res.user.id
     external_user_id = "externalId"
 
     # Create User ID Mapping:
@@ -169,7 +169,7 @@ async def create_user_id_mapping_when_mapping_already_exists():
     # Try creating a duplicate mapping where external_user_id exists and but supertokens_user_id doesn't (new)
     sign_up_res = await sign_up("public", "foo@bar.com", "baz")
     assert isinstance(sign_up_res, SignUpOkResult)
-    new_supertokens_user_id = sign_up_res.user.user_id
+    new_supertokens_user_id = sign_up_res.user.id
 
     res = await create_user_id_mapping(new_supertokens_user_id, external_user_id)
     assert isinstance(res, UserIdMappingAlreadyExistsError)
