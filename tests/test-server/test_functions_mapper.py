@@ -1002,19 +1002,38 @@ def reset_override_params():
     Info.core_call_count = 0
 
 
-send_email_to_user_id: Optional[str] = None
-token: Optional[str] = None
-user_post_password_reset: Optional[User] = None
-email_post_password_reset: Optional[str] = None
-send_email_callback_called: bool = False
-send_email_to_user_email: Optional[str] = None
-send_email_inputs: List[Any] = []
-send_sms_inputs: List[Any] = []
-send_email_to_recipe_user_id: Optional[str] = None
-user_in_callback: Optional[Union[User, VerificationEmailTemplateVarsUser]] = None
-email_param: Optional[str] = None
-primary_user_in_callback: Optional[User] = None
-new_account_info_in_callback: Optional[RecipeLevelUser] = None
-user_id_in_callback: Optional[str] = None
-recipe_user_id_in_callback: Optional[RecipeUserId] = None
-store: Dict[str, Any] = {}
+# Global variable declarations
+send_email_to_user_id = None
+token = None
+user_post_password_reset = None
+email_post_password_reset = None
+send_email_callback_called = False
+send_email_to_user_email = None
+send_email_inputs = []
+send_sms_inputs = []
+send_email_to_recipe_user_id = None
+user_in_callback = None
+email_param = None
+primary_user_in_callback = None
+new_account_info_in_callback = None
+user_id_in_callback = None
+recipe_user_id_in_callback = None
+store = {}
+
+# Type annotations (if needed)
+send_email_to_user_id: Optional[str]
+token: Optional[str]
+user_post_password_reset: Optional[User]
+email_post_password_reset: Optional[str]
+send_email_callback_called: bool
+send_email_to_user_email: Optional[str]
+send_email_inputs: List[Any]
+send_sms_inputs: List[Any]
+send_email_to_recipe_user_id: Optional[str]
+user_in_callback: Optional[Union[User, VerificationEmailTemplateVarsUser]]
+email_param: Optional[str]
+primary_user_in_callback: Optional[User]
+new_account_info_in_callback: Optional[RecipeLevelUser]
+user_id_in_callback: Optional[str]
+recipe_user_id_in_callback: Optional[RecipeUserId]
+store: Dict[str, Any]
