@@ -13,7 +13,8 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List, Literal
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List
+from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 
 if TYPE_CHECKING:

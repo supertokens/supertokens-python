@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, Union, List
 from typing_extensions import Literal
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
@@ -8,7 +8,7 @@ from supertokens_python.types import APIResponse
 
 
 class OkResponse(APIResponse):
-    def __init__(self, roles: list[str]):
+    def __init__(self, roles: List[str]):
         self.status: Literal["OK"] = "OK"
         self.roles = roles
 

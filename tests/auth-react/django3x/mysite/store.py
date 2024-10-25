@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+from typing_extensions import Literal
 
 latest_url_with_token = ""
 
