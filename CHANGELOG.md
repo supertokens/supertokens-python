@@ -11,13 +11,621 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.25.0] - 2024-09-18
 
+### Overview
+
+-   Enable smooth switching between `useDynamicAccessTokenSigningKey` settings by allowing refresh calls to change the signing key type of a session
+-   Added a core call cache that should reduce traffic to your SuperTokens core instances
+-   Refactored sign in/up API codes to reduce code duplication
+-   Added MFA related information to dashboard APIs
+-   Added a cache to reduce the number of requests made to the core. This can be disabled using the `disableCoreCallCache: true`, in the config.
+-   Added new `overwriteSessionDuringSignInUp` configuration option to the Session recipe
+-   Added new function: `checkCode` to Passwordless and ThirdPartyPasswordless recipes
+-   Added new function: `verifyCredentials` to EmailPassword and ThirdPartyEmailPassword recipes
+-   Added the `MultiFactorAuth` and `TOTP` recipes.
+
 ### Breaking changes
-- `supertokens_python.recipe.emailverification.types.User` has been renamed to `supertokens_python.recipe.emailverification.types.EmailVerificationUser`
-- The user object has been changed to be a global one, containing information about all emails, phone numbers, third party info and login methods associated with that user.
-- Type of `get_email_for_user_id` in `emailverification.init` has changed
-- Session recipe's error handlers take an extra param of recipe_user_id as well
-- Session recipe, removes `validate_claims_in_jwt_payload` that is exposed to the user.
-- TODO..
+
+-   Now only supporting CDI 5.1. Compatible with core version >= 9.1
+-   Added new support codes to sign in/up APIs. This means that there are new possible values coming from the default implementation for the `reason` strings of `SIGN_IN_NOT_ALLOWED`, `SIGN_UP_NOT_ALLOWED` and `SIGN_IN_UP_NOT_ALLOWED` responses.
+-   `Session` recipe:
+    -   The sign out API new returns a 401 instead of 200 in case the input access token has expired or is missing.
+-   `AccountLinking` recipe:
+    -   Changed the signature of the following functions, each taking a new (optional) `session` parameter:
+        -   `createPrimaryUserIdOrLinkAccounts`
+        -   `isSignUpAllowed`
+        -   `isSignInAllowed`
+        -   `isEmailChangeAllowed`
+    -   Changed the signature of the `shouldDoAutomaticAccountLinking` callback: it now takes a new (optional) session parameter.
+-   `EmailPassword`:
+    -   Changed the signature of the following overrideable functions:
+        -   `signUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `signIn`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `signInPOST`
+        -   `signUpPOST`
+    -   Changed the signature of functions:
+        -   `signUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `signIn`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"
+-   `Multitenancy`:
+    -   Changed the signature of the following functions:
+        -   `createOrUpdateTenant`: Added optional `firstFactors` and `requiredSecondaryFactors` parameters.
+        -   `getTenant`: Added `firstFactors` and `requiredSecondaryFactors` to the return type
+        -   `listAllTenants`: Added `firstFactors` and `requiredSecondaryFactors` to the returned tenants
+    -   Changed the signature of the following overrideable functions:
+        -   `createOrUpdateTenant`: Now gets optional `firstFactors` and `requiredSecondaryFactors` in the input.
+        -   `getTenant`: Added `firstFactors` and `requiredSecondaryFactors` to the return type
+        -   `listAllTenants`: Added `firstFactors` and `requiredSecondaryFactors` to the returned tenants
+    -   Changed the signature of the overrideable apis:
+        -   `loginMethodsGET`: Now returns `firstFactors`
+-   `Passwordless`:
+    -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
+    -   Added new email and sms type for MFA
+    -   Changed the signature of the following functions:
+        -   `signInUp`, `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
+-   Session claims:
+    -   The `build` function and the `fetchValue` callback of session claims now take a new `currentPayload` param.
+        -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+        -   This will affect all custom claims as well built on our base classes.
+-   `ThirdParty`:
+    -   Changed the signature of the following functions:
+        -   `manuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of the following overrideable functions:
+        -   `signInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `manuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `signInUpPOST`
+-   `ThirdPartyEmailPassword`:
+    -   Added new function: `emailPasswordVerifyCredentials`
+    -   Changed the signature of the following functions:
+        -   `thirdPartyManuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `emailPasswordSignUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of the following overrideable functions:
+        -   `thirdPartySignInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `thirdPartyManuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `emailPasswordSignUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `emailPasswordSignInPOST`
+        -   `emailPasswordSignUpPOST`
+        -   `thirdPartySignInUpPOST`
+-   `ThirdPartyPasswordless`:
+    -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
+    -   Changed the signature of the following functions:
+        -   `thirdPartyManuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `passwordlessSignInUp`, `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `thirdPartySignInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `thirdPartyManuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `thirdPartySignInUpPOST`
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
+
+#### Migration guide
+
+##### shouldDoAutomaticAccountLinking signature change
+
+If you use the `userContext` or `tenantId` parameters passed to `shouldDoAutomaticAccountLinking`, please update your implementation to account for the new parameter.
+
+Before:
+
+```ts
+AccountLinking.init({
+    shouldDoAutomaticAccountLinking: async (newAccountInfo, user, tenantId, userContext) => {
+        return {
+            shouldAutomaticallyLink: true,
+            shouldRequireVerification: true,
+        };
+    },
+});
+```
+
+After:
+
+```ts
+AccountLinking.init({
+    shouldDoAutomaticAccountLinking: async (newAccountInfo, user, session, tenantId, userContext) => {
+        return {
+            shouldAutomaticallyLink: true,
+            shouldRequireVerification: true,
+        };
+    },
+});
+```
+
+##### Optional `session` parameter added to public functions
+
+We've added a new optional `session` parameter to many function calls. In all cases, these have been added as the last parameter before `userContext`, so this should only affect you if you are using that. You only need to pass a session as a parameter if you are using account linking and want to try and link the user signing in/up to the session user.
+You can get the necessary session object using `verifySession` in an API call.
+
+Here we use the example of `EmailPassword.signIn` but this fits other functions with changed signatures.
+
+Before:
+
+```ts
+const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", { myContextVar: true });
+```
+
+After:
+
+```ts
+const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", undefined, { myContextVar: true });
+```
+
+##### `fetchValue` signature change
+
+If you use the `userContext` parameter passed to `fetchValue`, please update your implementation to account for the new parameter.
+
+Before:
+
+```ts
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, userContext) => {
+        return userContext.claimValue;
+    },
+});
+```
+
+After:
+
+```ts
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, currentPayload, userContext) => {
+        return userContext.claimValue;
+    },
+});
+```
+
+##### `build` signature change
+
+If you were using the `build` function for custom or built-in session claims, you should update the call signature to also pass the new parameter.
+
+Before:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+After:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+##### Post sign-in/up actions
+
+Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                            // TODO: post sign up logic
+                        } else {
+                            // TODO: post sign in logic
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (input.session === undefined) {
+                            if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                                // TODO: post sign up logic
+                            } else {
+                                // TODO: post sign in logic
+                            }
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+##### Sign-in/up linking to the session user
+
+Sign in/up APIs and functions will now attempt to link the authenticating user to the session user if a session is available (depending on AccountLinking settings). You can disable this and get the old behaviour by:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+                    input.session = undefined;
+                    return originalImplementation.consumeCode(input);
+                }
+            }
+        }
+    }
+}),
+```
+
+#### Introducing account-linking
+
+With this release, we are introducing a new AccountLinking recipe, this will let you:
+
+-   link accounts automatically,
+-   implement manual account linking flows.
+
+Check our [guide](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview) for more information.
+
+#### The new User object and primary vs non-primary users
+
+In this release, we've removed the recipes specific user types and instead introduced a new `User` class to support the "Primary user" concept introduced by account linking
+
+-   The new `User` class now provides the same interface for all recipes.
+-   It contains an `isPrimary` field that you can use to differentiate between primary and recipe users
+-   The `loginMethods` array contains objects that covers all props of the old (recipe specific) user types, with the exception of the id. Please check the migration section below to get the exact mapping between old and new props.
+-   Non-primary users:
+    -   The `loginMethods` array should contain exactly 1 element.
+    -   `user.id` will be the same as `user.loginMethods[0].recipeUserId.getAsString()`.
+    -   `user.id` will change if it is linked to another user.
+    -   They can become a primary user if, and only if there are no other primary users with the same email, third party info or phone number as this user across all the tenants that this user is a part of.
+-   Primary users
+    -   The `loginMethods` array can have 1 or more elements, each corresponding to a single recipe user.
+    -   `user.id` will not change even if other users are linked to it.
+    -   Other non-primary users can be linked to it. The user ID of the linked accounts will now be the primary users ID.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview#primary-user-vs-non-primary-user) for more information about differences between primary and recipe users.
+
+#### Primary vs RecipeUserId
+
+Because of account linking we've introduced a new Primary user concept (see above). In most cases, you should only use the primary user id (`user.id` or `session.getUserId()`) if you are associating data to users. Still, in some cases you need to specifically refer to a login method, which is covered by the new `RecipeUserId` class:
+
+-   You can get it:
+    -   From a session by: `session.getRecipeUserId()`.
+    -   By finding the appropriate entry in the `loginMethods` array of a `User` object (see above): `user.loginMethods[0].recipeUserId`.
+-   It wraps a simple string value that you can get by calling `recipeUserId.getAsString()`.
+-   We've introduced it to differentiate between primary and recipe user ids in our APIs on a type level.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object#primary-vs-recipe-user-id) for more information.
+
+### Breaking changes
+
+-   Now only supporting CDI 4.0. Compatible with core version >= 7.0
+-   Now supporting FDI 1.18
+-   Removed the recipe specific `User` type, now all functions are using the new generic `User` type.
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object) for more information.
+-   The `build` function and the `fetchValue` callback of session claims now take a new `recipeUserId` param.
+    -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+    -   This will affect all custom claims as well built on our base classes.
+-   Now ignoring protected props in the payload in `createNewSession` and `createNewSessionWithoutRequestResponse`
+-   `createdNewUser` has been renamed to `createdNewRecipeUser` in sign up related APIs and functions
+
+-   EmailPassword:
+    -   removed `getUserById`, `getUserByEmail`. You should use `supertokens.getUser`, and `supertokens. listUsersByAccountInfo` instead
+    -   added `consumePasswordResetToken`. This function allows the consumption of the reset password token without changing the password. It will return OK if the token was valid.
+    -   added an overrideable `createNewRecipeUser` function that is called during sign up and password reset flow (in case a new email password user is being created on the fly). This is mostly for internal use.
+    -   `recipeUserId` is added to the input of `getContent` of the email delivery config
+    -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
+    -   `updateEmailOrPassword` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `signIn`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `signUp`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `resetPasswordUsingToken`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consumePasswordResetToken` and `updateEmailOrPassword`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
+    -   `signInPOST`:
+        -   can return status `SIGN_IN_NOT_ALLOWED`
+    -   `signUpPOST`:
+        -   can return status `SIGN_UP_NOT_ALLOWED`
+    -   `generatePasswordResetTokenPOST`:
+        -   can now return `PASSWORD_RESET_NOT_ALLOWED`
+    -   `passwordResetPOST`:
+        -   now returns the `user` and the `email` whose password was reset
+        -   can now return `PASSWORD_POLICY_VIOLATED_ERROR`
+-   EmailVerification:
+    -   `createEmailVerificationToken`, `createEmailVerificationLink`, `isEmailVerified`, `revokeEmailVerificationTokens` , `unverifyEmail`:
+        -   now takes `recipeUserId` instead of `userId`
+    -   `sendEmailVerificationEmail` :
+        -   now takes an additional `recipeUserId` parameter
+    -   `verifyEmailUsingToken`:
+        -   now takes a new `attemptAccountLinking` parameter
+        -   returns the `recipeUserId` instead of `id`
+    -   `sendEmail` now requires a new `recipeUserId` as part of the user info
+    -   `getEmailForUserId` config option was renamed to `getEmailForRecipeUserId`
+    -   `verifyEmailPOST`, `generateEmailVerifyTokenPOST`: returns an optional `newSession` in case the current user session needs to be updated
+-   Passwordless:
+    -   removed `getUserById`, `getUserByEmail`, `getUserByPhoneNumber`
+    -   `updateUser` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return `"EMAIL_CHANGE_NOT_ALLOWED_ERROR` and `PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR` statuses
+    -   `createCodePOST` and `consumeCodePOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   Session:
+    -   access tokens and session objects now contain the recipe user id
+    -   Support for new access token version
+    -   `recipeUserId` is now added to the payload of the `TOKEN_THEFT_DETECTED` error
+    -   `createNewSession`: now takes `recipeUserId` instead of `userId`
+    -   Removed `validateClaimsInJWTPayload`
+    -   `revokeAllSessionsForUser` now takes an optional `revokeSessionsForLinkedAccounts` param
+    -   `getAllSessionHandlesForUser` now takes an optional `fetchSessionsForAllLinkedAccounts` param
+    -   `regenerateAccessToken` return value now includes `recipeUserId`
+    -   `getGlobalClaimValidators` and `validateClaims` now get a new `recipeUserId` param
+    -   Added `getRecipeUserId` to the session class
+-   ThirdParty:
+    -   The `signInUp` override:
+        -   gets a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `manuallyCreateOrUpdateUser`:
+        -   gets a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserById`
+    -   `signInUpPOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   ThirdPartyEmailPassword:
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserById`
+    -   `thirdPartyManuallyCreateOrUpdateUser`:
+        -   now get a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   The `thirdPartySignInUp` override:
+        -   now get a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
+    -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during email password sign up and in the “invitation link” flow
+    -   added `consumePasswordResetToken`
+    -   `updateEmailOrPassword` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `resetPasswordUsingToken`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consumePasswordResetToken` and `updateEmailOrPassword`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
+    -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during sign up and in the “invitation link” flow
+    -   `emailPasswordSignIn`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `emailPasswordSignUp`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `emailPasswordSignInPOST`:
+        -   can return status `SIGN_IN_NOT_ALLOWED`
+    -   `emailPasswordSignUpPOST`:
+        -   can return status `SIGN_UP_NOT_ALLOWED`
+    -   `generatePasswordResetTokenPOST`:
+        -   can now return `PASSWORD_RESET_NOT_ALLOWED`
+    -   `passwordResetPOST`:
+        -   now returns the `user` and the `email` whose password was reset
+        -   can now return `PASSWORD_POLICY_VIOLATED_ERROR`
+    -   `thirdPartySignInUpPOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   ThirdPartyPasswordless:
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserByPhoneNumber`, `getUserById`
+    -   `thirdPartyManuallyCreateOrUpdateUser`:
+        -   gets a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   The `thirdPartySignInUp` override:
+        -   gets a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `updatePasswordlessUser`:
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return `"EMAIL_CHANGE_NOT_ALLOWED_ERROR` and `PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR` statuses
+    -   `thirdPartySignInUpPOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+    -   `createCodePOST` and `consumeCodePOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   Multitenancy:
+    -   `associateUserToTenant` can now return `ASSOCIATION_NOT_ALLOWED_ERROR`
+    -   `associateUserToTenant` and `disassociateUserFromTenant` now take `RecipeUserId` instead of a string user id
+
+### Changes
+
+-   Added `RecipeUserId` and a generic `User` class
+-   Added `getUser`, `listUsersByAccountInfo`, `convertToRecipeUserId` to the main exports
+-   Updated compilation target of typescript to ES2017 to make debugging easier.
+-   Added account-linking recipe
+
+### Migration guide
+
+#### New User structure
+
+We've added a generic `User` class instead of the old recipe specific ones. The mapping of old props to new in case you are not using account-linking:
+
+-   `user.id` stays `user.id` (or `user.loginMethods[0].recipeUserId` in case you need `RecipeUserId`)
+-   `user.email` becomes `user.emails[0]`
+-   `user.phoneNumber` becomes `user.phoneNumbers[0]`
+-   `user.thirdParty` becomes `user.thirdParty[0]`
+-   `user.timeJoined` is still `user.timeJoined`
+-   `user.tenantIds` is still `user.tenantIds`
+
+#### RecipeUserId
+
+Some functions now require you to pass a `RecipeUserId` instead of a string user id. If you are using our auth recipes, you can find the recipeUserId as: `user.loginMethods[0].recipeUserId` (you'll need to worry about selecting the right login method after enabling account linking). Alternatively, if you already have a string user id you can convert it to a `RecipeUserId` using `supertokens.convertToRecipeUserId(userIdString)`
+
+#### Checking if a user signed up or signed in
+
+-   In the passwordless consumeCode / social login signinup APIs, you can check if a user signed up by:
+
+```
+    // Here res refers to the result the function/api functions mentioned above.
+    const isNewUser = res.createdNewRecipeUser && res.user.loginMethods.length === 1;
+```
+
+-   In the emailpassword sign up API, you can check if a user signed up by:
+
+```
+    const isNewUser = res.user.loginMethods.length === 1;
+```
+
+#### Changing user emails
+
+-   We recommend that you check if the email change of a user is allowed, before calling the update function
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/change-email-post-login) for more information
+
+```
+import {isEmailChangeAllowed} from "supertokens-node/recipe/accountlinking";
+/// ...
+app.post("/change-email", verifySession(), async (req: SessionRequest, res: express.Response) => {
+    let session = req.session!;
+    let email = req.body.email;
+
+    // ...
+    if (!(await isEmailChangeAllowed(session.getRecipeUserId(), email, false))) {
+        // this can come here if you have enabled the account linking feature, and
+        // if there is a security risk in changing this user's email.
+    }
+
+    // Update the email
+    let resp = await ThirdPartyEmailPassword.updateEmailOrPassword({
+        recipeUserId: session.getRecipeUserId(),
+        email: email,
+    });
+    // ...
+});
+```
 
 ## [0.24.4] - 2024-10-16
 
