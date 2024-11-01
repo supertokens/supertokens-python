@@ -402,72 +402,53 @@ session.init(override=session.InputOverrideConfig(functions=functions_override))
 
 Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
 
-Before:
+```python
+# While this example uses Passwordless, all recipes require a very similar change
+from typing import Any, Dict, Optional, Union
+from supertokens_python.recipe import passwordless
+from supertokens_python.recipe.passwordless.interfaces import ConsumeCodeOkResult, RecipeInterface
+from supertokens_python.recipe.session import SessionContainer
 
-```ts
-// While this example uses Passwordless, all recipes require a very similar change
-Passwordless.init({
-    contactMethod: "EMAIL", // This example will work with any contactMethod
-    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+def functions_override(original_implementation: RecipeInterface):
+    o_consume_code = original_implementation.consume_code
 
-    override: {
-        functions: (originalImplementation) => {
-            return {
-                ...originalImplementation,
-                consumeCode: async (input) => {
+    async def n_consume_code(
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        resp = await o_consume_code(
+            pre_auth_session_id,
+            user_input_code, device_id,
+            link_code,
+            session,
+            should_try_linking_with_session_user,
+            tenant_id,
+            user_context
+        )
 
-                    // First we call the original implementation of consumeCode.
-                    let response = await originalImplementation.consumeCode(input);
+        if isinstance(resp, ConsumeCodeOkResult):
+            if session is None:
+                if resp.created_new_recipe_user and len(resp.user.login_methods) == 1:
+                    pass # TODO: post sign up logic
+                else:
+                    pass # TODO: post sign in logic
 
-                    // Post sign up response, we check if it was successful
-                    if (response.status === "OK") {
-                        if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
-                            // TODO: post sign up logic
-                        } else {
-                            // TODO: post sign in logic
-                        }
-                    }
-                    return response;
-                }
-            }
-        }
-    }
-}),
-```
+        return resp
 
-After:
+    original_implementation.consume_code = n_consume_code
+    return original_implementation
 
-```ts
-// While this example uses Passwordless, all recipes require a very similar change
-Passwordless.init({
-    contactMethod: "EMAIL", // This example will work with any contactMethod
-    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
-
-    override: {
-        functions: (originalImplementation) => {
-            return {
-                ...originalImplementation,
-                consumeCode: async (input) => {
-
-                    // First we call the original implementation of consumeCode.
-                    let response = await originalImplementation.consumeCode(input);
-
-                    // Post sign up response, we check if it was successful
-                    if (response.status === "OK") {
-                        if (input.session === undefined) {
-                            if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
-                                // TODO: post sign up logic
-                            } else {
-                                // TODO: post sign in logic
-                            }
-                        }
-                    }
-                    return response;
-                }
-            }
-        }
-    }
-}),
+passwordless.init(
+    passwordless.ContactConfig('EMAIL'),
+    'USER_INPUT_CODE_AND_MAGIC_LINK',
+    override=passwordless.InputOverrideConfig(functions=functions_override)
+)
 ```
 
 #### Sign-in/up linking to the session user
@@ -476,34 +457,57 @@ Sign in/up APIs and functions will now attempt to link the authenticating user t
 
 Before:
 
-```ts
-// While this example uses Passwordless, all recipes require a very similar change
-Passwordless.init({
-    contactMethod: "EMAIL", // This example will work with any contactMethod
-    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
-}),
+```python
+from supertokens_python.recipe import passwordless
+
+# While this example uses Passwordless, all recipes require a very similar change
+passwordless.init(
+    passwordless.ContactConfig('EMAIL'),
+    'USER_INPUT_CODE_AND_MAGIC_LINK'
+)
 ```
 
 After:
 
-```ts
-// While this example uses Passwordless, all recipes require a very similar change
-Passwordless.init({
-    contactMethod: "EMAIL", // This example will work with any contactMethod
-    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+```python
+# While this example uses Passwordless, all recipes require a very similar change
 
-    override: {
-        functions: (originalImplementation) => {
-            return {
-                ...originalImplementation,
-                consumeCode: async (input) => {
-                    input.session = undefined;
-                    return originalImplementation.consumeCode(input);
-                }
-            }
-        }
-    }
-}),
+from typing import Any, Dict, Optional, Union
+from supertokens_python.recipe import passwordless
+from supertokens_python.recipe.passwordless.interfaces import RecipeInterface
+from supertokens_python.recipe.session import SessionContainer
+
+def functions_override(original_implementation: RecipeInterface):
+    o_consume_code = original_implementation.consume_code
+
+    async def n_consume_code(
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        return await o_consume_code(
+            pre_auth_session_id,
+            user_input_code, device_id,
+            link_code,
+            None, # do not pass session
+            should_try_linking_with_session_user,
+            tenant_id,
+            user_context
+        )
+
+    original_implementation.consume_code = n_consume_code
+    return original_implementation
+
+passwordless.init(
+    passwordless.ContactConfig('EMAIL'),
+    'USER_INPUT_CODE_AND_MAGIC_LINK',
+    override=passwordless.InputOverrideConfig(functions=functions_override)
+)
 ```
 
 ## [0.24.4] - 2024-10-16
