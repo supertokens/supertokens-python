@@ -62,6 +62,10 @@ jobs:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
+    parameters:
+        fdi-version:
+            type: string
+    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
@@ -69,7 +73,7 @@ jobs:
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-fastapi
-      - run: (cd .circleci/ && ./websiteFastApi.sh)
+      - run: (cd .circleci/ && ./websiteFastApi.sh << parameters.fdi-version >>)
       - slack/status
   test-website-flask:
     docker:
@@ -92,6 +96,10 @@ jobs:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
+    parameters:
+        fdi-version:
+            type: string
+    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
@@ -99,12 +107,16 @@ jobs:
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django
-      - run: (cd .circleci/ && ./websiteDjango.sh)
+      - run: (cd .circleci/ && ./websiteDjango.sh << parameters.fdi-version >>)
       - slack/status
   test-website-drf-async:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
+    parameters:
+        fdi-version:
+            type: string
+    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
@@ -118,12 +130,16 @@ jobs:
       - run: echo "alias pip3='python -m pip'" >> ~/.bashrc
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-drf
-      - run: (cd .circleci/ && ./websiteDrfAsync.sh)
+      - run: (cd .circleci/ && ./websiteDrfAsync.sh << parameters.fdi-version >>)
       - slack/status
   test-website-drf-sync:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
+    parameters:
+        fdi-version:
+            type: string
+    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
@@ -137,12 +153,16 @@ jobs:
       - run: echo "alias pip3='python -m pip'" >> ~/.bashrc
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-drf
-      - run: (cd .circleci/ && ./websiteDrfSync.sh)
+      - run: (cd .circleci/ && ./websiteDrfSync.sh << parameters.fdi-version >>)
       - slack/status
   test-website-django2x:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
+    parameters:
+        fdi-version:
+            type: string
+    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
@@ -150,7 +170,7 @@ jobs:
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django2x
-      - run: (cd .circleci/ && ./websiteDjango2x.sh)
+      - run: (cd .circleci/ && ./websiteDjango2x.sh << parameters.fdi-version >>)
       - slack/status
   test-website-flask-nest-asyncio:
     docker:
@@ -158,6 +178,10 @@ jobs:
     resource_class: large
     environment:
       SUPERTOKENS_NEST_ASYNCIO: "1"
+    parameters:
+        fdi-version:
+            type: string
+    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
@@ -166,7 +190,7 @@ jobs:
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
       - run: python -m pip install nest-asyncio
-      - run: (cd .circleci/ && ./websiteFlask.sh)
+      - run: (cd .circleci/ && ./websiteFlask.sh << parameters.fdi-version >>)
       - slack/status
   test-authreact-fastapi:
     docker:
@@ -310,6 +334,9 @@ workflows:
             - test-dev-tag-as-not-passed
           context:
             - slack-notification
+          matrix:
+              parameters:
+                  fdi-version: placeholder
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -333,6 +360,9 @@ workflows:
             - test-dev-tag-as-not-passed
           context:
             - slack-notification
+          matrix:
+              parameters:
+                  fdi-version: placeholder
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -343,6 +373,9 @@ workflows:
             - test-dev-tag-as-not-passed
           context:
             - slack-notification
+          matrix:
+              parameters:
+                  fdi-version: placeholder
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -353,6 +386,9 @@ workflows:
             - test-dev-tag-as-not-passed
           context:
             - slack-notification
+          matrix:
+              parameters:
+                  fdi-version: placeholder
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -363,6 +399,9 @@ workflows:
             - test-dev-tag-as-not-passed
           context:
             - slack-notification
+          matrix:
+              parameters:
+                  fdi-version: placeholder
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
