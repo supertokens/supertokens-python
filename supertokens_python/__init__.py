@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Optional
 from typing_extensions import Literal
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.types import SupportedFrameworks
 
 from . import supertokens
 from .recipe_module import RecipeModule
@@ -29,7 +30,7 @@ AppInfo = supertokens.AppInfo
 
 def init(
     app_info: InputAppInfo,
-    framework: Literal["fastapi", "flask", "django"],
+    framework: SupportedFrameworks,
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
     mode: Optional[Literal["asgi", "wsgi"]] = None,
