@@ -151,17 +151,21 @@ def start_st(host: str = "localhost", port: str = "3567"):
 
 
 def setup_multitenancy_feature(host: str = "localhost", port: str = "3567"):
-    OPAQUE_KEY_WITH_MULTITENANCY_FEATURE = "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu"
+    _ = host
+    _ = port
+    # inmemory core no longer requires license to function
 
-    import requests
+    # OPAQUE_KEY_WITH_MULTITENANCY_FEATURE = "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu"
 
-    requests.put(
-        f"http://{host}:{port}/ee/license",
-        json={
-            "licenseKey": OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
-        },
-        timeout=10,
-    )
+    # import requests
+
+    # requests.put(
+    #     f"http://{host}:{port}/ee/license",
+    #     json={
+    #         "licenseKey": OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+    #     },
+    #     timeout=10,
+    # )
 
 
 def setup_st():
