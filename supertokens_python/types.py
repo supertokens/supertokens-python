@@ -212,7 +212,7 @@ class User:
             "tenantIds": self.tenant_ids,
             "emails": self.emails,
             "phoneNumbers": self.phone_numbers,
-            "thirdParty": self.third_party,
+            "thirdParty": [tp.to_json() for tp in self.third_party],
             "loginMethods": [lm.to_json() for lm in self.login_methods],
             "timeJoined": self.time_joined,
         }
