@@ -341,7 +341,7 @@ def get_backwards_compatible_user_info(
         "timeJoined": login_method.time_joined,
     }
     if login_method.third_party:
-        user_obj["thirdParty"] = login_method.third_party
+        user_obj["thirdParty"] = login_method.third_party.to_json()
     if login_method.email:
         user_obj["email"] = login_method.email
     if login_method.phone_number:
