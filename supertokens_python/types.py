@@ -219,13 +219,15 @@ class User:
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> "User":
+        from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+
         return User(
             user_id=json["id"],
             is_primary_user=json["isPrimaryUser"],
             tenant_ids=json["tenantIds"],
             emails=json["emails"],
             phone_numbers=json["phoneNumbers"],
-            third_party=[ThirdPartyInfo.from_json(tp) for tp in json["thirdParty"]],
+            third_party=[TPI.from_json(tp) for tp in json["thirdParty"]],
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )
