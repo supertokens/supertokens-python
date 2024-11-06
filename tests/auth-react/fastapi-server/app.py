@@ -1044,9 +1044,15 @@ def custom_init():
 
     global enabled_recipes
     if enabled_recipes is not None:
-        recipe_list = [
-            item["init"] for item in recipe_list if item["id"] in enabled_recipes
-        ]
+        new_recipe_list = []
+        for item in recipe_list:
+            for recipe_id in enabled_recipes:
+                if item["id"] in recipe_id:
+                    new_recipe_list.append(item["init"])  # type: ignore
+                    break
+
+        recipe_list = new_recipe_list
+
     else:
         recipe_list = [item["init"] for item in recipe_list]
 

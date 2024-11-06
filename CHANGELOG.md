@@ -8,27 +8,516 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-
 ## [0.25.0] - 2024-09-18
 
+### Overview
+
+-   Added `RecipeUserId` and a generic `User` class
+-   Added `get_user`, `list_users_by_account_info`, `convert_to_recipe_user_id` to the main exports
+-   Added account-linking recipe
+-   Enable smooth switching between `use_dynamic_access_token_signing_key` settings by allowing refresh calls to change the signing key type of a session
+-   Added a core call cache that should reduce traffic to your SuperTokens core instances
+-   Refactored sign in/up API codes to reduce code duplication
+-   Added MFA related information to dashboard APIs
+-   Added a cache to reduce the number of requests made to the core. This can be disabled using the `disable_core_call_cache: true`, in the config.
+-   Added new function: `check_code` to Passwordless and ThirdPartyPasswordless recipes
+-   Added new function: `verify_credentials` to EmailPassword and ThirdPartyEmailPassword recipes
+-   Added the `MultiFactorAuth` and `TOTP` recipes.
+
 ### Breaking changes
-- `supertokens_python.recipe.emailverification.types.User` has been renamed to `supertokens_python.recipe.emailverification.types.EmailVerificationUser`
-- The user object has been changed to be a global one, containing information about all emails, phone numbers, third party info and login methods associated with that user.
-- Type of `get_email_for_user_id` in `emailverification.init` has changed
-- Session recipe's error handlers take an extra param of recipe_user_id as well
-- Session recipe, removes `validate_claims_in_jwt_payload` that is exposed to the user.
-- TODO..
+
+-   Now only supporting CDI 5.1. Compatible with core version >= 9.1
+-   Added new support codes to sign in/up APIs. This means that there are new possible values coming from the default implementation for the `reason` strings of `SIGN_IN_NOT_ALLOWED`, `SIGN_UP_NOT_ALLOWED` and `SIGN_IN_UP_NOT_ALLOWED` responses.
+-   Removed the recipe specific `User` type, now all functions are using the new generic `User` type.
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object) for more information.
+-   The `build` function and the `fetch_value` callback of session claims now take a new `recipe_user_id` param.
+    -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+    -   This will affect all custom claims as well built on our base classes.
+-   Now ignoring protected props in the payload in `create_new_session` and `create_new_session_without_request_response`
+-   `created_new_user` has been renamed to `created_new_recipe_user` in sign up related APIs and functions
+-   `Session` recipe:
+    -   The sign out API new returns a 401 instead of 200 in case the input access token has expired or is missing.
+-   `EmailPassword`:
+    -   removed `get_user_by_id`, `get_user_by_email`. You should use `supertokens.get_user`, and `supertokens.list_users_by_account_info` instead
+    -   added `consume_password_reset_token`. This function allows the consumption of the reset password token without changing the password. It will return OK if the token was valid.
+    -   added an overrideable `create_new_recipe_user` function that is called during sign up and password reset flow (in case a new email password user is being created on the fly). This is mostly for internal use.
+    -   `recipe_user_id` is added to the input of `get_content` of the email delivery config
+    -   `email` was added to the input of `create_reset_password_token` , `send_reset_password_email`, `create_reset_password_link`
+    -   `update_email_or_password` :
+        -   now takes `recipe_user_id` instead of `user_id`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `reset_password_using_token`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consume_password_reset_token` and `update_email_or_password`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
+    -   `sign_in_post`:
+        -   can return status `SIGN_IN_NOT_ALLOWED`
+    -   `sign_up_post`:
+        -   can return status `SIGN_UP_NOT_ALLOWED`
+    -   `generate_password_reset_token_post`:
+        -   can now return `PASSWORD_RESET_NOT_ALLOWED`
+    -   `password_reset_post`:
+        -   now returns the `user` and the `email` whose password was reset
+        -   can now return `PASSWORD_POLICY_VIOLATED_ERROR`
+    -   Changed the signature of the following overrideable functions:
+        -   `sign_up`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   returns new `recipe_user_id` prop in the `status: OK` case
+        -   `sign_in`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   returns new `recipe_user_id` prop in the `status: OK` case
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `sign_in_post`
+        -   `sign_up_post`
+    -   Changed the signature of functions:
+        -   `sign_up`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `sign_in`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"
+-   `EmailVerification`:
+    -   `create_email_verification_token`, `create_email_verification_link`, `is_email_verified`, `revoke_email_verification_tokens` , `unverify_email`:
+        -   now takes `recipe_user_id` instead of `user_id`
+    -   `send_email_verification_email` :
+        -   now takes an additional `recipe_user_id` parameter
+    -   `verify_email_using_token`:
+        -   now takes a new `attempt_account_linking` parameter
+        -   returns the `recipe_user_id` instead of `id`
+    -   `send_email` now requires a new `recipe_user_id` as part of the user info
+    -   `get_email_for_user_id` config option was renamed to `get_email_for_recipe_user_id`
+    -   `verify_email_post`, `generate_email_verify_token_post`: returns an optional `new_session` in case the current user session needs to be updated
+-   `Multitenancy`:
+    -   `associate_user_to_tenant` can now return `ASSOCIATION_NOT_ALLOWED_ERROR`
+    -   `associate_user_to_tenant` and `disassociate_user_from_tenant` now take `RecipeUserId` instead of a string user id
+    -   Changed the signature of the following functions:
+        -   `create_or_update_tenant`: Added optional `first_factors` and `required_secondary_factors` parameters.
+        -   `get_tenant`: Added `first_factors` and `required_secondary_factors` to the return type
+        -   `list_all_tenants`: Added `first_factors` and `required_secondary_factors` to the returned tenants
+    -   Changed the signature of the following overrideable functions:
+        -   `create_or_update_tenant`: Now gets optional `first_factors` and `required_secondary_factors` in the input.
+        -   `get_tenant`: Added `first_factors` and `required_secondary_factors` to the return type
+        -   `list_all_tenants`: Added `first_factors` and `required_secondary_factors` to the returned tenants
+    -   Changed the signature of the overrideable apis:
+        -   `login_methods_get`: Now returns `first_factors`
+-   `Passwordless`:
+    -   removed `get_user_by_id`, `get_user_by_email`, `get_user_by_phone_number`
+    -   `update_user` :
+        -   now takes `recipe_user_id` instead of `user_id`
+        -   can return `"EMAIL_CHANGE_NOT_ALLOWED_ERROR` and `PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR` statuses
+    -   `create_code_post` and `consume_code_post` can now return `SIGN_IN_UP_NOT_ALLOWED`
+    -   `revoke_code` (and the related overrideable func) can now be called with either `pre_auth_session_id` or `code_id` instead of only `code_id`.
+    -   Added new email and sms type for MFA
+    -   Changed the signature of the following functions:
+        -   `sign_in_up`, `create_code`: Takes a new (optional) `session` parameter
+        -   `consume_code`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumed_device` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `create_code`: Takes a new (optional) `session` parameter
+        -   `consume_code`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumed_device` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `create_code_post`
+        -   `resend_code_post`
+        -   `consume_code_post`
+-   `Session`:
+    -   access tokens and session objects now contain the recipe user id
+    -   Support for new access token version
+    -   `recipe_user_id` is now added to the payload of the `TOKEN_THEFT_DETECTED` error
+    -   `create_new_session`: now takes `recipe_user_id` instead of `user_id`
+    -   Removed `validate_claims_in_jwt_payload`
+    -   `revoke_all_sessions_for_user` now takes an optional `revoke_sessions_for_linked_accounts` param
+    -   `get_all_session_handles_for_user` now takes an optional `fetch_sessions_for_all_linked_accounts` param
+    -   `regenerate_access_token` return value now includes `recipe_user_id`
+    -   `get_global_claim_validators` and `validate_claims` now get a new `recipe_user_id` param
+    -   Added `get_recipe_user_id` to the session class
+-   Session claims:
+    -   The `build` function and the `fetch_value` callback of session claims now take a new `current_payload` param.
+        -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+        -   This will affect all custom claims as well built on our base classes.
+-   `ThirdParty`:
+    -   Removed `get_user_by_third_party_info`, `get_users_by_email`, `get_user_by_id`
+    -   `sign_in_up_post` can now return `SIGN_IN_UP_NOT_ALLOWED`
+    -   Changed the signature of the following functions:
+        -   `manually_create_or_update_user`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of the following overrideable functions:
+        -   `sign_in_up`:
+            -   gets a new `is_verified` param
+            -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `manually_create_or_update_user`
+            -   gets a new `is_verified` param
+            -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `sign_in_up_post`
+
+#### Migration guide
+
+#### Introducing account-linking
+
+With this release, we are introducing a new AccountLinking recipe, this will let you:
+
+-   link accounts automatically,
+-   implement manual account linking flows.
+
+Check our [guide](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview) for more information.
+
+#### The new User object and primary vs non-primary users
+
+In this release, we've removed the recipes specific user types and instead introduced a new `User` class to support the "Primary user" concept introduced by account linking
+
+-   The new `User` class now provides the same interface for all recipes.
+-   It contains an `is_primary` field that you can use to differentiate between primary and recipe users
+-   The `login_methods` array contains objects that covers all props of the old (recipe specific) user types, with the exception of the id. Please check the migration section below to get the exact mapping between old and new props.
+-   Non-primary users:
+    -   The `login_methods` array should contain exactly 1 element.
+    -   `user.id` will be the same as `user.login_methods[0].recipe_user_id.get_as_string()`.
+    -   `user.id` will change if it is linked to another user.
+    -   They can become a primary user if, and only if there are no other primary users with the same email, third party info or phone number as this user across all the tenants that this user is a part of.
+-   Primary users
+    -   The `login_methods` array can have 1 or more elements, each corresponding to a single recipe user.
+    -   `user.id` will not change even if other users are linked to it.
+    -   Other non-primary users can be linked to it. The user ID of the linked accounts will now be the primary users ID.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview#primary-user-vs-non-primary-user) for more information about differences between primary and recipe users.
+
+#### Primary vs RecipeUserId
+
+Because of account linking we've introduced a new Primary user concept (see above). In most cases, you should only use the primary user id (`user.id` or `session.get_user_id()`) if you are associating data to users. Still, in some cases you need to specifically refer to a login method, which is covered by the new `RecipeUserId` class:
+
+-   You can get it:
+    -   From a session by: `session.get_recipe_user_id()`.
+    -   By finding the appropriate entry in the `login_methods` array of a `User` object (see above): `user.login_methods[0].recipe_user_id`.
+-   It wraps a simple string value that you can get by calling `recipe_user_id.get_as_string()`.
+-   We've introduced it to differentiate between primary and recipe user ids in our APIs on a type level.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object#primary-vs-recipe-user-id) for more information.
+
+#### New User structure
+
+We've added a generic `User` class instead of the old recipe specific ones. The mapping of old props to new in case you are not using account-linking:
+
+-   `user.id` stays `user.id` (or `user.login_methods[0].recipe_user_id` in case you need `RecipeUserId`)
+-   `user.email` becomes `user.emails[0]`
+-   `user.phone_number` becomes `user.phone_numbers[0]`
+-   `user.third_party` becomes `user.third_party[0]`
+-   `user.time_joined` is still `user.time_joined`
+-   `user.tenant_ids` is still `user.tenant_ids`
+
+#### RecipeUserId
+
+Some functions now require you to pass a `RecipeUserId` instead of a string user id. If you are using our auth recipes, you can find the recipeUserId as: `user.login_methods[0].recipe_user_id` (you'll need to worry about selecting the right login method after enabling account linking). Alternatively, if you already have a string user id you can convert it to a `RecipeUserId` using `supertokens_python.convert_to_recipe_user_id(userIdString)`
+
+#### Checking if a user signed up or signed in
+
+-   In the passwordless consumeCode / social login signinup APIs, you can check if a user signed up by:
+
+```python
+# Here res refers to the result the function/api functions mentioned above.
+is_new_user = res.created_new_recipe_user and len(res.user.login_methods) == 1
+```
+
+-   In the emailpassword sign up API, you can check if a user signed up by:
+
+```python
+is_new_user = len(res.user.login_methods) == 1
+```
+
+#### Changing user emails
+
+-   We recommend that you check if the email change of a user is allowed, before calling the update function
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/change-email-post-login) for more information
+
+```python
+from fastapi import Depends
+from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.accountlinking.asyncio import is_email_change_allowed
+from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
+
+# ...
+
+@app.post("/change-email")
+async def change_email(req: ChangeEmailBody, session: SessionContainer = Depends(verify_session())):
+    email = req.email
+    if not await is_email_change_allowed(session.get_recipe_user_id(), email, False):
+        # this can come here if you have enabled the account linking feature, and
+        # if there is a security risk in changing this user's email.
+        pass
+
+    # Update the email
+    await update_email_or_password(
+        session.get_recipe_user_id(),
+        email,   
+    )
+
+    # ...
+```
+
+#### Optional `session` parameter added to public functions
+
+We've added a new optional `session` parameter to many function calls. In all cases, these have been added as the last parameter before `user_context`, so this should only affect you if you are using that. You only need to pass a session as a parameter if you are using account linking and want to try and link the user signing in/up to the session user.
+You can get the necessary session object using `verify_session` in an API call.
+
+Here we use the example of `EmailPassword.sign_in` but this fits other functions with changed signatures.
+
+Before:
+
+```python
+from supertokens_python.recipe.emailpassword.asyncio import sign_in
+
+sign_in_resp = await sign_in("public", "asdf@asdf.asfd", "testpw", { "myContextVar": True })
+```
+
+After:
+
+```python
+from supertokens_python.recipe.emailpassword.asyncio import sign_in
+
+sign_in_resp = await sign_in("public", "asdf@asdf.asfd", "testpw", None, { "myContextVar": True })
+```
+
+#### `fetch_value` signature change
+
+If you use the `user_context` parameter passed to `fetch_value`, please update your implementation to account for the new parameter.
+
+Before:
+
+```python
+from typing import Any, Dict
+from supertokens_python.recipe.session.claims import BooleanClaim
+from supertokens_python.types import RecipeUserId
+
+def fetch_value(user_id: str, recipe_user_id: RecipeUserId, tenant_id: str, user_context: Dict[str, Any]) -> bool:
+    return user_context["claimValue"]
+
+
+bool_claim = BooleanClaim(
+    key="asdf",
+    fetch_value=fetch_value,
+)
+```
+
+After:
+
+```python
+from typing import Any, Dict
+from supertokens_python.recipe.session.claims import BooleanClaim
+from supertokens_python.types import RecipeUserId
+
+def fetch_value(user_id: str, recipe_user_id: RecipeUserId, tenant_id: str, current_payload: Dict[str, Any], user_context: Dict[str, Any]) -> bool:
+    return user_context["claimValue"]
+
+
+bool_claim = BooleanClaim(
+    key="asdf",
+    fetch_value=fetch_value,
+)
+```
+
+#### `build` signature change
+
+If you were using the `build` function for custom or built-in session claims, you should update the call signature to also pass the new parameter.
+
+Before:
+
+```python
+from typing import Any, Dict, Optional
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.recipe.userroles import UserRoleClaim
+from supertokens_python.types import RecipeUserId
+
+
+def functions_override(original_implementation: RecipeInterface):
+    o_create_new_session = original_implementation.create_new_session
+    
+    async def n_create_new_session(
+        user_id: str,
+        recipe_user_id: RecipeUserId,
+        access_token_payload: Optional[Dict[str, Any]],
+        session_data_in_database: Optional[Dict[str, Any]],
+        disable_anti_csrf: Optional[bool],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        access_token_payload = {
+            **(access_token_payload or {}),
+            **(await UserRoleClaim.build(user_id, recipe_user_id, tenant_id, user_context))
+        }
+        return await o_create_new_session(user_id, recipe_user_id, access_token_payload, session_data_in_database, disable_anti_csrf, tenant_id, user_context)
+
+    original_implementation.create_new_session = n_create_new_session
+    
+    return original_implementation
+
+session.init(override=session.InputOverrideConfig(functions=functions_override))
+```
+
+After:
+
+```python
+from typing import Any, Dict, Optional
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.interfaces import RecipeInterface
+from supertokens_python.recipe.userroles import UserRoleClaim
+from supertokens_python.types import RecipeUserId
+
+
+def functions_override(original_implementation: RecipeInterface):
+    o_create_new_session = original_implementation.create_new_session
+    
+    async def n_create_new_session(
+        user_id: str,
+        recipe_user_id: RecipeUserId,
+        access_token_payload: Optional[Dict[str, Any]],
+        session_data_in_database: Optional[Dict[str, Any]],
+        disable_anti_csrf: Optional[bool],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        access_token_payload = {
+            **(access_token_payload or {}),
+            **(await UserRoleClaim.build(user_id, recipe_user_id, tenant_id, access_token_payload or {}, user_context))
+        }
+        return await o_create_new_session(user_id, recipe_user_id, access_token_payload, session_data_in_database, disable_anti_csrf, tenant_id, user_context)
+
+    original_implementation.create_new_session = n_create_new_session
+    
+    return original_implementation
+
+session.init(override=session.InputOverrideConfig(functions=functions_override))
+```
+
+#### Post sign-in/up actions
+
+Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
+
+```python
+# While this example uses Passwordless, all recipes require a very similar change
+from typing import Any, Dict, Optional, Union
+from supertokens_python.recipe import passwordless
+from supertokens_python.recipe.passwordless.interfaces import ConsumeCodeOkResult, RecipeInterface
+from supertokens_python.recipe.session import SessionContainer
+
+def functions_override(original_implementation: RecipeInterface):
+    o_consume_code = original_implementation.consume_code
+
+    async def n_consume_code(
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        resp = await o_consume_code(
+            pre_auth_session_id,
+            user_input_code, device_id,
+            link_code,
+            session,
+            should_try_linking_with_session_user,
+            tenant_id,
+            user_context
+        )
+
+        if isinstance(resp, ConsumeCodeOkResult):
+            if session is None:
+                if resp.created_new_recipe_user and len(resp.user.login_methods) == 1:
+                    pass # TODO: post sign up logic
+                else:
+                    pass # TODO: post sign in logic
+
+        return resp
+
+    original_implementation.consume_code = n_consume_code
+    return original_implementation
+
+passwordless.init(
+    passwordless.ContactConfig('EMAIL'),
+    'USER_INPUT_CODE_AND_MAGIC_LINK',
+    override=passwordless.InputOverrideConfig(functions=functions_override)
+)
+```
+
+#### Sign-in/up linking to the session user
+
+Sign in/up APIs and functions will now attempt to link the authenticating user to the session user if a session is available (depending on AccountLinking settings). You can disable this and get the old behaviour by:
+
+Before:
+
+```python
+from supertokens_python.recipe import passwordless
+
+# While this example uses Passwordless, all recipes require a very similar change
+passwordless.init(
+    passwordless.ContactConfig('EMAIL'),
+    'USER_INPUT_CODE_AND_MAGIC_LINK'
+)
+```
+
+After:
+
+```python
+# While this example uses Passwordless, all recipes require a very similar change
+
+from typing import Any, Dict, Optional, Union
+from supertokens_python.recipe import passwordless
+from supertokens_python.recipe.passwordless.interfaces import RecipeInterface
+from supertokens_python.recipe.session import SessionContainer
+
+def functions_override(original_implementation: RecipeInterface):
+    o_consume_code = original_implementation.consume_code
+
+    async def n_consume_code(
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Union[bool, None],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ):
+        return await o_consume_code(
+            pre_auth_session_id,
+            user_input_code, device_id,
+            link_code,
+            None, # do not pass session
+            should_try_linking_with_session_user,
+            tenant_id,
+            user_context
+        )
+
+    original_implementation.consume_code = n_consume_code
+    return original_implementation
+
+passwordless.init(
+    passwordless.ContactConfig('EMAIL'),
+    'USER_INPUT_CODE_AND_MAGIC_LINK',
+    override=passwordless.InputOverrideConfig(functions=functions_override)
+)
+```
 
 ## [0.24.4] - 2024-10-16
 
 - Updates `phonenumbers` and `twilio` to latest versions
 
->>>>>>> 0.24
 ## [0.24.3] - 2024-09-24
 
 - Adds support for form field related improvements by making fields accept any type of values
 - Adds support for optional fields to properly optional
->>>>>>> 0.24
 
 ### Migration
 
