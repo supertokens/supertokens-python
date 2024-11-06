@@ -52,7 +52,7 @@ class FeatureNotEnabledErrorResponse(APIResponse):
 
 
 async def get_all_roles_api(
-    _: APIInterface, __: str, api_options: APIOptions, ___: Any
+    _: APIInterface, __: str, ___: APIOptions, ____: Any
 ) -&gt; Union[OkResponse, FeatureNotEnabledErrorResponse]:
     try:
         UserRolesRecipe.get_instance()
@@ -71,7 +71,7 @@ async def get_all_roles_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.get_all_roles_api"><code class="name flex">
-<span>async def <span class="ident">get_all_roles_api</span></span>(<span>_: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, __: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, ___: Any) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.OkResponse" href="#supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.FeatureNotEnabledErrorResponse" href="#supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.FeatureNotEnabledErrorResponse">FeatureNotEnabledErrorResponse</a>]</span>
+<span>async def <span class="ident">get_all_roles_api</span></span>(<span>_: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, __: str, ___: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, ____: Any) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.OkResponse" href="#supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.FeatureNotEnabledErrorResponse" href="#supertokens_python.recipe.dashboard.api.userroles.roles.get_all_roles.FeatureNotEnabledErrorResponse">FeatureNotEnabledErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -80,7 +80,7 @@ async def get_all_roles_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_all_roles_api(
-    _: APIInterface, __: str, api_options: APIOptions, ___: Any
+    _: APIInterface, __: str, ___: APIOptions, ____: Any
 ) -&gt; Union[OkResponse, FeatureNotEnabledErrorResponse]:
     try:
         UserRolesRecipe.get_instance()

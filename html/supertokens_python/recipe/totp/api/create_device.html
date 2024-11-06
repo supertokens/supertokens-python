@@ -54,7 +54,7 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 async def handle_create_device_api(
-    tenant_id: str,
+    _: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],
@@ -94,7 +94,7 @@ async def handle_create_device_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.totp.api.create_device.handle_create_device_api"><code class="name flex">
-<span>async def <span class="ident">handle_create_device_api</span></span>(<span>tenant_id: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+<span>async def <span class="ident">handle_create_device_api</span></span>(<span>_: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -103,7 +103,7 @@ async def handle_create_device_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_create_device_api(
-    tenant_id: str,
+    _: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],

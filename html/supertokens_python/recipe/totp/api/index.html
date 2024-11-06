@@ -19,9 +19,40 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Namespace <code>supertokens_python.recipe.totp.api</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.totp.api</code></h1>
 </header>
 <section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from .create_device import handle_create_device_api
+from .list_devices import handle_list_devices_api
+from .remove_device import handle_remove_device_api
+from .verify_device import handle_verify_device_api
+from .verify_totp import handle_verify_totp_api
+
+__all__ = [
+    &#34;handle_create_device_api&#34;,
+    &#34;handle_list_devices_api&#34;,
+    &#34;handle_remove_device_api&#34;,
+    &#34;handle_verify_device_api&#34;,
+    &#34;handle_verify_totp_api&#34;,
+]</code></pre>
+</details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -55,6 +86,227 @@
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.totp.api.handle_create_device_api"><code class="name flex">
+<span>async def <span class="ident">handle_create_device_api</span></span>(<span>_: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_create_device_api(
+    _: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[BaseResponse, None]:
+    if api_implementation.disable_create_device_post:
+        return None
+
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        user_context=user_context,
+    )
+
+    assert session is not None
+
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please provide a JSON body&#34;)
+
+    device_name = body.get(&#34;deviceName&#34;)
+
+    if device_name is not None and not isinstance(device_name, str):
+        raise_bad_input_exception(&#34;deviceName must be a string&#34;)
+
+    response = await api_implementation.create_device_post(
+        device_name, api_options, session, user_context
+    )
+
+    return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.totp.api.handle_list_devices_api"><code class="name flex">
+<span>async def <span class="ident">handle_list_devices_api</span></span>(<span>_: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_list_devices_api(
+    _: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[BaseResponse, None]:
+    if api_implementation.disable_list_devices_get:
+        return None
+
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        session_required=True,
+        user_context=user_context,
+    )
+
+    assert session is not None
+
+    response = await api_implementation.list_devices_get(
+        api_options, session, user_context
+    )
+
+    return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.totp.api.handle_remove_device_api"><code class="name flex">
+<span>async def <span class="ident">handle_remove_device_api</span></span>(<span>_: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_remove_device_api(
+    _: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[BaseResponse, None]:
+    if api_implementation.disable_remove_device_post:
+        return None
+
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        session_required=True,
+        user_context=user_context,
+    )
+
+    assert session is not None
+
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please provide a JSON body&#34;)
+    device_name = body.get(&#34;deviceName&#34;)
+
+    if device_name is None or not isinstance(device_name, str) or len(device_name) == 0:
+        raise Exception(&#34;deviceName is required and must be a non-empty string&#34;)
+
+    response = await api_implementation.remove_device_post(
+        device_name=device_name,
+        options=api_options,
+        session=session,
+        user_context=user_context,
+    )
+
+    return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.totp.api.handle_verify_device_api"><code class="name flex">
+<span>async def <span class="ident">handle_verify_device_api</span></span>(<span>_: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_verify_device_api(
+    _: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[BaseResponse, None]:
+    if api_implementation.disable_verify_device_post:
+        return None
+
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        session_required=True,
+        user_context=user_context,
+    )
+
+    assert session is not None
+
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please provide a JSON body&#34;)
+
+    device_name = body.get(&#34;deviceName&#34;)
+    totp = body.get(&#34;totp&#34;)
+
+    if device_name is None or not isinstance(device_name, str):
+        raise Exception(&#34;deviceName is required and must be a string&#34;)
+
+    if totp is None or not isinstance(totp, str):
+        raise Exception(&#34;totp is required and must be a string&#34;)
+
+    response = await api_implementation.verify_device_post(
+        device_name=device_name,
+        totp=totp,
+        options=api_options,
+        session=session,
+        user_context=user_context,
+    )
+
+    return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.totp.api.handle_verify_totp_api"><code class="name flex">
+<span>async def <span class="ident">handle_verify_totp_api</span></span>(<span>_: str, api_implementation: APIInterface, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_verify_totp_api(
+    _: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[BaseResponse, None]:
+    if api_implementation.disable_verify_totp_post:
+        return None
+
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        session_required=True,
+        user_context=user_context,
+    )
+
+    assert session is not None
+
+    body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please provide a JSON body&#34;)
+
+    totp = body.get(&#34;totp&#34;)
+
+    if totp is None or not isinstance(totp, str):
+        raise Exception(&#34;totp is required and must be a string&#34;)
+
+    response = await api_implementation.verify_totp_post(
+        totp=totp,
+        options=api_options,
+        session=session,
+        user_context=user_context,
+    )
+
+    return send_200_response(response.to_json(), api_options.response)</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 </section>
@@ -78,6 +330,15 @@
 <li><code><a title="supertokens_python.recipe.totp.api.remove_device" href="remove_device.html">supertokens_python.recipe.totp.api.remove_device</a></code></li>
 <li><code><a title="supertokens_python.recipe.totp.api.verify_device" href="verify_device.html">supertokens_python.recipe.totp.api.verify_device</a></code></li>
 <li><code><a title="supertokens_python.recipe.totp.api.verify_totp" href="verify_totp.html">supertokens_python.recipe.totp.api.verify_totp</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.totp.api.handle_create_device_api" href="#supertokens_python.recipe.totp.api.handle_create_device_api">handle_create_device_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.api.handle_list_devices_api" href="#supertokens_python.recipe.totp.api.handle_list_devices_api">handle_list_devices_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.api.handle_remove_device_api" href="#supertokens_python.recipe.totp.api.handle_remove_device_api">handle_remove_device_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.api.handle_verify_device_api" href="#supertokens_python.recipe.totp.api.handle_verify_device_api">handle_verify_device_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.api.handle_verify_totp_api" href="#supertokens_python.recipe.totp.api.handle_verify_totp_api">handle_verify_totp_api</a></code></li>
 </ul>
 </li>
 </ul>

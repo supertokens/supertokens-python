@@ -35,7 +35,6 @@ from supertokens_python.recipe.userroles.interfaces import (
 )
 
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 from supertokens_python.types import APIResponse
 
 
@@ -65,10 +64,10 @@ class UnknownRoleErrorResponse(APIResponse):
 
 
 async def get_permissions_for_role_api(
-    _api_interface: APIInterface,
-    _tenant_id: str,
+    _: APIInterface,
+    __: str,
     api_options: APIOptions,
-    user_context: Dict[str, Any],
+    ___: Dict[str, Any],
 ) -&gt; Union[
     OkPermissionsForRoleResponse,
     FeatureNotEnabledErrorResponse,
@@ -100,7 +99,7 @@ async def get_permissions_for_role_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.get_permissions_for_role_api"><code class="name flex">
-<span>async def <span class="ident">get_permissions_for_role_api</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, _tenant_id: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.OkPermissionsForRoleResponse" href="#supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.OkPermissionsForRoleResponse">OkPermissionsForRoleResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.FeatureNotEnabledErrorResponse" href="#supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.FeatureNotEnabledErrorResponse">FeatureNotEnabledErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.UnknownRoleErrorResponse" href="#supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.UnknownRoleErrorResponse">UnknownRoleErrorResponse</a>]</span>
+<span>async def <span class="ident">get_permissions_for_role_api</span></span>(<span>_: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, __: str, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../../../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>, ___: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.OkPermissionsForRoleResponse" href="#supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.OkPermissionsForRoleResponse">OkPermissionsForRoleResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.FeatureNotEnabledErrorResponse" href="#supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.FeatureNotEnabledErrorResponse">FeatureNotEnabledErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.UnknownRoleErrorResponse" href="#supertokens_python.recipe.dashboard.api.userroles.permissions.get_permissions_for_role.UnknownRoleErrorResponse">UnknownRoleErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -109,10 +108,10 @@ async def get_permissions_for_role_api(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_permissions_for_role_api(
-    _api_interface: APIInterface,
-    _tenant_id: str,
+    _: APIInterface,
+    __: str,
     api_options: APIOptions,
-    user_context: Dict[str, Any],
+    ___: Dict[str, Any],
 ) -&gt; Union[
     OkPermissionsForRoleResponse,
     FeatureNotEnabledErrorResponse,
