@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
@@ -30,9 +30,6 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from ...interfaces import APIInterface, APIOptions, CoreConfigFieldInfo
-
-
-from typing import List, Optional
 
 
 class ThirdPartyProvider:

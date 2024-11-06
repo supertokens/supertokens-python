@@ -105,9 +105,9 @@ async def create_passwordless_user(
         raise BadInputError("Please provide exactly one of email or phoneNumber")
 
     if email is not None and (
-        isinstance(passwordless_recipe.config.contact_config, ContactEmailOnlyConfig)
-        or isinstance(
-            passwordless_recipe.config.contact_config, ContactEmailOrPhoneConfig
+        isinstance(
+            passwordless_recipe.config.contact_config,
+            (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig),
         )
     ):
         email = email.strip()
@@ -120,9 +120,9 @@ async def create_passwordless_user(
             return CreatePasswordlessUserEmailValidationErrorResponse(validation_error)
 
     if phone_number is not None and (
-        isinstance(passwordless_recipe.config.contact_config, ContactPhoneOnlyConfig)
-        or isinstance(
-            passwordless_recipe.config.contact_config, ContactEmailOrPhoneConfig
+        isinstance(
+            passwordless_recipe.config.contact_config,
+            (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig),
         )
     ):
         validation_error = (

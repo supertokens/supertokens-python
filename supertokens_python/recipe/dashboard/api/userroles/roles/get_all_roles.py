@@ -24,7 +24,7 @@ class FeatureNotEnabledErrorResponse(APIResponse):
 
 
 async def get_all_roles_api(
-    _: APIInterface, __: str, api_options: APIOptions, ___: Any
+    _: APIInterface, __: str, ___: APIOptions, ____: Any
 ) -> Union[OkResponse, FeatureNotEnabledErrorResponse]:
     try:
         UserRolesRecipe.get_instance()

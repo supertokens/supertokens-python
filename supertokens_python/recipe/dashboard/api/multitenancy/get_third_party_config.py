@@ -275,17 +275,17 @@ async def get_third_party_config(
                         after_override = provider.override(before_override)
 
                         if (
-                            before_override.get_authorisation_redirect_url
+                            before_override.get_authorisation_redirect_url  # pylint: disable=W0143
                             != after_override.get_authorisation_redirect_url
                         ):
                             is_get_authorisation_redirect_url_overridden = True
                         if (
-                            before_override.exchange_auth_code_for_oauth_tokens
+                            before_override.exchange_auth_code_for_oauth_tokens  # pylint: disable=W0143
                             != after_override.exchange_auth_code_for_oauth_tokens
                         ):
                             is_exchange_auth_code_for_oauth_tokens_overridden = True
                         if (
-                            before_override.get_user_info
+                            before_override.get_user_info  # pylint: disable=W0143
                             != after_override.get_user_info
                         ):
                             is_get_user_info_overridden = True
