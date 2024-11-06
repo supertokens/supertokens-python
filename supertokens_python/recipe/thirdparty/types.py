@@ -36,6 +36,10 @@ class ThirdPartyInfo:
     def to_json(self) -> Dict[str, Any]:
         return {"userId": self.user_id, "id": self.id}
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -> "ThirdPartyInfo":
+        return ThirdPartyInfo(json["userId"], json["id"])
+
 
 class RawUserInfoFromProvider:
     def __init__(

@@ -225,7 +225,7 @@ class User:
             tenant_ids=json["tenantIds"],
             emails=json["emails"],
             phone_numbers=json["phoneNumbers"],
-            third_party=json["thirdParty"],
+            third_party=[ThirdPartyInfo.from_json(tp) for tp in json["thirdParty"]],
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )
