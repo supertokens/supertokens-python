@@ -63,7 +63,7 @@ async def create_email_password_user(
     _: APIInterface,
     tenant_id: str,
     api_options: APIOptions,
-    user_context: Dict[str, Any],
+    __: Dict[str, Any],
 ) -> Union[
     CreateEmailPasswordUserOkResponse,
     CreateEmailPasswordUserFeatureNotEnabledResponse,

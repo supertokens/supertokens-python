@@ -26,7 +26,7 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 async def handle_create_device_api(
-    tenant_id: str,
+    _: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],

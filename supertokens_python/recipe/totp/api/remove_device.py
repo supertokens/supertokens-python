@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 async def handle_remove_device_api(
-    tenant_id: str,
+    _: str,
     api_implementation: APIInterface,
     api_options: APIOptions,
     user_context: Dict[str, Any],

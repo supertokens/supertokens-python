@@ -110,6 +110,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP :: Session",
         "License :: OSI Approved :: Apache Software License",

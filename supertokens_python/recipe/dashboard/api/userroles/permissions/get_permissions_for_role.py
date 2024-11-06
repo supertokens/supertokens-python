@@ -7,7 +7,6 @@ from supertokens_python.recipe.userroles.interfaces import (
 )
 
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 from supertokens_python.types import APIResponse
 
 
@@ -37,10 +36,10 @@ class UnknownRoleErrorResponse(APIResponse):
 
 
 async def get_permissions_for_role_api(
-    _api_interface: APIInterface,
-    _tenant_id: str,
+    _: APIInterface,
+    __: str,
     api_options: APIOptions,
-    user_context: Dict[str, Any],
+    ___: Dict[str, Any],
 ) -> Union[
     OkPermissionsForRoleResponse,
     FeatureNotEnabledErrorResponse,
