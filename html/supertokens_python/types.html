@@ -240,20 +240,22 @@ class User:
             &#34;tenantIds&#34;: self.tenant_ids,
             &#34;emails&#34;: self.emails,
             &#34;phoneNumbers&#34;: self.phone_numbers,
-            &#34;thirdParty&#34;: self.third_party,
+            &#34;thirdParty&#34;: [tp.to_json() for tp in self.third_party],
             &#34;loginMethods&#34;: [lm.to_json() for lm in self.login_methods],
             &#34;timeJoined&#34;: self.time_joined,
         }
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
+        from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+
         return User(
             user_id=json[&#34;id&#34;],
             is_primary_user=json[&#34;isPrimaryUser&#34;],
             tenant_ids=json[&#34;tenantIds&#34;],
             emails=json[&#34;emails&#34;],
             phone_numbers=json[&#34;phoneNumbers&#34;],
-            third_party=json[&#34;thirdParty&#34;],
+            third_party=[TPI.from_json(tp) for tp in json[&#34;thirdParty&#34;]],
             login_methods=[LoginMethod.from_json(lm) for lm in json[&#34;loginMethods&#34;]],
             time_joined=json[&#34;timeJoined&#34;],
         )
@@ -567,7 +569,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.types.LoginMethod"><code class="flex name class">
 <span>class <span class="ident">LoginMethod</span></span>
-<span>(</span><span>recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless']", recipe_user_id: str, tenant_ids: List[str], email: Union[str, None], phone_number: Union[str, None], third_party: Union[ThirdPartyInfo, None], time_joined: int, verified: bool)</span>
+<span>(</span><span>recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", recipe_user_id: str, tenant_ids: List[str], email: Union[str, None], phone_number: Union[str, None], third_party: Union[ThirdPartyInfo, None], time_joined: int, verified: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -906,20 +908,22 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;LoginMethod&#34;:
             &#34;tenantIds&#34;: self.tenant_ids,
             &#34;emails&#34;: self.emails,
             &#34;phoneNumbers&#34;: self.phone_numbers,
-            &#34;thirdParty&#34;: self.third_party,
+            &#34;thirdParty&#34;: [tp.to_json() for tp in self.third_party],
             &#34;loginMethods&#34;: [lm.to_json() for lm in self.login_methods],
             &#34;timeJoined&#34;: self.time_joined,
         }
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
+        from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+
         return User(
             user_id=json[&#34;id&#34;],
             is_primary_user=json[&#34;isPrimaryUser&#34;],
             tenant_ids=json[&#34;tenantIds&#34;],
             emails=json[&#34;emails&#34;],
             phone_numbers=json[&#34;phoneNumbers&#34;],
-            third_party=json[&#34;thirdParty&#34;],
+            third_party=[TPI.from_json(tp) for tp in json[&#34;thirdParty&#34;]],
             login_methods=[LoginMethod.from_json(lm) for lm in json[&#34;loginMethods&#34;]],
             time_joined=json[&#34;timeJoined&#34;],
         )</code></pre>
@@ -937,13 +941,15 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;LoginMethod&#34;:
 </summary>
 <pre><code class="python">@staticmethod
 def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
+    from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+
     return User(
         user_id=json[&#34;id&#34;],
         is_primary_user=json[&#34;isPrimaryUser&#34;],
         tenant_ids=json[&#34;tenantIds&#34;],
         emails=json[&#34;emails&#34;],
         phone_numbers=json[&#34;phoneNumbers&#34;],
-        third_party=json[&#34;thirdParty&#34;],
+        third_party=[TPI.from_json(tp) for tp in json[&#34;thirdParty&#34;]],
         login_methods=[LoginMethod.from_json(lm) for lm in json[&#34;loginMethods&#34;]],
         time_joined=json[&#34;timeJoined&#34;],
     )</code></pre>
@@ -968,7 +974,7 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
         &#34;tenantIds&#34;: self.tenant_ids,
         &#34;emails&#34;: self.emails,
         &#34;phoneNumbers&#34;: self.phone_numbers,
-        &#34;thirdParty&#34;: self.third_party,
+        &#34;thirdParty&#34;: [tp.to_json() for tp in self.third_party],
         &#34;loginMethods&#34;: [lm.to_json() for lm in self.login_methods],
         &#34;timeJoined&#34;: self.time_joined,
     }</code></pre>

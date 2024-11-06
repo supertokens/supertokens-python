@@ -8,7 +8,7 @@
             "program": "${workspaceFolder}/tests/frontendIntegration/flask-server/app.py",
             "args": [
                 "--port",
-                "8080"
+                "8083"
             ],
             "cwd": "${workspaceFolder}/tests/frontendIntegration/flask-server",
             "env": {

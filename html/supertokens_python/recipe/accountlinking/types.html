@@ -200,7 +200,7 @@ class AccountLinkingConfig:
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId"><code class="flex name class">
 <span>class <span class="ident">AccountInfoWithRecipeId</span></span>
-<span>(</span><span>recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
+<span>(</span><span>recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -258,7 +258,7 @@ class AccountLinkingConfig:
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId"><code class="flex name class">
 <span>class <span class="ident">AccountInfoWithRecipeIdAndUserId</span></span>
-<span>(</span><span>recipe_user_id: Optional[RecipeUserId], recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
+<span>(</span><span>recipe_user_id: Optional[RecipeUserId], recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -404,7 +404,7 @@ def from_account_info_or_login_method(
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.types.RecipeLevelUser"><code class="flex name class">
 <span>class <span class="ident">RecipeLevelUser</span></span>
-<span>(</span><span>tenant_ids: List[str], time_joined: int, recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
+<span>(</span><span>tenant_ids: List[str], time_joined: int, recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

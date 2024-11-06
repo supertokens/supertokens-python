@@ -369,7 +369,7 @@ def get_backwards_compatible_user_info(
         &#34;timeJoined&#34;: login_method.time_joined,
     }
     if login_method.third_party:
-        user_obj[&#34;thirdParty&#34;] = login_method.third_party
+        user_obj[&#34;thirdParty&#34;] = login_method.third_party.to_json()
     if login_method.email:
         user_obj[&#34;email&#34;] = login_method.email
     if login_method.phone_number:
@@ -620,7 +620,7 @@ def get_normalised_should_try_linking_with_session_user_flag(
         &#34;timeJoined&#34;: login_method.time_joined,
     }
     if login_method.third_party:
-        user_obj[&#34;thirdParty&#34;] = login_method.third_party
+        user_obj[&#34;thirdParty&#34;] = login_method.third_party.to_json()
     if login_method.email:
         user_obj[&#34;email&#34;] = login_method.email
     if login_method.phone_number:

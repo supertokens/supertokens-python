@@ -64,6 +64,10 @@ class ThirdPartyInfo:
     def to_json(self) -&gt; Dict[str, Any]:
         return {&#34;userId&#34;: self.user_id, &#34;id&#34;: self.id}
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -&gt; &#34;ThirdPartyInfo&#34;:
+        return ThirdPartyInfo(json[&#34;userId&#34;], json[&#34;id&#34;])
+
 
 class RawUserInfoFromProvider:
     def __init__(
@@ -262,8 +266,29 @@ class ThirdPartyIngredients:
         )
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {&#34;userId&#34;: self.user_id, &#34;id&#34;: self.id}</code></pre>
+        return {&#34;userId&#34;: self.user_id, &#34;id&#34;: self.id}
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -&gt; &#34;ThirdPartyInfo&#34;:
+        return ThirdPartyInfo(json[&#34;userId&#34;], json[&#34;id&#34;])</code></pre>
 </details>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>json: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def from_json(json: Dict[str, Any]) -&gt; &#34;ThirdPartyInfo&#34;:
+    return ThirdPartyInfo(json[&#34;userId&#34;], json[&#34;id&#34;])</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.to_json"><code class="name flex">
@@ -414,6 +439,7 @@ class ThirdPartyIngredients:
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.from_json" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.from_json">from_json</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.to_json" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo.to_json">to_json</a></code></li>
 </ul>
 </li>
