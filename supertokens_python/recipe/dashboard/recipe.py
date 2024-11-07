@@ -142,6 +142,7 @@ from .constants import (
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
     UNLINK_USER,
+    USERROLES_LIST_API,
     USERROLES_PERMISSIONS_API,
     USERROLES_REMOVE_PERMISSIONS_API,
     USERROLES_ROLE_API,
@@ -194,6 +195,18 @@ class DashboardRecipe(RecipeModule):
         return [
             APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base("/")),
+                "get",
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base("/roles")),
+                "get",
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base("/tenants")),
                 "get",
                 DASHBOARD_API,
                 False,
@@ -443,6 +456,12 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_LIST_API)),
+                "get",
+                USERROLES_LIST_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
                 "put",
                 USERROLES_ROLE_API,
@@ -583,6 +602,8 @@ class DashboardRecipe(RecipeModule):
             api_function = create_passwordless_user
         elif request_id == UNLINK_USER:
             api_function = handle_user_unlink_get
+        elif request_id == USERROLES_LIST_API:
+            api_function = get_all_roles_api
         elif request_id == USERROLES_PERMISSIONS_API:
             api_function = get_permissions_for_role_api
         elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
