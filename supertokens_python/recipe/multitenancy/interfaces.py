@@ -56,6 +56,17 @@ class TenantConfig:
             required_secondary_factors=json.get("requiredSecondaryFactors", []),
         )
 
+    def to_json(self) -> Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        res["tenantId"] = self.tenant_id
+        res["thirdPartyProviders"] = [
+            provider.to_json() for provider in self.third_party_providers
+        ]
+        res["firstFactors"] = self.first_factors
+        res["requiredSecondaryFactors"] = self.required_secondary_factors
+        res["coreConfig"] = self.core_config
+        return res
+
 
 class TenantConfigCreateOrUpdate:
     # pylint: disable=dangerous-default-value
