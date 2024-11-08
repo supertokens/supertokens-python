@@ -18,7 +18,6 @@ jobs:
     parameters:
       cdi-version:
         type: string
-    parallelism: 4
     steps:
       - checkout
       - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
