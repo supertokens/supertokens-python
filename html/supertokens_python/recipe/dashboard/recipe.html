@@ -170,6 +170,7 @@ from .constants import (
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
     UNLINK_USER,
+    USERROLES_LIST_API,
     USERROLES_PERMISSIONS_API,
     USERROLES_REMOVE_PERMISSIONS_API,
     USERROLES_ROLE_API,
@@ -222,6 +223,18 @@ class DashboardRecipe(RecipeModule):
         return [
             APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/&#34;)),
+                &#34;get&#34;,
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/roles&#34;)),
+                &#34;get&#34;,
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/tenants&#34;)),
                 &#34;get&#34;,
                 DASHBOARD_API,
                 False,
@@ -471,6 +484,12 @@ class DashboardRecipe(RecipeModule):
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_LIST_API)),
+                &#34;get&#34;,
+                USERROLES_LIST_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
                 &#34;put&#34;,
                 USERROLES_ROLE_API,
@@ -611,6 +630,8 @@ class DashboardRecipe(RecipeModule):
             api_function = create_passwordless_user
         elif request_id == UNLINK_USER:
             api_function = handle_user_unlink_get
+        elif request_id == USERROLES_LIST_API:
+            api_function = get_all_roles_api
         elif request_id == USERROLES_PERMISSIONS_API:
             api_function = get_permissions_for_role_api
         elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
@@ -759,6 +780,18 @@ inheritance.</p></div>
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/roles&#34;)),
+                &#34;get&#34;,
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/tenants&#34;)),
+                &#34;get&#34;,
+                DASHBOARD_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base(SIGN_IN_API)),
                 &#34;post&#34;,
                 SIGN_IN_API,
@@ -1003,6 +1036,12 @@ inheritance.</p></div>
                 False,
             ),
             APIHandled(
+                NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_LIST_API)),
+                &#34;get&#34;,
+                USERROLES_LIST_API,
+                False,
+            ),
+            APIHandled(
                 NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
                 &#34;put&#34;,
                 USERROLES_ROLE_API,
@@ -1143,6 +1182,8 @@ inheritance.</p></div>
             api_function = create_passwordless_user
         elif request_id == UNLINK_USER:
             api_function = handle_user_unlink_get
+        elif request_id == USERROLES_LIST_API:
+            api_function = get_all_roles_api
         elif request_id == USERROLES_PERMISSIONS_API:
             api_function = get_permissions_for_role_api
         elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
@@ -1340,6 +1381,18 @@ def reset():
     return [
         APIHandled(
             NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/&#34;)),
+            &#34;get&#34;,
+            DASHBOARD_API,
+            False,
+        ),
+        APIHandled(
+            NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/roles&#34;)),
+            &#34;get&#34;,
+            DASHBOARD_API,
+            False,
+        ),
+        APIHandled(
+            NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/tenants&#34;)),
             &#34;get&#34;,
             DASHBOARD_API,
             False,
@@ -1589,6 +1642,12 @@ def reset():
             False,
         ),
         APIHandled(
+            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_LIST_API)),
+            &#34;get&#34;,
+            USERROLES_LIST_API,
+            False,
+        ),
+        APIHandled(
             NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
             &#34;put&#34;,
             USERROLES_ROLE_API,
@@ -1739,6 +1798,8 @@ def reset():
         api_function = create_passwordless_user
     elif request_id == UNLINK_USER:
         api_function = handle_user_unlink_get
+    elif request_id == USERROLES_LIST_API:
+        api_function = get_all_roles_api
     elif request_id == USERROLES_PERMISSIONS_API:
         api_function = get_permissions_for_role_api
     elif request_id == USERROLES_REMOVE_PERMISSIONS_API:

@@ -84,6 +84,17 @@ class TenantConfig:
             required_secondary_factors=json.get(&#34;requiredSecondaryFactors&#34;, []),
         )
 
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        res[&#34;tenantId&#34;] = self.tenant_id
+        res[&#34;thirdPartyProviders&#34;] = [
+            provider.to_json() for provider in self.third_party_providers
+        ]
+        res[&#34;firstFactors&#34;] = self.first_factors
+        res[&#34;requiredSecondaryFactors&#34;] = self.required_secondary_factors
+        res[&#34;coreConfig&#34;] = self.core_config
+        return res
+
 
 class TenantConfigCreateOrUpdate:
     # pylint: disable=dangerous-default-value
@@ -1261,7 +1272,18 @@ async def list_all_tenants(
             core_config=json.get(&#34;coreConfig&#34;, {}),
             first_factors=json.get(&#34;firstFactors&#34;, []),
             required_secondary_factors=json.get(&#34;requiredSecondaryFactors&#34;, []),
-        )</code></pre>
+        )
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res: Dict[str, Any] = {}
+        res[&#34;tenantId&#34;] = self.tenant_id
+        res[&#34;thirdPartyProviders&#34;] = [
+            provider.to_json() for provider in self.third_party_providers
+        ]
+        res[&#34;firstFactors&#34;] = self.first_factors
+        res[&#34;requiredSecondaryFactors&#34;] = self.required_secondary_factors
+        res[&#34;coreConfig&#34;] = self.core_config
+        return res</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -1286,6 +1308,30 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfig:
         first_factors=json.get(&#34;firstFactors&#34;, []),
         required_secondary_factors=json.get(&#34;requiredSecondaryFactors&#34;, []),
     )</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    res: Dict[str, Any] = {}
+    res[&#34;tenantId&#34;] = self.tenant_id
+    res[&#34;thirdPartyProviders&#34;] = [
+        provider.to_json() for provider in self.third_party_providers
+    ]
+    res[&#34;firstFactors&#34;] = self.first_factors
+    res[&#34;requiredSecondaryFactors&#34;] = self.required_secondary_factors
+    res[&#34;coreConfig&#34;] = self.core_config
+    return res</code></pre>
 </details>
 </dd>
 </dl>
@@ -1617,6 +1663,7 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfigCreateOrUpdate:
 <h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig">TenantConfig</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig.from_json" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
