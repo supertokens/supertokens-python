@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.25.1] - 2024-11-07
+## [0.25.1] - 2024-11-08
 
 - Fixes issues with dashboard - userroles and tenants
+- Fixes `LoginMethod` to json conversion to not include `null` as values
 - Adds `to_json` method to `TenantConfig`
 
 ## [0.25.0] - 2024-09-18

@@ -131,16 +131,20 @@ class LoginMethod(AccountInfo):
         )
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        result: Dict[str, Any] = {
             "recipeId": self.recipe_id,
             "recipeUserId": self.recipe_user_id.get_as_string(),
             "tenantIds": self.tenant_ids,
-            "email": self.email,
-            "phoneNumber": self.phone_number,
-            "thirdParty": self.third_party.to_json() if self.third_party else None,
             "timeJoined": self.time_joined,
             "verified": self.verified,
         }
+        if self.email is not None:
+            result["email"] = self.email
+        if self.phone_number is not None:
+            result["phoneNumber"] = self.phone_number
+        if self.third_party is not None:
+            result["thirdParty"] = self.third_party.to_json()
+        return result
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> "LoginMethod":

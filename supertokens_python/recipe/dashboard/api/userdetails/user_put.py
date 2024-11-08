@@ -339,6 +339,9 @@ async def handle_user_put(
             user_context,
         )
 
+        if isinstance(email_update_response, EmailChangeNotAllowedErrorResponse):
+            return EmailChangeNotAllowedErrorResponse(email_update_response.error)
+
         if not isinstance(email_update_response, OkResponse):
             return email_update_response
 
@@ -349,6 +352,9 @@ async def handle_user_put(
             tenant_id,
             user_context,
         )
+
+        if isinstance(phone_update_response, PhoneNumberChangeNotAllowedErrorResponse):
+            return PhoneNumberChangeNotAllowedErrorResponse(phone_update_response.error)
 
         if not isinstance(phone_update_response, OkResponse):
             return phone_update_response
