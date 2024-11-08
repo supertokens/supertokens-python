@@ -43,7 +43,7 @@ class NormalisedURLPath:
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
-    input_str = input_str.strip().lower()
+    input_str = input_str.strip()
     try:
         if not input_str.startswith("http://") and not input_str.startswith("https://"):
             raise Exception("converting to proper URL")
