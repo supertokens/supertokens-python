@@ -97,14 +97,20 @@ async def get_third_party_config(
 
     additional_config: Optional[Dict[str, Any]] = None
 
+    # filter out providers that is not matching thirdPartyId
     providers_from_core = [
         provider
         for provider in providers_from_core
         if provider.third_party_id == third_party_id
     ]
 
-    if not providers_from_core:
+    # if none left, add one to this list so that it takes priority while merging
+    if len(providers_from_core) == 0:
         providers_from_core.append(ProviderConfig(third_party_id=third_party_id))
+
+    # At this point, providersFromCore.length === 1
+
+    # query param may be passed if we are creating a new third party config, check and update accordingly
 
     if third_party_id in ["okta", "active-directory", "boxy-saml", "google-workspaces"]:
         if third_party_id == "okta":
@@ -135,28 +141,19 @@ async def get_third_party_config(
 
             if providers_from_core[0].clients is not None:
                 for existing_client in providers_from_core[0].clients:
-                    if existing_client.additional_config is not None:
-                        existing_client.additional_config = {
-                            **existing_client.additional_config,
-                            **additional_config,
-                        }
-                    else:
-                        existing_client.additional_config = additional_config
-            else:
-                providers_from_core[0].clients = [
-                    ProviderClientConfig(
-                        client_id="nonguessable-temporary-client-id",
-                        additional_config=additional_config,
-                    )
-                ]
+                    existing_client.additional_config = {
+                        **(existing_client.additional_config or {}),
+                        **additional_config 
+                    }
 
+    # filter out other providers from static
     static_providers = [
         provider
         for provider in static_providers
         if provider.config.third_party_id == third_party_id
     ]
 
-    if not static_providers and third_party_id == "apple":
+    if len(static_providers) == 0 and third_party_id == "apple":
         static_providers.append(
             ProviderInput(
                 config=ProviderConfig(
@@ -176,27 +173,20 @@ async def get_third_party_config(
             "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
         }
 
-    if len(static_providers) == 1 and additional_config is not None:
-        static_providers[0].config.oidc_discovery_endpoint = None
-        static_providers[0].config.authorization_endpoint = None
-        static_providers[0].config.token_endpoint = None
-        static_providers[0].config.user_info_endpoint = None
-        if static_providers[0].config.clients is not None:
-            for existing_client in static_providers[0].config.clients:
-                if existing_client.additional_config is not None:
+    if len(static_providers) == 1:
+        # modify additional config if query param is passed
+        if additional_config is not None:
+            # we set these to undefined so that these can be computed using the query param that was provided
+            static_providers[0].config.oidc_discovery_endpoint = None
+            static_providers[0].config.authorization_endpoint = None
+            static_providers[0].config.token_endpoint = None
+            static_providers[0].config.user_info_endpoint = None
+            if static_providers[0].config.clients is not None:
+                for existing_client in static_providers[0].config.clients:
                     existing_client.additional_config = {
-                        **existing_client.additional_config,
+                        **(existing_client.additional_config or {}),
                         **additional_config,
                     }
-                else:
-                    existing_client.additional_config = additional_config
-        else:
-            static_providers[0].config.clients = [
-                ProviderClientConfig(
-                    client_id="nonguessable-temporary-client-id",
-                    additional_config=additional_config,
-                )
-            ]
 
     merged_providers_from_core_and_static = merge_providers_from_core_and_static(
         providers_from_core, static_providers, True
@@ -207,15 +197,14 @@ async def get_third_party_config(
 
     for merged_provider in merged_providers_from_core_and_static:
         if merged_provider.config.third_party_id == third_party_id:
-            if not merged_provider.config.clients:
+            if merged_provider.config.clients is None or len(merged_provider.config.clients) == 0:
                 merged_provider.config.clients = [
                     ProviderClientConfig(
                         client_id="nonguessable-temporary-client-id",
-                        additional_config=(
-                            additional_config if additional_config is not None else None
-                        ),
+                        additional_config=additional_config,
                     )
                 ]
+
     clients: List[ProviderClientConfig] = []
     common_provider_config: CommonProviderConfig = CommonProviderConfig(
         third_party_id=third_party_id
@@ -228,7 +217,7 @@ async def get_third_party_config(
         if provider.config.third_party_id == third_party_id:
             found_correct_config = False
 
-            for client in provider.config.clients or []:
+            for client in (provider.config.clients or []):
                 try:
                     provider_instance = await find_and_create_provider_instance(
                         merged_providers_from_core_and_static,
@@ -299,7 +288,7 @@ async def get_third_party_config(
 
             break
 
-    if additional_config and "privateKey" in additional_config:
+    if additional_config is not None and "privateKey" in additional_config:
         additional_config["privateKey"] = ""
 
     temp_clients = [
@@ -313,18 +302,19 @@ async def get_third_party_config(
         for client in clients
         if client.client_id != "nonguessable-temporary-client-id"
     ]
-    if not final_clients:
+    if len(final_clients) == 0:
         final_clients = [
             ProviderClientConfig(
                 client_id="",
                 client_secret="",
-                additional_config=additional_config,
                 client_type=temp_clients[0].client_type,
-                force_pkce=temp_clients[0].force_pkce,
                 scope=temp_clients[0].scope,
+                force_pkce=temp_clients[0].force_pkce,
+                additional_config=additional_config,
             )
         ]
 
+    # fill in boxy info from boxy instance
     if third_party_id.startswith("boxy-saml"):
         boxy_api_key = options.request.get_query_param("boxyAPIKey")
         if boxy_api_key and final_clients[0].client_id:
