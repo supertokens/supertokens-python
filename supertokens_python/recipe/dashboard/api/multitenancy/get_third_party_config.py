@@ -143,7 +143,7 @@ async def get_third_party_config(
                 for existing_client in providers_from_core[0].clients:
                     existing_client.additional_config = {
                         **(existing_client.additional_config or {}),
-                        **additional_config 
+                        **additional_config,
                     }
 
     # filter out other providers from static
@@ -197,7 +197,10 @@ async def get_third_party_config(
 
     for merged_provider in merged_providers_from_core_and_static:
         if merged_provider.config.third_party_id == third_party_id:
-            if merged_provider.config.clients is None or len(merged_provider.config.clients) == 0:
+            if (
+                merged_provider.config.clients is None
+                or len(merged_provider.config.clients) == 0
+            ):
                 merged_provider.config.clients = [
                     ProviderClientConfig(
                         client_id="nonguessable-temporary-client-id",
@@ -217,7 +220,7 @@ async def get_third_party_config(
         if provider.config.third_party_id == third_party_id:
             found_correct_config = False
 
-            for client in (provider.config.clients or []):
+            for client in provider.config.clients or []:
                 try:
                     provider_instance = await find_and_create_provider_instance(
                         merged_providers_from_core_and_static,
