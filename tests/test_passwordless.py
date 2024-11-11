@@ -132,9 +132,7 @@ async def test_passwordless_otp(driver_config_client: TestClient):
                 {
                     "recipeId": "passwordless",
                     "tenantIds": ["public"],
-                    "email": None,
                     "phoneNumber": "+919494949494",
-                    "thirdParty": None,
                     "verified": True,
                 }
             ],
