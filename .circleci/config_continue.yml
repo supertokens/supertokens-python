@@ -43,6 +43,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y jq
       - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: python3 -m pip install -r dev-requirements.txt
       - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
