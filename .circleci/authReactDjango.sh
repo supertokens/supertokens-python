@@ -1,3 +1,8 @@
+python_version=$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1,2)
+if [[ $(echo "$python_version >= 3.13" | bc -l) -eq 1 ]]; then
+    pip install setuptools legacy-cgi
+fi
+
 echo "Starting tests for FDI $1";
 
 if [ -z "$SUPERTOKENS_API_KEY" ]; then

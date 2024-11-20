@@ -390,9 +390,6 @@ def config(
         assert header in settings.CORS_ALLOW_HEADERS
 
 
-config(True, False, None)
-
-
 def send_file(request: HttpRequest):
     return render(request, file_path)
 

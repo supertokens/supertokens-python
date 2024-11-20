@@ -1,3 +1,8 @@
+python_version=$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1,2)
+if [[ $(echo "$python_version >= 3.13" | bc -l) -eq 1 ]]; then
+    pip install setuptools legacy-cgi
+fi
+
 coreDriverJson=`cat ../coreDriverInterfaceSupported.json`
 coreDriverLength=`echo $coreDriverJson | jq ".versions | length"`
 coreDriverArray=`echo $coreDriverJson | jq ".versions"`
