@@ -22,7 +22,7 @@ jobs:
         type: string
     steps:
       - checkout
-      - run: apt update && apt install -y jq
+      - run: apt update && apt install -y jq lsof
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: (cd .circleci/ && ./installJava.sh)
       - run: make dev-install
@@ -41,7 +41,7 @@ jobs:
         type: string
     steps:
       - checkout
-      - run: apt update && apt install -y jq
+      - run: apt update && apt install -y jq lsof
       - run: (cd .circleci/ && ./installJava.sh)
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
