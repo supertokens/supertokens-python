@@ -4,7 +4,7 @@ import uvicorn  # type: ignore
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse, PlainTextResponse
-from starlette.exceptions import ExceptionMiddleware
+from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from supertokens_python import (
@@ -153,7 +153,7 @@ init(
     telemetry=False,
 )
 
-app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
+app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)  # type: ignore
 
 
 @app.get("/sessioninfo")

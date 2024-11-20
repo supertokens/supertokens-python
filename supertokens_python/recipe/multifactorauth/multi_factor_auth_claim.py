@@ -40,17 +40,26 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         requirement_list: MFARequirementList,
     ):
         super().__init__(id_)
-        self.claim: MultiFactorAuthClaimClass = claim
+        self.claim = claim
         self.requirement_list = requirement_list
 
     def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
+        if self.claim is None:
+            raise Exception("should never happen")
+
         return bool(self.claim.key not in payload or not payload[self.claim.key])
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
+        if self.claim is None:
+            raise Exception("should never happen")
+
+        if not isinstance(self.claim, MultiFactorAuthClaimClass):
+            raise Exception("should never happen")
+
         if len(self.requirement_list) == 0:
             return ClaimValidationResult(is_valid=True)  # no requirements to satisfy
 

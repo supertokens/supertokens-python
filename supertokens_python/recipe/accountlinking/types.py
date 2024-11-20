@@ -39,9 +39,9 @@ class AccountInfoWithRecipeId(AccountInfo):
         third_party: Optional[ThirdPartyInfo] = None,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[
-            "emailpassword", "thirdparty", "passwordless"
-        ] = recipe_id
+        self.recipe_id: Literal["emailpassword", "thirdparty", "passwordless"] = (
+            recipe_id
+        )
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -63,9 +63,9 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         super().__init__(recipe_id, email, phone_number, third_party)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id: Literal[
-            "emailpassword", "thirdparty", "passwordless"
-        ] = recipe_id
+        self.recipe_id: Literal["emailpassword", "thirdparty", "passwordless"] = (
+            recipe_id
+        )
 
     @staticmethod
     def from_login_method(

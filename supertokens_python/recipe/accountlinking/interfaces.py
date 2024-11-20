@@ -211,9 +211,9 @@ class CanLinkAccountsAccountInfoAlreadyAssociatedError:
 
 class CanLinkAccountsInputUserNotPrimaryError:
     def __init__(self, description: Optional[str] = None):
-        self.status: Literal[
+        self.status: Literal["INPUT_USER_IS_NOT_A_PRIMARY_USER"] = (
             "INPUT_USER_IS_NOT_A_PRIMARY_USER"
-        ] = "INPUT_USER_IS_NOT_A_PRIMARY_USER"
+        )
         self.description = description
 
 
@@ -261,9 +261,9 @@ class LinkAccountsAccountInfoAlreadyAssociatedError:
 
 class LinkAccountsInputUserNotPrimaryError:
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal["INPUT_USER_IS_NOT_A_PRIMARY_USER"] = (
             "INPUT_USER_IS_NOT_A_PRIMARY_USER"
-        ] = "INPUT_USER_IS_NOT_A_PRIMARY_USER"
+        )
 
 
 class UnlinkAccountOkResult:

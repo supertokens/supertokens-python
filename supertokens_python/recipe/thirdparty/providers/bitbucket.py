@@ -71,9 +71,9 @@ class BitbucketImpl(GenericProvider):
             # checker is not agreeing so doing this:
             raw_user_info_from_provider.from_id_token_payload = {}
 
-        raw_user_info_from_provider.from_id_token_payload[
-            "email"
-        ] = user_info_from_email
+        raw_user_info_from_provider.from_id_token_payload["email"] = (
+            user_info_from_email
+        )
 
         email = None
         is_verified = False

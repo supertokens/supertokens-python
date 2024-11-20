@@ -671,7 +671,7 @@ class IsVerifiedSCV(SessionClaimValidator):
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
-        self.claim: EmailVerificationClaimClass = claim
+        self.claim = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
@@ -686,6 +686,12 @@ class IsVerifiedSCV(SessionClaimValidator):
     def should_refetch(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> MaybeAwaitable[bool]:
+        if self.claim is None:
+            raise Exception("should never happen")
+
+        if not isinstance(self.claim, EmailVerificationClaimClass):
+            raise Exception("should never happen")
+
         value = self.claim.get_value_from_payload(payload, user_context)
         if value is None:
             return True

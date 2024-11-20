@@ -237,10 +237,7 @@ class SessionRecipe(RecipeModule):
         response: BaseResponse,
         user_context: Dict[str, Any],
     ) -> BaseResponse:
-        if (
-            isinstance(err, SuperTokensSessionError)
-            and err.response_mutators is not None
-        ):
+        if isinstance(err, SuperTokensSessionError):
             for mutator in err.response_mutators:
                 mutator(response, user_context)
 

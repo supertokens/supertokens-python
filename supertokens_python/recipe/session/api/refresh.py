@@ -28,7 +28,7 @@ async def handle_refresh_api(
 ):
     if (
         api_implementation.disable_refresh_post
-        or api_implementation.refresh_post is None
+        or api_implementation.refresh_post is None  # type: ignore
     ):
         return None
 

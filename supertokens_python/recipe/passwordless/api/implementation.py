@@ -666,8 +666,7 @@ class APIImplementation(APIInterface):
             return SignInUpPostNotAllowedResponse(reason=reason)
 
         if check_credentials_response is not None:
-            if not isinstance(check_credentials_response, CheckCodeOkResult):
-                return check_credentials_response
+            return check_credentials_response
 
         response = await api_options.recipe_implementation.consume_code(
             pre_auth_session_id=pre_auth_session_id,

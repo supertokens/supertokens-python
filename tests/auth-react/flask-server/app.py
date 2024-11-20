@@ -314,7 +314,7 @@ from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
-    async def get_user_info(  # pylint: disable=no-self-use
+    async def get_user_info(
         oauth_tokens: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> UserInfo:
@@ -1007,7 +1007,7 @@ def custom_init():
 
     global accountlinking_config
 
-    accountlinking_config_input = {
+    accountlinking_config_input: Dict[str, Any] = {
         "enabled": False,
         "shouldAutoLink": {
             "shouldAutomaticallyLink": True,
@@ -1028,10 +1028,10 @@ def custom_init():
     ]:
         should_auto_link = accountlinking_config_input["shouldAutoLink"]
         assert isinstance(should_auto_link, dict)
-        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]
+        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]  # type: ignore
         assert isinstance(should_automatically_link, bool)
         if should_automatically_link:
-            should_require_verification = should_auto_link["shouldRequireVerification"]
+            should_require_verification = should_auto_link["shouldRequireVerification"]  # type: ignore
             assert isinstance(should_require_verification, bool)
             return accountlinking.ShouldAutomaticallyLink(
                 should_require_verification=should_require_verification
@@ -1187,7 +1187,7 @@ def setup_tenant():
         raise Exception("Should never come here")
     tenant_id = body["tenantId"]
     login_methods = body["loginMethods"]
-    core_config = "coreConfig" in body and body["coreConfig"] or {}
+    core_config: Dict[str, Any] = "coreConfig" in body and body["coreConfig"] or {}
 
     first_factors: List[str] = []
     if login_methods.get("emailPassword", {}).get("enabled") == True:

@@ -50,6 +50,7 @@ class CachedKeys:
 cached_keys: Optional[CachedKeys] = None
 mutex = RWMutex()
 
+
 # only for testing purposes
 def reset_jwks_cache():
     with RWLockContext(mutex, read=False):

@@ -218,9 +218,7 @@ class GenericProvider(Provider):
         )
         super().__init__(input_config.third_party_id, provider_config_for_client)
 
-    def _normalize_input(  # pylint: disable=no-self-use
-        self, input_config: ProviderConfig
-    ) -> ProviderConfig:
+    def _normalize_input(self, input_config: ProviderConfig) -> ProviderConfig:
         if input_config.user_info_map is None:
             input_config.user_info_map = UserInfoMap(
                 from_id_token_payload=UserFields(),
@@ -368,9 +366,9 @@ class GenericProvider(Provider):
 
         # Transformation needed for dev keys BEGIN
         if is_using_oauth_development_client_id(self.config.client_id):
-            access_token_params[
-                "client_id"
-            ] = get_actual_client_id_from_development_client_id(self.config.client_id)
+            access_token_params["client_id"] = (
+                get_actual_client_id_from_development_client_id(self.config.client_id)
+            )
             access_token_params["redirect_uri"] = DEV_OAUTH_REDIRECT_URL
         # Transformation needed for dev keys END
 

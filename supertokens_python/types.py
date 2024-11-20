@@ -75,9 +75,9 @@ class LoginMethod(AccountInfo):
         verified: bool,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[
-            "emailpassword", "thirdparty", "passwordless"
-        ] = recipe_id
+        self.recipe_id: Literal["emailpassword", "thirdparty", "passwordless"] = (
+            recipe_id
+        )
         self.recipe_user_id = RecipeUserId(recipe_user_id)
         self.tenant_ids: List[str] = tenant_ids
         self.time_joined = time_joined

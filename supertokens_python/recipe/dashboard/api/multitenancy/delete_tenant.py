@@ -30,9 +30,9 @@ class DeleteTenantOkResult(APIResponse):
 
 class DeleteTenantCannotDeletePublicTenantError(APIResponse):
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal["CANNOT_DELETE_PUBLIC_TENANT_ERROR"] = (
             "CANNOT_DELETE_PUBLIC_TENANT_ERROR"
-        ] = "CANNOT_DELETE_PUBLIC_TENANT_ERROR"
+        )
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}

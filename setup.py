@@ -15,30 +15,26 @@ extras_require = {
     # on changes in these frameworks
     "fastapi": (
         [
-            "respx==0.19.2",
-            "Fastapi",
-            "uvicorn==0.18.2",
-            "python-dotenv==0.19.2",
-            "pyotp<3",
-            "aiofiles==23.2.1",
+            "respx==0.21.1",
+            "fastapi",
+            "uvicorn",
+            "python-dotenv==1.0.1",
         ]
     ),
     "flask": (
         [
-            "flask_cors",
-            "Flask",
-            "python-dotenv==0.19.2",
-            "pyotp<3",
+            "flask-cors",
+            "flask",
+            "python-dotenv==1.0.1",
         ]
     ),
     "django": (
         [
-            "django-cors-headers==3.11.0",
+            "django-cors-headers",
             "django>=3",
-            "django-stubs==1.9.0",
-            "uvicorn==0.18.2",
-            "python-dotenv==0.19.2",
-            "pyotp<3",
+            "django-stubs",
+            "uvicorn",
+            "python-dotenv==1.0.1",
         ]
     ),
     "django2x": (
@@ -46,23 +42,21 @@ extras_require = {
             "django-cors-headers==3.11.0",
             "django>=2,<3",
             "django-stubs==1.9.0",
-            "gunicorn==20.1.0",
-            "python-dotenv==0.19.2",
-            "pyotp<3",
+            "gunicorn",
+            "python-dotenv==1.0.1",
         ]
     ),
     "drf": (
         [
             "adrf",
-            "django-cors-headers==3.11.0",
+            "django-cors-headers",
             "django>=4",
-            "django-stubs==1.9.0",
+            "django-stubs",
             "djangorestframework",
-            "gunicorn==20.1.0",
-            "uvicorn==0.18.2",
-            "python-dotenv==0.19.2",
-            "tzdata==2021.5",
-            "pyotp<3",
+            "gunicorn",
+            "uvicorn",
+            "python-dotenv==1.0.1",
+            "tzdata",
         ]
     ),
 }
@@ -89,7 +83,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.25.1",
+    version="0.26.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -122,16 +116,16 @@ setup(
         # [crypto] ensures that it installs the `cryptography` library as well
         # based on constraints specified in https://github.com/jpadilla/pyjwt/blob/master/setup.cfg#L50
         "PyJWT[crypto]>=2.5.0,<3.0.0",
-        "httpx>=0.15.0,<=0.26.0",
-        "pycryptodome==3.10.*",
-        "tldextract==3.1.0",
+        "httpx>=0.15.0,<=0.27.2",
+        "pycryptodome<3.21.0",
+        "tldextract<5.1.3",
         "asgiref>=3.4.1,<4",
         "typing_extensions>=4.1.1,<5.0.0",
-        "Deprecated==1.2.13",
+        "Deprecated<1.3.0",
         "phonenumbers<9",
         "twilio<10",
         "aiosmtplib>=1.1.6,<4.0.0",
-        "pkce==1.0.3",
+        "pkce<1.1.0",
         "pyotp<3",
     ],
     python_requires=">=3.7",

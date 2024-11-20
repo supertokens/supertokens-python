@@ -16,42 +16,42 @@ from supertokens_python.recipe.session.utils import normalise_session_scope
 
 
 class TestNormaliseSessionScope:
-    def test_empty_string(self):  # pylint: disable=no-self-use
+    def test_empty_string(self):
         try:
             normalise_session_scope("")
             assert False
         except Exception as e:
             assert str(e) == "Please provide a valid session_scope"
 
-    def test_with_leading_dot(self):  # pylint: disable=no-self-use
+    def test_with_leading_dot(self):
         result = normalise_session_scope(".example.com")
         assert result == ".example.com"
 
-    def test_without_leading_dot(self):  # pylint: disable=no-self-use
+    def test_without_leading_dot(self):
         result = normalise_session_scope("example.com")
         assert result == "example.com"
 
-    def test_with_http_prefix(self):  # pylint: disable=no-self-use
+    def test_with_http_prefix(self):
         result = normalise_session_scope("http://example.com")
         assert result == "example.com"
 
-    def test_with_https_prefix(self):  # pylint: disable=no-self-use
+    def test_with_https_prefix(self):
         result = normalise_session_scope("https://example.com")
         assert result == "example.com"
 
-    def test_with_ip_address(self):  # pylint: disable=no-self-use
+    def test_with_ip_address(self):
         result = normalise_session_scope("192.168.1.1")
         assert result == "192.168.1.1"
 
-    def test_with_localhost(self):  # pylint: disable=no-self-use
+    def test_with_localhost(self):
         result = normalise_session_scope("localhost")
         assert result == "localhost"
 
-    def test_with_leading_trailing_whitespace(self):  # pylint: disable=no-self-use
+    def test_with_leading_trailing_whitespace(self):
         result = normalise_session_scope("  example.com  ")
         assert result == "example.com"
 
-    def test_with_subdomain(self):  # pylint: disable=no-self-use
+    def test_with_subdomain(self):
         assert normalise_session_scope("sub.example.com") == "sub.example.com"
         assert normalise_session_scope("http://sub.example.com") == "sub.example.com"
         assert normalise_session_scope("https://sub.example.com") == "sub.example.com"

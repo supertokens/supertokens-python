@@ -53,7 +53,7 @@ class Validator(SessionClaimValidator):
         factor_id: str,
     ):
         super().__init__(id_)
-        self.claim: MultiFactorAuthClaimClass = claim
+        self.claim = claim
         self.factors_set_up_for_user = factors_set_up_for_user
         self.factor_id = factor_id
         self.mfa_requirement_for_auth = mfa_requirement_for_auth
@@ -61,11 +61,20 @@ class Validator(SessionClaimValidator):
     def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -> bool:
+        if self.claim is None:
+            raise Exception("should never happen")
+
         return self.claim.get_value_from_payload(payload) is None
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
+        if self.claim is None:
+            raise Exception("should never happen")
+
+        if not isinstance(self.claim, MultiFactorAuthClaimClass):
+            raise Exception("should never happen")
+
         claim_val: MFAClaimValue | None = self.claim.get_value_from_payload(payload)
 
         if claim_val is None:

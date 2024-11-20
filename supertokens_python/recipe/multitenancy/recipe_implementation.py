@@ -139,9 +139,9 @@ class RecipeImplementation(RecipeInterface):
             if not config.is_first_factors_unchanged():
                 json_body["firstFactors"] = config.get_first_factors_for_update()
             if not config.is_required_secondary_factors_unchanged():
-                json_body[
-                    "requiredSecondaryFactors"
-                ] = config.get_required_secondary_factors_for_update()
+                json_body["requiredSecondaryFactors"] = (
+                    config.get_required_secondary_factors_for_update()
+                )
             json_body["coreConfig"] = config.core_config
 
         response = await self.querier.send_put_request(

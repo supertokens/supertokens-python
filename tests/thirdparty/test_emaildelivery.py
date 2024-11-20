@@ -71,7 +71,7 @@ def teardown_function(_):
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -95,7 +95,7 @@ def CustomProvider(provider_id: str) -> thirdparty.ProviderInput:
                 email=UserInfoEmail(oauth_tokens["email"], True),
             )
 
-        original_implementation.get_user_info = get_user_info
+        original_implementation.get_user_info = get_user_info  # type: ignore
         return original_implementation
 
     return thirdparty.ProviderInput(
@@ -463,8 +463,8 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
                 is_html=False,
             )
 
-        oi.send_raw_email = send_raw_email_override
-        oi.get_content = get_content_override
+        oi.send_raw_email = send_raw_email_override  # type: ignore
+        oi.get_content = get_content_override  # type: ignore
 
         return oi
 

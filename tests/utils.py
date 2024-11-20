@@ -21,11 +21,12 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast, Optional
+from typing import Any, Dict, List, Union, cast, Optional
 from urllib.parse import unquote
 
 from fastapi.testclient import TestClient
-from requests.models import Response
+from requests.models import Response as RequestsResponse
+from httpx import Response as HTTPXResponse
 from yaml import FullLoader, dump, load
 
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
@@ -232,14 +233,18 @@ def reset(stop_core: bool = True):
     TOTPRecipe.reset()
 
 
-def get_cookie_from_response(response: Response, cookie_name: str):
+def get_cookie_from_response(
+    response: Union[RequestsResponse, HTTPXResponse], cookie_name: str
+):
     cookies = extract_all_cookies(response)
     if cookie_name in cookies:
         return cookies[cookie_name]
     return None
 
 
-def extract_all_cookies(response: Response) -> Dict[str, Any]:
+def extract_all_cookies(
+    response: Union[RequestsResponse, HTTPXResponse]
+) -> Dict[str, Any]:
     if response.headers.get("set-cookie") is None:
         return {}
     cookie_headers = SimpleCookie(response.headers.get("set-cookie"))  # type: ignore
@@ -258,7 +263,7 @@ def extract_all_cookies(response: Response) -> Dict[str, Any]:
     return cookies
 
 
-def extract_info(response: Response) -> Dict[str, Any]:
+def extract_info(response: Union[RequestsResponse, HTTPXResponse]) -> Dict[str, Any]:
     cookies = extract_all_cookies(response)
     access_token = cookies.get("sAccessToken", {}).get("value")
     refresh_token = cookies.get("sRefreshToken", {}).get("value")
@@ -424,7 +429,7 @@ def email_verify_token_request(
             cookies={
                 "sAccessToken": accessToken,
             },
-            data=str.encode(userId),
+            data=userId,  # type: ignore
         )
         return resp
     finally:
@@ -466,7 +471,7 @@ def get_core_api_version() -> str:
     try:
         # If ST has been already initialized:
         core_version = cast(loop.run_until_complete(asyncio.gather(get_api_version())), str)  # type: ignore
-        return core_version
+        return core_version  # type: ignore
     except Exception:
         pass
 
@@ -555,19 +560,17 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
     """
     if isinstance(dict1, list):
         if isinstance(dict2, list):
-            for item in dict2:  # pyright: reportUnknownVariableType=false
+            for item in dict2:  # type: ignore
                 if item not in dict1:
                     return False
             return True
         return False
     if isinstance(dict1, dict):
         if isinstance(dict2, dict):
-            for key, value in dict2.items():
+            for key, value in dict2.items():  # type: ignore
                 if key not in dict1:
                     return False
-                if not is_subset(
-                    dict1[key], value
-                ):  # pyright: reportUnknownArgumentType=false
+                if not is_subset(dict1[key], value):
                     return False
             return True
         return False

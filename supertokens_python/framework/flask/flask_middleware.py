@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework import BaseResponse
@@ -103,7 +103,7 @@ class Middleware:
             base_request = FlaskRequest(request)
             user_context = default_user_context(base_request)
 
-            result: BaseResponse = sync(
+            result: Optional[BaseResponse] = sync(
                 st.handle_supertokens_error(
                     base_request,
                     error,
@@ -111,6 +111,9 @@ class Middleware:
                     user_context,
                 )
             )
-            if isinstance(result, FlaskResponse):
+            if result is not None:
+                if not isinstance(result, FlaskResponse):
+                    raise Exception("should never happen")
+
                 return result.response
             raise Exception("Should never come here")

@@ -42,7 +42,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[PrimitiveList] = claim  # TODO:PrimitiveArrayClaim
+        self.claim = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -52,6 +52,9 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         user_context: Dict[str, Any],
     ) -> bool:
         claim = self.claim
+
+        if claim is None:
+            raise Exception("should never happen")
 
         return (claim.get_value_from_payload(payload, user_context) is None) or (
             self.max_age_in_sec is not None
@@ -103,9 +106,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
 
         # Doing this to ensure same code in the upcoming steps irrespective of
         # whether self.val is Primitive or PrimitiveList
-        vals: List[JSONPrimitive] = (
-            val if isinstance(val, list) else [val]
-        )  # pyright: reportGeneralTypeIssues=false
+        vals: List[_T] = val if isinstance(val, list) else [val]
 
         claim_val_set = set(claim_val)
         if is_include and not is_include_any:

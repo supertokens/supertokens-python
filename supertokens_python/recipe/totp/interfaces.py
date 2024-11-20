@@ -60,7 +60,11 @@ class RecipeInterface(ABC):
         skew: Optional[int],
         period: Optional[int],
         user_context: Dict[str, Any],
-    ) -> Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
+    ) -> Union[
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        UnknownUserIdError,
+    ]:
         pass
 
     @abstractmethod
@@ -70,7 +74,11 @@ class RecipeInterface(ABC):
         existing_device_name: str,
         new_device_name: str,
         user_context: Dict[str, Any],
-    ) -> Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
+    ) -> Union[
+        UpdateDeviceOkResult,
+        UnknownDeviceError,
+        DeviceAlreadyExistsError,
+    ]:
         pass
 
     @abstractmethod

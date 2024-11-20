@@ -52,7 +52,7 @@ pytestmark = mark.asyncio
 
 
 @fixture(scope="function")
-async def app():
+def app():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -68,7 +68,7 @@ async def test_dashboard_recipe(app: TestClient):
         ) -> bool:
             return True
 
-        oi.should_allow_access = should_allow_access
+        oi.should_allow_access = should_allow_access  # type: ignore
         return oi
 
     st_args = get_st_init_args(
@@ -102,7 +102,7 @@ async def test_dashboard_users_get(app: TestClient):
         ) -> bool:
             return True
 
-        oi.should_allow_access = should_allow_access
+        oi.should_allow_access = should_allow_access  # type: ignore
         return oi
 
     st_args = get_st_init_args(
@@ -227,7 +227,7 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
         ) -> bool:
             return True
 
-        oi.should_allow_access = should_allow_access
+        oi.should_allow_access = should_allow_access  # type: ignore
         return oi
 
     st_args = get_st_init_args(

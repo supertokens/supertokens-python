@@ -257,9 +257,9 @@ class PasswordlessRecipe(RecipeModule):
                         if FactorIds.OTP_EMAIL in all_factors:
                             factor_id_to_emails_map[FactorIds.OTP_EMAIL] = emails_result
                         if FactorIds.LINK_EMAIL in all_factors:
-                            factor_id_to_emails_map[
-                                FactorIds.LINK_EMAIL
-                            ] = emails_result
+                            factor_id_to_emails_map[FactorIds.LINK_EMAIL] = (
+                                emails_result
+                            )
                         return GetEmailsForFactorOkResult(
                             factor_id_to_emails_map=factor_id_to_emails_map
                         )
@@ -267,13 +267,13 @@ class PasswordlessRecipe(RecipeModule):
                         # Return just this email to avoid creating more loginMethods
                         factor_id_to_emails_map = {}
                         if FactorIds.OTP_EMAIL in all_factors:
-                            factor_id_to_emails_map[
-                                FactorIds.OTP_EMAIL
-                            ] = non_fake_emails_passwordless
+                            factor_id_to_emails_map[FactorIds.OTP_EMAIL] = (
+                                non_fake_emails_passwordless
+                            )
                         if FactorIds.LINK_EMAIL in all_factors:
-                            factor_id_to_emails_map[
-                                FactorIds.LINK_EMAIL
-                            ] = non_fake_emails_passwordless
+                            factor_id_to_emails_map[FactorIds.LINK_EMAIL] = (
+                                non_fake_emails_passwordless
+                            )
                         return GetEmailsForFactorOkResult(
                             factor_id_to_emails_map=factor_id_to_emails_map
                         )
@@ -294,7 +294,7 @@ class PasswordlessRecipe(RecipeModule):
                         ]
                     )
 
-                    factor_id_to_emails_map = {}
+                    factor_id_to_emails_map: Dict[str, List[str]] = {}
                     if FactorIds.OTP_EMAIL in all_factors:
                         factor_id_to_emails_map[FactorIds.OTP_EMAIL] = emails_result
                     if FactorIds.LINK_EMAIL in all_factors:
@@ -369,15 +369,15 @@ class PasswordlessRecipe(RecipeModule):
                             ]
                         )
 
-                    factor_id_to_phone_number_map = {}
+                    factor_id_to_phone_number_map: Dict[str, List[str]] = {}
                     if FactorIds.OTP_PHONE in all_factors:
-                        factor_id_to_phone_number_map[
-                            FactorIds.OTP_PHONE
-                        ] = phones_result
+                        factor_id_to_phone_number_map[FactorIds.OTP_PHONE] = (
+                            phones_result
+                        )
                     if FactorIds.LINK_PHONE in all_factors:
-                        factor_id_to_phone_number_map[
-                            FactorIds.LINK_PHONE
-                        ] = phones_result
+                        factor_id_to_phone_number_map[FactorIds.LINK_PHONE] = (
+                            phones_result
+                        )
 
                     return GetPhoneNumbersForFactorsOkResult(
                         factor_id_to_phone_number_map=factor_id_to_phone_number_map
