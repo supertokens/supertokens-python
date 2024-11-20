@@ -22,6 +22,7 @@ jobs:
         type: string
     steps:
       - checkout
+      - run: apt update && apt install -y jq
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: (cd .circleci/ && ./installJava.sh)
       - run: make dev-install
