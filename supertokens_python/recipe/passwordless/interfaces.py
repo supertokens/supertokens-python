@@ -183,6 +183,12 @@ class CheckCodeOkResult:
         self.status = "OK"
         self.consumed_device = consumed_device
 
+    def to_json(self):
+        return {
+            "status": self.status,
+            "consumedDevice": self.consumed_device.to_json(),
+        }
+
 
 class CheckCodeIncorrectUserInputCodeError(ConsumeCodeIncorrectUserInputCodeError):
     pass
