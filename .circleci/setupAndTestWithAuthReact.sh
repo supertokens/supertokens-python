@@ -65,6 +65,10 @@ cd ../../../../supertokens-auth-react/
 
 # SKIP_OAUTH=true npm run test-with-non-node
 
+mkdir -p ~/test_report/logs
+mkdir -p ~/test_report/react-logs
+mkdir -p ~/test_report/screenshots
+
 echo "Running tests with React 18"
 # Run node server in background.
 if [[ "${SERVER_STARTED}" != "true" ]]; then
@@ -89,10 +93,6 @@ done
 
 sleep 2 # Because the server is responding does not mean the app is ready. Let's wait another 2secs to make sure the app is up.
 
-
-mkdir -p ~/test_report/logs
-mkdir -p ~/test_report/react-logs
-mkdir -p ~/test_report/screenshots
 
 echo "Start mocha testing"
 
