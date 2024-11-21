@@ -71,8 +71,6 @@ mkdir -p ~/test_report/logs
 mkdir -p ~/test_report/react-logs
 mkdir -p ~/test_report/screenshots
 
-npm i -g mocha
-
 echo "Running tests with React 18"
 # Run node server in background.
 if [[ "${SERVER_STARTED}" != "true" ]]; then
@@ -105,7 +103,7 @@ if ! [[ -z "${CI}" ]]; then
     echo "Selected spec files: $SPEC_FILES, $CIRCLE_NODE_TOTAL/$CIRCLE_NODE_INDEX"
 fi
 
-SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing mocha --bail=$BAIL --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config $SPEC_FILES
+SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing npx mocha --bail=$BAIL --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config $SPEC_FILES
 testPassed=$?;
 
 if [[ $testPassed -ne 0 ]]
