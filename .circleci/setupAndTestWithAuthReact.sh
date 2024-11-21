@@ -69,6 +69,8 @@ mkdir -p ~/test_report/logs
 mkdir -p ~/test_report/react-logs
 mkdir -p ~/test_report/screenshots
 
+apiPort=8083
+
 echo "Running tests with React 18"
 # Run node server in background.
 if [[ "${SERVER_STARTED}" != "true" ]]; then
