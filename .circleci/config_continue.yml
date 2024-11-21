@@ -20,6 +20,7 @@ jobs:
         type: string
       python-version:
         type: string
+    parallelism: 4
     steps:
       - checkout
       - run: apt update && apt install -y bc jq lsof
@@ -27,6 +28,8 @@ jobs:
       - run: (cd .circleci/ && ./installJava.sh)
       - run: make dev-install
       - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
+      - store_test_results:
+        path: test-results/junit.xml
       - slack/status
   test-backend-sdk-testing:
     docker:

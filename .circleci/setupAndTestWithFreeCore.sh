@@ -49,4 +49,8 @@ cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../project/
-INSTALL_DIR=../supertokens-root make test
+
+export INSTALL_DIR=../supertokens-root
+mkdir test-results
+TEST_FILES=$(circleci tests glob "**/test_*.py")
+echo "$TEST_FILES" | circleci tests run --command="xargs pytest -vv --reruns 3 --reruns-delay 5 -o junit_family=legacy --junitxml=test-results/junit.xml" --verbose --split-by=timings
