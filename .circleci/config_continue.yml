@@ -198,7 +198,7 @@ jobs:
     docker:
       - image: python:<< parameters.python-version >>
     environment:
-      MOCHA_FILE: test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
         type: string
@@ -229,7 +229,7 @@ jobs:
       - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
-      MOCHA_FILE: test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
         type: string
@@ -260,7 +260,7 @@ jobs:
       - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
-      MOCHA_FILE: test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
         type: string
