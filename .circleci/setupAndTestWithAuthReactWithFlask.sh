@@ -67,6 +67,25 @@ cd ../../../../supertokens-auth-react/
 
 # SKIP_OAUTH=true npm run test-with-non-node
 
+# Exit script from startEndToEnd func.
+trap "exit 1" TERM
+export EXIT_PID=$$
+
+function killServers () {
+    if [[ "${SERVER_STARTED}" != "true" ]]; then
+        echo "Kill servers."
+        lsof -i tcp:8082 | grep -m 1 node | awk '{printf $2}' | cut -c 1- | xargs -I {} kill -9 {} > /dev/null 2>&1
+        lsof -i tcp:3031 | grep -m 1 node | awk '{printf $2}' | cut -c 1- | xargs -I {} kill -9 {} > /dev/null 2>&1
+    else
+        echo "Leaving servers running because SERVER_STARTED=true"
+    fi
+}
+
+trap "killServers" EXIT # Trap to execute on script shutdown
+
+# Start by killing any servers up on 8082 and 3031 if any.
+killServers
+
 mkdir -p ~/test_report/logs
 mkdir -p ~/test_report/react-logs
 mkdir -p ~/test_report/screenshots
@@ -107,6 +126,9 @@ fi
 
 SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing npx mocha --bail=$BAIL --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config $SPEC_FILES
 testPassed=$?;
+
+echo "testPassed exit code: $testPassed"
+killServers
 
 if [[ $testPassed -ne 0 ]]
 then
