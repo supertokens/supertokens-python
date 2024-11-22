@@ -117,12 +117,9 @@ sleep 2 # Because the server is responding does not mean the app is ready. Let's
 
 echo "Start mocha testing"
 
-if ! [[ -z "${CI}" ]]; then
-    export SPEC_FILES=$(circleci tests glob 'test/end-to-end/**/*.test.js' 'test/unit/**/*.test.js')
-    echo "Selected spec files: $SPEC_FILES, $CIRCLE_NODE_TOTAL/$CIRCLE_NODE_INDEX"
-fi
+export SPEC_FILES=$(circleci tests glob 'test/end-to-end/**/*.test.js' 'test/unit/**/*.test.js')
+echo $SPEC_FILES | SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing multi="spec=- mocha-junit-reporter=/dev/null" circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config" --verbose --split-by=timings
 
-SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing npx mocha --bail=$BAIL --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config $SPEC_FILES
 testPassed=$?;
 
 echo "testPassed exit code: $testPassed"
