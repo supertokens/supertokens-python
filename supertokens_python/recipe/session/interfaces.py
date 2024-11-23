@@ -25,10 +25,15 @@ from typing import (
     TypeVar,
     Union,
 )
+
 from typing_extensions import TypedDict
 
-from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
+from supertokens_python.async_to_sync.base import sync
+from supertokens_python.types import (
+    APIResponse,
+    GeneralErrorResponse,
+    MaybeAwaitable,
+)
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError

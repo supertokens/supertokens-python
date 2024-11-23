@@ -15,7 +15,7 @@ from functools import wraps
 from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
 
 from supertokens_python import Supertokens
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.framework.flask.flask_response import FlaskResponse
 from supertokens_python.recipe.session import SessionRecipe, SessionContainer

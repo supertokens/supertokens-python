@@ -17,30 +17,9 @@ import asyncio
 from enum import Enum
 from threading import Thread
 from typing import Any, Coroutine, Optional, TypeVar, Union
-from os import getenv
+from supertokens_python.async_to_sync.utils import create_or_get_event_loop
 
 _T = TypeVar("_T")
-
-
-def nest_asyncio_enabled():
-    return getenv("SUPERTOKENS_NEST_ASYNCIO", "") == "1"
-
-
-def create_or_get_event_loop() -> asyncio.AbstractEventLoop:
-    try:
-        return asyncio.get_event_loop()
-    except Exception as ex:
-        if "There is no current event loop in thread" in str(ex):
-            loop = asyncio.new_event_loop()
-
-            if nest_asyncio_enabled():
-                import nest_asyncio  # type: ignore
-
-                nest_asyncio.apply(loop)  # type: ignore
-
-            asyncio.set_event_loop(loop)
-            return loop
-        raise ex
 
 
 class AsyncType(Enum):
@@ -185,15 +164,6 @@ class EventletHandler(_AsyncHandler):
         future.add_done_callback(lambda _: event.send())  # type: ignore
         event.wait()  # type: ignore
         return future.result()
-
-
-def sync(co: Coroutine[Any, Any, _T]) -> _T:
-    from supertokens_python import supertokens
-
-    st = supertokens.Supertokens.get_instance()
-    handler = st.async_handler
-
-    return handler.run_as_sync(co)
 
 
 ConcreteAsyncHandler = Union[

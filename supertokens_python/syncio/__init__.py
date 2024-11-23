@@ -14,7 +14,7 @@
 from typing import Dict, List, Optional, Union, Any
 
 from supertokens_python import Supertokens
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.interfaces import (
     CreateUserIdMappingOkResult,
     DeleteUserIdMappingOkResult,

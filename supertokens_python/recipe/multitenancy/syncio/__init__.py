@@ -12,12 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Any, Dict, Optional, TYPE_CHECKING
 
-from supertokens_python.async_to_sync_wrapper import sync
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+from supertokens_python.async_to_sync.base import sync
 
 if TYPE_CHECKING:
-    from ..interfaces import TenantConfig, ProviderConfig
+    from ..interfaces import ProviderConfig, TenantConfig
 
 
 def create_or_update_tenant(

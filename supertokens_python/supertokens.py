@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Unio
 
 from typing_extensions import Literal
 
-from supertokens_python.async_to_sync_wrapper import (
+from supertokens_python.async_to_sync.handler import (
     ConcreteAsyncHandler,
     DefaultHandler,
 )

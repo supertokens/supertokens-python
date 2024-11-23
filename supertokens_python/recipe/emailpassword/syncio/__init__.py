@@ -11,9 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 from ..interfaces import SignInOkResult, SignInWrongCredentialsError
 from ..types import EmailTemplateVars, User

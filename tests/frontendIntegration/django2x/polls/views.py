@@ -52,7 +52,7 @@ from supertokens_python.utils import is_version_gte
 from supertokens_python.recipe.session.syncio import get_session_information
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 protected_prop_name = {
     "sub",

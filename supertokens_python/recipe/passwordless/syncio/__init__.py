@@ -13,7 +13,7 @@
 # under the License.
 from typing import Any, Dict, List, Union
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,

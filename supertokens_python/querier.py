@@ -38,7 +38,7 @@ from typing import List, Set, Union
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
 from sniffio import AsyncLibraryNotFoundError
-from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
+from supertokens_python.async_to_sync.utils import create_or_get_event_loop
 from supertokens_python.utils import get_timestamp_ms
 
 
