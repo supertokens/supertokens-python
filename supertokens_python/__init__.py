@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
+from supertokens_python import async_to_sync_wrapper
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.types import RecipeUserId
 
@@ -36,9 +37,17 @@ def init(
     mode: Optional[Literal["asgi", "wsgi"]] = None,
     telemetry: Optional[bool] = None,
     debug: Optional[bool] = None,
+    async_handler: Optional[async_to_sync_wrapper.ConcreteAsyncHandler] = None,
 ):
     return Supertokens.init(
-        app_info, framework, supertokens_config, recipe_list, mode, telemetry, debug
+        app_info=app_info,
+        framework=framework,
+        supertokens_config=supertokens_config,
+        recipe_list=recipe_list,
+        mode=mode,
+        telemetry=telemetry,
+        debug=debug,
+        async_handler=async_handler,
     )
 
 
