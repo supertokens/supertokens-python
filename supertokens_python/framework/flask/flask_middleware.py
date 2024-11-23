@@ -56,7 +56,6 @@ class Middleware:
             result: Union[BaseResponse, None] = sync(
                 st.middleware(request_, response_, user_context),
             )
-            # result = await st.middleware(request_, response_, user_context)
 
             if result is not None:
                 if isinstance(result, FlaskResponse):
@@ -112,12 +111,6 @@ class Middleware:
                     user_context,
                 ),
             )
-            # result: BaseResponse = await st.handle_supertokens_error(
-            #     base_request,
-            #     error,
-            #     FlaskResponse(response),
-            #     user_context,
-            # )
 
             if isinstance(result, FlaskResponse):
                 return result.response
