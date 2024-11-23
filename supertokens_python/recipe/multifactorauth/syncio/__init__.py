@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, List
 
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 
 def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(

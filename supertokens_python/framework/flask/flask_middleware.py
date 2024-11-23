@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Union
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.framework import BaseResponse
 
 if TYPE_CHECKING:
@@ -54,13 +54,14 @@ class Middleware:
             user_context = default_user_context(request_)
 
             result: Union[BaseResponse, None] = sync(
-                st.middleware(request_, response_, user_context)
+                st.middleware(request_, response_, user_context),
             )
+            # result = await st.middleware(request_, response_, user_context)
 
             if result is not None:
                 if isinstance(result, FlaskResponse):
                     return result.response
-                raise Exception("Should never come here")
+                raise Exception(f"Should never come here, {type(result)=}")
             return None
 
         @app.after_request
@@ -109,8 +110,15 @@ class Middleware:
                     error,
                     FlaskResponse(response),
                     user_context,
-                )
+                ),
             )
+            # result: BaseResponse = await st.handle_supertokens_error(
+            #     base_request,
+            #     error,
+            #     FlaskResponse(response),
+            #     user_context,
+            # )
+
             if isinstance(result, FlaskResponse):
                 return result.response
             raise Exception("Should never come here")

@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, List, Optional, Union
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.session import SessionContainer

@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
-from supertokens_python import async_to_sync_wrapper, convert_to_recipe_user_id
+from supertokens_python import convert_to_recipe_user_id
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.recipe.accountlinking.syncio import can_create_primary_user
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.syncio import is_sign_in_allowed
@@ -233,7 +234,7 @@ def add_accountlinking_routes(app: Flask):
         assert request.json is not None
         recipe_user_id = convert_to_recipe_user_id(request.json["recipeUserId"])
         user = User.from_json(request.json["user"])
-        async_to_sync_wrapper.sync(
+        sync(
             AccountLinkingRecipe.get_instance().verify_email_for_recipe_user_if_linked_accounts_are_verified(
                 user=user,
                 recipe_user_id=recipe_user_id,
