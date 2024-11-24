@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 
-from supertokens_python import async_to_sync_wrapper
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenOkResult,
@@ -116,7 +116,7 @@ def add_emailverification_routes(app: Flask):
         )
         session = convert_session_to_container(data) if "session" in data else None
 
-        session_resp = async_to_sync_wrapper.sync(
+        session_resp = sync(
             EmailVerificationRecipe.get_instance_or_throw().update_session_if_required_post_email_verification(
                 recipe_user_id_whose_email_got_verified=recipe_user_id_whose_email_got_verified,
                 session=session,

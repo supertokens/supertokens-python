@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union, Optional
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 from supertokens_python.recipe.totp.types import (
     CreateDeviceOkResult,

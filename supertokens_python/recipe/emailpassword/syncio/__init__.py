@@ -14,7 +14,7 @@
 from typing import Any, Dict, Union, Optional
 from typing_extensions import Literal
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,

@@ -1,6 +1,6 @@
 from typing import Any, Dict, Union
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 
 def get_user_metadata(user_id: str, user_context: Union[Dict[str, Any], None] = None):

@@ -51,7 +51,7 @@ from supertokens_python.recipe.session.syncio import (
 )
 from supertokens_python.recipe.session.framework.django.syncio import verify_session
 from supertokens_python.recipe.session.syncio import merge_into_access_token_payload
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 from supertokens_python.constants import VERSION
 from supertokens_python.types import RecipeUserId

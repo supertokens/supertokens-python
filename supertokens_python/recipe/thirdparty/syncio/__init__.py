@@ -13,7 +13,7 @@
 # under the License.
 from typing import Any, Dict, Optional, Union
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.interfaces import (

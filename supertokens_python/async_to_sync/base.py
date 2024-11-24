@@ -12,34 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import asyncio
 from typing import Any, Coroutine, TypeVar
-from os import getenv
 
 _T = TypeVar("_T")
 
 
-def nest_asyncio_enabled():
-    return getenv("SUPERTOKENS_NEST_ASYNCIO", "") == "1"
-
-
-def create_or_get_event_loop() -> asyncio.AbstractEventLoop:
-    try:
-        return asyncio.get_event_loop()
-    except Exception as ex:
-        if "There is no current event loop in thread" in str(ex):
-            loop = asyncio.new_event_loop()
-
-            if nest_asyncio_enabled():
-                import nest_asyncio  # type: ignore
-
-                nest_asyncio.apply(loop)  # type: ignore
-
-            asyncio.set_event_loop(loop)
-            return loop
-        raise ex
-
-
 def sync(co: Coroutine[Any, Any, _T]) -> _T:
-    loop = create_or_get_event_loop()
-    return loop.run_until_complete(co)
+    """
+    Convert async function calls to sync calls using the specified `_AsyncHandler`
+    """
+    # Disabling cyclic import since the import is lazy, and will not cause issues
+    from supertokens_python import supertokens  # pylint: disable=cyclic-import
+
+    st = supertokens.Supertokens.get_instance()
+    handler = st.async_handler
+
+    return handler.run_as_sync(co)

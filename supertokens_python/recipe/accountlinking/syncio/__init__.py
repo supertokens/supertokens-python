@@ -13,7 +13,7 @@
 # under the License.
 from typing import Any, Dict, Optional
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 
 from ..types import AccountInfoWithRecipeId
 from supertokens_python.types import RecipeUserId

@@ -14,7 +14,7 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Union, Callable, Optional, TypeVar
 
-from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )

@@ -19,6 +19,10 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Unio
 
 from typing_extensions import Literal
 
+from supertokens_python.async_to_sync.handler import (
+    ConcreteAsyncHandler,
+    DefaultHandler,
+)
 from supertokens_python.logger import (
     get_maybe_none_as_str,
     log_debug_message,
@@ -211,7 +215,14 @@ class Supertokens:
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
+        async_handler: Optional[ConcreteAsyncHandler],
     ):
+        # Handling async setup before anything else is initialized to prevent event loop issues
+        if async_handler is None:
+            async_handler = DefaultHandler()
+
+        self.async_handler = async_handler
+
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 
@@ -301,6 +312,7 @@ class Supertokens:
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
+        async_handler: Optional[ConcreteAsyncHandler],
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
@@ -311,6 +323,7 @@ class Supertokens:
                 mode,
                 telemetry,
                 debug,
+                async_handler=async_handler,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 

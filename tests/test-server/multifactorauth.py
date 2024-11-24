@@ -1,7 +1,7 @@
 from typing import List
 from flask import Flask, request, jsonify
 
-from supertokens_python import async_to_sync_wrapper
+from supertokens_python.async_to_sync.base import sync
 from supertokens_python.recipe.multifactorauth.types import MFAClaimValue
 from supertokens_python.types import User
 
@@ -15,7 +15,7 @@ def add_multifactorauth_routes(app: Flask):
         )
 
         assert request.json is not None
-        response: MFAClaimValue = async_to_sync_wrapper.sync(  # type: ignore
+        response: MFAClaimValue = sync(  # type: ignore
             MultiFactorAuthClaim.fetch_value(  # type: ignore
                 request.json["_userId"],
                 convert_to_recipe_user_id(request.json["recipeUserId"]),
@@ -184,7 +184,7 @@ def add_multifactorauth_routes(app: Flask):
             assert request.json is not None
             return request.json["requiredSecondaryFactorsForTenant"]
 
-        response = async_to_sync_wrapper.sync(
+        response = sync(
             MultiFactorAuthRecipe.get_instance_or_throw_error().recipe_implementation.get_mfa_requirements_for_auth(
                 tenant_id=request.json["tenantId"],
                 access_token_payload=request.json["accessTokenPayload"],
