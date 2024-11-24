@@ -18,6 +18,10 @@ _T = TypeVar("_T")
 
 
 def sync(co: Coroutine[Any, Any, _T]) -> _T:
+    """
+    Convert async function calls to sync calls using the specified `_AsyncHandler`
+    """
+    # Disabling cyclic import since the import is lazy, and will not cause issues
     from supertokens_python import supertokens  # pylint: disable=cyclic-import
 
     st = supertokens.Supertokens.get_instance()
