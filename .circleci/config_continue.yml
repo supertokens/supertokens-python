@@ -198,7 +198,7 @@ jobs:
     docker:
       - image: python:<< parameters.python-version >>
     environment:
-      MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
         type: string
@@ -217,7 +217,7 @@ jobs:
       - run: make with-fastapi
       - run: (cd .circleci && ./authReactFastApi.sh << parameters.fdi-version >>)
       - store_test_results:
-          path: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+          path: /root/test_report/report_node-<< parameters.fdi-version >>.xml
       - store_artifacts:
           path: ~/test_report/screenshots
           destination: screenshots
@@ -229,7 +229,7 @@ jobs:
       - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
-      MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
         type: string
@@ -248,7 +248,7 @@ jobs:
       - run: make with-flask
       - run: (cd .circleci && ./authReactFlask.sh << parameters.fdi-version >>)
       - store_test_results:
-          path: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+          path: /root/test_report/report_node-<< parameters.fdi-version >>.xml
       - store_artifacts:
           path: ~/test_report/screenshots
           destination: screenshots
@@ -260,7 +260,7 @@ jobs:
       - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
-      MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
         type: string
@@ -279,7 +279,7 @@ jobs:
       - run: make with-django
       - run: (cd .circleci && ./authReactDjango.sh << parameters.fdi-version >>)
       - store_test_results:
-          path: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+          path: /root/test_report/report_node-<< parameters.fdi-version >>.xml
       - store_artifacts:
           path: ~/test_report/screenshots
           destination: screenshots
