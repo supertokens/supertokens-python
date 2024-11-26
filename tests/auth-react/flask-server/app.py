@@ -1473,7 +1473,8 @@ def check_role_api():
 
 @app.route("/", defaults={"path": ""})  # type: ignore
 @app.route("/<path:path>")  # type: ignore
-def index(_: str):
+def index(path: str):
+    _ = path
     return ""
 
 
