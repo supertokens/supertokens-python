@@ -185,6 +185,53 @@ class RedirectResponse:
         self.cookies = cookies
 
 
+class GetOAuth2ClientsOkResult:
+    def __init__(
+        self, clients: List[OAuth2Client], next_pagination_token: Optional[str]
+    ):
+        self.clients = clients
+        self.next_pagination_token = next_pagination_token
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return GetOAuth2ClientsOkResult(
+            clients=[OAuth2Client.from_json(client) for client in json["clients"]],
+            next_pagination_token=json["nextPaginationToken"],
+        )
+
+
+class GetOAuth2ClientOkResult:
+    def __init__(self, client: OAuth2Client):
+        self.client = client
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return GetOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+
+
+class CreateOAuth2ClientOkResult:
+    def __init__(self, client: OAuth2Client):
+        self.client = client
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return CreateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+
+
+class UpdateOAuth2ClientOkResult:
+    def __init__(self, client: OAuth2Client):
+        self.client = client
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return UpdateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+
+
+class DeleteOAuth2ClientOkResult:
+    def __init__(self):
+        pass
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -267,16 +314,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_oauth2_client(
-        self, client_id: str, user_context: Optional[Dict[str, Any]] = None
-    ) -> Union[GetOAuth2ClientOkResult, GetOAuth2ClientErrorResult]:
+    async def get_oauth2_clients(
+        self,
+        page_size: Optional[int] = None,
+        pagination_token: Optional[str] = None,
+        client_name: Optional[str] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
-    async def get_oauth2_clients(
+    async def get_oauth2_client(
         self,
+        client_id: str,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[GetOAuth2ClientsOkResult, GetOAuth2ClientsErrorResult]:
+    ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -290,14 +342,15 @@ class RecipeInterface(ABC):
     async def update_oauth2_client(
         self,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[UpdateOAuth2ClientOkResult, UpdateOAuth2ClientErrorResult]:
+    ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
     async def delete_oauth2_client(
         self,
+        client_id: str,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[DeleteOAuth2ClientOkResult, DeleteOAuth2ClientErrorResult]:
+    ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response\]:
         pass
 
     @abstractmethod

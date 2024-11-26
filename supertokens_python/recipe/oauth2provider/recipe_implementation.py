@@ -214,34 +214,111 @@ class RecipeImplementation(RecipeInterface):
     ) -> Union[TokenInfo, ErrorOAuth2Response]:
         pass
 
-    async def get_oauth2_client(
-        self, client_id: str, user_context: Optional[Dict[str, Any]] = None
-    ) -> Union[GetOAuth2ClientOkResult, GetOAuth2ClientErrorResult]:
-        pass
-
     async def get_oauth2_clients(
         self,
+        page_size: Optional[int] = None,
+        pagination_token: Optional[str] = None,
+        client_name: Optional[str] = None,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[GetOAuth2ClientsOkResult, GetOAuth2ClientsErrorResult]:
-        pass
+    ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
+        body: Dict[str, Any] = {}
+        if page_size is not None:
+            body["pageSize"] = page_size
+        if pagination_token is not None:
+            body["pageToken"] = pagination_token
+        if client_name is not None:
+            body["clientName"] = client_name
+
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/oauth/clients/list"),
+            body,
+            user_context=user_context,
+        )
+
+        if response["status"] == "OK":
+            return GetOAuth2ClientsOkResult(
+                clients=[
+                    OAuth2Client.from_json(client) for client in response["clients"]
+                ],
+                next_pagination_token=response["nextPaginationToken"],
+            )
+
+        return ErrorOAuth2Response(
+            error=response["error"],
+            error_description=response["errorDescription"],
+            status_code=response["statusCode"],
+        )
+
+    async def get_oauth2_client(
+        self, client_id: str, user_context: Optional[Dict[str, Any]] = None
+    ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/oauth/clients"),
+            {"clientId": client_id},
+            user_context=user_context,
+        )
+
+        if response["status"] == "OK":
+            return GetOAuth2ClientOkResult(client=OAuth2Client.from_json(response))
+        elif response["status"] == "CLIENT_NOT_FOUND_ERROR":
+            return ErrorOAuth2Response(
+                error="invalid_request",
+                error_description="The provided client_id is not valid or unknown",
+            )
+        else:
+            return ErrorOAuth2Response(
+                error=response["error"], error_description=response["errorDescription"]
+            )
 
     async def create_oauth2_client(
         self,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[CreateOAuth2ClientOkResult, CreateOAuth2ClientErrorResult]:
-        pass
+    ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/clients"),
+            {},  # Empty dict since no input params in function signature
+            user_context=user_context,
+        )
+
+        if response["status"] == "OK":
+            return CreateOAuth2ClientOkResult(client=OAuth2Client.from_json(response))
+        return ErrorOAuth2Response(
+            error=response["error"], error_description=response["errorDescription"]
+        )
 
     async def update_oauth2_client(
         self,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[UpdateOAuth2ClientOkResult, UpdateOAuth2ClientErrorResult]:
-        pass
+    ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/clients"),
+            {},  # TODO update params
+            None,
+            user_context=user_context,
+        )
+
+        if response["status"] == "OK":
+            return UpdateOAuth2ClientOkResult(client=OAuth2Client.from_json(response))
+        return ErrorOAuth2Response(
+            error=response["error"], error_description=response["errorDescription"]
+        )
 
     async def delete_oauth2_client(
         self,
+        client_id: str,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[DeleteOAuth2ClientOkResult, DeleteOAuth2ClientErrorResult]:
-        pass
+    ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/clients/remove"),
+            {"clientId": client_id},
+            user_context=user_context,
+        )
+
+        if response["status"] == "OK":
+            return DeleteOAuth2ClientOkResult()
+        return ErrorOAuth2Response(
+            error=response["error"], error_description=response["errorDescription"]
+        )
 
     async def validate_oauth2_access_token(
         self,
@@ -260,27 +337,35 @@ class RecipeImplementation(RecipeInterface):
         client_id: str,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
-        pass
+        return scope_param
 
     async def build_access_token_payload(
         self,
-        user: Optional[Dict[str, Any]],
         client: OAuth2Client,
-        session_handle: Optional[str],
         scopes: List[str],
+        user: Optional[Dict[str, Any]] = None,
+        session_handle: Optional[str] = None,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        pass
+        if user is None or session_handle is None:
+            return {}
+
+        return get_default_access_token_payload(
+            user, scopes, session_handle, user_context
+        )
 
     async def build_id_token_payload(
         self,
-        user: Optional[Dict[str, Any]],
         client: OAuth2Client,
-        session_handle: Optional[str],
         scopes: List[str],
+        user: Optional[Dict[str, Any]] = None,
+        session_handle: Optional[str] = None,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        pass
+        if user is None or session_handle is None:
+            return {}
+
+        return get_default_id_token_payload(user, scopes, session_handle, user_context)
 
     async def build_user_info(
         self,
@@ -290,14 +375,19 @@ class RecipeImplementation(RecipeInterface):
         tenant_id: str,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        pass
+        return get_default_user_info(
+            user, access_token_payload, scopes, tenant_id, user_context
+        )
 
     async def get_frontend_redirection_url(
         self,
         input_type: str,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> str:
-        pass
+        website_domain = self.app_info.get_origin(
+            None, user_context
+        ).get_as_string_dangerous()
+        website_base_path = self.app_info.api_base_path.get_as_string_dangerous()
 
     async def revoke_token(
         self,
