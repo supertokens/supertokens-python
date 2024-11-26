@@ -109,6 +109,20 @@ class LoginRequest:
         self.skip = skip
         self.subject = subject
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return LoginRequest(
+            challenge=json["challenge"],
+            client=OAuth2Client.from_json(json["client"]),
+            request_url=json["requestUrl"],
+            skip=json["skip"],
+            subject=json["subject"],
+            oidc_context=json["oidcContext"],
+            requested_access_token_audience=json["requestedAccessTokenAudience"],
+            requested_scope=json["requestedScope"],
+            session_id=json["sessionId"],
+        )
+
 
 class TokenInfo:
     def __init__(
@@ -149,7 +163,7 @@ class LoginInfo:
 
 
 class RedirectResponse:
-    def __init__(self, redirect_to: str, cookies: Optional[str]):
+    def __init__(self, redirect_to: str, cookies: Optional[str] = None):
         self.redirect_to = redirect_to
         self.cookies = cookies
 

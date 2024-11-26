@@ -14,6 +14,9 @@
 
 from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
 
+from supertokens_python import AppInfo
+from supertokens_python.normalised_url_path import NormalisedURLPath
+
 from .interfaces import (
     RecipeInterface,
     RedirectResponse,
@@ -40,10 +43,76 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
 
+def get_updated_redirect_to(app_info: AppInfo, redirect_to: str) -> str:
+    return redirect_to.replace(
+        "{apiDomain}",
+        app_info.api_domain.get_as_string_dangerous() + app_info.api_base_path.get_as_string_dangerous()
+    )
+
+
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier):
+    def __init__(self, querier: Querier, app_info: AppInfo):
         super().__init__()
         self.querier = querier
+        self.app_info = app_info
+
+    async def get_login_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -> Union[LoginRequest, ErrorOAuth2Response]:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/login"),
+            {"challenge": challenge},
+            user_context=user_context,
+        )
+        if response["status"] != "OK":
+            return ErrorOAuth2Response(
+                response["error"],
+                response["errorDescription"],
+                response["statusCode"],
+            )
+
+        return LoginRequest.from_json(response)
+
+    async def accept_login_request(
+        self,
+        challenge: str,
+        acr: Optional[str] = None,
+        amr: Optional[List[str]] = None,
+        context: Optional[Any] = None,
+        extend_session_lifespan: Optional[bool] = None,
+        identity_provider_session_id: Optional[str] = None,
+        subject: str = "",
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/login/accept"),
+            {
+                "acr": acr,
+                "amr": amr,
+                "context": context,
+                "extendSessionLifespan": extend_session_lifespan,
+                "identityProviderSessionId": identity_provider_session_id,
+                "subject": subject,
+                "loginChallenge": challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"]))
+
+
+    async def reject_login_request(
+        self,
+        challenge: str,
+        error: ErrorOAuth2Response,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/login/reject"),
+            {"error": error.error, "errorDescription": error.error_description, "statusCode": error.status_code},
+            user_context=user_context,
+        )
+        return RedirectResponse(redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"]))
 
     async def authorization(
         self,
@@ -85,32 +154,6 @@ class RecipeImplementation(RecipeInterface):
 
     async def reject_consent_request(
         self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
-    ) -> RedirectResponse:
-        pass
-
-    async def get_login_request(
-        self, challenge: str, user_context: Dict[str, Any]
-    ) -> Union[LoginRequest, ErrorOAuth2Response]:
-        pass
-
-    async def accept_login_request(
-        self,
-        challenge: str,
-        acr: Optional[str] = None,
-        amr: Optional[List[str]] = None,
-        context: Optional[Any] = None,
-        extend_session_lifespan: Optional[bool] = None,
-        identity_provider_session_id: Optional[str] = None,
-        subject: str = "",
-        user_context: Optional[Dict[str, Any]] = None,
-    ) -> RedirectResponse:
-        pass
-
-    async def reject_login_request(
-        self,
-        challenge: str,
-        error: ErrorOAuth2Response,
-        user_context: Optional[Dict[str, Any]] = None,
     ) -> RedirectResponse:
         pass
 
