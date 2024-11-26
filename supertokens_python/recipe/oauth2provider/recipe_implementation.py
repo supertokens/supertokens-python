@@ -46,7 +46,8 @@ if TYPE_CHECKING:
 def get_updated_redirect_to(app_info: AppInfo, redirect_to: str) -> str:
     return redirect_to.replace(
         "{apiDomain}",
-        app_info.api_domain.get_as_string_dangerous() + app_info.api_base_path.get_as_string_dangerous()
+        app_info.api_domain.get_as_string_dangerous()
+        + app_info.api_base_path.get_as_string_dangerous(),
     )
 
 
@@ -59,9 +60,9 @@ class RecipeImplementation(RecipeInterface):
     async def get_login_request(
         self, challenge: str, user_context: Dict[str, Any]
     ) -> Union[LoginRequest, ErrorOAuth2Response]:
-        response = await self.querier.send_put_request(
+        response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login"),
-            {"challenge": challenge},
+            {"loginChallenge": challenge},
             user_context=user_context,
         )
         if response["status"] != "OK":
@@ -93,13 +94,16 @@ class RecipeImplementation(RecipeInterface):
                 "extendSessionLifespan": extend_session_lifespan,
                 "identityProviderSessionId": identity_provider_session_id,
                 "subject": subject,
+            },
+            {
                 "loginChallenge": challenge,
             },
             user_context=user_context,
         )
 
-        return RedirectResponse(redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"]))
-
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
+        )
 
     async def reject_login_request(
         self,
@@ -109,10 +113,19 @@ class RecipeImplementation(RecipeInterface):
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/reject"),
-            {"error": error.error, "errorDescription": error.error_description, "statusCode": error.status_code},
+            {
+                "error": error.error,
+                "errorDescription": error.error_description,
+                "statusCode": error.status_code,
+            },
+            {
+                "loginChallenge": challenge,
+            },
             user_context=user_context,
         )
-        return RedirectResponse(redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"]))
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
+        )
 
     async def authorization(
         self,

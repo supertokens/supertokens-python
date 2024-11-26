@@ -50,6 +50,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath(f"{tenant_id}/recipe/user/role"),
             params,
+            None,
             user_context=user_context,
         )
         if response["status"] == "OK":
@@ -108,6 +109,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/role"),
             params,
+            None,
             user_context=user_context,
         )
         return CreateNewRoleOrAddPermissionsOkResult(

@@ -149,6 +149,7 @@ class RecipeImplementation(RecipeInterface):
         resp = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/totp/device"),
             data,
+            None,
             user_context=user_context,
         )
 

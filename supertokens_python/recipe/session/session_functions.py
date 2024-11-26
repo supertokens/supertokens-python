@@ -517,6 +517,7 @@ async def update_session_data_in_database(
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath("/recipe/session/data"),
         {"sessionHandle": session_handle, "userDataInDatabase": new_session_data},
+        None,
         user_context=user_context,
     )
     if response["status"] == "UNAUTHORISED":
@@ -534,6 +535,7 @@ async def update_access_token_payload(
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath("/recipe/jwt/data"),
         {"sessionHandle": session_handle, "userDataInJWT": new_access_token_payload},
+        None,
         user_context=user_context,
     )
     if response["status"] == "UNAUTHORISED":
