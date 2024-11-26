@@ -85,6 +85,23 @@ class ConsentRequest:
         self.skip = skip
         self.subject = subject
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return ConsentRequest(
+            acr=json["acr"],
+            amr=json["amr"],
+            challenge=json["challenge"],
+            client=OAuth2Client.from_json(json["client"]),
+            context=json["context"],
+            login_challenge=json["loginChallenge"],
+            login_session_id=json["loginSessionId"],
+            oidc_context=json["oidcContext"],
+            requested_access_token_audience=json["requestedAccessTokenAudience"],
+            requested_scope=json["requestedScope"],
+            skip=json["skip"],
+            subject=json["subject"],
+        )
+
 
 class LoginRequest:
     def __init__(

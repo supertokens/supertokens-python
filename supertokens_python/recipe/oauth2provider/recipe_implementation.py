@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
 
 from supertokens_python import AppInfo
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 
 from .interfaces import (
     RecipeInterface,
@@ -127,27 +128,16 @@ class RecipeImplementation(RecipeInterface):
             redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
         )
 
-    async def authorization(
-        self,
-        params: Dict[str, str],
-        cookies: Optional[str],
-        session: Optional[SessionContainer],
-        user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-        pass
-
-    async def token_exchange(
-        self,
-        authorization_header: Optional[str],
-        body: Dict[str, Optional[str]],
-        user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[TokenInfo, ErrorOAuth2Response]:
-        pass
-
     async def get_consent_request(
         self, challenge: str, user_context: Optional[Dict[str, Any]] = None
     ) -> ConsentRequest:
-        pass
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
+            {"consentChallenge": challenge},
+            user_context=user_context,
+        )
+
+        return ConsentRequest.from_json(response)
 
     async def accept_consent_request(
         self,
@@ -163,11 +153,65 @@ class RecipeImplementation(RecipeInterface):
         initial_id_token_payload: Optional[Dict[str, Any]] = None,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> RedirectResponse:
-        pass
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/consent/accept"),
+            {
+                "context": context,
+                "grantAccessTokenAudience": grant_access_token_audience,
+                "grantScope": grant_scope,
+                "handledAt": handled_at,
+                "iss": await OpenIdRecipe.get_issuer(user_context),
+                "tId": tenant_id,
+                "rsub": rsub,
+                "sessionHandle": session_handle,
+                "initialAccessTokenPayload": initial_access_token_payload,
+                "initialIdTokenPayload": initial_id_token_payload,
+            },
+            {
+                "consentChallenge": challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
+        )
 
     async def reject_consent_request(
         self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
     ) -> RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/consent/reject"),
+            {
+                "error": error.error,
+                "errorDescription": error.error_description,
+                "statusCode": error.status_code,
+            },
+            {
+                "consentChallenge": challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
+        )
+
+    async def authorization(
+        self,
+        params: Dict[str, str],
+        cookies: Optional[str],
+        session: Optional[SessionContainer],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+        pass
+
+    async def token_exchange(
+        self,
+        authorization_header: Optional[str],
+        body: Dict[str, Optional[str]],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> Union[TokenInfo, ErrorOAuth2Response]:
         pass
 
     async def get_oauth2_client(
