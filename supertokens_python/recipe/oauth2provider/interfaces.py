@@ -422,7 +422,9 @@ class APIInterface:
         session: Optional[SessionContainer] = None,
         should_try_refresh: bool = False,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[Dict[str, Union[str, Optional[str]]], ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[
+        Dict[str, Union[str, Optional[str]]], ErrorOAuth2Response, GeneralErrorResponse
+    ]:
         pass
 
     @abstractmethod
@@ -434,7 +436,9 @@ class APIInterface:
         should_try_refresh: bool,
         options: APIOptions,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[Dict[str, Union[str, Optional[str]]], ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[
+        Dict[str, Union[str, Optional[str]]], ErrorOAuth2Response, GeneralErrorResponse
+    ]:
         pass
 
     @abstractmethod
@@ -453,7 +457,11 @@ class APIInterface:
         login_challenge: str,
         options: APIOptions,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[Dict[Literal["status", "info"], Union[Literal["OK"], LoginInfo]], ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[
+        Dict[Literal["status", "info"], Union[Literal["OK"], LoginInfo]],
+        ErrorOAuth2Response,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
@@ -519,5 +527,7 @@ class APIInterface:
         options: APIOptions,
         session: Optional[SessionContainer] = None,
         user_context: Optional[Dict[str, Any]] = None,
-    ) -> Union[Dict[str, Union[Literal["OK"], str]], ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[
+        Dict[str, Union[Literal["OK"], str]], ErrorOAuth2Response, GeneralErrorResponse
+    ]:
         pass

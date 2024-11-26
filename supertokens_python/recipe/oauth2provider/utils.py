@@ -38,5 +38,13 @@ class OverrideConfig:
 
 
 class OAuth2ProviderConfig:
-    def __init__(self):
-        pass
+    def __init__(self, override: Union[OverrideConfig, None] = None):
+        self.override = override
+
+
+def validate_and_normalise_user_input(
+    override: Union[InputOverrideConfig, None] = None
+):
+    if override is None:
+        return OAuth2ProviderConfig(OverrideConfig())
+    return OAuth2ProviderConfig(OverrideConfig(override.functions, override.apis))
