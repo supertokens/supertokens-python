@@ -65,7 +65,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-fastapi
@@ -85,7 +85,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
@@ -105,7 +105,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django
@@ -125,7 +125,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-drf
@@ -145,7 +145,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-drf
@@ -165,7 +165,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django2x
@@ -187,7 +187,7 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
@@ -211,7 +211,7 @@ jobs:
           at: /
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-fastapi
@@ -242,7 +242,7 @@ jobs:
           at: /
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
@@ -273,7 +273,7 @@ jobs:
           at: /
       - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
       - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 16)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django
