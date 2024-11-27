@@ -177,10 +177,21 @@ os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 @app.middleware("http")
 async def log_response(request: Request, call_next):  # type: ignore
     response = await call_next(request)  # type: ignore
-    if isinstance(response, Response):
-        body = response.body
-        if isinstance(body, bytes):
-            print(f"Response: {body.decode('utf-8')}")
+
+    try:
+        body_bytes = b""
+        async for chunk in response.body_iterator:  # type: ignore
+            body_bytes += chunk  # type: ignore
+        print(f"Response: {body_bytes.decode('utf-8')}")  # type: ignore
+        response_with_body = Response(
+            content=body_bytes,
+            status_code=response.status_code,  # type: ignore
+            headers=response.headers,  # type: ignore
+            media_type=response.media_type,  # type: ignore
+        )
+        return response_with_body
+    except:
+        pass
     return response  # type: ignore
 
 
