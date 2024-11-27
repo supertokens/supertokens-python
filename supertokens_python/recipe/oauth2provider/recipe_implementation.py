@@ -17,22 +17,17 @@ from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
 from supertokens_python import AppInfo
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
+from supertokens_python.recipe.session.interfaces import SessionContainer
 
 from .interfaces import (
     RecipeInterface,
     RedirectResponse,
     ErrorOAuth2Response,
-    SessionContainer,
     GetOAuth2ClientOkResult,
-    GetOAuth2ClientErrorResult,
     GetOAuth2ClientsOkResult,
-    GetOAuth2ClientsErrorResult,
     CreateOAuth2ClientOkResult,
-    CreateOAuth2ClientErrorResult,
     UpdateOAuth2ClientOkResult,
-    UpdateOAuth2ClientErrorResult,
     DeleteOAuth2ClientOkResult,
-    DeleteOAuth2ClientErrorResult,
     ConsentRequest,
     LoginRequest,
     OAuth2Client,
@@ -84,7 +79,7 @@ class RecipeImplementation(RecipeInterface):
         extend_session_lifespan: Optional[bool] = None,
         identity_provider_session_id: Optional[str] = None,
         subject: str = "",
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/accept"),
@@ -110,7 +105,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         challenge: str,
         error: ErrorOAuth2Response,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/reject"),
@@ -129,7 +124,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_consent_request(
-        self, challenge: str, user_context: Optional[Dict[str, Any]] = None
+        self, challenge: str, user_context: Dict[str, Any] = {}
     ) -> ConsentRequest:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
@@ -151,7 +146,7 @@ class RecipeImplementation(RecipeInterface):
         session_handle: str = "",
         initial_access_token_payload: Optional[Dict[str, Any]] = None,
         initial_id_token_payload: Optional[Dict[str, Any]] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent/accept"),
@@ -202,7 +197,7 @@ class RecipeImplementation(RecipeInterface):
         params: Dict[str, str],
         cookies: Optional[str],
         session: Optional[SessionContainer],
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
@@ -210,7 +205,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         authorization_header: Optional[str],
         body: Dict[str, Optional[str]],
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[TokenInfo, ErrorOAuth2Response]:
         pass
 
@@ -219,7 +214,7 @@ class RecipeImplementation(RecipeInterface):
         page_size: Optional[int] = None,
         pagination_token: Optional[str] = None,
         client_name: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
         body: Dict[str, Any] = {}
         if page_size is not None:
@@ -250,7 +245,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_oauth2_client(
-        self, client_id: str, user_context: Optional[Dict[str, Any]] = None
+        self, client_id: str, user_context: Dict[str, Any] = {}
     ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/clients"),
@@ -272,7 +267,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_oauth2_client(
         self,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients"),
@@ -288,7 +283,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_oauth2_client(
         self,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/clients"),
@@ -306,7 +301,7 @@ class RecipeImplementation(RecipeInterface):
     async def delete_oauth2_client(
         self,
         client_id: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients/remove"),
@@ -325,7 +320,7 @@ class RecipeImplementation(RecipeInterface):
         token: str,
         requirements: Optional[Dict[str, Any]] = None,
         check_database: Optional[bool] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         pass
 
@@ -335,7 +330,7 @@ class RecipeImplementation(RecipeInterface):
         session_handle: Optional[str],
         scope_param: List[str],
         client_id: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> List[str]:
         return scope_param
 
@@ -345,7 +340,7 @@ class RecipeImplementation(RecipeInterface):
         scopes: List[str],
         user: Optional[Dict[str, Any]] = None,
         session_handle: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         if user is None or session_handle is None:
             return {}
@@ -360,7 +355,7 @@ class RecipeImplementation(RecipeInterface):
         scopes: List[str],
         user: Optional[Dict[str, Any]] = None,
         session_handle: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         if user is None or session_handle is None:
             return {}
@@ -373,7 +368,7 @@ class RecipeImplementation(RecipeInterface):
         access_token_payload: Dict[str, Any],
         scopes: List[str],
         tenant_id: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         return get_default_user_info(
             user, access_token_payload, scopes, tenant_id, user_context
@@ -382,7 +377,7 @@ class RecipeImplementation(RecipeInterface):
     async def get_frontend_redirection_url(
         self,
         input_type: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> str:
         website_domain = self.app_info.get_origin(
             None, user_context
@@ -395,21 +390,21 @@ class RecipeImplementation(RecipeInterface):
         authorization_header: Optional[str] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[Dict[str, str], ErrorOAuth2Response]:
         pass
 
     async def revoke_tokens_by_client_id(
         self,
         client_id: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, str]:
         pass
 
     async def revoke_tokens_by_session_handle(
         self,
         session_handle: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, str]:
         pass
 
@@ -417,7 +412,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         token: str,
         scopes: Optional[List[str]] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         pass
 
@@ -426,20 +421,20 @@ class RecipeImplementation(RecipeInterface):
         params: Dict[str, str],
         session: Optional[SessionContainer] = None,
         should_try_refresh: bool = False,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
     async def accept_logout_request(
         self,
         challenge: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
     async def reject_logout_request(
         self,
         challenge: str,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any] = {},
     ) -> Dict[str, str]:
         pass
