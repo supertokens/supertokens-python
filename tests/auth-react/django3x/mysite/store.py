@@ -1,3 +1,4 @@
+import time
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Literal
 
@@ -10,6 +11,13 @@ def save_url_with_token(url_with_token: str):
 
 
 def get_url_with_token() -> str:
+    t = 0
+    while not latest_url_with_token:
+        time.sleep(0.5)
+        t += 1
+        if t > 10:
+            break
+
     return latest_url_with_token
 
 

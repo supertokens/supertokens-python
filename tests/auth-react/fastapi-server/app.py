@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import time
 import typing
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -171,6 +172,17 @@ load_dotenv()
 app = FastAPI(debug=True)
 app.add_middleware(get_middleware())
 os.environ.setdefault("SUPERTOKENS_ENV", "testing")
+
+
+@app.middleware("http")
+async def log_response(request: Request, call_next):  # type: ignore
+    response = await call_next(request)  # type: ignore
+    if isinstance(response, Response):
+        body = response.body
+        if isinstance(body, bytes):
+            print(f"Response: {body.decode('utf-8')}")
+    return response  # type: ignore
+
 
 code_store: Dict[str, List[Dict[str, Any]]] = {}
 accountlinking_config: Dict[str, Any] = {}
@@ -1397,6 +1409,14 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
 @app.get("/token")
 async def get_token():
     global latest_url_with_token
+    t = 0
+
+    while not latest_url_with_token:
+        time.sleep(0.5)
+        t += 1
+        if t > 10:
+            break
+
     return JSONResponse({"latestURLWithToken": latest_url_with_token})
 
 

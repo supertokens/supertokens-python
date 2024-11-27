@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import time
 import traceback
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -1094,6 +1095,12 @@ CORS(
 )
 
 
+@app.after_request
+def after_request(response):  # type: ignore
+    print(f"Response: {response.get_data(as_text=True)}")  # type: ignore
+    return response  # type: ignore
+
+
 @app.route("/ping", methods=["GET"])  # type: ignore
 def ping():
     return "success"
@@ -1284,6 +1291,14 @@ def get_session_info():
 @app.route("/token", methods=["GET"])  # type: ignore
 def get_token():
     global latest_url_with_token
+
+    t = 0
+    while not latest_url_with_token:
+        time.sleep(0.5)
+        t += 1
+        if t > 10:
+            break
+
     return jsonify({"latestURLWithToken": latest_url_with_token})
 
 
