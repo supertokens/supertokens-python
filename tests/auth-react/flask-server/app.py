@@ -1095,10 +1095,11 @@ CORS(
 )
 
 
-@app.after_request
-def after_request(response):  # type: ignore
-    print(f"Response: {response.get_data(as_text=True)}")  # type: ignore
-    return response  # type: ignore
+# Uncomment the following for response logging
+# @app.after_request
+# def after_request(response):  # type: ignore
+#     print(f"Response: {response.get_data(as_text=True)}")  # type: ignore
+#     return response  # type: ignore
 
 
 @app.route("/ping", methods=["GET"])  # type: ignore
