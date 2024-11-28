@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.26.1] - 2024-11-28
+
+- Fixes dependency for docs build
+
 ## [0.26.0] - 2024-11-20
 
 - Not supporting Python 3.7
