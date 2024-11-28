@@ -128,7 +128,7 @@ setup(
         "pkce<1.1.0",
         "pyotp<3",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     include_package_data=True,
     extras_require=extras_require,
 )
