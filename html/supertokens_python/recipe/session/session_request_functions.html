@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.recipe.session.session_request_functions API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.session.session_request_functions</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
+
+from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING
+
+from supertokens_python.logger import log_debug_message
+from supertokens_python.recipe.session.access_token import (
+    validate_access_token_structure,
+)
+from supertokens_python.recipe.session.constants import available_token_transfer_methods
+from supertokens_python.recipe.session.cookie_and_header import (
+    clear_session_cookies_from_older_cookie_domain,
+    clear_session_mutator,
+    get_anti_csrf_header,
+    get_token,
+    has_multiple_cookies_for_token_type,
+    set_cookie_response_mutator,
+)
+from supertokens_python.recipe.session.exceptions import (
+    raise_try_refresh_token_exception,
+    raise_unauthorised_exception,
+)
+from supertokens_python.recipe.session.interfaces import (
+    RecipeInterface as SessionRecipeInterface,
+)
+from supertokens_python.recipe.session.interfaces import (
+    SessionClaimValidator,
+    SessionContainer,
+)
+from supertokens_python.recipe.session.exceptions import (
+    SuperTokensSessionError,
+    TokenTheftError,
+    UnauthorisedError,
+)
+from supertokens_python.recipe.session.jwt import (
+    ParsedJWTInfo,
+    parse_jwt_without_signature_verification,
+)
+from supertokens_python.recipe.session.utils import (
+    SessionConfig,
+    TokenTransferMethod,
+    get_required_claim_validators,
+    get_auth_mode_from_header,
+)
+from supertokens_python.types import MaybeAwaitable, RecipeUserId
+from supertokens_python.utils import (
+    FRAMEWORKS,
+    get_rid_from_header,
+    is_an_ip_address,
+    normalise_http_method,
+    set_request_in_user_context_if_not_defined,
+)
+from supertokens_python.supertokens import Supertokens
+from .constants import protected_props
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.recipe import SessionRecipe
+    from supertokens_python.supertokens import AppInfo
+    from .interfaces import ResponseMutator
+
+LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = &#34;sIdRefreshToken&#34;
+
+
+async def get_session_from_request(
+    request: Any,
+    config: SessionConfig,
+    recipe_interface_impl: SessionRecipeInterface,
+    session_required: Optional[bool] = None,
+    anti_csrf_check: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; Optional[SessionContainer]:
+    log_debug_message(&#34;getSession: Started&#34;)
+
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            Supertokens.get_instance().app_info.framework
+        ].wrap_request(request)
+
+    log_debug_message(&#34;getSession: Wrapping done&#34;)
+
+    user_context = set_request_in_user_context_if_not_defined(user_context, request)
+
+    # This token isn&#39;t handled by getToken to limit the scope of this legacy/migration code
+    if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+        log_debug_message(
+            &#34;getSession: Throwing TRY_REFRESH_TOKEN because the request is using a legacy session&#34;
+        )
+        # This could create a spike on refresh calls during the update of the backend SDK
+        return raise_try_refresh_token_exception(
+            &#34;using legacy session, please call the refresh API&#34;
+        )
+
+    session_optional = not session_required
+    log_debug_message(&#34;getSession: optional validation: %s&#34;, session_optional)
+
+    access_tokens: Dict[TokenTransferMethod, ParsedJWTInfo] = {}
+
+    # We check all token transfer methods for available access tokens
+    for transfer_method in available_token_transfer_methods:
+        token_string = get_token(request, &#34;access&#34;, transfer_method)
+
+        if token_string is not None:
+            try:
+                info = parse_jwt_without_signature_verification(token_string)
+                validate_access_token_structure(info.payload, info.version)
+                log_debug_message(
+                    &#34;getSession: got access token from %s&#34;, transfer_method
+                )
+                access_tokens[transfer_method] = info
+            except Exception:
+                log_debug_message(
+                    &#34;getSession: ignoring token in %s, because it doesn&#39;t match our access token structure&#34;,
+                    transfer_method,
+                )
+
+    allowed_transfer_method = config.get_token_transfer_method(
+        request, False, user_context
+    )
+    request_transfer_method: Optional[TokenTransferMethod] = None
+    request_access_token: Union[ParsedJWTInfo, None] = None
+
+    if (allowed_transfer_method in (&#34;any&#34;, &#34;header&#34;)) and access_tokens.get(
+        &#34;header&#34;
+    ) is not None:
+        log_debug_message(&#34;getSession: using header transfer method&#34;)
+        request_transfer_method = &#34;header&#34;
+        request_access_token = access_tokens[&#34;header&#34;]
+    elif (allowed_transfer_method in (&#34;any&#34;, &#34;cookie&#34;)) and access_tokens.get(
+        &#34;cookie&#34;
+    ) is not None:
+        log_debug_message(&#34;getSession: using cookie transfer method&#34;)
+
+        # If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        # This prompts the client to call the refresh endpoint, clearing older_cookie_domain cookies (if set).
+        # ensuring outdated token payload isn&#39;t used.
+        if has_multiple_cookies_for_token_type(request, &#34;access&#34;):
+            log_debug_message(
+                &#34;getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies&#34;
+            )
+            raise_try_refresh_token_exception(
+                &#34;Multiple access tokens present in the request cookies.&#34;
+            )
+
+        request_transfer_method = &#34;cookie&#34;
+        request_access_token = access_tokens[&#34;cookie&#34;]
+
+    anti_csrf_token = get_anti_csrf_header(request)
+    do_anti_csrf_check = anti_csrf_check
+
+    if do_anti_csrf_check is None:
+        do_anti_csrf_check = normalise_http_method(request.method()) != &#34;get&#34;
+    if request_transfer_method == &#34;header&#34;:
+        do_anti_csrf_check = False
+    if request_access_token is None:
+        do_anti_csrf_check = False
+
+    if callable(config.anti_csrf_function_or_string):
+        anti_csrf = config.anti_csrf_function_or_string(request, user_context)
+    else:
+        anti_csrf = config.anti_csrf_function_or_string
+
+    if do_anti_csrf_check and anti_csrf == &#34;VIA_CUSTOM_HEADER&#34;:
+        if anti_csrf == &#34;VIA_CUSTOM_HEADER&#34;:
+            if get_rid_from_header(request) is None:
+                log_debug_message(
+                    &#34;getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed&#34;
+                )
+                raise_try_refresh_token_exception(
+                    &#34;anti-csrf check failed. Please pass &#39;rid: \&#34;session\&#34;&#39; header in the request, or set doAntiCsrfCheck to false for this API&#34;
+                )
+
+            log_debug_message(&#34;getSession: VIA_CUSTOM_HEADER anti-csrf check passed&#34;)
+            do_anti_csrf_check = False
+
+    log_debug_message(&#34;getSession: Value of antiCsrfToken is: %s&#34;, do_anti_csrf_check)
+
+    session = await recipe_interface_impl.get_session(
+        access_token=(
+            request_access_token.raw_token_string
+            if request_access_token is not None
+            else None
+        ),
+        anti_csrf_token=anti_csrf_token,
+        anti_csrf_check=do_anti_csrf_check,
+        session_required=session_required,
+        check_database=check_database,
+        override_global_claim_validators=override_global_claim_validators,
+        user_context=user_context,
+    )
+
+    if session is not None:
+        claim_validators = await get_required_claim_validators(
+            session, override_global_claim_validators, user_context
+        )
+        await session.assert_claims(claim_validators, user_context)
+
+        # request_transfer_method can only be None here if the user overriddes get_session
+        # to load the session by a custom method in that (very niche) case they also need to
+        # override how the session is attached to the response.
+        # In that scenario the transferMethod passed to attachToRequestResponse likely doesn&#39;t
+        # matter, still, we follow the general fallback logic
+
+        if request_transfer_method is not None:
+            final_transfer_method = request_transfer_method
+        elif allowed_transfer_method != &#34;any&#34;:
+            final_transfer_method = allowed_transfer_method
+        else:
+            final_transfer_method = &#34;header&#34;
+
+        await session.attach_to_request_response(
+            request, final_transfer_method, user_context
+        )
+
+    return session
+
+
+async def create_new_session_in_request(
+    request: Any,
+    user_context: Dict[str, Any],
+    recipe_instance: SessionRecipe,
+    access_token_payload: Dict[str, Any],
+    user_id: str,
+    recipe_user_id: RecipeUserId,
+    config: SessionConfig,
+    app_info: AppInfo,
+    session_data_in_database: Dict[str, Any],
+    tenant_id: str,
+) -&gt; SessionContainer:
+    log_debug_message(&#34;createNewSession: Started&#34;)
+
+    # Handling framework specific request/response wrapping
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            Supertokens.get_instance().app_info.framework
+        ].wrap_request(request)
+
+    log_debug_message(&#34;createNewSession: Wrapping done&#34;)
+    user_context = set_request_in_user_context_if_not_defined(user_context, request)
+
+    claims_added_by_other_recipes = recipe_instance.get_claims_added_by_other_recipes()
+    issuer = (
+        app_info.api_domain.get_as_string_dangerous()
+        + app_info.api_base_path.get_as_string_dangerous()
+    )
+
+    final_access_token_payload = {**access_token_payload, &#34;iss&#34;: issuer}
+
+    for prop in protected_props:
+        if prop in final_access_token_payload:
+            del final_access_token_payload[prop]
+
+    for claim in claims_added_by_other_recipes:
+        update = await claim.build(
+            user_id, recipe_user_id, tenant_id, final_access_token_payload, user_context
+        )
+        final_access_token_payload.update(update)
+
+    log_debug_message(&#34;createNewSession: Access token payload built&#34;)
+
+    output_transfer_method = config.get_token_transfer_method(
+        request, True, user_context
+    )
+    if output_transfer_method == &#34;any&#34;:
+        auth_mode_header = get_auth_mode_from_header(request)
+        if auth_mode_header == &#34;cookie&#34;:
+            output_transfer_method = auth_mode_header
+        else:
+            output_transfer_method = &#34;header&#34;
+
+    log_debug_message(
+        &#34;createNewSession: using transfer method %s&#34;, output_transfer_method
+    )
+
+    if (
+        output_transfer_method == &#34;cookie&#34;
+        and config.get_cookie_same_site(request, user_context) == &#34;none&#34;
+        and not config.cookie_secure
+        and not (
+            (
+                app_info.top_level_api_domain == &#34;localhost&#34;
+                or is_an_ip_address(app_info.top_level_api_domain)
+            )
+            and (
+                app_info.get_top_level_website_domain(request, user_context)
+                == &#34;localhost&#34;
+                or is_an_ip_address(
+                    app_info.get_top_level_website_domain(request, user_context)
+                )
+            )
+        )
+    ):
+        # We can allow insecure cookie when both website &amp; API domain are localhost or an IP
+        # When either of them is a different domain, API domain needs to have https and a secure cookie to work
+        raise Exception(
+            &#34;Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don&#39;t set cookieSecure to false.&#34;
+        )
+
+    disable_anti_csrf = output_transfer_method == &#34;header&#34;
+    session = await recipe_instance.recipe_implementation.create_new_session(
+        user_id,
+        recipe_user_id,
+        final_access_token_payload,
+        session_data_in_database,
+        disable_anti_csrf,
+        tenant_id,
+        user_context=user_context,
+    )
+
+    log_debug_message(&#34;createNewSession: Session created in core built&#34;)
+
+    for transfer_method in available_token_transfer_methods:
+        if (
+            transfer_method != output_transfer_method
+            and get_token(request, &#34;access&#34;, transfer_method) is not None
+        ):
+            session.response_mutators.append(
+                clear_session_mutator(config, transfer_method, request)
+            )
+
+    log_debug_message(&#34;createNewSession: Cleared old tokens&#34;)
+
+    await session.attach_to_request_response(
+        request, output_transfer_method, user_context
+    )
+    log_debug_message(&#34;createNewSession: Attached new tokens to res&#34;)
+
+    return session
+
+
+# In all cases: if sIdRefreshToken token exists (so it&#39;s a legacy session) we clear it.
+# Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
+
+
+async def refresh_session_in_request(
+    request: Any,
+    user_context: Dict[str, Any],
+    config: SessionConfig,
+    recipe_interface_impl: SessionRecipeInterface,
+) -&gt; SessionContainer:
+    log_debug_message(&#34;refreshSession: Started&#34;)
+
+    response_mutators: List[ResponseMutator] = []
+
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            Supertokens.get_instance().app_info.framework
+        ].wrap_request(request)
+
+    log_debug_message(&#34;refreshSession: Wrapping done&#34;)
+    user_context = set_request_in_user_context_if_not_defined(user_context, request)
+
+    clear_session_cookies_from_older_cookie_domain(request, config, user_context)
+
+    refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
+
+    for transfer_method in available_token_transfer_methods:
+        refresh_tokens[transfer_method] = get_token(request, &#34;refresh&#34;, transfer_method)
+        if refresh_tokens[transfer_method] is not None:
+            log_debug_message(
+                &#34;refreshSession: got refresh token from %s&#34;, transfer_method
+            )
+
+    allowed_transfer_method = config.get_token_transfer_method(
+        request, False, user_context
+    )
+    log_debug_message(
+        &#34;refreshSession: getTokenTransferMethod returned: %s&#34;,
+        allowed_transfer_method,
+    )
+
+    request_transfer_method: TokenTransferMethod
+    refresh_token: Optional[str]
+
+    if (allowed_transfer_method in (&#34;any&#34;, &#34;header&#34;)) and (
+        refresh_tokens.get(&#34;header&#34;)
+    ):
+        log_debug_message(&#34;refreshSession: using header transfer method&#34;)
+        request_transfer_method = &#34;header&#34;
+        refresh_token = refresh_tokens[&#34;header&#34;]
+    elif (allowed_transfer_method in (&#34;any&#34;, &#34;cookie&#34;)) and (
+        refresh_tokens.get(&#34;cookie&#34;)
+    ):
+        log_debug_message(&#34;refreshSession: using cookie transfer method&#34;)
+        request_transfer_method = &#34;cookie&#34;
+        refresh_token = refresh_tokens[&#34;cookie&#34;]
+    else:
+        # This token isn&#39;t handled by getToken/setToken to limit the scope of this legacy/migration code
+        if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+            log_debug_message(
+                &#34;refreshSession: cleared legacy id refresh token because refresh token was not found&#34;
+            )
+            response_mutators.append(
+                set_cookie_response_mutator(
+                    config,
+                    LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                    &#34;&#34;,
+                    0,
+                    &#34;access_token_path&#34;,
+                    request,
+                )
+            )
+
+        # We need to clear the access token cookie if
+        # - the refresh token is not found, and
+        # - the allowed_transfer_method is &#39;cookie&#39; or &#39;any&#39;, and
+        # - an access token cookie exists (otherwise it&#39;d be a no-op)
+        # See: https://github.com/supertokens/supertokens-node/issues/790
+        if (
+            allowed_transfer_method in (&#34;cookie&#34;, &#34;any&#34;)
+            and get_token(request, &#34;access&#34;, &#34;cookie&#34;) is not None
+        ):
+            log_debug_message(
+                &#34;refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh_token in request is None&#34;
+            )
+
+            # We&#39;re clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            # error with `clear_tokens: False`. This approach avoids confusion and we don&#39;t want to retain session
+            # tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            return raise_unauthorised_exception(
+                &#34;Refresh token not found but access token is present. Clearing all tokens.&#34;,
+                clear_tokens=True,
+                response_mutators=response_mutators,
+            )
+
+        return raise_unauthorised_exception(
+            &#34;Refresh token not found. Are you sending the refresh token in the request?&#34;,
+            clear_tokens=True,
+            response_mutators=response_mutators,
+        )
+
+    assert refresh_token is not None
+
+    disable_anti_csrf = request_transfer_method == &#34;header&#34;
+    anti_csrf_token = get_anti_csrf_header(request)
+
+    anti_csrf = config.anti_csrf_function_or_string
+    if callable(anti_csrf):
+        anti_csrf = anti_csrf(request, user_context)
+
+    if anti_csrf == &#34;VIA_CUSTOM_HEADER&#34; and not disable_anti_csrf:
+        if get_rid_from_header(request) is None:
+            log_debug_message(
+                &#34;refreshSession: Returning UNAUTHORISED because anti-csrf token is undefined&#34;
+            )
+            # see https://github.com/supertokens/supertokens-node/issues/141
+            raise_unauthorised_exception(
+                &#34;anti-csrf check failed. Please pass &#39;rid: \&#34;session\&#34;&#39; header in the request.&#34;,
+                clear_tokens=True,
+            )
+        disable_anti_csrf = True
+
+    session: Optional[SessionContainer] = None
+    try:
+        session = await recipe_interface_impl.refresh_session(
+            refresh_token, anti_csrf_token, disable_anti_csrf, user_context
+        )
+    except SuperTokensSessionError as e:
+        if isinstance(e, TokenTheftError) or (
+            isinstance(e, UnauthorisedError) and getattr(e, &#34;clear_tokens&#34;) is True
+        ):
+            # We clear the LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME here because we want to limit the scope of
+            # this legacy/migration code so the token clearing functions in the error handlers do not.
+            if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+                log_debug_message(
+                    &#34;refreshSession: cleared legacy id refresh token because refresh token was not found&#34;
+                )
+                response_mutators.append(
+                    set_cookie_response_mutator(
+                        config,
+                        LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                        &#34;&#34;,
+                        0,
+                        &#34;access_token_path&#34;,
+                        request,
+                    )
+                )
+
+        e.response_mutators.extend(response_mutators)
+        raise e
+
+    log_debug_message(
+        &#34;refreshSession: Attaching refreshed session info as %s&#34;,
+        request_transfer_method,
+    )
+
+    # We clear the tokens in all token transfer methods we are not going to overwrite:
+    for transfer_method in available_token_transfer_methods:
+        if (
+            transfer_method != request_transfer_method
+            and refresh_tokens[transfer_method] is not None
+        ):
+            response_mutators.append(
+                clear_session_mutator(config, transfer_method, request)
+            )
+
+    await session.attach_to_request_response(
+        request, request_transfer_method, user_context
+    )
+    log_debug_message(&#34;refreshSession: Success!&#34;)
+
+    # This token isn&#39;t handled by getToken/setToken to limit the scope of this legacy/migration code
+    if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+        log_debug_message(
+            &#34;refreshSession: cleared legacy id refresh token after successful refresh&#34;
+        )
+        response_mutators.append(
+            set_cookie_response_mutator(
+                config,
+                LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                &#34;&#34;,
+                0,
+                &#34;access_token_path&#34;,
+                request,
+            )
+        )
+
+    session.response_mutators.extend(response_mutators)
+    return session</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.session.session_request_functions.create_new_session_in_request"><code class="name flex">
+<span>async def <span class="ident">create_new_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], recipe_instance: SessionRecipe, access_token_payload: Dict[str, Any], user_id: str, recipe_user_id: RecipeUserId, config: SessionConfig, app_info: AppInfo, session_data_in_database: Dict[str, Any], tenant_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.session.session_request_functions.get_session_from_request"><code class="name flex">
+<span>async def <span class="ident">get_session_from_request</span></span>(<span>request: Any, config: SessionConfig, recipe_interface_impl: SessionRecipeInterface, session_required: Optional[bool] = None, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.session.session_request_functions.refresh_session_in_request"><code class="name flex">
+<span>async def <span class="ident">refresh_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], config: SessionConfig, recipe_interface_impl: SessionRecipeInterface) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.session" href="index.html">supertokens_python.recipe.session</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.session_request_functions.create_new_session_in_request" href="#supertokens_python.recipe.session.session_request_functions.create_new_session_in_request">create_new_session_in_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_request_functions.get_session_from_request" href="#supertokens_python.recipe.session.session_request_functions.get_session_from_request">get_session_from_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_request_functions.refresh_session_in_request" href="#supertokens_python.recipe.session.session_request_functions.refresh_session_in_request">refresh_session_in_request</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>
