@@ -94,26 +94,10 @@ if [[ $frontendDriverVersion == '1.3' || $frontendDriverVersion == '1.8' ]]; the
     # we skip 1.8 since the SDK with just 1.8 doesn't have the right scripts
     exit 0
 else
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for auth-react tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            # we do not delete supertokens-auth-react here cause the test reports are generated in there.
-            break
-        fi
-    done
+    ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
+    if [[ $? -ne 0 ]]
+    then
+        echo "test failed for auth-react tests... exiting!"
+        exit 1
+    fi
 fi

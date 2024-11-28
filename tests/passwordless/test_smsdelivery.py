@@ -70,7 +70,7 @@ def teardown_function(_):
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -532,8 +532,8 @@ async def test_pless_login_twilio_service(driver_config_client: TestClient):
 
             return SMSContent(body=user_input_code, to_phone=template_vars.phone_number)
 
-        oi.send_raw_sms = send_raw_email_override
-        oi.get_content = get_content_override
+        oi.send_raw_sms = send_raw_email_override  # type: ignore
+        oi.get_content = get_content_override  # type: ignore
 
         return oi
 

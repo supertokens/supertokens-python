@@ -13,7 +13,7 @@
 # under the License.
 import json
 from math import ceil
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.utils import get_timestamp_ms
@@ -47,7 +47,7 @@ class FastApiResponse(BaseResponse):
         domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
-        samesite: str = "lax",
+        samesite: Literal["lax", "strict", "none"] = "lax",
     ):
         # Note: For FastAPI response object, the expires value
         # doesn't mean the absolute time in ms, but the duration in seconds

@@ -271,7 +271,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -655,12 +655,12 @@ async def test_token_cookie_expires(
     response = driver_config_client.post("/create")
     assert response.status_code == 200
 
-    cookies = extract_all_cookies(response)
+    cookies = extract_all_cookies(response)  # type: ignore
 
     assert "sAccessToken" in cookies
     assert "sRefreshToken" in cookies
 
-    for c in response.cookies:
+    for c in response.cookies.jar:
         if c.name == "sAccessToken":  # 100 years (set by the SDK)
             # some time must have elasped since the cookie was set. So less than current time
             assert (
@@ -690,7 +690,7 @@ async def test_token_cookie_expires(
     assert "sAccessToken" in cookies
     assert "sRefreshToken" in cookies
 
-    for c in response.cookies:
+    for c in response.cookies.jar:
         if c.name == "sAccessToken":  # 100 years (set by the SDK)
             # some time must have elasped since the cookie was set. So less than current time
             assert (

@@ -244,7 +244,7 @@ def driver_config_app():
     return app
 
 
-def test_cookie_login_and_refresh(driver_config_app: Any):
+def test_cookie_login_and_refresh(driver_config_app: Flask):
     start_st()
 
     set_key_value_in_config(TEST_COOKIE_SAME_SITE_CONFIG_KEY, "None")
@@ -284,7 +284,9 @@ def test_cookie_login_and_refresh(driver_config_app: Any):
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
-        "localhost", "sRefreshToken", cookies_1["sRefreshToken"]["value"]
+        "sRefreshToken",
+        cookies_1["sRefreshToken"]["value"],
+        domain="localhost",
     )
     response_2 = test_client.post(
         "/refresh", headers={"anti-csrf": response_1.headers.get("anti-csrf")}
@@ -349,7 +351,9 @@ def test_login_refresh_no_csrf(driver_config_app: Any):
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
-        "localhost", "sRefreshToken", cookies_1["sRefreshToken"]["value"]
+        "sRefreshToken",
+        cookies_1["sRefreshToken"]["value"],
+        domain="localhost",
     )
 
     # post with csrf token -> no error
@@ -403,7 +407,9 @@ def test_login_logout(driver_config_app: Any):
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
-        "localhost", "sAccessToken", cookies_1["sAccessToken"]["value"]
+        "sAccessToken",
+        cookies_1["sAccessToken"]["value"],
+        domain="localhost",
     )
 
     response_2 = test_client.post(
@@ -443,7 +449,9 @@ def test_login_handle(driver_config_app: Any):
     cookies_1 = extract_all_cookies(response_1)
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
-        "localhost", "sAccessToken", cookies_1["sAccessToken"]["value"]
+        "sAccessToken",
+        cookies_1["sAccessToken"]["value"],
+        domain="localhost",
     )
 
     response_2 = test_client.get(

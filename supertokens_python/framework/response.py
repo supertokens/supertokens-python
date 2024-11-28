@@ -13,7 +13,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 
 class BaseResponse(ABC):
@@ -34,7 +34,7 @@ class BaseResponse(ABC):
         domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
-        samesite: str = "lax",
+        samesite: Literal["lax", "strict", "none"] = "lax",
     ):
         pass
 

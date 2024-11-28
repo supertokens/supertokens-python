@@ -13,62 +13,59 @@ jobs:
       - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
   test-unit:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
       cdi-version:
         type: string
+      python-version:
+        type: string
+    parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: (cd .circleci/ && ./installJava.sh)
       - run: make dev-install
       - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
+      - store_test_results:
+          path: test-results/junit.xml
       - slack/status
   test-backend-sdk-testing:
     docker:
-      - image: rishabhpoddar/supertokens_node_driver_testing_node_20
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
       cdi-version:
         type: string
       fdi-version:
         type: string
+      python-version:
+        type: string
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run:
-          name: Install latest Python and dependencies
-          command: |
-            apt-get update
-            apt-get install -y software-properties-common lsof
-            add-apt-repository -y ppa:deadsnakes/ppa
-            apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y python3.11 python3-pip python3.11-dev libffi-dev
-            update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-            update-alternatives --set python3 /usr/bin/python3.11
-            python3 --version
-            python3 -m pip install "cython<3.0.0" wheel
-            python3 -m pip install --upgrade pip setuptools
-            python3 -m pip install "pyyaml==5.4.1" --no-build-isolation
       - run: python3 -m pip install -r dev-requirements.txt
       - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
       - slack/status
   test-website-fastapi:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-fastapi
@@ -76,16 +73,19 @@ jobs:
       - slack/status
   test-website-flask:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
@@ -93,16 +93,19 @@ jobs:
       - slack/status
   test-website-django:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django
@@ -110,62 +113,59 @@ jobs:
       - slack/status
   test-website-drf-async:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: echo "unalias pip" >> ~/.bashrc
-      - run: echo "unalias python" >> ~/.bashrc
-      - run: apt update && apt install -y python3.8-minimal python3-pip
-      - run: update-alternatives --install "/usr/bin/python" python /usr/bin/python3.8 2
-      - run: python -m pip install --upgrade pip
-      - run: echo "alias pip3='python -m pip'" >> ~/.bashrc
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-drf
       - run: (cd .circleci/ && ./websiteDrfAsync.sh << parameters.fdi-version >>)
       - slack/status
   test-website-drf-sync:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: echo "unalias pip" >> ~/.bashrc
-      - run: echo "unalias python" >> ~/.bashrc
-      - run: apt update && apt install -y python3.8-minimal python3-pip
-      - run: update-alternatives --install "/usr/bin/python" python /usr/bin/python3.8 2
-      - run: python -m pip install --upgrade pip
-      - run: echo "alias pip3='python -m pip'" >> ~/.bashrc
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-drf
       - run: (cd .circleci/ && ./websiteDrfSync.sh << parameters.fdi-version >>)
       - slack/status
   test-website-django2x:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django2x
@@ -173,18 +173,21 @@ jobs:
       - slack/status
   test-website-flask-nest-asyncio:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
       SUPERTOKENS_NEST_ASYNCIO: "1"
     parameters:
-        fdi-version:
-            type: string
+      fdi-version:
+        type: string
+      python-version:
+        type: string
     parallelism: 4
     steps:
       - checkout
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
@@ -193,96 +196,96 @@ jobs:
       - slack/status
   test-authreact-fastapi:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     environment:
-      MOCHA_FILE: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
+        type: string
+      python-version:
         type: string
     parallelism: 4
     steps:
       - checkout
       - attach_workspace:
           at: /
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: n 16
-      - run: node --version
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-fastapi
       - run: (cd .circleci && ./authReactFastApi.sh << parameters.fdi-version >>)
-      - run: ls -la ../supertokens-auth-react/test_report || true
       - store_test_results:
-          path: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
+          path: /root/test_report/report_node-<< parameters.fdi-version >>.xml
       - store_artifacts:
-          path: ../supertokens-auth-react/test_report/screenshots
-          destination: failed-test-screenshots
+          path: ~/test_report/screenshots
+          destination: screenshots
       - store_artifacts:
-          path: ../supertokens-auth-react/test_report/logs
-          destination: logfiles
+          path: ~/test_report/react-logs
+          destination: react-logs
   test-authreact-flask:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
-      MOCHA_FILE: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
+        type: string
+      python-version:
         type: string
     parallelism: 4
     steps:
       - checkout
       - attach_workspace:
           at: /
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: n 16
-      - run: node --version
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
       - run: (cd .circleci && ./authReactFlask.sh << parameters.fdi-version >>)
-      - run: ls -la ../supertokens-auth-react/test_report || true
       - store_test_results:
-          path: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
+          path: /root/test_report/report_node-<< parameters.fdi-version >>.xml
       - store_artifacts:
-          path: ../supertokens-auth-react/test_report/screenshots
-          destination: failed-test-screenshots
+          path: ~/test_report/screenshots
+          destination: screenshots
       - store_artifacts:
-          path: ../supertokens-auth-react/test_report/logs
-          destination: logfiles
+          path: ~/test_report/react-logs
+          destination: react-logs
   test-authreact-django:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: python:<< parameters.python-version >>
     resource_class: large
     environment:
-      MOCHA_FILE: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
+      MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
       fdi-version:
+        type: string
+      python-version:
         type: string
     parallelism: 4
     steps:
       - checkout
       - attach_workspace:
           at: /
-      - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
-      - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+      - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+      - run: (cd .circleci/ && ./installJava.sh)
+      - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-      - run: n 16
-      - run: node --version
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django
       - run: (cd .circleci && ./authReactDjango.sh << parameters.fdi-version >>)
-      - run: ls -la ../supertokens-auth-react/test_report || true
       - store_test_results:
-          path: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
+          path: /root/test_report/report_node-<< parameters.fdi-version >>.xml
       - store_artifacts:
-          path: ../supertokens-auth-react/test_report/screenshots
-          destination: failed-test-screenshots
+          path: ~/test_report/screenshots
+          destination: screenshots
       - store_artifacts:
-          path: ../supertokens-auth-react/test_report/logs
-          destination: logfiles
+          path: ~/test_report/react-logs
+          destination: react-logs
   test-success:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
@@ -314,6 +317,7 @@ workflows:
           matrix:
             parameters:
               cdi-version: placeholder
+              python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
       - test-backend-sdk-testing:
           requires:
               - test-dev-tag-as-not-passed
@@ -328,6 +332,7 @@ workflows:
               parameters:
                   cdi-version: placeholder
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
       - test-website-fastapi:
           requires:
             - test-dev-tag-as-not-passed
@@ -336,6 +341,7 @@ workflows:
           matrix:
               parameters:
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -349,6 +355,7 @@ workflows:
           matrix:
               parameters:
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -362,6 +369,7 @@ workflows:
           matrix:
               parameters:
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -375,6 +383,7 @@ workflows:
           matrix:
               parameters:
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -388,6 +397,7 @@ workflows:
           matrix:
               parameters:
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -401,6 +411,7 @@ workflows:
           matrix:
               parameters:
                   fdi-version: placeholder
+                  python-version: ['3.8', '3.13']
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -419,6 +430,7 @@ workflows:
           matrix:
             parameters:
               fdi-version: placeholder
+              python-version: ['3.8', '3.13']
       - test-authreact-flask:
           requires:
             - test-dev-tag-as-not-passed
@@ -432,6 +444,7 @@ workflows:
           matrix:
             parameters:
               fdi-version: placeholder
+              python-version: ['3.8', '3.13']
       - test-authreact-django:
           requires:
             - test-dev-tag-as-not-passed
@@ -445,6 +458,7 @@ workflows:
           matrix:
             parameters:
               fdi-version: placeholder
+              python-version: ['3.8', '3.13']
       - test-success:
           requires:
             - test-unit

@@ -157,7 +157,11 @@ class RecipeInterface(ABC):
         session: Union[SessionContainer, None],
         should_try_linking_with_session_user: Union[bool, None],
         user_context: Dict[str, Any],
-    ) -> Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError,]:
+    ) -> Union[
+        SignInOkResult,
+        WrongCredentialsError,
+        LinkingToSessionUserFailedError,
+    ]:
         pass
 
     @abstractmethod

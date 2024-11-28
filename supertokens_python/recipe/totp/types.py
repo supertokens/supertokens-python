@@ -43,9 +43,9 @@ class UnknownUserIdError(APIResponse):
 
 class UserIdentifierInfoDoesNotExistError:
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal["USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR"] = (
             "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR"
-        ] = "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR"
+        )
 
 
 class CreateDeviceOkResult(OkResult):
@@ -66,9 +66,9 @@ class CreateDeviceOkResult(OkResult):
 
 class DeviceAlreadyExistsError(APIResponse):
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal["DEVICE_ALREADY_EXISTS_ERROR"] = (
             "DEVICE_ALREADY_EXISTS_ERROR"
-        ] = "DEVICE_ALREADY_EXISTS_ERROR"
+        )
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}

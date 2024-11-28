@@ -15,10 +15,10 @@
 
 from typing import Any, Dict
 
-from fastapi import Response
+from werkzeug.test import TestResponse
 
 
-def extract_all_cookies(response: Response) -> Dict[str, Any]:
+def extract_all_cookies(response: TestResponse) -> Dict[str, Any]:
     cookie_headers = response.headers.getlist("Set-Cookie")
     cookies: Dict[str, Any] = {}
     for header in cookie_headers:

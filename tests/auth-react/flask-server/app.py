@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import time
 import traceback
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -314,7 +315,7 @@ from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
-    async def get_user_info(  # pylint: disable=no-self-use
+    async def get_user_info(
         oauth_tokens: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> UserInfo:
@@ -1007,7 +1008,7 @@ def custom_init():
 
     global accountlinking_config
 
-    accountlinking_config_input = {
+    accountlinking_config_input: Dict[str, Any] = {
         "enabled": False,
         "shouldAutoLink": {
             "shouldAutomaticallyLink": True,
@@ -1028,10 +1029,10 @@ def custom_init():
     ]:
         should_auto_link = accountlinking_config_input["shouldAutoLink"]
         assert isinstance(should_auto_link, dict)
-        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]
+        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]  # type: ignore
         assert isinstance(should_automatically_link, bool)
         if should_automatically_link:
-            should_require_verification = should_auto_link["shouldRequireVerification"]
+            should_require_verification = should_auto_link["shouldRequireVerification"]  # type: ignore
             assert isinstance(should_require_verification, bool)
             return accountlinking.ShouldAutomaticallyLink(
                 should_require_verification=should_require_verification
@@ -1092,6 +1093,13 @@ CORS(
     origins=get_website_domain(),
     allow_headers=["Content-Type"] + get_all_cors_headers(),
 )
+
+
+# Uncomment the following for response logging
+# @app.after_request
+# def after_request(response):  # type: ignore
+#     print(f"Response: {response.get_data(as_text=True)}")  # type: ignore
+#     return response  # type: ignore
 
 
 @app.route("/ping", methods=["GET"])  # type: ignore
@@ -1187,7 +1195,7 @@ def setup_tenant():
         raise Exception("Should never come here")
     tenant_id = body["tenantId"]
     login_methods = body["loginMethods"]
-    core_config = "coreConfig" in body and body["coreConfig"] or {}
+    core_config: Dict[str, Any] = "coreConfig" in body and body["coreConfig"] or {}
 
     first_factors: List[str] = []
     if login_methods.get("emailPassword", {}).get("enabled") == True:
@@ -1284,6 +1292,14 @@ def get_session_info():
 @app.route("/token", methods=["GET"])  # type: ignore
 def get_token():
     global latest_url_with_token
+
+    t = 0
+    while not latest_url_with_token:
+        time.sleep(0.5)
+        t += 1
+        if t > 10:
+            break
+
     return jsonify({"latestURLWithToken": latest_url_with_token})
 
 
@@ -1473,7 +1489,8 @@ def check_role_api():
 
 @app.route("/", defaults={"path": ""})  # type: ignore
 @app.route("/<path:path>")  # type: ignore
-def index(_: str):
+def index(path: str):
+    _ = path
     return ""
 
 

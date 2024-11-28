@@ -37,7 +37,7 @@ class HasValueSCV(SessionClaimValidator):
         max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
+        self.claim = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -47,6 +47,9 @@ class HasValueSCV(SessionClaimValidator):
         user_context: Dict[str, Any],
     ) -> bool:
         max_age_in_sec = self.max_age_in_sec
+
+        if self.claim is None:
+            raise Exception("should never happen")
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
@@ -65,7 +68,10 @@ class HasValueSCV(SessionClaimValidator):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
-        claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+        if self.claim is None:
+            raise Exception("should never happen")
+
+        claim_val: Optional[JSONPrimitive] = self.claim.get_value_from_payload(
             payload, user_context
         )
         if claim_val is None:

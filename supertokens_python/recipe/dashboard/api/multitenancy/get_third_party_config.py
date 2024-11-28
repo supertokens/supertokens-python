@@ -54,12 +54,12 @@ class ProviderConfigResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         json_response = self.provider_config.to_json()
-        json_response[
-            "isGetAuthorisationRedirectUrlOverridden"
-        ] = self.is_get_authorisation_redirect_url_overridden
-        json_response[
-            "isExchangeAuthCodeForOAuthTokensOverridden"
-        ] = self.is_exchange_auth_code_for_oauth_tokens_overridden
+        json_response["isGetAuthorisationRedirectUrlOverridden"] = (
+            self.is_get_authorisation_redirect_url_overridden
+        )
+        json_response["isExchangeAuthCodeForOAuthTokensOverridden"] = (
+            self.is_exchange_auth_code_for_oauth_tokens_overridden
+        )
         json_response["isGetUserInfoOverridden"] = self.is_get_user_info_overridden
         return {
             "status": "OK",

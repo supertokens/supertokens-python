@@ -345,7 +345,7 @@ class Supertokens:
 
         return list(headers_set)
 
-    async def get_user_count(  # pylint: disable=no-self-use
+    async def get_user_count(
         self,
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
@@ -367,7 +367,7 @@ class Supertokens:
 
         return int(response["count"])
 
-    async def create_user_id_mapping(  # pylint: disable=no-self-use
+    async def create_user_id_mapping(
         self,
         supertokens_user_id: str,
         external_user_id: str,
@@ -409,7 +409,7 @@ class Supertokens:
 
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
-    async def get_user_id_mapping(  # pylint: disable=no-self-use
+    async def get_user_id_mapping(
         self,
         user_id: str,
         user_id_type: Optional[UserIDTypes],
@@ -443,7 +443,7 @@ class Supertokens:
 
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
-    async def delete_user_id_mapping(  # pylint: disable=no-self-use
+    async def delete_user_id_mapping(
         self,
         user_id: str,
         user_id_type: Optional[UserIDTypes],
@@ -475,7 +475,7 @@ class Supertokens:
 
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
-    async def update_or_delete_user_id_mapping_info(  # pylint: disable=no-self-use
+    async def update_or_delete_user_id_mapping_info(
         self,
         user_id: str,
         user_id_type: Optional[UserIDTypes],
@@ -505,7 +505,7 @@ class Supertokens:
 
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
-    async def middleware(  # pylint: disable=no-self-use
+    async def middleware(
         self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
     ) -> Union[BaseResponse, None]:
         log_debug_message("middleware: Started")
@@ -634,7 +634,7 @@ class Supertokens:
         err: Exception,
         response: BaseResponse,
         user_context: Dict[str, Any],
-    ):
+    ) -> Optional[BaseResponse]:
         log_debug_message("errorHandler: Started")
         log_debug_message(
             "errorHandler: Error is from SuperTokens recipe. Message: %s", str(err)
@@ -659,7 +659,7 @@ class Supertokens:
                 return await recipe.handle_error(request, err, response, user_context)
         raise err
 
-    def get_request_from_user_context(  # pylint: disable=no-self-use
+    def get_request_from_user_context(
         self,
         user_context: Optional[Dict[str, Any]] = None,
     ) -> Optional[BaseRequest]:

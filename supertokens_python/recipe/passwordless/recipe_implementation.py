@@ -198,7 +198,7 @@ class RecipeImplementation(RecipeInterface):
         tenant_id: str,
         user_context: Dict[str, Any],
     ) -> CreateCodeOkResult:
-        input_dict = {}
+        input_dict: Dict[str, Any] = {}
         if email:
             input_dict["email"] = email
         if phone_number:

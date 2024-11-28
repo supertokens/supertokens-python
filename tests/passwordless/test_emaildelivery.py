@@ -78,7 +78,7 @@ def teardown_function(_):
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -122,8 +122,8 @@ async def test_email_verify_for_pless_user_no_callback():
                 is_html=False,
             )
 
-        oi.send_raw_email = send_raw_email_override
-        oi.get_content = get_content_override
+        oi.send_raw_email = send_raw_email_override  # type: ignore
+        oi.get_content = get_content_override  # type: ignore
 
         return oi
 
@@ -569,8 +569,8 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
                 is_html=False,
             )
 
-        oi.send_raw_email = send_raw_email_override
-        oi.get_content = get_content_override
+        oi.send_raw_email = send_raw_email_override  # type: ignore
+        oi.get_content = get_content_override  # type: ignore
 
         return oi
 

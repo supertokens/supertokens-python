@@ -5,6 +5,9 @@ from supertokens_python.recipe.session import SessionContainer
 
 @verify_session()
 def get_session_info(request: HttpRequest) -> JsonResponse:
+    if not isinstance(request.supertokens, SessionContainer):  # type: ignore
+        raise Exception("should never happen")
+
     session_: SessionContainer = request.supertokens  # type: ignore
     return JsonResponse(
         {

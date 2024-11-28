@@ -51,9 +51,7 @@ class AppleImpl(GenericProvider):
 
         return config
 
-    async def _get_client_secret(  # pylint: disable=no-self-use
-        self, config: ProviderConfigForClient
-    ) -> str:
+    async def _get_client_secret(self, config: ProviderConfigForClient) -> str:
         if (
             config.additional_config is None
             or config.additional_config.get("keyId") is None
@@ -114,9 +112,9 @@ class AppleImpl(GenericProvider):
             if response.raw_user_info_from_provider.from_id_token_payload is None:
                 response.raw_user_info_from_provider.from_id_token_payload = {}
 
-            response.raw_user_info_from_provider.from_id_token_payload[
-                "user"
-            ] = user_dict
+            response.raw_user_info_from_provider.from_id_token_payload["user"] = (
+                user_dict
+            )
 
         return response
 

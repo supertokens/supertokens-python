@@ -51,7 +51,7 @@ class TwilioService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
             twilio_settings.account_sid, twilio_settings.auth_token, **otps
         )
         oi = ServiceImplementation(self.twilio_client)  # type: ignore
-        self.service_implementation = oi if override is None else override(oi)
+        self.service_implementation = oi if override is None else override(oi)  # type: ignore
 
     async def send_sms(
         self,

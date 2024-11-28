@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional, Union
+from httpx import Response
 from typing_extensions import Literal
 
 from fastapi import Depends, FastAPI, Request
@@ -27,7 +28,7 @@ pytestmark = mark.asyncio
 
 
 @fixture(scope="function")
-async def app():
+def app():
     fast = FastAPI()
     fast.add_middleware(get_middleware())
 
@@ -76,8 +77,8 @@ def call_api(
 ):
     access_token = info.get("accessTokenFromAny")
 
-    headers = {}
-    cookies = {}
+    headers: Dict[str, Any] = {}
+    cookies: Dict[str, Any] = {}
 
     if auth_mode_header:
         headers["st-auth-mode"] = auth_mode_header
@@ -87,9 +88,9 @@ def call_api(
             headers["anti-csrf"] = info["antiCsrf"]
 
     if auth_mode in ("header", "both"):
-        headers[
-            "Authorization"
-        ] = f"Bearer {(access_token)}"  # TODO: Might have to add decode_uri()
+        headers["Authorization"] = (
+            f"Bearer {(access_token)}"  # TODO: Might have to add decode_uri()
+        )
 
     app.cookies = RequestsCookieJar()  # Reset cookies
 
@@ -516,7 +517,7 @@ async def test_refresh_session_parametrized(
     # Token transfer method doesn't matter for this test
     res = create_session(app, "cookies")
 
-    auth_mode = "none"
+    auth_mode: Literal["none", "header", "cookie", "both"] = "none"
     if auth_cookie and auth_header:
         auth_mode = "both"
     elif auth_header:
@@ -594,9 +595,9 @@ async def refresh_session(
     auth_mode_header: TokenTransferMethod,
     auth_mode: str,
     res: Dict[str, str],
-):
-    headers = {}
-    cookies = {}
+) -> Response:
+    headers: Dict[str, Any] = {}
+    cookies: Dict[str, Any] = {}
 
     app.cookies = RequestsCookieJar()  # Reset cookies
 

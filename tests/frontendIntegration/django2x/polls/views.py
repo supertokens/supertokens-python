@@ -76,12 +76,12 @@ last_set_enable_jwt = False
 def custom_decorator_for_test():  # type: ignore
     def session_verify_custom_test(f):  # type: ignore
         @wraps(f)  # type: ignore
-        def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
+        def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):  # type: ignore
             Test.increment_attempted_refresh()
             try:
-                value: HttpResponse = f(request, *args, **kwargs)
-                if value is not None and value.status_code != 200:
-                    return value
+                value: HttpResponse = f(request, *args, **kwargs)  # type: ignore
+                if value is not None and value.status_code != 200:  # type: ignore
+                    return value  # type: ignore
                 if request.headers.get("rid") is None:  # type: ignore
                     return HttpResponse(content="refresh failed")
                 Test.increment_refresh()
@@ -89,7 +89,7 @@ def custom_decorator_for_test():  # type: ignore
             except Exception as e:
                 raise e
 
-        return wrapped_function
+        return wrapped_function  # type: ignore
 
     return session_verify_custom_test  # type: ignore
 
@@ -100,32 +100,32 @@ def custom_decorator_for_update_jwt():  # type: ignore
         def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == "GET":
                 Test.increment_get_session()
-                value: HttpResponse = f(request, *args, **kwargs)
-                if value is not None and value.status_code != 200:
-                    return value
+                value: HttpResponse = f(request, *args, **kwargs)  # type: ignore
+                if value is not None and value.status_code != 200:  # type: ignore
+                    return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
-                resp = JsonResponse(session.get_access_token_payload())
+                resp = JsonResponse(session.get_access_token_payload())  # type: ignore
                 resp["Cache-Control"] = "no-cache, private"
                 return resp
             else:
                 if request.method == "POST":
-                    value: HttpResponse = f(request, *args, **kwargs)
-                    if value is not None and value.status_code != 200:
-                        return value
+                    value: HttpResponse = f(request, *args, **kwargs)  # type: ignore
+                    if value is not None and value.status_code != 200:  # type: ignore
+                        return value  # type: ignore
                     session_: SessionContainer = request.supertokens  # type: ignore
 
                     clearing = {}
-                    for k in session_.get_access_token_payload():
+                    for k in session_.get_access_token_payload():  # type: ignore
                         if k not in protected_prop_name:
                             clearing[k] = None
 
                     body = json.loads(request.body)
-                    session_.sync_merge_into_access_token_payload(
+                    session_.sync_merge_into_access_token_payload(  # type: ignore
                         {**clearing, **body}, {}
                     )
 
                     Test.increment_get_session()
-                    resp = JsonResponse(session_.get_access_token_payload())
+                    resp = JsonResponse(session_.get_access_token_payload())  # type: ignore
                     resp["Cache-Control"] = "no-cache, private"
                     return resp
             return send_options_api_response()
@@ -140,12 +140,12 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
         @wraps(f)  # type: ignore
         def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == "POST":
-                value: HttpResponse = f(request, *args, **kwargs)
-                if value is not None and value.status_code != 200:
-                    return value
+                value: HttpResponse = f(request, *args, **kwargs)  # type: ignore
+                if value is not None and value.status_code != 200:  # type: ignore
+                    return value  # type: ignore
                 session_: SessionContainer = request.supertokens  # type: ignore
 
-                info = get_session_information(session_.get_handle())
+                info = get_session_information(session_.get_handle())  # type: ignore
                 assert info is not None
                 clearing = {}
                 for k in info.custom_claims_in_access_token_payload:
@@ -154,10 +154,10 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
 
                 body = json.loads(request.body)
                 merge_into_access_token_payload(
-                    session_.get_handle(), {**clearing, **body}
+                    session_.get_handle(), {**clearing, **body}  # type: ignore
                 )
 
-                resp = JsonResponse(session_.get_access_token_payload())
+                resp = JsonResponse(session_.get_access_token_payload())  # type: ignore
                 resp["Cache-Control"] = "no-cache, private"
                 return resp
             return send_options_api_response()
@@ -172,12 +172,12 @@ def custom_decorator_for_get_info():  # type: ignore
         @wraps(f)  # type: ignore
         def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == "GET":
-                value: HttpResponse = f(request, *args, **kwargs)
-                if value is not None and value.status_code != 200:
-                    return value
+                value: HttpResponse = f(request, *args, **kwargs)  # type: ignore
+                if value is not None and value.status_code != 200:  # type: ignore
+                    return value  # type: ignore
                 Test.increment_get_session()
                 session: SessionContainer = request.supertokens  # type: ignore
-                resp = HttpResponse(session.get_user_id())
+                resp = HttpResponse(session.get_user_id())  # type: ignore
                 resp["Cache-Control"] = "no-cache, private"
                 return resp
             else:
@@ -193,11 +193,11 @@ def custom_decorator_for_logout():  # type: ignore
         @wraps(f)  # type: ignore
         def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == "POST":
-                value: HttpResponse = f(request, *args, **kwargs)
-                if value is not None and value.status_code != 200:
-                    return value
+                value: HttpResponse = f(request, *args, **kwargs)  # type: ignore
+                if value is not None and value.status_code != 200:  # type: ignore
+                    return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
-                session.sync_revoke_session()
+                session.sync_revoke_session()  # type: ignore
                 return HttpResponse("success")
             return send_options_api_response()
 
@@ -388,9 +388,6 @@ def config(
 
     for header in get_all_cors_headers():
         assert header in settings.CORS_ALLOW_HEADERS
-
-
-config(True, False, None)
 
 
 def send_file(request: HttpRequest):

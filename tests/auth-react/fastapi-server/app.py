@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import time
 import typing
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -172,6 +173,29 @@ app = FastAPI(debug=True)
 app.add_middleware(get_middleware())
 os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 
+
+# Uncomment the following for response logging
+# @app.middleware("http")
+# async def log_response(request: Request, call_next):  # type: ignore
+#     response = await call_next(request)  # type: ignore
+
+#     try:
+#         body_bytes = b""
+#         async for chunk in response.body_iterator:  # type: ignore
+#             body_bytes += chunk  # type: ignore
+#         print(f"Response: {body_bytes.decode('utf-8')}")  # type: ignore
+#         response_with_body = Response(
+#             content=body_bytes,
+#             status_code=response.status_code,  # type: ignore
+#             headers=response.headers,  # type: ignore
+#             media_type=response.media_type,  # type: ignore
+#         )
+#         return response_with_body
+#     except:
+#         pass
+#     return response  # type: ignore
+
+
 code_store: Dict[str, List[Dict[str, Any]]] = {}
 accountlinking_config: Dict[str, Any] = {}
 enabled_providers: Optional[List[Any]] = None
@@ -308,7 +332,7 @@ from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
-    async def get_user_info(  # pylint: disable=no-self-use
+    async def get_user_info(
         oauth_tokens: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> UserInfo:
@@ -1001,7 +1025,7 @@ def custom_init():
 
     global accountlinking_config
 
-    accountlinking_config_input = {
+    accountlinking_config_input: Dict[str, Any] = {
         "enabled": False,
         "shouldAutoLink": {
             "shouldAutomaticallyLink": True,
@@ -1022,10 +1046,10 @@ def custom_init():
     ]:
         should_auto_link = accountlinking_config_input["shouldAutoLink"]
         assert isinstance(should_auto_link, dict)
-        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]
+        should_automatically_link = should_auto_link["shouldAutomaticallyLink"]  # type: ignore
         assert isinstance(should_automatically_link, bool)
         if should_automatically_link:
-            should_require_verification = should_auto_link["shouldRequireVerification"]
+            should_require_verification = should_auto_link["shouldRequireVerification"]  # type: ignore
             assert isinstance(should_require_verification, bool)
             return accountlinking.ShouldAutomaticallyLink(
                 should_require_verification=should_require_verification
@@ -1397,6 +1421,14 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
 @app.get("/token")
 async def get_token():
     global latest_url_with_token
+    t = 0
+
+    while not latest_url_with_token:
+        time.sleep(0.5)
+        t += 1
+        if t > 10:
+            break
+
     return JSONResponse({"latestURLWithToken": latest_url_with_token})
 
 

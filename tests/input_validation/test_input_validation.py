@@ -18,6 +18,15 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
 )
 from supertokens_python.types import RecipeUserId
+from tests.utils import reset
+
+
+def setup_function(_):
+    reset()
+
+
+def teardown_function(_):
+    reset()
 
 
 @pytest.mark.asyncio

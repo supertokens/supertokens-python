@@ -10,7 +10,7 @@
 
 
 # class TransporterTests(TestCase):
-#     def test_transporter(self):  # pylint: disable=no-self-use
+#     def test_transporter(self):
 #         local_insecure_smtpd_config_without_auth = SMTPServiceConfig(
 #             host="localhost",
 #             from_=SMTPServiceConfigFrom("Foo bar", "foo@example.com"),
@@ -65,7 +65,7 @@
 #             except TimeoutExpired:
 #                 raise Exception('subprocess did not terminate in time')
 
-#     def test_transporter_with_gmail(self):  # pylint: disable=no-self-use
+#     def test_transporter_with_gmail(self):
 #         email = getenv("TEST_GMAIL_EMAIL")
 #         password = getenv("TEST_GMAIL_PASS")
 

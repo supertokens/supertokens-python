@@ -18,10 +18,10 @@ from typing import Any, Dict, Union
 from base64 import b64encode
 import time
 
-import uvicorn  # type: ignore
+import uvicorn
 from fastapi import Depends, FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
-from starlette.exceptions import ExceptionMiddleware
+from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from supertokens_python import (
@@ -246,7 +246,7 @@ def config(
 
 config(True, False, None)
 
-app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
+app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)  # type: ignore
 
 
 @app.get("/index.html")
