@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import base64
 from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
 from urllib.parse import parse_qs, urlparse
 
@@ -367,7 +368,137 @@ class RecipeImplementation(RecipeInterface):
         body: Dict[str, Optional[str]],
         user_context: Dict[str, Any] = {},
     ) -> Union[TokenInfo, ErrorOAuth2Response]:
-        pass
+        request_body = {
+            "iss": await OpenIdRecipe.get_issuer(user_context),
+            "inputBody": body,
+            "authorizationHeader": authorization_header,
+        }
+
+        if body.get("grant_type") == "password":
+            return ErrorOAuth2Response(
+                status_code=400,
+                error="invalid_request",
+                error_description="Unsupported grant type: password",
+            )
+
+        if body.get("grant_type") == "client_credentials":
+            client_id = None
+            if authorization_header:
+                # Extract client_id from Basic auth header
+                decoded = base64.b64decode(
+                    authorization_header.replace("Basic ", "").strip()
+                ).decode()
+                client_id = decoded.split(":")[0]
+            else:
+                client_id = body.get("client_id")
+
+            if not client_id:
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error="invalid_request",
+                    error_description="client_id is required",
+                )
+
+            scopes = str(body.get("scope", "")).split() if body.get("scope") else []
+
+            client_info = await self.get_oauth2_client(
+                client_id=client_id, user_context=user_context
+            )
+
+            if isinstance(client_info, ErrorOAuth2Response):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=client_info.error,
+                    error_description=client_info.error_description,
+                )
+
+            client = client_info.client
+            request_body["id_token"] = await self.build_id_token_payload(
+                user=None,
+                client=client,
+                session_handle=None,
+                scopes=scopes,
+                user_context=user_context,
+            )
+            request_body["access_token"] = await self.build_access_token_payload(
+                user=None,
+                client=client,
+                session_handle=None,
+                scopes=scopes,
+                user_context=user_context,
+            )
+
+        if body.get("grant_type") == "refresh_token":
+            scopes = str(body.get("scope", "")).split() if body.get("scope") else []
+            token_info = await self.introspect_token(
+                token=str(body["refresh_token"]),
+                scopes=scopes,
+                user_context=user_context,
+            )
+
+            if token_info.get("active"):
+                session_handle = token_info["sessionHandle"]
+
+                client_info = await self.get_oauth2_client(
+                    client_id=token_info["client_id"], user_context=user_context
+                )
+
+                if isinstance(client_info, ErrorOAuth2Response):
+                    return ErrorOAuth2Response(
+                        status_code=400,
+                        error=client_info.error,
+                        error_description=client_info.error_description,
+                    )
+
+                client = client_info.client
+                user = await get_user(token_info["sub"])
+
+                if not user:
+                    return ErrorOAuth2Response(
+                        status_code=400,
+                        error="invalid_request",
+                        error_description="User not found",
+                    )
+
+                request_body["id_token"] = await self.build_id_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session_handle,
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+                request_body["access_token"] = await self.build_access_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session_handle,
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+        if authorization_header:
+            request_body["authorizationHeader"] = authorization_header
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/token"),
+            request_body,
+            user_context=user_context,
+        )
+
+        if response["status"] == "CLIENT_NOT_FOUND_ERROR":
+            return ErrorOAuth2Response(
+                status_code=400,
+                error="invalid_request",
+                error_description="client_id not found",
+            )
+
+        if response["status"] != "OK":
+            return ErrorOAuth2Response(
+                status_code=response["statusCode"],
+                error=response["error"],
+                error_description=response["errorDescription"],
+            )
+
+        return TokenInfo.from_json(response)
 
     async def get_oauth2_clients(
         self,

@@ -162,6 +162,17 @@ class TokenInfo:
         self.scope = scope
         self.token_type = token_type
 
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return TokenInfo(
+            access_token=json["access_token"],
+            expires_in=json["expires_in"],
+            id_token=json["id_token"],
+            refresh_token=json["refresh_token"],
+            scope=json["scope"],
+            token_type=json["token_type"],
+        )
+
 
 class LoginInfo:
     def __init__(
