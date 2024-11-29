@@ -430,7 +430,7 @@ class RecipeInterface(ABC):
         self,
         client_id: str,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, str]:
+    ):
         pass
 
     @abstractmethod
@@ -438,7 +438,7 @@ class RecipeInterface(ABC):
         self,
         session_handle: str,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, str]:
+    ):
         pass
 
     @abstractmethod
@@ -473,7 +473,7 @@ class RecipeInterface(ABC):
         self,
         challenge: str,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, str]:
+    ):
         pass
 
 

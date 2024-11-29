@@ -398,15 +398,23 @@ class RecipeImplementation(RecipeInterface):
         self,
         client_id: str,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, str]:
-        pass
+    ):
+        await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/session/revoke"),
+            {"client_id": client_id},
+            user_context=user_context,
+        )
 
     async def revoke_tokens_by_session_handle(
         self,
         session_handle: str,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, str]:
-        pass
+    ):
+        await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/session/revoke"),
+            {"sessionHandle": session_handle},
+            user_context=user_context,
+        )
 
     async def introspect_token(
         self,
@@ -414,7 +422,34 @@ class RecipeImplementation(RecipeInterface):
         scopes: Optional[List[str]] = None,
         user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
-        pass
+        # Determine if the token is an access token by checking if it doesn't start with "st_rt"
+        is_access_token = not token.startswith("st_rt")
+
+        # Attempt to validate the access token locally
+        # If it fails, the token is not active, and we return early
+        if is_access_token:
+            try:
+                await self.validate_oauth2_access_token(
+                    token=token,
+                    requirements={"scopes": scopes},
+                    check_database=False,
+                    user_context=user_context,
+                )
+            except Exception:
+                return {"active": False}
+
+        # For tokens that passed local validation or if it's a refresh token,
+        # validate the token with the database by calling the core introspection endpoint
+        res = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/introspect"),
+            {
+                "token": token,
+                "scope": " ".join(scopes) if scopes else None,
+            },
+            user_context=user_context,
+        )
+
+        return res
 
     async def end_session(
         self,
@@ -430,11 +465,43 @@ class RecipeImplementation(RecipeInterface):
         challenge: str,
         user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-        pass
+        resp = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/logout/accept"),
+            {"challenge": challenge},
+            None,
+            user_context=user_context,
+        )
+
+        if resp["status"] != "OK":
+            return ErrorOAuth2Response(
+                status_code=resp["statusCode"],
+                error=resp["error"],
+                error_description=resp["errorDescription"],
+            )
+
+        redirect_to = get_updated_redirect_to(self.app_info, resp["redirectTo"])
+
+        if redirect_to.endswith("/fallbacks/logout/callback"):
+            return RedirectResponse(
+                redirect_to=await self.get_frontend_redirection_url(
+                    type="post-logout-fallback",
+                    user_context=user_context,
+                )
+            )
+
+        return RedirectResponse(redirect_to=redirect_to)
 
     async def reject_logout_request(
         self,
         challenge: str,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, str]:
-        pass
+    ):
+        resp = await self.querier.send_put_request(
+            NormalisedURLPath("/recipe/oauth/auth/requests/logout/reject"),
+            {},
+            {"challenge": challenge},
+            user_context=user_context,
+        )
+
+        if resp["status"] != "OK":
+            raise Exception(resp["error"])
