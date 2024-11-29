@@ -14,13 +14,18 @@
 
 from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
 
+import jwt
+
 from supertokens_python import AppInfo
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.recipe.session.jwks import get_latest_keys
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import User
 
 from .interfaces import (
+    OAuth2TokenValidationRequirements,
     PayloadBuilderFunction,
     RecipeInterface,
     RedirectResponse,
@@ -331,11 +336,58 @@ class RecipeImplementation(RecipeInterface):
     async def validate_oauth2_access_token(
         self,
         token: str,
-        requirements: Optional[Dict[str, Any]] = None,
+        requirements: Optional[OAuth2TokenValidationRequirements] = None,
         check_database: Optional[bool] = None,
         user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
-        pass
+        # Verify token signature using session recipe's JWKS
+        session_recipe = SessionRecipe.get_instance()
+        matching_keys = get_latest_keys(session_recipe.config)
+        payload = jwt.decode(
+            token,
+            matching_keys[0].key,
+            algorithms=["RS256"],
+            options={"verify_signature": True, "verify_exp": True},
+        )
+
+        if payload.get("stt") != 1:
+            raise Exception("Wrong token type")
+
+        if requirements is not None and requirements.client_id is not None:
+            if payload.get("client_id") != requirements.client_id:
+                raise Exception(
+                    f"The token doesn't belong to the specified client ({requirements.client_id} !== {payload.get('client_id')})"
+                )
+
+        if requirements is not None and requirements.scopes is not None:
+            token_scopes = payload.get("scp", [])
+            if not isinstance(token_scopes, list):
+                token_scopes = [token_scopes]
+
+            if any(scope not in token_scopes for scope in requirements.scopes):
+                raise Exception("The token is missing some required scopes")
+
+        aud = payload.get("aud", [])
+        if not isinstance(aud, list):
+            aud = [aud]
+
+        if requirements is not None and requirements.audience is not None:
+            if requirements.audience not in aud:
+                raise Exception("The token doesn't belong to the specified audience")
+
+        if check_database:
+            response = await self.querier.send_post_request(
+                NormalisedURLPath("/recipe/oauth/introspect"),
+                {
+                    "token": token,
+                },
+                user_context=user_context,
+            )
+
+            if response.get("active") is not True:
+                raise Exception("The token is expired, invalid or has been revoked")
+
+        return {"status": "OK", "payload": payload}
 
     async def get_requested_scopes(
         self,

@@ -240,6 +240,18 @@ UserInfoBuilderFunction = Callable[
 ]
 
 
+class OAuth2TokenValidationRequirements:
+    def __init__(
+        self,
+        client_id: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
+        audience: Optional[str] = None,
+    ):
+        self.client_id = client_id
+        self.scopes = scopes
+        self.audience = audience
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -365,7 +377,7 @@ class RecipeInterface(ABC):
     async def validate_oauth2_access_token(
         self,
         token: str,
-        requirements: Optional[Dict[str, Any]] = None,
+        requirements: Optional[OAuth2TokenValidationRequirements] = None,
         check_database: Optional[bool] = None,
         user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
