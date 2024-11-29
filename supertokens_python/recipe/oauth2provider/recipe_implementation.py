@@ -15,6 +15,7 @@
 import base64
 from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
 from urllib.parse import parse_qs, urlparse
+import urllib.parse
 
 import jwt
 
@@ -28,6 +29,10 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId, User
 
 from .interfaces import (
+    FrontendRedirectionURLTypeLogin,
+    FrontendRedirectionURLTypeLogoutConfirmation,
+    FrontendRedirectionURLTypePostLogoutFallback,
+    FrontendRedirectionURLTypeTryRefresh,
     OAuth2TokenValidationRequirements,
     PayloadBuilderFunction,
     RecipeInterface,
@@ -725,13 +730,41 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_frontend_redirection_url(
         self,
-        input_type: str,
+        input: Union[
+            FrontendRedirectionURLTypeLogin,
+            FrontendRedirectionURLTypeTryRefresh,
+            FrontendRedirectionURLTypeLogoutConfirmation,
+            FrontendRedirectionURLTypePostLogoutFallback,
+        ],
         user_context: Dict[str, Any] = {},
     ) -> str:
         website_domain = self.app_info.get_origin(
             None, user_context
         ).get_as_string_dangerous()
         website_base_path = self.app_info.api_base_path.get_as_string_dangerous()
+
+        if isinstance(input, FrontendRedirectionURLTypeLogin):
+            query_params: Dict[str, str] = {"loginChallenge": input.login_challenge}
+            if input.tenant_id != "public":  # DEFAULT_TENANT_ID is "public"
+                query_params["tenantId"] = input.tenant_id
+            if input.hint is not None:
+                query_params["hint"] = input.hint
+            if input.force_fresh_auth:
+                query_params["forceFreshAuth"] = "true"
+
+            query_string = "&".join(
+                f"{k}={urllib.parse.quote(str(v))}" for k, v in query_params.items()
+            )
+            return f"{website_domain}{website_base_path}?{query_string}"
+
+        elif isinstance(input, FrontendRedirectionURLTypeTryRefresh):
+            return f"{website_domain}{website_base_path}/try-refresh?loginChallenge={input.login_challenge}"
+
+        elif isinstance(input, FrontendRedirectionURLTypePostLogoutFallback):
+            return f"{website_domain}{website_base_path}"
+
+        else:  # isinstance(input, FrontendRedirectionURLTypeLogoutConfirmation)
+            return f"{website_domain}{website_base_path}/oauth/logout?logoutChallenge={input.logout_challenge}"
 
     async def revoke_token(
         self,

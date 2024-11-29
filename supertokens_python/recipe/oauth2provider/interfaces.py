@@ -268,6 +268,34 @@ class OAuth2TokenValidationRequirements:
         self.audience = audience
 
 
+class FrontendRedirectionURLTypeLogin:
+    def __init__(
+        self,
+        login_challenge: str,
+        tenant_id: str,
+        force_fresh_auth: bool,
+        hint: Optional[str] = None,
+    ):
+        self.login_challenge = login_challenge
+        self.tenant_id = tenant_id
+        self.force_fresh_auth = force_fresh_auth
+        self.hint = hint
+
+
+class FrontendRedirectionURLTypeTryRefresh:
+    def __init__(self, login_challenge: str):
+        self.login_challenge = login_challenge
+
+
+class FrontendRedirectionURLTypeLogoutConfirmation:
+    def __init__(self, logout_challenge: str):
+        self.logout_challenge = logout_challenge
+
+
+class FrontendRedirectionURLTypePostLogoutFallback:
+    pass
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -446,7 +474,12 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_frontend_redirection_url(
         self,
-        input_type: str,
+        input: Union[
+            FrontendRedirectionURLTypeLogin,
+            FrontendRedirectionURLTypeTryRefresh,
+            FrontendRedirectionURLTypeLogoutConfirmation,
+            FrontendRedirectionURLTypePostLogoutFallback,
+        ],
         user_context: Dict[str, Any] = {},
     ) -> str:
         pass
