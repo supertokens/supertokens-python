@@ -24,7 +24,7 @@ from supertokens_python.types import User
 
 from .recipe_implementation import RecipeImplementation
 
-from .interfaces import APIOptions
+from .interfaces import APIOptions, PayloadBuilderFunction, UserInfoBuilderFunction
 
 
 if TYPE_CHECKING:
@@ -59,76 +59,6 @@ from .utils import (
 )
 
 
-async def get_default_id_token_payload(
-    user: Dict[str, Any],
-    scopes: List[str],
-    session_handle: str,
-    user_context: Dict[str, Any] = {},
-) -> Dict[str, Any]:
-    payload: Dict[str, Any] = {}
-
-    if "email" in scopes:
-        payload["email"] = user.get("emails", [None])[0]
-        payload["email_verified"] = any(
-            lm.get("hasSameEmailAs")(user.get("emails", [None])[0])
-            and lm.get("verified")
-            for lm in user.get("loginMethods", [])
-        )
-        payload["emails"] = user.get("emails", [])
-
-    if "phoneNumber" in scopes:
-        payload["phoneNumber"] = user.get("phoneNumbers", [None])[0]
-        payload["phoneNumber_verified"] = any(
-            lm.get("hasSamePhoneNumberAs")(user.get("phoneNumbers", [None])[0])
-            and lm.get("verified")
-            for lm in user.get("loginMethods", [])
-        )
-        payload["phoneNumbers"] = user.get("phoneNumbers", [])
-
-    for fn in self.id_token_builders:
-        fn_payload = await fn(user, scopes, session_handle, user_context)
-        payload.update(fn_payload)
-
-    return payload
-
-
-async def get_default_user_info(
-    user: Dict[str, Any],
-    access_token_payload: Dict[str, Any],
-    scopes: List[str],
-    tenant_id: str,
-    user_context: Dict[str, Any] = {},
-) -> Dict[str, Any]:
-    payload: Dict[str, Any] = {"sub": access_token_payload.get("sub")}
-
-    if "email" in scopes:
-        # TODO: try and get the email based on the user id of the entire user object
-        payload["email"] = user.get("emails", [None])[0]
-        payload["email_verified"] = any(
-            lm.get("hasSameEmailAs")(user.get("emails", [None])[0])
-            and lm.get("verified")
-            for lm in user.get("loginMethods", [])
-        )
-        payload["emails"] = user.get("emails", [])
-
-    if "phoneNumber" in scopes:
-        payload["phoneNumber"] = user.get("phoneNumbers", [None])[0]
-        payload["phoneNumber_verified"] = any(
-            lm.get("hasSamePhoneNumberAs")(user.get("phoneNumbers", [None])[0])
-            and lm.get("verified")
-            for lm in user.get("loginMethods", [])
-        )
-        payload["phoneNumbers"] = user.get("phoneNumbers", [])
-
-    for fn in self.user_info_builders:
-        fn_payload = await fn(
-            user, access_token_payload, scopes, tenant_id, user_context
-        )
-        payload.update(fn_payload)
-
-    return payload
-
-
 class OAuth2ProviderRecipe(RecipeModule):
     recipe_id = "oauth2provider"
     __instance = None
@@ -144,7 +74,13 @@ class OAuth2ProviderRecipe(RecipeModule):
             override,
         )
 
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id),
+            app_info,
+            self.get_default_access_token_payload,
+            self.get_default_id_token_payload,
+            self.get_default_user_info_payload,
+        )
         self.recipe_implementation: RecipeImplementation = (
             recipe_implementation
             if self.config.override.functions is None
@@ -157,6 +93,10 @@ class OAuth2ProviderRecipe(RecipeModule):
             if self.config.override.apis is None
             else self.config.override.apis(api_implementation)
         )
+
+        self._access_token_builders: List[PayloadBuilderFunction] = []
+        self._id_token_builders: List[PayloadBuilderFunction] = []
+        self._user_info_builders: List[UserInfoBuilderFunction] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, OAuth2ProviderError)
@@ -300,37 +240,6 @@ class OAuth2ProviderRecipe(RecipeModule):
     def get_all_cors_headers(self) -> List[str]:
         return []
 
-    async def get_default_access_token_payload(
-        self,
-        user: User,
-        scopes: List[str],
-        session_handle: str,
-        user_context: Dict[str, Any] = {},
-    ) -> Dict[str, Any]:
-        payload: Dict[str, Any] = {}
-
-        if "email" in scopes:
-            payload["email"] = user.emails[0]
-            payload["email_verified"] = any(
-                lm.has_same_email_as(user.emails[0]) and lm.verified
-                for lm in user.login_methods
-            )
-            payload["emails"] = user.emails
-
-        if "phoneNumber" in scopes:
-            payload["phoneNumber"] = user.phone_numbers[0]
-            payload["phoneNumber_verified"] = any(
-                lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
-                for lm in user.login_methods
-            )
-            payload["phoneNumbers"] = user.phone_numbers
-
-        for fn in self.access_token_builders:
-            fn_payload = await fn(user, scopes, session_handle, user_context)
-            payload.update(fn_payload)
-
-        return payload
-
     @staticmethod
     def init(
         override: Union[InputOverrideConfig, None] = None,
@@ -369,3 +278,144 @@ class OAuth2ProviderRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         OAuth2ProviderRecipe.__instance = None
+
+    def add_user_info_builder_from_other_recipe(
+        self, user_info_builder_fn: UserInfoBuilderFunction
+    ) -> None:
+        self._user_info_builders.append(user_info_builder_fn)
+
+    def add_access_token_builder_from_other_recipe(
+        self, access_token_builder: PayloadBuilderFunction
+    ) -> None:
+        self._access_token_builders.append(access_token_builder)
+
+    def add_id_token_builder_from_other_recipe(
+        self, id_token_builder: PayloadBuilderFunction
+    ) -> None:
+        self._id_token_builders.append(id_token_builder)
+
+    async def get_default_access_token_payload(
+        self,
+        user: User,
+        scopes: List[str],
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {}
+
+        if "email" in scopes:
+            payload["email"] = user.emails[0] if user.emails else None
+            payload["email_verified"] = (
+                any(
+                    lm.has_same_email_as(user.emails[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.emails
+                else False
+            )
+            payload["emails"] = user.emails
+
+        if "phoneNumber" in scopes:
+            payload["phoneNumber"] = (
+                user.phone_numbers[0] if user.phone_numbers else None
+            )
+            payload["phoneNumber_verified"] = (
+                any(
+                    lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.phone_numbers
+                else False
+            )
+            payload["phoneNumbers"] = user.phone_numbers
+
+        for fn in self._access_token_builders:
+            builder_payload = await fn(user, scopes, session_handle, user_context)
+            payload.update(builder_payload)
+
+        return payload
+
+    async def get_default_id_token_payload(
+        self,
+        user: User,
+        scopes: List[str],
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {}
+
+        if "email" in scopes:
+            payload["email"] = user.emails[0] if user.emails else None
+            payload["email_verified"] = (
+                any(
+                    lm.has_same_email_as(user.emails[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.emails
+                else False
+            )
+            payload["emails"] = user.emails
+
+        if "phoneNumber" in scopes:
+            payload["phoneNumber"] = (
+                user.phone_numbers[0] if user.phone_numbers else None
+            )
+            payload["phoneNumber_verified"] = (
+                any(
+                    lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.phone_numbers
+                else False
+            )
+            payload["phoneNumbers"] = user.phone_numbers
+
+        for fn in self._id_token_builders:
+            builder_payload = await fn(user, scopes, session_handle, user_context)
+            payload.update(builder_payload)
+
+        return payload
+
+    async def get_default_user_info_payload(
+        self,
+        user: User,
+        access_token_payload: Dict[str, Any],
+        scopes: List[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {"sub": access_token_payload["sub"]}
+
+        if "email" in scopes:
+            payload["email"] = user.emails[0] if user.emails else None
+            payload["email_verified"] = (
+                any(
+                    lm.has_same_email_as(user.emails[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.emails
+                else False
+            )
+            payload["emails"] = user.emails
+
+        if "phoneNumber" in scopes:
+            payload["phoneNumber"] = (
+                user.phone_numbers[0] if user.phone_numbers else None
+            )
+            payload["phoneNumber_verified"] = (
+                any(
+                    lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.phone_numbers
+                else False
+            )
+            payload["phoneNumbers"] = user.phone_numbers
+
+        for fn in self._user_info_builders:
+            builder_payload = await fn(
+                user, access_token_payload, scopes, tenant_id, user_context
+            )
+            payload.update(builder_payload)
+
+        return payload

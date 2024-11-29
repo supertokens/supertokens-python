@@ -18,8 +18,10 @@ from supertokens_python import AppInfo
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.types import User
 
 from .interfaces import (
+    PayloadBuilderFunction,
     RecipeInterface,
     RedirectResponse,
     ErrorOAuth2Response,
@@ -32,6 +34,7 @@ from .interfaces import (
     LoginRequest,
     OAuth2Client,
     TokenInfo,
+    UserInfoBuilderFunction,
 )
 
 
@@ -48,10 +51,20 @@ def get_updated_redirect_to(app_info: AppInfo, redirect_to: str) -> str:
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, app_info: AppInfo):
+    def __init__(
+        self,
+        querier: Querier,
+        app_info: AppInfo,
+        get_default_access_token_payload: PayloadBuilderFunction,
+        get_default_id_token_payload: PayloadBuilderFunction,
+        get_default_user_info_payload: UserInfoBuilderFunction,
+    ):
         super().__init__()
         self.querier = querier
         self.app_info = app_info
+        self._get_default_access_token_payload = get_default_access_token_payload
+        self._get_default_id_token_payload = get_default_id_token_payload
+        self._get_default_user_info_payload = get_default_user_info_payload
 
     async def get_login_request(
         self, challenge: str, user_context: Dict[str, Any]
@@ -336,41 +349,47 @@ class RecipeImplementation(RecipeInterface):
 
     async def build_access_token_payload(
         self,
+        user: Optional[User],
         client: OAuth2Client,
+        session_handle: Optional[str],
         scopes: List[str],
-        user: Optional[Dict[str, Any]] = None,
-        session_handle: Optional[str] = None,
         user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         if user is None or session_handle is None:
             return {}
 
-        return get_default_access_token_payload(
+        _ = client
+
+        return await self._get_default_access_token_payload(
             user, scopes, session_handle, user_context
         )
 
     async def build_id_token_payload(
         self,
+        user: Optional[User],
         client: OAuth2Client,
+        session_handle: Optional[str],
         scopes: List[str],
-        user: Optional[Dict[str, Any]] = None,
-        session_handle: Optional[str] = None,
         user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         if user is None or session_handle is None:
             return {}
 
-        return get_default_id_token_payload(user, scopes, session_handle, user_context)
+        _ = client
+
+        return await self._get_default_id_token_payload(
+            user, scopes, session_handle, user_context
+        )
 
     async def build_user_info(
         self,
-        user: Dict[str, Any],
+        user: User,
         access_token_payload: Dict[str, Any],
         scopes: List[str],
         tenant_id: str,
         user_context: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
-        return get_default_user_info(
+        return await self._get_default_user_info_payload(
             user, access_token_payload, scopes, tenant_id, user_context
         )
 

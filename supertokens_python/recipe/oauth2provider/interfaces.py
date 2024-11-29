@@ -13,7 +13,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 from typing_extensions import Literal
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import APIResponse, GeneralErrorResponse, User
@@ -231,6 +231,15 @@ class DeleteOAuth2ClientOkResult:
         pass
 
 
+PayloadBuilderFunction = Callable[
+    [User, List[str], str, Dict[str, Any]], Awaitable[Dict[str, Any]]
+]
+
+UserInfoBuilderFunction = Callable[
+    [User, Dict[str, Any], List[str], str, Dict[str, Any]], Awaitable[Dict[str, Any]]
+]
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -376,7 +385,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def build_access_token_payload(
         self,
-        user: Optional[Dict[str, Any]],
+        user: Optional[User],
         client: OAuth2Client,
         session_handle: Optional[str],
         scopes: List[str],
@@ -387,7 +396,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def build_id_token_payload(
         self,
-        user: Optional[Dict[str, Any]],
+        user: Optional[User],
         client: OAuth2Client,
         session_handle: Optional[str],
         scopes: List[str],
@@ -398,7 +407,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def build_user_info(
         self,
-        user: Dict[str, Any],
+        user: User,
         access_token_payload: Dict[str, Any],
         scopes: List[str],
         tenant_id: str,
