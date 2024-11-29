@@ -41,6 +41,8 @@ from .interfaces import (
     GetOAuth2ClientOkResult,
     GetOAuth2ClientsOkResult,
     CreateOAuth2ClientOkResult,
+    RevokeTokenUsingAuthorizationHeader,
+    RevokeTokenUsingClientIDAndClientSecret,
     UpdateOAuth2ClientOkResult,
     DeleteOAuth2ClientOkResult,
     ConsentRequest,
@@ -768,13 +770,34 @@ class RecipeImplementation(RecipeInterface):
 
     async def revoke_token(
         self,
-        token: str,
-        authorization_header: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        input: Union[
+            RevokeTokenUsingAuthorizationHeader,
+            RevokeTokenUsingClientIDAndClientSecret,
+        ],
         user_context: Dict[str, Any] = {},
-    ) -> Union[Dict[str, str], ErrorOAuth2Response]:
-        pass
+    ) -> Optional[ErrorOAuth2Response]:
+        request_body = {"token": input.token}
+
+        if isinstance(input, RevokeTokenUsingAuthorizationHeader):
+            request_body["authorizationHeader"] = input.authorization_header
+        else:
+            request_body["client_id"] = input.client_id
+            request_body["client_secret"] = input.client_secret
+
+        res = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/token/revoke"),
+            request_body,
+            user_context=user_context,
+        )
+
+        if res.get("status") != "OK":
+            return ErrorOAuth2Response(
+                status_code=res.get("statusCode"),
+                error=str(res.get("error")),
+                error_description=str(res.get("errorDescription")),
+            )
+
+        return None
 
     async def revoke_tokens_by_client_id(
         self,

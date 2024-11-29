@@ -296,6 +296,19 @@ class FrontendRedirectionURLTypePostLogoutFallback:
     pass
 
 
+class RevokeTokenUsingAuthorizationHeader:
+    def __init__(self, token: str, authorization_header: str):
+        self.token = token
+        self.authorization_header = authorization_header
+
+
+class RevokeTokenUsingClientIDAndClientSecret:
+    def __init__(self, token: str, client_id: str, client_secret: str):
+        self.token = token
+        self.client_id = client_id
+        self.client_secret = client_secret
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -487,12 +500,12 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def revoke_token(
         self,
-        token: str,
-        authorization_header: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        input: Union[
+            RevokeTokenUsingAuthorizationHeader,
+            RevokeTokenUsingClientIDAndClientSecret,
+        ],
         user_context: Dict[str, Any] = {},
-    ) -> Union[Dict[str, str], ErrorOAuth2Response]:
+    ) -> Optional[ErrorOAuth2Response]:
         pass
 
     @abstractmethod
