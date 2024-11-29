@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multifactorauth.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -225,23 +225,10 @@ class ResyncSessionAndFetchMFAInfoPUTOkResult(APIResponse):
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.APIInterface.resync_session_and_fetch_mfa_info_put"><code class="name flex">
-<span>async def <span class="ident">resync_session_and_fetch_mfa_info_put</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.multifactorauth.interfaces.APIOptions" href="#supertokens_python.recipe.multifactorauth.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multifactorauth.interfaces.ResyncSessionAndFetchMFAInfoPUTOkResult" href="#supertokens_python.recipe.multifactorauth.interfaces.ResyncSessionAndFetchMFAInfoPUTOkResult">ResyncSessionAndFetchMFAInfoPUTOkResult</a>, GeneralErrorResponse]</span>
+<span>async def <span class="ident">resync_session_and_fetch_mfa_info_put</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.multifactorauth.interfaces.APIOptions" href="#supertokens_python.recipe.multifactorauth.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def resync_session_and_fetch_mfa_info_put(
-    self,
-    api_options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -307,17 +294,6 @@ async def resync_session_and_fetch_mfa_info_put(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;next&#34;: self.next_,
-        &#34;alreadySetup&#34;: self.already_setup,
-        &#34;allowedToSetup&#34;: self.allowed_to_setup,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -405,128 +381,42 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def add_to_required_secondary_factors_for_user(
-    self, user_id: str, factor_id: str, user_context: Dict[str, Any]
-) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface.assert_allowed_to_setup_factor_else_throw_invalid_claim_error"><code class="name flex">
-<span>async def <span class="ident">assert_allowed_to_setup_factor_else_throw_invalid_claim_error</span></span>(<span>self, session: SessionContainer, factor_id: str, mfa_requirements_for_auth: Callable[[], Awaitable[MFARequirementList]], factors_set_up_for_user: Callable[[], Awaitable[List[str]]], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">assert_allowed_to_setup_factor_else_throw_invalid_claim_error</span></span>(<span>self, session: SessionContainer, factor_id: str, mfa_requirements_for_auth: Callable[[], Awaitable[MFARequirementList]], factors_set_up_for_user: Callable[[], Awaitable[List[str]]], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
-    self,
-    session: SessionContainer,
-    factor_id: str,
-    mfa_requirements_for_auth: Callable[[], Awaitable[MFARequirementList]],
-    factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
-    user_context: Dict[str, Any],
-) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface.get_factors_setup_for_user"><code class="name flex">
-<span>async def <span class="ident">get_factors_setup_for_user</span></span>(<span>self, user: User, user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">get_factors_setup_for_user</span></span>(<span>self, user: User, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_factors_setup_for_user(
-    self, user: User, user_context: Dict[str, Any]
-) -&gt; List[str]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface.get_mfa_requirements_for_auth"><code class="name flex">
-<span>async def <span class="ident">get_mfa_requirements_for_auth</span></span>(<span>self, tenant_id: str, access_token_payload: Dict[str, Any], completed_factors: Dict[str, int], user: Callable[[], Awaitable[User]], factors_set_up_for_user: Callable[[], Awaitable[List[str]]], required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]], required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]], user_context: Dict[str, Any]) ‑> MFARequirementList</span>
+<span>async def <span class="ident">get_mfa_requirements_for_auth</span></span>(<span>self, tenant_id: str, access_token_payload: Dict[str, Any], completed_factors: Dict[str, int], user: Callable[[], Awaitable[User]], factors_set_up_for_user: Callable[[], Awaitable[List[str]]], required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]], required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_mfa_requirements_for_auth(
-    self,
-    tenant_id: str,
-    access_token_payload: Dict[str, Any],
-    completed_factors: Dict[str, int],
-    user: Callable[[], Awaitable[User]],
-    factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
-    required_secondary_factors_for_user: Callable[[], Awaitable[List[str]]],
-    required_secondary_factors_for_tenant: Callable[[], Awaitable[List[str]]],
-    user_context: Dict[str, Any],
-) -&gt; MFARequirementList:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface.get_required_secondary_factors_for_user"><code class="name flex">
 <span>async def <span class="ident">get_required_secondary_factors_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_required_secondary_factors_for_user(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; List[str]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface.mark_factor_as_complete_in_session"><code class="name flex">
-<span>async def <span class="ident">mark_factor_as_complete_in_session</span></span>(<span>self, session: SessionContainer, factor_id: str, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">mark_factor_as_complete_in_session</span></span>(<span>self, session: SessionContainer, factor_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def mark_factor_as_complete_in_session(
-    self,
-    session: SessionContainer,
-    factor_id: str,
-    user_context: Dict[str, Any],
-) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface.remove_from_required_secondary_factors_for_user"><code class="name flex">
 <span>async def <span class="ident">remove_from_required_secondary_factors_for_user</span></span>(<span>self, user_id: str, factor_id: str, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def remove_from_required_secondary_factors_for_user(
-    self, user_id: str, factor_id: str, user_context: Dict[str, Any]
-) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -581,18 +471,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;factors&#34;: self.factors.to_json(),
-        &#34;emails&#34;: self.emails,
-        &#34;phoneNumbers&#34;: self.phone_numbers,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -652,7 +530,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

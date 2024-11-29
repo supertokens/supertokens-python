@@ -334,9 +334,9 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                     SignInUpNotAllowed,
                     LinkingToSessionUserFailedError,
                 ]:
-                    user_context[
-                        "isVerified"
-                    ] = is_verified  # this information comes from the third party provider
+                    user_context["isVerified"] = (
+                        is_verified  # this information comes from the third party provider
+                    )
                     return await og_sign_in_up(
                         third_party_id,
                         third_party_user_id,

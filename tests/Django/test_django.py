@@ -120,7 +120,7 @@ async def optional_session(request: HttpRequest):
     session: Union[None, SessionContainer] = request.supertokens  # type: ignore
     if session is None:
         return JsonResponse({"s": "empty session"})
-    return JsonResponse({"s": session.get_handle()})
+    return JsonResponse({"s": session.get_handle()})  # type: ignore
 
 
 @verify_session()
@@ -538,7 +538,7 @@ class SupertokensTest(TestCase):
         if not is_version_gte(cdi_version, "2.20"):
             pytest.skip()
         await create_users(emailpassword=True)
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -591,7 +591,7 @@ class SupertokensTest(TestCase):
         if not is_version_gte(cdi_version, "2.20"):
             pytest.skip()
         await create_users(emailpassword=True)
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -642,7 +642,7 @@ class SupertokensTest(TestCase):
         if not is_version_gte(cdi_version, "2.20"):
             pytest.skip()
         await create_users(emailpassword=True)
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -700,7 +700,7 @@ class SupertokensTest(TestCase):
         await create_users(
             passwordless=True,
         )
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -754,7 +754,7 @@ class SupertokensTest(TestCase):
         if not is_version_gte(cdi_version, "2.20"):
             pytest.skip()
         await create_users(passwordless=True)
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -849,7 +849,7 @@ class SupertokensTest(TestCase):
         if not is_version_gte(cdi_version, "2.20"):
             pytest.skip()
         await create_users(emailpassword=False, passwordless=False, thirdparty=True)
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -948,7 +948,7 @@ class SupertokensTest(TestCase):
         if not is_version_gte(cdi_version, "2.20"):
             pytest.skip()
         await create_users(emailpassword=False, passwordless=True, thirdparty=True)
-        headers = {
+        headers: Dict[str, Any] = {
             "content_type": "application/json",
             "HTTP_AUTHORIZATION": "Bearer testapikey",
         }
@@ -990,7 +990,7 @@ class SupertokensTest(TestCase):
             "public", RecipeUserId("userId"), {}, {}
         )
         access_token = s.get_access_token()
-        headers = {"HTTP_AUTHORIZATION": "Bearer " + access_token}
+        headers: Dict[str, Any] = {"HTTP_AUTHORIZATION": "Bearer " + access_token}
 
         # Now try with middleware:
         request = self.factory.get("/verify", {}, **headers)

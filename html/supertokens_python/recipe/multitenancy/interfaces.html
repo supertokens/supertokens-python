@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multitenancy.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -462,20 +462,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def login_methods_get(
-    self,
-    tenant_id: str,
-    client_type: Optional[str],
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[LoginMethodsGetOkResult, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -810,15 +796,6 @@ async def login_methods_get(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;enabled&#34;: self.enabled,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -848,15 +825,6 @@ async def login_methods_get(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;enabled&#34;: self.enabled,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -888,16 +856,6 @@ async def login_methods_get(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;enabled&#34;: self.enabled,
-        &#34;providers&#34;: [provider.to_json() for provider in self.providers],
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -947,19 +905,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;emailPassword&#34;: self.email_password.to_json(),
-        &#34;passwordless&#34;: self.passwordless.to_json(),
-        &#34;thirdParty&#34;: self.third_party.to_json(),
-        &#34;firstFactors&#34;: self.first_factors,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1071,167 +1016,54 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def associate_user_to_tenant(
-    self,
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdError,
-    AssociateUserToTenantEmailAlreadyExistsError,
-    AssociateUserToTenantPhoneNumberAlreadyExistsError,
-    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
-    AssociateUserToTenantNotAllowedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_tenant"><code class="name flex">
 <span>async def <span class="ident">create_or_update_tenant</span></span>(<span>self, tenant_id: str, config: Optional[<a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfigCreateOrUpdate" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfigCreateOrUpdate">TenantConfigCreateOrUpdate</a>], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult">CreateOrUpdateTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def create_or_update_tenant(
-    self,
-    tenant_id: str,
-    config: Optional[TenantConfigCreateOrUpdate],
-    user_context: Dict[str, Any],
-) -&gt; CreateOrUpdateTenantOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.create_or_update_third_party_config"><code class="name flex">
-<span>async def <span class="ident">create_or_update_third_party_config</span></span>(<span>self, tenant_id: str, config: ProviderConfig, skip_validation: Optional[bool], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult">CreateOrUpdateThirdPartyConfigOkResult</a></span>
+<span>async def <span class="ident">create_or_update_third_party_config</span></span>(<span>self, tenant_id: str, config: ProviderConfig, skip_validation: Optional[bool], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def create_or_update_third_party_config(
-    self,
-    tenant_id: str,
-    config: ProviderConfig,
-    skip_validation: Optional[bool],
-    user_context: Dict[str, Any],
-) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_tenant"><code class="name flex">
 <span>async def <span class="ident">delete_tenant</span></span>(<span>self, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult">DeleteTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def delete_tenant(
-    self, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; DeleteTenantOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.delete_third_party_config"><code class="name flex">
 <span>async def <span class="ident">delete_third_party_config</span></span>(<span>self, tenant_id: str, third_party_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult">DeleteThirdPartyConfigOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def delete_third_party_config(
-    self,
-    tenant_id: str,
-    third_party_id: str,
-    user_context: Dict[str, Any],
-) -&gt; DeleteThirdPartyConfigOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.disassociate_user_from_tenant"><code class="name flex">
 <span>async def <span class="ident">disassociate_user_from_tenant</span></span>(<span>self, tenant_id: str, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult">DisassociateUserFromTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def disassociate_user_from_tenant(
-    self,
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    user_context: Dict[str, Any],
-) -&gt; DisassociateUserFromTenantOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant"><code class="name flex">
 <span>async def <span class="ident">get_tenant</span></span>(<span>self, tenant_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig" href="#supertokens_python.recipe.multitenancy.interfaces.TenantConfig">TenantConfig</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_tenant(
-    self, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; Optional[TenantConfig]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.get_tenant_id"><code class="name flex">
 <span>async def <span class="ident">get_tenant_id</span></span>(<span>self, tenant_id_from_frontend: str, user_context: Dict[str, Any]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_tenant_id(
-    self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
-) -&gt; str:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface.list_all_tenants"><code class="name flex">
 <span>async def <span class="ident">list_all_tenants</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult">ListAllTenantsOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def list_all_tenants(
-    self, user_context: Dict[str, Any]
-) -&gt; ListAllTenantsOkResult:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1292,23 +1124,6 @@ async def list_all_tenants(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; TenantConfig:
-    return TenantConfig(
-        tenant_id=json.get(&#34;tenantId&#34;, &#34;&#34;),
-        third_party_providers=[
-            ProviderConfig.from_json(provider)
-            for provider in json.get(&#34;thirdPartyProviders&#34;, [])
-        ],
-        core_config=json.get(&#34;coreConfig&#34;, {}),
-        first_factors=json.get(&#34;firstFactors&#34;, []),
-        required_secondary_factors=json.get(&#34;requiredSecondaryFactors&#34;, []),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1318,21 +1133,6 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    res: Dict[str, Any] = {}
-    res[&#34;tenantId&#34;] = self.tenant_id
-    res[&#34;thirdPartyProviders&#34;] = [
-        provider.to_json() for provider in self.third_party_providers
-    ]
-    res[&#34;firstFactors&#34;] = self.first_factors
-    res[&#34;requiredSecondaryFactors&#34;] = self.required_secondary_factors
-    res[&#34;coreConfig&#34;] = self.core_config
-    return res</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1401,20 +1201,6 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; TenantConfigCreateOrUpdate:
-    return TenantConfigCreateOrUpdate(
-        core_config=json.get(&#34;coreConfig&#34;, {}),
-        first_factors=json.get(&#34;firstFactors&#34;, [&#34;NO_CHANGE&#34;]),
-        required_secondary_factors=json.get(
-            &#34;requiredSecondaryFactors&#34;, [&#34;NO_CHANGE&#34;]
-        ),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1424,60 +1210,24 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfigCreateOrUpdate:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_first_factors_for_update(self) -&gt; Optional[List[str]]:
-    if self._first_factors == [&#34;NO_CHANGE&#34;]:
-        raise Exception(
-            &#34;First check if the value of first_factors is not NO_CHANGE&#34;
-        )
-    return self._first_factors</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfigCreateOrUpdate.get_required_secondary_factors_for_update"><code class="name flex">
 <span>def <span class="ident">get_required_secondary_factors_for_update</span></span>(<span>self) ‑> Optional[List[str]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_required_secondary_factors_for_update(self) -&gt; Optional[List[str]]:
-    if self._required_secondary_factors == [&#34;NO_CHANGE&#34;]:
-        raise Exception(
-            &#34;First check if the value of required_secondary_factors is not NO_CHANGE&#34;
-        )
-    return self._required_secondary_factors</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfigCreateOrUpdate.is_first_factors_unchanged"><code class="name flex">
 <span>def <span class="ident">is_first_factors_unchanged</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_first_factors_unchanged(self) -&gt; bool:
-    return self._first_factors == [&#34;NO_CHANGE&#34;]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.TenantConfigCreateOrUpdate.is_required_secondary_factors_unchanged"><code class="name flex">
 <span>def <span class="ident">is_required_secondary_factors_unchanged</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_required_secondary_factors_unchanged(self) -&gt; bool:
-    return self._required_secondary_factors == [&#34;NO_CHANGE&#34;]</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1511,16 +1261,6 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfigCreateOrUpdate:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;id&#34;: self.id,
-        &#34;name&#34;: self.name,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1688,7 +1428,7 @@ def from_json(json: Dict[str, Any]) -&gt; TenantConfigCreateOrUpdate:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

@@ -36,7 +36,7 @@ def teardown_function(_):
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
     return TestClient(app)

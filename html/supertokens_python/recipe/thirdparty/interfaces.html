@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -343,68 +343,18 @@ class APIInterface:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def apple_redirect_handler_post(
-    self,
-    form_post_info: Dict[str, Any],
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-):
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIInterface.authorisation_url_get"><code class="name flex">
 <span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, redirect_uri_on_provider_dashboard: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def authorisation_url_get(
-    self,
-    provider: Provider,
-    redirect_uri_on_provider_dashboard: str,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIInterface.sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, provider: Provider, redirect_uri_info: Optional[RedirectUriInfo], oauth_tokens: Optional[Dict[str, Any]], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, GeneralErrorResponse]</span>
+<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, provider: Provider, redirect_uri_info: Optional[RedirectUriInfo], oauth_tokens: Optional[Dict[str, Any]], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def sign_in_up_post(
-    self,
-    provider: Provider,
-    redirect_uri_info: Optional[RedirectUriInfo],
-    oauth_tokens: Optional[Dict[str, Any]],
-    session: Optional[SessionContainer],
-    should_try_linking_with_session_user: Union[bool, None],
-    tenant_id: str,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    SignInUpPostOkResult,
-    SignInUpPostNoEmailGivenByProviderResponse,
-    SignInUpNotAllowed,
-    GeneralErrorResponse,
-]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -484,17 +434,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {
-        &#34;status&#34;: self.status,
-        &#34;urlWithQueryParams&#34;: self.url_with_query_params,
-        &#34;pkceCodeVerifier&#34;: self.pkce_code_verifier,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -624,75 +563,18 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_provider(
-    self,
-    third_party_id: str,
-    client_type: Optional[str],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Optional[Provider]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.manually_create_or_update_user"><code class="name flex">
-<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a>, LinkingToSessionUserFailedError, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError" href="#supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>]</span>
+<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def manually_create_or_update_user(
-    self,
-    third_party_id: str,
-    third_party_user_id: str,
-    email: str,
-    is_verified: bool,
-    session: Optional[SessionContainer],
-    should_try_linking_with_session_user: Union[bool, None],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    ManuallyCreateOrUpdateUserOkResult,
-    LinkingToSessionUserFailedError,
-    SignInUpNotAllowed,
-    EmailChangeNotAllowedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, LinkingToSessionUserFailedError]</span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def sign_in_up(
-    self,
-    third_party_id: str,
-    third_party_user_id: str,
-    email: str,
-    is_verified: bool,
-    oauth_tokens: Dict[str, Any],
-    raw_user_info_from_provider: RawUserInfoFromProvider,
-    session: Optional[SessionContainer],
-    should_try_linking_with_session_user: Union[bool, None],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -740,13 +622,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;reason&#34;: self.reason}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -811,13 +686,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -875,17 +743,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;user&#34;: self.user.to_json(),
-        &#34;createdNewRecipeUser&#34;: self.created_new_recipe_user,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -971,7 +828,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

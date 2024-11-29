@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.totp.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -88,7 +88,11 @@ class RecipeInterface(ABC):
         skew: Optional[int],
         period: Optional[int],
         user_context: Dict[str, Any],
-    ) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
+    ) -&gt; Union[
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        UnknownUserIdError,
+    ]:
         pass
 
     @abstractmethod
@@ -98,7 +102,11 @@ class RecipeInterface(ABC):
         existing_device_name: str,
         new_device_name: str,
         user_context: Dict[str, Any],
-    ) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
+    ) -&gt; Union[
+        UpdateDeviceOkResult,
+        UnknownDeviceError,
+        DeviceAlreadyExistsError,
+    ]:
         pass
 
     @abstractmethod
@@ -332,116 +340,34 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.totp.interfaces.APIInterface.create_device_post"><code class="name flex">
-<span>async def <span class="ident">create_device_post</span></span>(<span>self, device_name: Union[str, None], options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any]) ‑> Union[CreateDeviceOkResult, DeviceAlreadyExistsError, GeneralErrorResponse]</span>
+<span>async def <span class="ident">create_device_post</span></span>(<span>self, device_name: Union[str, None], options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def create_device_post(
-    self,
-    device_name: Union[str, None],
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.APIInterface.list_devices_get"><code class="name flex">
-<span>async def <span class="ident">list_devices_get</span></span>(<span>self, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any]) ‑> Union[ListDevicesOkResult, GeneralErrorResponse]</span>
+<span>async def <span class="ident">list_devices_get</span></span>(<span>self, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def list_devices_get(
-    self,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[ListDevicesOkResult, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.APIInterface.remove_device_post"><code class="name flex">
-<span>async def <span class="ident">remove_device_post</span></span>(<span>self, device_name: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any]) ‑> Union[RemoveDeviceOkResult, GeneralErrorResponse]</span>
+<span>async def <span class="ident">remove_device_post</span></span>(<span>self, device_name: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def remove_device_post(
-    self,
-    device_name: str,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[RemoveDeviceOkResult, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.APIInterface.verify_device_post"><code class="name flex">
-<span>async def <span class="ident">verify_device_post</span></span>(<span>self, device_name: str, totp: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any]) ‑> Union[VerifyDeviceOkResult, UnknownDeviceError, InvalidTOTPError, LimitReachedError, GeneralErrorResponse]</span>
+<span>async def <span class="ident">verify_device_post</span></span>(<span>self, device_name: str, totp: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def verify_device_post(
-    self,
-    device_name: str,
-    totp: str,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    VerifyDeviceOkResult,
-    UnknownDeviceError,
-    InvalidTOTPError,
-    LimitReachedError,
-    GeneralErrorResponse,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.APIInterface.verify_totp_post"><code class="name flex">
-<span>async def <span class="ident">verify_totp_post</span></span>(<span>self, totp: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any]) ‑> Union[VerifyTOTPOkResult, UnknownUserIdError, InvalidTOTPError, LimitReachedError, GeneralErrorResponse]</span>
+<span>async def <span class="ident">verify_totp_post</span></span>(<span>self, totp: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: SessionContainer, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def verify_totp_post(
-    self,
-    totp: str,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    VerifyTOTPOkResult,
-    UnknownUserIdError,
-    InvalidTOTPError,
-    LimitReachedError,
-    GeneralErrorResponse,
-]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -505,7 +431,11 @@ inheritance.</p></div>
         skew: Optional[int],
         period: Optional[int],
         user_context: Dict[str, Any],
-    ) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
+    ) -&gt; Union[
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        UnknownUserIdError,
+    ]:
         pass
 
     @abstractmethod
@@ -515,7 +445,11 @@ inheritance.</p></div>
         existing_device_name: str,
         new_device_name: str,
         user_context: Dict[str, Any],
-    ) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
+    ) -&gt; Union[
+        UpdateDeviceOkResult,
+        UnknownDeviceError,
+        DeviceAlreadyExistsError,
+    ]:
         pass
 
     @abstractmethod
@@ -568,145 +502,46 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.create_device"><code class="name flex">
-<span>async def <span class="ident">create_device</span></span>(<span>self, user_id: str, user_identifier_info: Optional[str], device_name: Optional[str], skew: Optional[int], period: Optional[int], user_context: Dict[str, Any]) ‑> Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError]</span>
+<span>async def <span class="ident">create_device</span></span>(<span>self, user_id: str, user_identifier_info: Optional[str], device_name: Optional[str], skew: Optional[int], period: Optional[int], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def create_device(
-    self,
-    user_id: str,
-    user_identifier_info: Optional[str],
-    device_name: Optional[str],
-    skew: Optional[int],
-    period: Optional[int],
-    user_context: Dict[str, Any],
-) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.get_user_identifier_info_for_user_id"><code class="name flex">
-<span>async def <span class="ident">get_user_identifier_info_for_user_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[UserIdentifierInfoOkResult, UnknownUserIdError, UserIdentifierInfoDoesNotExistError]</span>
+<span>async def <span class="ident">get_user_identifier_info_for_user_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_user_identifier_info_for_user_id(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Union[
-    UserIdentifierInfoOkResult,
-    UnknownUserIdError,
-    UserIdentifierInfoDoesNotExistError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.list_devices"><code class="name flex">
-<span>async def <span class="ident">list_devices</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> ListDevicesOkResult</span>
+<span>async def <span class="ident">list_devices</span></span>(<span>self, user_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def list_devices(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; ListDevicesOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.remove_device"><code class="name flex">
-<span>async def <span class="ident">remove_device</span></span>(<span>self, user_id: str, device_name: str, user_context: Dict[str, Any]) ‑> RemoveDeviceOkResult</span>
+<span>async def <span class="ident">remove_device</span></span>(<span>self, user_id: str, device_name: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def remove_device(
-    self, user_id: str, device_name: str, user_context: Dict[str, Any]
-) -&gt; RemoveDeviceOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.update_device"><code class="name flex">
-<span>async def <span class="ident">update_device</span></span>(<span>self, user_id: str, existing_device_name: str, new_device_name: str, user_context: Dict[str, Any]) ‑> Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError]</span>
+<span>async def <span class="ident">update_device</span></span>(<span>self, user_id: str, existing_device_name: str, new_device_name: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def update_device(
-    self,
-    user_id: str,
-    existing_device_name: str,
-    new_device_name: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.verify_device"><code class="name flex">
-<span>async def <span class="ident">verify_device</span></span>(<span>self, tenant_id: str, user_id: str, device_name: str, totp: str, user_context: Dict[str, Any]) ‑> Union[VerifyDeviceOkResult, UnknownDeviceError, InvalidTOTPError, LimitReachedError]</span>
+<span>async def <span class="ident">verify_device</span></span>(<span>self, tenant_id: str, user_id: str, device_name: str, totp: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def verify_device(
-    self,
-    tenant_id: str,
-    user_id: str,
-    device_name: str,
-    totp: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    VerifyDeviceOkResult,
-    UnknownDeviceError,
-    InvalidTOTPError,
-    LimitReachedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.RecipeInterface.verify_totp"><code class="name flex">
-<span>async def <span class="ident">verify_totp</span></span>(<span>self, tenant_id: str, user_id: str, totp: str, user_context: Dict[str, Any]) ‑> Union[VerifyTOTPOkResult, UnknownUserIdError, InvalidTOTPError, LimitReachedError]</span>
+<span>async def <span class="ident">verify_totp</span></span>(<span>self, tenant_id: str, user_id: str, totp: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def verify_totp(
-    self, tenant_id: str, user_id: str, totp: str, user_context: Dict[str, Any]
-) -&gt; Union[
-    VerifyTOTPOkResult,
-    UnknownUserIdError,
-    InvalidTOTPError,
-    LimitReachedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -757,7 +592,7 @@ async def verify_totp(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.framework.request API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -201,156 +201,66 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def form_data(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_cookie"><code class="name flex">
 <span>def <span class="ident">get_cookie</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_cookie(self, key: str) -&gt; Union[str, None]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_header"><code class="name flex">
 <span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_header(self, key: str) -&gt; Union[None, str]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_original_url"><code class="name flex">
 <span>def <span class="ident">get_original_url</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_original_url(self) -&gt; str:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_path"><code class="name flex">
 <span>def <span class="ident">get_path</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_path(self) -&gt; str:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_query_param"><code class="name flex">
 <span>def <span class="ident">get_query_param</span></span>(<span>self, key: str, default: Union[str, None] = None) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_query_param(
-    self, key: str, default: Union[str, None] = None
-) -&gt; Union[str, None]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_query_params"><code class="name flex">
 <span>def <span class="ident">get_query_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_query_params(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>self) ‑> Union[SessionContainer, None]</span>
+<span>def <span class="ident">get_session</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_session(self) -&gt; Union[SessionContainer, None]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.json"><code class="name flex">
 <span>async def <span class="ident">json</span></span>(<span>self) ‑> Optional[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def json(self) -&gt; Union[Any, None]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.method"><code class="name flex">
 <span>def <span class="ident">method</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def method(self) -&gt; str:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.set_session"><code class="name flex">
 <span>def <span class="ident">set_session</span></span>(<span>self, session: SessionContainer)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_session(self, session: SessionContainer):
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.set_session_as_none"><code class="name flex">
 <span>def <span class="ident">set_session_as_none</span></span>(<span>self)</span>
@@ -358,17 +268,6 @@ def set_session(self, session: SessionContainer):
 <dd>
 <div class="desc"><p>This function is used to set the request's session variable to None.
 See <a href="https://github.com/supertokens/supertokens-python/issues/90">https://github.com/supertokens/supertokens-python/issues/90</a></p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_session_as_none(self):
-    &#34;&#34;&#34;
-    This function is used to set the request&#39;s session variable to None.
-    See https://github.com/supertokens/supertokens-python/issues/90
-    &#34;&#34;&#34;</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -411,7 +310,7 @@ def set_session_as_none(self):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

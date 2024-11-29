@@ -21,7 +21,10 @@ async def handle_user_get(
     _tenant_id: str,
     api_options: APIOptions,
     _user_context: Dict[str, Any],
-) -> Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse,]:
+) -> Union[
+    UserGetAPINoUserFoundError,
+    UserGetAPIOkResponse,
+]:
     user_id = api_options.request.get_query_param("userId")
 
     if user_id is None:

@@ -46,9 +46,9 @@ class UpdateTenantSecondaryFactorOkResult(APIResponse):
 class UpdateTenantSecondaryFactorRecipeNotConfiguredOnBackendSdkErrorResult(
     APIResponse
 ):
-    status: Literal[
+    status: Literal["RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"] = (
         "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"
-    ] = "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"
+    )
 
     def __init__(self, message: str):
         self.status = "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"

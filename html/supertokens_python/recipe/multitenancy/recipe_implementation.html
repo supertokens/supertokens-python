@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multitenancy.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -167,9 +167,9 @@ class RecipeImplementation(RecipeInterface):
             if not config.is_first_factors_unchanged():
                 json_body[&#34;firstFactors&#34;] = config.get_first_factors_for_update()
             if not config.is_required_secondary_factors_unchanged():
-                json_body[
-                    &#34;requiredSecondaryFactors&#34;
-                ] = config.get_required_secondary_factors_for_update()
+                json_body[&#34;requiredSecondaryFactors&#34;] = (
+                    config.get_required_secondary_factors_for_update()
+                )
             json_body[&#34;coreConfig&#34;] = config.core_config
 
         response = await self.querier.send_put_request(
@@ -351,79 +351,6 @@ class RecipeImplementation(RecipeInterface):
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def parse_tenant_config(tenant: Dict[str, Any]) -&gt; TenantConfig:
-    from supertokens_python.recipe.thirdparty.provider import (
-        UserInfoMap,
-        UserFields,
-        ProviderClientConfig,
-        ProviderConfig,
-    )
-
-    providers: List[ProviderConfig] = []
-    for p in tenant[&#34;thirdParty&#34;][&#34;providers&#34;]:
-        user_info_map: Optional[UserInfoMap] = None
-        if &#34;userInfoMap&#34; in p:
-            map_from_payload = p[&#34;userInfoMap&#34;].get(&#34;fromIdTokenPayload&#34;, {})
-            map_from_api = p[&#34;userInfoMap&#34;].get(&#34;fromUserInfoAPI&#34;, {})
-            user_info_map = UserInfoMap(
-                UserFields(
-                    map_from_payload.get(&#34;userId&#34;),
-                    map_from_payload.get(&#34;email&#34;),
-                    map_from_payload.get(&#34;emailVerified&#34;),
-                ),
-                UserFields(
-                    map_from_api.get(&#34;userId&#34;),
-                    map_from_api.get(&#34;email&#34;),
-                    map_from_api.get(&#34;emailVerified&#34;),
-                ),
-            )
-
-        providers.append(
-            ProviderConfig(
-                third_party_id=p[&#34;thirdPartyId&#34;],
-                name=p.get(&#34;name&#34;),
-                clients=[
-                    ProviderClientConfig(
-                        client_id=c[&#34;clientId&#34;],
-                        client_secret=c.get(&#34;clientSecret&#34;),
-                        client_type=c.get(&#34;clientType&#34;),
-                        scope=c.get(&#34;scope&#34;),
-                        force_pkce=c.get(&#34;forcePKCE&#34;, False),
-                        additional_config=c.get(&#34;additionalConfig&#34;),
-                    )
-                    for c in p[&#34;clients&#34;]
-                ],
-                authorization_endpoint=p.get(&#34;authorizationEndpoint&#34;),
-                authorization_endpoint_query_params=p.get(
-                    &#34;authorizationEndpointQueryParams&#34;
-                ),
-                token_endpoint=p.get(&#34;tokenEndpoint&#34;),
-                token_endpoint_body_params=p.get(&#34;tokenEndpointBodyParams&#34;),
-                user_info_endpoint=p.get(&#34;userInfoEndpoint&#34;),
-                user_info_endpoint_query_params=p.get(&#34;userInfoEndpointQueryParams&#34;),
-                user_info_endpoint_headers=p.get(&#34;userInfoEndpointHeaders&#34;),
-                jwks_uri=p.get(&#34;jwksURI&#34;),
-                oidc_discovery_endpoint=p.get(&#34;oidcDiscoveryEndpoint&#34;),
-                user_info_map=user_info_map,
-                require_email=p.get(&#34;requireEmail&#34;, True),
-                validate_id_token_payload=None,
-                generate_fake_email=None,
-                validate_access_token=None,
-            )
-        )
-
-    return TenantConfig(
-        tenant_id=tenant[&#34;tenantId&#34;],
-        third_party_providers=providers,
-        core_config=tenant[&#34;coreConfig&#34;],
-        first_factors=tenant.get(&#34;firstFactors&#34;),
-        required_secondary_factors=tenant.get(&#34;requiredSecondaryFactors&#34;),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -465,9 +392,9 @@ inheritance.</p></div>
             if not config.is_first_factors_unchanged():
                 json_body[&#34;firstFactors&#34;] = config.get_first_factors_for_update()
             if not config.is_required_secondary_factors_unchanged():
-                json_body[
-                    &#34;requiredSecondaryFactors&#34;
-                ] = config.get_required_secondary_factors_for_update()
+                json_body[&#34;requiredSecondaryFactors&#34;] = (
+                    config.get_required_secondary_factors_for_update()
+                )
             json_body[&#34;coreConfig&#34;] = config.core_config
 
         response = await self.querier.send_put_request(
@@ -648,279 +575,54 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def associate_user_to_tenant(
-    self,
-    tenant_id: Optional[str],
-    recipe_user_id: RecipeUserId,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdError,
-    AssociateUserToTenantEmailAlreadyExistsError,
-    AssociateUserToTenantPhoneNumberAlreadyExistsError,
-    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
-    AssociateUserToTenantNotAllowedError,
-]:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(
-            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user&#34;
-        ),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-        },
-        user_context=user_context,
-    )
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return AssociateUserToTenantOkResult(
-            was_already_associated=response[&#34;wasAlreadyAssociated&#34;],
-        )
-    if response[&#34;status&#34;] == AssociateUserToTenantUnknownUserIdError.status:
-        return AssociateUserToTenantUnknownUserIdError()
-    if response[&#34;status&#34;] == AssociateUserToTenantEmailAlreadyExistsError.status:
-        return AssociateUserToTenantEmailAlreadyExistsError()
-    if (
-        response[&#34;status&#34;]
-        == AssociateUserToTenantPhoneNumberAlreadyExistsError.status
-    ):
-        return AssociateUserToTenantPhoneNumberAlreadyExistsError()
-    if (
-        response[&#34;status&#34;]
-        == AssociateUserToTenantThirdPartyUserAlreadyExistsError.status
-    ):
-        return AssociateUserToTenantThirdPartyUserAlreadyExistsError()
-    if response[&#34;status&#34;] == AssociateUserToTenantNotAllowedError.status:
-        return AssociateUserToTenantNotAllowedError(response[&#34;reason&#34;])
-
-    raise Exception(&#34;Should never come here&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.create_or_update_tenant"><code class="name flex">
 <span>async def <span class="ident">create_or_update_tenant</span></span>(<span>self, tenant_id: str, config: Optional[TenantConfigCreateOrUpdate], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult">CreateOrUpdateTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_or_update_tenant(
-    self,
-    tenant_id: str,
-    config: Optional[TenantConfigCreateOrUpdate],
-    user_context: Dict[str, Any],
-) -&gt; CreateOrUpdateTenantOkResult:
-    json_body: Dict[str, Any] = {
-        &#34;tenantId&#34;: tenant_id,
-    }
-    if config is not None:
-        if not config.is_first_factors_unchanged():
-            json_body[&#34;firstFactors&#34;] = config.get_first_factors_for_update()
-        if not config.is_required_secondary_factors_unchanged():
-            json_body[
-                &#34;requiredSecondaryFactors&#34;
-            ] = config.get_required_secondary_factors_for_update()
-        json_body[&#34;coreConfig&#34;] = config.core_config
-
-    response = await self.querier.send_put_request(
-        NormalisedURLPath(&#34;/recipe/multitenancy/tenant/v2&#34;),
-        json_body,
-        user_context=user_context,
-    )
-    return CreateOrUpdateTenantOkResult(
-        created_new=response[&#34;createdNew&#34;],
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.create_or_update_third_party_config"><code class="name flex">
-<span>async def <span class="ident">create_or_update_third_party_config</span></span>(<span>self, tenant_id: Optional[str], config: ProviderConfig, skip_validation: Optional[bool], user_context: Dict[str, Any]) ‑> CreateOrUpdateThirdPartyConfigOkResult</span>
+<span>async def <span class="ident">create_or_update_third_party_config</span></span>(<span>self, tenant_id: Optional[str], config: ProviderConfig, skip_validation: Optional[bool], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_or_update_third_party_config(
-    self,
-    tenant_id: Optional[str],
-    config: ProviderConfig,
-    skip_validation: Optional[bool],
-    user_context: Dict[str, Any],
-) -&gt; CreateOrUpdateThirdPartyConfigOkResult:
-    response = await self.querier.send_put_request(
-        NormalisedURLPath(
-            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty&#34;
-        ),
-        {
-            &#34;config&#34;: config.to_json(),
-            &#34;skipValidation&#34;: skip_validation is True,
-        },
-        user_context=user_context,
-    )
-
-    return CreateOrUpdateThirdPartyConfigOkResult(
-        created_new=response[&#34;createdNew&#34;],
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.delete_tenant"><code class="name flex">
 <span>async def <span class="ident">delete_tenant</span></span>(<span>self, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult">DeleteTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def delete_tenant(
-    self, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; DeleteTenantOkResult:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/multitenancy/tenant/remove&#34;),
-        {&#34;tenantId&#34;: tenant_id},
-        user_context=user_context,
-    )
-    return DeleteTenantOkResult(
-        did_exist=response[&#34;didExist&#34;],
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.delete_third_party_config"><code class="name flex">
 <span>async def <span class="ident">delete_third_party_config</span></span>(<span>self, tenant_id: Optional[str], third_party_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult">DeleteThirdPartyConfigOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def delete_third_party_config(
-    self,
-    tenant_id: Optional[str],
-    third_party_id: str,
-    user_context: Dict[str, Any],
-) -&gt; DeleteThirdPartyConfigOkResult:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(
-            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/config/thirdparty/remove&#34;
-        ),
-        {
-            &#34;thirdPartyId&#34;: third_party_id,
-        },
-        user_context=user_context,
-    )
-
-    return DeleteThirdPartyConfigOkResult(
-        did_config_exist=response[&#34;didConfigExist&#34;],
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.disassociate_user_from_tenant"><code class="name flex">
 <span>async def <span class="ident">disassociate_user_from_tenant</span></span>(<span>self, tenant_id: Optional[str], recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult">DisassociateUserFromTenantOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def disassociate_user_from_tenant(
-    self,
-    tenant_id: Optional[str],
-    recipe_user_id: RecipeUserId,
-    user_context: Dict[str, Any],
-) -&gt; DisassociateUserFromTenantOkResult:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(
-            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/user/remove&#34;
-        ),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-        },
-        user_context=user_context,
-    )
-
-    return DisassociateUserFromTenantOkResult(
-        was_associated=response[&#34;wasAssociated&#34;],
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.get_tenant"><code class="name flex">
 <span>async def <span class="ident">get_tenant</span></span>(<span>self, tenant_id: Optional[str], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.multitenancy.interfaces.TenantConfig" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.TenantConfig">TenantConfig</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_tenant(
-    self, tenant_id: Optional[str], user_context: Dict[str, Any]
-) -&gt; Optional[TenantConfig]:
-    res = await self.querier.send_get_request(
-        NormalisedURLPath(
-            f&#34;{tenant_id or DEFAULT_TENANT_ID}/recipe/multitenancy/tenant/v2&#34;
-        ),
-        None,
-        user_context=user_context,
-    )
-
-    if res[&#34;status&#34;] == &#34;TENANT_NOT_FOUND_ERROR&#34;:
-        return None
-
-    tenant_config = parse_tenant_config(res)
-
-    return tenant_config</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.get_tenant_id"><code class="name flex">
 <span>async def <span class="ident">get_tenant_id</span></span>(<span>self, tenant_id_from_frontend: str, user_context: Dict[str, Any]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_tenant_id(
-    self, tenant_id_from_frontend: str, user_context: Dict[str, Any]
-) -&gt; str:
-    return tenant_id_from_frontend</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation.list_all_tenants"><code class="name flex">
 <span>async def <span class="ident">list_all_tenants</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult">ListAllTenantsOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_all_tenants(
-    self, user_context: Dict[str, Any]
-) -&gt; ListAllTenantsOkResult:
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/multitenancy/tenant/list/v2&#34;),
-        {},
-        user_context=user_context,
-    )
-
-    tenant_items: List[TenantConfig] = []
-
-    for tenant in response[&#34;tenants&#34;]:
-        config = parse_tenant_config(tenant)
-        tenant_items.append(config)
-
-    return ListAllTenantsOkResult(
-        tenants=tenant_items,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -965,7 +667,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

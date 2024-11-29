@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.providers.apple API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -79,9 +79,7 @@ class AppleImpl(GenericProvider):
 
         return config
 
-    async def _get_client_secret(  # pylint: disable=no-self-use
-        self, config: ProviderConfigForClient
-    ) -&gt; str:
+    async def _get_client_secret(self, config: ProviderConfigForClient) -&gt; str:
         if (
             config.additional_config is None
             or config.additional_config.get(&#34;keyId&#34;) is None
@@ -142,9 +140,9 @@ class AppleImpl(GenericProvider):
             if response.raw_user_info_from_provider.from_id_token_payload is None:
                 response.raw_user_info_from_provider.from_id_token_payload = {}
 
-            response.raw_user_info_from_provider.from_id_token_payload[
-                &#34;user&#34;
-            ] = user_dict
+            response.raw_user_info_from_provider.from_id_token_payload[&#34;user&#34;] = (
+                user_dict
+            )
 
         return response
 
@@ -178,26 +176,6 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
-    if not input.config.name:
-        input.config.name = &#34;Apple&#34;
-
-    if not input.config.oidc_discovery_endpoint:
-        input.config.oidc_discovery_endpoint = (
-            &#34;https://appleid.apple.com/.well-known/openid-configuration&#34;
-        )
-
-    input.config.authorization_endpoint_query_params = {
-        &#34;response_mode&#34;: &#34;form_post&#34;,
-        **(input.config.authorization_endpoint_query_params or {}),
-    }
-
-    return NewProvider(input, AppleImpl)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -236,9 +214,7 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
 
         return config
 
-    async def _get_client_secret(  # pylint: disable=no-self-use
-        self, config: ProviderConfigForClient
-    ) -&gt; str:
+    async def _get_client_secret(self, config: ProviderConfigForClient) -&gt; str:
         if (
             config.additional_config is None
             or config.additional_config.get(&#34;keyId&#34;) is None
@@ -299,9 +275,9 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
             if response.raw_user_info_from_provider.from_id_token_payload is None:
                 response.raw_user_info_from_provider.from_id_token_payload = {}
 
-            response.raw_user_info_from_provider.from_id_token_payload[
-                &#34;user&#34;
-            ] = user_dict
+            response.raw_user_info_from_provider.from_id_token_payload[&#34;user&#34;] = (
+                user_dict
+            )
 
         return response</code></pre>
 </details>
@@ -317,92 +293,18 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def exchange_auth_code_for_oauth_tokens(
-    self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
-) -&gt; Dict[str, Any]:
-    response = await super().exchange_auth_code_for_oauth_tokens(
-        redirect_uri_info, user_context
-    )
-
-    user = redirect_uri_info.redirect_uri_query_params.get(&#34;user&#34;)
-    if user is not None:
-        if isinstance(user, str):
-            response[&#34;user&#34;] = json.loads(user)
-        elif isinstance(user, dict):
-            response[&#34;user&#34;] = user
-
-    return response</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_config_for_client_type"><code class="name flex">
 <span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_config_for_client_type(
-    self, client_type: Optional[str], user_context: Dict[str, Any]
-) -&gt; ProviderConfigForClient:
-    config = await super().get_config_for_client_type(client_type, user_context)
-
-    if config.scope is None:
-        config.scope = [&#34;openid&#34;, &#34;email&#34;]
-
-    if not config.client_secret:
-        config.client_secret = await self._get_client_secret(config)
-
-    if not config.oidc_discovery_endpoint:
-        raise Exception(&#34;should never happen&#34;)
-
-    # The config could be coming from core where we didn&#39;t add the well-known previously
-    config.oidc_discovery_endpoint = normalise_oidc_endpoint_to_include_well_known(
-        config.oidc_discovery_endpoint
-    )
-
-    return config</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.AppleImpl.get_user_info"><code class="name flex">
 <span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_info(
-    self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; UserInfo:
-    response = await super().get_user_info(oauth_tokens, user_context)
-    user = oauth_tokens.get(&#34;user&#34;)
-
-    user_dict: Dict[str, Any] = {}
-
-    if user is not None:
-        if isinstance(user, str):
-            user_dict = json.loads(user)
-        elif isinstance(user, dict):
-            user_dict = user
-        else:
-            return response
-
-        if response.raw_user_info_from_provider.from_id_token_payload is None:
-            response.raw_user_info_from_provider.from_id_token_payload = {}
-
-        response.raw_user_info_from_provider.from_id_token_payload[
-            &#34;user&#34;
-        ] = user_dict
-
-    return response</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -441,7 +343,7 @@ def Apple(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bui
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

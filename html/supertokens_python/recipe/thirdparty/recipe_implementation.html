@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -457,200 +457,18 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_provider(
-    self,
-    third_party_id: str,
-    client_type: Optional[str],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-):
-    mt_recipe = MultitenancyRecipe.get_instance()
-    tenant_config = await mt_recipe.recipe_implementation.get_tenant(
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )
-
-    if tenant_config is None:
-        raise Exception(&#34;Tenant not found&#34;)
-
-    merged_providers = merge_providers_from_core_and_static(
-        provider_configs_from_core=tenant_config.third_party_providers,
-        provider_inputs_from_static=self.providers,
-        include_all_providers=tenant_id == DEFAULT_TENANT_ID,
-    )
-
-    provider = await find_and_create_provider_instance(
-        merged_providers, third_party_id, client_type, user_context
-    )
-
-    return provider</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe_implementation.RecipeImplementation.manually_create_or_update_user"><code class="name flex">
-<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[ManuallyCreateOrUpdateUserOkResult, LinkingToSessionUserFailedError, SignInUpNotAllowed, EmailChangeNotAllowedError]</span>
+<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def manually_create_or_update_user(
-    self,
-    third_party_id: str,
-    third_party_user_id: str,
-    email: str,
-    is_verified: bool,
-    session: Optional[SessionContainer],
-    should_try_linking_with_session_user: Union[bool, None],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    ManuallyCreateOrUpdateUserOkResult,
-    LinkingToSessionUserFailedError,
-    SignInUpNotAllowed,
-    EmailChangeNotAllowedError,
-]:
-    from supertokens_python.auth_utils import (
-        link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
-    )
-
-    account_linking = AccountLinkingRecipe.get_instance()
-    users = await list_users_by_account_info(
-        tenant_id,
-        AccountInfo(
-            third_party=ThirdPartyInfo(
-                third_party_id=third_party_id,
-                third_party_user_id=third_party_user_id,
-            ),
-        ),
-        False,
-        user_context,
-    )
-
-    user = users[0] if users else None
-    if user is not None:
-        is_email_change_allowed = await account_linking.is_email_change_allowed(
-            user=user,
-            is_verified=is_verified,
-            new_email=email,
-            session=session,
-            user_context=user_context,
-        )
-        if not is_email_change_allowed.allowed:
-            reason = (
-                &#34;Email already associated with another primary user.&#34;
-                if is_email_change_allowed.reason == &#34;PRIMARY_USER_CONFLICT&#34;
-                else &#34;New email cannot be applied to existing account because of account takeover risks.&#34;
-            )
-            return EmailChangeNotAllowedError(reason)
-
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup&#34;),
-        {
-            &#34;thirdPartyId&#34;: third_party_id,
-            &#34;thirdPartyUserId&#34;: third_party_user_id,
-            &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: is_verified},
-        },
-        user_context=user_context,
-    )
-
-    if response[&#34;status&#34;] == &#34;EMAIL_CHANGE_NOT_ALLOWED_ERROR&#34;:
-        return EmailChangeNotAllowedError(response[&#34;reason&#34;])
-
-    # status is OK
-
-    user = User.from_json(
-        response[&#34;user&#34;],
-    )
-    recipe_user_id = RecipeUserId(response[&#34;recipeUserId&#34;])
-
-    await account_linking.verify_email_for_recipe_user_if_linked_accounts_are_verified(
-        user=user,
-        recipe_user_id=recipe_user_id,
-        user_context=user_context,
-    )
-
-    # Fetch updated user
-    user = await get_user(recipe_user_id.get_as_string(), user_context)
-
-    assert user is not None
-
-    link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
-        tenant_id=tenant_id,
-        input_user=user,
-        recipe_user_id=recipe_user_id,
-        session=session,
-        user_context=user_context,
-        should_try_linking_with_session_user=should_try_linking_with_session_user,
-    )
-
-    if link_result.status != &#34;OK&#34;:
-        return link_result
-
-    return ManuallyCreateOrUpdateUserOkResult(
-        user=link_result.user,
-        recipe_user_id=recipe_user_id,
-        created_new_recipe_user=response[&#34;createdNewUser&#34;],
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]</span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, oauth_tokens: Dict[str, Any], raw_user_info_from_provider: RawUserInfoFromProvider, session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def sign_in_up(
-    self,
-    third_party_id: str,
-    third_party_user_id: str,
-    email: str,
-    is_verified: bool,
-    oauth_tokens: Dict[str, Any],
-    raw_user_info_from_provider: RawUserInfoFromProvider,
-    session: Optional[SessionContainer],
-    should_try_linking_with_session_user: Union[bool, None],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[SignInUpOkResult, SignInUpNotAllowed, LinkingToSessionUserFailedError]:
-    response = await self.manually_create_or_update_user(
-        third_party_id=third_party_id,
-        third_party_user_id=third_party_user_id,
-        email=email,
-        tenant_id=tenant_id,
-        is_verified=is_verified,
-        session=session,
-        should_try_linking_with_session_user=should_try_linking_with_session_user,
-        user_context=user_context,
-    )
-
-    if isinstance(response, EmailChangeNotAllowedError):
-        return SignInUpNotAllowed(
-            &#34;Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)&#34;
-            if response.reason
-            == &#34;Email already associated with another primary user.&#34;
-            else &#34;Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_024)&#34;
-        )
-
-    if isinstance(response, ManuallyCreateOrUpdateUserOkResult):
-        return SignInUpOkResult(
-            user=response.user,
-            recipe_user_id=response.recipe_user_id,
-            created_new_recipe_user=response.created_new_recipe_user,
-            oauth_tokens=oauth_tokens,
-            raw_user_info_from_provider=raw_user_info_from_provider,
-        )
-
-    return response</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -684,7 +502,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

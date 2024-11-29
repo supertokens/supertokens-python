@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.api.implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -214,94 +214,22 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.refresh_post"><code class="name flex">
-<span>async def <span class="ident">refresh_post</span></span>(<span>self, api_options: APIOptions, user_context: Dict[str, Any]) ‑> SessionContainer</span>
+<span>async def <span class="ident">refresh_post</span></span>(<span>self, api_options: APIOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def refresh_post(
-    self, api_options: APIOptions, user_context: Dict[str, Any]
-) -&gt; SessionContainer:
-    return await refresh_session_in_request(
-        api_options.request,
-        user_context,
-        api_options.config,
-        api_options.recipe_implementation,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.signout_post"><code class="name flex">
-<span>async def <span class="ident">signout_post</span></span>(<span>self, session: SessionContainer, api_options: APIOptions, user_context: Dict[str, Any]) ‑> SignOutOkayResponse</span>
+<span>async def <span class="ident">signout_post</span></span>(<span>self, session: SessionContainer, api_options: APIOptions, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def signout_post(
-    self,
-    session: SessionContainer,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; SignOutOkayResponse:
-    await session.revoke_session(user_context)
-    return SignOutOkayResponse()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.verify_session"><code class="name flex">
-<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: APIOptions, anti_csrf_check: Union[bool, None], session_required: bool, check_database: bool, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]], user_context: Dict[str, Any]) ‑> Union[SessionContainer, None]</span>
+<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: APIOptions, anti_csrf_check: Union[bool, None], session_required: bool, check_database: bool, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_session(
-    self,
-    api_options: APIOptions,
-    anti_csrf_check: Union[bool, None],
-    session_required: bool,
-    check_database: bool,
-    override_global_claim_validators: Optional[
-        Callable[
-            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-            MaybeAwaitable[List[SessionClaimValidator]],
-        ]
-    ],
-    user_context: Dict[str, Any],
-) -&gt; Union[SessionContainer, None]:
-    method = normalise_http_method(api_options.request.method())
-    if method in (&#34;options&#34;, &#34;trace&#34;):
-        if session_required:
-            raise Exception(f&#34;verify_session cannot be used with {method} method&#34;)
-        return None
-    incoming_path = NormalisedURLPath(api_options.request.get_path())
-    refresh_token_path = api_options.config.refresh_token_path
-
-    if incoming_path.equals(refresh_token_path) and method == &#34;post&#34;:
-        return await refresh_session_in_request(
-            api_options.request,
-            user_context,
-            api_options.config,
-            api_options.recipe_implementation,
-        )
-
-    return await get_session_from_request(
-        api_options.request,
-        api_options.config,
-        api_options.recipe_implementation,
-        session_required=session_required,
-        anti_csrf_check=anti_csrf_check,
-        check_database=check_database,
-        override_global_claim_validators=override_global_claim_validators,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -335,7 +263,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

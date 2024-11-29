@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.totp.types API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -71,9 +71,9 @@ class UnknownUserIdError(APIResponse):
 
 class UserIdentifierInfoDoesNotExistError:
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal[&#34;USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR&#34;] = (
             &#34;USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR&#34;
-        ] = &#34;USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR&#34;
+        )
 
 
 class CreateDeviceOkResult(OkResult):
@@ -94,9 +94,9 @@ class CreateDeviceOkResult(OkResult):
 
 class DeviceAlreadyExistsError(APIResponse):
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal[&#34;DEVICE_ALREADY_EXISTS_ERROR&#34;] = (
             &#34;DEVICE_ALREADY_EXISTS_ERROR&#34;
-        ] = &#34;DEVICE_ALREADY_EXISTS_ERROR&#34;
+        )
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {&#34;status&#34;: self.status}
@@ -289,18 +289,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;deviceName&#34;: self.device_name,
-        &#34;secret&#34;: self.secret,
-        &#34;qrCodeString&#34;: self.qr_code_string,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -342,18 +330,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;name&#34;: self.name,
-        &#34;period&#34;: self.period,
-        &#34;skew&#34;: self.skew,
-        &#34;verified&#34;: self.verified,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -369,9 +345,9 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class DeviceAlreadyExistsError(APIResponse):
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal[&#34;DEVICE_ALREADY_EXISTS_ERROR&#34;] = (
             &#34;DEVICE_ALREADY_EXISTS_ERROR&#34;
-        ] = &#34;DEVICE_ALREADY_EXISTS_ERROR&#34;
+        )
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {&#34;status&#34;: self.status}</code></pre>
@@ -388,13 +364,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -436,17 +405,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;currentNumberOfFailedAttempts&#34;: self.current_number_of_failed_attempts,
-        &#34;maxNumberOfFailedAttempts&#34;: self.max_number_of_failed_attempts,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -484,16 +442,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;retryAfterMs&#34;: self.retry_after_ms,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -532,16 +480,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;devices&#34;: [device.to_json() for device in self.devices],
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -630,16 +568,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;didDeviceExist&#34;: self.did_device_exist,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -720,13 +648,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -759,13 +680,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -796,13 +710,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    raise NotImplementedError()</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -817,9 +724,9 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class UserIdentifierInfoDoesNotExistError:
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal[&#34;USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR&#34;] = (
             &#34;USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR&#34;
-        ] = &#34;USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR&#34;</code></pre>
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.totp.types.UserIdentifierInfoOkResult"><code class="flex name class">
@@ -854,13 +761,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    raise NotImplementedError()</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -902,16 +802,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;wasAlreadyVerified&#34;: self.was_already_verified,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -942,13 +832,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1067,7 +950,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

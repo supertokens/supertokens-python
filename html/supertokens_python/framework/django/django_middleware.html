@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.framework.django.django_middleware API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -42,9 +42,11 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from asgiref.sync import async_to_sync
+
+from supertokens_python.framework import BaseResponse
 
 
 def middleware(get_response: Any):
@@ -102,12 +104,15 @@ def middleware(get_response: Any):
         user_context = default_user_context(custom_request)
 
         try:
-            result: Union[DjangoResponse, None] = async_to_sync(st.middleware)(
+            result: Union[BaseResponse, None] = async_to_sync(st.middleware)(
                 custom_request, response, user_context
             )
 
             if result is None:
                 result = DjangoResponse(get_response(request))
+
+            if not isinstance(result, DjangoResponse):
+                raise Exception(&#34;should never happen&#34;)
 
             if hasattr(request, &#34;supertokens&#34;) and isinstance(
                 request.supertokens, SessionContainer  # type: ignore
@@ -115,14 +120,19 @@ def middleware(get_response: Any):
                 manage_session_post_response(
                     request.supertokens, result, user_context  # type: ignore
                 )
+
             return result.response
 
         except SuperTokensError as e:
             response = DjangoResponse(HttpResponse())
-            result: Union[DjangoResponse, None] = async_to_sync(
-                st.handle_supertokens_error
-            )(DjangoRequest(request), e, response, user_context)
+            result: Optional[BaseResponse] = async_to_sync(st.handle_supertokens_error)(
+                DjangoRequest(request), e, response, user_context
+            )
+
             if result is not None:
+                if not isinstance(result, DjangoResponse):
+                    raise Exception(&#34;should never happen&#34;)
+
                 return result.response
         raise Exception(&#34;Should never come here&#34;)
 
@@ -141,91 +151,6 @@ def middleware(get_response: Any):
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def middleware(get_response: Any):
-    from supertokens_python import Supertokens
-    from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.framework.django.django_request import DjangoRequest
-    from supertokens_python.framework.django.django_response import DjangoResponse
-    from supertokens_python.recipe.session import SessionContainer
-    from supertokens_python.supertokens import manage_session_post_response
-
-    from django.http import HttpRequest
-    from supertokens_python.utils import default_user_context
-
-    if asyncio.iscoroutinefunction(get_response):
-
-        async def __asyncMiddleware(request: HttpRequest):
-            st = Supertokens.get_instance()
-            custom_request = DjangoRequest(request)
-            from django.http import HttpResponse
-
-            response = DjangoResponse(HttpResponse())
-            user_context = default_user_context(custom_request)
-
-            try:
-                result = await st.middleware(custom_request, response, user_context)
-                if result is None:
-                    result = await get_response(request)
-                    result = DjangoResponse(result)
-                if hasattr(request, &#34;supertokens&#34;) and isinstance(
-                    request.supertokens, SessionContainer  # type: ignore
-                ):
-                    manage_session_post_response(
-                        request.supertokens, result, user_context  # type: ignore
-                    )
-                if isinstance(result, DjangoResponse):
-                    return result.response
-            except SuperTokensError as e:
-                response = DjangoResponse(HttpResponse())
-                result = await st.handle_supertokens_error(
-                    DjangoRequest(request), e, response, user_context
-                )
-                if isinstance(result, DjangoResponse):
-                    return result.response
-
-            raise Exception(&#34;Should never come here&#34;)
-
-        return __asyncMiddleware
-
-    def __syncMiddleware(request: HttpRequest):
-        st = Supertokens.get_instance()
-        custom_request = DjangoRequest(request)
-        from django.http import HttpResponse
-
-        response = DjangoResponse(HttpResponse())
-        user_context = default_user_context(custom_request)
-
-        try:
-            result: Union[DjangoResponse, None] = async_to_sync(st.middleware)(
-                custom_request, response, user_context
-            )
-
-            if result is None:
-                result = DjangoResponse(get_response(request))
-
-            if hasattr(request, &#34;supertokens&#34;) and isinstance(
-                request.supertokens, SessionContainer  # type: ignore
-            ):
-                manage_session_post_response(
-                    request.supertokens, result, user_context  # type: ignore
-                )
-            return result.response
-
-        except SuperTokensError as e:
-            response = DjangoResponse(HttpResponse())
-            result: Union[DjangoResponse, None] = async_to_sync(
-                st.handle_supertokens_error
-            )(DjangoRequest(request), e, response, user_context)
-            if result is not None:
-                return result.response
-        raise Exception(&#34;Should never come here&#34;)
-
-    return __syncMiddleware</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -252,7 +177,7 @@ def middleware(get_response: Any):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

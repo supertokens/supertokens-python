@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.emailverification.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -365,65 +365,18 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def email_verify_post(
-    self,
-    token: str,
-    session: Optional[SessionContainer],
-    tenant_id: str,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.APIInterface.generate_email_verify_token_post"><code class="name flex">
 <span>async def <span class="ident">generate_email_verify_token_post</span></span>(<span>self, session: SessionContainer, api_options: <a title="supertokens_python.recipe.emailverification.interfaces.APIOptions" href="#supertokens_python.recipe.emailverification.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult" href="#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError" href="#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError">GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def generate_email_verify_token_post(
-    self,
-    session: SessionContainer,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    GenerateEmailVerifyTokenPostOkResult,
-    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
-    GeneralErrorResponse,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.APIInterface.is_email_verified_get"><code class="name flex">
 <span>async def <span class="ident">is_email_verified_get</span></span>(<span>self, session: SessionContainer, api_options: <a title="supertokens_python.recipe.emailverification.interfaces.APIOptions" href="#supertokens_python.recipe.emailverification.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult" href="#supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def is_email_verified_get(
-    self,
-    session: SessionContainer,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -471,7 +424,7 @@ async def is_email_verified_get(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationLinkEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationLinkEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -495,7 +448,7 @@ async def is_email_verified_get(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationLinkOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationLinkOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -515,7 +468,7 @@ async def is_email_verified_get(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -539,7 +492,7 @@ async def is_email_verified_get(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -593,13 +546,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -637,13 +583,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -678,13 +617,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -717,13 +649,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -774,13 +699,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;isVerified&#34;: self.is_verified}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -858,95 +776,30 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def create_email_verification_token(
-    self,
-    recipe_user_id: RecipeUserId,
-    email: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    CreateEmailVerificationTokenOkResult,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.RecipeInterface.is_email_verified"><code class="name flex">
 <span>async def <span class="ident">is_email_verified</span></span>(<span>self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def is_email_verified(
-    self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
-) -&gt; bool:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.RecipeInterface.revoke_email_verification_tokens"><code class="name flex">
 <span>async def <span class="ident">revoke_email_verification_tokens</span></span>(<span>self, recipe_user_id: RecipeUserId, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult" href="#supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult">RevokeEmailVerificationTokensOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def revoke_email_verification_tokens(
-    self,
-    recipe_user_id: RecipeUserId,
-    email: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; RevokeEmailVerificationTokensOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.RecipeInterface.unverify_email"><code class="name flex">
 <span>async def <span class="ident">unverify_email</span></span>(<span>self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.UnverifyEmailOkResult" href="#supertokens_python.recipe.emailverification.interfaces.UnverifyEmailOkResult">UnverifyEmailOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def unverify_email(
-    self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
-) -&gt; UnverifyEmailOkResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.RecipeInterface.verify_email_using_token"><code class="name flex">
 <span>async def <span class="ident">verify_email_using_token</span></span>(<span>self, token: str, tenant_id: str, attempt_account_linking: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult" href="#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult">VerifyEmailUsingTokenOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError" href="#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError">VerifyEmailUsingTokenInvalidTokenError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def verify_email_using_token(
-    self,
-    token: str,
-    tenant_id: str,
-    attempt_account_linking: bool,
-    user_context: Dict[str, Any],
-) -&gt; Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -977,7 +830,7 @@ async def verify_email_using_token(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.SendEmailVerificationEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.SendEmailVerificationEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -997,7 +850,7 @@ async def verify_email_using_token(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.SendEmailVerificationEmailOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.SendEmailVerificationEmailOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1069,7 +922,7 @@ async def verify_email_using_token(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1081,13 +934,6 @@ async def verify_email_using_token(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;user&#34;: self.user.to_json(), &#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1225,7 +1071,7 @@ async def verify_email_using_token(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

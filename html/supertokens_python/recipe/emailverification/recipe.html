@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.emailverification.recipe API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -699,7 +699,7 @@ class IsVerifiedSCV(SessionClaimValidator):
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
-        self.claim: EmailVerificationClaimClass = claim
+        self.claim = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
@@ -714,6 +714,12 @@ class IsVerifiedSCV(SessionClaimValidator):
     def should_refetch(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -&gt; MaybeAwaitable[bool]:
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
+        if not isinstance(self.claim, EmailVerificationClaimClass):
+            raise Exception(&#34;should never happen&#34;)
+
         value = self.claim.get_value_from_payload(payload, user_context)
         if value is None:
             return True
@@ -922,187 +928,18 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def email_verify_post(
-    self,
-    token: str,
-    session: Optional[SessionContainer],
-    tenant_id: str,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
-
-    response = await api_options.recipe_implementation.verify_email_using_token(
-        token, tenant_id, True, user_context
-    )
-    if isinstance(response, VerifyEmailUsingTokenOkResult):
-        email_verification_recipe = EmailVerificationRecipe.get_instance_or_throw()
-        new_session = await email_verification_recipe.update_session_if_required_post_email_verification(
-            api_options.request, session, response.user.recipe_user_id, user_context
-        )
-
-        return EmailVerifyPostOkResult(response.user, new_session)
-    return EmailVerifyPostInvalidTokenError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.APIImplementation.generate_email_verify_token_post"><code class="name flex">
 <span>async def <span class="ident">generate_email_verify_token_post</span></span>(<span>self, session: SessionContainer, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError">GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def generate_email_verify_token_post(
-    self,
-    session: SessionContainer,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    GenerateEmailVerifyTokenPostOkResult,
-    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
-]:
-    tenant_id = session.get_tenant_id()
-
-    email_info = await EmailVerificationRecipe.get_instance_or_throw().get_email_for_recipe_user_id(
-        None, session.get_recipe_user_id(user_context), user_context
-    )
-
-    if isinstance(email_info, EmailDoesNotExistError):
-        log_debug_message(
-            &#34;Email verification email not sent to user %s because it doesn&#39;t have an email address.&#34;,
-            session.get_recipe_user_id(user_context).get_as_string(),
-        )
-        # This can happen if the user ID was found, but it has no email. In this
-        # case, we treat it as a success case.
-        new_session = await EmailVerificationRecipe.get_instance_or_throw().update_session_if_required_post_email_verification(
-            api_options.request,
-            session,
-            session.get_recipe_user_id(user_context),
-            user_context,
-        )
-        return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(new_session)
-    elif isinstance(email_info, GetEmailForUserIdOkResult):
-        response = (
-            await api_options.recipe_implementation.create_email_verification_token(
-                session.get_recipe_user_id(user_context),
-                email_info.email,
-                tenant_id,
-                user_context,
-            )
-        )
-
-        if isinstance(
-            response, CreateEmailVerificationTokenEmailAlreadyVerifiedError
-        ):
-            log_debug_message(
-                &#34;Email verification email not sent to user %s because it is already verified.&#34;,
-                session.get_recipe_user_id(user_context).get_as_string(),
-            )
-            new_session = await EmailVerificationRecipe.get_instance_or_throw().update_session_if_required_post_email_verification(
-                api_options.request,
-                session,
-                session.get_recipe_user_id(user_context),
-                user_context,
-            )
-            return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(
-                new_session
-            )
-
-        if (
-            await session.get_claim_value(EmailVerificationClaim, user_context)
-            is not False
-        ):
-            # This can happen if the email was unverified in another browser
-            # and this session is still outdated - and the user has not
-            # called the get email verification API yet.
-            await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
-
-        email_verify_link = get_email_verify_link(
-            api_options.app_info,
-            response.token,
-            tenant_id,
-            api_options.request,
-            user_context,
-        )
-
-        log_debug_message(
-            &#34;Sending email verification email to %s&#34;, email_info.email
-        )
-        email_verification_email_delivery_input = VerificationEmailTemplateVars(
-            user=VerificationEmailTemplateVarsUser(
-                _id=session.get_user_id(user_context),
-                recipe_user_id=session.get_recipe_user_id(user_context),
-                email=email_info.email,
-            ),
-            email_verify_link=email_verify_link,
-            tenant_id=tenant_id,
-        )
-        await api_options.email_delivery.ingredient_interface_impl.send_email(
-            email_verification_email_delivery_input, user_context
-        )
-        return GenerateEmailVerifyTokenPostOkResult()
-
-    log_debug_message(
-        &#34;generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown&#34;
-    )
-    raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.APIImplementation.is_email_verified_get"><code class="name flex">
 <span>async def <span class="ident">is_email_verified_get</span></span>(<span>self, session: SessionContainer, api_options: APIOptions, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def is_email_verified_get(
-    self,
-    session: SessionContainer,
-    api_options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; IsEmailVerifiedGetOkResult:
-    recipe = EmailVerificationRecipe.get_instance_or_throw()
-    email_info = await recipe.get_email_for_recipe_user_id(
-        None, session.get_recipe_user_id(user_context), user_context
-    )
-
-    if isinstance(email_info, GetEmailForUserIdOkResult):
-        is_verified = await api_options.recipe_implementation.is_email_verified(
-            session.get_recipe_user_id(user_context), email_info.email, user_context
-        )
-
-        if is_verified:
-            new_session = (
-                await recipe.update_session_if_required_post_email_verification(
-                    api_options.request,
-                    session,
-                    session.get_recipe_user_id(user_context),
-                    user_context,
-                )
-            )
-            return IsEmailVerifiedGetOkResult(True, new_session)
-        else:
-            await session.set_claim_value(
-                EmailVerificationClaim, False, user_context
-            )
-            return IsEmailVerifiedGetOkResult(False, None)
-    elif isinstance(email_info, EmailDoesNotExistError):
-        # We consider people without email addresses as validated
-        return IsEmailVerifiedGetOkResult(True, None)
-    else:
-        # This means that the user ID is not known to supertokens. This could
-        # happen if the current session&#39;s user ID is not an auth user,
-        # or if it belongs to a recipe user ID that got deleted. Either way,
-        # we logout the user.
-        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1229,26 +1066,6 @@ return default</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_verified(
-    self,
-    refetch_time_on_false_in_seconds: int = 10,
-    max_age_in_seconds: Optional[int] = None,
-    id_: Optional[str] = None,
-) -&gt; SessionClaimValidator:
-
-    assert isinstance(self.claim, EmailVerificationClaimClass)
-    return IsVerifiedSCV(
-        (id_ or self.claim.key),
-        self.claim,
-        self,
-        refetch_time_on_false_in_seconds,
-        max_age_in_seconds,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1655,107 +1472,24 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def get_instance_optional() -&gt; Optional[EmailVerificationRecipe]:
-    return EmailVerificationRecipe.__instance</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_instance_or_throw"><code class="name flex">
 <span>def <span class="ident">get_instance_or_throw</span></span>(<span>) ‑> <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe">EmailVerificationRecipe</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def get_instance_or_throw() -&gt; EmailVerificationRecipe:
-    if EmailVerificationRecipe.__instance is not None:
-        return EmailVerificationRecipe.__instance
-    raise_general_exception(
-        &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.init"><code class="name flex">
 <span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[OverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def init(
-    mode: MODE_TYPE,
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
-):
-    def func(app_info: AppInfo) -&gt; EmailVerificationRecipe:
-        if EmailVerificationRecipe.__instance is None:
-            ingredients = EmailVerificationIngredients(email_delivery=None)
-            EmailVerificationRecipe.__instance = EmailVerificationRecipe(
-                EmailVerificationRecipe.recipe_id,
-                app_info,
-                ingredients,
-                mode,
-                email_delivery,
-                get_email_for_recipe_user_id,
-                override,
-            )
-
-            def callback():
-                SessionRecipe.get_instance().add_claim_from_other_recipe(
-                    EmailVerificationClaim
-                )
-                if mode == &#34;REQUIRED&#34;:
-                    SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
-                        EmailVerificationClaim.validators.is_verified()
-                    )
-
-                from supertokens_python.recipe.accountlinking.recipe import (
-                    AccountLinkingRecipe,
-                )
-
-                assert EmailVerificationRecipe.__instance is not None
-                AccountLinkingRecipe.get_instance().register_email_verification_recipe(
-                    EmailVerificationRecipe.__instance
-                )
-
-            PostSTInitCallbacks.add_post_init_callback(callback)
-
-            return EmailVerificationRecipe.__instance
-        raise_general_exception(
-            &#34;Emailverification recipe has already been initialised. Please check your code for bugs.&#34;
-        )
-
-    return func</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def reset():
-    if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
-        environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
-    ):
-        raise_general_exception(&#34;calling testing function in non testing env&#34;)
-    EmailVerificationRecipe.__instance = None</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1765,333 +1499,48 @@ def reset():
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_all_cors_headers(self) -&gt; List[str]:
-    return []</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_apis_handled"><code class="name flex">
 <span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_apis_handled(self) -&gt; List[APIHandled]:
-    return [
-        APIHandled(
-            NormalisedURLPath(USER_EMAIL_VERIFY_TOKEN),
-            &#34;post&#34;,
-            USER_EMAIL_VERIFY_TOKEN,
-            self.api_implementation.disable_generate_email_verify_token_post,
-        ),
-        APIHandled(
-            NormalisedURLPath(USER_EMAIL_VERIFY),
-            &#34;post&#34;,
-            USER_EMAIL_VERIFY,
-            self.api_implementation.disable_email_verify_post,
-        ),
-        APIHandled(
-            NormalisedURLPath(USER_EMAIL_VERIFY),
-            &#34;get&#34;,
-            USER_EMAIL_VERIFY,
-            self.api_implementation.disable_is_email_verified_get,
-        ),
-    ]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_email_for_recipe_user_id"><code class="name flex">
-<span>async def <span class="ident">get_email_for_recipe_user_id</span></span>(<span>self, user: Optional[User], recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]</span>
+<span>async def <span class="ident">get_email_for_recipe_user_id</span></span>(<span>self, user: Optional[User], recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_email_for_recipe_user_id(
-    self,
-    user: Optional[User],
-    recipe_user_id: RecipeUserId,
-    user_context: Dict[str, Any],
-) -&gt; Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:
-    if self.config.get_email_for_recipe_user_id is not None:
-        user_res = await self.config.get_email_for_recipe_user_id(
-            recipe_user_id, user_context
-        )
-        if not isinstance(user_res, UnknownUserIdError):
-            return user_res
-
-    if user is None:
-        from supertokens_python.recipe.accountlinking.recipe import (
-            AccountLinkingRecipe,
-        )
-
-        user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
-            recipe_user_id.get_as_string(), user_context
-        )
-
-        if user is None:
-            return UnknownUserIdError()
-
-    for login_method in user.login_methods:
-        if (
-            login_method.recipe_user_id.get_as_string()
-            == recipe_user_id.get_as_string()
-        ):
-            if login_method.email is not None:
-                return GetEmailForUserIdOkResult(email=login_method.email)
-            else:
-                return EmailDoesNotExistError()
-
-    return UnknownUserIdError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_primary_user_id_for_recipe_user"><code class="name flex">
-<span>async def <span class="ident">get_primary_user_id_for_recipe_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> str</span>
+<span>async def <span class="ident">get_primary_user_id_for_recipe_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_primary_user_id_for_recipe_user(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; str:
-    # We extract this into its own function like this cause we want to make sure that
-    # this recipe does not get the email of the user ID from the getUser function.
-    # In fact, there is a test &#34;email verification recipe uses getUser function only in getEmailForRecipeUserId&#34;
-    # which makes sure that this function is only called in 3 places in this recipe:
-    # - this function
-    # - getEmailForRecipeUserId function (above)
-    # - after verification to get the updated user in verifyEmailUsingToken
-    # We want to isolate the result of calling this function as much as possible
-    # so that the consumer of the getUser function does not read the email
-    # from the primaryUser. Hence, this function only returns the string ID
-    # and nothing else from the primaryUser.
-    from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-
-    primary_user = (
-        await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
-            recipe_user_id.get_as_string(), user_context
-        )
-    )
-    if primary_user is None:
-        # This can come here if the user is using session + email verification
-        # recipe with a user ID that is not known to supertokens. In this case,
-        # we do not allow linking for such users.
-        return recipe_user_id.get_as_string()
-    return primary_user.id</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_api_request(
-    self,
-    request_id: str,
-    tenant_id: str,
-    request: BaseRequest,
-    path: NormalisedURLPath,
-    method: str,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; Union[BaseResponse, None]:
-    api_options = APIOptions(
-        request,
-        response,
-        self.recipe_id,
-        self.config,
-        self.recipe_implementation,
-        self.get_app_info(),
-        self.email_delivery,
-    )
-    if request_id == USER_EMAIL_VERIFY_TOKEN:
-        return await handle_generate_email_verify_token_api(
-            self.api_implementation, api_options, user_context
-        )
-    return await handle_email_verify_api(
-        self.api_implementation, tenant_id, api_options, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]) ‑> BaseResponse</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_error(
-    self,
-    request: BaseRequest,
-    err: SuperTokensError,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; BaseResponse:
-    if isinstance(err, EmailVerificationInvalidTokenError):
-        response.set_json_content(
-            {&#34;status&#34;: &#34;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#34;}
-        )
-        return response
-    response.set_json_content({&#34;status&#34;: &#34;EMAIL_ALREADY_VERIFIED_ERROR&#34;})
-    return response</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
 <span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
-    return isinstance(err, SuperTokensError) and isinstance(
-        err, SuperTokensEmailVerificationError
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.update_session_if_required_post_email_verification"><code class="name flex">
-<span>async def <span class="ident">update_session_if_required_post_email_verification</span></span>(<span>self, req: BaseRequest, session: Optional[SessionContainer], recipe_user_id_whose_email_got_verified: RecipeUserId, user_context: Dict[str, Any]) ‑> Optional[SessionContainer]</span>
+<span>async def <span class="ident">update_session_if_required_post_email_verification</span></span>(<span>self, req: BaseRequest, session: Optional[SessionContainer], recipe_user_id_whose_email_got_verified: RecipeUserId, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_session_if_required_post_email_verification(
-    self,
-    req: BaseRequest,
-    session: Optional[SessionContainer],
-    recipe_user_id_whose_email_got_verified: RecipeUserId,
-    user_context: Dict[str, Any],
-) -&gt; Optional[SessionContainer]:
-    primary_user_id = await self.get_primary_user_id_for_recipe_user(
-        recipe_user_id_whose_email_got_verified, user_context
-    )
-
-    # if a session exists in the API, then we can update the session
-    # claim related to email verification
-    if session is not None:
-        log_debug_message(
-            &#34;updateSessionIfRequiredPostEmailVerification got session&#34;
-        )
-        # Due to linking, we will have to correct the current
-        # session&#39;s user ID. There are four cases here:
-        # --&gt; (Case 1) User signed up and did email verification and the new account
-        # became a primary user (user ID no change)
-        # --&gt; (Case 2) User signed up and did email verification and the new account got linked
-        # to another primary user (user ID change)
-        # --&gt; (Case 3) This is post login account linking, in which the account that got verified
-        # got linked to the session&#39;s account (user ID of account has changed to the session&#39;s user ID)
-        # --&gt;  (Case 4) This is post login account linking, in which the account that got verified
-        # got linked to ANOTHER primary account (user ID of account has changed to a different user ID != session.getUserId, but
-        # we should ignore this since it will result in the user&#39;s session changing.)
-
-        if (
-            session.get_recipe_user_id(user_context).get_as_string()
-            == recipe_user_id_whose_email_got_verified.get_as_string()
-        ):
-            log_debug_message(
-                &#34;updateSessionIfRequiredPostEmailVerification the session belongs to the verified user&#34;
-            )
-            # this means that the session&#39;s login method&#39;s account is the
-            # one that just got verified and that we are NOT doing post login
-            # account linking. So this is only for (Case 1) and (Case 2)
-
-            if session.get_user_id() == primary_user_id:
-                log_debug_message(
-                    &#34;updateSessionIfRequiredPostEmailVerification the session userId matches the primary user id, so we are only refreshing the claim&#34;
-                )
-                # if the session&#39;s primary user ID is equal to the
-                # primary user ID that the account was linked to, then
-                # this means that the new account became a primary user (Case 1)
-                # We also have the sub cases here that the account that just
-                # got verified was already linked to the session&#39;s primary user ID,
-                # but either way, we don&#39;t need to change any user ID.
-
-                # In this case, all we do is to update the emailverification claim
-                try:
-                    # EmailVerificationClaim will be based on the recipeUserId
-                    # and not the primary user ID.
-                    await session.fetch_and_set_claim(
-                        EmailVerificationClaim, user_context
-                    )
-                except Exception as err:
-                    # This should never happen, since we&#39;ve just set the status above.
-                    if str(err) == &#34;UNKNOWN_USER_ID&#34;:
-                        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
-                    raise err
-
-                return None
-            else:
-                log_debug_message(
-                    &#34;updateSessionIfRequiredPostEmailVerification the session user id doesn&#39;t match the primary user id, so we are revoking all sessions and creating a new one&#34;
-                )
-                # if the session&#39;s primary user ID is NOT equal to the
-                # primary user ID that the account that it was linked to, then
-                # this means that the new account got linked to another primary user (Case 2)
-
-                # In this case, we need to update the session&#39;s user ID by creating
-                # a new session
-
-                # Revoke all session belonging to session.getRecipeUserId()
-                # We do not really need to do this, but we do it anyway.. no harm.
-                await revoke_all_sessions_for_user(
-                    recipe_user_id_whose_email_got_verified.get_as_string(),
-                    False,
-                    None,
-                    user_context,
-                )
-
-                # create a new session and return that..
-                return await create_new_session(
-                    req,
-                    session.get_tenant_id(),
-                    session.get_recipe_user_id(user_context),
-                    {},
-                    {},
-                    user_context,
-                )
-        else:
-            log_debug_message(
-                &#34;updateSessionIfRequiredPostEmailVerification the verified user doesn&#39;t match the session&#34;
-            )
-            # this means that the session&#39;s login method&#39;s account was NOT the
-            # one that just got verified and that we ARE doing post login
-            # account linking. So this is only for (Case 3) and (Case 4)
-
-            # In both case 3 and case 4, we do not want to change anything in the
-            # current session in terms of user ID or email verification claim (since
-            # both of these refer to the current logged in user and not the newly
-            # linked user&#39;s account).
-
-            return None
-    else:
-        log_debug_message(
-            &#34;updateSessionIfRequiredPostEmailVerification got no session&#34;
-        )
-        # the session is updated when the is email verification GET API is called
-        # so we don&#39;t do anything in this API.
-        return None</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -2116,7 +1565,7 @@ inheritance.</p></div>
         max_age_in_seconds: Optional[int],
     ):
         super().__init__(id_)
-        self.claim: EmailVerificationClaimClass = claim
+        self.claim = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
@@ -2131,6 +1580,12 @@ inheritance.</p></div>
     def should_refetch(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -&gt; MaybeAwaitable[bool]:
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
+        if not isinstance(self.claim, EmailVerificationClaimClass):
+            raise Exception(&#34;should never happen&#34;)
+
         value = self.claim.get_value_from_payload(payload, user_context)
         if value is None:
             return True
@@ -2157,52 +1612,16 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.recipe.IsVerifiedSCV.should_refetch"><code class="name flex">
-<span>def <span class="ident">should_refetch</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any]) ‑> MaybeAwaitable[bool]</span>
+<span>def <span class="ident">should_refetch</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def should_refetch(
-    self, payload: JSONObject, user_context: Dict[str, Any]
-) -&gt; MaybeAwaitable[bool]:
-    value = self.claim.get_value_from_payload(payload, user_context)
-    if value is None:
-        return True
-
-    current_time = get_timestamp_ms()
-    last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
-    assert last_refetch_time is not None
-
-    if self.max_age_in_sec is not None:
-        if last_refetch_time &lt; current_time - self.max_age_in_sec * 1000:
-            return True
-
-    if value is False:
-        if last_refetch_time &lt; current_time - self.refetch_time_on_false_in_ms:
-            return True
-
-    return False</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.IsVerifiedSCV.validate"><code class="name flex">
 <span>async def <span class="ident">validate</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.ClaimValidationResult" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.ClaimValidationResult">ClaimValidationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self, payload: JSONObject, user_context: Dict[str, Any]
-) -&gt; ClaimValidationResult:
-    return await self.ev_claim_validators.has_value(
-        True, self.max_age_in_sec
-    ).validate(payload, user_context)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -2271,7 +1690,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

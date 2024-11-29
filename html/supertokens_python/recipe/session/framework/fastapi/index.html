@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.framework.fastapi API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -109,13 +109,13 @@ async def session_exception_handler(
     Usage: `app.add_exception_handler(SuperTokensError, st_exception_handler)`
     &#34;&#34;&#34;
     base_req = FastApiRequest(request)
-    base_res = FastApiResponse(JSONResponse())
+    base_res = FastApiResponse(JSONResponse(content={}))
     user_context = default_user_context(base_req)
     result = await Supertokens.get_instance().handle_supertokens_error(
         base_req, exc, base_res, user_context
     )
     if isinstance(result, FastApiResponse):
-        body = json.loads(result.response.body)
+        body = json.loads(bytes(result.response.body))
         return JSONResponse(body, status_code=result.response.status_code)
 
     raise Exception(&#34;Should never come here&#34;)</code></pre>
@@ -134,79 +134,12 @@ async def session_exception_handler(
 <dd>
 <div class="desc"><p>FastAPI exceptional handler for errors raised by Supertokens SDK when not using middleware</p>
 <p>Usage: <code>app.add_exception_handler(SuperTokensError, st_exception_handler)</code></p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def session_exception_handler(
-    request: Request, exc: SuperTokensError
-) -&gt; JSONResponse:
-    &#34;&#34;&#34;FastAPI exceptional handler for errors raised by Supertokens SDK when not using middleware
-
-    Usage: `app.add_exception_handler(SuperTokensError, st_exception_handler)`
-    &#34;&#34;&#34;
-    base_req = FastApiRequest(request)
-    base_res = FastApiResponse(JSONResponse())
-    user_context = default_user_context(base_req)
-    result = await Supertokens.get_instance().handle_supertokens_error(
-        base_req, exc, base_res, user_context
-    )
-    if isinstance(result, FastApiResponse):
-        body = json.loads(result.response.body)
-        return JSONResponse(body, status_code=result.response.status_code)
-
-    raise Exception(&#34;Should never come here&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.framework.fastapi.verify_session"><code class="name flex">
 <span>def <span class="ident">verify_session</span></span>(<span>anti_csrf_check: Optional[bool] = None, session_required: bool = True, check_database: bool = False, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Callable[..., Coroutine[Any, Any, Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def verify_session(
-    anti_csrf_check: Union[bool, None] = None,
-    session_required: bool = True,
-    check_database: bool = False,
-    override_global_claim_validators: Optional[
-        Callable[
-            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-            MaybeAwaitable[List[SessionClaimValidator]],
-        ]
-    ] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
-    _ = user_context
-
-    async def func(request: Request) -&gt; Union[SessionContainer, None]:
-        nonlocal user_context
-        base_req = FastApiRequest(request)
-        user_context = set_request_in_user_context_if_not_defined(
-            user_context, base_req
-        )
-
-        recipe = SessionRecipe.get_instance()
-        session = await recipe.verify_session(
-            base_req,
-            anti_csrf_check,
-            session_required,
-            check_database,
-            override_global_claim_validators,
-            user_context,
-        )
-        if session is None:
-            if session_required:
-                raise Exception(&#34;Should never come here&#34;)
-            base_req.set_session_as_none()
-        else:
-            base_req.set_session(session)
-        return base_req.get_session()
-
-    return func</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -234,7 +167,7 @@ async def session_exception_handler(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

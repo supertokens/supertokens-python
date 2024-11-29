@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.dashboard.recipe API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -1288,69 +1288,18 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def get_instance() -&gt; DashboardRecipe:
-    if DashboardRecipe.__instance is not None:
-        return DashboardRecipe.__instance
-    raise_general_exception(
-        &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe.DashboardRecipe.init"><code class="name flex">
 <span>def <span class="ident">init</span></span>(<span>api_key: Optional[str], admins: Optional[List[str]] = None, override: Optional[InputOverrideConfig] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def init(
-    api_key: Optional[str],
-    admins: Optional[List[str]] = None,
-    override: Optional[InputOverrideConfig] = None,
-):
-    def func(app_info: AppInfo):
-        if DashboardRecipe.__instance is None:
-            DashboardRecipe.__instance = DashboardRecipe(
-                DashboardRecipe.recipe_id,
-                app_info,
-                api_key,
-                admins,
-                override,
-            )
-            return DashboardRecipe.__instance
-        raise Exception(
-            None,
-            &#34;Dashboard recipe has already been initialised. Please check your code for bugs.&#34;,
-        )
-
-    return func</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe.DashboardRecipe.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def reset():
-    if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
-        environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
-    ):
-        raise_general_exception(&#34;calling testing function in non testing env&#34;)
-    DashboardRecipe.__instance = None</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1360,510 +1309,30 @@ def reset():
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_all_cors_headers(self) -&gt; List[str]:
-    return []</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe.DashboardRecipe.get_apis_handled"><code class="name flex">
 <span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_apis_handled(self) -&gt; List[APIHandled]:
-    return [
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/&#34;)),
-            &#34;get&#34;,
-            DASHBOARD_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/roles&#34;)),
-            &#34;get&#34;,
-            DASHBOARD_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(&#34;/tenants&#34;)),
-            &#34;get&#34;,
-            DASHBOARD_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(SIGN_IN_API)),
-            &#34;post&#34;,
-            SIGN_IN_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(VALIDATE_KEY_API)),
-            &#34;post&#34;,
-            VALIDATE_KEY_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(SIGN_OUT_API)),
-            &#34;post&#34;,
-            SIGN_OUT_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERS_LIST_GET_API)),
-            &#34;get&#34;,
-            USERS_LIST_GET_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERS_COUNT_API)),
-            &#34;get&#34;,
-            USERS_COUNT_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
-            &#34;get&#34;,
-            USER_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
-            &#34;post&#34;,
-            USER_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
-            &#34;put&#34;,
-            USER_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_API)),
-            &#34;delete&#34;,
-            USER_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
-            ),
-            &#34;get&#34;,
-            USER_EMAIL_VERIFY_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_API)
-            ),
-            &#34;put&#34;,
-            USER_EMAIL_VERIFY_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_METADATA_API)),
-            &#34;get&#34;,
-            USER_METADATA_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_METADATA_API)),
-            &#34;put&#34;,
-            USER_METADATA_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_SESSION_API)),
-            &#34;get&#34;,
-            USER_SESSION_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_SESSION_API)),
-            &#34;post&#34;,
-            USER_SESSION_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USER_PASSWORD_API)),
-            &#34;put&#34;,
-            USER_PASSWORD_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(USER_EMAIL_VERIFY_TOKEN_API)
-            ),
-            &#34;post&#34;,
-            USER_EMAIL_VERIFY_TOKEN_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(SEARCH_TAGS_API)),
-            &#34;get&#34;,
-            SEARCH_TAGS_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(DASHBOARD_ANALYTICS_API)
-            ),
-            &#34;post&#34;,
-            DASHBOARD_ANALYTICS_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
-            &#34;post&#34;,
-            TENANT_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
-            &#34;delete&#34;,
-            TENANT_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(TENANT_API)),
-            &#34;get&#34;,
-            TENANT_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
-            ),
-            &#34;put&#34;,
-            TENANT_THIRD_PARTY_CONFIG_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
-            ),
-            &#34;delete&#34;,
-            TENANT_THIRD_PARTY_CONFIG_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(TENANT_THIRD_PARTY_CONFIG_API)
-            ),
-            &#34;get&#34;,
-            TENANT_THIRD_PARTY_CONFIG_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(LIST_TENANTS_WITH_LOGIN_METHODS)
-            ),
-            &#34;get&#34;,
-            LIST_TENANTS_WITH_LOGIN_METHODS,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(UPDATE_TENANT_CORE_CONFIG_API)
-            ),
-            &#34;put&#34;,
-            UPDATE_TENANT_CORE_CONFIG_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(UPDATE_TENANT_FIRST_FACTOR_API)
-            ),
-            &#34;put&#34;,
-            UPDATE_TENANT_FIRST_FACTOR_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(
-                    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API
-                )
-            ),
-            &#34;put&#34;,
-            UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(CREATE_EMAIL_PASSWORD_USER)
-            ),
-            &#34;post&#34;,
-            CREATE_EMAIL_PASSWORD_USER,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(CREATE_PASSWORDLESS_USER)
-            ),
-            &#34;post&#34;,
-            CREATE_PASSWORDLESS_USER,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(UNLINK_USER)),
-            &#34;get&#34;,
-            UNLINK_USER,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(USERROLES_PERMISSIONS_API)
-            ),
-            &#34;get&#34;,
-            USERROLES_PERMISSIONS_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(USERROLES_PERMISSIONS_API)
-            ),
-            &#34;put&#34;,
-            USERROLES_PERMISSIONS_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(
-                get_api_path_with_dashboard_base(USERROLES_REMOVE_PERMISSIONS_API)
-            ),
-            &#34;put&#34;,
-            USERROLES_REMOVE_PERMISSIONS_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_LIST_API)),
-            &#34;get&#34;,
-            USERROLES_LIST_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
-            &#34;put&#34;,
-            USERROLES_ROLE_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
-            &#34;delete&#34;,
-            USERROLES_ROLE_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_ROLE_API)),
-            &#34;get&#34;,
-            USERROLES_ROLE_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
-            &#34;get&#34;,
-            USERROLES_USER_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
-            &#34;put&#34;,
-            USERROLES_USER_API,
-            False,
-        ),
-        APIHandled(
-            NormalisedURLPath(get_api_path_with_dashboard_base(USERROLES_USER_API)),
-            &#34;delete&#34;,
-            USERROLES_USER_API,
-            False,
-        ),
-    ]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe.DashboardRecipe.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any]) ‑> Optional[BaseResponse]</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_api_request(
-    self,
-    request_id: str,
-    tenant_id: str,
-    request: BaseRequest,
-    path: NormalisedURLPath,
-    method: str,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; Optional[BaseResponse]:
-    api_options = APIOptions(
-        request,
-        response,
-        self.recipe_id,
-        self.config,
-        self.recipe_implementation,
-        self.get_app_info(),
-    )
-    # For these APIs we dont need API key validation
-    if request_id == DASHBOARD_API:
-        return await handle_dashboard_api(
-            self.api_implementation, api_options, user_context
-        )
-    if request_id == VALIDATE_KEY_API:
-        return await handle_validate_key_api(
-            self.api_implementation, api_options, user_context
-        )
-    if request_id == SIGN_IN_API:
-        return await handle_emailpassword_signin_api(
-            self.api_implementation, api_options, user_context
-        )
-
-    # Do API key validation for the remaining APIs
-    api_function: Optional[
-        Callable[
-            [APIInterface, str, APIOptions, Dict[str, Any]], Awaitable[APIResponse]
-        ]
-    ] = None
-    if request_id == USERS_LIST_GET_API:
-        api_function = handle_users_get_api
-    elif request_id == USERS_COUNT_API:
-        api_function = handle_users_count_get_api
-    elif request_id == USER_API:
-        if method == &#34;get&#34;:
-            api_function = handle_user_get
-        if method == &#34;delete&#34;:
-            api_function = handle_user_delete
-        if method == &#34;put&#34;:
-            api_function = handle_user_put
-    elif request_id == USER_EMAIL_VERIFY_API:
-        if method == &#34;get&#34;:
-            api_function = handle_user_email_verify_get
-        if method == &#34;put&#34;:
-            api_function = handle_user_email_verify_put
-    elif request_id == USER_METADATA_API:
-        if method == &#34;get&#34;:
-            api_function = handle_metadata_get
-        if method == &#34;put&#34;:
-            api_function = handle_metadata_put
-    elif request_id == USER_SESSION_API:
-        if method == &#34;get&#34;:
-            api_function = handle_sessions_get
-        if method == &#34;post&#34;:
-            api_function = handle_user_sessions_post
-    elif request_id == USER_PASSWORD_API:
-        api_function = handle_user_password_put
-    elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
-        api_function = handle_email_verify_token_post
-    elif request_id == SIGN_OUT_API:
-        api_function = handle_emailpassword_signout_api
-    elif request_id == SEARCH_TAGS_API:
-        api_function = handle_get_tags
-    elif request_id == DASHBOARD_ANALYTICS_API:
-        if method == &#34;post&#34;:
-            api_function = handle_analytics_post
-    elif request_id == TENANT_API:
-        if method == &#34;post&#34;:
-            api_function = create_tenant
-        if method == &#34;delete&#34;:
-            api_function = delete_tenant_api
-        if method == &#34;get&#34;:
-            api_function = get_tenant_info
-    elif request_id == TENANT_THIRD_PARTY_CONFIG_API:
-        if method == &#34;put&#34;:
-            api_function = handle_create_or_update_third_party_config
-        if method == &#34;delete&#34;:
-            api_function = delete_third_party_config_api
-        if method == &#34;get&#34;:
-            api_function = get_third_party_config
-    elif request_id == LIST_TENANTS_WITH_LOGIN_METHODS:
-        api_function = list_all_tenants_with_login_methods
-    elif request_id == UPDATE_TENANT_CORE_CONFIG_API:
-        api_function = update_tenant_core_config
-    elif request_id == UPDATE_TENANT_FIRST_FACTOR_API:
-        api_function = update_tenant_first_factor
-    elif request_id == UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API:
-        api_function = update_tenant_secondary_factor
-    elif request_id == CREATE_EMAIL_PASSWORD_USER:
-        api_function = create_email_password_user
-    elif request_id == CREATE_PASSWORDLESS_USER:
-        api_function = create_passwordless_user
-    elif request_id == UNLINK_USER:
-        api_function = handle_user_unlink_get
-    elif request_id == USERROLES_LIST_API:
-        api_function = get_all_roles_api
-    elif request_id == USERROLES_PERMISSIONS_API:
-        api_function = get_permissions_for_role_api
-    elif request_id == USERROLES_REMOVE_PERMISSIONS_API:
-        api_function = remove_permissions_from_role_api
-    elif request_id == USERROLES_ROLE_API:
-        if method == &#34;put&#34;:
-            api_function = create_role_or_add_permissions_api
-        if method == &#34;delete&#34;:
-            api_function = delete_role_api
-        if method == &#34;get&#34;:
-            api_function = get_all_roles_api
-    elif request_id == USERROLES_USER_API:
-        if method == &#34;get&#34;:
-            api_function = get_roles_for_user_api
-        if method == &#34;put&#34;:
-            api_function = add_role_to_user_api
-        if method == &#34;delete&#34;:
-            api_function = remove_user_role_api
-
-    if api_function is not None:
-        return await api_key_protector(
-            self.api_implementation,
-            tenant_id,
-            api_options,
-            api_function,
-            user_context,
-        )
-
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe.DashboardRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]) ‑> BaseResponse</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_error(
-    self,
-    request: BaseRequest,
-    err: SuperTokensError,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; BaseResponse:
-    raise err</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe.DashboardRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
 <span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
-    return isinstance(err, SuperTokensError) and (
-        isinstance(err, SuperTokensDashboardError)
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1904,7 +1373,7 @@ def reset():
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

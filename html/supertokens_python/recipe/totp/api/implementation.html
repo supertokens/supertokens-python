@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.totp.api.implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -369,186 +369,30 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_device_post(
-    self,
-    device_name: Union[str, None],
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, GeneralErrorResponse]:
-    user_id = session.get_user_id()
-
-    mfa_instance = MultiFactorAuthRecipe.get_instance()
-    if mfa_instance is None:
-        raise Exception(&#34;should never come here&#34;)
-
-    await assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
-        session, &#34;totp&#34;, user_context
-    )
-
-    create_device_res = await options.recipe_implementation.create_device(
-        user_id=user_id,
-        user_identifier_info=None,
-        device_name=device_name,
-        skew=None,
-        period=None,
-        user_context=user_context,
-    )
-
-    if isinstance(create_device_res, UnknownUserIdError):
-        raise UnauthorisedError(&#34;Session user not found&#34;)
-    return create_device_res</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.api.implementation.APIImplementation.list_devices_get"><code class="name flex">
 <span>async def <span class="ident">list_devices_get</span></span>(<span>self, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.ListDevicesOkResult" href="../types.html#supertokens_python.recipe.totp.types.ListDevicesOkResult">ListDevicesOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_devices_get(
-    self,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[ListDevicesOkResult, GeneralErrorResponse]:
-    user_id = session.get_user_id()
-
-    return await options.recipe_implementation.list_devices(
-        user_id=user_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.api.implementation.APIImplementation.remove_device_post"><code class="name flex">
 <span>async def <span class="ident">remove_device_post</span></span>(<span>self, device_name: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.RemoveDeviceOkResult" href="../types.html#supertokens_python.recipe.totp.types.RemoveDeviceOkResult">RemoveDeviceOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def remove_device_post(
-    self,
-    device_name: str,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[RemoveDeviceOkResult, GeneralErrorResponse]:
-    user_id = session.get_user_id()
-
-    return await options.recipe_implementation.remove_device(
-        user_id=user_id,
-        device_name=device_name,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.api.implementation.APIImplementation.verify_device_post"><code class="name flex">
 <span>async def <span class="ident">verify_device_post</span></span>(<span>self, device_name: str, totp: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.VerifyDeviceOkResult" href="../types.html#supertokens_python.recipe.totp.types.VerifyDeviceOkResult">VerifyDeviceOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownDeviceError" href="../types.html#supertokens_python.recipe.totp.types.UnknownDeviceError">UnknownDeviceError</a>, <a title="supertokens_python.recipe.totp.types.InvalidTOTPError" href="../types.html#supertokens_python.recipe.totp.types.InvalidTOTPError">InvalidTOTPError</a>, <a title="supertokens_python.recipe.totp.types.LimitReachedError" href="../types.html#supertokens_python.recipe.totp.types.LimitReachedError">LimitReachedError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_device_post(
-    self,
-    device_name: str,
-    totp: str,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    VerifyDeviceOkResult,
-    UnknownDeviceError,
-    InvalidTOTPError,
-    LimitReachedError,
-    GeneralErrorResponse,
-]:
-    user_id = session.get_user_id()
-    tenant_id = session.get_tenant_id()
-
-    mfa_instance = MultiFactorAuthRecipe.get_instance()
-    if mfa_instance is None:
-        raise Exception(&#34;should never come here&#34;)
-
-    await assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
-        session, &#34;totp&#34;, user_context
-    )
-
-    res = await options.recipe_implementation.verify_device(
-        tenant_id=tenant_id,
-        user_id=user_id,
-        device_name=device_name,
-        totp=totp,
-        user_context=user_context,
-    )
-
-    if isinstance(res, VerifyDeviceOkResult):
-        await mfa_instance.recipe_implementation.mark_factor_as_complete_in_session(
-            session=session,
-            factor_id=&#34;totp&#34;,
-            user_context=user_context,
-        )
-
-    return res</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.api.implementation.APIImplementation.verify_totp_post"><code class="name flex">
 <span>async def <span class="ident">verify_totp_post</span></span>(<span>self, totp: str, options: <a title="supertokens_python.recipe.totp.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.totp.interfaces.APIOptions">APIOptions</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.VerifyTOTPOkResult" href="../types.html#supertokens_python.recipe.totp.types.VerifyTOTPOkResult">VerifyTOTPOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownUserIdError" href="../types.html#supertokens_python.recipe.totp.types.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.totp.types.InvalidTOTPError" href="../types.html#supertokens_python.recipe.totp.types.InvalidTOTPError">InvalidTOTPError</a>, <a title="supertokens_python.recipe.totp.types.LimitReachedError" href="../types.html#supertokens_python.recipe.totp.types.LimitReachedError">LimitReachedError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_totp_post(
-    self,
-    totp: str,
-    options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    VerifyTOTPOkResult,
-    UnknownUserIdError,
-    InvalidTOTPError,
-    LimitReachedError,
-    GeneralErrorResponse,
-]:
-    user_id = session.get_user_id()
-    tenant_id = session.get_tenant_id()
-
-    mfa_instance = MultiFactorAuthRecipe.get_instance()
-    if mfa_instance is None:
-        raise Exception(&#34;should never come here&#34;)
-
-    res = await options.recipe_implementation.verify_totp(
-        tenant_id=tenant_id,
-        user_id=user_id,
-        totp=totp,
-        user_context=user_context,
-    )
-
-    if isinstance(res, VerifyTOTPOkResult):
-        await mfa_instance.recipe_implementation.mark_factor_as_complete_in_session(
-            session=session,
-            factor_id=&#34;totp&#34;,
-            user_context=user_context,
-        )
-
-    return res</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -584,7 +428,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

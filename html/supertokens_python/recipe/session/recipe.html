@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.recipe API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -265,10 +265,7 @@ class SessionRecipe(RecipeModule):
         response: BaseResponse,
         user_context: Dict[str, Any],
     ) -&gt; BaseResponse:
-        if (
-            isinstance(err, SuperTokensSessionError)
-            and err.response_mutators is not None
-        ):
+        if isinstance(err, SuperTokensSessionError):
             for mutator in err.response_mutators:
                 mutator(response, user_context)
 
@@ -628,10 +625,7 @@ inheritance.</p></div>
         response: BaseResponse,
         user_context: Dict[str, Any],
     ) -&gt; BaseResponse:
-        if (
-            isinstance(err, SuperTokensSessionError)
-            and err.response_mutators is not None
-        ):
+        if isinstance(err, SuperTokensSessionError):
             for mutator in err.response_mutators:
                 mutator(response, user_context)
 
@@ -820,96 +814,18 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def get_instance() -&gt; SessionRecipe:
-    if SessionRecipe.__instance is not None:
-        return SessionRecipe.__instance
-    raise_general_exception(
-        &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.init"><code class="name flex">
 <span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal[('lax', 'none', 'strict')], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal[('VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE')], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def init(
-    cookie_domain: Union[str, None] = None,
-    older_cookie_domain: Union[str, None] = None,
-    cookie_secure: Union[bool, None] = None,
-    cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
-    session_expired_status_code: Union[int, None] = None,
-    anti_csrf: Union[
-        Literal[&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None
-    ] = None,
-    get_token_transfer_method: Union[
-        Callable[
-            [BaseRequest, bool, Dict[str, Any]],
-            Union[TokenTransferMethod, Literal[&#34;any&#34;]],
-        ],
-        None,
-    ] = None,
-    error_handlers: Union[InputErrorHandlers, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-    invalid_claim_status_code: Union[int, None] = None,
-    use_dynamic_access_token_signing_key: Union[bool, None] = None,
-    expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
-    jwks_refresh_interval_sec: Union[int, None] = None,
-):
-    def func(app_info: AppInfo):
-        if SessionRecipe.__instance is None:
-            SessionRecipe.__instance = SessionRecipe(
-                SessionRecipe.recipe_id,
-                app_info,
-                cookie_domain,
-                older_cookie_domain,
-                cookie_secure,
-                cookie_same_site,
-                session_expired_status_code,
-                anti_csrf,
-                get_token_transfer_method,
-                error_handlers,
-                override,
-                invalid_claim_status_code,
-                use_dynamic_access_token_signing_key,
-                expose_access_token_to_frontend_in_cookie_based_auth,
-                jwks_refresh_interval_sec,
-            )
-            return SessionRecipe.__instance
-        raise_general_exception(
-            &#34;Session recipe has already been initialised. Please check your code for bugs.&#34;
-        )
-
-    return func</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def reset():
-    if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
-        environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
-    ):
-        raise_general_exception(&#34;calling testing function in non testing env&#34;)
-    SessionRecipe.__instance = None</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -919,273 +835,60 @@ def reset():
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_claim_from_other_recipe(self, claim: SessionClaim[Any]):
-    # We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple
-    # claims are added with the same key they will overwrite each other. Validators will all run
-    # and work as expected even if they are added multiple times.
-    if claim.key in [c.key for c in self.claims_added_by_other_recipes]:
-        raise Exception(&#34;Claim added by multiple recipes&#34;)
-
-    self.claims_added_by_other_recipes.append(claim)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.add_claim_validator_from_other_recipe"><code class="name flex">
 <span>def <span class="ident">add_claim_validator_from_other_recipe</span></span>(<span>self, claim_validator: SessionClaimValidator)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_claim_validator_from_other_recipe(
-    self, claim_validator: SessionClaimValidator
-):
-    self.claim_validators_added_by_other_recipes.append(claim_validator)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.get_all_cors_headers"><code class="name flex">
 <span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_all_cors_headers(self) -&gt; List[str]:
-    cors_headers = get_cors_allowed_headers()
-    cors_headers.extend(self.openid_recipe.get_all_cors_headers())
-
-    return cors_headers</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.get_apis_handled"><code class="name flex">
 <span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_apis_handled(self) -&gt; List[APIHandled]:
-    apis_handled = [
-        APIHandled(
-            NormalisedURLPath(SESSION_REFRESH),
-            &#34;post&#34;,
-            SESSION_REFRESH,
-            self.api_implementation.disable_refresh_post,
-        ),
-        APIHandled(
-            NormalisedURLPath(SIGNOUT),
-            &#34;post&#34;,
-            SIGNOUT,
-            self.api_implementation.disable_signout_post,
-        ),
-    ]
-    apis_handled.extend(self.openid_recipe.get_apis_handled())
-
-    return apis_handled</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.get_claim_validators_added_by_other_recipes"><code class="name flex">
 <span>def <span class="ident">get_claim_validators_added_by_other_recipes</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_claim_validators_added_by_other_recipes(
-    self,
-) -&gt; List[SessionClaimValidator]:
-    return self.claim_validators_added_by_other_recipes</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.get_claims_added_by_other_recipes"><code class="name flex">
 <span>def <span class="ident">get_claims_added_by_other_recipes</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_claims_added_by_other_recipes(self) -&gt; List[SessionClaim[Any]]:
-    return self.claims_added_by_other_recipes</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_api_request(
-    self,
-    request_id: str,
-    tenant_id: str,
-    request: BaseRequest,
-    path: NormalisedURLPath,
-    method: str,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; Union[BaseResponse, None]:
-    if request_id == SESSION_REFRESH:
-        return await handle_refresh_api(
-            self.api_implementation,
-            APIOptions(
-                request,
-                response,
-                self.recipe_id,
-                self.config,
-                self.recipe_implementation,
-            ),
-            user_context,
-        )
-    if request_id == SIGNOUT:
-        return await handle_signout_api(
-            self.api_implementation,
-            APIOptions(
-                request,
-                response,
-                self.recipe_id,
-                self.config,
-                self.recipe_implementation,
-            ),
-            user_context,
-        )
-    return await self.openid_recipe.handle_api_request(
-        request_id, tenant_id, request, path, method, response, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]) ‑> BaseResponse</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_error(
-    self,
-    request: BaseRequest,
-    err: SuperTokensError,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; BaseResponse:
-    if (
-        isinstance(err, SuperTokensSessionError)
-        and err.response_mutators is not None
-    ):
-        for mutator in err.response_mutators:
-            mutator(response, user_context)
-
-    if isinstance(err, UnauthorisedError):
-        log_debug_message(&#34;errorHandler: returning UNAUTHORISED&#34;)
-        if err.clear_tokens:
-            log_debug_message(&#34;Clearing tokens because of UNAUTHORISED response&#34;)
-            clear_session_from_all_token_transfer_methods(
-                response, self, request, user_context
-            )
-        return await self.config.error_handlers.on_unauthorised(
-            request, str(err), response
-        )
-    if isinstance(err, TokenTheftError):
-        log_debug_message(&#34;errorHandler: returning TOKEN_THEFT_DETECTED&#34;)
-        log_debug_message(
-            &#34;Clearing tokens because of TOKEN_THEFT_DETECTED response&#34;
-        )
-        clear_session_from_all_token_transfer_methods(
-            response, self, request, user_context
-        )
-        return await self.config.error_handlers.on_token_theft_detected(
-            request, err.session_handle, err.user_id, err.recipe_user_id, response
-        )
-    if isinstance(err, InvalidClaimsError):
-        log_debug_message(&#34;errorHandler: returning INVALID_CLAIMS&#34;)
-        return await self.config.error_handlers.on_invalid_claim(
-            self, request, err.payload, response
-        )
-    if isinstance(err, ClearDuplicateSessionCookiesError):
-        log_debug_message(&#34;errorHandler: returning CLEAR_DUPLICATE_SESSION_COOKIES&#34;)
-        return await self.config.error_handlers.on_clear_duplicate_session_cookies(
-            request, str(err), response
-        )
-
-    log_debug_message(&#34;errorHandler: returning TRY_REFRESH_TOKEN&#34;)
-    return await self.config.error_handlers.on_try_refresh_token(
-        request, str(err), response
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
 <span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
-    return isinstance(err, SuperTokensError) and (
-        isinstance(err, SuperTokensSessionError)
-        or self.openid_recipe.is_error_from_this_recipe_based_on_instance(err)
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.verify_session"><code class="name flex">
 <span>async def <span class="ident">verify_session</span></span>(<span>self, request: BaseRequest, anti_csrf_check: Union[bool, None], session_required: bool, check_database: bool, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_session(
-    self,
-    request: BaseRequest,
-    anti_csrf_check: Union[bool, None],
-    session_required: bool,
-    check_database: bool,
-    override_global_claim_validators: Optional[
-        Callable[
-            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-            MaybeAwaitable[List[SessionClaimValidator]],
-        ]
-    ],
-    user_context: Dict[str, Any],
-):
-    _ = user_context
-
-    return await self.api_implementation.verify_session(
-        APIOptions(
-            request,
-            None,
-            self.recipe_id,
-            self.config,
-            self.recipe_implementation,
-        ),
-        anti_csrf_check,
-        session_required,
-        check_database,
-        override_global_claim_validators,
-        user_context,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1231,7 +934,7 @@ def reset():
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

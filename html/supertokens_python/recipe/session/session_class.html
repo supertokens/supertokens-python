@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.session_class API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -709,492 +709,114 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def assert_claims(
-    self,
-    claim_validators: List[SessionClaimValidator],
-    user_context: Union[Dict[str, Any], None] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    validate_claim_res = await self.recipe_implementation.validate_claims(
-        self.get_user_id(user_context),
-        self.get_recipe_user_id(user_context),
-        self.get_access_token_payload(user_context),
-        claim_validators,
-        user_context,
-    )
-
-    if validate_claim_res.access_token_payload_update is not None:
-        for k in protected_props:
-            try:
-                del validate_claim_res.access_token_payload_update[k]
-            except KeyError:
-                pass
-        await self.merge_into_access_token_payload(
-            validate_claim_res.access_token_payload_update, user_context
-        )
-
-    validation_errors = validate_claim_res.invalid_claims
-    if len(validation_errors) &gt; 0:
-        raise_invalid_claims_exception(&#34;INVALID_CLAIMS&#34;, validation_errors)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.attach_to_request_response"><code class="name flex">
-<span>async def <span class="ident">attach_to_request_response</span></span>(<span>self, request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, transfer_method: Literal['cookie', 'header'], user_context: Optional[Dict[str, Any]]) ‑> None</span>
+<span>async def <span class="ident">attach_to_request_response</span></span>(<span>self, request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, transfer_method: typing_extensions.Literal['cookie', 'header'], user_context: Optional[Dict[str, Any]]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def attach_to_request_response(
-    self,
-    request: BaseRequest,
-    transfer_method: TokenTransferMethod,
-    user_context: Optional[Dict[str, Any]],
-) -&gt; None:
-    self.req_res_info = ReqResInfo(request, transfer_method)
-
-    if self.access_token_updated:
-        self.response_mutators.append(
-            access_token_mutator(
-                self.access_token,
-                self.front_token,
-                self.config,
-                transfer_method,
-                request,
-            )
-        )
-        if self.refresh_token is not None:
-            self.response_mutators.append(
-                token_response_mutator(
-                    self.config,
-                    &#34;refresh&#34;,
-                    self.refresh_token.token,
-                    self.refresh_token.expiry,
-                    transfer_method,
-                    request,
-                )
-            )
-        if self.anti_csrf_token is not None:
-            self.response_mutators.append(
-                anti_csrf_response_mutator(self.anti_csrf_token)
-            )
-
-    request.set_session(
-        self
-    )  # Although this is called in recipe/session/framework/**/__init__.py. It&#39;s required in case of python because functions like create_new_session(req, &#34;user-id&#34;) can be called in the framework view handler as well</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.fetch_and_set_claim"><code class="name flex">
 <span>async def <span class="ident">fetch_and_set_claim</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[typing.Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def fetch_and_set_claim(
-    self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    update = await claim.build(
-        self.get_user_id(user_context=user_context),
-        self.get_recipe_user_id(user_context=user_context),
-        self.get_tenant_id(user_context=user_context),
-        self.get_access_token_payload(user_context=user_context),
-        user_context,
-    )
-    return await self.merge_into_access_token_payload(update, user_context)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_access_token"><code class="name flex">
 <span>def <span class="ident">get_access_token</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
-    return self.access_token</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_access_token_payload"><code class="name flex">
 <span>def <span class="ident">get_access_token_payload</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_access_token_payload(
-    self, user_context: Union[Dict[str, Any], None] = None
-) -&gt; Dict[str, Any]:
-    return self.user_data_in_access_token</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_all_session_tokens_dangerously"><code class="name flex">
 <span>def <span class="ident">get_all_session_tokens_dangerously</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict" href="interfaces.html#supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict">GetSessionTokensDangerouslyDict</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_all_session_tokens_dangerously(self) -&gt; GetSessionTokensDangerouslyDict:
-    return {
-        &#34;accessToken&#34;: self.access_token,
-        &#34;accessAndFrontTokenUpdated&#34;: self.access_token_updated,
-        &#34;refreshToken&#34;: (
-            None if self.refresh_token is None else self.refresh_token.token
-        ),
-        &#34;frontToken&#34;: self.front_token,
-        &#34;antiCsrfToken&#34;: self.anti_csrf_token,
-    }</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_claim_value"><code class="name flex">
 <span>async def <span class="ident">get_claim_value</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~_T], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_claim_value(
-    self, claim: SessionClaim[_T], user_context: Union[Dict[str, Any], None] = None
-) -&gt; Union[_T, None]:
-    if user_context is None:
-        user_context = {}
-
-    return claim.get_value_from_payload(
-        self.get_access_token_payload(user_context), user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_expiry"><code class="name flex">
 <span>async def <span class="ident">get_expiry</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
-    if user_context is None:
-        user_context = {}
-    session_info = await self.recipe_implementation.get_session_information(
-        self.session_handle, user_context
-    )
-    if session_info is None:
-        log_debug_message(
-            &#34;getExpiry: Throwing UNAUTHORISED because session does not exist anymore&#34;
-        )
-        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
-
-    return session_info.expiry</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_handle"><code class="name flex">
 <span>def <span class="ident">get_handle</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
-    return self.session_handle</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_recipe_user_id"><code class="name flex">
 <span>def <span class="ident">get_recipe_user_id</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.types.RecipeUserId" href="../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_recipe_user_id(
-    self, user_context: Union[Dict[str, Any], None] = None
-) -&gt; RecipeUserId:
-    return self.recipe_user_id</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_session_data_from_database"><code class="name flex">
 <span>async def <span class="ident">get_session_data_from_database</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_session_data_from_database(
-    self, user_context: Union[Dict[str, Any], None] = None
-) -&gt; Dict[str, Any]:
-    if user_context is None:
-        user_context = {}
-    session_info = await self.recipe_implementation.get_session_information(
-        self.session_handle, user_context
-    )
-    if session_info is None:
-        log_debug_message(
-            &#34;getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
-        )
-        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
-
-    return session_info.session_data_in_database</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_tenant_id"><code class="name flex">
 <span>def <span class="ident">get_tenant_id</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_tenant_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
-    return self.tenant_id</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_time_created"><code class="name flex">
 <span>async def <span class="ident">get_time_created</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_time_created(
-    self, user_context: Union[Dict[str, Any], None] = None
-) -&gt; int:
-    if user_context is None:
-        user_context = {}
-    session_info = await self.recipe_implementation.get_session_information(
-        self.session_handle, user_context
-    )
-    if session_info is None:
-        log_debug_message(
-            &#34;getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore&#34;
-        )
-        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
-
-    return session_info.time_created</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_user_id"><code class="name flex">
 <span>def <span class="ident">get_user_id</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
-    return self.user_id</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.merge_into_access_token_payload"><code class="name flex">
 <span>async def <span class="ident">merge_into_access_token_payload</span></span>(<span>self, access_token_payload_update: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def merge_into_access_token_payload(
-    self,
-    access_token_payload_update: Dict[str, Any],
-    user_context: Union[Dict[str, Any], None] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    new_access_token_payload = {**self.get_access_token_payload(user_context)}
-    for k in protected_props:
-        try:
-            del new_access_token_payload[k]
-        except KeyError:
-            pass
-
-    new_access_token_payload = {
-        **new_access_token_payload,
-        **access_token_payload_update,
-    }
-
-    for k in access_token_payload_update.keys():
-        if access_token_payload_update[k] is None:
-            del new_access_token_payload[k]
-
-    response = await self.recipe_implementation.regenerate_access_token(
-        self.get_access_token(), new_access_token_payload, user_context
-    )
-
-    if response is None:
-        log_debug_message(
-            &#34;mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore&#34;
-        )
-        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
-
-    if response.access_token is not None:
-        resp_token = parse_jwt_without_signature_verification(
-            response.access_token.token
-        )
-        payload = (
-            resp_token.payload
-            if resp_token.version &gt;= 3
-            else response.session.user_data_in_jwt
-        )
-        self.user_data_in_access_token = payload
-        self.access_token = response.access_token.token
-        self.front_token = build_front_token(
-            self.get_user_id(), response.access_token.expiry, payload
-        )
-        self.access_token_updated = True
-        if self.req_res_info is not None:
-            transfer_method: TokenTransferMethod = self.req_res_info.transfer_method  # type: ignore
-            self.response_mutators.append(
-                access_token_mutator(
-                    self.access_token,
-                    self.front_token,
-                    self.config,
-                    transfer_method,
-                    self.req_res_info.request,
-                )
-            )
-    else:
-        # This case means that the access token has expired between the validation and this update
-        # We can&#39;t update the access token on the FE, as it will need to call refresh anyway but we handle this as a successful update during this request
-        # the changes will be reflected on the FE after refresh is called
-        self.user_data_in_access_token = {
-            **self.get_access_token_payload(),
-            **response.session.user_data_in_jwt,
-        }</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.remove_claim"><code class="name flex">
 <span>async def <span class="ident">remove_claim</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[typing.Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def remove_claim(
-    self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    update = claim.remove_from_payload_by_merge_({}, user_context)
-    return await self.merge_into_access_token_payload(update, user_context)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.revoke_session"><code class="name flex">
 <span>async def <span class="ident">revoke_session</span></span>(<span>self, user_context: Optional[Any] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    await self.recipe_implementation.revoke_session(
-        self.session_handle, user_context
-    )
-
-    if self.req_res_info is not None:
-        # we do not check the output of calling revokeSession
-        # before clearing the cookies because we are revoking the
-        # current API request&#39;s session.
-        # If we instead clear the cookies only when revokeSession
-        # returns true, it can cause this kind of bug:
-        # https://github.com/supertokens/supertokens-node/issues/343
-        transfer_method: TokenTransferMethod = self.req_res_info.transfer_method  # type: ignore
-        self.response_mutators.append(
-            clear_session_response_mutator(
-                self.config,
-                transfer_method,
-                self.req_res_info.request,
-            )
-        )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.set_claim_value"><code class="name flex">
 <span>async def <span class="ident">set_claim_value</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~_T], value: ~_T, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def set_claim_value(
-    self,
-    claim: SessionClaim[_T],
-    value: _T,
-    user_context: Union[Dict[str, Any], None] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    update = claim.add_to_payload_({}, value, user_context)
-    return await self.merge_into_access_token_payload(update, user_context)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.update_session_data_in_database"><code class="name flex">
 <span>async def <span class="ident">update_session_data_in_database</span></span>(<span>self, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_session_data_in_database(
-    self,
-    new_session_data: Dict[str, Any],
-    user_context: Union[Dict[str, Any], None] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-    updated = await self.recipe_implementation.update_session_data_in_database(
-        self.session_handle, new_session_data, user_context
-    )
-    if not updated:
-        log_debug_message(
-            &#34;updateSessionDataInDatabase: Throwing UNAUTHORISED because session does not exist anymore&#34;
-        )
-        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1244,7 +866,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

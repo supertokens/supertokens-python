@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.accountlinking.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -239,9 +239,9 @@ class CanLinkAccountsAccountInfoAlreadyAssociatedError:
 
 class CanLinkAccountsInputUserNotPrimaryError:
     def __init__(self, description: Optional[str] = None):
-        self.status: Literal[
+        self.status: Literal[&#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;] = (
             &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
-        ] = &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
+        )
         self.description = description
 
 
@@ -289,9 +289,9 @@ class LinkAccountsAccountInfoAlreadyAssociatedError:
 
 class LinkAccountsInputUserNotPrimaryError:
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal[&#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;] = (
             &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
-        ] = &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
+        )
 
 
 class UnlinkAccountOkResult:
@@ -397,9 +397,9 @@ class UnlinkAccountOkResult:
 </summary>
 <pre><code class="python">class CanLinkAccountsInputUserNotPrimaryError:
     def __init__(self, description: Optional[str] = None):
-        self.status: Literal[
+        self.status: Literal[&#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;] = (
             &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
-        ] = &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
+        )
         self.description = description</code></pre>
 </details>
 </dd>
@@ -489,17 +489,6 @@ class UnlinkAccountOkResult:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;user&#34;: self.user.to_json(),
-        &#34;wasAlreadyAPrimaryUser&#34;: self.was_already_a_primary_user,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -572,9 +561,9 @@ class UnlinkAccountOkResult:
 </summary>
 <pre><code class="python">class LinkAccountsInputUserNotPrimaryError:
     def __init__(self):
-        self.status: Literal[
+        self.status: Literal[&#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;] = (
             &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
-        ] = &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;</code></pre>
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsOkResult"><code class="flex name class">
@@ -607,17 +596,6 @@ class UnlinkAccountOkResult:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;accountsAlreadyLinked&#34;: self.accounts_already_linked,
-        &#34;user&#34;: self.user.to_json(),
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -760,186 +738,58 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.can_create_primary_user"><code class="name flex">
-<span>async def <span class="ident">can_create_primary_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.CanCreatePrimaryUserOkResult" href="#supertokens_python.recipe.accountlinking.interfaces.CanCreatePrimaryUserOkResult">CanCreatePrimaryUserOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError" href="#supertokens_python.recipe.accountlinking.interfaces.CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError">CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanCreatePrimaryUserAccountInfoAlreadyAssociatedError" href="#supertokens_python.recipe.accountlinking.interfaces.CanCreatePrimaryUserAccountInfoAlreadyAssociatedError">CanCreatePrimaryUserAccountInfoAlreadyAssociatedError</a>]</span>
+<span>async def <span class="ident">can_create_primary_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def can_create_primary_user(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; Union[
-    CanCreatePrimaryUserOkResult,
-    CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError,
-    CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.can_link_accounts"><code class="name flex">
-<span>async def <span class="ident">can_link_accounts</span></span>(<span>self, recipe_user_id: RecipeUserId, primary_user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsOkResult" href="#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsOkResult">CanLinkAccountsOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsRecipeUserIdAlreadyLinkedError" href="#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsRecipeUserIdAlreadyLinkedError">CanLinkAccountsRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsAccountInfoAlreadyAssociatedError" href="#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsAccountInfoAlreadyAssociatedError">CanLinkAccountsAccountInfoAlreadyAssociatedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsInputUserNotPrimaryError" href="#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsInputUserNotPrimaryError">CanLinkAccountsInputUserNotPrimaryError</a>]</span>
+<span>async def <span class="ident">can_link_accounts</span></span>(<span>self, recipe_user_id: RecipeUserId, primary_user_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def can_link_accounts(
-    self,
-    recipe_user_id: RecipeUserId,
-    primary_user_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    CanLinkAccountsOkResult,
-    CanLinkAccountsRecipeUserIdAlreadyLinkedError,
-    CanLinkAccountsAccountInfoAlreadyAssociatedError,
-    CanLinkAccountsInputUserNotPrimaryError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.create_primary_user"><code class="name flex">
-<span>async def <span class="ident">create_primary_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserOkResult" href="#supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserOkResult">CreatePrimaryUserOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserRecipeUserIdAlreadyLinkedError" href="#supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserRecipeUserIdAlreadyLinkedError">CreatePrimaryUserRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserAccountInfoAlreadyAssociatedError" href="#supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserAccountInfoAlreadyAssociatedError">CreatePrimaryUserAccountInfoAlreadyAssociatedError</a>]</span>
+<span>async def <span class="ident">create_primary_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def create_primary_user(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; Union[
-    CreatePrimaryUserOkResult,
-    CreatePrimaryUserRecipeUserIdAlreadyLinkedError,
-    CreatePrimaryUserAccountInfoAlreadyAssociatedError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.delete_user"><code class="name flex">
 <span>async def <span class="ident">delete_user</span></span>(<span>self, user_id: str, remove_all_linked_accounts: bool, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def delete_user(
-    self,
-    user_id: str,
-    remove_all_linked_accounts: bool,
-    user_context: Dict[str, Any],
-) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.get_user"><code class="name flex">
-<span>async def <span class="ident">get_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[User]</span>
+<span>async def <span class="ident">get_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_user(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Optional[User]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.get_users"><code class="name flex">
 <span>async def <span class="ident">get_users</span></span>(<span>self, tenant_id: str, time_joined_order: "Literal[('ASC', 'DESC')]", limit: Optional[int], pagination_token: Optional[str], include_recipe_ids: Optional[List[str]], query: Optional[Dict[str, str]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.GetUsersResult" href="#supertokens_python.recipe.accountlinking.interfaces.GetUsersResult">GetUsersResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_users(
-    self,
-    tenant_id: str,
-    time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;],
-    limit: Optional[int],
-    pagination_token: Optional[str],
-    include_recipe_ids: Optional[List[str]],
-    query: Optional[Dict[str, str]],
-    user_context: Dict[str, Any],
-) -&gt; GetUsersResult:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.link_accounts"><code class="name flex">
-<span>async def <span class="ident">link_accounts</span></span>(<span>self, recipe_user_id: RecipeUserId, primary_user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsOkResult" href="#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsOkResult">LinkAccountsOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsRecipeUserIdAlreadyLinkedError" href="#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsRecipeUserIdAlreadyLinkedError">LinkAccountsRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsAccountInfoAlreadyAssociatedError" href="#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsAccountInfoAlreadyAssociatedError">LinkAccountsAccountInfoAlreadyAssociatedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsInputUserNotPrimaryError" href="#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsInputUserNotPrimaryError">LinkAccountsInputUserNotPrimaryError</a>]</span>
+<span>async def <span class="ident">link_accounts</span></span>(<span>self, recipe_user_id: RecipeUserId, primary_user_id: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def link_accounts(
-    self,
-    recipe_user_id: RecipeUserId,
-    primary_user_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    LinkAccountsOkResult,
-    LinkAccountsRecipeUserIdAlreadyLinkedError,
-    LinkAccountsAccountInfoAlreadyAssociatedError,
-    LinkAccountsInputUserNotPrimaryError,
-]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.list_users_by_account_info"><code class="name flex">
-<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>self, tenant_id: str, account_info: AccountInfo, do_union_of_account_info: bool, user_context: Dict[str, Any]) ‑> List[User]</span>
+<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>self, tenant_id: str, account_info: AccountInfo, do_union_of_account_info: bool, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def list_users_by_account_info(
-    self,
-    tenant_id: str,
-    account_info: AccountInfo,
-    do_union_of_account_info: bool,
-    user_context: Dict[str, Any],
-) -&gt; List[User]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.interfaces.RecipeInterface.unlink_account"><code class="name flex">
-<span>async def <span class="ident">unlink_account</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.UnlinkAccountOkResult" href="#supertokens_python.recipe.accountlinking.interfaces.UnlinkAccountOkResult">UnlinkAccountOkResult</a></span>
+<span>async def <span class="ident">unlink_account</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def unlink_account(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; UnlinkAccountOkResult:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1050,7 +900,7 @@ async def unlink_account(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

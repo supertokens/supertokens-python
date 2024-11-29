@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 SUPPORTED_CDI_VERSIONS = ["5.1"]
-VERSION = "0.25.1"
+VERSION = "0.26.1"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"

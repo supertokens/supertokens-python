@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.dashboard.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -505,13 +505,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -588,25 +581,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; CoreConfigFieldInfo:
-    return CoreConfigFieldInfo(
-        key=json[&#34;key&#34;],
-        value_type=json[&#34;valueType&#34;],
-        value=json[&#34;value&#34;],
-        description=json[&#34;description&#34;],
-        is_different_across_tenants=json[&#34;isDifferentAcrossTenants&#34;],
-        possible_values=json[&#34;possibleValues&#34;],
-        is_nullable=json[&#34;isNullable&#34;],
-        default_value=json[&#34;defaultValue&#34;],
-        is_plugin_property=json[&#34;isPluginProperty&#34;],
-        is_plugin_property_editable=json[&#34;isPluginPropertyEditable&#34;],
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -616,26 +590,6 @@ def from_json(json: Dict[str, Any]) -&gt; CoreConfigFieldInfo:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    result: Dict[str, Any] = {
-        &#34;key&#34;: self.key,
-        &#34;valueType&#34;: self.value_type,
-        &#34;value&#34;: self.value,
-        &#34;description&#34;: self.description,
-        &#34;isDifferentAcrossTenants&#34;: self.is_different_across_tenants,
-        &#34;isNullable&#34;: self.is_nullable,
-        &#34;defaultValue&#34;: self.default_value,
-        &#34;isPluginProperty&#34;: self.is_plugin_property,
-        &#34;isPluginPropertyEditable&#34;: self.is_plugin_property_editable,
-    }
-    if self.possible_values is not None:
-        result[&#34;possibleValues&#34;] = self.possible_values
-    return result</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -665,15 +619,6 @@ def from_json(json: Dict[str, Any]) -&gt; CoreConfigFieldInfo:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;tenantId&#34;: self.tenant_config.tenant_id,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -719,16 +664,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;tenants&#34;: [t.to_json() for t in self.tenants],
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -780,17 +715,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;users&#34;: [u.to_json() for u in self.users],
-        &#34;nextPaginationToken&#34;: self.next_pagination_token,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -829,13 +753,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -881,33 +798,12 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_dashboard_bundle_location(self, user_context: Dict[str, Any]) -&gt; str:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.RecipeInterface.should_allow_access"><code class="name flex">
-<span>async def <span class="ident">should_allow_access</span></span>(<span>self, request: BaseRequest, config: DashboardConfig, user_context: Dict[str, Any]) ‑> bool</span>
+<span>async def <span class="ident">should_allow_access</span></span>(<span>self, request: BaseRequest, config: DashboardConfig, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def should_allow_access(
-    self,
-    request: BaseRequest,
-    config: DashboardConfig,
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -955,13 +851,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {&#34;status&#34;: self.status, &#34;tags&#34;: self.tags}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1021,13 +910,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1070,13 +952,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;count&#34;: self.count}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1115,13 +990,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1164,13 +1032,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;isVerified&#34;: self.is_verified}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1209,13 +1070,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1254,13 +1108,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1299,13 +1146,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1344,13 +1184,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1396,16 +1229,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;status&#34;: self.status,
-        &#34;user&#34;: self.user.to_json(),
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1448,13 +1271,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: &#34;OK&#34;, &#34;data&#34;: self.data}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1493,13 +1309,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1542,13 +1351,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1587,13 +1389,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1632,13 +1427,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1681,13 +1469,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1730,13 +1511,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1775,13 +1549,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1820,13 +1587,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1879,13 +1639,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;sessions&#34;: self.sessions}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1924,13 +1677,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -2161,7 +1907,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

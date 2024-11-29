@@ -81,13 +81,13 @@ async def session_exception_handler(
     Usage: `app.add_exception_handler(SuperTokensError, st_exception_handler)`
     """
     base_req = FastApiRequest(request)
-    base_res = FastApiResponse(JSONResponse())
+    base_res = FastApiResponse(JSONResponse(content={}))
     user_context = default_user_context(base_req)
     result = await Supertokens.get_instance().handle_supertokens_error(
         base_req, exc, base_res, user_context
     )
     if isinstance(result, FastApiResponse):
-        body = json.loads(result.response.body)
+        body = json.loads(bytes(result.response.body))
         return JSONResponse(body, status_code=result.response.status_code)
 
     raise Exception("Should never come here")

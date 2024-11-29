@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.emailverification.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -332,148 +332,30 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_email_verification_token(
-    self,
-    recipe_user_id: RecipeUserId,
-    email: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    CreateEmailVerificationTokenOkResult,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-]:
-    data = {&#34;userId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: email}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token&#34;),
-        data,
-        user_context,
-    )
-    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
-        return CreateEmailVerificationTokenOkResult(response[&#34;token&#34;])
-    return CreateEmailVerificationTokenEmailAlreadyVerifiedError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.is_email_verified"><code class="name flex">
 <span>async def <span class="ident">is_email_verified</span></span>(<span>self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def is_email_verified(
-    self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
-) -&gt; bool:
-    params = {&#34;userId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: email}
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/user/email/verify&#34;), params, user_context
-    )
-    return response[&#34;isVerified&#34;]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.revoke_email_verification_tokens"><code class="name flex">
 <span>async def <span class="ident">revoke_email_verification_tokens</span></span>(<span>self, recipe_user_id: RecipeUserId, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.RevokeEmailVerificationTokensOkResult">RevokeEmailVerificationTokensOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_email_verification_tokens(
-    self,
-    recipe_user_id: RecipeUserId,
-    email: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; RevokeEmailVerificationTokensOkResult:
-    data = {&#34;userId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: email}
-    await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify/token/remove&#34;),
-        data,
-        user_context,
-    )
-    return RevokeEmailVerificationTokensOkResult()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.unverify_email"><code class="name flex">
 <span>async def <span class="ident">unverify_email</span></span>(<span>self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailverification.interfaces.UnverifyEmailOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.UnverifyEmailOkResult">UnverifyEmailOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def unverify_email(
-    self, recipe_user_id: RecipeUserId, email: str, user_context: Dict[str, Any]
-) -&gt; UnverifyEmailOkResult:
-    data = {&#34;userId&#34;: recipe_user_id.get_as_string(), &#34;email&#34;: email}
-    await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/user/email/verify/remove&#34;), data, user_context
-    )
-    return UnverifyEmailOkResult()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe_implementation.RecipeImplementation.verify_email_using_token"><code class="name flex">
 <span>async def <span class="ident">verify_email_using_token</span></span>(<span>self, token: str, tenant_id: str, attempt_account_linking: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult">VerifyEmailUsingTokenOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenInvalidTokenError">VerifyEmailUsingTokenInvalidTokenError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_email_using_token(
-    self,
-    token: str,
-    tenant_id: str,
-    attempt_account_linking: bool,
-    user_context: Dict[str, Any],
-) -&gt; Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
-    data = {&#34;method&#34;: &#34;token&#34;, &#34;token&#34;: token}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/email/verify&#34;),
-        data,
-        user_context,
-    )
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        recipe_user_id = RecipeUserId(response[&#34;userId&#34;])
-        if attempt_account_linking:
-            updated_user = await get_user(
-                recipe_user_id.get_as_string(), user_context
-            )
-
-            if updated_user:
-                # Check if the verified email is currently associated with the user ID
-                email_info = await self.get_email_for_recipe_user_id(
-                    updated_user, recipe_user_id, user_context
-                )
-                if (
-                    isinstance(email_info, GetEmailForUserIdOkResult)
-                    and email_info.email == response[&#34;email&#34;]
-                ):
-                    from ..accountlinking.recipe import AccountLinkingRecipe
-
-                    account_linking = AccountLinkingRecipe.get_instance()
-                    await account_linking.try_linking_by_account_info_or_create_primary_user(
-                        tenant_id=tenant_id,
-                        input_user=updated_user,
-                        session=None,
-                        user_context=user_context,
-                    )
-
-        return VerifyEmailUsingTokenOkResult(
-            EmailVerificationUser(recipe_user_id, response[&#34;email&#34;])
-        )
-    else:
-        return VerifyEmailUsingTokenInvalidTokenError()</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -509,7 +391,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.types API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -103,9 +103,9 @@ class LoginMethod(AccountInfo):
         verified: bool,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[
-            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;
-        ] = recipe_id
+        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
+            recipe_id
+        )
         self.recipe_user_id = RecipeUserId(recipe_user_id)
         self.tenant_ids: List[str] = tenant_ids
         self.time_joined = time_joined
@@ -453,14 +453,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def to_json(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -510,23 +502,6 @@ def to_json(self) -&gt; Dict[str, Any]:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    json_repo: Dict[str, Any] = {}
-    if self.email is not None:
-        json_repo[&#34;email&#34;] = self.email
-    if self.phone_number is not None:
-        json_repo[&#34;phoneNumber&#34;] = self.phone_number
-    if self.third_party is not None:
-        json_repo[&#34;thirdParty&#34;] = {
-            &#34;id&#34;: self.third_party.id,
-            &#34;userId&#34;: self.third_party.user_id,
-        }
-    return json_repo</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -561,13 +536,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -594,9 +562,9 @@ inheritance.</p></div>
         verified: bool,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[
-            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;
-        ] = recipe_id
+        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
+            recipe_id
+        )
         self.recipe_user_id = RecipeUserId(recipe_user_id)
         self.tenant_ids: List[str] = tenant_ids
         self.time_joined = time_joined
@@ -703,37 +671,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; &#34;LoginMethod&#34;:
-    from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
-
-    return LoginMethod(
-        recipe_id=json[&#34;recipeId&#34;],
-        recipe_user_id=json[&#34;recipeUserId&#34;],
-        tenant_ids=json[&#34;tenantIds&#34;],
-        email=(
-            json[&#34;email&#34;] if &#34;email&#34; in json and json[&#34;email&#34;] is not None else None
-        ),
-        phone_number=(
-            json[&#34;phoneNumber&#34;]
-            if &#34;phoneNumber&#34; in json and json[&#34;phoneNumber&#34;] is not None
-            else None
-        ),
-        third_party=(
-            (
-                TPI(json[&#34;thirdParty&#34;][&#34;userId&#34;], json[&#34;thirdParty&#34;][&#34;id&#34;])
-                if &#34;thirdParty&#34; in json and json[&#34;thirdParty&#34;] is not None
-                else None
-            )
-        ),
-        time_joined=json[&#34;timeJoined&#34;],
-        verified=json[&#34;verified&#34;],
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -743,89 +680,24 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;LoginMethod&#34;:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_same_email_as(self, email: Union[str, None]) -&gt; bool:
-    if email is None:
-        return False
-    return (
-        self.email is not None
-        and self.email.lower().strip() == email.lower().strip()
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.types.LoginMethod.has_same_phone_number_as"><code class="name flex">
 <span>def <span class="ident">has_same_phone_number_as</span></span>(<span>self, phone_number: Union[str, None]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_same_phone_number_as(self, phone_number: Union[str, None]) -&gt; bool:
-    if phone_number is None:
-        return False
-
-    cleaned_phone = phone_number.strip()
-    try:
-        cleaned_phone = format_number(
-            parse(phone_number, None), phonenumbers.PhoneNumberFormat.E164
-        )
-    except Exception:
-        pass  # here we just use the stripped version
-
-    return self.phone_number is not None and self.phone_number == cleaned_phone</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.types.LoginMethod.has_same_third_party_info_as"><code class="name flex">
-<span>def <span class="ident">has_same_third_party_info_as</span></span>(<span>self, third_party: Union[ThirdPartyInfo, None]) ‑> bool</span>
+<span>def <span class="ident">has_same_third_party_info_as</span></span>(<span>self, third_party: Union[ThirdPartyInfo, None])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_same_third_party_info_as(
-    self, third_party: Union[ThirdPartyInfo, None]
-) -&gt; bool:
-    if third_party is None:
-        return False
-    return (
-        self.third_party is not None
-        and self.third_party.id.strip() == third_party.id.strip()
-        and self.third_party.user_id.strip() == third_party.user_id.strip()
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.types.LoginMethod.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    result: Dict[str, Any] = {
-        &#34;recipeId&#34;: self.recipe_id,
-        &#34;recipeUserId&#34;: self.recipe_user_id.get_as_string(),
-        &#34;tenantIds&#34;: self.tenant_ids,
-        &#34;timeJoined&#34;: self.time_joined,
-        &#34;verified&#34;: self.verified,
-    }
-    if self.email is not None:
-        result[&#34;email&#34;] = self.email
-    if self.phone_number is not None:
-        result[&#34;phoneNumber&#34;] = self.phone_number
-    if self.third_party is not None:
-        result[&#34;thirdParty&#34;] = self.third_party.to_json()
-    return result</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -858,13 +730,6 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;LoginMethod&#34;:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_as_string(self) -&gt; str:
-    return self.recipe_user_id</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -947,25 +812,6 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;LoginMethod&#34;:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
-    from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
-
-    return User(
-        user_id=json[&#34;id&#34;],
-        is_primary_user=json[&#34;isPrimaryUser&#34;],
-        tenant_ids=json[&#34;tenantIds&#34;],
-        emails=json[&#34;emails&#34;],
-        phone_numbers=json[&#34;phoneNumbers&#34;],
-        third_party=[TPI.from_json(tp) for tp in json[&#34;thirdParty&#34;]],
-        login_methods=[LoginMethod.from_json(lm) for lm in json[&#34;loginMethods&#34;]],
-        time_joined=json[&#34;timeJoined&#34;],
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -975,22 +821,6 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;id&#34;: self.id,
-        &#34;isPrimaryUser&#34;: self.is_primary_user,
-        &#34;tenantIds&#34;: self.tenant_ids,
-        &#34;emails&#34;: self.emails,
-        &#34;phoneNumbers&#34;: self.phone_numbers,
-        &#34;thirdParty&#34;: [tp.to_json() for tp in self.third_party],
-        &#34;loginMethods&#34;: [lm.to_json() for lm in self.login_methods],
-        &#34;timeJoined&#34;: self.time_joined,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1057,7 +887,7 @@ def from_json(json: Dict[str, Any]) -&gt; &#34;User&#34;:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

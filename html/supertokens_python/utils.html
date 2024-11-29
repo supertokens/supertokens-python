@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.utils API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -480,583 +480,186 @@ def get_normalised_should_try_linking_with_session_user_flag(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
-    return set_request_in_user_context_if_not_defined({}, request)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.deprecated_warn"><code class="name flex">
 <span>def <span class="ident">deprecated_warn</span></span>(<span>msg: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def deprecated_warn(msg: str):
-    warnings.warn(msg, DeprecationWarning, stacklevel=2)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.encode_base64"><code class="name flex">
 <span>def <span class="ident">encode_base64</span></span>(<span>value: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Encode the passed value to base64 and return the encoded value.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def encode_base64(value: str) -&gt; str:
-    &#34;&#34;&#34;
-    Encode the passed value to base64 and return the encoded value.
-    &#34;&#34;&#34;
-    return b64encode(value.encode()).decode()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.find_first_occurrence_in_list"><code class="name flex">
 <span>def <span class="ident">find_first_occurrence_in_list</span></span>(<span>condition: Callable[[_T], bool], given_list: List[_T]) ‑> Optional[~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def find_first_occurrence_in_list(
-    condition: Callable[[_T], bool], given_list: List[_T]
-) -&gt; Union[_T, None]:
-    for item in given_list:
-        if condition(item):
-            return item
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.find_max_version"><code class="name flex">
 <span>def <span class="ident">find_max_version</span></span>(<span>versions_1: List[str], versions_2: List[str]) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def find_max_version(versions_1: List[str], versions_2: List[str]) -&gt; Union[str, None]:
-    versions = list(set(versions_1) &amp; set(versions_2))
-    if len(versions) == 0:
-        return None
-
-    max_v = versions[0]
-    for i in range(1, len(versions)):
-        version = versions[i]
-        max_v = _get_max_version(max_v, version)
-
-    return max_v</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.frontend_has_interceptor"><code class="name flex">
 <span>def <span class="ident">frontend_has_interceptor</span></span>(<span>request: BaseRequest) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
-    return get_rid_from_header(request) is not None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_backwards_compatible_user_info"><code class="name flex">
-<span>def <span class="ident">get_backwards_compatible_user_info</span></span>(<span>req: BaseRequest, user_info: User, session_container: SessionContainer, created_new_recipe_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+<span>def <span class="ident">get_backwards_compatible_user_info</span></span>(<span>req: BaseRequest, user_info: User, session_container: SessionContainer, created_new_recipe_user: Union[bool, None], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_backwards_compatible_user_info(
-    req: BaseRequest,
-    user_info: User,
-    session_container: SessionContainer,
-    created_new_recipe_user: Union[bool, None],
-    user_context: Dict[str, Any],
-) -&gt; Dict[str, Any]:
-    resp: Dict[str, Any] = {}
-    # (&gt;= 1.18 &amp;&amp; &lt; 2.0) || &gt;= 3.0: This is because before 1.18, and between 2 and 3, FDI does not
-    # support account linking.
-    if (
-        has_greater_than_equal_to_fdi(req, &#34;1.18&#34;)
-        and not has_greater_than_equal_to_fdi(req, &#34;2.0&#34;)
-    ) or has_greater_than_equal_to_fdi(req, &#34;3.0&#34;):
-        resp = {&#34;user&#34;: user_info.to_json()}
-
-        if created_new_recipe_user is not None:
-            resp[&#34;createdNewRecipeUser&#34;] = created_new_recipe_user
-        return resp
-
-    login_method = next(
-        (
-            lm
-            for lm in user_info.login_methods
-            if lm.recipe_user_id.get_as_string()
-            == session_container.get_recipe_user_id(user_context).get_as_string()
-        ),
-        None,
-    )
-
-    if login_method is None:
-        # we pick the oldest login method here for the user.
-        # this can happen in case the user is implementing something like
-        # MFA where the session remains the same during the second factor as well.
-        login_method = min(user_info.login_methods, key=lambda lm: lm.time_joined)
-
-    user_obj: Dict[str, Any] = {
-        &#34;id&#34;: user_info.id,  # we purposely use this instead of the loginmethod&#39;s recipeUserId because if the oldest login method is deleted, then this userID should remain the same.
-        &#34;timeJoined&#34;: login_method.time_joined,
-    }
-    if login_method.third_party:
-        user_obj[&#34;thirdParty&#34;] = login_method.third_party.to_json()
-    if login_method.email:
-        user_obj[&#34;email&#34;] = login_method.email
-    if login_method.phone_number:
-        user_obj[&#34;phoneNumber&#34;] = login_method.phone_number
-
-    resp = {&#34;user&#34;: user_obj}
-
-    if created_new_recipe_user is not None:
-        resp[&#34;createdNewUser&#34;] = created_new_recipe_user
-
-    return resp</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_filtered_list"><code class="name flex">
 <span>def <span class="ident">get_filtered_list</span></span>(<span>func: Callable[[_T], bool], given_list: List[_T]) ‑> List[~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -&gt; List[_T]:
-    return list(filter(func, given_list))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_header"><code class="name flex">
 <span>def <span class="ident">get_header</span></span>(<span>request: BaseRequest, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_header(request: BaseRequest, key: str) -&gt; Union[str, None]:
-    return request.get_header(key)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_latest_fdi_version_from_fdi_list"><code class="name flex">
 <span>def <span class="ident">get_latest_fdi_version_from_fdi_list</span></span>(<span>fdi_header_value: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_latest_fdi_version_from_fdi_list(fdi_header_value: str) -&gt; str:
-    versions = fdi_header_value.split(&#34;,&#34;)
-    max_version_str = versions[0]
-    for version in versions[1:]:
-        max_version_str = _get_max_version(max_version_str, version)
-    return max_version_str</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_normalised_should_try_linking_with_session_user_flag"><code class="name flex">
 <span>def <span class="ident">get_normalised_should_try_linking_with_session_user_flag</span></span>(<span>req: BaseRequest, body: Dict[str, Any]) ‑> Optional[bool]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_normalised_should_try_linking_with_session_user_flag(
-    req: BaseRequest, body: Dict[str, Any]
-) -&gt; Optional[bool]:
-    if has_greater_than_equal_to_fdi(req, &#34;3.1&#34;):
-        return body.get(&#34;shouldTryLinkingWithSessionUser&#34;, False)
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_rid_from_header"><code class="name flex">
 <span>def <span class="ident">get_rid_from_header</span></span>(<span>request: BaseRequest) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_rid_from_header(request: BaseRequest) -&gt; Union[str, None]:
-    return get_header(request, RID_KEY_HEADER)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_timestamp_ms"><code class="name flex">
 <span>def <span class="ident">get_timestamp_ms</span></span>(<span>) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_timestamp_ms() -&gt; int:
-    return int(time() * 1000)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.get_top_level_domain_for_same_site_resolution"><code class="name flex">
 <span>def <span class="ident">get_top_level_domain_for_same_site_resolution</span></span>(<span>url: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
-    url_obj = urlparse(url)
-    hostname = url_obj.hostname
-
-    if hostname is None:
-        raise Exception(&#34;Should not come here&#34;)
-
-    if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
-        return &#34;localhost&#34;
-
-    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
-    if parsed_url.domain == &#34;&#34;:  # type: ignore
-        # We need to do this because of https://github.com/supertokens/supertokens-python/issues/394
-        if hostname.endswith(&#34;.amazonaws.com&#34;) and parsed_url.suffix == hostname:
-            return hostname
-
-        raise Exception(
-            &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
-        )
-
-    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.handle_httpx_client_exceptions"><code class="name flex">
 <span>def <span class="ident">handle_httpx_client_exceptions</span></span>(<span>e: Exception, input_: Union[Dict[str, Any], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def handle_httpx_client_exceptions(
-    e: Exception, input_: Union[Dict[str, Any], None] = None
-):
-    if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
-        res = e.response  # type: ignore
-        log_debug_message(&#34;Error status: %s&#34;, res.status_code)  # type: ignore
-        log_debug_message(&#34;Error response: %s&#34;, res.json())
-    else:
-        log_debug_message(&#34;Error: %s&#34;, str(e))
-
-    if input_ is not None:
-        log_debug_message(&#34;Logging the input:&#34;)
-        log_debug_message(&#34;%s&#34;, json.dumps(input_))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.has_greater_than_equal_to_fdi"><code class="name flex">
 <span>def <span class="ident">has_greater_than_equal_to_fdi</span></span>(<span>req: BaseRequest, version: str) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_greater_than_equal_to_fdi(req: BaseRequest, version: str) -&gt; bool:
-    request_fdi = req.get_header(FDI_KEY_HEADER)
-    if request_fdi is None:
-        # By default we assume they want to use the latest FDI, this also helps with tests
-        return True
-    request_fdi = get_latest_fdi_version_from_fdi_list(request_fdi)
-    if request_fdi == version or _get_max_version(version, request_fdi) != version:
-        return True
-    return False</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.humanize_time"><code class="name flex">
 <span>def <span class="ident">humanize_time</span></span>(<span>ms: int) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def humanize_time(ms: int) -&gt; str:
-    t = floor(ms / 1000)
-    suffix = &#34;&#34;
-
-    if t &lt; 60:
-        if t &gt; 1:
-            suffix = &#34;s&#34;
-        time_str = f&#34;{t} second{suffix}&#34;
-    elif t &lt; 3600:
-        m = floor(t / 60)
-        if m &gt; 1:
-            suffix = &#34;s&#34;
-        time_str = f&#34;{m} minute{suffix}&#34;
-    else:
-        h = floor(t / 360) / 10
-        if h &gt; 1:
-            suffix = &#34;s&#34;
-        if h % 1 == 0:
-            h = int(h)
-        time_str = f&#34;{h} hour{suffix}&#34;
-
-    return time_str</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.is_4xx_error"><code class="name flex">
 <span>def <span class="ident">is_4xx_error</span></span>(<span>status_code: int) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_4xx_error(status_code: int) -&gt; bool:
-    return status_code // 100 == 4</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.is_5xx_error"><code class="name flex">
 <span>def <span class="ident">is_5xx_error</span></span>(<span>status_code: int) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_5xx_error(status_code: int) -&gt; bool:
-    return status_code // 100 == 5</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.is_an_ip_address"><code class="name flex">
 <span>def <span class="ident">is_an_ip_address</span></span>(<span>ip_address: str) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_an_ip_address(ip_address: str) -&gt; bool:
-    return (
-        fullmatch(
-            r&#34;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#34;
-            r&#34;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#34;,
-            ip_address,
-        )
-        is not None
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.is_version_gte"><code class="name flex">
 <span>def <span class="ident">is_version_gte</span></span>(<span>version: str, minimum_version: str) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_version_gte(version: str, minimum_version: str) -&gt; bool:
-    return _get_max_version(version, minimum_version) == version</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.normalise_email"><code class="name flex">
 <span>def <span class="ident">normalise_email</span></span>(<span>email: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def normalise_email(email: str) -&gt; str:
-    return email.strip().lower()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.normalise_http_method"><code class="name flex">
 <span>def <span class="ident">normalise_http_method</span></span>(<span>method: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def normalise_http_method(method: str) -&gt; str:
-    return method.lower()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.resolve"><code class="name flex">
 <span>async def <span class="ident">resolve</span></span>(<span>obj: MaybeAwaitable[_T]) ‑> ~_T</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Returns value or value of awaitable object passed</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
-    &#34;&#34;&#34;Returns value or value of awaitable object passed&#34;&#34;&#34;
-    if isinstance(obj, Awaitable):
-        return await obj  # type: ignore
-    return obj  # type: ignore</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.send_200_response"><code class="name flex">
 <span>def <span class="ident">send_200_response</span></span>(<span>data_json: Dict[str, Any], response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_200_response(
-    data_json: Dict[str, Any], response: BaseResponse
-) -&gt; BaseResponse:
-    log_debug_message(&#34;Sending response to client with status code: 200&#34;)
-    response.set_json_content(data_json)
-    response.set_status_code(200)
-    return response</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.send_non_200_response"><code class="name flex">
 <span>def <span class="ident">send_non_200_response</span></span>(<span>body: Dict[str, Any], status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_non_200_response(
-    body: Dict[str, Any], status_code: int, response: BaseResponse
-) -&gt; BaseResponse:
-    if status_code &lt; 300:
-        raise_general_exception(&#34;Calling sendNon200Response with status code &lt; 300&#34;)
-    log_debug_message(
-        &#34;Sending response to client with status code: %s&#34;, str(status_code)
-    )
-    response.set_status_code(status_code)
-    response.set_json_content(content=body)
-    return response</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.send_non_200_response_with_message"><code class="name flex">
 <span>def <span class="ident">send_non_200_response_with_message</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_non_200_response_with_message(
-    message: str, status_code: int, response: BaseResponse
-) -&gt; BaseResponse:
-    return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.send_unauthorised_access_response"><code class="name flex">
 <span>def <span class="ident">send_unauthorised_access_response</span></span>(<span>response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_unauthorised_access_response(response: BaseResponse) -&gt; BaseResponse:
-    return send_non_200_response_with_message(&#34;Unauthorised access&#34;, 401, response)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.set_request_in_user_context_if_not_defined"><code class="name flex">
 <span>def <span class="ident">set_request_in_user_context_if_not_defined</span></span>(<span>user_context: Optional[Dict[str, Any]], request: BaseRequest) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_request_in_user_context_if_not_defined(
-    user_context: Optional[Dict[str, Any]], request: BaseRequest
-) -&gt; Dict[str, Any]:
-    if user_context is None:
-        user_context = {}
-
-    if &#34;_default&#34; not in user_context:
-        user_context[&#34;_default&#34;] = {}
-
-    if isinstance(user_context[&#34;_default&#34;], dict):
-        user_context[&#34;_default&#34;][&#34;request&#34;] = request
-        user_context[&#34;_default&#34;][&#34;keep_cache_alive&#34;] = True
-
-    return user_context</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.utf_base64decode"><code class="name flex">
 <span>def <span class="ident">utf_base64decode</span></span>(<span>s: str, urlsafe: bool) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def utf_base64decode(s: str, urlsafe: bool) -&gt; str:
-    # Adding extra &#34;==&#34; based on
-    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
-    # Otherwise it can raise &#34;incorrect padding&#34; error
-    if urlsafe:
-        return urlsafe_b64decode(s.encode(&#34;utf-8&#34;) + b&#34;==&#34;).decode(&#34;utf-8&#34;)
-
-    return b64decode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.utf_base64encode"><code class="name flex">
 <span>def <span class="ident">utf_base64encode</span></span>(<span>s: str, urlsafe: bool) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def utf_base64encode(s: str, urlsafe: bool) -&gt; str:
-    if urlsafe:
-        return urlsafe_b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
-
-    return b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -1142,64 +745,24 @@ def get_normalised_should_try_linking_with_session_user_flag(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def lock(self):
-    with self._lock:
-        while self._writer_count &gt; 0 or self._reader_count &gt; 0:
-            self._writers.wait()
-        self._writer_count += 1</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.RWMutex.r_lock"><code class="name flex">
 <span>def <span class="ident">r_lock</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def r_lock(self):
-    with self._lock:
-        while self._writer_count &gt; 0:
-            self._readers.wait()
-        self._reader_count += 1</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.RWMutex.r_unlock"><code class="name flex">
 <span>def <span class="ident">r_unlock</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def r_unlock(self):
-    with self._lock:
-        self._reader_count -= 1
-        if self._reader_count == 0:
-            self._writers.notify_all()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.utils.RWMutex.unlock"><code class="name flex">
 <span>def <span class="ident">unlock</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def unlock(self):
-    with self._lock:
-        self._writer_count -= 1
-        self._readers.notify_all()
-        self._writers.notify_all()</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1272,7 +835,7 @@ def get_normalised_should_try_linking_with_session_user_flag(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

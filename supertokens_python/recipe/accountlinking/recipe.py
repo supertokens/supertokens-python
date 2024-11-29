@@ -58,9 +58,9 @@ class EmailChangeAllowedResult:
         reason: Literal["OK", "PRIMARY_USER_CONFLICT", "ACCOUNT_TAKEOVER_RISK"],
     ):
         self.allowed = allowed
-        self.reason: Literal[
-            "OK", "PRIMARY_USER_CONFLICT", "ACCOUNT_TAKEOVER_RISK"
-        ] = reason
+        self.reason: Literal["OK", "PRIMARY_USER_CONFLICT", "ACCOUNT_TAKEOVER_RISK"] = (
+            reason
+        )
 
 
 class TryLinkingByAccountInfoOrCreatePrimaryUserResult:
@@ -685,7 +685,6 @@ class AccountLinkingRecipe(RecipeModule):
         )
         return EmailChangeAllowedResult(allowed=True, reason="OK")
 
-    # pylint:disable=no-self-use
     async def verify_email_for_recipe_user_if_linked_accounts_are_verified(
         self,
         user: User,

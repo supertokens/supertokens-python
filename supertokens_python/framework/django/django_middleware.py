@@ -14,9 +14,11 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from asgiref.sync import async_to_sync
+
+from supertokens_python.framework import BaseResponse
 
 
 def middleware(get_response: Any):
@@ -74,12 +76,15 @@ def middleware(get_response: Any):
         user_context = default_user_context(custom_request)
 
         try:
-            result: Union[DjangoResponse, None] = async_to_sync(st.middleware)(
+            result: Union[BaseResponse, None] = async_to_sync(st.middleware)(
                 custom_request, response, user_context
             )
 
             if result is None:
                 result = DjangoResponse(get_response(request))
+
+            if not isinstance(result, DjangoResponse):
+                raise Exception("should never happen")
 
             if hasattr(request, "supertokens") and isinstance(
                 request.supertokens, SessionContainer  # type: ignore
@@ -87,14 +92,19 @@ def middleware(get_response: Any):
                 manage_session_post_response(
                     request.supertokens, result, user_context  # type: ignore
                 )
+
             return result.response
 
         except SuperTokensError as e:
             response = DjangoResponse(HttpResponse())
-            result: Union[DjangoResponse, None] = async_to_sync(
-                st.handle_supertokens_error
-            )(DjangoRequest(request), e, response, user_context)
+            result: Optional[BaseResponse] = async_to_sync(st.handle_supertokens_error)(
+                DjangoRequest(request), e, response, user_context
+            )
+
             if result is not None:
+                if not isinstance(result, DjangoResponse):
+                    raise Exception("should never happen")
+
                 return result.response
         raise Exception("Should never come here")
 

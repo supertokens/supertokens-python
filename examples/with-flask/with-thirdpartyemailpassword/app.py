@@ -156,7 +156,7 @@ CORS(
 @app.route("/sessioninfo", methods=["GET"])  # type: ignore
 @verify_session()
 def get_session_info():
-    session_ = g.supertokens
+    session_: session.SessionContainer = g.supertokens
     return jsonify(
         {
             "sessionHandle": session_.get_handle(),

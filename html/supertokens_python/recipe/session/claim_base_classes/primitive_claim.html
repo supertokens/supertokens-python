@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.claim_base_classes.primitive_claim API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -65,7 +65,7 @@ class HasValueSCV(SessionClaimValidator):
         max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
+        self.claim = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -75,6 +75,9 @@ class HasValueSCV(SessionClaimValidator):
         user_context: Dict[str, Any],
     ) -&gt; bool:
         max_age_in_sec = self.max_age_in_sec
+
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
@@ -93,7 +96,10 @@ class HasValueSCV(SessionClaimValidator):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
-        claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
+        claim_val: Optional[JSONPrimitive] = self.claim.get_value_from_payload(
             payload, user_context
         )
         if claim_val is None:
@@ -237,7 +243,7 @@ inheritance.</p></div>
         max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
+        self.claim = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -247,6 +253,9 @@ inheritance.</p></div>
         user_context: Dict[str, Any],
     ) -&gt; bool:
         max_age_in_sec = self.max_age_in_sec
+
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
@@ -265,7 +274,10 @@ inheritance.</p></div>
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
-        claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
+        claim_val: Optional[JSONPrimitive] = self.claim.get_value_from_payload(
             payload, user_context
         )
         if claim_val is None:
@@ -317,84 +329,12 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def should_refetch(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    max_age_in_sec = self.max_age_in_sec
-
-    # (claim value is None) OR (value has expired)
-    return (self.claim.get_value_from_payload(payload, user_context) is None) or (
-        (max_age_in_sec is not None)
-        and (
-            payload[self.claim.key][&#34;t&#34;]
-            &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.validate"><code class="name flex">
 <span>async def <span class="ident">validate</span></span>(<span>self, payload: Dict[str, Any], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-):
-    val = self.val
-    max_age_in_sec = self.max_age_in_sec
-
-    claim_val: JSONPrimitive = self.claim.get_value_from_payload(
-        payload, user_context
-    )
-    if claim_val is None:
-        return ClaimValidationResult(
-            is_valid=False,
-            reason={
-                &#34;message&#34;: &#34;value does not exist&#34;,
-                &#34;expectedValue&#34;: val,
-                &#34;actualValue&#34;: claim_val,
-            },
-        )
-
-    if max_age_in_sec is not None:
-        assert isinstance(self.claim, PrimitiveClaim)
-        last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
-        assert last_refetch_time is not None
-        age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
-        if age_in_sec &gt; max_age_in_sec:
-            return ClaimValidationResult(
-                is_valid=False,
-                reason={
-                    &#34;message&#34;: &#34;expired&#34;,
-                    &#34;ageInSeconds&#34;: age_in_sec,
-                    &#34;maxAgeInSeconds&#34;: max_age_in_sec,
-                },
-            )
-
-    if claim_val != val:
-        return ClaimValidationResult(
-            is_valid=False,
-            reason={
-                &#34;message&#34;: &#34;wrong value&#34;,
-                &#34;expectedValue&#34;: val,
-                &#34;actualValue&#34;: claim_val,
-            },
-        )
-
-    return ClaimValidationResult(is_valid=True)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -488,17 +428,6 @@ don't want to add the claim to the session automatically</dd>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_last_refetch_time(
-    self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-) -&gt; Union[int, None]:
-    _ = user_context
-
-    return payload.get(self.key, {}).get(&#34;t&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -571,21 +500,6 @@ return default</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_value(
-    self,
-    val: Primitive,
-    max_age_in_sec: Optional[int] = None,
-    id_: Optional[str] = None,
-) -&gt; SessionClaimValidator:
-    max_age_in_sec = max_age_in_sec or self.default_max_age_in_sec
-    return HasValueSCV(
-        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -630,7 +544,7 @@ return default</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

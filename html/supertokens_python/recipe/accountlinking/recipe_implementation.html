@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.accountlinking.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -744,397 +744,54 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def can_create_primary_user(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; Union[
-    CanCreatePrimaryUserOkResult,
-    CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError,
-    CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
-]:
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/accountlinking/user/primary/check&#34;),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-        },
-        user_context,
-    )
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return CanCreatePrimaryUserOkResult(response[&#34;wasAlreadyAPrimaryUser&#34;])
-    elif (
-        response[&#34;status&#34;]
-        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError(
-            response[&#34;primaryUserId&#34;], response[&#34;description&#34;]
-        )
-    elif (
-        response[&#34;status&#34;]
-        == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return CanCreatePrimaryUserAccountInfoAlreadyAssociatedError(
-            response[&#34;primaryUserId&#34;], response[&#34;description&#34;]
-        )
-    else:
-        raise Exception(f&#34;Unknown response status: {response[&#39;status&#39;]}&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.can_link_accounts"><code class="name flex">
 <span>async def <span class="ident">can_link_accounts</span></span>(<span>self, recipe_user_id: RecipeUserId, primary_user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsOkResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsOkResult">CanLinkAccountsOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsRecipeUserIdAlreadyLinkedError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsRecipeUserIdAlreadyLinkedError">CanLinkAccountsRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsAccountInfoAlreadyAssociatedError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsAccountInfoAlreadyAssociatedError">CanLinkAccountsAccountInfoAlreadyAssociatedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsInputUserNotPrimaryError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CanLinkAccountsInputUserNotPrimaryError">CanLinkAccountsInputUserNotPrimaryError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def can_link_accounts(
-    self,
-    recipe_user_id: RecipeUserId,
-    primary_user_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    CanLinkAccountsOkResult,
-    CanLinkAccountsRecipeUserIdAlreadyLinkedError,
-    CanLinkAccountsAccountInfoAlreadyAssociatedError,
-    CanLinkAccountsInputUserNotPrimaryError,
-]:
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/accountlinking/user/link/check&#34;),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-            &#34;primaryUserId&#34;: primary_user_id,
-        },
-        user_context,
-    )
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return CanLinkAccountsOkResult(response[&#34;accountsAlreadyLinked&#34;])
-    elif (
-        response[&#34;status&#34;]
-        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return CanLinkAccountsRecipeUserIdAlreadyLinkedError(
-            response[&#34;primaryUserId&#34;], response[&#34;description&#34;]
-        )
-    elif (
-        response[&#34;status&#34;]
-        == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return CanLinkAccountsAccountInfoAlreadyAssociatedError(
-            response[&#34;primaryUserId&#34;], response[&#34;description&#34;]
-        )
-    elif response[&#34;status&#34;] == &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;:
-        return CanLinkAccountsInputUserNotPrimaryError(response[&#34;description&#34;])
-    else:
-        raise Exception(f&#34;Unknown response status: {response[&#39;status&#39;]}&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.create_primary_user"><code class="name flex">
 <span>async def <span class="ident">create_primary_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserOkResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserOkResult">CreatePrimaryUserOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserRecipeUserIdAlreadyLinkedError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserRecipeUserIdAlreadyLinkedError">CreatePrimaryUserRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserAccountInfoAlreadyAssociatedError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.CreatePrimaryUserAccountInfoAlreadyAssociatedError">CreatePrimaryUserAccountInfoAlreadyAssociatedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_primary_user(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; Union[
-    CreatePrimaryUserOkResult,
-    CreatePrimaryUserRecipeUserIdAlreadyLinkedError,
-    CreatePrimaryUserAccountInfoAlreadyAssociatedError,
-]:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/accountlinking/user/primary&#34;),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-        },
-        user_context,
-    )
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return CreatePrimaryUserOkResult(
-            User.from_json(response[&#34;user&#34;]),
-            response[&#34;wasAlreadyAPrimaryUser&#34;],
-        )
-    elif (
-        response[&#34;status&#34;]
-        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return CreatePrimaryUserRecipeUserIdAlreadyLinkedError(
-            response[&#34;primaryUserId&#34;], response[&#34;description&#34;]
-        )
-    elif (
-        response[&#34;status&#34;]
-        == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return CreatePrimaryUserAccountInfoAlreadyAssociatedError(
-            response[&#34;primaryUserId&#34;], response[&#34;description&#34;]
-        )
-    else:
-        raise Exception(f&#34;Unknown response status: {response[&#39;status&#39;]}&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.delete_user"><code class="name flex">
 <span>async def <span class="ident">delete_user</span></span>(<span>self, user_id: str, remove_all_linked_accounts: bool, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def delete_user(
-    self,
-    user_id: str,
-    remove_all_linked_accounts: bool,
-    user_context: Dict[str, Any],
-) -&gt; None:
-    await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/user/remove&#34;),
-        {
-            &#34;userId&#34;: user_id,
-            &#34;removeAllLinkedAccounts&#34;: remove_all_linked_accounts,
-        },
-        user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.get_user"><code class="name flex">
 <span>async def <span class="ident">get_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.types.User" href="../../types.html#supertokens_python.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Optional[User]:
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/user/id&#34;),
-        {
-            &#34;userId&#34;: user_id,
-        },
-        user_context,
-    )
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return User.from_json(response[&#34;user&#34;])
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.get_users"><code class="name flex">
 <span>async def <span class="ident">get_users</span></span>(<span>self, tenant_id: str, time_joined_order: "Literal[('ASC', 'DESC')]", limit: Optional[int], pagination_token: Optional[str], include_recipe_ids: Optional[List[str]], query: Optional[Dict[str, str]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.GetUsersResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.GetUsersResult">GetUsersResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_users(
-    self,
-    tenant_id: str,
-    time_joined_order: Literal[&#34;ASC&#34;, &#34;DESC&#34;],
-    limit: Optional[int],
-    pagination_token: Optional[str],
-    include_recipe_ids: Optional[List[str]],
-    query: Optional[Dict[str, str]],
-    user_context: Dict[str, Any],
-) -&gt; GetUsersResult:
-    include_recipe_ids_str = None
-    if include_recipe_ids is not None:
-        include_recipe_ids_str = &#34;,&#34;.join(include_recipe_ids)
-
-    params: Dict[str, Any] = {
-        &#34;timeJoinedOrder&#34;: time_joined_order,
-    }
-    if limit is not None:
-        params[&#34;limit&#34;] = limit
-    if pagination_token is not None:
-        params[&#34;paginationToken&#34;] = pagination_token
-    if include_recipe_ids_str is not None:
-        params[&#34;includeRecipeIds&#34;] = include_recipe_ids_str
-    if query:
-        params.update(query)
-
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}/users&#34;), params, user_context
-    )
-
-    return GetUsersResult(
-        users=[User.from_json(u) for u in response[&#34;users&#34;]],
-        next_pagination_token=response.get(&#34;nextPaginationToken&#34;),
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.link_accounts"><code class="name flex">
 <span>async def <span class="ident">link_accounts</span></span>(<span>self, recipe_user_id: RecipeUserId, primary_user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsOkResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsOkResult">LinkAccountsOkResult</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsRecipeUserIdAlreadyLinkedError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsRecipeUserIdAlreadyLinkedError">LinkAccountsRecipeUserIdAlreadyLinkedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsAccountInfoAlreadyAssociatedError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsAccountInfoAlreadyAssociatedError">LinkAccountsAccountInfoAlreadyAssociatedError</a>, <a title="supertokens_python.recipe.accountlinking.interfaces.LinkAccountsInputUserNotPrimaryError" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.LinkAccountsInputUserNotPrimaryError">LinkAccountsInputUserNotPrimaryError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def link_accounts(
-    self,
-    recipe_user_id: RecipeUserId,
-    primary_user_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    LinkAccountsOkResult,
-    LinkAccountsRecipeUserIdAlreadyLinkedError,
-    LinkAccountsAccountInfoAlreadyAssociatedError,
-    LinkAccountsInputUserNotPrimaryError,
-]:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/accountlinking/user/link&#34;),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-            &#34;primaryUserId&#34;: primary_user_id,
-        },
-        user_context,
-    )
-
-    if response[&#34;status&#34;] in [
-        &#34;OK&#34;,
-        &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-    ]:
-        response[&#34;user&#34;] = User.from_json(response[&#34;user&#34;])
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        user = response[&#34;user&#34;]
-        if not response[&#34;accountsAlreadyLinked&#34;]:
-            await self.recipe_instance.verify_email_for_recipe_user_if_linked_accounts_are_verified(
-                user=user,
-                recipe_user_id=recipe_user_id,
-                user_context=user_context,
-            )
-
-            updated_user = await self.get_user(
-                user_id=primary_user_id,
-                user_context=user_context,
-            )
-            if updated_user is None:
-                raise Exception(&#34;This error should never be thrown&#34;)
-            user = updated_user
-
-            login_method_info = next(
-                (
-                    lm
-                    for lm in user.login_methods
-                    if lm.recipe_user_id.get_as_string()
-                    == recipe_user_id.get_as_string()
-                ),
-                None,
-            )
-            if login_method_info is None:
-                raise Exception(&#34;This error should never be thrown&#34;)
-
-            await self.config.on_account_linked(
-                user,
-                RecipeLevelUser.from_login_method(login_method_info),
-                user_context,
-            )
-
-        response[&#34;user&#34;] = user
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return LinkAccountsOkResult(
-            user=response[&#34;user&#34;],
-            accounts_already_linked=response[&#34;accountsAlreadyLinked&#34;],
-        )
-    elif (
-        response[&#34;status&#34;]
-        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return LinkAccountsRecipeUserIdAlreadyLinkedError(
-            primary_user_id=response[&#34;primaryUserId&#34;],
-            user=response[&#34;user&#34;],
-            description=response[&#34;description&#34;],
-        )
-    elif (
-        response[&#34;status&#34;]
-        == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        return LinkAccountsAccountInfoAlreadyAssociatedError(
-            primary_user_id=response[&#34;primaryUserId&#34;],
-            description=response[&#34;description&#34;],
-        )
-    elif response[&#34;status&#34;] == &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;:
-        return LinkAccountsInputUserNotPrimaryError()
-    else:
-        raise Exception(f&#34;Unknown response status: {response[&#39;status&#39;]}&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.list_users_by_account_info"><code class="name flex">
 <span>async def <span class="ident">list_users_by_account_info</span></span>(<span>self, tenant_id: str, account_info: AccountInfo, do_union_of_account_info: bool, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.types.User" href="../../types.html#supertokens_python.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_users_by_account_info(
-    self,
-    tenant_id: str,
-    account_info: AccountInfo,
-    do_union_of_account_info: bool,
-    user_context: Dict[str, Any],
-) -&gt; List[User]:
-    params: Dict[str, Any] = {
-        &#34;doUnionOfAccountInfo&#34;: do_union_of_account_info,
-    }
-    if account_info.email is not None:
-        params[&#34;email&#34;] = account_info.email
-    if account_info.phone_number is not None:
-        params[&#34;phoneNumber&#34;] = account_info.phone_number
-
-    if account_info.third_party:
-        params[&#34;thirdPartyId&#34;] = account_info.third_party.id
-        params[&#34;thirdPartyUserId&#34;] = account_info.third_party.user_id
-
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}/users/by-accountinfo&#34;),
-        params,
-        user_context,
-    )
-
-    return [User.from_json(u) for u in response[&#34;users&#34;]]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.unlink_account"><code class="name flex">
 <span>async def <span class="ident">unlink_account</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.UnlinkAccountOkResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.UnlinkAccountOkResult">UnlinkAccountOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def unlink_account(
-    self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
-) -&gt; UnlinkAccountOkResult:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/accountlinking/user/unlink&#34;),
-        {
-            &#34;recipeUserId&#34;: recipe_user_id.get_as_string(),
-        },
-        user_context,
-    )
-    return UnlinkAccountOkResult(
-        response[&#34;wasRecipeUserDeleted&#34;], response[&#34;wasLinked&#34;]
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1174,7 +831,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

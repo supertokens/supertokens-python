@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -138,55 +138,6 @@ async def update_tenant_core_config(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_tenant_core_config(
-    _: APIInterface,
-    tenant_id: str,
-    options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    UpdateTenantCoreConfigOkResult,
-    UpdateTenantCoreConfigUnknownTenantErrorResult,
-    UpdateTenantCoreConfigInvalidConfigErrorResult,
-]:
-    request_body = await options.request.json()
-    if request_body is None:
-        raise_bad_input_exception(&#34;Request body is required&#34;)
-    name = request_body[&#34;name&#34;]
-    value = request_body[&#34;value&#34;]
-
-    mt_recipe = MultitenancyRecipe.get_instance()
-
-    tenant_res = await mt_recipe.recipe_implementation.get_tenant(
-        tenant_id=tenant_id, user_context=user_context
-    )
-    if tenant_res is None:
-        return UpdateTenantCoreConfigUnknownTenantErrorResult()
-
-    try:
-        await mt_recipe.recipe_implementation.create_or_update_tenant(
-            tenant_id=tenant_id,
-            config=TenantConfigCreateOrUpdate(
-                core_config={name: value},
-            ),
-            user_context=user_context,
-        )
-    except Exception as err:
-        err_msg = str(err)
-        if (
-            &#34;SuperTokens core threw an error for a &#34; in err_msg
-            and &#34;with status code: 400&#34; in err_msg
-        ):
-            return UpdateTenantCoreConfigInvalidConfigErrorResult(
-                message=err_msg.split(&#34; and message: &#34;)[1]
-            )
-        raise err
-
-    return UpdateTenantCoreConfigOkResult()</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -221,7 +172,7 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigInvalidConfigErrorResult.status"><code class="name">var <span class="ident">status</span> : Literal['INVALID_CONFIG_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigInvalidConfigErrorResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['INVALID_CONFIG_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -229,17 +180,10 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigInvalidConfigErrorResult.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Union[Literal['INVALID_CONFIG_ERROR'], str]]</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Union[typing_extensions.Literal['INVALID_CONFIG_ERROR'], str]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Union[Literal[&#34;INVALID_CONFIG_ERROR&#34;], str]]:
-    return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -269,7 +213,7 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -277,17 +221,10 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigOkResult.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Literal['OK']]</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, typing_extensions.Literal['OK']]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Literal[&#34;OK&#34;]]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -317,7 +254,7 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigUnknownTenantErrorResult.status"><code class="name">var <span class="ident">status</span> : Literal['UNKNOWN_TENANT_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigUnknownTenantErrorResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['UNKNOWN_TENANT_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -325,17 +262,10 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_core_config.UpdateTenantCoreConfigUnknownTenantErrorResult.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Literal['UNKNOWN_TENANT_ERROR']]</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, typing_extensions.Literal['UNKNOWN_TENANT_ERROR']]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Literal[&#34;UNKNOWN_TENANT_ERROR&#34;]]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -387,7 +317,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

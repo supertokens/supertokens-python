@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.dashboard.utils API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -315,163 +315,36 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_api_if_matched(path: NormalisedURLPath, method: str) -&gt; Optional[str]:
-    path_str = path.get_as_string_dangerous()
-
-    if path_str.endswith(VALIDATE_KEY_API) and method == &#34;post&#34;:
-        return VALIDATE_KEY_API
-    if path_str.endswith(USERS_LIST_GET_API) and method == &#34;get&#34;:
-        return USERS_LIST_GET_API
-    if path_str.endswith(USERS_COUNT_API) and method == &#34;get&#34;:
-        return USERS_COUNT_API
-    if path_str.endswith(USER_API) and method in (&#34;get&#34;, &#34;delete&#34;, &#34;put&#34;):
-        return USER_API
-    if path_str.endswith(USER_EMAIL_VERIFY_API) and method in (&#34;get&#34;, &#34;put&#34;):
-        return USER_EMAIL_VERIFY_API
-    if path_str.endswith(USER_METADATA_API) and method in (&#34;get&#34;, &#34;put&#34;):
-        return USER_METADATA_API
-    if path_str.endswith(USER_SESSION_API) and method in (&#34;get&#34;, &#34;post&#34;):
-        return USER_SESSION_API
-    if path_str.endswith(USER_PASSWORD_API) and method == &#34;put&#34;:
-        return USER_PASSWORD_API
-    if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == &#34;post&#34;:
-        return USER_EMAIL_VERIFY_TOKEN_API
-    if path_str.endswith(SIGN_IN_API) and method == &#34;post&#34;:
-        return SIGN_IN_API
-    if path_str.endswith(SIGN_OUT_API) and method == &#34;post&#34;:
-        return SIGN_OUT_API
-    if path_str.endswith(SEARCH_TAGS_API) and method == &#34;get&#34;:
-        return SEARCH_TAGS_API
-    if path_str.endswith(DASHBOARD_ANALYTICS_API) and method == &#34;post&#34;:
-        return DASHBOARD_ANALYTICS_API
-
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.get_api_path_with_dashboard_base"><code class="name flex">
 <span>def <span class="ident">get_api_path_with_dashboard_base</span></span>(<span>path: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_api_path_with_dashboard_base(path: str) -&gt; str:
-    return DASHBOARD_API + path</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.get_user_for_recipe_id"><code class="name flex">
 <span>async def <span class="ident">get_user_for_recipe_id</span></span>(<span>recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult">GetUserForRecipeIdResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_for_recipe_id(
-    recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
-) -&gt; GetUserForRecipeIdResult:
-    user_response = await _get_user_for_recipe_id(
-        recipe_user_id, recipe_id, user_context
-    )
-
-    user = None
-    if user_response.user is not None:
-        user = UserWithMetadata().from_user(
-            user_response.user, first_name=&#34;&#34;, last_name=&#34;&#34;
-        )
-
-    return GetUserForRecipeIdResult(user=user, recipe=user_response.recipe)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.is_api_path"><code class="name flex">
 <span>def <span class="ident">is_api_path</span></span>(<span>path: NormalisedURLPath, base_path: NormalisedURLPath) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_api_path(path: NormalisedURLPath, base_path: NormalisedURLPath) -&gt; bool:
-    dashboard_recipe_base_path = base_path.append(NormalisedURLPath(DASHBOARD_API))
-
-    if not path.startswith(dashboard_recipe_base_path):
-        return False
-
-    path_without_dashboard_path = path.get_as_string_dangerous().split(DASHBOARD_API)[1]
-
-    if len(path_without_dashboard_path) &gt; 0 and path_without_dashboard_path[0] == &#34;/&#34;:
-        path_without_dashboard_path = path_without_dashboard_path[1:]
-
-    if path_without_dashboard_path.split(&#34;/&#34;)[0] == &#34;api&#34;:
-        return True
-
-    return False</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_and_normalise_user_input"><code class="name flex">
 <span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>api_key: Union[str, None], admins: Optional[List[str]], override: Optional[<a title="supertokens_python.recipe.dashboard.utils.InputOverrideConfig" href="#supertokens_python.recipe.dashboard.utils.InputOverrideConfig">InputOverrideConfig</a>] = None) ‑> <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate_and_normalise_user_input(
-    # app_info: AppInfo,
-    api_key: Union[str, None],
-    admins: Optional[List[str]],
-    override: Optional[InputOverrideConfig] = None,
-) -&gt; DashboardConfig:
-
-    if override is None:
-        override = InputOverrideConfig()
-
-    if api_key is not None and admins is not None:
-        log_debug_message(
-            &#34;User Dashboard: Providing &#39;admins&#39; has no effect when using an api key.&#34;
-        )
-
-    admins = [normalise_email(a) for a in admins] if admins is not None else None
-
-    return DashboardConfig(
-        api_key,
-        admins,
-        OverrideConfig(
-            functions=override.functions,
-            apis=override.apis,
-        ),
-        &#34;api-key&#34; if api_key else &#34;email-password&#34;,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_api_key"><code class="name flex">
-<span>async def <span class="ident">validate_api_key</span></span>(<span>req: BaseRequest, config: <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a>, _user_context: Dict[str, Any]) ‑> bool</span>
+<span>async def <span class="ident">validate_api_key</span></span>(<span>req: BaseRequest, config: <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a>, _user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate_api_key(
-    req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
-) -&gt; bool:
-    api_key_header_value = req.get_header(&#34;authorization&#34;)
-    if not api_key_header_value:
-        return False
-    # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
-    api_key_header_value = api_key_header_value.split(&#34; &#34;)[1]
-    return api_key_header_value == config.api_key</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -629,37 +502,12 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def from_user(
-    self,
-    user: User,
-    first_name: Optional[str] = None,
-    last_name: Optional[str] = None,
-):
-    self.first_name = first_name or &#34;&#34;
-    self.last_name = last_name or &#34;&#34;
-    self.user = user
-    return self</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    user_json = self.user.to_json()
-    user_json[&#34;firstName&#34;] = self.first_name
-    user_json[&#34;lastName&#34;] = self.last_name
-    return user_json</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -720,7 +568,7 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

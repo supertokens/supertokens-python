@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multitenancy.recipe API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -517,96 +517,24 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def get_instance() -&gt; MultitenancyRecipe:
-    if MultitenancyRecipe.__instance is not None:
-        return MultitenancyRecipe.__instance
-    raise_general_exception(
-        &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.get_instance_optional"><code class="name flex">
 <span>def <span class="ident">get_instance_optional</span></span>(<span>) ‑> Optional[<a title="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe" href="#supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe">MultitenancyRecipe</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def get_instance_optional() -&gt; Optional[MultitenancyRecipe]:
-    return MultitenancyRecipe.__instance</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.init"><code class="name flex">
 <span>def <span class="ident">init</span></span>(<span>get_allowed_domains_for_tenant_id: Union[TypeGetAllowedDomainsForTenantId, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def init(
-    get_allowed_domains_for_tenant_id: Union[
-        TypeGetAllowedDomainsForTenantId, None
-    ] = None,
-    override: Union[InputOverrideConfig, None] = None,
-):
-    def func(app_info: AppInfo):
-        if MultitenancyRecipe.__instance is None:
-            MultitenancyRecipe.__instance = MultitenancyRecipe(
-                MultitenancyRecipe.recipe_id,
-                app_info,
-                get_allowed_domains_for_tenant_id,
-                override,
-            )
-
-            def callback():
-                try:
-                    from supertokens_python.recipe.session import SessionRecipe
-
-                    SessionRecipe.get_instance().add_claim_from_other_recipe(
-                        AllowedDomainsClaim
-                    )
-                except Exception:
-                    # Skip adding claims if session recipe is not initilised
-                    pass
-
-            PostSTInitCallbacks.add_post_init_callback(callback)
-
-            return MultitenancyRecipe.__instance
-        raise_general_exception(
-            &#34;Multitenancy recipe has already been initialised. Please check your code for bugs.&#34;
-        )
-
-    return func</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def reset():
-    if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
-        environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
-    ):
-        raise_general_exception(&#34;calling testing function in non testing env&#34;)
-    MultitenancyRecipe.__instance = None</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -616,102 +544,30 @@ def reset():
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_all_cors_headers(self) -&gt; List[str]:
-    return []</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.get_apis_handled"><code class="name flex">
 <span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_apis_handled(self) -&gt; List[APIHandled]:
-    return [
-        APIHandled(
-            NormalisedURLPath(LOGIN_METHODS),
-            &#34;get&#34;,
-            LOGIN_METHODS,
-            self.api_implementation.disable_login_methods_get,
-        ),
-    ]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_api_request(
-    self,
-    request_id: str,
-    tenant_id: str,
-    request: BaseRequest,
-    path: NormalisedURLPath,
-    method: str,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; Union[BaseResponse, None]:
-    api_options = APIOptions(
-        request,
-        response,
-        self.recipe_id,
-        self.config,
-        self.recipe_implementation,
-        self.static_third_party_providers,
-        self.all_available_first_factors,
-        self.static_first_factors,
-    )
-    return await handle_login_methods_api(
-        self.api_implementation,
-        tenant_id,
-        api_options,
-        user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]) ‑> BaseResponse</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def handle_error(
-    self,
-    request: BaseRequest,
-    err: SuperTokensError,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; BaseResponse:
-    raise err</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
 <span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
-    return isinstance(err, MultitenancyError)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -756,7 +612,7 @@ def reset():
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

@@ -37,7 +37,7 @@ pytestmark = mark.asyncio
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multitenancy.syncio API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -163,173 +163,48 @@ def disassociate_user_from_tenant(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def associate_user_to_tenant(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_tenant
-
-    return sync(associate_user_to_tenant(tenant_id, recipe_user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.create_or_update_tenant"><code class="name flex">
 <span>def <span class="ident">create_or_update_tenant</span></span>(<span>tenant_id: str, config: Optional[TenantConfigCreateOrUpdate], user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_or_update_tenant(
-    tenant_id: str,
-    config: Optional[TenantConfigCreateOrUpdate],
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import create_or_update_tenant
-
-    return sync(create_or_update_tenant(tenant_id, config, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.create_or_update_third_party_config"><code class="name flex">
 <span>def <span class="ident">create_or_update_third_party_config</span></span>(<span>tenant_id: str, config: ProviderConfig, skip_validation: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_or_update_third_party_config(
-    tenant_id: str,
-    config: ProviderConfig,
-    skip_validation: Optional[bool] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import (
-        create_or_update_third_party_config,
-    )
-
-    return sync(
-        create_or_update_third_party_config(
-            tenant_id, config, skip_validation, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.delete_tenant"><code class="name flex">
 <span>def <span class="ident">delete_tenant</span></span>(<span>tenant_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def delete_tenant(tenant_id: str, user_context: Optional[Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import delete_tenant
-
-    return sync(delete_tenant(tenant_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.delete_third_party_config"><code class="name flex">
 <span>def <span class="ident">delete_third_party_config</span></span>(<span>tenant_id: str, third_party_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def delete_third_party_config(
-    tenant_id: str,
-    third_party_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import delete_third_party_config
-
-    return sync(delete_third_party_config(tenant_id, third_party_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.disassociate_user_from_tenant"><code class="name flex">
 <span>def <span class="ident">disassociate_user_from_tenant</span></span>(<span>tenant_id: str, recipe_user_id: RecipeUserId, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def disassociate_user_from_tenant(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import (
-        disassociate_user_from_tenant,
-    )
-
-    return sync(disassociate_user_from_tenant(tenant_id, recipe_user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.get_tenant"><code class="name flex">
 <span>def <span class="ident">get_tenant</span></span>(<span>tenant_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_tenant(tenant_id: str, user_context: Optional[Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import get_tenant
-
-    return sync(get_tenant(tenant_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.syncio.list_all_tenants"><code class="name flex">
 <span>def <span class="ident">list_all_tenants</span></span>(<span>user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def list_all_tenants(user_context: Optional[Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multitenancy.asyncio import list_all_tenants
-
-    return sync(list_all_tenants(user_context))</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -363,7 +238,7 @@ def disassociate_user_from_tenant(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

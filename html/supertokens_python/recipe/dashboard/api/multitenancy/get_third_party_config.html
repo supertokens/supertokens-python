@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.dashboard.api.multitenancy.get_third_party_config API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -82,12 +82,12 @@ class ProviderConfigResponse(APIResponse):
 
     def to_json(self) -&gt; Dict[str, Any]:
         json_response = self.provider_config.to_json()
-        json_response[
-            &#34;isGetAuthorisationRedirectUrlOverridden&#34;
-        ] = self.is_get_authorisation_redirect_url_overridden
-        json_response[
-            &#34;isExchangeAuthCodeForOAuthTokensOverridden&#34;
-        ] = self.is_exchange_auth_code_for_oauth_tokens_overridden
+        json_response[&#34;isGetAuthorisationRedirectUrlOverridden&#34;] = (
+            self.is_get_authorisation_redirect_url_overridden
+        )
+        json_response[&#34;isExchangeAuthCodeForOAuthTokensOverridden&#34;] = (
+            self.is_exchange_auth_code_for_oauth_tokens_overridden
+        )
         json_response[&#34;isGetUserInfoOverridden&#34;] = self.is_get_user_info_overridden
         return {
             &#34;status&#34;: &#34;OK&#34;,
@@ -171,7 +171,7 @@ async def get_third_party_config(
                 for existing_client in providers_from_core[0].clients:
                     existing_client.additional_config = {
                         **(existing_client.additional_config or {}),
-                        **additional_config 
+                        **additional_config,
                     }
 
     # filter out other providers from static
@@ -225,7 +225,10 @@ async def get_third_party_config(
 
     for merged_provider in merged_providers_from_core_and_static:
         if merged_provider.config.third_party_id == third_party_id:
-            if merged_provider.config.clients is None or len(merged_provider.config.clients) == 0:
+            if (
+                merged_provider.config.clients is None
+                or len(merged_provider.config.clients) == 0
+            ):
                 merged_provider.config.clients = [
                     ProviderClientConfig(
                         client_id=&#34;nonguessable-temporary-client-id&#34;,
@@ -245,7 +248,7 @@ async def get_third_party_config(
         if provider.config.third_party_id == third_party_id:
             found_correct_config = False
 
-            for client in (provider.config.clients or []):
+            for client in provider.config.clients or []:
                 try:
                     provider_instance = await find_and_create_provider_instance(
                         merged_providers_from_core_and_static,
@@ -410,304 +413,6 @@ async def get_third_party_config(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_third_party_config(
-    _: APIInterface,
-    tenant_id: str,
-    options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[ProviderConfigResponse, GetThirdPartyConfigUnknownTenantError]:
-    tenant_res = await get_tenant(tenant_id, user_context)
-
-    if tenant_res is None:
-        return GetThirdPartyConfigUnknownTenantError()
-
-    third_party_id = options.request.get_query_param(&#34;thirdPartyId&#34;)
-
-    if third_party_id is None:
-        raise_bad_input_exception(&#34;Please provide thirdPartyId&#34;)
-
-    providers_from_core = tenant_res.third_party_providers
-    mt_recipe = MultitenancyRecipe.get_instance()
-    static_providers = mt_recipe.static_third_party_providers or []
-
-    additional_config: Optional[Dict[str, Any]] = None
-
-    # filter out providers that is not matching thirdPartyId
-    providers_from_core = [
-        provider
-        for provider in providers_from_core
-        if provider.third_party_id == third_party_id
-    ]
-
-    # if none left, add one to this list so that it takes priority while merging
-    if len(providers_from_core) == 0:
-        providers_from_core.append(ProviderConfig(third_party_id=third_party_id))
-
-    # At this point, providersFromCore.length === 1
-
-    # query param may be passed if we are creating a new third party config, check and update accordingly
-
-    if third_party_id in [&#34;okta&#34;, &#34;active-directory&#34;, &#34;boxy-saml&#34;, &#34;google-workspaces&#34;]:
-        if third_party_id == &#34;okta&#34;:
-            okta_domain = options.request.get_query_param(&#34;oktaDomain&#34;)
-            if okta_domain is not None:
-                additional_config = {&#34;oktaDomain&#34;: okta_domain}
-        elif third_party_id == &#34;active-directory&#34;:
-            directory_id = options.request.get_query_param(&#34;directoryId&#34;)
-            if directory_id is not None:
-                additional_config = {&#34;directoryId&#34;: directory_id}
-        elif third_party_id == &#34;boxy-saml&#34;:
-            boxy_url = options.request.get_query_param(&#34;boxyUrl&#34;)
-            boxy_api_key = options.request.get_query_param(&#34;boxyAPIKey&#34;)
-            if boxy_url is not None:
-                additional_config = {&#34;boxyURL&#34;: boxy_url}
-                if boxy_api_key is not None:
-                    additional_config[&#34;boxyAPIKey&#34;] = boxy_api_key
-        elif third_party_id == &#34;google-workspaces&#34;:
-            hd = options.request.get_query_param(&#34;hd&#34;)
-            if hd is not None:
-                additional_config = {&#34;hd&#34;: hd}
-
-        if additional_config is not None:
-            providers_from_core[0].oidc_discovery_endpoint = None
-            providers_from_core[0].authorization_endpoint = None
-            providers_from_core[0].token_endpoint = None
-            providers_from_core[0].user_info_endpoint = None
-
-            if providers_from_core[0].clients is not None:
-                for existing_client in providers_from_core[0].clients:
-                    existing_client.additional_config = {
-                        **(existing_client.additional_config or {}),
-                        **additional_config 
-                    }
-
-    # filter out other providers from static
-    static_providers = [
-        provider
-        for provider in static_providers
-        if provider.config.third_party_id == third_party_id
-    ]
-
-    if len(static_providers) == 0 and third_party_id == &#34;apple&#34;:
-        static_providers.append(
-            ProviderInput(
-                config=ProviderConfig(
-                    third_party_id=&#34;apple&#34;,
-                    clients=[
-                        ProviderClientConfig(
-                            client_id=&#34;nonguessable-temporary-client-id&#34;
-                        )
-                    ],
-                )
-            )
-        )
-
-        additional_config = {
-            &#34;teamId&#34;: &#34;&#34;,
-            &#34;keyId&#34;: &#34;&#34;,
-            &#34;privateKey&#34;: &#34;-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----&#34;,
-        }
-
-    if len(static_providers) == 1:
-        # modify additional config if query param is passed
-        if additional_config is not None:
-            # we set these to undefined so that these can be computed using the query param that was provided
-            static_providers[0].config.oidc_discovery_endpoint = None
-            static_providers[0].config.authorization_endpoint = None
-            static_providers[0].config.token_endpoint = None
-            static_providers[0].config.user_info_endpoint = None
-            if static_providers[0].config.clients is not None:
-                for existing_client in static_providers[0].config.clients:
-                    existing_client.additional_config = {
-                        **(existing_client.additional_config or {}),
-                        **additional_config,
-                    }
-
-    merged_providers_from_core_and_static = merge_providers_from_core_and_static(
-        providers_from_core, static_providers, True
-    )
-
-    if len(merged_providers_from_core_and_static) != 1:
-        raise Exception(&#34;should never come here!&#34;)
-
-    for merged_provider in merged_providers_from_core_and_static:
-        if merged_provider.config.third_party_id == third_party_id:
-            if merged_provider.config.clients is None or len(merged_provider.config.clients) == 0:
-                merged_provider.config.clients = [
-                    ProviderClientConfig(
-                        client_id=&#34;nonguessable-temporary-client-id&#34;,
-                        additional_config=additional_config,
-                    )
-                ]
-
-    clients: List[ProviderClientConfig] = []
-    common_provider_config: CommonProviderConfig = CommonProviderConfig(
-        third_party_id=third_party_id
-    )
-    is_get_authorisation_redirect_url_overridden = False
-    is_exchange_auth_code_for_oauth_tokens_overridden = False
-    is_get_user_info_overridden = False
-
-    for provider in merged_providers_from_core_and_static:
-        if provider.config.third_party_id == third_party_id:
-            found_correct_config = False
-
-            for client in (provider.config.clients or []):
-                try:
-                    provider_instance = await find_and_create_provider_instance(
-                        merged_providers_from_core_and_static,
-                        third_party_id,
-                        client.client_type,
-                        user_context,
-                    )
-                    assert provider_instance is not None
-                    clients.append(
-                        ProviderClientConfig(
-                            client_id=provider_instance.config.client_id,
-                            client_secret=provider_instance.config.client_secret,
-                            scope=provider_instance.config.scope,
-                            client_type=provider_instance.config.client_type,
-                            additional_config=provider_instance.config.additional_config,
-                            force_pkce=provider_instance.config.force_pkce,
-                        )
-                    )
-                    # common_provider_config = CommonProviderConfig(
-                    #     third_party_id=provider_instance.config.third_party_id,
-                    #     name=provider_instance.config.name,
-                    #     authorization_endpoint=provider_instance.config.authorization_endpoint,
-                    #     authorization_endpoint_query_params=provider_instance.config.authorization_endpoint_query_params,
-                    #     token_endpoint=provider_instance.config.token_endpoint,
-                    #     token_endpoint_body_params=provider_instance.config.token_endpoint_body_params,
-                    #     user_info_endpoint=provider_instance.config.user_info_endpoint,
-                    #     user_info_endpoint_query_params=provider_instance.config.user_info_endpoint_query_params,
-                    #     user_info_endpoint_headers=provider_instance.config.user_info_endpoint_headers,
-                    #     jwks_uri=provider_instance.config.jwks_uri,
-                    #     oidc_discovery_endpoint=provider_instance.config.oidc_discovery_endpoint,
-                    #     user_info_map=provider_instance.config.user_info_map,
-                    #     require_email=provider_instance.config.require_email,
-                    #     validate_id_token_payload=provider_instance.config.validate_id_token_payload,
-                    #     validate_access_token=provider_instance.config.validate_access_token,
-                    #     generate_fake_email=provider_instance.config.generate_fake_email,
-                    # )
-                    common_provider_config = provider_instance.config
-
-                    if provider.override is not None:
-                        before_override = Provider(
-                            config=provider_instance.config,
-                            id=provider_instance.id,
-                        )
-                        after_override = provider.override(before_override)
-
-                        if (
-                            before_override.get_authorisation_redirect_url  # pylint: disable=W0143
-                            != after_override.get_authorisation_redirect_url
-                        ):
-                            is_get_authorisation_redirect_url_overridden = True
-                        if (
-                            before_override.exchange_auth_code_for_oauth_tokens  # pylint: disable=W0143
-                            != after_override.exchange_auth_code_for_oauth_tokens
-                        ):
-                            is_exchange_auth_code_for_oauth_tokens_overridden = True
-                        if (
-                            before_override.get_user_info  # pylint: disable=W0143
-                            != after_override.get_user_info
-                        ):
-                            is_get_user_info_overridden = True
-
-                    found_correct_config = True
-                except Exception:
-                    clients.append(client)
-
-            if not found_correct_config:
-                common_provider_config = provider.config
-
-            break
-
-    if additional_config is not None and &#34;privateKey&#34; in additional_config:
-        additional_config[&#34;privateKey&#34;] = &#34;&#34;
-
-    temp_clients = [
-        client
-        for client in clients
-        if client.client_id == &#34;nonguessable-temporary-client-id&#34;
-    ]
-
-    final_clients = [
-        client
-        for client in clients
-        if client.client_id != &#34;nonguessable-temporary-client-id&#34;
-    ]
-    if len(final_clients) == 0:
-        final_clients = [
-            ProviderClientConfig(
-                client_id=&#34;&#34;,
-                client_secret=&#34;&#34;,
-                client_type=temp_clients[0].client_type,
-                scope=temp_clients[0].scope,
-                force_pkce=temp_clients[0].force_pkce,
-                additional_config=additional_config,
-            )
-        ]
-
-    # fill in boxy info from boxy instance
-    if third_party_id.startswith(&#34;boxy-saml&#34;):
-        boxy_api_key = options.request.get_query_param(&#34;boxyAPIKey&#34;)
-        if boxy_api_key and final_clients[0].client_id:
-            assert isinstance(final_clients[0].additional_config, dict)
-            boxy_url = final_clients[0].additional_config[&#34;boxyURL&#34;]
-            normalised_domain = NormalisedURLDomain(boxy_url)
-            normalised_base_path = NormalisedURLPath(boxy_url)
-            connections_path = NormalisedURLPath(&#34;/api/v1/saml/config&#34;)
-
-            resp = await do_get_request(
-                normalised_domain.get_as_string_dangerous()
-                + normalised_base_path.append(
-                    connections_path
-                ).get_as_string_dangerous(),
-                {&#34;clientID&#34;: final_clients[0].client_id},
-                {&#34;Authorization&#34;: f&#34;Api-Key {boxy_api_key}&#34;},
-            )
-
-            json_response = resp
-            final_clients[0].additional_config.update(
-                {
-                    &#34;redirectURLs&#34;: json_response[&#34;redirectUrl&#34;],
-                    &#34;boxyTenant&#34;: json_response[&#34;tenant&#34;],
-                    &#34;boxyProduct&#34;: json_response[&#34;product&#34;],
-                }
-            )
-
-    provider_config = ProviderConfig(
-        third_party_id=third_party_id,
-        clients=final_clients,
-        authorization_endpoint=common_provider_config.authorization_endpoint,
-        authorization_endpoint_query_params=common_provider_config.authorization_endpoint_query_params,
-        token_endpoint=common_provider_config.token_endpoint,
-        token_endpoint_body_params=common_provider_config.token_endpoint_body_params,
-        user_info_endpoint=common_provider_config.user_info_endpoint,
-        user_info_endpoint_query_params=common_provider_config.user_info_endpoint_query_params,
-        user_info_endpoint_headers=common_provider_config.user_info_endpoint_headers,
-        jwks_uri=common_provider_config.jwks_uri,
-        oidc_discovery_endpoint=common_provider_config.oidc_discovery_endpoint,
-        user_info_map=common_provider_config.user_info_map,
-        require_email=common_provider_config.require_email,
-        validate_id_token_payload=common_provider_config.validate_id_token_payload,
-        validate_access_token=common_provider_config.validate_access_token,
-        generate_fake_email=common_provider_config.generate_fake_email,
-        name=common_provider_config.name,
-    )
-
-    return ProviderConfigResponse(
-        provider_config=provider_config,
-        is_get_authorisation_redirect_url_overridden=is_get_authorisation_redirect_url_overridden,
-        is_exchange_auth_code_for_oauth_tokens_overridden=is_exchange_auth_code_for_oauth_tokens_overridden,
-        is_get_user_info_overridden=is_get_user_info_overridden,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -743,13 +448,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -783,12 +481,12 @@ inheritance.</p></div>
 
     def to_json(self) -&gt; Dict[str, Any]:
         json_response = self.provider_config.to_json()
-        json_response[
-            &#34;isGetAuthorisationRedirectUrlOverridden&#34;
-        ] = self.is_get_authorisation_redirect_url_overridden
-        json_response[
-            &#34;isExchangeAuthCodeForOAuthTokensOverridden&#34;
-        ] = self.is_exchange_auth_code_for_oauth_tokens_overridden
+        json_response[&#34;isGetAuthorisationRedirectUrlOverridden&#34;] = (
+            self.is_get_authorisation_redirect_url_overridden
+        )
+        json_response[&#34;isExchangeAuthCodeForOAuthTokensOverridden&#34;] = (
+            self.is_exchange_auth_code_for_oauth_tokens_overridden
+        )
         json_response[&#34;isGetUserInfoOverridden&#34;] = self.is_get_user_info_overridden
         return {
             &#34;status&#34;: &#34;OK&#34;,
@@ -807,24 +505,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    json_response = self.provider_config.to_json()
-    json_response[
-        &#34;isGetAuthorisationRedirectUrlOverridden&#34;
-    ] = self.is_get_authorisation_redirect_url_overridden
-    json_response[
-        &#34;isExchangeAuthCodeForOAuthTokensOverridden&#34;
-    ] = self.is_exchange_auth_code_for_oauth_tokens_overridden
-    json_response[&#34;isGetUserInfoOverridden&#34;] = self.is_get_user_info_overridden
-    return {
-        &#34;status&#34;: &#34;OK&#34;,
-        &#34;providerConfig&#34;: json_response,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -867,7 +547,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

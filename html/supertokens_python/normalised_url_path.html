@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.normalised_url_path API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -131,67 +131,12 @@ def domain_given(input_str: str) -&gt; bool:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def domain_given(input_str: str) -&gt; bool:
-    if &#34;.&#34; not in input_str or input_str.startswith(&#34;/&#34;):
-        return False
-    try:
-        if not &#34;http://&#34; in input_str and not &#34;https://&#34; in input_str:
-            raise Exception(&#34;Trying with http&#34;)
-        url = urlparse(input_str)
-        return url.hostname is not None and &#34;.&#34; in url.hostname
-    except Exception:
-        pass
-    try:
-        url = urlparse(&#34;http://&#34; + input_str)
-        return url.hostname is not None and &#34;.&#34; in url.hostname
-    except Exception:
-        pass
-    return False</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.normalise_url_path_or_throw_error"><code class="name flex">
 <span>def <span class="ident">normalise_url_path_or_throw_error</span></span>(<span>input_str: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
-    input_str = input_str.strip().lower()
-    try:
-        if not input_str.startswith(&#34;http://&#34;) and not input_str.startswith(&#34;https://&#34;):
-            raise Exception(&#34;converting to proper URL&#34;)
-        url_obj = urlparse(input_str)
-        input_str = url_obj.path
-        if input_str.endswith(&#34;/&#34;):
-            return input_str[:-1]
-        return input_str
-    except Exception:
-        pass
-
-    if (
-        (domain_given(input_str) or input_str.startswith(&#34;localhost&#34;))
-        and not input_str.startswith(&#34;http://&#34;)
-        and not input_str.startswith(&#34;https://&#34;)
-    ):
-        input_str = &#34;http://&#34; + input_str
-        return normalise_url_path_or_throw_error(input_str)
-
-    if not input_str.startswith(&#34;/&#34;):
-        input_str = &#34;/&#34; + input_str
-
-    try:
-        urlparse(&#34;http://example.com&#34; + input_str)
-        return normalise_url_path_or_throw_error(&#34;http://example.com&#34; + input_str)
-    except Exception:
-        raise_general_exception(&#34;Please provide a valid URL path&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -235,66 +180,30 @@ def domain_given(input_str: str) -&gt; bool:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def append(self, other: NormalisedURLPath) -&gt; NormalisedURLPath:
-    return NormalisedURLPath(self.__value + other.get_as_string_dangerous())</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.equals"><code class="name flex">
 <span>def <span class="ident">equals</span></span>(<span>self, other: <a title="supertokens_python.normalised_url_path.NormalisedURLPath" href="#supertokens_python.normalised_url_path.NormalisedURLPath">NormalisedURLPath</a>) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def equals(self, other: NormalisedURLPath) -&gt; bool:
-    return self.__value == other.get_as_string_dangerous()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.get_as_string_dangerous"><code class="name flex">
 <span>def <span class="ident">get_as_string_dangerous</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_as_string_dangerous(self) -&gt; str:
-    return self.__value</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.is_a_recipe_path"><code class="name flex">
 <span>def <span class="ident">is_a_recipe_path</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_a_recipe_path(self) -&gt; bool:
-    parts = self.__value.split(&#34;/&#34;)
-    return parts[1] == &#34;recipe&#34; or (len(parts) &gt; 2 and parts[2] == &#34;recipe&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.startswith"><code class="name flex">
 <span>def <span class="ident">startswith</span></span>(<span>self, other: <a title="supertokens_python.normalised_url_path.NormalisedURLPath" href="#supertokens_python.normalised_url_path.NormalisedURLPath">NormalisedURLPath</a>) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def startswith(self, other: NormalisedURLPath) -&gt; bool:
-    return self.__value.startswith(other.get_as_string_dangerous())</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -336,7 +245,7 @@ def domain_given(input_str: str) -&gt; bool:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

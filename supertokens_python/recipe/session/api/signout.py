@@ -35,7 +35,7 @@ async def handle_signout_api(
 ):
     if (
         api_implementation.disable_signout_post
-        or api_implementation.signout_post is None
+        or api_implementation.signout_post is None  # type: ignore
     ):
         return None
 

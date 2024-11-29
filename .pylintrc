@@ -121,9 +121,9 @@ disable=raw-checker-failed,
         consider-using-f-string,
         consider-using-in,
         no-else-return,
-        no-self-use,
         no-else-raise,
         too-many-nested-blocks,
+        broad-exception-raised,
 
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -603,5 +603,5 @@ min-public-methods=2
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception

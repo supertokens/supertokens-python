@@ -591,7 +591,10 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
     session: Union[SessionContainer, None],
     should_try_linking_with_session_user: Union[bool, None],
     user_context: Dict[str, Any],
-) -> Union[OkResponse2, LinkingToSessionUserFailedError,]:
+) -> Union[
+    OkResponse2,
+    LinkingToSessionUserFailedError,
+]:
     log_debug_message(
         "link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info called"
     )
@@ -799,7 +802,10 @@ async def try_linking_by_session(
     authenticated_user: User,
     session_user: User,
     user_context: Dict[str, Any],
-) -> Union[OkResponse2, LinkingToSessionUserFailedError,]:
+) -> Union[
+    OkResponse2,
+    LinkingToSessionUserFailedError,
+]:
     log_debug_message("tryLinkingBySession called")
 
     session_user_has_verified_account_info = any(

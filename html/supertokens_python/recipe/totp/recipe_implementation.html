@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.totp.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -123,7 +123,11 @@ class RecipeImplementation(RecipeInterface):
         skew: Optional[int],
         period: Optional[int],
         user_context: Dict[str, Any],
-    ) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
+    ) -&gt; Union[
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        UnknownUserIdError,
+    ]:
         if user_identifier_info is None:
             email_or_phone_info = await self.get_user_identifier_info_for_user_id(
                 user_id, user_context
@@ -165,7 +169,11 @@ class RecipeImplementation(RecipeInterface):
         existing_device_name: str,
         new_device_name: str,
         user_context: Dict[str, Any],
-    ) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
+    ) -&gt; Union[
+        UpdateDeviceOkResult,
+        UnknownDeviceError,
+        DeviceAlreadyExistsError,
+    ]:
         # Prepare the data for the API request
         data = {
             &#34;userId&#34;: user_id,
@@ -367,7 +375,11 @@ inheritance.</p></div>
         skew: Optional[int],
         period: Optional[int],
         user_context: Dict[str, Any],
-    ) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
+    ) -&gt; Union[
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        UnknownUserIdError,
+    ]:
         if user_identifier_info is None:
             email_or_phone_info = await self.get_user_identifier_info_for_user_id(
                 user_id, user_context
@@ -409,7 +421,11 @@ inheritance.</p></div>
         existing_device_name: str,
         new_device_name: str,
         user_context: Dict[str, Any],
-    ) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
+    ) -&gt; Union[
+        UpdateDeviceOkResult,
+        UnknownDeviceError,
+        DeviceAlreadyExistsError,
+    ]:
         # Prepare the data for the API request
         data = {
             &#34;userId&#34;: user_id,
@@ -550,283 +566,42 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_device(
-    self,
-    user_id: str,
-    user_identifier_info: Optional[str],
-    device_name: Optional[str],
-    skew: Optional[int],
-    period: Optional[int],
-    user_context: Dict[str, Any],
-) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError,]:
-    if user_identifier_info is None:
-        email_or_phone_info = await self.get_user_identifier_info_for_user_id(
-            user_id, user_context
-        )
-        if isinstance(email_or_phone_info, UserIdentifierInfoOkResult):
-            user_identifier_info = email_or_phone_info.info
-        elif isinstance(email_or_phone_info, UnknownUserIdError):
-            return UnknownUserIdError()
-
-    data = {
-        &#34;userId&#34;: user_id,
-        &#34;skew&#34;: skew if skew is not None else self.config.default_skew,
-        &#34;period&#34;: period if period is not None else self.config.default_period,
-    }
-    if device_name is not None:
-        data[&#34;deviceName&#34;] = device_name
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/totp/device&#34;),
-        data,
-        user_context=user_context,
-    )
-
-    qr_code_string = (
-        f&#34;otpauth://totp/{quote(self.config.issuer)}&#34;
-        f&#34;{&#39;:&#39; + quote(user_identifier_info) if user_identifier_info is not None else &#39;&#39;}&#34;
-        f&#34;?secret={response[&#39;secret&#39;]}&amp;issuer={quote(self.config.issuer)}&amp;digits=6&#34;
-        f&#34;&amp;period={period if period is not None else self.config.default_period}&#34;
-    )
-
-    return CreateDeviceOkResult(
-        device_name=response[&#34;deviceName&#34;],
-        secret=response[&#34;secret&#34;],
-        qr_code_string=qr_code_string,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation.get_user_identifier_info_for_user_id"><code class="name flex">
 <span>async def <span class="ident">get_user_identifier_info_for_user_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.UserIdentifierInfoOkResult" href="types.html#supertokens_python.recipe.totp.types.UserIdentifierInfoOkResult">UserIdentifierInfoOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownUserIdError" href="types.html#supertokens_python.recipe.totp.types.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.totp.types.UserIdentifierInfoDoesNotExistError" href="types.html#supertokens_python.recipe.totp.types.UserIdentifierInfoDoesNotExistError">UserIdentifierInfoDoesNotExistError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_identifier_info_for_user_id(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; Union[
-    UserIdentifierInfoOkResult,
-    UnknownUserIdError,
-    UserIdentifierInfoDoesNotExistError,
-]:
-    user = await get_user(user_id, user_context)
-
-    if user is None:
-        return UnknownUserIdError()
-
-    primary_login_method = next(
-        (
-            method
-            for method in user.login_methods
-            if method.recipe_user_id.get_as_string() == user.id
-        ),
-        None,
-    )
-
-    if primary_login_method is not None:
-        if primary_login_method.email is not None:
-            return UserIdentifierInfoOkResult(primary_login_method.email)
-        elif primary_login_method.phone_number is not None:
-            return UserIdentifierInfoOkResult(primary_login_method.phone_number)
-
-    if user.emails:
-        return UserIdentifierInfoOkResult(user.emails[0])
-    elif user.phone_numbers:
-        return UserIdentifierInfoOkResult(user.phone_numbers[0])
-
-    return UserIdentifierInfoDoesNotExistError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation.list_devices"><code class="name flex">
 <span>async def <span class="ident">list_devices</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.totp.types.ListDevicesOkResult" href="types.html#supertokens_python.recipe.totp.types.ListDevicesOkResult">ListDevicesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_devices(
-    self, user_id: str, user_context: Dict[str, Any]
-) -&gt; ListDevicesOkResult:
-    params = {&#34;userId&#34;: user_id}
-    response = await self.querier.send_get_request(
-        NormalisedURLPath(&#34;/recipe/totp/device/list&#34;),
-        params,
-        user_context=user_context,
-    )
-    return ListDevicesOkResult(
-        devices=[
-            Device(
-                name=device[&#34;name&#34;],
-                period=device[&#34;period&#34;],
-                skew=device[&#34;skew&#34;],
-                verified=device[&#34;verified&#34;],
-            )
-            for device in response[&#34;devices&#34;]
-        ]
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation.remove_device"><code class="name flex">
 <span>async def <span class="ident">remove_device</span></span>(<span>self, user_id: str, device_name: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.totp.types.RemoveDeviceOkResult" href="types.html#supertokens_python.recipe.totp.types.RemoveDeviceOkResult">RemoveDeviceOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def remove_device(
-    self, user_id: str, device_name: str, user_context: Dict[str, Any]
-) -&gt; RemoveDeviceOkResult:
-    data = {&#34;userId&#34;: user_id, &#34;deviceName&#34;: device_name}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/totp/device/remove&#34;),
-        data,
-        user_context=user_context,
-    )
-    return RemoveDeviceOkResult(did_device_exist=response[&#34;didDeviceExist&#34;])</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation.update_device"><code class="name flex">
 <span>async def <span class="ident">update_device</span></span>(<span>self, user_id: str, existing_device_name: str, new_device_name: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.UpdateDeviceOkResult" href="types.html#supertokens_python.recipe.totp.types.UpdateDeviceOkResult">UpdateDeviceOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownDeviceError" href="types.html#supertokens_python.recipe.totp.types.UnknownDeviceError">UnknownDeviceError</a>, <a title="supertokens_python.recipe.totp.types.DeviceAlreadyExistsError" href="types.html#supertokens_python.recipe.totp.types.DeviceAlreadyExistsError">DeviceAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_device(
-    self,
-    user_id: str,
-    existing_device_name: str,
-    new_device_name: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError,]:
-    # Prepare the data for the API request
-    data = {
-        &#34;userId&#34;: user_id,
-        &#34;existingDeviceName&#34;: existing_device_name,
-        &#34;newDeviceName&#34;: new_device_name,
-    }
-
-    # Send a PUT request to update the device
-    resp = await self.querier.send_put_request(
-        NormalisedURLPath(&#34;/recipe/totp/device&#34;),
-        data,
-        user_context=user_context,
-    )
-
-    # Handle the response based on the status
-    if resp[&#34;status&#34;] == &#34;OK&#34;:
-        return UpdateDeviceOkResult()
-    elif resp[&#34;status&#34;] == &#34;UNKNOWN_DEVICE_ERROR&#34;:
-        return UnknownDeviceError()
-    elif resp[&#34;status&#34;] == &#34;DEVICE_ALREADY_EXISTS_ERROR&#34;:
-        return DeviceAlreadyExistsError()
-    else:
-        # Raise an exception for unknown errors
-        raise Exception(&#34;Unknown error&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation.verify_device"><code class="name flex">
 <span>async def <span class="ident">verify_device</span></span>(<span>self, tenant_id: str, user_id: str, device_name: str, totp: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.VerifyDeviceOkResult" href="types.html#supertokens_python.recipe.totp.types.VerifyDeviceOkResult">VerifyDeviceOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownDeviceError" href="types.html#supertokens_python.recipe.totp.types.UnknownDeviceError">UnknownDeviceError</a>, <a title="supertokens_python.recipe.totp.types.InvalidTOTPError" href="types.html#supertokens_python.recipe.totp.types.InvalidTOTPError">InvalidTOTPError</a>, <a title="supertokens_python.recipe.totp.types.LimitReachedError" href="types.html#supertokens_python.recipe.totp.types.LimitReachedError">LimitReachedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_device(
-    self,
-    tenant_id: str,
-    user_id: str,
-    device_name: str,
-    totp: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    VerifyDeviceOkResult,
-    UnknownDeviceError,
-    InvalidTOTPError,
-    LimitReachedError,
-]:
-    data = {&#34;userId&#34;: user_id, &#34;deviceName&#34;: device_name, &#34;totp&#34;: totp}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/totp/device/verify&#34;),
-        data,
-        user_context=user_context,
-    )
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return VerifyDeviceOkResult(
-            was_already_verified=response[&#34;wasAlreadyVerified&#34;]
-        )
-    elif response[&#34;status&#34;] == &#34;UNKNOWN_DEVICE_ERROR&#34;:
-        return UnknownDeviceError()
-    elif response[&#34;status&#34;] == &#34;INVALID_TOTP_ERROR&#34;:
-        return InvalidTOTPError(
-            current_number_of_failed_attempts=response[
-                &#34;currentNumberOfFailedAttempts&#34;
-            ],
-            max_number_of_failed_attempts=response[&#34;maxNumberOfFailedAttempts&#34;],
-        )
-    elif response[&#34;status&#34;] == &#34;LIMIT_REACHED_ERROR&#34;:
-        return LimitReachedError(
-            retry_after_ms=response[&#34;retryAfterMs&#34;],
-        )
-    else:
-        raise Exception(&#34;Unknown error&#34;)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation.verify_totp"><code class="name flex">
 <span>async def <span class="ident">verify_totp</span></span>(<span>self, tenant_id: str, user_id: str, totp: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.totp.types.VerifyTOTPOkResult" href="types.html#supertokens_python.recipe.totp.types.VerifyTOTPOkResult">VerifyTOTPOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownUserIdError" href="types.html#supertokens_python.recipe.totp.types.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.totp.types.InvalidTOTPError" href="types.html#supertokens_python.recipe.totp.types.InvalidTOTPError">InvalidTOTPError</a>, <a title="supertokens_python.recipe.totp.types.LimitReachedError" href="types.html#supertokens_python.recipe.totp.types.LimitReachedError">LimitReachedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_totp(
-    self, tenant_id: str, user_id: str, totp: str, user_context: Dict[str, Any]
-) -&gt; Union[
-    VerifyTOTPOkResult,
-    UnknownUserIdError,
-    InvalidTOTPError,
-    LimitReachedError,
-]:
-    data = {&#34;userId&#34;: user_id, &#34;totp&#34;: totp}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/totp/verify&#34;),
-        data,
-        user_context=user_context,
-    )
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return VerifyTOTPOkResult()
-    elif response[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
-        return UnknownUserIdError()
-    elif response[&#34;status&#34;] == &#34;INVALID_TOTP_ERROR&#34;:
-        return InvalidTOTPError(
-            current_number_of_failed_attempts=response[
-                &#34;currentNumberOfFailedAttempts&#34;
-            ],
-            max_number_of_failed_attempts=response[&#34;maxNumberOfFailedAttempts&#34;],
-        )
-    elif response[&#34;status&#34;] == &#34;LIMIT_REACHED_ERROR&#34;:
-        return LimitReachedError(
-            retry_after_ms=response[&#34;retryAfterMs&#34;],
-        )
-    else:
-        raise Exception(&#34;Unknown error&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -864,7 +639,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

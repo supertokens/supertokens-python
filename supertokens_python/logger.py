@@ -13,7 +13,7 @@
 # under the License.
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from os import getenv, path
 from typing import Union
 
@@ -37,7 +37,7 @@ if debug_env == "1":
 
 
 def _get_log_timestamp() -> str:
-    return datetime.utcnow().isoformat()[:-3] + "Z"
+    return datetime.now(timezone.utc).isoformat()[:-3] + "Z"
 
 
 class CustomStreamHandler(logging.StreamHandler):  # type: ignore

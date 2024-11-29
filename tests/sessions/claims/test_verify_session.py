@@ -59,7 +59,7 @@ def st_init_generator_with_overriden_global_validators(
         ):
             return validators
 
-        oi.get_global_claim_validators = new_get_global_claim_validators
+        oi.get_global_claim_validators = new_get_global_claim_validators  # type: ignore
         return oi
 
     return {
@@ -87,7 +87,7 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
         ):
             return [*claim_validators_added_by_other_recipes, claim_validator]
 
-        oi.get_global_claim_validators = new_get_global_claim_validators
+        oi.get_global_claim_validators = new_get_global_claim_validators  # type: ignore
         return oi
 
     return {
@@ -134,7 +134,7 @@ class AlwaysInvalidValidator(SessionClaimValidator):
 
 
 @fixture(scope="function")
-async def fastapi_client():
+def fastapi_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -552,7 +552,7 @@ async def test_should_allow_with_custom_claim_returning_true(
 
 
 @fixture(scope="function")
-async def client_without_middleware():
+def client_without_middleware():
     app = FastAPI()
 
     @app.post("/verify")

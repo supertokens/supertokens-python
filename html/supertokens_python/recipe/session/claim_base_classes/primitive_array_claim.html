@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.claim_base_classes.primitive_array_claim API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -70,7 +70,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[PrimitiveList] = claim  # TODO:PrimitiveArrayClaim
+        self.claim = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -80,6 +80,9 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         user_context: Dict[str, Any],
     ) -&gt; bool:
         claim = self.claim
+
+        if claim is None:
+            raise Exception(&#34;should never happen&#34;)
 
         return (claim.get_value_from_payload(payload, user_context) is None) or (
             self.max_age_in_sec is not None
@@ -131,9 +134,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
 
         # Doing this to ensure same code in the upcoming steps irrespective of
         # whether self.val is Primitive or PrimitiveList
-        vals: List[JSONPrimitive] = (
-            val if isinstance(val, list) else [val]
-        )  # pyright: reportGeneralTypeIssues=false
+        vals: List[_T] = val if isinstance(val, list) else [val]
 
         claim_val_set = set(claim_val)
         if is_include and not is_include_any:
@@ -385,17 +386,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-):
-    return await self._validate(payload, user_context, is_include=False)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -432,17 +422,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-):
-    return await self._validate(payload, user_context, is_include=False)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -479,17 +458,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-):
-    return await self._validate(payload, user_context, is_include=True)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -528,19 +496,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-):
-    return await self._validate(
-        payload, user_context, is_include=True, is_include_any=True
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -577,17 +532,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-):
-    return await self._validate(payload, user_context, is_include=True)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -683,17 +627,6 @@ don't want to add the claim to the session automatically</dd>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_last_refetch_time(
-    self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-) -&gt; Union[int, None]:
-    _ = user_context
-
-    return payload.get(self.key, {}).get(&#34;t&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -806,105 +739,30 @@ return default</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def excludes(  # pyright: ignore[reportInvalidTypeVarUse]
-    self,
-    val: Primitive,  # pyright: ignore[reportInvalidTypeVarUse]
-    max_age_in_seconds: Optional[int] = None,
-    id_: Union[str, None] = None,
-) -&gt; SessionClaimValidator:
-    max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
-    return ExcludesSCV(
-        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.excludes_all"><code class="name flex">
 <span>def <span class="ident">excludes_all</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def excludes_all(
-    self,
-    val: PrimitiveList,
-    max_age_in_seconds: Optional[int] = None,
-    id_: Union[str, None] = None,
-) -&gt; SessionClaimValidator:
-    max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
-    return ExcludesAllSCV(
-        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes"><code class="name flex">
 <span>def <span class="ident">includes</span></span>(<span>self, val: ~Primitive, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def includes(  # pyright: ignore[reportInvalidTypeVarUse]
-    self,
-    val: Primitive,  # pyright: ignore[reportInvalidTypeVarUse]
-    max_age_in_seconds: Optional[int] = None,
-    id_: Union[str, None] = None,
-) -&gt; SessionClaimValidator:
-    max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
-    return IncludesSCV(
-        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_all"><code class="name flex">
 <span>def <span class="ident">includes_all</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def includes_all(
-    self,
-    val: PrimitiveList,
-    max_age_in_seconds: Optional[int] = None,
-    id_: Union[str, None] = None,
-) -&gt; SessionClaimValidator:
-    max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
-    return IncludesAllSCV(
-        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_any"><code class="name flex">
 <span>def <span class="ident">includes_any</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def includes_any(
-    self,
-    val: PrimitiveList,
-    max_age_in_seconds: Optional[int] = None,
-    id_: Union[str, None] = None,
-) -&gt; SessionClaimValidator:
-    max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
-    return IncludesAnySCV(
-        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -928,7 +786,7 @@ inheritance.</p></div>
         max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[PrimitiveList] = claim  # TODO:PrimitiveArrayClaim
+        self.claim = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -938,6 +796,9 @@ inheritance.</p></div>
         user_context: Dict[str, Any],
     ) -&gt; bool:
         claim = self.claim
+
+        if claim is None:
+            raise Exception(&#34;should never happen&#34;)
 
         return (claim.get_value_from_payload(payload, user_context) is None) or (
             self.max_age_in_sec is not None
@@ -989,9 +850,7 @@ inheritance.</p></div>
 
         # Doing this to ensure same code in the upcoming steps irrespective of
         # whether self.val is Primitive or PrimitiveList
-        vals: List[JSONPrimitive] = (
-            val if isinstance(val, list) else [val]
-        )  # pyright: reportGeneralTypeIssues=false
+        vals: List[_T] = val if isinstance(val, list) else [val]
 
         claim_val_set = set(claim_val)
         if is_include and not is_include_any:
@@ -1056,25 +915,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def should_refetch(
-    self,
-    payload: JSONObject,
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    claim = self.claim
-
-    return (claim.get_value_from_payload(payload, user_context) is None) or (
-        self.max_age_in_sec is not None
-        and (
-            payload[claim.key][&#34;t&#34;]
-            &lt; get_timestamp_ms() - self.max_age_in_sec * 1000
-        )
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1152,7 +992,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.providers.facebook API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -165,38 +165,6 @@ def Facebook(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def Facebook(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
-    if not input.config.name:
-        input.config.name = &#34;Facebook&#34;
-
-    if not input.config.authorization_endpoint:
-        input.config.authorization_endpoint = (
-            &#34;https://www.facebook.com/v12.0/dialog/oauth&#34;
-        )
-
-    if not input.config.token_endpoint:
-        input.config.token_endpoint = (
-            &#34;https://graph.facebook.com/v12.0/oauth/access_token&#34;
-        )
-
-    if not input.config.user_info_endpoint:
-        input.config.user_info_endpoint = &#34;https://graph.facebook.com/me&#34;
-
-    if input.config.user_info_map is None:
-        input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
-
-    if input.config.user_info_map.from_user_info_api is None:
-        input.config.user_info_map.from_user_info_api = UserFields()
-
-    if input.config.user_info_map.from_user_info_api.user_id is None:
-        input.config.user_info_map.from_user_info_api.user_id = &#34;id&#34;
-
-    return NewProvider(input, FacebookImpl)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -290,84 +258,12 @@ def Facebook(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_config_for_client_type(
-    self, client_type: Optional[str], user_context: Dict[str, Any]
-) -&gt; ProviderConfigForClient:
-    config = await super().get_config_for_client_type(client_type, user_context)
-
-    if config.scope is None:
-        config.scope = [&#34;email&#34;]
-
-    return config</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.facebook.FacebookImpl.get_user_info"><code class="name flex">
 <span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_info(
-    self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; UserInfo:
-    fields_permission_map = {
-        &#34;public_profile&#34;: [
-            &#34;first_name&#34;,
-            &#34;last_name&#34;,
-            &#34;middle_name&#34;,
-            &#34;name&#34;,
-            &#34;name_format&#34;,
-            &#34;picture&#34;,
-            &#34;short_name&#34;,
-        ],
-        &#34;email&#34;: [&#34;id&#34;, &#34;email&#34;],
-        &#34;user_birthday&#34;: [&#34;birthday&#34;],
-        &#34;user_videos&#34;: [&#34;videos&#34;],
-        &#34;user_posts&#34;: [&#34;posts&#34;],
-        &#34;user_photos&#34;: [&#34;photos&#34;],
-        &#34;user_location&#34;: [&#34;location&#34;],
-        &#34;user_link&#34;: [&#34;link&#34;],
-        &#34;user_likes&#34;: [&#34;likes&#34;],
-        &#34;user_hometown&#34;: [&#34;hometown&#34;],
-        &#34;user_gender&#34;: [&#34;gender&#34;],
-        &#34;user_friends&#34;: [&#34;friends&#34;],
-        &#34;user_age_range&#34;: [&#34;age_range&#34;],
-    }
-    scope_values = self.config.scope
-
-    fields = (
-        &#34;,&#34;.join(
-            [
-                field
-                for scope in scope_values
-                for field in fields_permission_map.get(scope, [])
-            ]
-        )
-        if scope_values
-        else &#34;id,email&#34;
-    )
-
-    self.config.user_info_endpoint_query_params = {
-        &#34;access_token&#34;: str(oauth_tokens[&#34;access_token&#34;]),
-        &#34;fields&#34;: fields,
-        &#34;format&#34;: &#34;json&#34;,
-        **(self.config.user_info_endpoint_query_params or {}),
-    }
-
-    self.config.user_info_endpoint_headers = {
-        **(self.config.user_info_endpoint_headers or {}),
-        &#34;Authorization&#34;: None,
-    }
-
-    return await super().get_user_info(oauth_tokens, user_context)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -405,7 +301,7 @@ def Facebook(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

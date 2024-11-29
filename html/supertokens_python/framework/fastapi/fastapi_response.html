@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.framework.fastapi.fastapi_response API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -41,7 +41,7 @@
 # under the License.
 import json
 from math import ceil
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.utils import get_timestamp_ms
@@ -75,7 +75,7 @@ class FastApiResponse(BaseResponse):
         domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
-        samesite: str = &#34;lax&#34;,
+        samesite: Literal[&#34;lax&#34;, &#34;strict&#34;, &#34;none&#34;] = &#34;lax&#34;,
     ):
         # Note: For FastAPI response object, the expires value
         # doesn&#39;t mean the absolute time in ms, but the duration in seconds
@@ -172,7 +172,7 @@ inheritance.</p></div>
         domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
-        samesite: str = &#34;lax&#34;,
+        samesite: Literal[&#34;lax&#34;, &#34;strict&#34;, &#34;none&#34;] = &#34;lax&#34;,
     ):
         # Note: For FastAPI response object, the expires value
         # doesn&#39;t mean the absolute time in ms, but the duration in seconds
@@ -239,135 +239,42 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_header(self, key: str) -&gt; Optional[str]:
-    return self.response.headers.get(key, None)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.remove_header"><code class="name flex">
 <span>def <span class="ident">remove_header</span></span>(<span>self, key: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def remove_header(self, key: str):
-    del self.response.headers[key]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_cookie"><code class="name flex">
-<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str, expires: int, path: str = '/', domain: Optional[str] = None, secure: bool = False, httponly: bool = False, samesite: str = 'lax')</span>
+<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str, expires: int, path: str = '/', domain: Optional[str] = None, secure: bool = False, httponly: bool = False, samesite: Literal['lax', 'strict', 'none'] = 'lax')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_cookie(
-    self,
-    key: str,
-    value: str,
-    expires: int,
-    path: str = &#34;/&#34;,
-    domain: Optional[str] = None,
-    secure: bool = False,
-    httponly: bool = False,
-    samesite: str = &#34;lax&#34;,
-):
-    # Note: For FastAPI response object, the expires value
-    # doesn&#39;t mean the absolute time in ms, but the duration in seconds
-    # So we need to convert our absolute expiry time (ms) to a duration (seconds)
-
-    # we do ceil because if we do floor, we tests may fail where the access
-    # token lifetime is set to 1 second
-    self.response.set_cookie(
-        key=key,
-        value=value,  # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
-        expires=ceil((expires - get_timestamp_ms()) / 1000),
-        path=path,
-        domain=domain,  # type: ignore # starlette didn&#39;t set domain as optional type but their default value is None anyways
-        secure=secure,
-        httponly=httponly,
-        samesite=samesite,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_header"><code class="name flex">
 <span>def <span class="ident">set_header</span></span>(<span>self, key: str, value: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_header(self, key: str, value: str):
-    self.response.headers[key] = value</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_html_content"><code class="name flex">
 <span>def <span class="ident">set_html_content</span></span>(<span>self, content: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_html_content(self, content: str):
-    if not self.response_sent:
-        body = bytes(content, &#34;utf-8&#34;)
-        self.set_header(&#34;Content-Length&#34;, str(len(body)))
-        self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
-        self.response.body = body
-        self.response_sent = True</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_json_content"><code class="name flex">
 <span>def <span class="ident">set_json_content</span></span>(<span>self, content: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_json_content(self, content: Dict[str, Any]):
-    if not self.response_sent:
-        body = json.dumps(
-            content,
-            ensure_ascii=False,
-            allow_nan=False,
-            indent=None,
-            separators=(&#34;,&#34;, &#34;:&#34;),
-        ).encode(&#34;utf-8&#34;)
-        self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
-        self.set_header(&#34;Content-Length&#34;, str(len(body)))
-        self.response.body = body
-        self.response_sent = True</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_status_code"><code class="name flex">
 <span>def <span class="ident">set_status_code</span></span>(<span>self, status_code: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_status_code(self, status_code: int):
-    if not self.status_set:
-        self.response.status_code = status_code
-        self.status_code = status_code
-        self.status_set = True</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -406,7 +313,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

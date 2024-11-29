@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.framework.fastapi.fastapi_request API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -95,6 +95,9 @@ class FastApiRequest(BaseRequest):
 
     def get_path(self) -&gt; str:
         root_path = self.request.scope.get(&#34;root_path&#34;)
+        if root_path is None:
+            raise Exception(&#34;should never happen&#34;)
+
         url = self.request.url.path
         # FastAPI seems buggy and it adds an extra root_path (if it matches):
         # So we trim the extra root_path (from the left) from the url
@@ -168,6 +171,9 @@ inheritance.</p></div>
 
     def get_path(self) -&gt; str:
         root_path = self.request.scope.get(&#34;root_path&#34;)
+        if root_path is None:
+            raise Exception(&#34;should never happen&#34;)
+
         url = self.request.url.path
         # FastAPI seems buggy and it adds an extra root_path (if it matches):
         # So we trim the extra root_path (from the left) from the url
@@ -188,154 +194,66 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def form_data(self):
-    return dict(parse_qsl((await self.request.body()).decode(&#34;utf-8&#34;)))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie"><code class="name flex">
 <span>def <span class="ident">get_cookie</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_cookie(self, key: str) -&gt; Union[str, None]:
-    # Note: Unlike other frameworks, FastAPI wraps the value in quotes in Set-Cookie header
-    # It also takes care of escaping the quotes while fetching the value
-    return self.request.cookies.get(key)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header"><code class="name flex">
 <span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_header(self, key: str) -&gt; Union[str, None]:
-    return self.request.headers.get(key, None)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_original_url"><code class="name flex">
 <span>def <span class="ident">get_original_url</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_original_url(self) -&gt; str:
-    return self.request.url.components.geturl()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_path"><code class="name flex">
 <span>def <span class="ident">get_path</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_path(self) -&gt; str:
-    root_path = self.request.scope.get(&#34;root_path&#34;)
-    url = self.request.url.path
-    # FastAPI seems buggy and it adds an extra root_path (if it matches):
-    # So we trim the extra root_path (from the left) from the url
-    return url[url.startswith(root_path) and len(root_path) :]</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param"><code class="name flex">
 <span>def <span class="ident">get_query_param</span></span>(<span>self, key: str, default: Union[str, None] = None) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_query_param(
-    self, key: str, default: Union[str, None] = None
-) -&gt; Union[str, None]:
-    return self.request.query_params.get(key, default)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_params"><code class="name flex">
 <span>def <span class="ident">get_query_params</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_query_params(self) -&gt; Dict[str, Any]:
-    return dict(self.request.query_params.items())  # type: ignore</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>self) ‑> Union[SessionContainer, None]</span>
+<span>def <span class="ident">get_session</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_session(self) -&gt; Union[SessionContainer, None]:
-    return self.request.state.supertokens</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.json"><code class="name flex">
 <span>async def <span class="ident">json</span></span>(<span>self) ‑> Optional[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def json(self) -&gt; Union[Any, None]:
-    try:
-        return await self.request.json()
-    except Exception:
-        return {}</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.method"><code class="name flex">
 <span>def <span class="ident">method</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def method(self) -&gt; str:
-    return self.request.method</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.set_session"><code class="name flex">
 <span>def <span class="ident">set_session</span></span>(<span>self, session: SessionContainer)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_session(self, session: SessionContainer):
-    self.request.state.supertokens = session</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -385,7 +303,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

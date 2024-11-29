@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.totp.syncio API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -165,146 +165,36 @@ def verify_totp(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_device(
-    user_id: str,
-    user_identifier_info: Optional[str] = None,
-    device_name: Optional[str] = None,
-    skew: Optional[int] = None,
-    period: Optional[int] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; Union[CreateDeviceOkResult, DeviceAlreadyExistsError, UnknownUserIdError]:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.totp.asyncio import create_device as async_func
-
-    return sync(
-        async_func(
-            user_id, user_identifier_info, device_name, skew, period, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.syncio.list_devices"><code class="name flex">
 <span>def <span class="ident">list_devices</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.totp.types.ListDevicesOkResult" href="../types.html#supertokens_python.recipe.totp.types.ListDevicesOkResult">ListDevicesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def list_devices(
-    user_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; ListDevicesOkResult:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.totp.asyncio import list_devices as async_func
-
-    return sync(async_func(user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.syncio.remove_device"><code class="name flex">
 <span>def <span class="ident">remove_device</span></span>(<span>user_id: str, device_name: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.totp.types.RemoveDeviceOkResult" href="../types.html#supertokens_python.recipe.totp.types.RemoveDeviceOkResult">RemoveDeviceOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def remove_device(
-    user_id: str,
-    device_name: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; RemoveDeviceOkResult:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.totp.asyncio import remove_device as async_func
-
-    return sync(async_func(user_id, device_name, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.syncio.update_device"><code class="name flex">
 <span>def <span class="ident">update_device</span></span>(<span>user_id: str, existing_device_name: str, new_device_name: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.totp.types.UpdateDeviceOkResult" href="../types.html#supertokens_python.recipe.totp.types.UpdateDeviceOkResult">UpdateDeviceOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownDeviceError" href="../types.html#supertokens_python.recipe.totp.types.UnknownDeviceError">UnknownDeviceError</a>, <a title="supertokens_python.recipe.totp.types.DeviceAlreadyExistsError" href="../types.html#supertokens_python.recipe.totp.types.DeviceAlreadyExistsError">DeviceAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def update_device(
-    user_id: str,
-    existing_device_name: str,
-    new_device_name: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; Union[UpdateDeviceOkResult, UnknownDeviceError, DeviceAlreadyExistsError]:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.totp.asyncio import update_device as async_func
-
-    return sync(
-        async_func(user_id, existing_device_name, new_device_name, user_context)
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.syncio.verify_device"><code class="name flex">
 <span>def <span class="ident">verify_device</span></span>(<span>tenant_id: str, user_id: str, device_name: str, totp: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.totp.types.VerifyDeviceOkResult" href="../types.html#supertokens_python.recipe.totp.types.VerifyDeviceOkResult">VerifyDeviceOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownDeviceError" href="../types.html#supertokens_python.recipe.totp.types.UnknownDeviceError">UnknownDeviceError</a>, <a title="supertokens_python.recipe.totp.types.InvalidTOTPError" href="../types.html#supertokens_python.recipe.totp.types.InvalidTOTPError">InvalidTOTPError</a>, <a title="supertokens_python.recipe.totp.types.LimitReachedError" href="../types.html#supertokens_python.recipe.totp.types.LimitReachedError">LimitReachedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def verify_device(
-    tenant_id: str,
-    user_id: str,
-    device_name: str,
-    totp: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; Union[
-    VerifyDeviceOkResult, UnknownDeviceError, InvalidTOTPError, LimitReachedError
-]:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.totp.asyncio import verify_device as async_func
-
-    return sync(async_func(tenant_id, user_id, device_name, totp, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.syncio.verify_totp"><code class="name flex">
 <span>def <span class="ident">verify_totp</span></span>(<span>tenant_id: str, user_id: str, totp: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.totp.types.VerifyTOTPOkResult" href="../types.html#supertokens_python.recipe.totp.types.VerifyTOTPOkResult">VerifyTOTPOkResult</a>, <a title="supertokens_python.recipe.totp.types.UnknownUserIdError" href="../types.html#supertokens_python.recipe.totp.types.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.totp.types.InvalidTOTPError" href="../types.html#supertokens_python.recipe.totp.types.InvalidTOTPError">InvalidTOTPError</a>, <a title="supertokens_python.recipe.totp.types.LimitReachedError" href="../types.html#supertokens_python.recipe.totp.types.LimitReachedError">LimitReachedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def verify_totp(
-    tenant_id: str,
-    user_id: str,
-    totp: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; Union[VerifyTOTPOkResult, UnknownUserIdError, InvalidTOTPError, LimitReachedError]:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.totp.asyncio import verify_totp as async_func
-
-    return sync(async_func(tenant_id, user_id, totp, user_context))</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -336,7 +226,7 @@ def verify_totp(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

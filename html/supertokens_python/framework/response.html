@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.framework.response API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -41,7 +41,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 
 class BaseResponse(ABC):
@@ -62,7 +62,7 @@ class BaseResponse(ABC):
         domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
-        samesite: str = &#34;lax&#34;,
+        samesite: Literal[&#34;lax&#34;, &#34;strict&#34;, &#34;none&#34;] = &#34;lax&#34;,
     ):
         pass
 
@@ -129,7 +129,7 @@ inheritance.</p></div>
         domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
-        samesite: str = &#34;lax&#34;,
+        samesite: Literal[&#34;lax&#34;, &#34;strict&#34;, &#34;none&#34;] = &#34;lax&#34;,
     ):
         pass
 
@@ -174,109 +174,42 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def get_header(self, key: str) -&gt; Optional[str]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.remove_header"><code class="name flex">
 <span>def <span class="ident">remove_header</span></span>(<span>self, key: str) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def remove_header(self, key: str) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_cookie"><code class="name flex">
-<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str, expires: int, path: str = '/', domain: Optional[str] = None, secure: bool = False, httponly: bool = False, samesite: str = 'lax')</span>
+<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str, expires: int, path: str = '/', domain: Optional[str] = None, secure: bool = False, httponly: bool = False, samesite: Literal['lax', 'strict', 'none'] = 'lax')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_cookie(
-    self,
-    key: str,
-    value: str,
-    #    max_age: Union[int, None] = None,
-    expires: int,
-    path: str = &#34;/&#34;,
-    domain: Optional[str] = None,
-    secure: bool = False,
-    httponly: bool = False,
-    samesite: str = &#34;lax&#34;,
-):
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_header"><code class="name flex">
 <span>def <span class="ident">set_header</span></span>(<span>self, key: str, value: str) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_header(self, key: str, value: str) -&gt; None:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_html_content"><code class="name flex">
 <span>def <span class="ident">set_html_content</span></span>(<span>self, content: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_html_content(self, content: str):
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_json_content"><code class="name flex">
 <span>def <span class="ident">set_json_content</span></span>(<span>self, content: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_json_content(self, content: Dict[str, Any]):
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_status_code"><code class="name flex">
 <span>def <span class="ident">set_status_code</span></span>(<span>self, status_code: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def set_status_code(self, status_code: int):
-    pass</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -314,7 +247,7 @@ def set_status_code(self, status_code: int):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

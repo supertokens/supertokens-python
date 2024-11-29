@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.passwordless.asyncio API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -367,433 +367,102 @@ async def send_sms(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def check_code(
-    tenant_id: str,
-    pre_auth_session_id: str,
-    user_input_code: Union[str, None] = None,
-    device_id: Union[str, None] = None,
-    link_code: Union[str, None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[
-    CheckCodeOkResult,
-    CheckCodeIncorrectUserInputCodeError,
-    CheckCodeExpiredUserInputCodeError,
-    CheckCodeRestartFlowError,
-]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.check_code(
-        pre_auth_session_id=pre_auth_session_id,
-        user_input_code=user_input_code,
-        device_id=device_id,
-        link_code=link_code,
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.consume_code"><code class="name flex">
 <span>async def <span class="ident">consume_code</span></span>(<span>tenant_id: str, pre_auth_session_id: str, user_input_code: Optional[str] = None, device_id: Optional[str] = None, link_code: Optional[str] = None, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def consume_code(
-    tenant_id: str,
-    pre_auth_session_id: str,
-    user_input_code: Union[str, None] = None,
-    device_id: Union[str, None] = None,
-    link_code: Union[str, None] = None,
-    session: Optional[SessionContainer] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[
-    ConsumeCodeOkResult,
-    ConsumeCodeIncorrectUserInputCodeError,
-    ConsumeCodeExpiredUserInputCodeError,
-    ConsumeCodeRestartFlowError,
-    LinkingToSessionUserFailedError,
-]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.consume_code(
-        pre_auth_session_id=pre_auth_session_id,
-        user_input_code=user_input_code,
-        device_id=device_id,
-        link_code=link_code,
-        tenant_id=tenant_id,
-        session=session,
-        should_try_linking_with_session_user=session is not None,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.create_code"><code class="name flex">
 <span>async def <span class="ident">create_code</span></span>(<span>tenant_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_input_code: Optional[str] = None, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_code(
-    tenant_id: str,
-    email: Union[None, str] = None,
-    phone_number: Union[None, str] = None,
-    user_input_code: Union[None, str] = None,
-    session: Optional[SessionContainer] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; CreateCodeOkResult:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.create_code(
-        email=email,
-        phone_number=phone_number,
-        user_input_code=user_input_code,
-        tenant_id=tenant_id,
-        session=session,
-        user_context=user_context,
-        should_try_linking_with_session_user=session is not None,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.create_magic_link"><code class="name flex">
 <span>async def <span class="ident">create_magic_link</span></span>(<span>tenant_id: str, email: Optional[str], phone_number: Optional[str], user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_magic_link(
-    tenant_id: str,
-    email: Union[str, None],
-    phone_number: Union[str, None],
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; str:
-    if user_context is None:
-        user_context = {}
-    request = get_request_from_user_context(user_context)
-    return await PasswordlessRecipe.get_instance().create_magic_link(
-        email=email,
-        phone_number=phone_number,
-        tenant_id=tenant_id,
-        request=request,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.create_new_code_for_device"><code class="name flex">
 <span>async def <span class="ident">create_new_code_for_device</span></span>(<span>tenant_id: str, device_id: str, user_input_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_new_code_for_device(
-    tenant_id: str,
-    device_id: str,
-    user_input_code: Union[str, None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowError,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(
-        device_id=device_id,
-        user_input_code=user_input_code,
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.delete_email_for_user"><code class="name flex">
 <span>async def <span class="ident">delete_email_for_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def delete_email_for_user(
-    recipe_user_id: RecipeUserId,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(
-        recipe_user_id=recipe_user_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.delete_phone_number_for_user"><code class="name flex">
 <span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def delete_phone_number_for_user(
-    recipe_user_id: RecipeUserId,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
-        recipe_user_id=recipe_user_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.list_codes_by_device_id"><code class="name flex">
 <span>async def <span class="ident">list_codes_by_device_id</span></span>(<span>tenant_id: str, device_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_codes_by_device_id(
-    tenant_id: str, device_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; Union[DeviceType, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(
-        device_id=device_id,
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.list_codes_by_email"><code class="name flex">
 <span>async def <span class="ident">list_codes_by_email</span></span>(<span>tenant_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_codes_by_email(
-    tenant_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; List[DeviceType]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(
-        email=email, tenant_id=tenant_id, user_context=user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.list_codes_by_phone_number"><code class="name flex">
 <span>async def <span class="ident">list_codes_by_phone_number</span></span>(<span>tenant_id: str, phone_number: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_codes_by_phone_number(
-    tenant_id: str, phone_number: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; List[DeviceType]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(
-        phone_number=phone_number,
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.list_codes_by_pre_auth_session_id"><code class="name flex">
 <span>async def <span class="ident">list_codes_by_pre_auth_session_id</span></span>(<span>tenant_id: str, pre_auth_session_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def list_codes_by_pre_auth_session_id(
-    tenant_id: str,
-    pre_auth_session_id: str,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[DeviceType, None]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(
-        pre_auth_session_id=pre_auth_session_id,
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.revoke_all_codes"><code class="name flex">
 <span>async def <span class="ident">revoke_all_codes</span></span>(<span>tenant_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_all_codes(
-    tenant_id: str,
-    email: Union[str, None] = None,
-    phone_number: Union[str, None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; RevokeAllCodesOkResult:
-    if user_context is None:
-        user_context = {}
-    return (
-        await PasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(
-            email=email,
-            phone_number=phone_number,
-            tenant_id=tenant_id,
-            user_context=user_context,
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.revoke_code"><code class="name flex">
 <span>async def <span class="ident">revoke_code</span></span>(<span>tenant_id: str, code_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_code(
-    tenant_id: str, code_id: str, user_context: Union[None, Dict[str, Any]] = None
-) -&gt; RevokeCodeOkResult:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.revoke_code(
-        tenant_id=tenant_id,
-        code_id=code_id,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.send_email"><code class="name flex">
 <span>async def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def send_email(
-    input_: EmailTemplateVars,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    return await PasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.send_sms"><code class="name flex">
 <span>async def <span class="ident">send_sms</span></span>(<span>input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def send_sms(
-    input_: SMSTemplateVars,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    return await PasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
-        input_, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.signinup"><code class="name flex">
 <span>async def <span class="ident">signinup</span></span>(<span>tenant_id: str, email: Optional[str], phone_number: Optional[str], session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def signinup(
-    tenant_id: str,
-    email: Union[str, None],
-    phone_number: Union[str, None],
-    session: Optional[SessionContainer] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; ConsumeCodeOkResult:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().signinup(
-        email=email,
-        phone_number=phone_number,
-        tenant_id=tenant_id,
-        user_context=user_context,
-        session=session,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.asyncio.update_user"><code class="name flex">
 <span>async def <span class="ident">update_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.EmailChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberChangeNotAllowedError">PhoneNumberChangeNotAllowedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_user(
-    recipe_user_id: RecipeUserId,
-    email: Union[str, None] = None,
-    phone_number: Union[str, None] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-) -&gt; Union[
-    UpdateUserOkResult,
-    UpdateUserUnknownUserIdError,
-    UpdateUserEmailAlreadyExistsError,
-    UpdateUserPhoneNumberAlreadyExistsError,
-    EmailChangeNotAllowedError,
-    PhoneNumberChangeNotAllowedError,
-]:
-    if user_context is None:
-        user_context = {}
-    return await PasswordlessRecipe.get_instance().recipe_implementation.update_user(
-        recipe_user_id=recipe_user_id,
-        email=email,
-        phone_number=phone_number,
-        user_context=user_context,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -836,7 +505,7 @@ async def send_sms(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

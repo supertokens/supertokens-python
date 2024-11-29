@@ -107,10 +107,10 @@ if mode == "asgi":
         session_: SessionContainer = request.supertokens  # type: ignore
         return JsonResponse(
             {
-                "sessionHandle": session_.get_handle(),
-                "userId": session_.get_user_id(),
-                "jwtPayload": session_.get_access_token_payload(),
-                "sessionDataFromDatabase": await session_.get_session_data_from_database(),
+                "sessionHandle": session_.get_handle(),  # type: ignore
+                "userId": session_.get_user_id(),  # type: ignore
+                "jwtPayload": session_.get_access_token_payload(),  # type: ignore
+                "sessionDataFromDatabase": await session_.get_session_data_from_database(),  # type: ignore
             }
         )
 
@@ -119,16 +119,16 @@ if mode == "asgi":
         session_: SessionContainer = request.supertokens  # type: ignore
         body = json.loads(request.body)
         await create_new_role_or_add_permissions(body["role"], body["permissions"])
-        await add_role_to_user("public", session_.get_user_id(), body["role"])
-        await session_.fetch_and_set_claim(UserRoleClaim)
-        await session_.fetch_and_set_claim(PermissionClaim)
+        await add_role_to_user("public", session_.get_user_id(), body["role"])  # type: ignore
+        await session_.fetch_and_set_claim(UserRoleClaim)  # type: ignore
+        await session_.fetch_and_set_claim(PermissionClaim)  # type: ignore
         return JsonResponse({"status": "OK"})
 
     @verify_session()
     async def unverify_email_api(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
-        await unverify_email(session_.get_recipe_user_id())
-        await session_.fetch_and_set_claim(EmailVerificationClaim)
+        await unverify_email(session_.get_recipe_user_id())  # type: ignore
+        await session_.fetch_and_set_claim(EmailVerificationClaim)  # type: ignore
         return JsonResponse({"status": "OK"})
 
     @verify_session(override_global_claim_validators=override_global_claim_validators)
@@ -163,10 +163,10 @@ else:
         session_: SessionContainer = request.supertokens  # type: ignore
         return JsonResponse(
             {
-                "sessionHandle": session_.get_handle(),
-                "userId": session_.get_user_id(),
-                "accessTokenPayload": session_.get_access_token_payload(),
-                "sessionDataFromDatabase": session_.sync_get_session_data_from_database(),
+                "sessionHandle": session_.get_handle(),  # type: ignore
+                "userId": session_.get_user_id(),  # type: ignore
+                "accessTokenPayload": session_.get_access_token_payload(),  # type: ignore
+                "sessionDataFromDatabase": session_.sync_get_session_data_from_database(),  # type: ignore
             }
         )
 
@@ -175,16 +175,16 @@ else:
         session_: SessionContainer = request.supertokens  # type: ignore
         body = json.loads(request.body)
         sync_create_new_role_or_add_permissions(body["role"], body["permissions"])
-        sync_add_role_to_user("public", session_.get_user_id(), body["role"])
-        session_.sync_fetch_and_set_claim(UserRoleClaim)
-        session_.sync_fetch_and_set_claim(PermissionClaim)
+        sync_add_role_to_user("public", session_.get_user_id(), body["role"])  # type: ignore
+        session_.sync_fetch_and_set_claim(UserRoleClaim)  # type: ignore
+        session_.sync_fetch_and_set_claim(PermissionClaim)  # type: ignore
         return JsonResponse({"status": "OK"})
 
     @verify_session()
     def sync_unverify_email_api(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
-        sync_unverify_email(session_.get_recipe_user_id())
-        session_.sync_fetch_and_set_claim(EmailVerificationClaim)
+        sync_unverify_email(session_.get_recipe_user_id())  # type: ignore
+        session_.sync_fetch_and_set_claim(EmailVerificationClaim)  # type: ignore
         return JsonResponse({"status": "OK"})
 
     def sync_delete_user(request: HttpRequest):
@@ -425,7 +425,7 @@ async def add_required_factor(request: HttpRequest):
         return JsonResponse({"error": "Invalid request body"}, status_code=400)
 
     await add_to_required_secondary_factors_for_user(
-        session_.get_user_id(), body["factorId"]
+        session_.get_user_id(), body["factorId"]  # type: ignore
     )
 
     return JsonResponse({"status": "OK"})

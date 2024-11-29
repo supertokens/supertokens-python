@@ -27,7 +27,7 @@ pytestmark = mark.asyncio
 
 
 @fixture(scope="function")
-async def client():
+def client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 

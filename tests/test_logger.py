@@ -28,7 +28,7 @@ class LoggerTests(TestCase):
         # caplog is the pytest fixture to capture all logs
         self._caplog = caplog  # pylint: disable=attribute-defined-outside-init
 
-    def setup_method(self, _):  # pylint: disable=no-self-use
+    def setup_method(self, _):
         # Setting the log level to a higher level so debug logs are not printed
         logging.getLogger(NAMESPACE).setLevel(logging.ERROR)
         reset()
@@ -43,7 +43,7 @@ class LoggerTests(TestCase):
     @patch("supertokens_python.logger.datetime", wraps=real_datetime)
     def test_1_json_msg_format(self, datetime_mock: MagicMock):
         enable_debug_logging()
-        datetime_mock.utcnow.return_value = real_datetime(2000, 1, 1)  # type: ignore
+        datetime_mock.now.return_value = real_datetime(2000, 1, 1)
 
         with self.assertLogs(level="DEBUG") as captured:
             log_debug_message("API replied with status 200")

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.exceptions API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -146,87 +146,34 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.exceptions.raise_clear_duplicate_session_cookies_exception"><code class="name flex">
-<span>def <span class="ident">raise_clear_duplicate_session_cookies_exception</span></span>(<span>msg: str, response_mutators: List[ResponseMutator]) ‑> NoReturn</span>
+<span>def <span class="ident">raise_clear_duplicate_session_cookies_exception</span></span>(<span>msg: str, response_mutators: List[ResponseMutator])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def raise_clear_duplicate_session_cookies_exception(
-    msg: str, response_mutators: List[ResponseMutator]
-) -&gt; NoReturn:
-    err = ClearDuplicateSessionCookiesError(msg)
-    err.response_mutators.extend(response_mutators)
-    raise err</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_invalid_claims_exception"><code class="name flex">
 <span>def <span class="ident">raise_invalid_claims_exception</span></span>(<span>msg: str, payload: List[<a title="supertokens_python.recipe.session.exceptions.ClaimValidationError" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError">ClaimValidationError</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]):
-    raise InvalidClaimsError(msg, payload)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_token_theft_exception"><code class="name flex">
 <span>def <span class="ident">raise_token_theft_exception</span></span>(<span>user_id: str, recipe_user_id: RecipeUserId, session_handle: str) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def raise_token_theft_exception(
-    user_id: str, recipe_user_id: RecipeUserId, session_handle: str
-) -&gt; NoReturn:
-    raise TokenTheftError(user_id, recipe_user_id, session_handle)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_try_refresh_token_exception"><code class="name flex">
 <span>def <span class="ident">raise_try_refresh_token_exception</span></span>(<span>ex: Union[str, Exception]) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
-    if isinstance(ex, SuperTokensError):
-        raise ex
-
-    raise TryRefreshTokenError(ex) from None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_unauthorised_exception"><code class="name flex">
-<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True, response_mutators: Optional[List[ResponseMutator]] = None) ‑> NoReturn</span>
+<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True, response_mutators: Optional[List[ResponseMutator]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def raise_unauthorised_exception(
-    msg: str,
-    clear_tokens: bool = True,
-    response_mutators: Optional[List[ResponseMutator]] = None,
-) -&gt; NoReturn:
-    err = UnauthorisedError(msg, clear_tokens)
-
-    if response_mutators is not None:
-        err.response_mutators.extend(response_mutators)
-
-    raise err</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -276,17 +223,6 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    result: Dict[str, Any] = {&#34;id&#34;: self.id_}
-    if self.reason is not None:
-        result[&#34;reason&#34;] = self.reason
-
-    return result</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -490,7 +426,7 @@ class ClearDuplicateSessionCookiesError(SuperTokensSessionError):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

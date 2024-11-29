@@ -1,3 +1,4 @@
+from typing import Any, Dict, Optional
 from flask import Flask, request, jsonify
 
 from session import convert_session_to_container  # pylint: disable=import-error
@@ -71,14 +72,14 @@ def add_thirdparty_routes(app: Flask):
 
     @app.route("/test/thirdparty/getprovider", methods=["POST"])  # type: ignore
     def get_provider():  # type: ignore
-        data = request.get_json()
+        data = request.get_json()  # type: ignore
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
 
-        tenant_id = data.get("tenantId", "public")
-        third_party_id = data["thirdPartyId"]
-        client_type = data.get("clientType", None)
-        user_context = data.get("userContext", {})
+        tenant_id: str = data.get("tenantId", "public")
+        third_party_id: str = data["thirdPartyId"]
+        client_type: Optional[str] = data.get("clientType", None)
+        user_context: Dict[str, Any] = data.get("userContext", {})
 
         from supertokens_python.recipe.thirdparty.syncio import get_provider
 

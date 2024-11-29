@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.emailpassword.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -643,327 +643,42 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def consume_password_reset_token(
-    self,
-    token: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[ConsumePasswordResetTokenOkResult, PasswordResetTokenInvalidError]:
-    data = {&#34;token&#34;: token}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset/token/consume&#34;),
-        data,
-        user_context=user_context,
-    )
-    if &#34;status&#34; not in response or response[&#34;status&#34;] != &#34;OK&#34;:
-        return PasswordResetTokenInvalidError()
-    return ConsumePasswordResetTokenOkResult(response[&#34;email&#34;], response[&#34;userId&#34;])</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.create_new_recipe_user"><code class="name flex">
 <span>async def <span class="ident">create_new_recipe_user</span></span>(<span>self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_new_recipe_user(
-    self,
-    email: str,
-    password: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[SignUpOkResult, EmailAlreadyExistsError]:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/signup&#34;),
-        {
-            &#34;email&#34;: email,
-            &#34;password&#34;: password,
-        },
-        user_context=user_context,
-    )
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return SignUpOkResult(
-            user=User.from_json(response[&#34;user&#34;]),
-            recipe_user_id=RecipeUserId(response[&#34;recipeUserId&#34;]),
-        )
-    return EmailAlreadyExistsError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.create_reset_password_token"><code class="name flex">
 <span>async def <span class="ident">create_reset_password_token</span></span>(<span>self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult">CreateResetPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError">UnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_reset_password_token(
-    self, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]
-) -&gt; Union[CreateResetPasswordOkResult, UnknownUserIdError]:
-    data = {&#34;userId&#34;: user_id, &#34;email&#34;: email}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/user/password/reset/token&#34;),
-        data,
-        user_context=user_context,
-    )
-    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
-        return CreateResetPasswordOkResult(response[&#34;token&#34;])
-    return UnknownUserIdError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_in"><code class="name flex">
 <span>async def <span class="ident">sign_in</span></span>(<span>self, email: str, password: str, tenant_id: str, session: Union[SessionContainer, None], should_try_linking_with_session_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError">WrongCredentialsError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def sign_in(
-    self,
-    email: str,
-    password: str,
-    tenant_id: str,
-    session: Union[SessionContainer, None],
-    should_try_linking_with_session_user: Union[bool, None],
-    user_context: Dict[str, Any],
-) -&gt; Union[SignInOkResult, WrongCredentialsError, LinkingToSessionUserFailedError]:
-    response = await self.verify_credentials(
-        email, password, tenant_id, user_context
-    )
-
-    if isinstance(response, SignInOkResult):
-        login_method = next(
-            (
-                lm
-                for lm in response.user.login_methods
-                if lm.recipe_user_id.get_as_string()
-                == response.recipe_user_id.get_as_string()
-            ),
-            None,
-        )
-
-        assert login_method is not None
-
-        if not login_method.verified:
-            await AccountLinkingRecipe.get_instance().verify_email_for_recipe_user_if_linked_accounts_are_verified(
-                user=response.user,
-                recipe_user_id=response.recipe_user_id,
-                user_context=user_context,
-            )
-
-            # We do this to get the updated user (in case the above function updated the verification status)
-            updated_user = await get_user(
-                response.recipe_user_id.get_as_string(), user_context
-            )
-            assert updated_user is not None
-            response.user = updated_user
-
-        link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
-            tenant_id=tenant_id,
-            input_user=response.user,
-            recipe_user_id=response.recipe_user_id,
-            session=session,
-            should_try_linking_with_session_user=should_try_linking_with_session_user,
-            user_context=user_context,
-        )
-
-        if isinstance(link_result, LinkingToSessionUserFailedError):
-            return link_result
-
-        response.user = link_result.user
-
-    return response</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_up"><code class="name flex">
 <span>async def <span class="ident">sign_up</span></span>(<span>self, email: str, password: str, tenant_id: str, session: Union[SessionContainer, None], should_try_linking_with_session_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def sign_up(
-    self,
-    email: str,
-    password: str,
-    tenant_id: str,
-    session: Union[SessionContainer, None],
-    should_try_linking_with_session_user: Union[bool, None],
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    SignUpOkResult, EmailAlreadyExistsError, LinkingToSessionUserFailedError
-]:
-    response = await self.create_new_recipe_user(
-        email=email,
-        password=password,
-        tenant_id=tenant_id,
-        user_context=user_context,
-    )
-    if isinstance(response, EmailAlreadyExistsError):
-        return response
-
-    updated_user = response.user
-
-    link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
-        tenant_id=tenant_id,
-        input_user=response.user,
-        recipe_user_id=response.recipe_user_id,
-        session=session,
-        should_try_linking_with_session_user=should_try_linking_with_session_user,
-        user_context=user_context,
-    )
-
-    if isinstance(link_result, LinkingToSessionUserFailedError):
-        return LinkingToSessionUserFailedError(reason=link_result.reason)
-
-    updated_user = link_result.user
-
-    return SignUpOkResult(
-        user=updated_user,
-        recipe_user_id=response.recipe_user_id,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.update_email_or_password"><code class="name flex">
 <span>async def <span class="ident">update_email_or_password</span></span>(<span>self, recipe_user_id: RecipeUserId, email: Union[str, None], password: Union[str, None], apply_password_policy: Union[bool, None], tenant_id_for_password_policy: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordOkResult">UpdateEmailOrPasswordOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UnknownUserIdError">UnknownUserIdError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailChangeNotAllowedError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordEmailChangeNotAllowedError">UpdateEmailOrPasswordEmailChangeNotAllowedError</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordPolicyViolationError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordPolicyViolationError">PasswordPolicyViolationError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_email_or_password(
-    self,
-    recipe_user_id: RecipeUserId,
-    email: Union[str, None],
-    password: Union[str, None],
-    apply_password_policy: Union[bool, None],
-    tenant_id_for_password_policy: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    UpdateEmailOrPasswordOkResult,
-    EmailAlreadyExistsError,
-    UnknownUserIdError,
-    PasswordPolicyViolationError,
-    UpdateEmailOrPasswordEmailChangeNotAllowedError,
-]:
-    account_linking = AccountLinkingRecipe.get_instance()
-    data = {&#34;recipeUserId&#34;: recipe_user_id.get_as_string()}
-
-    if email is not None:
-        user = await get_user(recipe_user_id.get_as_string(), user_context)
-        if user is None:
-            return UnknownUserIdError()
-
-        ev_instance = EmailVerificationRecipe.get_instance_optional()
-        is_email_verified = False
-        if ev_instance:
-            is_email_verified = (
-                await ev_instance.recipe_implementation.is_email_verified(
-                    recipe_user_id=recipe_user_id,
-                    email=email,
-                    user_context=user_context,
-                )
-            )
-
-        is_email_change_allowed = await account_linking.is_email_change_allowed(
-            user=user,
-            is_verified=is_email_verified,
-            new_email=email,
-            session=None,
-            user_context=user_context,
-        )
-        if not is_email_change_allowed.allowed:
-            reason = (
-                &#34;New email cannot be applied to existing account because of account takeover risks.&#34;
-                if is_email_change_allowed.reason == &#34;ACCOUNT_TAKEOVER_RISK&#34;
-                else &#34;New email cannot be applied to existing account because of there is another primary user with the same email address.&#34;
-            )
-            return UpdateEmailOrPasswordEmailChangeNotAllowedError(reason)
-
-        data[&#34;email&#34;] = email
-
-    if password is not None:
-        if apply_password_policy is None or apply_password_policy:
-            form_fields = self.ep_config.sign_up_feature.form_fields
-            password_field = next(
-                field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
-            )
-            error = await password_field.validate(
-                password, tenant_id_for_password_policy
-            )
-            if error is not None:
-                return PasswordPolicyViolationError(error)
-        data[&#34;password&#34;] = password
-
-    response = await self.querier.send_put_request(
-        NormalisedURLPath(&#34;/recipe/user&#34;),
-        data,
-        user_context=user_context,
-    )
-
-    if response.get(&#34;status&#34;) == &#34;OK&#34;:
-        user = await get_user(recipe_user_id.get_as_string(), user_context)
-        if user is None:
-            return UnknownUserIdError()
-        await AccountLinkingRecipe.get_instance().verify_email_for_recipe_user_if_linked_accounts_are_verified(
-            user=user,
-            recipe_user_id=recipe_user_id,
-            user_context=user_context,
-        )
-        return UpdateEmailOrPasswordOkResult()
-    elif response.get(&#34;status&#34;) == &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;:
-        return EmailAlreadyExistsError()
-    else:
-        return UnknownUserIdError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.verify_credentials"><code class="name flex">
 <span>async def <span class="ident">verify_credentials</span></span>(<span>self, email: str, password: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError">WrongCredentialsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_credentials(
-    self,
-    email: str,
-    password: str,
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; Union[SignInOkResult, WrongCredentialsError]:
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(f&#34;{tenant_id}/recipe/signin&#34;),
-        {
-            &#34;email&#34;: email,
-            &#34;password&#34;: password,
-        },
-        user_context=user_context,
-    )
-
-    if response[&#34;status&#34;] == &#34;OK&#34;:
-        return SignInOkResult(
-            user=User.from_json(response[&#34;user&#34;]),
-            recipe_user_id=RecipeUserId(response[&#34;recipeUserId&#34;]),
-        )
-
-    return WrongCredentialsError()</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1001,7 +716,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

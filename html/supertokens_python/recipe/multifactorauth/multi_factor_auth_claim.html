@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multifactorauth.multi_factor_auth_claim API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -68,17 +68,26 @@ class HasCompletedRequirementListSCV(SessionClaimValidator):
         requirement_list: MFARequirementList,
     ):
         super().__init__(id_)
-        self.claim: MultiFactorAuthClaimClass = claim
+        self.claim = claim
         self.requirement_list = requirement_list
 
     def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; bool:
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
         return bool(self.claim.key not in payload or not payload[self.claim.key])
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -&gt; ClaimValidationResult:
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
+        if not isinstance(self.claim, MultiFactorAuthClaimClass):
+            raise Exception(&#34;should never happen&#34;)
+
         if len(self.requirement_list) == 0:
             return ClaimValidationResult(is_valid=True)  # no requirements to satisfy
 
@@ -366,49 +375,12 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def should_refetch(
-    self, payload: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; bool:
-    assert self.claim is not None
-    return bool(self.claim.key not in payload or not payload[self.claim.key])</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.multi_factor_auth_claim.HasCompletedMFARequirementsForAuthSCV.validate"><code class="name flex">
 <span>async def <span class="ident">validate</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.ClaimValidationResult" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.ClaimValidationResult">ClaimValidationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self, payload: JSONObject, user_context: Dict[str, Any]
-) -&gt; ClaimValidationResult:
-    assert self.claim is not None
-    if self.claim.key not in payload or not payload[self.claim.key]:
-        raise Exception(
-            &#34;This should never happen, claim value not present in payload&#34;
-        )
-    claim_val: MFAClaimValue = MFAClaimValue(
-        c=payload[self.claim.key][&#34;c&#34;], v=payload[self.claim.key][&#34;v&#34;]
-    )
-
-    return ClaimValidationResult(
-        is_valid=claim_val.v,
-        reason=(
-            {
-                &#34;message&#34;: &#34;MFA requirement for auth is not satisfied&#34;,
-            }
-            if not claim_val.v
-            else None
-        ),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -431,17 +403,26 @@ inheritance.</p></div>
         requirement_list: MFARequirementList,
     ):
         super().__init__(id_)
-        self.claim: MultiFactorAuthClaimClass = claim
+        self.claim = claim
         self.requirement_list = requirement_list
 
     def should_refetch(
         self, payload: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; bool:
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
         return bool(self.claim.key not in payload or not payload[self.claim.key])
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -&gt; ClaimValidationResult:
+        if self.claim is None:
+            raise Exception(&#34;should never happen&#34;)
+
+        if not isinstance(self.claim, MultiFactorAuthClaimClass):
+            raise Exception(&#34;should never happen&#34;)
+
         if len(self.requirement_list) == 0:
             return ClaimValidationResult(is_valid=True)  # no requirements to satisfy
 
@@ -506,80 +487,12 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def should_refetch(
-    self, payload: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; bool:
-    return bool(self.claim.key not in payload or not payload[self.claim.key])</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.multi_factor_auth_claim.HasCompletedRequirementListSCV.validate"><code class="name flex">
 <span>async def <span class="ident">validate</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.ClaimValidationResult" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.ClaimValidationResult">ClaimValidationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate(
-    self, payload: JSONObject, user_context: Dict[str, Any]
-) -&gt; ClaimValidationResult:
-    if len(self.requirement_list) == 0:
-        return ClaimValidationResult(is_valid=True)  # no requirements to satisfy
-
-    if (self.claim.key not in payload) or (not payload[self.claim.key]):
-        raise Exception(
-            &#34;This should never happen, claim value not present in payload&#34;
-        )
-
-    claim_val: MFAClaimValue = MFAClaimValue(
-        c=payload[self.claim.key][&#34;c&#34;], v=payload[self.claim.key][&#34;v&#34;]
-    )
-
-    completed_factors = claim_val.c
-    next_set_of_unsatisfied_factors = (
-        self.claim.get_next_set_of_unsatisfied_factors(
-            completed_factors, self.requirement_list
-        )
-    )
-
-    if len(next_set_of_unsatisfied_factors.factor_ids) == 0:
-        return ClaimValidationResult(
-            is_valid=True
-        )  # No item in the requirementList is left unsatisfied, hence is Valid
-
-    factor_ids = next_set_of_unsatisfied_factors.factor_ids
-
-    if next_set_of_unsatisfied_factors.type_ == &#34;string&#34;:
-        return ClaimValidationResult(
-            is_valid=False,
-            reason={
-                &#34;message&#34;: f&#34;Factor validation failed: {factor_ids[0]} not completed&#34;,
-                &#34;factor_id&#34;: factor_ids[0],
-            },
-        )
-
-    elif next_set_of_unsatisfied_factors.type_ == &#34;oneOf&#34;:
-        return ClaimValidationResult(
-            is_valid=False,
-            reason={
-                &#34;reason&#34;: f&#34;None of these factors are complete in the session: {&#39;, &#39;.join(factor_ids)}&#34;,
-                &#34;one_of&#34;: factor_ids,
-            },
-        )
-    else:
-        return ClaimValidationResult(
-            is_valid=False,
-            reason={
-                &#34;reason&#34;: f&#34;Some of the factors are not complete in the session: {&#39;, &#39;.join(factor_ids)}&#34;,
-                &#34;all_of_in_any_order&#34;: factor_ids,
-            },
-        )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -715,44 +628,6 @@ don't want to add the claim to the session automatically</dd>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_next_set_of_unsatisfied_factors(
-    self, completed_factors: Dict[str, int], requirement_list: MFARequirementList
-) -&gt; FactorIdsAndType:
-    for req in requirement_list:
-        next_factors: Set[str] = set()
-        factor_type = &#34;string&#34;
-
-        if isinstance(req, str):
-            if req not in completed_factors:
-                factor_type = &#34;string&#34;
-                next_factors.add(req)
-        else:
-            if &#34;oneOf&#34; in req:
-                satisfied = any(
-                    factor_id in completed_factors for factor_id in req[&#34;oneOf&#34;]
-                )
-                if not satisfied:
-                    factor_type = &#34;oneOf&#34;
-                    next_factors.update(req[&#34;oneOf&#34;])
-            elif &#34;allOfInAnyOrder&#34; in req:
-                factor_type = &#34;allOfInAnyOrder&#34;
-                next_factors.update(
-                    factor_id
-                    for factor_id in req[&#34;allOfInAnyOrder&#34;]
-                    if factor_id not in completed_factors
-                )
-
-        if len(next_factors) &gt; 0:
-            return FactorIdsAndType(
-                factor_ids=list(next_factors), type_=factor_type
-            )
-
-    return FactorIdsAndType(factor_ids=[], type_=&#34;string&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -806,38 +681,12 @@ don't want to add the claim to the session automatically</dd>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_completed_mfa_requirements_for_auth(
-    self, claim_key: Optional[str] = None
-) -&gt; SessionClaimValidator:
-
-    return HasCompletedMFARequirementsForAuthSCV(
-        id_=claim_key or self.claim.key,
-        claim=self.claim,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.multi_factor_auth_claim.MultiFactorAuthClaimValidators.has_completed_requirement_list"><code class="name flex">
 <span>def <span class="ident">has_completed_requirement_list</span></span>(<span>self, requirement_list: MFARequirementList, claim_key: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def has_completed_requirement_list(
-    self, requirement_list: MFARequirementList, claim_key: Optional[str] = None
-) -&gt; SessionClaimValidator:
-    return HasCompletedRequirementListSCV(
-        id_=claim_key or self.claim.key,
-        claim=self.claim,
-        requirement_list=requirement_list,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -890,7 +739,7 @@ don't want to add the claim to the session automatically</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

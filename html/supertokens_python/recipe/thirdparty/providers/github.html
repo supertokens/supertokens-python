@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.providers.github API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -144,56 +144,12 @@ async def validate_access_token(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def Github(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-builtin
-    if not input.config.name:
-        input.config.name = &#34;Github&#34;
-
-    if not input.config.authorization_endpoint:
-        input.config.authorization_endpoint = &#34;https://github.com/login/oauth/authorize&#34;
-
-    if not input.config.token_endpoint:
-        input.config.token_endpoint = &#34;https://github.com/login/oauth/access_token&#34;
-
-    if input.config.validate_access_token is None:
-        input.config.validate_access_token = validate_access_token
-
-    return NewProvider(input, GithubImpl)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.github.validate_access_token"><code class="name flex">
 <span>async def <span class="ident">validate_access_token</span></span>(<span>access_token: str, config: ProviderConfigForClient, _: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate_access_token(
-    access_token: str, config: ProviderConfigForClient, _: Dict[str, Any]
-):
-    client_secret = &#34;&#34; if config.client_secret is None else config.client_secret
-    basic_auth_token = base64.b64encode(
-        f&#34;{config.client_id}:{client_secret}&#34;.encode()
-    ).decode()
-
-    url = f&#34;https://api.github.com/applications/{config.client_id}/token&#34;
-    headers = {
-        &#34;Authorization&#34;: f&#34;Basic {basic_auth_token}&#34;,
-        &#34;Content-Type&#34;: &#34;application/json&#34;,
-    }
-
-    status, body = await do_post_request(url, {&#34;access_token&#34;: access_token}, headers)
-    if status != 200:
-        raise ValueError(&#34;Invalid access token&#34;)
-
-    if &#34;app&#34; not in body or body[&#34;app&#34;].get(&#34;client_id&#34;) != config.client_id:
-        raise ValueError(&#34;Access token does not belong to your application&#34;)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -261,58 +217,12 @@ async def validate_access_token(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_config_for_client_type(
-    self, client_type: Optional[str], user_context: Dict[str, Any]
-) -&gt; ProviderConfigForClient:
-    config = await super().get_config_for_client_type(client_type, user_context)
-
-    if config.scope is None:
-        config.scope = [&#34;read:user&#34;, &#34;user:email&#34;]
-
-    return config</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.github.GithubImpl.get_user_info"><code class="name flex">
 <span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_info(
-    self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; UserInfo:
-    headers = {
-        &#34;Authorization&#34;: f&#34;Bearer {oauth_tokens.get(&#39;access_token&#39;)}&#34;,
-        &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
-    }
-
-    raw_response = {}
-
-    email_info: List[Any] = await do_get_request(&#34;https://api.github.com/user/emails&#34;, headers=headers)  # type: ignore
-    user_info = await do_get_request(&#34;https://api.github.com/user&#34;, headers=headers)
-
-    raw_response[&#34;emails&#34;] = email_info
-    raw_response[&#34;user&#34;] = user_info
-
-    result = UserInfo(
-        third_party_user_id=str(user_info.get(&#34;id&#34;)),
-    )
-
-    for info in email_info:
-        if info.get(&#34;primary&#34;):
-            result.email = UserInfoEmail(
-                email=info.get(&#34;email&#34;), is_verified=info.get(&#34;verified&#34;)
-            )
-
-    return result</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -351,7 +261,7 @@ async def validate_access_token(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

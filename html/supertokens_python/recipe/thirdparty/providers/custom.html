@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.providers.custom API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -246,9 +246,7 @@ class GenericProvider(Provider):
         )
         super().__init__(input_config.third_party_id, provider_config_for_client)
 
-    def _normalize_input(  # pylint: disable=no-self-use
-        self, input_config: ProviderConfig
-    ) -&gt; ProviderConfig:
+    def _normalize_input(self, input_config: ProviderConfig) -&gt; ProviderConfig:
         if input_config.user_info_map is None:
             input_config.user_info_map = UserInfoMap(
                 from_id_token_payload=UserFields(),
@@ -396,9 +394,9 @@ class GenericProvider(Provider):
 
         # Transformation needed for dev keys BEGIN
         if is_using_oauth_development_client_id(self.config.client_id):
-            access_token_params[
-                &#34;client_id&#34;
-            ] = get_actual_client_id_from_development_client_id(self.config.client_id)
+            access_token_params[&#34;client_id&#34;] = (
+                get_actual_client_id_from_development_client_id(self.config.client_id)
+            )
             access_token_params[&#34;redirect_uri&#34;] = DEV_OAUTH_REDIRECT_URL
         # Transformation needed for dev keys END
 
@@ -487,228 +485,42 @@ def NewProvider(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def NewProvider(
-    input_: ProviderInput,
-    base_class: Callable[[ProviderConfig], Provider] = GenericProvider,
-) -&gt; Provider:
-    provider_instance = base_class(input_.config)
-    if input_.override is not None:
-        provider_instance = input_.override(provider_instance)
-
-    return provider_instance</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.access_field"><code class="name flex">
 <span>def <span class="ident">access_field</span></span>(<span>obj: Any, key: str) ‑> Any</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def access_field(obj: Any, key: str) -&gt; Any:
-    key_parts = key.split(&#34;.&#34;)
-    for part in key_parts:
-        if isinstance(obj, dict):
-            obj = obj.get(part)  # type: ignore
-        else:
-            return None
-
-    return obj</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.get_provider_config_for_client"><code class="name flex">
 <span>def <span class="ident">get_provider_config_for_client</span></span>(<span>config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>, client_config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a>) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_provider_config_for_client(
-    config: ProviderConfig, client_config: ProviderClientConfig
-) -&gt; ProviderConfigForClient:
-    return ProviderConfigForClient(
-        # ProviderClientConfig
-        client_id=client_config.client_id,
-        client_secret=client_config.client_secret,
-        client_type=client_config.client_type,
-        scope=client_config.scope,
-        force_pkce=client_config.force_pkce,
-        additional_config=client_config.additional_config,
-        # CommonProviderConfig
-        third_party_id=config.third_party_id,
-        name=config.name,
-        authorization_endpoint=config.authorization_endpoint,
-        authorization_endpoint_query_params=config.authorization_endpoint_query_params,
-        token_endpoint=config.token_endpoint,
-        token_endpoint_body_params=config.token_endpoint_body_params,
-        user_info_endpoint=config.user_info_endpoint,
-        user_info_endpoint_query_params=config.user_info_endpoint_query_params,
-        user_info_endpoint_headers=config.user_info_endpoint_headers,
-        jwks_uri=config.jwks_uri,
-        oidc_discovery_endpoint=config.oidc_discovery_endpoint,
-        user_info_map=config.user_info_map,
-        require_email=config.require_email,
-        validate_id_token_payload=config.validate_id_token_payload,
-        generate_fake_email=config.generate_fake_email,
-        validate_access_token=config.validate_access_token,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.get_supertokens_user_info_result_from_raw_user_info"><code class="name flex">
 <span>def <span class="ident">get_supertokens_user_info_result_from_raw_user_info</span></span>(<span>config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a>, raw_user_info_from_provider: <a title="supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider" href="../types.html#supertokens_python.recipe.thirdparty.types.RawUserInfoFromProvider">RawUserInfoFromProvider</a>) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_supertokens_user_info_result_from_raw_user_info(
-    config: ProviderConfigForClient,
-    raw_user_info_from_provider: RawUserInfoFromProvider,
-) -&gt; UserInfo:
-    third_party_user_id = &#34;&#34;
-
-    if config.user_info_map is None:
-        raise Exception(&#34;user info map is missing&#34;)
-
-    if config.user_info_map.from_user_info_api is None:
-        config.user_info_map.from_user_info_api = UserFields()
-    if config.user_info_map.from_id_token_payload is None:
-        config.user_info_map.from_id_token_payload = UserFields()
-
-    if config.user_info_map.from_user_info_api.user_id is not None:
-        user_id = access_field(
-            raw_user_info_from_provider.from_user_info_api,
-            config.user_info_map.from_user_info_api.user_id,
-        )
-        if user_id is not None:
-            third_party_user_id = str(user_id)
-
-    if config.user_info_map.from_id_token_payload.user_id is not None:
-        user_id = access_field(
-            raw_user_info_from_provider.from_id_token_payload,
-            config.user_info_map.from_id_token_payload.user_id,
-        )
-        if user_id is not None:
-            third_party_user_id = str(user_id)
-
-    if third_party_user_id == &#34;&#34;:
-        raise Exception(&#34;third party user id is missing&#34;)
-
-    result = UserInfo(
-        third_party_user_id=third_party_user_id,
-    )
-
-    email = &#34;&#34;
-
-    if config.user_info_map.from_user_info_api.email is not None:
-        email_val = access_field(
-            raw_user_info_from_provider.from_user_info_api,
-            config.user_info_map.from_user_info_api.email,
-        )
-        if email_val is not None:
-            email = email_val
-
-    if config.user_info_map.from_id_token_payload.email is not None:
-        email_val = access_field(
-            raw_user_info_from_provider.from_id_token_payload,
-            config.user_info_map.from_id_token_payload.email,
-        )
-        if email_val is not None:
-            email = email_val
-
-    if email != &#34;&#34;:
-        result.email = UserInfoEmail(email, False)
-
-        if config.user_info_map.from_user_info_api.email_verified is not None:
-            email_verified = access_field(
-                raw_user_info_from_provider.from_user_info_api,
-                config.user_info_map.from_user_info_api.email_verified,
-            )
-            if email_verified is not None:
-                result.email.is_verified = str(email_verified).lower() == &#34;true&#34;
-
-        if config.user_info_map.from_id_token_payload.email_verified is not None:
-            email_verified = access_field(
-                raw_user_info_from_provider.from_id_token_payload,
-                config.user_info_map.from_id_token_payload.email_verified,
-            )
-            if email_verified is not None:
-                result.email.is_verified = str(email_verified).lower() == &#34;true&#34;
-
-    return result</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.is_using_development_client_id"><code class="name flex">
 <span>def <span class="ident">is_using_development_client_id</span></span>(<span>client_id: str) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_using_development_client_id(client_id: str) -&gt; bool:
-    return client_id.startswith(DEV_KEY_IDENTIFIER) or client_id in DEV_OAUTH_CLIENT_IDS</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.merge_into_dict"><code class="name flex">
 <span>def <span class="ident">merge_into_dict</span></span>(<span>src: Dict[str, Any], dest: Dict[str, Any]) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def merge_into_dict(src: Dict[str, Any], dest: Dict[str, Any]) -&gt; Dict[str, Any]:
-    res = dest.copy()
-    for k, v in src.items():
-        if v is None:
-            if k in res:
-                del res[k]
-        else:
-            res[k] = v
-
-    return res</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.verify_id_token_from_jwks_endpoint_and_get_payload"><code class="name flex">
 <span>async def <span class="ident">verify_id_token_from_jwks_endpoint_and_get_payload</span></span>(<span>id_token: str, jwks_uri: str, audience: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def verify_id_token_from_jwks_endpoint_and_get_payload(
-    id_token: str, jwks_uri: str, audience: str
-):
-    public_keys: List[RSAAlgorithm] = []
-    async with AsyncClient(timeout=30.0) as client:
-        response = await client.get(jwks_uri)  # type:ignore
-        key_payload = response.json()
-        for key in key_payload[&#34;keys&#34;]:
-            public_keys.append(RSAAlgorithm.from_jwk(key))  # type: ignore
-
-    err = Exception(&#34;id token verification failed&#34;)
-    for key in public_keys:
-        try:
-            return decode(jwt=id_token, key=key, audience=[audience], algorithms=[&#34;RS256&#34;])  # type: ignore
-        except Exception as e:
-            err = e
-    raise err</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -756,9 +568,7 @@ def NewProvider(
         )
         super().__init__(input_config.third_party_id, provider_config_for_client)
 
-    def _normalize_input(  # pylint: disable=no-self-use
-        self, input_config: ProviderConfig
-    ) -&gt; ProviderConfig:
+    def _normalize_input(self, input_config: ProviderConfig) -&gt; ProviderConfig:
         if input_config.user_info_map is None:
             input_config.user_info_map = UserInfoMap(
                 from_id_token_payload=UserFields(),
@@ -906,9 +716,9 @@ def NewProvider(
 
         # Transformation needed for dev keys BEGIN
         if is_using_oauth_development_client_id(self.config.client_id):
-            access_token_params[
-                &#34;client_id&#34;
-            ] = get_actual_client_id_from_development_client_id(self.config.client_id)
+            access_token_params[&#34;client_id&#34;] = (
+                get_actual_client_id_from_development_client_id(self.config.client_id)
+            )
             access_token_params[&#34;redirect_uri&#34;] = DEV_OAUTH_REDIRECT_URL
         # Transformation needed for dev keys END
 
@@ -999,209 +809,24 @@ def NewProvider(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def exchange_auth_code_for_oauth_tokens(
-    self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
-) -&gt; Dict[str, Any]:
-    if self.config.token_endpoint is None:
-        raise Exception(&#34;ThirdParty provider&#39;s tokenEndpoint is not configured.&#34;)
-
-    token_api_url = self.config.token_endpoint
-    access_token_params: Dict[str, str] = {
-        &#34;client_id&#34;: self.config.client_id,
-        &#34;redirect_uri&#34;: redirect_uri_info.redirect_uri_on_provider_dashboard,
-        &#34;code&#34;: redirect_uri_info.redirect_uri_query_params[&#34;code&#34;],
-        &#34;grant_type&#34;: &#34;authorization_code&#34;,
-    }
-    if self.config.client_secret is not None:
-        access_token_params[&#34;client_secret&#34;] = self.config.client_secret
-
-    if redirect_uri_info.pkce_code_verifier is not None:
-        access_token_params[&#34;code_verifier&#34;] = redirect_uri_info.pkce_code_verifier
-
-    if self.config.token_endpoint_body_params is not None:
-        access_token_params = merge_into_dict(
-            self.config.token_endpoint_body_params, access_token_params
-        )
-
-    # Transformation needed for dev keys BEGIN
-    if is_using_oauth_development_client_id(self.config.client_id):
-        access_token_params[
-            &#34;client_id&#34;
-        ] = get_actual_client_id_from_development_client_id(self.config.client_id)
-        access_token_params[&#34;redirect_uri&#34;] = DEV_OAUTH_REDIRECT_URL
-    # Transformation needed for dev keys END
-
-    _, body = await do_post_request(token_api_url, access_token_params)
-    return body</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider.get_authorisation_redirect_url"><code class="name flex">
 <span>async def <span class="ident">get_authorisation_redirect_url</span></span>(<span>self, redirect_uri_on_provider_dashboard: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect" href="../provider.html#supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect">AuthorisationRedirect</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_authorisation_redirect_url(
-    self,
-    redirect_uri_on_provider_dashboard: str,
-    user_context: Dict[str, Any],
-) -&gt; AuthorisationRedirect:
-    query_params: Dict[str, str] = {
-        &#34;client_id&#34;: self.config.client_id,
-        &#34;redirect_uri&#34;: redirect_uri_on_provider_dashboard,
-        &#34;response_type&#34;: &#34;code&#34;,
-    }
-
-    if self.config.scope is not None:
-        query_params[&#34;scope&#34;] = &#34; &#34;.join(self.config.scope)
-
-    pkce_code_verifier: Union[str, None] = None
-
-    if self.config.client_secret is None or self.config.force_pkce:
-        code_verifier, code_challenge = pkce.generate_pkce_pair(64)
-        query_params[&#34;code_challenge&#34;] = code_challenge
-        query_params[&#34;code_challenge_method&#34;] = &#34;S256&#34;
-        pkce_code_verifier = code_verifier
-
-    if self.config.authorization_endpoint_query_params is not None:
-        for k, v in self.config.authorization_endpoint_query_params.items():
-            if v is None:
-                del query_params[k]
-            else:
-                query_params[k] = v
-
-    if self.config.authorization_endpoint is None:
-        raise Exception(
-            &#34;ThirdParty provider&#39;s authorizationEndpoint is not configured.&#34;
-        )
-
-    url: str = self.config.authorization_endpoint
-
-    # Transformation needed for dev keys BEGIN
-    if is_using_oauth_development_client_id(self.config.client_id):
-        query_params[&#34;client_id&#34;] = get_actual_client_id_from_development_client_id(
-            self.config.client_id
-        )
-        query_params[&#34;actual_redirect_uri&#34;] = url
-        url = DEV_OAUTH_AUTHORIZATION_URL
-    # Transformation needed for dev keys END
-
-    url_obj = urlparse(url)
-    qparams = parse_qs(url_obj.query)
-    for k, v in query_params.items():
-        qparams[k] = [v]
-
-    url = url_obj._replace(query=urlencode(qparams, doseq=True)).geturl()
-
-    return AuthorisationRedirect(url, pkce_code_verifier)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider.get_config_for_client_type"><code class="name flex">
 <span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_config_for_client_type(
-    self, client_type: Optional[str], user_context: Dict[str, Any]
-) -&gt; ProviderConfigForClient:
-    if client_type is None:
-        if self.input_config.clients is None or len(self.input_config.clients) != 1:
-            raise ClientTypeNotFoundError(
-                &#34;please provide exactly one client config or pass clientType or tenantId&#34;
-            )
-
-        return get_provider_config_for_client(
-            self.input_config, self.input_config.clients[0]
-        )
-
-    if self.input_config.clients is not None:
-        for client in self.input_config.clients:
-            if client.client_type == client_type:
-                return get_provider_config_for_client(self.input_config, client)
-
-    raise ClientTypeNotFoundError(
-        f&#34;Could not find client config for clientType: {client_type}&#34;
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider.get_user_info"><code class="name flex">
 <span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_info(
-    self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
-) -&gt; UserInfo:
-    access_token: Union[str, None] = oauth_tokens.get(&#34;access_token&#34;)
-    id_token: Union[str, None] = oauth_tokens.get(&#34;id_token&#34;)
-
-    raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
-    if id_token is not None and self.config.jwks_uri is not None:
-        raw_user_info_from_provider.from_id_token_payload = (
-            await verify_id_token_from_jwks_endpoint_and_get_payload(
-                id_token,
-                self.config.jwks_uri,
-                get_actual_client_id_from_development_client_id(
-                    self.config.client_id
-                ),
-            )
-        )
-
-        if self.config.validate_id_token_payload is not None:
-            await self.config.validate_id_token_payload(
-                raw_user_info_from_provider.from_id_token_payload,
-                self.config,
-                user_context,
-            )
-
-    if self.config.validate_access_token is not None and access_token is not None:
-        await self.config.validate_access_token(
-            access_token, self.config, user_context
-        )
-
-    if access_token is not None and self.config.user_info_endpoint is not None:
-        headers: Dict[str, str] = {&#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;}
-        query_params: Dict[str, str] = {}
-
-        if self.config.user_info_endpoint_headers is not None:
-            headers = merge_into_dict(
-                self.config.user_info_endpoint_headers, headers
-            )
-
-        if self.config.user_info_endpoint_query_params is not None:
-            query_params = merge_into_dict(
-                self.config.user_info_endpoint_query_params, query_params
-            )
-
-        raw_user_info_from_provider.from_user_info_api = await do_get_request(
-            self.config.user_info_endpoint, query_params, headers
-        )
-
-    user_info_result = get_supertokens_user_info_result_from_raw_user_info(
-        self.config, raw_user_info_from_provider
-    )
-
-    return UserInfo(
-        third_party_user_id=user_info_result.third_party_user_id,
-        email=user_info_result.email,
-        raw_user_info_from_provider=raw_user_info_from_provider,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1247,7 +872,7 @@ def NewProvider(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

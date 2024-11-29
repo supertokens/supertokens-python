@@ -585,7 +585,7 @@ def testing_override_test():
         def __init__(self):
             pass
 
-        def some_other_func(self):  # pylint: disable=no-self-use
+        def some_other_func(self):
             nonlocal m
             m = 1
 
@@ -620,7 +620,7 @@ def testing_super_recipe_tests():
         def sign_up(self):
             self.get_user()
 
-        def get_user(self):  # pylint: disable=no-self-use
+        def get_user(self):
             nonlocal m
             m = 1
 

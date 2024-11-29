@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.recipe_implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -1034,624 +1034,102 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def create_new_session(
-    self,
-    user_id: str,
-    recipe_user_id: RecipeUserId,
-    access_token_payload: Optional[Dict[str, Any]],
-    session_data_in_database: Optional[Dict[str, Any]],
-    disable_anti_csrf: Optional[bool],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-) -&gt; SessionContainer:
-    log_debug_message(&#34;createNewSession: Started&#34;)
-
-    result = await session_functions.create_new_session(
-        self,
-        tenant_id,
-        recipe_user_id,
-        disable_anti_csrf is True,
-        access_token_payload,
-        session_data_in_database,
-        user_context=user_context,
-    )
-    log_debug_message(&#34;createNewSession: Finished&#34;)
-
-    payload = parse_jwt_without_signature_verification(
-        result.accessToken.token
-    ).payload
-
-    new_session = Session(
-        self,
-        self.config,
-        result.accessToken.token,
-        build_front_token(
-            result.session.userId, result.accessToken.expiry, payload
-        ),
-        result.refreshToken,
-        result.antiCsrfToken,
-        result.session.handle,
-        result.session.userId,
-        recipe_user_id,
-        payload,
-        None,
-        True,
-        tenant_id,
-    )
-
-    return new_session</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.fetch_and_set_claim"><code class="name flex">
 <span>async def <span class="ident">fetch_and_set_claim</span></span>(<span>self, session_handle: str, claim: SessionClaim[Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def fetch_and_set_claim(
-    self,
-    session_handle: str,
-    claim: SessionClaim[Any],
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    session_info = await self.get_session_information(session_handle, user_context)
-    if session_info is None:
-        return False
-
-    access_token_payload_update = await claim.build(
-        session_info.user_id,
-        session_info.recipe_user_id,
-        session_info.tenant_id,
-        session_info.custom_claims_in_access_token_payload,
-        user_context,
-    )
-    return await self.merge_into_access_token_payload(
-        session_handle, access_token_payload_update, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>self, user_id: str, fetch_sessions_for_linked_accounts: bool, tenant_id: Optional[str], fetch_across_all_tenants: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>self, user_id: str, fetch_sessions_for_linked_accounts: bool, tenant_id: Optional[str], fetch_across_all_tenants: bool, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_all_session_handles_for_user(
-    self,
-    user_id: str,
-    fetch_sessions_for_linked_accounts: bool,
-    tenant_id: Optional[str],
-    fetch_across_all_tenants: bool,
-    user_context: Dict[str, Any],
-) -&gt; List[str]:
-    return await session_functions.get_all_session_handles_for_user(
-        self,
-        user_id,
-        fetch_sessions_for_linked_accounts,
-        tenant_id,
-        fetch_across_all_tenants,
-        user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_claim_value"><code class="name flex">
-<span>async def <span class="ident">get_claim_value</span></span>(<span>self, session_handle: str, claim: SessionClaim[Any], user_context: Dict[str, Any]) ‑> Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]</span>
+<span>async def <span class="ident">get_claim_value</span></span>(<span>self, session_handle: str, claim: SessionClaim[Any], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_claim_value(
-    self,
-    session_handle: str,
-    claim: SessionClaim[Any],
-    user_context: Dict[str, Any],
-) -&gt; Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
-    session_info = await self.get_session_information(session_handle, user_context)
-    if session_info is None:
-        return SessionDoesNotExistError()
-
-    return GetClaimValueOkResult(
-        value=claim.get_value_from_payload(
-            session_info.custom_claims_in_access_token_payload, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_global_claim_validators"><code class="name flex">
-<span>def <span class="ident">get_global_claim_validators</span></span>(<span>self, tenant_id: str, user_id: str, recipe_user_id: RecipeUserId, claim_validators_added_by_other_recipes: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> MaybeAwaitable[List[SessionClaimValidator]]</span>
+<span>def <span class="ident">get_global_claim_validators</span></span>(<span>self, tenant_id: str, user_id: str, recipe_user_id: RecipeUserId, claim_validators_added_by_other_recipes: List[SessionClaimValidator], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_global_claim_validators(
-    self,
-    tenant_id: str,
-    user_id: str,
-    recipe_user_id: RecipeUserId,
-    claim_validators_added_by_other_recipes: List[SessionClaimValidator],
-    user_context: Dict[str, Any],
-) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
-    return claim_validators_added_by_other_recipes</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, access_token: Optional[str], anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[SessionContainer]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, access_token: Optional[str], anti_csrf_token: Optional[str] = None, anti_csrf_check: Optional[bool] = None, session_required: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_session(
-    self,
-    access_token: Optional[str],
-    anti_csrf_token: Optional[str] = None,
-    anti_csrf_check: Optional[bool] = None,
-    session_required: Optional[bool] = None,
-    check_database: Optional[bool] = None,
-    override_global_claim_validators: Optional[
-        Callable[
-            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-            MaybeAwaitable[List[SessionClaimValidator]],
-        ]
-    ] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; Optional[SessionContainer]:
-    if (
-        anti_csrf_check is not False
-        and isinstance(self.config.anti_csrf_function_or_string, str)
-        and self.config.anti_csrf_function_or_string == &#34;VIA_CUSTOM_HEADER&#34;
-    ):
-        raise Exception(
-            &#34;Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can&#39;t check the CSRF token. Please either use VIA_TOKEN or set anti_csrf_check to false&#34;
-        )
-
-    log_debug_message(&#34;getSession: Started&#34;)
-
-    if access_token is None:
-        if session_required is False:
-            log_debug_message(
-                &#34;getSession: returning None because access_token is undefined and session_required is False&#34;
-            )
-            # there is no session that exists here, and the user wants session verification to be optional. So we return None
-            return None
-
-        log_debug_message(
-            &#34;getSession: UNAUTHORISED because accessToken in request is undefined&#34;
-        )
-        # we do not clear the session here because of a race condition mentioned in https://github.com/supertokens/supertokens-node/issues/17
-        raise UnauthorisedError(
-            &#34;Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?&#34;,
-            clear_tokens=False,
-        )
-
-    access_token_obj: Optional[ParsedJWTInfo] = None
-    try:
-        access_token_obj = parse_jwt_without_signature_verification(access_token)
-        validate_access_token_structure(
-            access_token_obj.payload, access_token_obj.version
-        )
-    except Exception as _:
-        if session_required is False:
-            log_debug_message(
-                &#34;getSession: Returning undefined because parsing failed and session_required is False&#34;
-            )
-            return None
-
-        log_debug_message(
-            &#34;getSession: UNAUTHORISED because the accessToken couldn&#39;t be parsed or had an invalid structure&#34;
-        )
-        raise UnauthorisedError(&#34;Token parsing failed&#34;, clear_tokens=False)
-
-    response = await session_functions.get_session(
-        self,
-        access_token_obj,
-        anti_csrf_token,
-        (anti_csrf_check is not False),
-        (check_database is True),
-        user_context,
-    )
-
-    log_debug_message(&#34;getSession: Success!&#34;)
-
-    if access_token_obj.version &gt;= 3:
-        if response.accessToken is not None:
-            payload = parse_jwt_without_signature_verification(
-                response.accessToken.token
-            ).payload
-        else:
-            payload = access_token_obj.payload
-    else:
-        payload = response.session.userDataInJWT
-
-    if response.accessToken is not None:
-        access_token_str = response.accessToken.token
-        expiry_time = response.accessToken.expiry
-        access_token_updated = True
-    else:
-        access_token_str = access_token
-        expiry_time = response.session.expiryTime
-        access_token_updated = False
-
-    session = Session(
-        self,
-        self.config,
-        access_token_str,
-        build_front_token(response.session.userId, expiry_time, payload),
-        None,  # refresh_token
-        anti_csrf_token,
-        response.session.handle,
-        response.session.userId,
-        response.session.recipe_user_id,
-        payload,
-        None,
-        access_token_updated,
-        response.session.tenant_id,
-    )
-
-    return session</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> Union[SessionInformationResult, None]</span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_session_information(
-    self, session_handle: str, user_context: Dict[str, Any]
-) -&gt; Union[SessionInformationResult, None]:
-    return await session_functions.get_session_information(
-        self, session_handle, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.merge_into_access_token_payload"><code class="name flex">
 <span>async def <span class="ident">merge_into_access_token_payload</span></span>(<span>self, session_handle: str, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def merge_into_access_token_payload(
-    self,
-    session_handle: str,
-    access_token_payload_update: Dict[str, Any],
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    session_info = await self.get_session_information(session_handle, user_context)
-    if session_info is None:
-        return False
-
-    new_access_token_payload = session_info.custom_claims_in_access_token_payload
-    for k in protected_props:
-        if k in new_access_token_payload:
-            del new_access_token_payload[k]
-
-    new_access_token_payload = {
-        **new_access_token_payload,
-        **access_token_payload_update,
-    }
-    for k in access_token_payload_update.keys():
-        if new_access_token_payload[k] is None:
-            del new_access_token_payload[k]
-
-    return await session_functions.update_access_token_payload(
-        self, session_handle, new_access_token_payload, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.refresh_session"><code class="name flex">
 <span>async def <span class="ident">refresh_session</span></span>(<span>self, refresh_token: str, anti_csrf_token: Optional[str], disable_anti_csrf: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def refresh_session(
-    self,
-    refresh_token: str,
-    anti_csrf_token: Optional[str],
-    disable_anti_csrf: bool,
-    user_context: Dict[str, Any],
-) -&gt; SessionContainer:
-    if (
-        disable_anti_csrf is not True
-        and isinstance(self.config.anti_csrf_function_or_string, str)
-        and self.config.anti_csrf_function_or_string == &#34;VIA_CUSTOM_HEADER&#34;
-    ):
-        raise Exception(
-            &#34;Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can&#39;t check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false&#34;
-        )
-
-    log_debug_message(&#34;refreshSession: Started&#34;)
-
-    response = await session_functions.refresh_session(
-        self,
-        refresh_token,
-        anti_csrf_token,
-        disable_anti_csrf,
-        self.config.use_dynamic_access_token_signing_key,
-        user_context=user_context,
-    )
-
-    log_debug_message(&#34;refreshSession: Success!&#34;)
-
-    payload = parse_jwt_without_signature_verification(
-        response.accessToken.token,
-    ).payload
-
-    session = Session(
-        self,
-        self.config,
-        response.accessToken.token,
-        build_front_token(
-            response.session.userId,
-            response.accessToken.expiry,
-            payload,
-        ),
-        response.refreshToken,
-        response.antiCsrfToken,
-        response.session.handle,
-        response.session.userId,
-        response.session.recipe_user_id,
-        user_data_in_access_token=payload,
-        req_res_info=None,
-        access_token_updated=True,
-        tenant_id=payload[&#34;tId&#34;],
-    )
-
-    return session</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> Union[RegenerateAccessTokenOkResult, None]</span>
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def regenerate_access_token(
-    self,
-    access_token: str,
-    new_access_token_payload: Union[Dict[str, Any], None],
-    user_context: Dict[str, Any],
-) -&gt; Union[RegenerateAccessTokenOkResult, None]:
-    if new_access_token_payload is None:
-        new_access_token_payload = {}
-    response = await self.querier.send_post_request(
-        NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
-        {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
-        user_context=user_context,
-    )
-    if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
-        return None
-    access_token_obj: Union[None, AccessTokenObj] = None
-    if &#34;accessToken&#34; in response:
-        access_token_obj = AccessTokenObj(
-            response[&#34;accessToken&#34;][&#34;token&#34;],
-            response[&#34;accessToken&#34;][&#34;expiry&#34;],
-            response[&#34;accessToken&#34;][&#34;createdTime&#34;],
-        )
-    session = SessionObj(
-        response[&#34;session&#34;][&#34;handle&#34;],
-        response[&#34;session&#34;][&#34;userId&#34;],
-        RecipeUserId(response[&#34;session&#34;][&#34;recipeUserId&#34;]),
-        response[&#34;session&#34;][&#34;userDataInJWT&#34;],
-        response[&#34;session&#34;][&#34;tenantId&#34;],
-    )
-    return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.remove_claim"><code class="name flex">
 <span>async def <span class="ident">remove_claim</span></span>(<span>self, session_handle: str, claim: SessionClaim[Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def remove_claim(
-    self,
-    session_handle: str,
-    claim: SessionClaim[Any],
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    access_token_payload = claim.remove_from_payload_by_merge_({}, user_context)
-    return await self.merge_into_access_token_payload(
-        session_handle, access_token_payload, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>self, user_id: str, revoke_sessions_for_linked_accounts: bool, tenant_id: Optional[str], revoke_across_all_tenants: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>self, user_id: str, revoke_sessions_for_linked_accounts: bool, tenant_id: Optional[str], revoke_across_all_tenants: bool, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_all_sessions_for_user(
-    self,
-    user_id: str,
-    revoke_sessions_for_linked_accounts: bool,
-    tenant_id: Optional[str],
-    revoke_across_all_tenants: bool,
-    user_context: Dict[str, Any],
-) -&gt; List[str]:
-    return await session_functions.revoke_all_sessions_for_user(
-        self,
-        user_id,
-        revoke_sessions_for_linked_accounts,
-        tenant_id,
-        revoke_across_all_tenants,
-        user_context,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_multiple_sessions"><code class="name flex">
-<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>self, session_handles: List[str], user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>self, session_handles: List[str], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_multiple_sessions(
-    self, session_handles: List[str], user_context: Dict[str, Any]
-) -&gt; List[str]:
-    return await session_functions.revoke_multiple_sessions(
-        self, session_handles, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_session"><code class="name flex">
 <span>async def <span class="ident">revoke_session</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def revoke_session(
-    self, session_handle: str, user_context: Dict[str, Any]
-) -&gt; bool:
-    return await session_functions.revoke_session(
-        self, session_handle, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.set_claim_value"><code class="name flex">
 <span>async def <span class="ident">set_claim_value</span></span>(<span>self, session_handle: str, claim: SessionClaim[Any], value: Any, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def set_claim_value(
-    self,
-    session_handle: str,
-    claim: SessionClaim[Any],
-    value: Any,
-    user_context: Dict[str, Any],
-):
-    access_token_payload_update = claim.add_to_payload_({}, value, user_context)
-    return await self.merge_into_access_token_payload(
-        session_handle, access_token_payload_update, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data_in_database"><code class="name flex">
 <span>async def <span class="ident">update_session_data_in_database</span></span>(<span>self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def update_session_data_in_database(
-    self,
-    session_handle: str,
-    new_session_data: Dict[str, Any],
-    user_context: Dict[str, Any],
-) -&gt; bool:
-    return await session_functions.update_session_data_in_database(
-        self, session_handle, new_session_data, user_context
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.validate_claims"><code class="name flex">
-<span>async def <span class="ident">validate_claims</span></span>(<span>self, user_id: str, recipe_user_id: RecipeUserId, access_token_payload: Dict[str, Any], claim_validators: List[SessionClaimValidator], user_context: Dict[str, Any]) ‑> ClaimsValidationResult</span>
+<span>async def <span class="ident">validate_claims</span></span>(<span>self, user_id: str, recipe_user_id: RecipeUserId, access_token_payload: Dict[str, Any], claim_validators: List[SessionClaimValidator], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def validate_claims(
-    self,
-    user_id: str,
-    recipe_user_id: RecipeUserId,
-    access_token_payload: Dict[str, Any],
-    claim_validators: List[SessionClaimValidator],
-    user_context: Dict[str, Any],
-) -&gt; ClaimsValidationResult:
-    access_token_payload_update = None
-    original_access_token_payload = json.dumps(access_token_payload)
-
-    for validator in claim_validators:
-        log_debug_message(
-            &#34;update_claims_in_payload_if_needed checking should_refetch for %s&#34;,
-            validator.id,
-        )
-        if validator.claim is not None and validator.should_refetch(
-            access_token_payload, user_context
-        ):
-            log_debug_message(
-                &#34;update_claims_in_payload_if_needed refetching for %s&#34;, validator.id
-            )
-            value = await resolve(
-                validator.claim.fetch_value(
-                    user_id,
-                    recipe_user_id,
-                    access_token_payload.get(&#34;tId&#34;, DEFAULT_TENANT_ID),
-                    access_token_payload,
-                    user_context,
-                )
-            )
-            log_debug_message(
-                &#34;update_claims_in_payload_if_needed %s refetch result %s&#34;,
-                validator.id,
-                value,
-            )
-            if value is not None:
-                access_token_payload = validator.claim.add_to_payload_(
-                    access_token_payload, value, user_context
-                )
-
-    if json.dumps(access_token_payload) != original_access_token_payload:
-        access_token_payload_update = access_token_payload
-
-    invalid_claims = await validate_claims_in_payload(
-        claim_validators, access_token_payload, user_context
-    )
-
-    return ClaimsValidationResult(invalid_claims, access_token_payload_update)</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1699,7 +1177,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

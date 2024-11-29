@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from fastapi import Depends, FastAPI
 from fastapi.requests import Request
@@ -85,7 +85,7 @@ def teardown_function(_):
 
 
 @fixture(scope="function")
-async def driver_config_client():
+def driver_config_client() -> TestClient:
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -121,10 +121,10 @@ async def driver_config_client():
         return {"s": session.get_handle()}
 
     @app.get("/handle-session-optional")
-    async def handle_get_optional(session: SessionContainer = Depends(verify_session(session_required=False))):  # type: ignore
+    async def handle_get_optional(session: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
         if session is None:
             return {"s": "empty session"}
-        return {"s": session.get_handle()}
+        return {"s": session.get_handle()}  # type: ignore
 
     @app.post("/logout")
     async def custom_logout(request: Request):  # type: ignore
@@ -551,6 +551,8 @@ def test_fastapi_root_path(fastapi_root_path: str):
     start_st()
 
     # Test with root_path
+    if fastapi_root_path.startswith("/"):
+        fastapi_root_path = fastapi_root_path[1:]
     app = FastAPI(root_path=fastapi_root_path)
     app.add_middleware(get_middleware())
     test_client = TestClient(app)

@@ -123,7 +123,7 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
                 resp = Response(  # type: ignore
-                    session.get_access_token_payload(),
+                    session.get_access_token_payload(),  # type: ignore
                     headers={"Cache-Control": "no-cache, private"},  # type: ignore
                 )  # type: ignore
                 return resp  # type: ignore
@@ -135,18 +135,18 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     session_: SessionContainer = request.supertokens  # type: ignore
 
                     clearing = {}
-                    for k in session_.get_access_token_payload():
+                    for k in session_.get_access_token_payload():  # type: ignore
                         if k not in protected_prop_name:
                             clearing[k] = None
 
                     body = request.data  # type: ignore
-                    await session_.merge_into_access_token_payload(
+                    await session_.merge_into_access_token_payload(  # type: ignore
                         {**clearing, **body}, {}  # type: ignore
                     )
 
                     Test.increment_get_session()
                     resp = Response(  # type: ignore
-                        session_.get_access_token_payload(),
+                        session_.get_access_token_payload(),  # type: ignore
                         headers={"Cache-Control": "no-cache, private"},  # type: ignore
                     )  # type: ignore
                     return resp  # type: ignore
@@ -167,7 +167,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                     return value  # type: ignore
                 session_: SessionContainer = request.supertokens  # type: ignore
 
-                info = await get_session_information(session_.get_handle())
+                info = await get_session_information(session_.get_handle())  # type: ignore
                 assert info is not None
                 clearing = {}
                 for k in info.custom_claims_in_access_token_payload:
@@ -200,7 +200,7 @@ def custom_decorator_for_get_info():  # type: ignore
                 Test.increment_get_session()
                 session: SessionContainer = request.supertokens  # type: ignore
                 resp = Response(  # type: ignore
-                    session.get_user_id(),
+                    session.get_user_id(),  # type: ignore
                     headers={"Cache-Control": "no-cache, private"},  # type: ignore
                 )  # type: ignore
                 return resp  # type: ignore
@@ -221,7 +221,7 @@ def custom_decorator_for_logout():  # type: ignore
                 if value is not None and value.status_code != 200:  # type: ignore
                     return value  # type: ignore
                 session: SessionContainer = request.supertokens  # type: ignore
-                await session.revoke_session()
+                await session.revoke_session()  # type: ignore
                 return Response("success")  # type: ignore
             return send_options_api_response()  # type: ignore
 
@@ -415,9 +415,6 @@ def config(
 
     for header in get_all_cors_headers():
         assert header in settings.CORS_ALLOW_HEADERS
-
-
-config(True, False, None)
 
 
 async def send_file(request: HttpRequest):

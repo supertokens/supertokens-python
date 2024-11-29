@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.thirdparty.provider API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -75,14 +75,14 @@ class Provider:
         self.id = id
         self.config = config
 
-    async def get_config_for_client_type(  # pylint: disable=no-self-use
+    async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -&gt; ProviderConfigForClient:
         _ = client_type
         __ = user_context
         raise NotImplementedError()
 
-    async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
+    async def get_authorisation_redirect_url(
         self,
         redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
@@ -91,7 +91,7 @@ class Provider:
         __ = user_context
         raise NotImplementedError()
 
-    async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
+    async def exchange_auth_code_for_oauth_tokens(
         self,
         redirect_uri_info: RedirectUriInfo,
         user_context: Dict[str, Any],
@@ -100,7 +100,7 @@ class Provider:
         __ = user_context
         raise NotImplementedError()
 
-    async def get_user_info(  # pylint: disable=no-self-use
+    async def get_user_info(
         self,
         oauth_tokens: Dict[str, Any],
         user_context: Dict[str, Any],
@@ -584,31 +584,6 @@ class ProviderInput:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    res = {
-        &#34;thirdPartyId&#34;: self.third_party_id,
-        &#34;name&#34;: self.name,
-        &#34;authorizationEndpoint&#34;: self.authorization_endpoint,
-        &#34;authorizationEndpointQueryParams&#34;: self.authorization_endpoint_query_params,
-        &#34;tokenEndpoint&#34;: self.token_endpoint,
-        &#34;tokenEndpointBodyParams&#34;: self.token_endpoint_body_params,
-        &#34;userInfoEndpoint&#34;: self.user_info_endpoint,
-        &#34;userInfoEndpointQueryParams&#34;: self.user_info_endpoint_query_params,
-        &#34;userInfoEndpointHeaders&#34;: self.user_info_endpoint_headers,
-        &#34;jwksURI&#34;: self.jwks_uri,
-        &#34;oidcDiscoveryEndpoint&#34;: self.oidc_discovery_endpoint,
-        &#34;userInfoMap&#34;: (
-            self.user_info_map.to_json() if self.user_info_map is not None else None
-        ),
-        &#34;requireEmail&#34;: self.require_email,
-    }
-
-    return {k: v for k, v in res.items() if v is not None}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -629,14 +604,14 @@ class ProviderInput:
         self.id = id
         self.config = config
 
-    async def get_config_for_client_type(  # pylint: disable=no-self-use
+    async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -&gt; ProviderConfigForClient:
         _ = client_type
         __ = user_context
         raise NotImplementedError()
 
-    async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
+    async def get_authorisation_redirect_url(
         self,
         redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
@@ -645,7 +620,7 @@ class ProviderInput:
         __ = user_context
         raise NotImplementedError()
 
-    async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
+    async def exchange_auth_code_for_oauth_tokens(
         self,
         redirect_uri_info: RedirectUriInfo,
         user_context: Dict[str, Any],
@@ -654,7 +629,7 @@ class ProviderInput:
         __ = user_context
         raise NotImplementedError()
 
-    async def get_user_info(  # pylint: disable=no-self-use
+    async def get_user_info(
         self,
         oauth_tokens: Dict[str, Any],
         user_context: Dict[str, Any],
@@ -674,74 +649,24 @@ class ProviderInput:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def exchange_auth_code_for_oauth_tokens(  # pylint: disable=no-self-use
-    self,
-    redirect_uri_info: RedirectUriInfo,
-    user_context: Dict[str, Any],
-) -&gt; Dict[str, Any]:
-    _ = redirect_uri_info
-    __ = user_context
-    raise NotImplementedError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_url"><code class="name flex">
 <span>async def <span class="ident">get_authorisation_redirect_url</span></span>(<span>self, redirect_uri_on_provider_dashboard: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect" href="#supertokens_python.recipe.thirdparty.provider.AuthorisationRedirect">AuthorisationRedirect</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_authorisation_redirect_url(  # pylint: disable=no-self-use
-    self,
-    redirect_uri_on_provider_dashboard: str,
-    user_context: Dict[str, Any],
-) -&gt; AuthorisationRedirect:
-    _ = redirect_uri_on_provider_dashboard
-    __ = user_context
-    raise NotImplementedError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_config_for_client_type"><code class="name flex">
 <span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_config_for_client_type(  # pylint: disable=no-self-use
-    self, client_type: Optional[str], user_context: Dict[str, Any]
-) -&gt; ProviderConfigForClient:
-    _ = client_type
-    __ = user_context
-    raise NotImplementedError()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_user_info"><code class="name flex">
-<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> UserInfo</span>
+<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_info(  # pylint: disable=no-self-use
-    self,
-    oauth_tokens: Dict[str, Any],
-    user_context: Dict[str, Any],
-) -&gt; UserInfo:
-    _ = oauth_tokens
-    __ = user_context
-    raise NotImplementedError()</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -806,21 +731,6 @@ class ProviderInput:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; ProviderClientConfig:
-    return ProviderClientConfig(
-        client_id=json.get(&#34;clientId&#34;, &#34;&#34;),
-        client_secret=json.get(&#34;clientSecret&#34;, None),
-        client_type=json.get(&#34;clientType&#34;, None),
-        scope=json.get(&#34;scope&#34;, None),
-        force_pkce=json.get(&#34;forcePKCE&#34;, None),
-        additional_config=json.get(&#34;additionalConfig&#34;, None),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -830,22 +740,6 @@ def from_json(json: Dict[str, Any]) -&gt; ProviderClientConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    res = {
-        &#34;clientId&#34;: self.client_id,
-        &#34;clientSecret&#34;: self.client_secret,
-        &#34;clientType&#34;: self.client_type,
-        &#34;scope&#34;: self.scope,
-        &#34;forcePKCE&#34;: self.force_pkce,
-        &#34;additionalConfig&#34;: self.additional_config,
-    }
-
-    return {k: v for k, v in res.items() if v is not None}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -961,38 +855,6 @@ def from_json(json: Dict[str, Any]) -&gt; ProviderClientConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Dict[str, Any]) -&gt; ProviderConfig:
-    return ProviderConfig(
-        third_party_id=json.get(&#34;thirdPartyId&#34;, &#34;&#34;),
-        name=json.get(&#34;name&#34;, None),
-        clients=[
-            ProviderClientConfig.from_json(c) for c in json.get(&#34;clients&#34;, [])
-        ],
-        authorization_endpoint=json.get(&#34;authorizationEndpoint&#34;, None),
-        authorization_endpoint_query_params=json.get(
-            &#34;authorizationEndpointQueryParams&#34;, None
-        ),
-        token_endpoint=json.get(&#34;tokenEndpoint&#34;, None),
-        token_endpoint_body_params=json.get(&#34;tokenEndpointBodyParams&#34;, None),
-        user_info_endpoint=json.get(&#34;userInfoEndpoint&#34;, None),
-        user_info_endpoint_query_params=json.get(
-            &#34;userInfoEndpointQueryParams&#34;, None
-        ),
-        user_info_endpoint_headers=json.get(&#34;userInfoEndpointHeaders&#34;, None),
-        jwks_uri=json.get(&#34;jwksURI&#34;, None),
-        oidc_discovery_endpoint=json.get(&#34;oidcDiscoveryEndpoint&#34;, None),
-        user_info_map=UserInfoMap.from_json(json.get(&#34;userInfoMap&#34;, None)),
-        require_email=json.get(&#34;requireEmail&#34;, None),
-        validate_id_token_payload=None,
-        generate_fake_email=None,
-        validate_access_token=None,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1002,18 +864,6 @@ def from_json(json: Dict[str, Any]) -&gt; ProviderConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    d = CommonProviderConfig.to_json(self)
-
-    if self.clients is not None:
-        d[&#34;clients&#34;] = [c.to_json() for c in self.clients]
-
-    return d</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1115,15 +965,6 @@ def from_json(json: Dict[str, Any]) -&gt; ProviderConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    d1 = ProviderClientConfig.to_json(self)
-    d2 = CommonProviderConfig.to_json(self)
-    return {**d1, **d2}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1220,20 +1061,6 @@ def from_json(json: Dict[str, Any]) -&gt; ProviderConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Optional[Dict[str, Any]]) -&gt; Optional[UserFields]:
-    if json is None:
-        return None
-    return UserFields(
-        user_id=json.get(&#34;userId&#34;, None),
-        email=json.get(&#34;email&#34;, None),
-        email_verified=json.get(&#34;emailVerified&#34;, None),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1243,19 +1070,6 @@ def from_json(json: Optional[Dict[str, Any]]) -&gt; Optional[UserFields]:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    res = {
-        &#34;userId&#34;: self.user_id,
-        &#34;email&#34;: self.email,
-        &#34;emailVerified&#34;: self.email_verified,
-    }
-
-    return {k: v for k, v in res.items() if v is not None}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1304,21 +1118,6 @@ def from_json(json: Optional[Dict[str, Any]]) -&gt; Optional[UserFields]:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_json(json: Optional[Dict[str, Any]]) -&gt; Optional[UserInfoMap]:
-    if json is None:
-        return None
-    return UserInfoMap(
-        from_id_token_payload=UserFields.from_json(
-            json.get(&#34;fromIdTokenPayload&#34;, None)
-        ),
-        from_user_info_api=UserFields.from_json(json.get(&#34;fromUserInfoAPI&#34;, None)),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1328,18 +1127,6 @@ def from_json(json: Optional[Dict[str, Any]]) -&gt; Optional[UserInfoMap]:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    res: Dict[str, Any] = {}
-    if self.from_id_token_payload:
-        res[&#34;fromIdTokenPayload&#34;] = self.from_id_token_payload.to_json()
-    if self.from_user_info_api:
-        res[&#34;fromUserInfoAPI&#34;] = self.from_user_info_api.to_json()
-    return res</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -1423,7 +1210,7 @@ def from_json(json: Optional[Dict[str, Any]]) -&gt; Optional[UserInfoMap]:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

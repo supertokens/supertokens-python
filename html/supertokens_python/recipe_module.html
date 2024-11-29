@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe_module API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -368,170 +368,48 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abc.abstractmethod
-def get_all_cors_headers(self) -&gt; List[str]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.get_apis_handled"><code class="name flex">
 <span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abc.abstractmethod
-def get_apis_handled(self) -&gt; List[APIHandled]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.get_app_info"><code class="name flex">
 <span>def <span class="ident">get_app_info</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_app_info(self):
-    return self.app_info</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.get_recipe_id"><code class="name flex">
 <span>def <span class="ident">get_recipe_id</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_recipe_id(self):
-    return self.recipe_id</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.handle_api_request"><code class="name flex">
-<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any]) ‑> Union[BaseResponse, None]</span>
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abc.abstractmethod
-async def handle_api_request(
-    self,
-    request_id: str,
-    tenant_id: str,
-    request: BaseRequest,
-    path: NormalisedURLPath,
-    method: str,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; Union[BaseResponse, None]:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.handle_error"><code class="name flex">
-<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any]) ‑> BaseResponse</span>
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abc.abstractmethod
-async def handle_error(
-    self,
-    request: BaseRequest,
-    err: SuperTokensError,
-    response: BaseResponse,
-    user_context: Dict[str, Any],
-) -&gt; BaseResponse:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.is_error_from_this_recipe_based_on_instance"><code class="name flex">
 <span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abc.abstractmethod
-def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe_module.RecipeModule.return_api_id_if_can_handle_request"><code class="name flex">
 <span>async def <span class="ident">return_api_id_if_can_handle_request</span></span>(<span>self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe_module.ApiIdWithTenantId" href="#supertokens_python.recipe_module.ApiIdWithTenantId">ApiIdWithTenantId</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def return_api_id_if_can_handle_request(
-    self, path: NormalisedURLPath, method: str, user_context: Dict[str, Any]
-) -&gt; Union[ApiIdWithTenantId, None]:
-    from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-
-    apis_handled = self.get_apis_handled()
-
-    base_path_str = self.app_info.api_base_path.get_as_string_dangerous()
-    path_str = path.get_as_string_dangerous()
-    regex = rf&#34;^{base_path_str}(?:/([a-zA-Z0-9-]+))?(/.*)$&#34;
-
-    match = re.match(regex, path_str)
-    match_group_1 = match.group(1) if match is not None else None
-    match_group_2 = match.group(2) if match is not None else None
-
-    tenant_id: str = DEFAULT_TENANT_ID
-    remaining_path: Optional[NormalisedURLPath] = None
-
-    if (
-        match is not None
-        and isinstance(match_group_1, str)
-        and isinstance(match_group_2, str)
-    ):
-        tenant_id = match_group_1
-        remaining_path = NormalisedURLPath(match_group_2)
-
-    assert RecipeModule.get_tenant_id is not None
-    assert callable(RecipeModule.get_tenant_id)
-
-    for current_api in apis_handled:
-        if not current_api.disabled and current_api.method == method:
-            if self.app_info.api_base_path.append(
-                current_api.path_without_api_base_path
-            ).equals(path):
-                final_tenant_id = await RecipeModule.get_tenant_id(  # pylint: disable=not-callable
-                    DEFAULT_TENANT_ID, user_context
-                )
-                return ApiIdWithTenantId(current_api.request_id, final_tenant_id)
-
-            if remaining_path is not None and self.app_info.api_base_path.append(
-                current_api.path_without_api_base_path
-            ).equals(self.app_info.api_base_path.append(remaining_path)):
-                final_tenant_id = await RecipeModule.get_tenant_id(  # pylint: disable=not-callable
-                    tenant_id, user_context
-                )
-                return ApiIdWithTenantId(current_api.request_id, final_tenant_id)
-
-    return None</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -577,7 +455,7 @@ def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

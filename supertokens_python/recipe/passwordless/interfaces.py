@@ -112,12 +112,15 @@ class ConsumedDevice:
         )
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        result: Dict[str, Any] = {
             "preAuthSessionId": self.pre_auth_session_id,
             "failedCodeInputAttemptCount": self.failed_code_input_attempt_count,
-            "email": self.email,
-            "phoneNumber": self.phone_number,
         }
+        if self.email is not None:
+            result["email"] = self.email
+        if self.phone_number is not None:
+            result["phoneNumber"] = self.phone_number
+        return result
 
 
 class ConsumeCodeOkResult:
@@ -182,6 +185,12 @@ class CheckCodeOkResult:
     def __init__(self, consumed_device: ConsumedDevice):
         self.status = "OK"
         self.consumed_device = consumed_device
+
+    def to_json(self):
+        return {
+            "status": self.status,
+            "consumedDevice": self.consumed_device.to_json(),
+        }
 
 
 class CheckCodeIncorrectUserInputCodeError(ConsumeCodeIncorrectUserInputCodeError):

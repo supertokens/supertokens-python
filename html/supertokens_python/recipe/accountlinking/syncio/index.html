@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.accountlinking.syncio API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -182,212 +182,60 @@ def is_email_change_allowed(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def can_create_primary_user(
-    recipe_user_id: RecipeUserId, user_context: Optional[Dict[str, Any]] = None
-):
-    from ..asyncio import can_create_primary_user as async_can_create_primary_user
-
-    return sync(async_can_create_primary_user(recipe_user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.can_link_accounts"><code class="name flex">
 <span>def <span class="ident">can_link_accounts</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, primary_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def can_link_accounts(
-    recipe_user_id: RecipeUserId,
-    primary_user_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import can_link_accounts as async_can_link_accounts
-
-    return sync(async_can_link_accounts(recipe_user_id, primary_user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.create_primary_user"><code class="name flex">
 <span>def <span class="ident">create_primary_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_primary_user(
-    recipe_user_id: RecipeUserId, user_context: Optional[Dict[str, Any]] = None
-):
-    from ..asyncio import create_primary_user as async_create_primary_user
-
-    return sync(async_create_primary_user(recipe_user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.create_primary_user_id_or_link_accounts"><code class="name flex">
 <span>def <span class="ident">create_primary_user_id_or_link_accounts</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_primary_user_id_or_link_accounts(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    session: Optional[SessionContainer] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import (
-        create_primary_user_id_or_link_accounts as async_create_primary_user_id_or_link_accounts,
-    )
-
-    return sync(
-        async_create_primary_user_id_or_link_accounts(
-            tenant_id, recipe_user_id, session, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.get_primary_user_that_can_be_linked_to_recipe_user_id"><code class="name flex">
 <span>def <span class="ident">get_primary_user_that_can_be_linked_to_recipe_user_id</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_primary_user_that_can_be_linked_to_recipe_user_id(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import (
-        get_primary_user_that_can_be_linked_to_recipe_user_id as async_get_primary_user_that_can_be_linked_to_recipe_user_id,
-    )
-
-    return sync(
-        async_get_primary_user_that_can_be_linked_to_recipe_user_id(
-            tenant_id, recipe_user_id, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.is_email_change_allowed"><code class="name flex">
 <span>def <span class="ident">is_email_change_allowed</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, new_email: str, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_email_change_allowed(
-    recipe_user_id: RecipeUserId,
-    new_email: str,
-    is_verified: bool,
-    session: Optional[SessionContainer] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import is_email_change_allowed as async_is_email_change_allowed
-
-    return sync(
-        async_is_email_change_allowed(
-            recipe_user_id, new_email, is_verified, session, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.is_sign_in_allowed"><code class="name flex">
 <span>def <span class="ident">is_sign_in_allowed</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_sign_in_allowed(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    session: Optional[SessionContainer] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import is_sign_in_allowed as async_is_sign_in_allowed
-
-    return sync(
-        async_is_sign_in_allowed(tenant_id, recipe_user_id, session, user_context)
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.is_sign_up_allowed"><code class="name flex">
 <span>def <span class="ident">is_sign_up_allowed</span></span>(<span>tenant_id: str, new_user: <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="../types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_sign_up_allowed(
-    tenant_id: str,
-    new_user: AccountInfoWithRecipeId,
-    is_verified: bool,
-    session: Optional[SessionContainer] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import is_sign_up_allowed as async_is_sign_up_allowed
-
-    return sync(
-        async_is_sign_up_allowed(
-            tenant_id, new_user, is_verified, session, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.link_accounts"><code class="name flex">
 <span>def <span class="ident">link_accounts</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, primary_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def link_accounts(
-    recipe_user_id: RecipeUserId,
-    primary_user_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from ..asyncio import link_accounts as async_link_accounts
-
-    return sync(async_link_accounts(recipe_user_id, primary_user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.unlink_account"><code class="name flex">
 <span>def <span class="ident">unlink_account</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def unlink_account(
-    recipe_user_id: RecipeUserId, user_context: Optional[Dict[str, Any]] = None
-):
-    from ..asyncio import unlink_account as async_unlink_account
-
-    return sync(async_unlink_account(recipe_user_id, user_context))</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -423,7 +271,7 @@ def is_email_change_allowed(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

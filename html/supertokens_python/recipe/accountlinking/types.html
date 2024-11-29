@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.accountlinking.types API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -67,9 +67,9 @@ class AccountInfoWithRecipeId(AccountInfo):
         third_party: Optional[ThirdPartyInfo] = None,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[
-            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;
-        ] = recipe_id
+        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
+            recipe_id
+        )
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
@@ -91,9 +91,9 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         super().__init__(recipe_id, email, phone_number, third_party)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id: Literal[
-            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;
-        ] = recipe_id
+        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
+            recipe_id
+        )
 
     @staticmethod
     def from_login_method(
@@ -217,9 +217,9 @@ class AccountLinkingConfig:
         third_party: Optional[ThirdPartyInfo] = None,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[
-            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;
-        ] = recipe_id
+        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
+            recipe_id
+        )
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
@@ -243,16 +243,6 @@ class AccountLinkingConfig:
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        **super().to_json(),
-        &#34;recipeId&#34;: self.recipe_id,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -304,32 +294,10 @@ class AccountLinkingConfig:
 <h3>Static methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method"><code class="name flex">
-<span>def <span class="ident">from_account_info_or_login_method</span></span>(<span>account_info: Union[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, LoginMethod]) ‑> <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a></span>
+<span>def <span class="ident">from_account_info_or_login_method</span></span>(<span>account_info: Union[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, LoginMethod])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_account_info_or_login_method(
-    account_info: Union[AccountInfoWithRecipeId, LoginMethod],
-) -&gt; AccountInfoWithRecipeIdAndUserId:
-    from supertokens_python.types import (
-        LoginMethod as LM,
-    )
-
-    return AccountInfoWithRecipeIdAndUserId(
-        recipe_id=account_info.recipe_id,
-        email=account_info.email,
-        phone_number=account_info.phone_number,
-        third_party=account_info.third_party,
-        recipe_user_id=(
-            account_info.recipe_user_id if isinstance(account_info, LM) else None
-        ),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -425,9 +393,9 @@ def from_account_info_or_login_method(
         super().__init__(recipe_id, email, phone_number, third_party)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id: Literal[
-            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;
-        ] = recipe_id
+        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
+            recipe_id
+        )
 
     @staticmethod
     def from_login_method(
@@ -450,27 +418,10 @@ def from_account_info_or_login_method(
 <h3>Static methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.types.RecipeLevelUser.from_login_method"><code class="name flex">
-<span>def <span class="ident">from_login_method</span></span>(<span>login_method: LoginMethod) ‑> <a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a></span>
+<span>def <span class="ident">from_login_method</span></span>(<span>login_method: LoginMethod)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def from_login_method(
-    login_method: LoginMethod,
-) -&gt; RecipeLevelUser:
-    return RecipeLevelUser(
-        tenant_ids=login_method.tenant_ids,
-        time_joined=login_method.time_joined,
-        recipe_id=login_method.recipe_id,
-        email=login_method.email,
-        phone_number=login_method.phone_number,
-        third_party=login_method.third_party,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -558,7 +509,7 @@ def from_login_method(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

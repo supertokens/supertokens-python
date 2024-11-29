@@ -13,4 +13,10 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 
+if True:
+    # to help middleware function with uvicorn (to ensure supertokens init is called)
+    from polls.views import config
+
+    config(True, False, None)
+
 application = get_wsgi_application()

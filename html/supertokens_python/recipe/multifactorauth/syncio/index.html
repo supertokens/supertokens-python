@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multifactorauth.syncio API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -162,165 +162,42 @@ def remove_from_required_secondary_factors_for_user(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_to_required_secondary_factors_for_user(
-    user_id: str,
-    factor_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        add_to_required_secondary_factors_for_user as async_func,
-    )
-
-    return sync(async_func(user_id, factor_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.syncio.assert_allowed_to_setup_factor_else_throw_invalid_claim_error"><code class="name flex">
 <span>def <span class="ident">assert_allowed_to_setup_factor_else_throw_invalid_claim_error</span></span>(<span>session: SessionContainer, factor_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
-    session: SessionContainer,
-    factor_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        assert_allowed_to_setup_factor_else_throw_invalid_claim_error as async_func,
-    )
-
-    return sync(async_func(session, factor_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.syncio.get_factors_setup_for_user"><code class="name flex">
 <span>def <span class="ident">get_factors_setup_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_factors_setup_for_user(
-    user_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; List[str]:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        get_factors_setup_for_user as async_func,
-    )
-
-    return sync(async_func(user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.syncio.get_mfa_requirements_for_auth"><code class="name flex">
 <span>def <span class="ident">get_mfa_requirements_for_auth</span></span>(<span>session: SessionContainer, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_mfa_requirements_for_auth(
-    session: SessionContainer,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        get_mfa_requirements_for_auth as async_func,
-    )
-
-    return sync(async_func(session, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.syncio.get_required_secondary_factors_for_user"><code class="name flex">
 <span>def <span class="ident">get_required_secondary_factors_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_required_secondary_factors_for_user(
-    user_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; List[str]:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        get_required_secondary_factors_for_user as async_func,
-    )
-
-    return sync(async_func(user_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.syncio.mark_factor_as_complete_in_session"><code class="name flex">
 <span>def <span class="ident">mark_factor_as_complete_in_session</span></span>(<span>session: SessionContainer, factor_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def mark_factor_as_complete_in_session(
-    session: SessionContainer,
-    factor_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        mark_factor_as_complete_in_session as async_func,
-    )
-
-    return sync(async_func(session, factor_id, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.syncio.remove_from_required_secondary_factors_for_user"><code class="name flex">
 <span>def <span class="ident">remove_from_required_secondary_factors_for_user</span></span>(<span>user_id: str, factor_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def remove_from_required_secondary_factors_for_user(
-    user_id: str,
-    factor_id: str,
-    user_context: Optional[Dict[str, Any]] = None,
-) -&gt; None:
-    if user_context is None:
-        user_context = {}
-
-    from supertokens_python.recipe.multifactorauth.asyncio import (
-        remove_from_required_secondary_factors_for_user as async_func,
-    )
-
-    return sync(async_func(user_id, factor_id, user_context))</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -353,7 +230,7 @@ def remove_from_required_secondary_factors_for_user(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

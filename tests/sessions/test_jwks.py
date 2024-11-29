@@ -655,7 +655,7 @@ from supertokens_python.recipe.session import SessionContainer
 
 
 @fixture(scope="function")
-async def client():
+def client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 

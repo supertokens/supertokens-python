@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.multifactorauth.api.implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -323,123 +323,6 @@ class APIImplementation(APIInterface):
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def resync_session_and_fetch_mfa_info_put(
-    self,
-    api_options: APIOptions,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
-
-    module = importlib.import_module(
-        &#34;supertokens_python.recipe.multifactorauth.utils&#34;
-    )
-
-    session_user = await get_user(session.get_user_id(), user_context)
-
-    if session_user is None:
-        raise UnauthorisedError(
-            &#34;Session user not found&#34;,
-        )
-
-    mfa_info = await module.update_and_get_mfa_related_info_in_session(
-        input_session=session,
-        user_context=user_context,
-    )
-    factors_setup_for_user = (
-        await api_options.recipe_implementation.get_factors_setup_for_user(
-            user=session_user,
-            user_context=user_context,
-        )
-    )
-    tenant_info = await get_tenant(
-        session.get_tenant_id(user_context), user_context
-    )
-    if tenant_info is None:
-        raise UnauthorisedError(
-            &#34;Tenant not found&#34;,
-        )
-    all_available_secondary_factors = (
-        await api_options.recipe_instance.get_all_available_secondary_factor_ids(
-            tenant_info
-        )
-    )
-
-    factors_allowed_to_setup: List[str] = []
-
-    async def get_factors_set_up_for_user():
-        return factors_setup_for_user
-
-    async def get_mfa_requirements_for_auth():
-        return mfa_info.mfa_requirements_for_auth
-
-    for factor_id in all_available_secondary_factors:
-        try:
-            await api_options.recipe_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
-                session=session,
-                factor_id=factor_id,
-                factors_set_up_for_user=get_factors_set_up_for_user,
-                mfa_requirements_for_auth=get_mfa_requirements_for_auth,
-                user_context=user_context,
-            )
-            factors_allowed_to_setup.append(factor_id)
-        except SuperTokensSessionError as err:
-            if not isinstance(err, InvalidClaimsError):
-                raise err
-
-    next_set_of_unsatisfied_factors = (
-        MultiFactorAuthClaim.get_next_set_of_unsatisfied_factors(
-            mfa_info.completed_factors, mfa_info.mfa_requirements_for_auth
-        )
-    )
-
-    get_emails_for_factors_result = (
-        await api_options.recipe_instance.get_emails_for_factors(
-            session_user, session.get_recipe_user_id(user_context)
-        )
-    )
-    get_phone_numbers_for_factors_result = (
-        await api_options.recipe_instance.get_phone_numbers_for_factors(
-            session_user, session.get_recipe_user_id(user_context)
-        )
-    )
-    if (
-        get_emails_for_factors_result.status == &#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;
-        or get_phone_numbers_for_factors_result.status
-        == &#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;
-    ):
-        raise UnauthorisedError(
-            &#34;User no longer associated with the session&#34;,
-        )
-
-    next_factors = [
-        factor_id
-        for factor_id in next_set_of_unsatisfied_factors.factor_ids
-        if factor_id in factors_allowed_to_setup
-        or factor_id in factors_setup_for_user
-    ]
-
-    if (
-        len(next_factors) == 0
-        and len(next_set_of_unsatisfied_factors.factor_ids) != 0
-    ):
-        raise Exception(
-            f&#34;The user is required to complete secondary factors they are not allowed to &#34;
-            f&#34;({&#39;, &#39;.join(next_set_of_unsatisfied_factors.factor_ids)}), likely because of configuration issues.&#34;
-        )
-    return ResyncSessionAndFetchMFAInfoPUTOkResult(
-        factors=NextFactors(
-            next_=next_factors,
-            already_setup=factors_setup_for_user,
-            allowed_to_setup=factors_allowed_to_setup,
-        ),
-        emails=get_emails_for_factors_result.factor_id_to_emails_map,
-        phone_numbers=get_phone_numbers_for_factors_result.factor_id_to_phone_number_map,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -471,7 +354,7 @@ class APIImplementation(APIInterface):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

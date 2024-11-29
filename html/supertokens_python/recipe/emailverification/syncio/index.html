@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.emailverification.syncio API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -168,181 +168,48 @@ def send_email_verification_email(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_email_verification_link(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    email: Optional[str],
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        create_email_verification_link,
-    )
-
-    return sync(
-        create_email_verification_link(tenant_id, recipe_user_id, email, user_context)
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.create_email_verification_token"><code class="name flex">
 <span>def <span class="ident">create_email_verification_token</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_email_verification_token(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        create_email_verification_token,
-    )
-
-    return sync(
-        create_email_verification_token(tenant_id, recipe_user_id, email, user_context)
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.is_email_verified"><code class="name flex">
 <span>def <span class="ident">is_email_verified</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_email_verified(
-    recipe_user_id: RecipeUserId,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
-
-    return sync(is_email_verified(recipe_user_id, email, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.revoke_email_verification_tokens"><code class="name flex">
 <span>def <span class="ident">revoke_email_verification_tokens</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def revoke_email_verification_tokens(
-    tenant_id: str,
-    recipe_user_id: RecipeUserId,
-    email: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        revoke_email_verification_tokens,
-    )
-
-    return sync(
-        revoke_email_verification_tokens(tenant_id, recipe_user_id, email, user_context)
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.send_email"><code class="name flex">
 <span>def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_email(
-    input_: EmailTemplateVars,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import send_email
-
-    return sync(send_email(input_, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.send_email_verification_email"><code class="name flex">
 <span>def <span class="ident">send_email_verification_email</span></span>(<span>tenant_id: str, user_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str], user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_email_verification_email(
-    tenant_id: str,
-    user_id: str,
-    recipe_user_id: RecipeUserId,
-    email: Optional[str],
-    user_context: Optional[Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        send_email_verification_email,
-    )
-
-    return sync(
-        send_email_verification_email(
-            tenant_id, user_id, recipe_user_id, email, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.unverify_email"><code class="name flex">
 <span>def <span class="ident">unverify_email</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def unverify_email(
-    recipe_user_id: RecipeUserId,
-    email: Optional[str] = None,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import unverify_email
-
-    return sync(unverify_email(recipe_user_id, email, user_context))</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.verify_email_using_token"><code class="name flex">
 <span>def <span class="ident">verify_email_using_token</span></span>(<span>tenant_id: str, token: str, attempt_account_linking: bool = True, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def verify_email_using_token(
-    tenant_id: str,
-    token: str,
-    attempt_account_linking: bool = True,
-    user_context: Union[None, Dict[str, Any]] = None,
-):
-    from supertokens_python.recipe.emailverification.asyncio import (
-        verify_email_using_token,
-    )
-
-    return sync(
-        verify_email_using_token(
-            tenant_id, token, attempt_account_linking, user_context
-        )
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -376,7 +243,7 @@ def send_email_verification_email(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

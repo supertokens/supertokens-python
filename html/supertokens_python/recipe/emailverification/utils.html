@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.emailverification.utils API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -157,79 +157,16 @@ def get_email_verify_link(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.utils.get_email_verify_link"><code class="name flex">
-<span>def <span class="ident">get_email_verify_link</span></span>(<span>app_info: AppInfo, token: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any]) ‑> str</span>
+<span>def <span class="ident">get_email_verify_link</span></span>(<span>app_info: AppInfo, token: str, tenant_id: str, request: Optional[BaseRequest], user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_email_verify_link(
-    app_info: AppInfo,
-    token: str,
-    tenant_id: str,
-    request: Optional[BaseRequest],
-    user_context: Dict[str, Any],
-) -&gt; str:
-    return (
-        app_info.get_origin(request, user_context).get_as_string_dangerous()
-        + app_info.website_base_path.get_as_string_dangerous()
-        + &#34;/verify-email&#34;
-        + &#34;?token=&#34;
-        + token
-        + &#34;&amp;tenantId=&#34;
-        + tenant_id
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate_and_normalise_user_input(
-    app_info: AppInfo,
-    mode: MODE_TYPE,
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
-) -&gt; EmailVerificationConfig:
-    if mode not in [&#34;REQUIRED&#34;, &#34;OPTIONAL&#34;]:
-        raise ValueError(
-            &#34;Email Verification recipe mode must be one of &#39;REQUIRED&#39; or &#39;OPTIONAL&#39;&#34;
-        )
-
-    def get_email_delivery_config() -&gt; (
-        EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
-    ):
-        email_service = email_delivery.service if email_delivery is not None else None
-        if email_service is None:
-            email_service = BackwardCompatibilityService(app_info)
-
-        if email_delivery is not None and email_delivery.override is not None:
-            override = email_delivery.override
-        else:
-            override = None
-        return EmailDeliveryConfigWithService(email_service, override=override)
-
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError(&#34;override must be of type OverrideConfig or None&#34;)
-
-    if override is None:
-        override = OverrideConfig()
-
-    return EmailVerificationConfig(
-        mode,
-        get_email_delivery_config,
-        get_email_for_recipe_user_id,
-        override,
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -316,7 +253,7 @@ def get_email_verify_link(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

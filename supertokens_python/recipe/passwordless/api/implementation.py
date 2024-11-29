@@ -33,6 +33,9 @@ from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface,
     APIOptions,
     CheckCodeOkResult,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeExpiredUserInputCodeError,
+    CheckCodeRestartFlowError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeOkResult,
@@ -544,6 +547,15 @@ class APIImplementation(APIInterface):
         account_info = AccountInfo(
             phone_number=device_info.phone_number, email=device_info.email
         )
+
+        check_credentials_response: Optional[
+            Union[
+                CheckCodeOkResult,
+                CheckCodeIncorrectUserInputCodeError,
+                CheckCodeExpiredUserInputCodeError,
+                CheckCodeRestartFlowError,
+            ]
+        ] = None
 
         async def check_credentials(_: str):
             nonlocal check_credentials_response

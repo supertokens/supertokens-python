@@ -165,7 +165,7 @@ class RecipeImplementation(RecipeInterface):
         return DeleteRoleOkResult(did_role_exist=response["didRoleExist"])
 
     async def get_all_roles(self, user_context: Dict[str, Any]) -> GetAllRolesOkResult:
-        params = {}
+        params: Dict[str, Any] = {}
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/roles"),
             params,

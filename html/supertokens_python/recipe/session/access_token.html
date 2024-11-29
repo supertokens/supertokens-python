@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.session.access_token API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -254,219 +254,24 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_info_from_access_token(
-    config: SessionConfig,
-    jwt_info: ParsedJWTInfo,
-    do_anti_csrf_check: bool,
-):
-    try:
-        payload: Optional[Dict[str, Any]] = None
-        decode_algo = (
-            jwt_info.parsed_header[&#34;alg&#34;]
-            if jwt_info.parsed_header is not None
-            else &#34;RS256&#34;
-        )
-
-        if jwt_info.version &gt;= 3:
-            matching_keys = get_latest_keys(config, jwt_info.kid)
-            payload = jwt.decode(  # type: ignore
-                jwt_info.raw_token_string,
-                matching_keys[0].key,  # type: ignore
-                algorithms=[decode_algo],
-                options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
-            )
-        else:
-            # It won&#39;t have kid. So we&#39;ll have to try the token against all the keys from all the jwk_clients
-            # If any of them work, we&#39;ll use that payload
-            for k in get_latest_keys(config):
-                try:
-                    payload = jwt.decode(  # type: ignore
-                        jwt_info.raw_token_string,
-                        k.key,  # type: ignore
-                        algorithms=[decode_algo],
-                        options={&#34;verify_signature&#34;: True, &#34;verify_exp&#34;: True},
-                    )
-                    break
-                except DecodeError:
-                    pass
-
-        if payload is None:
-            raise DecodeError(&#34;Could not decode the token&#34;)
-
-        validate_access_token_structure(payload, jwt_info.version)
-
-        if jwt_info.version == 2:
-            user_id = sanitize_string(payload.get(&#34;userId&#34;))
-            expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
-            time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
-            user_data = payload.get(&#34;userData&#34;)
-        else:
-            user_id = sanitize_string(payload.get(&#34;sub&#34;))
-            expiry_time = sanitize_number(payload.get(&#34;exp&#34;, 0) * 1000)
-            time_created = sanitize_number(payload.get(&#34;iat&#34;, 0) * 1000)
-            user_data = payload
-
-        session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
-        recipe_user_id = sanitize_string(payload.get(&#34;rsub&#34;, user_id))
-        refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
-        parent_refresh_token_hash_1 = sanitize_string(
-            payload.get(&#34;parentRefreshTokenHash1&#34;)
-        )
-        anti_csrf_token = sanitize_string(payload.get(&#34;antiCsrfToken&#34;))
-        tenant_id = DEFAULT_TENANT_ID
-
-        if jwt_info.version &gt;= 4:
-            tenant_id = sanitize_string(payload.get(&#34;tId&#34;))
-
-        if anti_csrf_token is None and do_anti_csrf_check:
-            raise Exception(&#34;Access token does not contain the anti-csrf token&#34;)
-
-        assert isinstance(expiry_time, (float, int))
-
-        if expiry_time &lt; get_timestamp_ms():
-            raise Exception(&#34;Access token expired&#34;)
-
-        return {
-            &#34;sessionHandle&#34;: session_handle,
-            &#34;userId&#34;: user_id,
-            &#34;refreshTokenHash1&#34;: refresh_token_hash_1,
-            &#34;parentRefreshTokenHash1&#34;: parent_refresh_token_hash_1,
-            &#34;userData&#34;: user_data,
-            &#34;antiCsrfToken&#34;: anti_csrf_token,
-            &#34;expiryTime&#34;: expiry_time,
-            &#34;timeCreated&#34;: time_created,
-            &#34;tenantId&#34;: tenant_id,
-            &#34;recipeUserId&#34;: recipe_user_id,
-        }
-    except Exception as e:
-        log_debug_message(
-            &#34;getInfoFromAccessToken: Returning TRY_REFRESH_TOKEN because access token validation failed - %s&#34;,
-            e,
-        )
-        raise_try_refresh_token_exception(e)</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.sanitize_number"><code class="name flex">
 <span>def <span class="ident">sanitize_number</span></span>(<span>n: Any) ‑> Union[int, float, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
-    if isinstance(n, (int, float)):
-        return n
-
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.sanitize_string"><code class="name flex">
 <span>def <span class="ident">sanitize_string</span></span>(<span>s: Any) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sanitize_string(s: Any) -&gt; Union[str, None]:
-    if s == &#34;&#34;:
-        return s
-
-    if not isinstance(s, str):
-        return None
-
-    return s.strip()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.validate_access_token_structure"><code class="name flex">
 <span>def <span class="ident">validate_access_token_structure</span></span>(<span>payload: Dict[str, Any], version: int) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt; None:
-    if version &gt;= 5:
-        if (
-            not isinstance(payload.get(&#34;sub&#34;), str)
-            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
-            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
-            or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
-            or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-            or not isinstance(payload.get(&#34;rsub&#34;), str)
-        ):
-            log_debug_message(
-                &#34;validateAccessTokenStructure: Access token is using version &gt;= 5&#34;
-            )
-            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            # it would come here if we change the structure of the JWT.
-            raise Exception(
-                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-            )
-    elif version &gt;= 4:
-        if (
-            not isinstance(payload.get(&#34;sub&#34;), str)
-            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
-            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
-            or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
-            or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        ):
-            log_debug_message(
-                &#34;validateAccessTokenStructure: Access token is using version &gt;= 4&#34;
-            )
-            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            # it would come here if we change the structure of the JWT.
-            raise Exception(
-                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-            )
-    elif version &gt;= 3:
-        if (
-            not isinstance(payload.get(&#34;sub&#34;), str)
-            or not isinstance(payload.get(&#34;exp&#34;), (int, float))
-            or not isinstance(payload.get(&#34;iat&#34;), (int, float))
-            or not isinstance(payload.get(&#34;sessionHandle&#34;), str)
-            or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        ):
-            log_debug_message(
-                &#34;validateAccessTokenStructure: Access token is using version &gt;= 3&#34;
-            )
-            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            # it would come here if we change the structure of the JWT.
-            raise Exception(
-                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-            )
-
-        if version &gt;= 4:
-            if not isinstance(payload.get(&#34;tId&#34;), str):
-                raise Exception(
-                    &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-                )
-    elif (
-        not isinstance(payload.get(&#34;sessionHandle&#34;), str)
-        or not isinstance(payload.get(&#34;userId&#34;), str)
-        or not isinstance(payload.get(&#34;refreshTokenHash1&#34;), str)
-        or payload.get(&#34;userData&#34;) is None
-        or not isinstance(payload.get(&#34;expiryTime&#34;), (int, float))
-        or not isinstance(payload.get(&#34;timeCreated&#34;), (int, float))
-    ):
-        log_debug_message(
-            &#34;validateAccessTokenStructure: Access token is using version &lt; 3&#34;
-        )
-        # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-        # it would come here if we change the structure of the JWT.
-        raise Exception(
-            &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
-        )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -496,7 +301,7 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -&gt;
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

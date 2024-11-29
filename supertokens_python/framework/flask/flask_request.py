@@ -44,8 +44,7 @@ class FlaskRequest(BaseRequest):
 
     def method(self) -> str:
         if isinstance(self.request, dict):
-            temp: str = self.request["REQUEST_METHOD"]
-            return temp
+            return str(self.request["REQUEST_METHOD"])  # type: ignore
         return self.request.method  # type: ignore
 
     def get_cookie(self, key: str) -> Union[str, None]:
@@ -75,8 +74,10 @@ class FlaskRequest(BaseRequest):
 
     def get_path(self) -> str:
         if isinstance(self.request, dict):
-            temp: str = self.request["PATH_INFO"]
-            return temp
+            if not isinstance(self.request["PATH_INFO"], str):
+                raise Exception("should never happen")
+
+            return str(self.request["PATH_INFO"])  # type: ignore
         return self.request.base_url
 
     async def form_data(self) -> Dict[str, Any]:

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.accountlinking.utils API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -143,106 +143,24 @@ def validate_and_normalise_user_input(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def default_on_account_linked(_: User, __: RecipeLevelUser, ___: Dict[str, Any]):
-    pass</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.utils.default_should_do_automatic_account_linking"><code class="name flex">
-<span>async def <span class="ident">default_should_do_automatic_account_linking</span></span>(<span>_: AccountInfoWithRecipeIdAndUserId, ___: Optional[User], ____: Optional[SessionContainer], _____: str, ______: Dict[str, Any]) ‑> Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]</span>
+<span>async def <span class="ident">default_should_do_automatic_account_linking</span></span>(<span>_: AccountInfoWithRecipeIdAndUserId, ___: Optional[User], ____: Optional[SessionContainer], _____: str, ______: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def default_should_do_automatic_account_linking(
-    _: AccountInfoWithRecipeIdAndUserId,
-    ___: Optional[User],
-    ____: Optional[SessionContainer],
-    _____: str,
-    ______: Dict[str, Any],
-) -&gt; Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]:
-    from .types import (
-        ShouldNotAutomaticallyLink as SNAL,
-    )
-
-    return SNAL()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.utils.recipe_init_defined_should_do_automatic_account_linking"><code class="name flex">
 <span>def <span class="ident">recipe_init_defined_should_do_automatic_account_linking</span></span>(<span>) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def recipe_init_defined_should_do_automatic_account_linking() -&gt; bool:
-    return not _did_use_default_should_do_automatic_account_linking</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>_: AppInfo, on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Union[InputOverrideConfig, None] = None) ‑> AccountLinkingConfig</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>_: AppInfo, on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate_and_normalise_user_input(
-    _: AppInfo,
-    on_account_linked: Optional[
-        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
-    ] = None,
-    should_do_automatic_account_linking: Optional[
-        Callable[
-            [
-                AccountInfoWithRecipeIdAndUserId,
-                Optional[User],
-                Optional[SessionContainer],
-                str,
-                Dict[str, Any],
-            ],
-            Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
-        ]
-    ] = None,
-    override: Union[InputOverrideConfig, None] = None,
-) -&gt; AccountLinkingConfig:
-    from .types import (
-        OverrideConfig,
-        InputOverrideConfig as IOC,
-        AccountLinkingConfig as ALC,
-    )
-
-    global _did_use_default_should_do_automatic_account_linking
-    if override is None:
-        override = IOC()
-
-    _did_use_default_should_do_automatic_account_linking = (
-        should_do_automatic_account_linking is None
-    )
-
-    return ALC(
-        override=OverrideConfig(functions=override.functions),
-        on_account_linked=(
-            default_on_account_linked
-            if on_account_linked is None
-            else on_account_linked
-        ),
-        should_do_automatic_account_linking=(
-            default_should_do_automatic_account_linking
-            if should_do_automatic_account_linking is None
-            else should_do_automatic_account_linking
-        ),
-    )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -272,7 +190,7 @@ def validate_and_normalise_user_input(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

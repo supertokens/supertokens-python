@@ -70,7 +70,7 @@ from tests.utils import extract_info
 
 
 @pytest.fixture(scope="function")
-async def app():
+def app():
     fast = FastAPI()
     fast.add_middleware(get_middleware())
 

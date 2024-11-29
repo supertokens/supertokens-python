@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.auth_utils API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -619,7 +619,10 @@ async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_acc
     session: Union[SessionContainer, None],
     should_try_linking_with_session_user: Union[bool, None],
     user_context: Dict[str, Any],
-) -&gt; Union[OkResponse2, LinkingToSessionUserFailedError,]:
+) -&gt; Union[
+    OkResponse2,
+    LinkingToSessionUserFailedError,
+]:
     log_debug_message(
         &#34;link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info called&#34;
     )
@@ -827,7 +830,10 @@ async def try_linking_by_session(
     authenticated_user: User,
     session_user: User,
     user_context: Dict[str, Any],
-) -&gt; Union[OkResponse2, LinkingToSessionUserFailedError,]:
+) -&gt; Union[
+    OkResponse2,
+    LinkingToSessionUserFailedError,
+]:
     log_debug_message(&#34;tryLinkingBySession called&#34;)
 
     session_user_has_verified_account_info = any(
@@ -1038,934 +1044,66 @@ async def load_session_in_auth_api_if_needed(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def check_auth_type_and_linking_status(
-    session: Union[SessionContainer, None],
-    should_try_linking_with_session_user: Union[bool, None],
-    account_info: AccountInfoWithRecipeId,
-    input_user: Union[User, None],
-    skip_session_user_update_in_core: bool,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    OkFirstFactorResponse,
-    OkSecondFactorLinkedResponse,
-    OkSecondFactorNotLinkedResponse,
-    LinkingToSessionUserFailedError,
-]:
-    log_debug_message(&#34;check_auth_type_and_linking_status called&#34;)
-    session_user: Union[User, None] = None
-    if session is None:
-        if should_try_linking_with_session_user is True:
-            raise UnauthorisedError(
-                &#34;Session not found but shouldTryLinkingWithSessionUser is true&#34;
-            )
-        log_debug_message(
-            &#34;check_auth_type_and_linking_status returning first factor because there is no session&#34;
-        )
-        return OkFirstFactorResponse()
-    else:
-        if should_try_linking_with_session_user is False:
-            # In our normal flows this should never happen - but some user overrides might do this.
-            # Anyway, since should_try_linking_with_session_user explicitly set to false, it&#39;s safe to consider this a first factor
-            log_debug_message(
-                &#34;check_auth_type_and_linking_status returning first factor because should_try_linking_with_session_user is False&#34;
-            )
-            return OkFirstFactorResponse()
-        if not recipe_init_defined_should_do_automatic_account_linking():
-            if should_try_linking_with_session_user is True:
-                raise Exception(
-                    &#34;Please initialise the account linking recipe and define should_do_automatic_account_linking to enable MFA&#34;
-                )
-            else:
-                if MultiFactorAuthRecipe.get_instance() is not None:
-                    raise Exception(
-                        &#34;Please initialise the account linking recipe and define should_do_automatic_account_linking to enable MFA&#34;
-                    )
-                else:
-                    return OkFirstFactorResponse()
-
-        if input_user is not None and input_user.id == session.get_user_id():
-            log_debug_message(
-                &#34;check_auth_type_and_linking_status returning secondary factor, session and input user are the same&#34;
-            )
-            return OkSecondFactorLinkedResponse(
-                session_user=input_user,
-            )
-
-        log_debug_message(
-            f&#34;check_auth_type_and_linking_status loading session user, {input_user.id if input_user else None} === {session.get_user_id()}&#34;
-        )
-        session_user_result = await try_and_make_session_user_into_a_primary_user(
-            session, skip_session_user_update_in_core, user_context
-        )
-        if session_user_result.status == &#34;SHOULD_AUTOMATICALLY_LINK_FALSE&#34;:
-            if should_try_linking_with_session_user is True:
-                raise BadInputError(
-                    &#34;should_do_automatic_account_linking returned false when creating primary user but shouldTryLinkingWithSessionUser is true&#34;
-                )
-            return OkFirstFactorResponse()
-        elif (
-            session_user_result.status
-            == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-        ):
-            return LinkingToSessionUserFailedError(
-                reason=&#34;SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-            )
-
-        session_user = session_user_result.user
-
-        should_link = await AccountLinkingRecipe.get_instance().config.should_do_automatic_account_linking(
-            AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
-                account_info
-            ),
-            session_user,
-            session,
-            session.get_tenant_id(),
-            user_context,
-        )
-        log_debug_message(
-            f&#34;check_auth_type_and_linking_status session user &lt;-&gt; input user should_do_automatic_account_linking returned {should_link}&#34;
-        )
-
-        if isinstance(should_link, ShouldNotAutomaticallyLink):
-            if should_try_linking_with_session_user is True:
-                raise BadInputError(
-                    &#34;should_do_automatic_account_linking returned false when creating primary user but shouldTryLinkingWithSessionUser is true&#34;
-                )
-            return OkFirstFactorResponse()
-        else:
-            return OkSecondFactorNotLinkedResponse(
-                session_user=session_user,
-                linking_to_session_user_requires_verification=should_link.should_require_verification,
-            )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.filter_out_invalid_first_factors_or_throw_if_all_are_invalid"><code class="name flex">
 <span>async def <span class="ident">filter_out_invalid_first_factors_or_throw_if_all_are_invalid</span></span>(<span>factor_ids: List[str], tenant_id: str, has_session: bool, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def filter_out_invalid_first_factors_or_throw_if_all_are_invalid(
-    factor_ids: List[str],
-    tenant_id: str,
-    has_session: bool,
-    user_context: Dict[str, Any],
-) -&gt; List[str]:
-    valid_factor_ids: List[str] = []
-    for _id in factor_ids:
-        valid_res = await is_valid_first_factor(tenant_id, _id, user_context)
-
-        if valid_res == &#34;TENANT_NOT_FOUND_ERROR&#34;:
-            if has_session:
-                raise UnauthorisedError(&#34;Tenant not found&#34;)
-            else:
-                raise Exception(&#34;Tenant not found error.&#34;)
-        elif valid_res == &#34;OK&#34;:
-            valid_factor_ids.append(_id)
-
-    if len(valid_factor_ids) == 0:
-        if not has_session:
-            raise UnauthorisedError(
-                &#34;A valid session is required to authenticate with secondary factors&#34;
-            )
-        else:
-            raise_bad_input_exception(
-                &#34;First factor sign in/up called for a non-first factor with an active session. This might indicate that you are trying to use this as a secondary factor, but disabled account linking.&#34;
-            )
-
-    return valid_factor_ids</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.filter_out_invalid_second_factors_or_throw_if_all_are_invalid"><code class="name flex">
 <span>async def <span class="ident">filter_out_invalid_second_factors_or_throw_if_all_are_invalid</span></span>(<span>factor_ids: List[str], input_user_already_linked_to_session_user: bool, session_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
-    factor_ids: List[str],
-    input_user_already_linked_to_session_user: bool,
-    session_user: User,
-    session: SessionContainer,
-    user_context: Dict[str, Any],
-) -&gt; List[str]:
-    log_debug_message(
-        f&#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid called for {&#39;, &#39;.join(factor_ids)}&#34;
-    )
-
-    mfa_instance = MultiFactorAuthRecipe.get_instance()
-    if mfa_instance is not None:
-        if not input_user_already_linked_to_session_user:
-            factors_set_up_for_user_prom: Optional[List[str]] = None
-            mfa_info_prom = None
-
-            async def get_factors_set_up_for_user() -&gt; List[str]:
-                nonlocal factors_set_up_for_user_prom
-                if factors_set_up_for_user_prom is None:
-                    factors_set_up_for_user_prom = await mfa_instance.recipe_implementation.get_factors_setup_for_user(
-                        user=session_user, user_context=user_context
-                    )
-                assert factors_set_up_for_user_prom is not None
-                return factors_set_up_for_user_prom
-
-            async def get_mfa_requirements_for_auth():
-                nonlocal mfa_info_prom
-                if mfa_info_prom is None:
-
-                    mfa_info_prom = await update_and_get_mfa_related_info_in_session(
-                        input_session=session,
-                        user_context=user_context,
-                    )
-                return mfa_info_prom.mfa_requirements_for_auth
-
-            log_debug_message(
-                &#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid checking if linking is allowed by the mfa recipe&#34;
-            )
-            caught_setup_factor_error: Optional[Exception] = None
-            valid_factor_ids: List[str] = []
-
-            for _id in factor_ids:
-                log_debug_message(
-                    &#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid checking assert_allowed_to_setup_factor_else_throw_invalid_claim_error&#34;
-                )
-                try:
-                    await mfa_instance.recipe_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
-                        factor_id=_id,
-                        session=session,
-                        factors_set_up_for_user=get_factors_set_up_for_user,
-                        mfa_requirements_for_auth=get_mfa_requirements_for_auth,
-                        user_context=user_context,
-                    )
-                    log_debug_message(
-                        f&#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid {id} valid because assert_allowed_to_setup_factor_else_throw_invalid_claim_error passed&#34;
-                    )
-                    valid_factor_ids.append(_id)
-                except Exception as err:
-                    log_debug_message(
-                        f&#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid assert_allowed_to_setup_factor_else_throw_invalid_claim_error failed for {id}&#34;
-                    )
-                    caught_setup_factor_error = err
-
-            if len(valid_factor_ids) == 0:
-                log_debug_message(
-                    &#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid rethrowing error from assert_allowed_to_setup_factor_else_throw_invalid_claim_error because we found no valid factors&#34;
-                )
-                if caught_setup_factor_error is not None:
-                    raise caught_setup_factor_error
-                else:
-                    raise Exception(&#34;Should never come here&#34;)
-
-            return valid_factor_ids
-        else:
-            log_debug_message(
-                &#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid allowing all factors because it&#39;ll not create new link&#34;
-            )
-            return factor_ids
-    else:
-        log_debug_message(
-            &#34;filter_out_invalid_second_factors_or_throw_if_all_are_invalid allowing all factors because MFA is not enabled&#34;
-        )
-        return factor_ids</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.get_authenticating_user_and_add_to_current_tenant_if_required"><code class="name flex">
 <span>async def <span class="ident">get_authenticating_user_and_add_to_current_tenant_if_required</span></span>(<span>recipe_id: str, email: Optional[str], phone_number: Optional[str], third_party: Optional[<a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="recipe/thirdparty/types.html#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>], tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], check_credentials_on_tenant: Callable[[str], Awaitable[bool]], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.auth_utils.AuthenticatingUserInfo" href="#supertokens_python.auth_utils.AuthenticatingUserInfo">AuthenticatingUserInfo</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_authenticating_user_and_add_to_current_tenant_if_required(
-    recipe_id: str,
-    email: Optional[str],
-    phone_number: Optional[str],
-    third_party: Optional[ThirdPartyInfo],
-    tenant_id: str,
-    session: Optional[SessionContainer],
-    check_credentials_on_tenant: Callable[[str], Awaitable[bool]],
-    user_context: Dict[str, Any],
-) -&gt; Optional[AuthenticatingUserInfo]:
-    i = 0
-    while i &lt; 300:
-        account_info = {
-            &#34;email&#34;: email,
-            &#34;phoneNumber&#34;: phone_number,
-            &#34;thirdParty&#34;: third_party,
-        }
-        log_debug_message(
-            f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired called with {account_info}&#34;
-        )
-        existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
-            tenant_id=tenant_id,
-            account_info=AccountInfo(
-                email=email, phone_number=phone_number, third_party=third_party
-            ),
-            do_union_of_account_info=True,
-            user_context=user_context,
-        )
-        log_debug_message(
-            f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired got {len(existing_users)} users from the core resp&#34;
-        )
-        users_with_matching_login_methods = [
-            AuthenticatingUserInfo(
-                user=user,
-                login_method=next(
-                    (
-                        lm
-                        for lm in user.login_methods
-                        if lm.recipe_id == recipe_id
-                        and (
-                            (email is not None and lm.has_same_email_as(email))
-                            or lm.has_same_phone_number_as(phone_number)
-                            or lm.has_same_third_party_info_as(third_party)
-                        )
-                    ),
-                    None,
-                ),
-            )
-            for user in existing_users
-        ]
-        users_with_matching_login_methods = [
-            u for u in users_with_matching_login_methods if u.login_method is not None
-        ]
-        log_debug_message(
-            f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired got {len(users_with_matching_login_methods)} users with matching login methods&#34;
-        )
-        if len(users_with_matching_login_methods) &gt; 1:
-            raise Exception(
-                &#34;You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues&#34;
-            )
-        authenticating_user = (
-            AuthenticatingUserInfo(
-                users_with_matching_login_methods[0].user,
-                users_with_matching_login_methods[0].login_method,
-            )
-            if users_with_matching_login_methods
-            else None
-        )
-
-        if authenticating_user is None and session is not None:
-            log_debug_message(
-                &#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired checking session user&#34;
-            )
-            session_user = await get_user(
-                session.get_user_id(user_context), user_context
-            )
-            if session_user is None:
-                raise UnauthorisedError(
-                    &#34;Session user not found&#34;,
-                )
-
-            if not session_user.is_primary_user:
-                log_debug_message(
-                    &#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired session user is non-primary so returning early without checking other tenants&#34;
-                )
-                return None
-
-            matching_login_methods_from_session_user = [
-                lm
-                for lm in session_user.login_methods
-                if lm.recipe_id == recipe_id
-                and (
-                    lm.has_same_email_as(email)
-                    or lm.has_same_phone_number_as(phone_number)
-                    or lm.has_same_third_party_info_as(third_party)
-                )
-            ]
-            log_debug_message(
-                f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired session has {len(matching_login_methods_from_session_user)} matching login methods&#34;
-            )
-
-            if any(
-                tenant_id in lm.tenant_ids
-                for lm in matching_login_methods_from_session_user
-            ):
-                log_debug_message(
-                    f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired session has {len(matching_login_methods_from_session_user)} matching login methods&#34;
-                )
-                return AuthenticatingUserInfo(
-                    user=session_user,
-                    login_method=next(
-                        lm
-                        for lm in matching_login_methods_from_session_user
-                        if tenant_id in lm.tenant_ids
-                    ),
-                )
-
-            go_to_retry = False
-            for lm in matching_login_methods_from_session_user:
-                log_debug_message(
-                    f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired session checking credentials on {lm.tenant_ids[0]}&#34;
-                )
-                if await check_credentials_on_tenant(lm.tenant_ids[0]):
-                    log_debug_message(
-                        f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired associating user from {lm.tenant_ids[0]} with current tenant&#34;
-                    )
-                    associate_res = await associate_user_to_tenant(
-                        tenant_id, lm.recipe_user_id, user_context
-                    )
-                    log_debug_message(
-                        f&#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired associating returned {associate_res.status}&#34;
-                    )
-                    if associate_res.status == &#34;OK&#34;:
-                        lm.tenant_ids.append(tenant_id)
-                        return AuthenticatingUserInfo(
-                            user=session_user, login_method=lm
-                        )
-                    if associate_res.status in [
-                        &#34;UNKNOWN_USER_ID_ERROR&#34;,
-                        &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;,
-                        &#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;,
-                        &#34;THIRD_PARTY_USER_ALREADY_EXISTS_ERROR&#34;,
-                    ]:
-                        go_to_retry = True
-                        break
-                    if associate_res.status == &#34;ASSOCIATION_NOT_ALLOWED_ERROR&#34;:
-                        raise UnauthorisedError(
-                            &#34;Session user not associated with the session tenant&#34;
-                        )
-            if go_to_retry:
-                log_debug_message(
-                    &#34;getAuthenticatingUserAndAddToCurrentTenantIfRequired retrying&#34;
-                )
-                i += 1
-                continue
-        return authenticating_user
-    raise Exception(
-        &#34;This should never happen: ran out of retries for getAuthenticatingUserAndAddToCurrentTenantIfRequired&#34;
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.is_fake_email"><code class="name flex">
 <span>def <span class="ident">is_fake_email</span></span>(<span>email: str) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_fake_email(email: str) -&gt; bool:
-    return email.endswith(&#34;@stfakeemail.supertokens.com&#34;) or email.endswith(
-        &#34;.fakeemail.com&#34;
-    )  # .fakeemail.com for older users</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info"><code class="name flex">
 <span>async def <span class="ident">link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info</span></span>(<span>tenant_id: str, input_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
-    tenant_id: str,
-    input_user: User,
-    recipe_user_id: RecipeUserId,
-    session: Union[SessionContainer, None],
-    should_try_linking_with_session_user: Union[bool, None],
-    user_context: Dict[str, Any],
-) -&gt; Union[OkResponse2, LinkingToSessionUserFailedError,]:
-    log_debug_message(
-        &#34;link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info called&#34;
-    )
-
-    async def retry():
-        log_debug_message(
-            &#34;link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info retrying....&#34;
-        )
-        return await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
-            tenant_id=tenant_id,
-            input_user=input_user,
-            session=session,
-            recipe_user_id=recipe_user_id,
-            should_try_linking_with_session_user=should_try_linking_with_session_user,
-            user_context=user_context,
-        )
-
-    auth_login_method = next(
-        (
-            lm
-            for lm in input_user.login_methods
-            if lm.recipe_user_id.get_as_string() == recipe_user_id.get_as_string()
-        ),
-        None,
-    )
-    if auth_login_method is None:
-        raise Exception(
-            &#34;This should never happen: the recipe_user_id and user is inconsistent in create_primary_user_id_or_link_by_account_info params&#34;
-        )
-
-    auth_type_res = await check_auth_type_and_linking_status(
-        session,
-        should_try_linking_with_session_user,
-        AccountInfoWithRecipeId(
-            recipe_id=auth_login_method.recipe_id,
-            email=auth_login_method.email,
-            phone_number=auth_login_method.phone_number,
-            third_party=auth_login_method.third_party,
-        ),
-        input_user,
-        False,
-        user_context,
-    )
-
-    if not isinstance(
-        auth_type_res,
-        (
-            OkFirstFactorResponse,
-            OkSecondFactorLinkedResponse,
-            OkSecondFactorNotLinkedResponse,
-        ),
-    ):
-        return LinkingToSessionUserFailedError(reason=auth_type_res.reason)
-
-    if isinstance(auth_type_res, OkFirstFactorResponse):
-        if not recipe_init_defined_should_do_automatic_account_linking():
-            log_debug_message(
-                &#34;link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info skipping link by account info because this is a first factor auth and the app hasn&#39;t defined should_do_automatic_account_linking&#34;
-            )
-            return OkResponse2(user=input_user)
-        log_debug_message(
-            &#34;link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info trying to link by account info because this is a first factor auth&#34;
-        )
-        link_res = await AccountLinkingRecipe.get_instance().try_linking_by_account_info_or_create_primary_user(
-            input_user=input_user,
-            session=session,
-            tenant_id=tenant_id,
-            user_context=user_context,
-        )
-        if link_res.status == &#34;OK&#34;:
-            assert link_res.user is not None
-            return OkResponse2(user=link_res.user)
-        if link_res.status == &#34;NO_LINK&#34;:
-            return OkResponse2(user=input_user)
-        return await retry()
-
-    if isinstance(auth_type_res, OkSecondFactorLinkedResponse):
-        return OkResponse2(user=auth_type_res.session_user)
-
-    log_debug_message(
-        &#34;link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info trying to link by session info&#34;
-    )
-    session_linking_res = await try_linking_by_session(
-        session_user=auth_type_res.session_user,
-        authenticated_user=input_user,
-        auth_login_method=auth_login_method,
-        linking_to_session_user_requires_verification=auth_type_res.linking_to_session_user_requires_verification,
-        user_context=user_context,
-    )
-    if isinstance(session_linking_res, LinkingToSessionUserFailedError):
-        if session_linking_res.reason == &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;:
-            return await retry()
-        else:
-            return session_linking_res
-    else:
-        return session_linking_res</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.load_session_in_auth_api_if_needed"><code class="name flex">
 <span>async def <span class="ident">load_session_in_auth_api_if_needed</span></span>(<span>request: <a title="supertokens_python.framework.request.BaseRequest" href="framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def load_session_in_auth_api_if_needed(
-    request: BaseRequest,
-    should_try_linking_with_session_user: Optional[bool],
-    user_context: Dict[str, Any],
-) -&gt; Optional[SessionContainer]:
-
-    if should_try_linking_with_session_user is not False:
-        return await get_session(
-            request,
-            session_required=should_try_linking_with_session_user is True,
-            override_global_claim_validators=lambda _, __, ___: [],
-            user_context=user_context,
-        )
-    return None</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.post_auth_checks"><code class="name flex">
 <span>async def <span class="ident">post_auth_checks</span></span>(<span>authenticated_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, is_sign_up: bool, factor_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], tenant_id: str, user_context: Dict[str, Any], request: <a title="supertokens_python.framework.request.BaseRequest" href="framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>) ‑> Union[<a title="supertokens_python.auth_utils.PostAuthChecksOkResponse" href="#supertokens_python.auth_utils.PostAuthChecksOkResponse">PostAuthChecksOkResponse</a>, <a title="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse" href="#supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse">PostAuthChecksSignInNotAllowedResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def post_auth_checks(
-    authenticated_user: User,
-    recipe_user_id: RecipeUserId,
-    is_sign_up: bool,
-    factor_id: str,
-    session: Union[SessionContainer, None],
-    tenant_id: str,
-    user_context: Dict[str, Any],
-    request: BaseRequest,
-) -&gt; Union[PostAuthChecksOkResponse, PostAuthChecksSignInNotAllowedResponse]:
-    log_debug_message(
-        f&#34;postAuthChecks called {&#39;with&#39; if session is not None else &#39;without&#39;} a session to &#34;
-        f&#34;{&#39;sign up&#39; if is_sign_up else &#39;sign in&#39;} with {factor_id}&#34;
-    )
-
-    mfa_instance = MultiFactorAuthRecipe.get_instance()
-
-    resp_session = session
-    if session is not None:
-        authenticated_user_linked_to_session_user = any(
-            lm.recipe_user_id.get_as_string()
-            == session.get_recipe_user_id(user_context).get_as_string()
-            for lm in authenticated_user.login_methods
-        )
-        if authenticated_user_linked_to_session_user:
-            log_debug_message(&#34;postAuthChecks session and input user got linked&#34;)
-            if mfa_instance is not None:
-                log_debug_message(&#34;postAuthChecks marking factor as completed&#34;)
-                # if the authenticating user is linked to the current session user (it means that the factor got set up or completed),
-                # we mark it as completed in the session.
-                assert resp_session is not None
-                await mark_factor_as_complete_in_session(
-                    resp_session, factor_id, user_context
-                )
-        else:
-            log_debug_message(&#34;postAuthChecks checking overwriteSessionDuringSignInUp&#34;)
-            # If the new user wasn&#39;t linked to the current one, we check the config and overwrite the session if required
-            # Note: we could also get here if MFA is enabled, but the app didn&#39;t want to link the user to the session user.
-            # This is intentional, since the MFA and overwriteSessionDuringSignInUp configs should work independently.
-            resp_session = await create_new_session(
-                request, tenant_id, recipe_user_id, {}, {}, user_context
-            )
-            if mfa_instance is not None:
-                await mark_factor_as_complete_in_session(
-                    resp_session, factor_id, user_context
-                )
-    else:
-        log_debug_message(&#34;postAuthChecks creating session for first factor sign in/up&#34;)
-        # If there is no input session, we do not need to do anything other checks and create a new session
-        resp_session = await create_new_session(
-            request, tenant_id, recipe_user_id, {}, {}, user_context
-        )
-
-        # Here we can always mark the factor as completed, since we just created the session
-        if mfa_instance is not None:
-            await mark_factor_as_complete_in_session(
-                resp_session, factor_id, user_context
-            )
-
-    assert resp_session is not None
-    return PostAuthChecksOkResponse(
-        status=&#34;OK&#34;, session=resp_session, user=authenticated_user
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.pre_auth_checks"><code class="name flex">
 <span>async def <span class="ident">pre_auth_checks</span></span>(<span>authenticating_account_info: <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="recipe/accountlinking/types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, authenticating_user: Optional[<a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>], tenant_id: str, factor_ids: List[str], is_sign_up: bool, is_verified: bool, sign_in_verifies_login_method: bool, skip_session_user_update_in_core: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse" href="#supertokens_python.auth_utils.OkResponse">OkResponse</a>, <a title="supertokens_python.auth_utils.SignUpNotAllowedResponse" href="#supertokens_python.auth_utils.SignUpNotAllowedResponse">SignUpNotAllowedResponse</a>, <a title="supertokens_python.auth_utils.SignInNotAllowedResponse" href="#supertokens_python.auth_utils.SignInNotAllowedResponse">SignInNotAllowedResponse</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def pre_auth_checks(
-    authenticating_account_info: AccountInfoWithRecipeId,
-    authenticating_user: Union[User, None],
-    tenant_id: str,
-    factor_ids: List[str],
-    is_sign_up: bool,
-    is_verified: bool,
-    sign_in_verifies_login_method: bool,
-    skip_session_user_update_in_core: bool,
-    session: Union[SessionContainer, None],
-    should_try_linking_with_session_user: Union[bool, None],
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    OkResponse,
-    SignUpNotAllowedResponse,
-    SignInNotAllowedResponse,
-    LinkingToSessionUserFailedError,
-]:
-    valid_factor_ids: List[str] = []
-
-    if len(factor_ids) == 0:
-        raise Exception(
-            &#34;This should never happen: empty factorIds array passed to preSignInChecks&#34;
-        )
-
-    log_debug_message(&#34;preAuthChecks checking auth types&#34;)
-    auth_type_info = await check_auth_type_and_linking_status(
-        session,
-        should_try_linking_with_session_user,
-        authenticating_account_info,
-        authenticating_user,
-        skip_session_user_update_in_core,
-        user_context,
-    )
-    if auth_type_info.status != &#34;OK&#34;:
-        log_debug_message(
-            f&#34;preAuthChecks returning {auth_type_info.status} from checkAuthType results&#34;
-        )
-        return auth_type_info
-
-    if auth_type_info.is_first_factor:
-        log_debug_message(&#34;preAuthChecks getting valid first factors&#34;)
-        valid_first_factors = (
-            await filter_out_invalid_first_factors_or_throw_if_all_are_invalid(
-                factor_ids, tenant_id, session is not None, user_context
-            )
-        )
-        valid_factor_ids = valid_first_factors
-    else:
-        assert isinstance(
-            auth_type_info,
-            (OkSecondFactorNotLinkedResponse, OkSecondFactorLinkedResponse),
-        )
-        assert session is not None
-        log_debug_message(&#34;preAuthChecks getting valid secondary factors&#34;)
-        valid_factor_ids = (
-            await filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
-                factor_ids,
-                auth_type_info.input_user_already_linked_to_session_user,
-                auth_type_info.session_user,
-                session,
-                user_context,
-            )
-        )
-
-    if not is_sign_up and authenticating_user is None:
-        raise Exception(
-            &#34;This should never happen: preAuthChecks called with isSignUp: false, authenticatingUser: None&#34;
-        )
-
-    if is_sign_up:
-        verified_in_session_user = not isinstance(
-            auth_type_info, OkFirstFactorResponse
-        ) and any(
-            lm.verified
-            and (
-                lm.has_same_email_as(authenticating_account_info.email)
-                or lm.has_same_phone_number_as(authenticating_account_info.phone_number)
-            )
-            for lm in auth_type_info.session_user.login_methods
-        )
-
-        log_debug_message(&#34;preAuthChecks checking if the user is allowed to sign up&#34;)
-        if not await AccountLinkingRecipe.get_instance().is_sign_up_allowed(
-            new_user=authenticating_account_info,
-            is_verified=is_verified
-            or sign_in_verifies_login_method
-            or verified_in_session_user,
-            tenant_id=tenant_id,
-            session=session,
-            user_context=user_context,
-        ):
-            return SignUpNotAllowedResponse()
-    elif authenticating_user is not None:
-        log_debug_message(&#34;preAuthChecks checking if the user is allowed to sign in&#34;)
-        if not await AccountLinkingRecipe.get_instance().is_sign_in_allowed(
-            user=authenticating_user,
-            account_info=authenticating_account_info,
-            sign_in_verifies_login_method=sign_in_verifies_login_method,
-            tenant_id=tenant_id,
-            session=session,
-            user_context=user_context,
-        ):
-            return SignInNotAllowedResponse()
-
-    log_debug_message(&#34;preAuthChecks returning OK&#34;)
-    return OkResponse(
-        valid_factor_ids=valid_factor_ids,
-        is_first_factor=auth_type_info.is_first_factor,
-    )</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.try_and_make_session_user_into_a_primary_user"><code class="name flex">
 <span>async def <span class="ident">try_and_make_session_user_into_a_primary_user</span></span>(<span>session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, skip_session_user_update_in_core: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.auth_utils.ShouldAutomaticallyLinkFalseResponse" href="#supertokens_python.auth_utils.ShouldAutomaticallyLinkFalseResponse">ShouldAutomaticallyLinkFalseResponse</a>, <a title="supertokens_python.auth_utils.AccountInfoAlreadyAssociatedResponse" href="#supertokens_python.auth_utils.AccountInfoAlreadyAssociatedResponse">AccountInfoAlreadyAssociatedResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def try_and_make_session_user_into_a_primary_user(
-    session: SessionContainer,
-    skip_session_user_update_in_core: bool,
-    user_context: Dict[str, Any],
-) -&gt; Union[
-    OkResponse2,
-    ShouldAutomaticallyLinkFalseResponse,
-    AccountInfoAlreadyAssociatedResponse,
-]:
-    log_debug_message(&#34;try_and_make_session_user_into_a_primary_user called&#34;)
-    session_user = await get_user(session.get_user_id(), user_context)
-    if session_user is None:
-        raise UnauthorisedError(&#34;Session user not found&#34;)
-
-    if session_user.is_primary_user:
-        log_debug_message(
-            &#34;try_and_make_session_user_into_a_primary_user session user already primary&#34;
-        )
-        return OkResponse2(user=session_user)
-    else:
-        log_debug_message(
-            &#34;try_and_make_session_user_into_a_primary_user not primary user yet&#34;
-        )
-
-        account_linking_instance = AccountLinkingRecipe.get_instance()
-        should_do_account_linking = (
-            await account_linking_instance.config.should_do_automatic_account_linking(
-                AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
-                    session_user.login_methods[0]
-                ),
-                None,
-                session,
-                session.get_tenant_id(),
-                user_context,
-            )
-        )
-        log_debug_message(
-            f&#34;try_and_make_session_user_into_a_primary_user should_do_account_linking: {should_do_account_linking}&#34;
-        )
-
-        if isinstance(should_do_account_linking, ShouldAutomaticallyLink):
-            if skip_session_user_update_in_core:
-                return OkResponse2(user=session_user)
-            if (
-                should_do_account_linking.should_require_verification
-                and not session_user.login_methods[0].verified
-            ):
-                if (
-                    await session.get_claim_value(EmailVerificationClaim, user_context)
-                ) is not False:
-                    log_debug_message(
-                        &#34;try_and_make_session_user_into_a_primary_user updating emailverification status in session&#34;
-                    )
-                    await session.set_claim_value(
-                        EmailVerificationClaim, False, user_context
-                    )
-                log_debug_message(
-                    &#34;try_and_make_session_user_into_a_primary_user throwing validation error&#34;
-                )
-                await session.assert_claims(
-                    [EmailVerificationClaim.validators.is_verified()], user_context
-                )
-                raise Exception(
-                    &#34;This should never happen: email verification claim validator passed after setting value to false&#34;
-                )
-            create_primary_user_res = await account_linking_instance.recipe_implementation.create_primary_user(
-                recipe_user_id=session_user.login_methods[0].recipe_user_id,
-                user_context=user_context,
-            )
-            log_debug_message(
-                f&#34;try_and_make_session_user_into_a_primary_user create_primary_user returned {create_primary_user_res.status}&#34;
-            )
-            if (
-                create_primary_user_res.status
-                == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR&#34;
-            ):
-                raise UnauthorisedError(&#34;Session user not found&#34;)
-            elif create_primary_user_res.status == &#34;OK&#34;:
-                return OkResponse2(user=create_primary_user_res.user)
-            else:
-                return AccountInfoAlreadyAssociatedResponse()
-        else:
-            return ShouldAutomaticallyLinkFalseResponse()</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.auth_utils.try_linking_by_session"><code class="name flex">
 <span>async def <span class="ident">try_linking_by_session</span></span>(<span>linking_to_session_user_requires_verification: bool, auth_login_method: <a title="supertokens_python.types.LoginMethod" href="types.html#supertokens_python.types.LoginMethod">LoginMethod</a>, authenticated_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, session_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def try_linking_by_session(
-    linking_to_session_user_requires_verification: bool,
-    auth_login_method: LoginMethod,
-    authenticated_user: User,
-    session_user: User,
-    user_context: Dict[str, Any],
-) -&gt; Union[OkResponse2, LinkingToSessionUserFailedError,]:
-    log_debug_message(&#34;tryLinkingBySession called&#34;)
-
-    session_user_has_verified_account_info = any(
-        (
-            lm.has_same_email_as(auth_login_method.email)
-            or lm.has_same_phone_number_as(auth_login_method.phone_number)
-        )
-        and lm.verified
-        for lm in session_user.login_methods
-    )
-
-    can_link_based_on_verification = (
-        not linking_to_session_user_requires_verification
-        or auth_login_method.verified
-        or session_user_has_verified_account_info
-    )
-
-    if not can_link_based_on_verification:
-        return LinkingToSessionUserFailedError(reason=&#34;EMAIL_VERIFICATION_REQUIRED&#34;)
-
-    link_accounts_result = (
-        await AccountLinkingRecipe.get_instance().recipe_implementation.link_accounts(
-            recipe_user_id=authenticated_user.login_methods[0].recipe_user_id,
-            primary_user_id=session_user.id,
-            user_context=user_context,
-        )
-    )
-
-    if link_accounts_result.status == &#34;OK&#34;:
-        log_debug_message(
-            &#34;tryLinkingBySession successfully linked input user to session user&#34;
-        )
-        return OkResponse2(user=link_accounts_result.user)
-    elif (
-        link_accounts_result.status
-        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-    ):
-        log_debug_message(
-            &#34;tryLinkingBySession linking to session user failed because of a race condition - input user linked to another user&#34;
-        )
-        return LinkingToSessionUserFailedError(
-            reason=&#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-        )
-    elif link_accounts_result.status == &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;:
-        log_debug_message(
-            &#34;tryLinkingBySession linking to session user failed because of a race condition - INPUT_USER_IS_NOT_A_PRIMARY_USER, should retry&#34;
-        )
-        return LinkingToSessionUserFailedError(
-            reason=&#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
-        )
-    else:
-        log_debug_message(
-            &#34;tryLinkingBySession linking to session user failed because of a race condition - input user has another primary user it can be linked to&#34;
-        )
-        return LinkingToSessionUserFailedError(
-            reason=&#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
-        )</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -1993,7 +1131,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.AccountInfoAlreadyAssociatedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR']</code></dt>
+<dt id="supertokens_python.auth_utils.AccountInfoAlreadyAssociatedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2017,7 +1155,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError"><code class="flex name class">
 <span>class <span class="ident">LinkingToSessionUserFailedError</span></span>
-<span>(</span><span>reason: Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER'])</span>
+<span>(</span><span>reason: typing_extensions.Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER'])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2049,11 +1187,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError.reason"><code class="name">var <span class="ident">reason</span> : Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']</code></dt>
+<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError.reason"><code class="name">var <span class="ident">reason</span> : typing_extensions.Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError.status"><code class="name">var <span class="ident">status</span> : Literal['LINKING_TO_SESSION_USER_FAILED']</code></dt>
+<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['LINKING_TO_SESSION_USER_FAILED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2074,11 +1212,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : Literal[True]</code></dt>
+<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : typing_extensions.Literal[True]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2110,7 +1248,7 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2140,7 +1278,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkResponse2.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkResponse2.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2171,11 +1309,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : Literal[True]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : typing_extensions.Literal[True]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : Literal[False]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : typing_extensions.Literal[False]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2183,7 +1321,7 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2218,11 +1356,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : Literal[False]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : typing_extensions.Literal[False]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : Literal[False]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : typing_extensions.Literal[False]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2234,7 +1372,7 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2242,7 +1380,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse"><code class="flex name class">
 <span>class <span class="ident">PostAuthChecksOkResponse</span></span>
-<span>(</span><span>status: Literal['OK'], session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>)</span>
+<span>(</span><span>status: typing_extensions.Literal['OK'], session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2266,7 +1404,7 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2290,7 +1428,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
+<dt id="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2313,7 +1451,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.ShouldAutomaticallyLinkFalseResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SHOULD_AUTOMATICALLY_LINK_FALSE']</code></dt>
+<dt id="supertokens_python.auth_utils.ShouldAutomaticallyLinkFalseResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SHOULD_AUTOMATICALLY_LINK_FALSE']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2333,7 +1471,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.SignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
+<dt id="supertokens_python.auth_utils.SignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2353,7 +1491,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.SignUpNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_UP_NOT_ALLOWED']</code></dt>
+<dt id="supertokens_python.auth_utils.SignUpNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SIGN_UP_NOT_ALLOWED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2485,7 +1623,7 @@ async def load_session_in_auth_api_if_needed(
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>

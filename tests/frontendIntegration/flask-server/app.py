@@ -82,9 +82,9 @@ def custom_decorator_for_test():  # type: ignore
         def wrapped_function(*args, **kwargs):  # type: ignore
             Test.increment_attempted_refresh()
             try:
-                value: Response = f(*args, **kwargs)
-                if value is not None and value.status_code != 200:
-                    return value
+                value: Response = f(*args, **kwargs)  # type: ignore
+                if value is not None and value.status_code != 200:  # type: ignore
+                    return value  # type: ignore
                 if request.headers.get("rid") is None:  # type: ignore
                     return "refresh failed"
                 Test.increment_refresh()
@@ -417,7 +417,7 @@ def update_jwt_post():
         if k not in protected_prop_name:
             clearing[k] = None
 
-    body = request.get_json() or {}
+    body: Any = request.get_json() or {}
     _session.sync_merge_into_access_token_payload({**clearing, **body}, {})
     Test.increment_get_session()
     resp = make_response(_session.get_access_token_payload())
@@ -436,7 +436,7 @@ def update_jwt_with_handle_post():
     for k in info.custom_claims_in_access_token_payload:
         clearing[k] = None
 
-    body = request.get_json() or {}
+    body: Any = request.get_json() or {}
     merge_into_access_token_payload(_session.get_handle(), {**clearing, **body})
 
     resp = make_response(_session.get_access_token_payload())

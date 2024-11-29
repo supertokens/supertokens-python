@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 # The `fastapi.testclient.TestClient` uses a cookie jar to store cookies between requests.
 # Our test cases aren't written with this behavior in mind, and for consistency with other SDKs,
 # we need a `TestClient` that doesn't retain cookies. The class below inherits from `TestClient`

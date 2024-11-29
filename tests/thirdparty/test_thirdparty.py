@@ -44,7 +44,7 @@ access_token_validated: bool = False
 
 
 @fixture(scope="function")
-async def fastapi_client():
+def fastapi_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
@@ -88,7 +88,7 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
     code = "testing"
 
     data = {"state": state, "code": code}
-    res = fastapi_client.post("/auth/callback/apple", data=data)
+    res = fastapi_client.post("/auth/callback/apple", data=data, allow_redirects=False)
 
     assert res.status_code == 303
     assert res.content == b""

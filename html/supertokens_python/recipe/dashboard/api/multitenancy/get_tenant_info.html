@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="generator" content="pdoc 0.11.0" />
 <title>supertokens_python.recipe.dashboard.api.multitenancy.get_tenant_info API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -205,86 +205,6 @@ async def get_tenant_info(
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_tenant_info(
-    _: APIInterface,
-    tenant_id: str,
-    options: APIOptions,
-    user_context: Dict[str, Any],
-) -&gt; Union[GetTenantInfoOkResult, GetTenantInfoUnknownTenantError]:
-    tenant_res = await get_tenant(tenant_id, user_context)
-
-    if tenant_res is None:
-        return GetTenantInfoUnknownTenantError()
-
-    first_factors = (
-        get_normalised_first_factors_based_on_tenant_config_from_core_and_sdk_init(
-            tenant_res
-        )
-    )
-
-    user_count = await Supertokens.get_instance().get_user_count(
-        None, tenant_id, user_context
-    )
-
-    providers_from_core = tenant_res.third_party_providers
-    mt_recipe = MultitenancyRecipe.get_instance()
-    static_providers = mt_recipe.static_third_party_providers
-
-    merged_providers_from_core_and_static = merge_providers_from_core_and_static(
-        providers_from_core, static_providers, tenant_id == DEFAULT_TENANT_ID
-    )
-
-    querier = Querier.get_instance(options.recipe_id)
-    core_config = await querier.send_get_request(
-        NormalisedURLPath(f&#34;/{tenant_id}/recipe/dashboard/tenant/core-config&#34;),
-        {},
-        user_context,
-    )
-
-    providers: List[ThirdPartyProvider] = []
-    for provider in merged_providers_from_core_and_static:
-        try:
-            provider_instance = await find_and_create_provider_instance(
-                merged_providers_from_core_and_static,
-                provider.config.third_party_id,
-                (
-                    provider.config.clients[0].client_type
-                    if provider.config.clients
-                    else None
-                ),
-                user_context,
-            )
-            assert provider_instance is not None
-            if provider_instance.config.name is None:
-                raise Exception(&#34;Falling back to exception block&#34;)
-            providers.append(
-                ThirdPartyProvider(
-                    provider.config.third_party_id,
-                    provider_instance.config.name,
-                ),
-            )
-        except Exception:
-            providers.append(
-                ThirdPartyProvider(
-                    provider.config.third_party_id, provider.config.third_party_id
-                )
-            )
-
-    tenant = TenantInfo(
-        tenant_id,
-        providers,
-        first_factors,
-        tenant_res.required_secondary_factors,
-        [CoreConfigFieldInfo.from_json(field) for field in core_config[&#34;config&#34;]],
-        user_count,
-    )
-
-    return GetTenantInfoOkResult(tenant)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
@@ -322,13 +242,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status, &#34;tenant&#34;: self.tenant.to_json()}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -361,13 +274,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;status&#34;: self.status}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -417,22 +323,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#34;tenantId&#34;: self.tenant_id,
-        &#34;thirdParty&#34;: {
-            &#34;providers&#34;: [provider.to_json() for provider in self.third_party]
-        },
-        &#34;firstFactors&#34;: self.first_factors,
-        &#34;requiredSecondaryFactors&#34;: self.required_secondary_factors,
-        &#34;coreConfig&#34;: [field.to_json() for field in self.core_config],
-        &#34;userCount&#34;: self.user_count,
-    }</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -461,13 +351,6 @@ inheritance.</p></div>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {&#34;thirdPartyId&#34;: self.third_party_id, &#34;name&#34;: self.name}</code></pre>
-</details>
 </dd>
 </dl>
 </dd>
@@ -522,7 +405,7 @@ inheritance.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
 </footer>
 </body>
 </html>
