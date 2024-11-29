@@ -16,7 +16,12 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 from typing_extensions import Literal
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import APIResponse, GeneralErrorResponse, User
+from supertokens_python.types import (
+    APIResponse,
+    GeneralErrorResponse,
+    RecipeUserId,
+    User,
+)
 
 from .oauth2_client import OAuth2Client
 
@@ -386,7 +391,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_requested_scopes(
         self,
-        recipe_user_id: Optional[str],
+        recipe_user_id: Optional[RecipeUserId],
         session_handle: Optional[str],
         scope_param: List[str],
         client_id: str,

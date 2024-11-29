@@ -13,16 +13,18 @@
 # under the License.
 
 from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
+from urllib.parse import parse_qs, urlparse
 
 import jwt
 
 from supertokens_python import AppInfo
+from supertokens_python.asyncio import get_user
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.jwks import get_latest_keys
 from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.types import User
+from supertokens_python.types import RecipeUserId, User
 
 from .interfaces import (
     OAuth2TokenValidationRequirements,
@@ -217,7 +219,147 @@ class RecipeImplementation(RecipeInterface):
         session: Optional[SessionContainer],
         user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-        pass
+        # we handle this in the backend SDK level
+        if params.get("prompt") == "none":
+            params["st_prompt"] = "none"
+            del params["prompt"]
+
+        payloads = None
+
+        if not params.get("client_id") or not isinstance(params.get("client_id"), str):
+            return ErrorOAuth2Response(
+                status_code=400,
+                error="invalid_request",
+                error_description="client_id is required and must be a string",
+            )
+
+        scopes = await self.get_requested_scopes(
+            scope_param=params.get("scope", "").split() if params.get("scope") else [],
+            client_id=params["client_id"],
+            recipe_user_id=(
+                session.get_recipe_user_id() if session is not None else None
+            ),
+            session_handle=session.get_handle() if session else None,
+            user_context=user_context,
+        )
+
+        response_types = (
+            params.get("response_type", "").split()
+            if params.get("response_type")
+            else []
+        )
+
+        if session is not None:
+            client_info = await self.get_oauth2_client(
+                client_id=params["client_id"], user_context=user_context
+            )
+
+            if isinstance(client_info, ErrorOAuth2Response):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=client_info.error,
+                    error_description=client_info.error_description,
+                )
+
+            client = client_info.client
+
+            user = await get_user(session.get_user_id())
+            if not user:
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error="invalid_request",
+                    error_description="User deleted",
+                )
+
+            # These default to empty dicts, because we want to keep them as required input
+            # but they'll not be actually used in flows where we are not building them
+            id_token = {}
+            if "openid" in scopes and (
+                "id_token" in response_types or "code" in response_types
+            ):
+                id_token = await self.build_id_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session.get_handle(),
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+            access_token = {}
+            if "token" in response_types or "code" in response_types:
+                access_token = await self.build_access_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session.get_handle(),
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+            payloads = {"idToken": id_token, "accessToken": access_token}
+
+        resp = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/oauth/auth"),
+            {
+                "params": {**params, "scope": " ".join(scopes)},
+                "iss": await OpenIdRecipe.get_issuer(user_context),
+                "cookies": cookies,
+                "session": payloads,
+            },
+            user_context,
+        )
+
+        if resp["status"] == "CLIENT_NOT_FOUND_ERROR":
+            return ErrorOAuth2Response(
+                status_code=400,
+                error="invalid_request",
+                error_description="The provided client_id is not valid",
+            )
+
+        if resp["status"] != "OK":
+            return ErrorOAuth2Response(
+                status_code=resp["statusCode"],
+                error=resp["error"],
+                error_description=resp["errorDescription"],
+            )
+
+        if resp.get("redirectTo") is None:
+            raise Exception(resp)
+        redirect_to = get_updated_redirect_to(self.app_info, resp["redirectTo"])
+
+        redirect_to_query_params_str = urlparse(redirect_to).query
+        redirect_to_query_params: Dict[str, List[str]] = parse_qs(
+            redirect_to_query_params_str
+        )
+        consent_challenge: Optional[str] = None
+
+        if "consent_challenge" in redirect_to_query_params:
+            if len(redirect_to_query_params["consent_challenge"]) > 0:
+                consent_challenge = redirect_to_query_params["consent_challenge"][0]
+
+        if consent_challenge is not None and session is not None:
+            consent_request = await self.get_consent_request(
+                challenge=consent_challenge, user_context=user_context
+            )
+
+            consent_res = await self.accept_consent_request(
+                user_context=user_context,
+                challenge=consent_request.challenge,
+                grant_access_token_audience=consent_request.requested_access_token_audience,
+                grant_scope=consent_request.requested_scope,
+                tenant_id=session.get_tenant_id(),
+                rsub=session.get_recipe_user_id().get_as_string(),
+                session_handle=session.get_handle(),
+                initial_access_token_payload=(
+                    payloads.get("accessToken") if payloads else None
+                ),
+                initial_id_token_payload=payloads.get("idToken") if payloads else None,
+            )
+
+            return RedirectResponse(
+                redirect_to=consent_res.redirect_to, cookies=resp["cookies"]
+            )
+
+        return RedirectResponse(redirect_to=redirect_to, cookies=resp["cookies"])
 
     async def token_exchange(
         self,
@@ -391,12 +533,17 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_requested_scopes(
         self,
-        recipe_user_id: Optional[str],
+        recipe_user_id: Optional[RecipeUserId],
         session_handle: Optional[str],
         scope_param: List[str],
         client_id: str,
         user_context: Dict[str, Any] = {},
     ) -> List[str]:
+        _ = recipe_user_id
+        _ = session_handle
+        _ = client_id
+        _ = user_context
+
         return scope_param
 
     async def build_access_token_payload(
