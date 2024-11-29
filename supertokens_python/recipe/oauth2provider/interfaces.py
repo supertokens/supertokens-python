@@ -537,8 +537,8 @@ class RecipeInterface(ABC):
     async def end_session(
         self,
         params: Dict[str, str],
+        should_try_refresh: bool,
         session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
         user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass

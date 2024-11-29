@@ -836,7 +836,11 @@ class RecipeImplementation(RecipeInterface):
             try:
                 await self.validate_oauth2_access_token(
                     token=token,
-                    requirements={"scopes": scopes},
+                    requirements=(
+                        OAuth2TokenValidationRequirements(scopes=scopes)
+                        if scopes
+                        else None
+                    ),
                     check_database=False,
                     user_context=user_context,
                 )
@@ -859,11 +863,80 @@ class RecipeImplementation(RecipeInterface):
     async def end_session(
         self,
         params: Dict[str, str],
+        should_try_refresh: bool,
         session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
         user_context: Dict[str, Any] = {},
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-        pass
+        # NOTE: The API response has 3 possible cases:
+        #
+        # CASE 1: end_session request with a valid id_token_hint
+        #        - Redirects to /oauth/logout with a logout_challenge.
+        #
+        # CASE 2: end_session request with an already logged out id_token_hint
+        #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
+        #
+        # CASE 3: end_session request with a logout_verifier (after accepting the logout request)
+        #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
+
+        resp = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/oauth/sessions/logout"),
+            {
+                "clientId": params.get("client_id"),
+                "idTokenHint": params.get("id_token_hint"),
+                "postLogoutRedirectUri": params.get("post_logout_redirect_uri"),
+                "state": params.get("state"),
+                "logoutVerifier": params.get("logout_verifier"),
+            },
+            user_context=user_context,
+        )
+
+        if "error" in resp:
+            return ErrorOAuth2Response(
+                status_code=resp["statusCode"],
+                error=resp["error"],
+                error_description=resp["errorDescription"],
+            )
+
+        redirect_to = get_updated_redirect_to(self.app_info, resp["redirectTo"])
+
+        initial_redirect_url = urlparse(redirect_to)
+        query_params = parse_qs(initial_redirect_url.query)
+        logout_challenge = query_params.get("logout_challenge", [None])[0]
+
+        # CASE 1 (See above notes)
+        if logout_challenge is not None:
+            # Redirect to the frontend to ask for logout confirmation if there is a valid or expired supertokens session
+            if session is not None or should_try_refresh:
+                return RedirectResponse(
+                    redirect_to=await self.get_frontend_redirection_url(
+                        FrontendRedirectionURLTypeLogoutConfirmation(
+                            logout_challenge=logout_challenge
+                        ),
+                        user_context=user_context,
+                    )
+                )
+            else:
+                # Accept the logout challenge immediately as there is no supertokens session
+                accept_logout_response = await self.accept_logout_request(
+                    challenge=logout_challenge, user_context=user_context
+                )
+                if isinstance(accept_logout_response, ErrorOAuth2Response):
+                    return accept_logout_response
+                return RedirectResponse(redirect_to=accept_logout_response.redirect_to)
+
+        # CASE 2 or 3 (See above notes)
+
+        # NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
+        # In this case, we redirect the user to the /auth page.
+        if redirect_to.endswith("/fallbacks/logout/callback"):
+            return RedirectResponse(
+                redirect_to=await self.get_frontend_redirection_url(
+                    FrontendRedirectionURLTypePostLogoutFallback(),
+                    user_context=user_context,
+                )
+            )
+
+        return RedirectResponse(redirect_to=redirect_to)
 
     async def accept_logout_request(
         self,
@@ -889,7 +962,7 @@ class RecipeImplementation(RecipeInterface):
         if redirect_to.endswith("/fallbacks/logout/callback"):
             return RedirectResponse(
                 redirect_to=await self.get_frontend_redirection_url(
-                    type="post-logout-fallback",
+                    FrontendRedirectionURLTypePostLogoutFallback(),
                     user_context=user_context,
                 )
             )
