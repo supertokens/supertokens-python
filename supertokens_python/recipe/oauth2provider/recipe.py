@@ -18,14 +18,22 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.accountlinking.interfaces import RecipeInterface
+from supertokens_python.recipe.oauth2provider.api.introspect_token import (
+    introspect_token_post,
+)
+from supertokens_python.recipe.oauth2provider.api.login import login_get
+from supertokens_python.recipe.oauth2provider.api.login_info import login_info_get
 from supertokens_python.recipe.oauth2provider.exceptions import OAuth2ProviderError
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.types import User
 
-from .recipe_implementation import RecipeImplementation
-
-from .interfaces import APIOptions, PayloadBuilderFunction, UserInfoBuilderFunction
+from .interfaces import (
+    APIInterface,
+    APIOptions,
+    PayloadBuilderFunction,
+    UserInfoBuilderFunction,
+    RecipeInterface,
+)
 
 
 if TYPE_CHECKING:
@@ -83,6 +91,8 @@ class OAuth2ProviderRecipe(RecipeModule):
             override,
         )
 
+        from .recipe_implementation import RecipeImplementation
+
         recipe_implementation: RecipeInterface = RecipeImplementation(
             Querier.get_instance(recipe_id),
             app_info,
@@ -91,16 +101,18 @@ class OAuth2ProviderRecipe(RecipeModule):
             self.get_default_user_info_payload,
         )
         self.recipe_implementation: RecipeInterface = (
-            recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
+            self.config.override.functions(recipe_implementation)
+            if self.config.override is not None
+            and self.config.override.functions is not None
+            else recipe_implementation
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation: APIImplementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
+        self.api_implementation: APIInterface = (
+            self.config.override.apis(api_implementation)
+            if self.config.override is not None
+            and self.config.override.apis is not None
+            else api_implementation
         )
 
         self._access_token_builders: List[PayloadBuilderFunction] = []
@@ -116,61 +128,61 @@ class OAuth2ProviderRecipe(RecipeModule):
                 NormalisedURLPath(LOGIN_PATH),
                 "get",
                 LOGIN_PATH,
-                self.api_implementation.login_get,
+                self.api_implementation.disable_login_get,
             ),
             APIHandled(
                 NormalisedURLPath(TOKEN_PATH),
                 "post",
                 TOKEN_PATH,
-                self.api_implementation.token_post,
+                self.api_implementation.disable_token_post,
             ),
             APIHandled(
                 NormalisedURLPath(AUTH_PATH),
                 "get",
                 AUTH_PATH,
-                self.api_implementation.auth_get,
+                self.api_implementation.disable_auth_get,
             ),
             APIHandled(
                 NormalisedURLPath(LOGIN_INFO_PATH),
                 "get",
                 LOGIN_INFO_PATH,
-                self.api_implementation.login_info_get,
+                self.api_implementation.disable_login_info_get,
             ),
             APIHandled(
                 NormalisedURLPath(USER_INFO_PATH),
                 "get",
                 USER_INFO_PATH,
-                self.api_implementation.user_info_get,
+                self.api_implementation.disable_user_info_get,
             ),
             APIHandled(
                 NormalisedURLPath(REVOKE_TOKEN_PATH),
                 "post",
                 REVOKE_TOKEN_PATH,
-                self.api_implementation.revoke_token_post,
+                self.api_implementation.disable_revoke_token_post,
             ),
             APIHandled(
                 NormalisedURLPath(INTROSPECT_TOKEN_PATH),
                 "post",
                 INTROSPECT_TOKEN_PATH,
-                self.api_implementation.introspect_token_post,
+                self.api_implementation.disable_introspect_token_post,
             ),
             APIHandled(
                 NormalisedURLPath(END_SESSION_PATH),
                 "get",
                 END_SESSION_PATH,
-                self.api_implementation.end_session_get,
+                self.api_implementation.disable_end_session_get,
             ),
             APIHandled(
                 NormalisedURLPath(END_SESSION_PATH),
                 "post",
                 END_SESSION_PATH,
-                self.api_implementation.end_session_post,
+                self.api_implementation.disable_end_session_post,
             ),
             APIHandled(
                 NormalisedURLPath(LOGOUT_PATH),
                 "post",
                 LOGOUT_PATH,
-                self.api_implementation.logout_post,
+                self.api_implementation.disable_logout_post,
             ),
         ]
 
@@ -192,46 +204,54 @@ class OAuth2ProviderRecipe(RecipeModule):
             self.recipe_implementation,
         )
         if request_id == LOGIN_PATH:
-            return await login_api(self.api_implementation, api_options, user_context)
+            return await login_get(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
 
         if request_id == TOKEN_PATH:
-            return await token_post(self.api_implementation, api_options, user_context)
+            return await token_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
 
         if request_id == AUTH_PATH:
-            return await auth_get(self.api_implementation, api_options, user_context)
+            return await auth_get(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
 
         if request_id == LOGIN_INFO_PATH:
             return await login_info_get(
-                self.api_implementation, api_options, user_context
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         if request_id == USER_INFO_PATH:
             return await user_info_get(
-                self.api_implementation, tenant_id, api_options, user_context
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         if request_id == REVOKE_TOKEN_PATH:
             return await revoke_token_post(
-                self.api_implementation, api_options, user_context
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         if request_id == INTROSPECT_TOKEN_PATH:
             return await introspect_token_post(
-                self.api_implementation, api_options, user_context
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         if request_id == END_SESSION_PATH and method == "get":
             return await end_session_get(
-                self.api_implementation, api_options, user_context
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         if request_id == END_SESSION_PATH and method == "post":
             return await end_session_post(
-                self.api_implementation, api_options, user_context
+                tenant_id, self.api_implementation, api_options, user_context
             )
 
         if request_id == LOGOUT_PATH and method == "post":
-            return await logout_post(self.api_implementation, api_options, user_context)
+            return await logout_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
 
         raise Exception(
             "Should never come here: handle_api_request called with unknown id"

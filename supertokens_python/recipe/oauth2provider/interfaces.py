@@ -310,9 +310,6 @@ class RevokeTokenUsingClientIDAndClientSecret:
 
 
 class RecipeInterface(ABC):
-    def __init__(self):
-        pass
-
     @abstractmethod
     async def authorization(
         self,
