@@ -22,8 +22,6 @@ if TYPE_CHECKING:
         APIInterface,
     )
 
-from supertokens_python.utils import send_200_response
-
 
 async def introspect_token_post(
     _tenant_id: str,

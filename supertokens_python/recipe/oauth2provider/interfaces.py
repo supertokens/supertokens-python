@@ -309,6 +309,19 @@ class RevokeTokenUsingClientIDAndClientSecret:
         self.client_secret = client_secret
 
 
+class InactiveTokenResponse:
+    def to_json(self):
+        return {"active": False}
+
+
+class ActiveTokenResponse:
+    def __init__(self, payload: Dict[str, Any]):
+        self.payload = payload
+
+    def to_json(self):
+        return {"active": True, **self.payload}
+
+
 class RecipeInterface(ABC):
     @abstractmethod
     async def authorization(
@@ -667,7 +680,7 @@ class APIInterface:
         scopes: Optional[List[str]],
         options: APIOptions,
         user_context: Dict[str, Any] = {},
-    ) -> Union[IntrospectTokenResponse, GeneralErrorResponse]:
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod

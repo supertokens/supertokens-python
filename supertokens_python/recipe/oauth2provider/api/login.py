@@ -22,10 +22,8 @@ if TYPE_CHECKING:
         APIInterface,
     )
 
-from supertokens_python.utils import send_200_response
 
-
-async def login_get(
+async def login(
     _tenant_id: str,
     api_implementation: APIInterface,
     api_options: APIOptions,

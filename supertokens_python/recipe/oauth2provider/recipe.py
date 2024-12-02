@@ -21,7 +21,7 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.recipe.oauth2provider.api.introspect_token import (
     introspect_token_post,
 )
-from supertokens_python.recipe.oauth2provider.api.login import login_get
+from supertokens_python.recipe.oauth2provider.api.login import login
 from supertokens_python.recipe.oauth2provider.api.login_info import login_info_get
 from supertokens_python.recipe.oauth2provider.exceptions import OAuth2ProviderError
 from supertokens_python.recipe_module import APIHandled, RecipeModule
@@ -51,6 +51,7 @@ from supertokens_python.recipe.oauth2provider.api.implementation import (
 
 from .api import (
     auth_get,
+    login,
     end_session_get,
     end_session_post,
     logout_post,
@@ -204,7 +205,7 @@ class OAuth2ProviderRecipe(RecipeModule):
             self.recipe_implementation,
         )
         if request_id == LOGIN_PATH:
-            return await login_get(
+            return await login(
                 tenant_id, self.api_implementation, api_options, user_context
             )
 
