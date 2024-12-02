@@ -12,9 +12,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .auth import auth_get  # type: ignore
-from .end_session import end_session_get, end_session_post  # type: ignore
-from .logout import logout_post  # type: ignore
-from .revoke_token import revoke_token_post  # type: ignore
-from .token import token_post  # type: ignore
-from .user_info import user_info_get  # type: ignore
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict
+
+if TYPE_CHECKING:
+    from ..interfaces import (
+        APIOptions,
+        APIInterface,
+    )
+
+from supertokens_python.utils import send_200_response
+
+
+async def login_get(
+    _tenant_id: str,
+    api_implementation: APIInterface,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
+    if api_implementation.disable_login_get is True:
+        return None
+
+    raise NotImplementedError()

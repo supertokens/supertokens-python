@@ -18,6 +18,7 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.recipe.accountlinking.interfaces import RecipeInterface
 from supertokens_python.recipe.oauth2provider.exceptions import OAuth2ProviderError
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.types import User
@@ -40,7 +41,15 @@ from supertokens_python.recipe.oauth2provider.api.implementation import (
 )
 
 
-from .api import *  # TODO: fix this
+from .api import (
+    auth_get,
+    end_session_get,
+    end_session_post,
+    logout_post,
+    revoke_token_post,
+    token_post,
+    user_info_get,
+)
 from .constants import (
     LOGIN_PATH,
     AUTH_PATH,
@@ -74,14 +83,14 @@ class OAuth2ProviderRecipe(RecipeModule):
             override,
         )
 
-        recipe_implementation = RecipeImplementation(
+        recipe_implementation: RecipeInterface = RecipeImplementation(
             Querier.get_instance(recipe_id),
             app_info,
             self.get_default_access_token_payload,
             self.get_default_id_token_payload,
             self.get_default_user_info_payload,
         )
-        self.recipe_implementation: RecipeImplementation = (
+        self.recipe_implementation: RecipeInterface = (
             recipe_implementation
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)

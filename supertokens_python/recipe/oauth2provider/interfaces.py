@@ -578,7 +578,16 @@ class APIOptions:
 
 class APIInterface:
     def __init__(self):
-        pass
+        self.disable_login_get = False
+        self.disable_auth_get = False
+        self.disable_token_post = False
+        self.disable_login_info_get = False
+        self.disable_user_info_get = False
+        self.disable_revoke_token_post = False
+        self.disable_introspect_token_post = False
+        self.disable_end_session_get = False
+        self.disable_end_session_post = False
+        self.disable_logout_post = False
 
     @abstractmethod
     async def login_get(
