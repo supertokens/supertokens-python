@@ -43,7 +43,7 @@ class ErrorOAuth2Response(APIResponse):
         self.error_description = error_description
         self.status_code = status_code
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
             "error": self.error,
@@ -193,11 +193,39 @@ class LoginInfo:
         self.client_uri = client_uri
         self.metadata = metadata
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "info": {
+                "clientId": self.client_id,
+                "clientName": self.client_name,
+                "tosUri": self.tos_uri,
+                "policyUri": self.policy_uri,
+                "logoUri": self.logo_uri,
+                "clientUri": self.client_uri,
+                "metadata": self.metadata,
+            },
+        }
+
 
 class RedirectResponse:
     def __init__(self, redirect_to: str, cookies: Optional[str] = None):
         self.redirect_to = redirect_to
         self.cookies = cookies
+
+
+class FrontendRedirectResponse:
+    def __init__(self, frontend_redirect_to: str, cookies: Optional[str] = None):
+        self.frontend_redirect_to = frontend_redirect_to
+        self.cookies = cookies
+
+    def to_json(self) -> Dict[str, Any]:
+        result = {
+            "frontendRedirectTo": self.frontend_redirect_to,
+        }
+        if self.cookies is not None:
+            result["cookies"] = self.cookies
+        return result
 
 
 class GetOAuth2ClientsOkResult:
@@ -607,9 +635,7 @@ class APIInterface:
         session: Optional[SessionContainer] = None,
         should_try_refresh: bool = False,
         user_context: Dict[str, Any] = {},
-    ) -> Union[
-        Dict[str, Union[str, Optional[str]]], ErrorOAuth2Response, GeneralErrorResponse
-    ]:
+    ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -643,7 +669,7 @@ class APIInterface:
         options: APIOptions,
         user_context: Dict[str, Any] = {},
     ) -> Union[
-        Dict[Literal["status", "info"], Union[Literal["OK"], LoginInfo]],
+        LoginInfo,
         ErrorOAuth2Response,
         GeneralErrorResponse,
     ]:
@@ -670,7 +696,7 @@ class APIInterface:
         authorization_header: Optional[str] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
-    ) -> Union[Dict[Literal["status"], Literal["OK"]], ErrorOAuth2Response]:
+    ) -> Union[None, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -712,7 +738,5 @@ class APIInterface:
         options: APIOptions,
         session: Optional[SessionContainer] = None,
         user_context: Dict[str, Any] = {},
-    ) -> Union[
-        Dict[str, Union[Literal["OK"], str]], ErrorOAuth2Response, GeneralErrorResponse
-    ]:
+    ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass

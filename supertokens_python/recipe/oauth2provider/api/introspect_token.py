@@ -14,7 +14,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
+
+from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
     from ..interfaces import (
@@ -32,4 +34,21 @@ async def introspect_token_post(
     if api_implementation.disable_introspect_token_post is True:
         return None
 
-    raise NotImplementedError()
+    body = await api_options.request.get_json_or_form_data()
+    if body is None or "token" not in body:
+        return send_non_200_response(
+            {"message": "token is required in the request body"},
+            400,
+            api_options.response,
+        )
+
+    scopes: List[str] = body.get("scope", "").split(" ") if "scope" in body else []
+
+    response = await api_implementation.introspect_token_post(
+        body["token"],
+        scopes,
+        api_options,
+        user_context,
+    )
+
+    return send_200_response(response.to_json(), api_options.response)
