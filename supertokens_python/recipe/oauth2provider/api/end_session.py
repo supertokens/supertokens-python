@@ -14,12 +14,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
+import urllib.parse
+
+from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.framework import BaseResponse
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
+from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
         APIInterface,
+        RedirectResponse,
+        ErrorOAuth2Response,
     )
 
 
@@ -32,7 +43,13 @@ async def end_session_get(
     if api_implementation.disable_end_session_get is True:
         return None
 
-    raise NotImplementedError()
+    orig_url = api_options.request.get_original_url()
+    split_url = orig_url.split("?")
+    params = dict(urllib.parse.parse_qsl(split_url[1]))
+
+    return await end_session_common(
+        params, api_implementation.end_session_get, api_options, user_context
+    )
 
 
 async def end_session_post(
@@ -44,4 +61,69 @@ async def end_session_post(
     if api_implementation.disable_end_session_post is True:
         return None
 
-    raise NotImplementedError()
+    params = await api_options.request.get_json_or_form_data()
+    if params is None:
+        raise_bad_input_exception("Please provide a JSON body or form data")
+
+    return await end_session_common(
+        params, api_implementation.end_session_post, api_options, user_context
+    )
+
+
+EndSessionCallable = Callable[
+    [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],
+    Awaitable[Union[Dict[str, str], ErrorOAuth2Response, GeneralErrorResponse]],
+]
+
+
+async def end_session_common(
+    params: Dict[str, str],
+    api_implementation: Optional[EndSessionCallable],
+    options: APIOptions,
+    user_context: Dict[str, Any],
+) -> Optional[BaseResponse]:
+    if api_implementation is None:
+        return None
+
+    session = None
+    should_try_refresh = False
+    try:
+        session = await get_session(
+            options.request,
+            False,
+            user_context=user_context,
+        )
+        should_try_refresh = False
+    except Exception as error:
+        # We can handle this as if the session is not present, because then we redirect to the frontend,
+        # which should handle the validation error
+        session = None
+        if isinstance(error, TryRefreshTokenError):
+            should_try_refresh = True
+        else:
+            should_try_refresh = False
+
+    response = await api_implementation(
+        params,
+        options,
+        session,
+        should_try_refresh,
+        user_context,
+    )
+
+    if isinstance(response, RedirectResponse):
+        options.response.redirect(response.redirect_to)
+    elif isinstance(response, ErrorOAuth2Response):
+        send_non_200_response(
+            {
+                "error": response.error,
+                "error_description": response.error_description,
+            },
+            response.status_code or 400,
+            options.response,
+        )
+    else:
+        if isinstance(response, dict):
+            return send_200_response(response, options.response)
+        else:
+            return send_200_response(response.to_json(), options.response)

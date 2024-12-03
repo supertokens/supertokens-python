@@ -85,3 +85,7 @@ class FlaskResponse(BaseResponse):
                 separators=(",", ":"),
             ).encode("utf-8")
             self.response_sent = True
+
+    def redirect(self, url: str):
+        self.response.headers.set("Location", url)
+        self.set_status_code(302)
