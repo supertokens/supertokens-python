@@ -38,11 +38,11 @@ if TYPE_CHECKING:
 async def login_get(
     recipe_implementation: RecipeInterface,
     login_challenge: str,
-    session: Optional[SessionContainer] = None,
-    should_try_refresh: bool = False,
-    cookies: Optional[str] = None,
-    is_direct_call: bool = False,
-    user_context: Dict[str, Any] = {},
+    session: Optional[SessionContainer],
+    should_try_refresh: bool,
+    cookies: Optional[str],
+    is_direct_call: bool,
+    user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
     login_request = await recipe_implementation.get_login_request(
         challenge=login_challenge,
@@ -116,6 +116,10 @@ async def login_get(
     ):
         accept = await recipe_implementation.accept_login_request(
             challenge=login_challenge,
+            acr=None,
+            amr=None,
+            context=None,
+            extend_session_lifespan=None,
             subject=session.get_user_id(),
             identity_provider_session_id=session.get_handle(),
             user_context=user_context,
@@ -128,7 +132,7 @@ async def login_get(
     if should_try_refresh and prompt_param != "login":
         return RedirectResponse(
             redirect_to=await recipe_implementation.get_frontend_redirection_url(
-                input=FrontendRedirectionURLTypeTryRefresh(
+                params=FrontendRedirectionURLTypeTryRefresh(
                     login_challenge=login_challenge,
                 ),
                 user_context=user_context,
@@ -152,7 +156,7 @@ async def login_get(
 
     return RedirectResponse(
         redirect_to=await recipe_implementation.get_frontend_redirection_url(
-            input=FrontendRedirectionURLTypeLogin(
+            params=FrontendRedirectionURLTypeLogin(
                 login_challenge=login_challenge,
                 force_fresh_auth=session is not None or prompt_param == "login",
                 tenant_id=tenant_id_param or DEFAULT_TENANT_ID,
@@ -168,9 +172,7 @@ async def login_get(
     )
 
 
-def get_merged_cookies(
-    orig_cookies: str = "", new_cookies: Optional[str] = None
-) -> str:
+def get_merged_cookies(orig_cookies: str, new_cookies: Optional[str]) -> str:
     if not new_cookies:
         return orig_cookies
 
@@ -223,10 +225,10 @@ def is_logout_internal_redirect(redirect_to: str) -> bool:
 async def handle_login_internal_redirects(
     response: RedirectResponse,
     recipe_implementation: RecipeInterface,
-    session: Optional[SessionContainer] = None,
-    should_try_refresh: bool = False,
-    cookie: str = "",
-    user_context: Dict[str, Any] = {},
+    session: Optional[SessionContainer],
+    should_try_refresh: bool,
+    cookie: str,
+    user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
     if not is_login_internal_redirect(response.redirect_to):
         return response
@@ -297,8 +299,8 @@ async def handle_login_internal_redirects(
 async def handle_logout_internal_redirects(
     response: RedirectResponse,
     recipe_implementation: RecipeInterface,
-    session: Optional[SessionContainer] = None,
-    user_context: Dict[str, Any] = {},
+    session: Optional[SessionContainer],
+    user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
     if not is_logout_internal_redirect(response.redirect_to):
         return response

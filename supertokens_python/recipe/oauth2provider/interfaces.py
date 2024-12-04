@@ -368,7 +368,7 @@ class RecipeInterface(ABC):
         params: Dict[str, str],
         cookies: Optional[str],
         session: Optional[SessionContainer],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
@@ -377,13 +377,13 @@ class RecipeInterface(ABC):
         self,
         authorization_header: Optional[str],
         body: Dict[str, Optional[str]],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[TokenInfo, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
     async def get_consent_request(
-        self, challenge: str, user_context: Dict[str, Any] = {}
+        self, challenge: str, user_context: Dict[str, Any]
     ) -> ConsentRequest:
         pass
 
@@ -391,16 +391,16 @@ class RecipeInterface(ABC):
     async def accept_consent_request(
         self,
         challenge: str,
-        context: Optional[Any] = None,
-        grant_access_token_audience: Optional[List[str]] = None,
-        grant_scope: Optional[List[str]] = None,
-        handled_at: Optional[str] = None,
-        tenant_id: str = "",
-        rsub: str = "",
-        session_handle: str = "",
-        initial_access_token_payload: Optional[Dict[str, Any]] = None,
-        initial_id_token_payload: Optional[Dict[str, Any]] = None,
-        user_context: Dict[str, Any] = {},
+        context: Optional[Any],
+        grant_access_token_audience: Optional[List[str]],
+        grant_scope: Optional[List[str]],
+        handled_at: Optional[str],
+        tenant_id: str,
+        rsub: str,
+        session_handle: str,
+        initial_access_token_payload: Optional[Dict[str, Any]],
+        initial_id_token_payload: Optional[Dict[str, Any]],
+        user_context: Dict[str, Any],
     ) -> RedirectResponse:
         pass
 
@@ -420,13 +420,13 @@ class RecipeInterface(ABC):
     async def accept_login_request(
         self,
         challenge: str,
-        acr: Optional[str] = None,
-        amr: Optional[List[str]] = None,
-        context: Optional[Any] = None,
-        extend_session_lifespan: Optional[bool] = None,
-        identity_provider_session_id: Optional[str] = None,
-        subject: str = "",
-        user_context: Dict[str, Any] = {},
+        acr: Optional[str],
+        amr: Optional[List[str]],
+        context: Optional[Any],
+        extend_session_lifespan: Optional[bool],
+        identity_provider_session_id: Optional[str],
+        subject: str,
+        user_context: Dict[str, Any],
     ) -> RedirectResponse:
         pass
 
@@ -435,17 +435,17 @@ class RecipeInterface(ABC):
         self,
         challenge: str,
         error: ErrorOAuth2Response,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> RedirectResponse:
         pass
 
     @abstractmethod
     async def get_oauth2_clients(
         self,
-        page_size: Optional[int] = None,
-        pagination_token: Optional[str] = None,
-        client_name: Optional[str] = None,
-        user_context: Dict[str, Any] = {},
+        page_size: Optional[int],
+        pagination_token: Optional[str],
+        client_name: Optional[str],
+        user_context: Dict[str, Any],
     ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
         pass
 
@@ -453,21 +453,21 @@ class RecipeInterface(ABC):
     async def get_oauth2_client(
         self,
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
     async def create_oauth2_client(
         self,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
     async def update_oauth2_client(
         self,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
         pass
 
@@ -475,7 +475,7 @@ class RecipeInterface(ABC):
     async def delete_oauth2_client(
         self,
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
         pass
 
@@ -483,9 +483,9 @@ class RecipeInterface(ABC):
     async def validate_oauth2_access_token(
         self,
         token: str,
-        requirements: Optional[OAuth2TokenValidationRequirements] = None,
-        check_database: Optional[bool] = None,
-        user_context: Dict[str, Any] = {},
+        requirements: Optional[OAuth2TokenValidationRequirements],
+        check_database: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         pass
 
@@ -496,7 +496,7 @@ class RecipeInterface(ABC):
         session_handle: Optional[str],
         scope_param: List[str],
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> List[str]:
         pass
 
@@ -507,7 +507,7 @@ class RecipeInterface(ABC):
         client: OAuth2Client,
         session_handle: Optional[str],
         scopes: List[str],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         pass
 
@@ -518,7 +518,7 @@ class RecipeInterface(ABC):
         client: OAuth2Client,
         session_handle: Optional[str],
         scopes: List[str],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         pass
 
@@ -529,31 +529,31 @@ class RecipeInterface(ABC):
         access_token_payload: Dict[str, Any],
         scopes: List[str],
         tenant_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         pass
 
     @abstractmethod
     async def get_frontend_redirection_url(
         self,
-        input: Union[
+        params: Union[
             FrontendRedirectionURLTypeLogin,
             FrontendRedirectionURLTypeTryRefresh,
             FrontendRedirectionURLTypeLogoutConfirmation,
             FrontendRedirectionURLTypePostLogoutFallback,
         ],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> str:
         pass
 
     @abstractmethod
     async def revoke_token(
         self,
-        input: Union[
+        params: Union[
             RevokeTokenUsingAuthorizationHeader,
             RevokeTokenUsingClientIDAndClientSecret,
         ],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Optional[ErrorOAuth2Response]:
         pass
 
@@ -561,7 +561,7 @@ class RecipeInterface(ABC):
     async def revoke_tokens_by_client_id(
         self,
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ):
         pass
 
@@ -569,7 +569,7 @@ class RecipeInterface(ABC):
     async def revoke_tokens_by_session_handle(
         self,
         session_handle: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ):
         pass
 
@@ -577,8 +577,8 @@ class RecipeInterface(ABC):
     async def introspect_token(
         self,
         token: str,
-        scopes: Optional[List[str]] = None,
-        user_context: Dict[str, Any] = {},
+        scopes: Optional[List[str]],
+        user_context: Dict[str, Any],
     ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
         pass
 
@@ -587,8 +587,8 @@ class RecipeInterface(ABC):
         self,
         params: Dict[str, str],
         should_try_refresh: bool,
-        session: Optional[SessionContainer] = None,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
@@ -596,7 +596,7 @@ class RecipeInterface(ABC):
     async def accept_logout_request(
         self,
         challenge: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
@@ -604,7 +604,7 @@ class RecipeInterface(ABC):
     async def reject_logout_request(
         self,
         challenge: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ):
         pass
 
@@ -643,9 +643,9 @@ class APIInterface:
         self,
         login_challenge: str,
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
     ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
@@ -657,7 +657,7 @@ class APIInterface:
         session: Optional[SessionContainer],
         should_try_refresh: bool,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
@@ -667,7 +667,7 @@ class APIInterface:
         authorization_header: Optional[str],
         body: Any,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[TokenInfo, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
@@ -676,7 +676,7 @@ class APIInterface:
         self,
         login_challenge: str,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[
         LoginInfo,
         ErrorOAuth2Response,
@@ -692,19 +692,19 @@ class APIInterface:
         scopes: List[str],
         tenant_id: str,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[Dict[str, Any], GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def revoke_token_post(
         self,
-        token: str,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
-        authorization_header: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        token: str,
+        authorization_header: Optional[str],
+        client_id: Optional[str],
+        client_secret: Optional[str],
+        user_context: Dict[str, Any],
     ) -> Union[None, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
@@ -714,7 +714,7 @@ class APIInterface:
         token: str,
         scopes: Optional[List[str]],
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[ActiveTokenResponse, InactiveTokenResponse, GeneralErrorResponse]:
         pass
 
@@ -723,9 +723,9 @@ class APIInterface:
         self,
         params: Dict[str, str],
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
@@ -734,9 +734,9 @@ class APIInterface:
         self,
         params: Dict[str, str],
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
@@ -745,7 +745,7 @@ class APIInterface:
         self,
         logout_challenge: str,
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
     ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass

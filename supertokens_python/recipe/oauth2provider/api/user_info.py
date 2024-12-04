@@ -60,6 +60,8 @@ async def user_info_get(
     try:
         payload = await api_options.recipe_implementation.validate_oauth2_access_token(
             token=access_token,
+            requirements=None,
+            check_database=None,
             user_context=user_context,
         )
 

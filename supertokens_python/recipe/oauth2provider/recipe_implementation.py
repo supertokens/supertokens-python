@@ -103,13 +103,13 @@ class RecipeImplementation(RecipeInterface):
     async def accept_login_request(
         self,
         challenge: str,
-        acr: Optional[str] = None,
-        amr: Optional[List[str]] = None,
-        context: Optional[Any] = None,
-        extend_session_lifespan: Optional[bool] = None,
-        identity_provider_session_id: Optional[str] = None,
-        subject: str = "",
-        user_context: Dict[str, Any] = {},
+        acr: Optional[str],
+        amr: Optional[List[str]],
+        context: Optional[Any],
+        extend_session_lifespan: Optional[bool],
+        identity_provider_session_id: Optional[str],
+        subject: str,
+        user_context: Dict[str, Any],
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/accept"),
@@ -135,7 +135,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         challenge: str,
         error: ErrorOAuth2Response,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/reject"),
@@ -154,7 +154,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_consent_request(
-        self, challenge: str, user_context: Dict[str, Any] = {}
+        self, challenge: str, user_context: Dict[str, Any]
     ) -> ConsentRequest:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
@@ -167,16 +167,16 @@ class RecipeImplementation(RecipeInterface):
     async def accept_consent_request(
         self,
         challenge: str,
-        context: Optional[Any] = None,
-        grant_access_token_audience: Optional[List[str]] = None,
-        grant_scope: Optional[List[str]] = None,
-        handled_at: Optional[str] = None,
-        tenant_id: str = "",
-        rsub: str = "",
-        session_handle: str = "",
-        initial_access_token_payload: Optional[Dict[str, Any]] = None,
-        initial_id_token_payload: Optional[Dict[str, Any]] = None,
-        user_context: Dict[str, Any] = {},
+        context: Optional[Any],
+        grant_access_token_audience: Optional[List[str]],
+        grant_scope: Optional[List[str]],
+        handled_at: Optional[str],
+        tenant_id: str,
+        rsub: str,
+        session_handle: str,
+        initial_access_token_payload: Optional[Dict[str, Any]],
+        initial_id_token_payload: Optional[Dict[str, Any]],
+        user_context: Dict[str, Any],
     ) -> RedirectResponse:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent/accept"),
@@ -227,7 +227,7 @@ class RecipeImplementation(RecipeInterface):
         params: Dict[str, str],
         cookies: Optional[str],
         session: Optional[SessionContainer],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         # we handle this in the backend SDK level
         if params.get("prompt") == "none":
@@ -352,10 +352,11 @@ class RecipeImplementation(RecipeInterface):
             )
 
             consent_res = await self.accept_consent_request(
-                user_context=user_context,
                 challenge=consent_request.challenge,
+                context=None,
                 grant_access_token_audience=consent_request.requested_access_token_audience,
                 grant_scope=consent_request.requested_scope,
+                handled_at=None,
                 tenant_id=session.get_tenant_id(),
                 rsub=session.get_recipe_user_id().get_as_string(),
                 session_handle=session.get_handle(),
@@ -363,6 +364,7 @@ class RecipeImplementation(RecipeInterface):
                     payloads.get("accessToken") if payloads else None
                 ),
                 initial_id_token_payload=payloads.get("idToken") if payloads else None,
+                user_context=user_context,
             )
 
             return RedirectResponse(
@@ -375,7 +377,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         authorization_header: Optional[str],
         body: Dict[str, Optional[str]],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[TokenInfo, ErrorOAuth2Response]:
         request_body = {
             "iss": await OpenIdRecipe.get_issuer(user_context),
@@ -511,10 +513,10 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_oauth2_clients(
         self,
-        page_size: Optional[int] = None,
-        pagination_token: Optional[str] = None,
-        client_name: Optional[str] = None,
-        user_context: Dict[str, Any] = {},
+        page_size: Optional[int],
+        pagination_token: Optional[str],
+        client_name: Optional[str],
+        user_context: Dict[str, Any],
     ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
         body: Dict[str, Any] = {}
         if page_size is not None:
@@ -545,7 +547,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
     async def get_oauth2_client(
-        self, client_id: str, user_context: Dict[str, Any] = {}
+        self, client_id: str, user_context: Dict[str, Any]
     ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/clients"),
@@ -567,7 +569,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_oauth2_client(
         self,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients"),
@@ -583,7 +585,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_oauth2_client(
         self,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/clients"),
@@ -601,7 +603,7 @@ class RecipeImplementation(RecipeInterface):
     async def delete_oauth2_client(
         self,
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients/remove"),
@@ -618,9 +620,9 @@ class RecipeImplementation(RecipeInterface):
     async def validate_oauth2_access_token(
         self,
         token: str,
-        requirements: Optional[OAuth2TokenValidationRequirements] = None,
-        check_database: Optional[bool] = None,
-        user_context: Dict[str, Any] = {},
+        requirements: Optional[OAuth2TokenValidationRequirements],
+        check_database: Optional[bool],
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         # Verify token signature using session recipe's JWKS
         session_recipe = SessionRecipe.get_instance()
@@ -677,7 +679,7 @@ class RecipeImplementation(RecipeInterface):
         session_handle: Optional[str],
         scope_param: List[str],
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> List[str]:
         _ = recipe_user_id
         _ = session_handle
@@ -692,7 +694,7 @@ class RecipeImplementation(RecipeInterface):
         client: OAuth2Client,
         session_handle: Optional[str],
         scopes: List[str],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         if user is None or session_handle is None:
             return {}
@@ -709,7 +711,7 @@ class RecipeImplementation(RecipeInterface):
         client: OAuth2Client,
         session_handle: Optional[str],
         scopes: List[str],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         if user is None or session_handle is None:
             return {}
@@ -726,7 +728,7 @@ class RecipeImplementation(RecipeInterface):
         access_token_payload: Dict[str, Any],
         scopes: List[str],
         tenant_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         return await self._get_default_user_info_payload(
             user, access_token_payload, scopes, tenant_id, user_context
@@ -734,26 +736,26 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_frontend_redirection_url(
         self,
-        input: Union[
+        params: Union[
             FrontendRedirectionURLTypeLogin,
             FrontendRedirectionURLTypeTryRefresh,
             FrontendRedirectionURLTypeLogoutConfirmation,
             FrontendRedirectionURLTypePostLogoutFallback,
         ],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> str:
         website_domain = self.app_info.get_origin(
             None, user_context
         ).get_as_string_dangerous()
         website_base_path = self.app_info.api_base_path.get_as_string_dangerous()
 
-        if isinstance(input, FrontendRedirectionURLTypeLogin):
-            query_params: Dict[str, str] = {"loginChallenge": input.login_challenge}
-            if input.tenant_id != "public":  # DEFAULT_TENANT_ID is "public"
-                query_params["tenantId"] = input.tenant_id
-            if input.hint is not None:
-                query_params["hint"] = input.hint
-            if input.force_fresh_auth:
+        if isinstance(params, FrontendRedirectionURLTypeLogin):
+            query_params: Dict[str, str] = {"loginChallenge": params.login_challenge}
+            if params.tenant_id != "public":  # DEFAULT_TENANT_ID is "public"
+                query_params["tenantId"] = params.tenant_id
+            if params.hint is not None:
+                query_params["hint"] = params.hint
+            if params.force_fresh_auth:
                 query_params["forceFreshAuth"] = "true"
 
             query_string = "&".join(
@@ -761,30 +763,30 @@ class RecipeImplementation(RecipeInterface):
             )
             return f"{website_domain}{website_base_path}?{query_string}"
 
-        elif isinstance(input, FrontendRedirectionURLTypeTryRefresh):
-            return f"{website_domain}{website_base_path}/try-refresh?loginChallenge={input.login_challenge}"
+        elif isinstance(params, FrontendRedirectionURLTypeTryRefresh):
+            return f"{website_domain}{website_base_path}/try-refresh?loginChallenge={params.login_challenge}"
 
-        elif isinstance(input, FrontendRedirectionURLTypePostLogoutFallback):
+        elif isinstance(params, FrontendRedirectionURLTypePostLogoutFallback):
             return f"{website_domain}{website_base_path}"
 
-        else:  # isinstance(input, FrontendRedirectionURLTypeLogoutConfirmation)
-            return f"{website_domain}{website_base_path}/oauth/logout?logoutChallenge={input.logout_challenge}"
+        else:  # isinstance(params, FrontendRedirectionURLTypeLogoutConfirmation)
+            return f"{website_domain}{website_base_path}/oauth/logout?logoutChallenge={params.logout_challenge}"
 
     async def revoke_token(
         self,
-        input: Union[
+        params: Union[
             RevokeTokenUsingAuthorizationHeader,
             RevokeTokenUsingClientIDAndClientSecret,
         ],
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Optional[ErrorOAuth2Response]:
-        request_body = {"token": input.token}
+        request_body = {"token": params.token}
 
-        if isinstance(input, RevokeTokenUsingAuthorizationHeader):
-            request_body["authorizationHeader"] = input.authorization_header
+        if isinstance(params, RevokeTokenUsingAuthorizationHeader):
+            request_body["authorizationHeader"] = params.authorization_header
         else:
-            request_body["client_id"] = input.client_id
-            request_body["client_secret"] = input.client_secret
+            request_body["client_id"] = params.client_id
+            request_body["client_secret"] = params.client_secret
 
         res = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/token/revoke"),
@@ -804,7 +806,7 @@ class RecipeImplementation(RecipeInterface):
     async def revoke_tokens_by_client_id(
         self,
         client_id: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ):
         await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/session/revoke"),
@@ -815,7 +817,7 @@ class RecipeImplementation(RecipeInterface):
     async def revoke_tokens_by_session_handle(
         self,
         session_handle: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ):
         await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/session/revoke"),
@@ -826,8 +828,8 @@ class RecipeImplementation(RecipeInterface):
     async def introspect_token(
         self,
         token: str,
-        scopes: Optional[List[str]] = None,
-        user_context: Dict[str, Any] = {},
+        scopes: Optional[List[str]],
+        user_context: Dict[str, Any],
     ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
         # Determine if the token is an access token by checking if it doesn't start with "st_rt"
         is_access_token = not token.startswith("st_rt")
@@ -869,8 +871,8 @@ class RecipeImplementation(RecipeInterface):
         self,
         params: Dict[str, str],
         should_try_refresh: bool,
-        session: Optional[SessionContainer] = None,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         # NOTE: The API response has 3 possible cases:
         #
@@ -946,7 +948,7 @@ class RecipeImplementation(RecipeInterface):
     async def accept_logout_request(
         self,
         challenge: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         resp = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/logout/accept"),
@@ -977,7 +979,7 @@ class RecipeImplementation(RecipeInterface):
     async def reject_logout_request(
         self,
         challenge: str,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ):
         resp = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/logout/reject"),

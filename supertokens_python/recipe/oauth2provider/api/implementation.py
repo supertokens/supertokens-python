@@ -42,9 +42,9 @@ class APIImplementation(APIInterface):
         self,
         login_challenge: str,
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
     ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         response = await login_get(
             recipe_implementation=options.recipe_implementation,
@@ -52,6 +52,7 @@ class APIImplementation(APIInterface):
             session=session,
             should_try_refresh=should_try_refresh,
             is_direct_call=True,
+            cookies=None,
             user_context=user_context,
         )
 
@@ -82,7 +83,7 @@ class APIImplementation(APIInterface):
         session: Optional[SessionContainer],
         should_try_refresh: bool,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         response = await options.recipe_implementation.authorization(
             params=params,
@@ -108,7 +109,7 @@ class APIImplementation(APIInterface):
         authorization_header: Optional[str],
         body: Any,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[TokenInfo, ErrorOAuth2Response, GeneralErrorResponse]:
         return await options.recipe_implementation.token_exchange(
             authorization_header=authorization_header,
@@ -120,7 +121,7 @@ class APIImplementation(APIInterface):
         self,
         login_challenge: str,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[LoginInfo, ErrorOAuth2Response, GeneralErrorResponse]:
         login_res = await options.recipe_implementation.get_login_request(
             challenge=login_challenge,
@@ -149,7 +150,7 @@ class APIImplementation(APIInterface):
         scopes: List[str],
         tenant_id: str,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[Dict[str, Any], GeneralErrorResponse]:
         return await options.recipe_implementation.build_user_info(
             user=user,
@@ -161,16 +162,16 @@ class APIImplementation(APIInterface):
 
     async def revoke_token_post(
         self,
-        token: str,
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
-        authorization_header: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        token: str,
+        authorization_header: Optional[str],
+        client_id: Optional[str],
+        client_secret: Optional[str],
+        user_context: Dict[str, Any],
     ) -> Union[None, ErrorOAuth2Response, GeneralErrorResponse]:
         if authorization_header is not None:
             return await options.recipe_implementation.revoke_token(
-                input=RevokeTokenUsingAuthorizationHeader(
+                params=RevokeTokenUsingAuthorizationHeader(
                     token=token,
                     authorization_header=authorization_header,
                 ),
@@ -181,7 +182,7 @@ class APIImplementation(APIInterface):
                 raise Exception("client_secret is required")
 
             return await options.recipe_implementation.revoke_token(
-                input=RevokeTokenUsingClientIDAndClientSecret(
+                params=RevokeTokenUsingClientIDAndClientSecret(
                     token=token,
                     client_id=client_id,
                     client_secret=client_secret,
@@ -198,7 +199,7 @@ class APIImplementation(APIInterface):
         token: str,
         scopes: Optional[List[str]],
         options: APIOptions,
-        user_context: Dict[str, Any] = {},
+        user_context: Dict[str, Any],
     ) -> Union[ActiveTokenResponse, InactiveTokenResponse, GeneralErrorResponse]:
         return await options.recipe_implementation.introspect_token(
             token=token,
@@ -210,9 +211,9 @@ class APIImplementation(APIInterface):
         self,
         params: Dict[str, str],
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         response = await options.recipe_implementation.end_session(
             params=params,
@@ -235,9 +236,9 @@ class APIImplementation(APIInterface):
         self,
         params: Dict[str, str],
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        should_try_refresh: bool = False,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         response = await options.recipe_implementation.end_session(
             params=params,
@@ -260,8 +261,8 @@ class APIImplementation(APIInterface):
         self,
         logout_challenge: str,
         options: APIOptions,
-        session: Optional[SessionContainer] = None,
-        user_context: Dict[str, Any] = {},
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
     ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         if session is not None:
             await session.revoke_session(user_context)
@@ -277,6 +278,7 @@ class APIImplementation(APIInterface):
         res = await handle_logout_internal_redirects(
             response=response,
             recipe_implementation=options.recipe_implementation,
+            session=session,
             user_context=user_context,
         )
 
