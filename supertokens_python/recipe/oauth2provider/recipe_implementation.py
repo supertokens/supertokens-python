@@ -50,6 +50,8 @@ from .interfaces import (
     OAuth2Client,
     TokenInfo,
     UserInfoBuilderFunction,
+    ActiveTokenResponse,
+    InactiveTokenResponse,
 )
 
 
@@ -443,11 +445,11 @@ class RecipeImplementation(RecipeInterface):
                 user_context=user_context,
             )
 
-            if token_info.get("active"):
-                session_handle = token_info["sessionHandle"]
+            if isinstance(token_info, ActiveTokenResponse):
+                session_handle = token_info.payload["sessionHandle"]
 
                 client_info = await self.get_oauth2_client(
-                    client_id=token_info["client_id"], user_context=user_context
+                    client_id=token_info.payload["client_id"], user_context=user_context
                 )
 
                 if isinstance(client_info, ErrorOAuth2Response):
@@ -458,7 +460,7 @@ class RecipeImplementation(RecipeInterface):
                     )
 
                 client = client_info.client
-                user = await get_user(token_info["sub"])
+                user = await get_user(token_info.payload["sub"])
 
                 if not user:
                     return ErrorOAuth2Response(
@@ -826,7 +828,7 @@ class RecipeImplementation(RecipeInterface):
         token: str,
         scopes: Optional[List[str]] = None,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, Any]:
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
         # Determine if the token is an access token by checking if it doesn't start with "st_rt"
         is_access_token = not token.startswith("st_rt")
 
@@ -845,7 +847,7 @@ class RecipeImplementation(RecipeInterface):
                     user_context=user_context,
                 )
             except Exception:
-                return {"active": False}
+                return InactiveTokenResponse()
 
         # For tokens that passed local validation or if it's a refresh token,
         # validate the token with the database by calling the core introspection endpoint
@@ -858,7 +860,10 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
-        return res
+        if res.get("active"):
+            return ActiveTokenResponse(payload=res)
+        else:
+            return InactiveTokenResponse()
 
     async def end_session(
         self,

@@ -72,7 +72,7 @@ async def end_session_post(
 
 EndSessionCallable = Callable[
     [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],
-    Awaitable[Union[Dict[str, str], ErrorOAuth2Response, GeneralErrorResponse]],
+    Awaitable[Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]],
 ]
 
 

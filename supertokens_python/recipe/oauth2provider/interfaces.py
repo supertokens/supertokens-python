@@ -579,7 +579,7 @@ class RecipeInterface(ABC):
         token: str,
         scopes: Optional[List[str]] = None,
         user_context: Dict[str, Any] = {},
-    ) -> Dict[str, Any]:
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
         pass
 
     @abstractmethod
@@ -726,7 +726,7 @@ class APIInterface:
         session: Optional[SessionContainer] = None,
         should_try_refresh: bool = False,
         user_context: Dict[str, Any] = {},
-    ) -> Union[Dict[str, str], ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -737,7 +737,7 @@ class APIInterface:
         session: Optional[SessionContainer] = None,
         should_try_refresh: bool = False,
         user_context: Dict[str, Any] = {},
-    ) -> Union[Dict[str, str], ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
