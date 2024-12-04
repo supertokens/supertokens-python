@@ -1,0 +1,751 @@
+# Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing_extensions import Literal
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import (
+    APIResponse,
+    GeneralErrorResponse,
+    RecipeUserId,
+    User,
+)
+
+from .oauth2_client import OAuth2Client
+
+
+if TYPE_CHECKING:
+    from supertokens_python.framework import BaseRequest, BaseResponse
+    from .utils import OAuth2ProviderConfig
+
+
+class ErrorOAuth2Response(APIResponse):
+    def __init__(
+        self,
+        error: str,  # OAuth2 error format (e.g. invalid_request, login_required)
+        error_description: str,  # Human readable error description
+        status_code: Optional[int] = None,  # HTTP status code (e.g. 401 or 403)
+    ):
+        self.status: Literal["ERROR"] = "ERROR"
+        self.error = error
+        self.error_description = error_description
+        self.status_code = status_code
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "error": self.error,
+            "errorDescription": self.error_description,
+            "statusCode": self.status_code,
+        }
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return ErrorOAuth2Response(
+            error=json["error"],
+            error_description=json["errorDescription"],
+            status_code=json["statusCode"],
+        )
+
+
+class ConsentRequest:
+    def __init__(
+        self,
+        challenge: str,  # ID/identifier of the consent authorization request
+        acr: Optional[str] = None,  # Authentication Context Class Reference value
+        amr: Optional[List[str]] = None,  # List of strings
+        client: Optional[OAuth2Client] = None,
+        context: Optional[Any] = None,  # Any JSON serializable object
+        login_challenge: Optional[str] = None,  # Associated login challenge
+        login_session_id: Optional[str] = None,
+        oidc_context: Optional[Any] = None,  # Optional OpenID Connect request info
+        requested_access_token_audience: Optional[List[str]] = None,
+        requested_scope: Optional[List[str]] = None,
+        skip: Optional[bool] = None,
+        subject: Optional[str] = None,
+    ):
+        self.challenge = challenge
+        self.acr = acr
+        self.amr = amr
+        self.client = client
+        self.context = context
+        self.login_challenge = login_challenge
+        self.login_session_id = login_session_id
+        self.oidc_context = oidc_context
+        self.requested_access_token_audience = requested_access_token_audience
+        self.requested_scope = requested_scope
+        self.skip = skip
+        self.subject = subject
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return ConsentRequest(
+            acr=json["acr"],
+            amr=json["amr"],
+            challenge=json["challenge"],
+            client=OAuth2Client.from_json(json["client"]),
+            context=json["context"],
+            login_challenge=json["loginChallenge"],
+            login_session_id=json["loginSessionId"],
+            oidc_context=json["oidcContext"],
+            requested_access_token_audience=json["requestedAccessTokenAudience"],
+            requested_scope=json["requestedScope"],
+            skip=json["skip"],
+            subject=json["subject"],
+        )
+
+
+class LoginRequest:
+    def __init__(
+        self,
+        challenge: str,  # ID/identifier of the login request
+        client: OAuth2Client,
+        request_url: str,  # Original OAuth 2.0 Authorization URL
+        skip: bool,
+        subject: str,
+        oidc_context: Optional[Any] = None,  # Optional OpenID Connect request info
+        requested_access_token_audience: Optional[List[str]] = None,
+        requested_scope: Optional[List[str]] = None,
+        session_id: Optional[str] = None,
+    ):
+        self.challenge = challenge
+        self.client = client
+        self.oidc_context = oidc_context
+        self.request_url = request_url
+        self.requested_access_token_audience = requested_access_token_audience
+        self.requested_scope = requested_scope
+        self.session_id = session_id
+        self.skip = skip
+        self.subject = subject
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return LoginRequest(
+            challenge=json["challenge"],
+            client=OAuth2Client.from_json(json["client"]),
+            request_url=json["requestUrl"],
+            skip=json["skip"],
+            subject=json["subject"],
+            oidc_context=json["oidcContext"],
+            requested_access_token_audience=json["requestedAccessTokenAudience"],
+            requested_scope=json["requestedScope"],
+            session_id=json["sessionId"],
+        )
+
+
+class TokenInfo:
+    def __init__(
+        self,
+        expires_in: int,  # Lifetime in seconds of the access token
+        scope: str,
+        token_type: str,
+        access_token: Optional[str] = None,
+        id_token: Optional[str] = None,  # Requires id_token scope
+        refresh_token: Optional[str] = None,  # Requires offline scope
+    ):
+        self.access_token = access_token
+        self.expires_in = expires_in
+        self.id_token = id_token
+        self.refresh_token = refresh_token
+        self.scope = scope
+        self.token_type = token_type
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return TokenInfo(
+            access_token=json["access_token"],
+            expires_in=json["expires_in"],
+            id_token=json["id_token"],
+            refresh_token=json["refresh_token"],
+            scope=json["scope"],
+            token_type=json["token_type"],
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "accessToken": self.access_token,
+            "expiresIn": self.expires_in,
+            "idToken": self.id_token,
+            "refreshToken": self.refresh_token,
+            "scope": self.scope,
+            "tokenType": self.token_type,
+        }
+
+
+class LoginInfo:
+    def __init__(
+        self,
+        client_id: str,
+        client_name: str,
+        tos_uri: Optional[str] = None,
+        policy_uri: Optional[str] = None,
+        logo_uri: Optional[str] = None,
+        client_uri: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ):
+        self.client_id = client_id
+        self.client_name = client_name
+        self.tos_uri = tos_uri
+        self.policy_uri = policy_uri
+        self.logo_uri = logo_uri
+        self.client_uri = client_uri
+        self.metadata = metadata
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "info": {
+                "clientId": self.client_id,
+                "clientName": self.client_name,
+                "tosUri": self.tos_uri,
+                "policyUri": self.policy_uri,
+                "logoUri": self.logo_uri,
+                "clientUri": self.client_uri,
+                "metadata": self.metadata,
+            },
+        }
+
+
+class RedirectResponse:
+    def __init__(self, redirect_to: str, cookies: Optional[str] = None):
+        self.redirect_to = redirect_to
+        self.cookies = cookies
+
+
+class FrontendRedirectResponse:
+    def __init__(self, frontend_redirect_to: str, cookies: Optional[str] = None):
+        self.frontend_redirect_to = frontend_redirect_to
+        self.cookies = cookies
+
+    def to_json(self) -> Dict[str, Any]:
+        result = {
+            "frontendRedirectTo": self.frontend_redirect_to,
+        }
+        if self.cookies is not None:
+            result["cookies"] = self.cookies
+        return result
+
+
+class GetOAuth2ClientsOkResult:
+    def __init__(
+        self, clients: List[OAuth2Client], next_pagination_token: Optional[str]
+    ):
+        self.clients = clients
+        self.next_pagination_token = next_pagination_token
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return GetOAuth2ClientsOkResult(
+            clients=[OAuth2Client.from_json(client) for client in json["clients"]],
+            next_pagination_token=json["nextPaginationToken"],
+        )
+
+
+class GetOAuth2ClientOkResult:
+    def __init__(self, client: OAuth2Client):
+        self.client = client
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return GetOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+
+
+class CreateOAuth2ClientOkResult:
+    def __init__(self, client: OAuth2Client):
+        self.client = client
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return CreateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+
+
+class UpdateOAuth2ClientOkResult:
+    def __init__(self, client: OAuth2Client):
+        self.client = client
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return UpdateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+
+
+class DeleteOAuth2ClientOkResult:
+    def __init__(self):
+        pass
+
+
+PayloadBuilderFunction = Callable[
+    [User, List[str], str, Dict[str, Any]], Awaitable[Dict[str, Any]]
+]
+
+UserInfoBuilderFunction = Callable[
+    [User, Dict[str, Any], List[str], str, Dict[str, Any]], Awaitable[Dict[str, Any]]
+]
+
+
+class OAuth2TokenValidationRequirements:
+    def __init__(
+        self,
+        client_id: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
+        audience: Optional[str] = None,
+    ):
+        self.client_id = client_id
+        self.scopes = scopes
+        self.audience = audience
+
+
+class FrontendRedirectionURLTypeLogin:
+    def __init__(
+        self,
+        login_challenge: str,
+        tenant_id: str,
+        force_fresh_auth: bool,
+        hint: Optional[str] = None,
+    ):
+        self.login_challenge = login_challenge
+        self.tenant_id = tenant_id
+        self.force_fresh_auth = force_fresh_auth
+        self.hint = hint
+
+
+class FrontendRedirectionURLTypeTryRefresh:
+    def __init__(self, login_challenge: str):
+        self.login_challenge = login_challenge
+
+
+class FrontendRedirectionURLTypeLogoutConfirmation:
+    def __init__(self, logout_challenge: str):
+        self.logout_challenge = logout_challenge
+
+
+class FrontendRedirectionURLTypePostLogoutFallback:
+    pass
+
+
+class RevokeTokenUsingAuthorizationHeader:
+    def __init__(self, token: str, authorization_header: str):
+        self.token = token
+        self.authorization_header = authorization_header
+
+
+class RevokeTokenUsingClientIDAndClientSecret:
+    def __init__(self, token: str, client_id: str, client_secret: str):
+        self.token = token
+        self.client_id = client_id
+        self.client_secret = client_secret
+
+
+class InactiveTokenResponse:
+    def to_json(self):
+        return {"active": False}
+
+
+class ActiveTokenResponse:
+    def __init__(self, payload: Dict[str, Any]):
+        self.payload = payload
+
+    def to_json(self):
+        return {"active": True, **self.payload}
+
+
+class RecipeInterface(ABC):
+    @abstractmethod
+    async def authorization(
+        self,
+        params: Dict[str, str],
+        cookies: Optional[str],
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def token_exchange(
+        self,
+        authorization_header: Optional[str],
+        body: Dict[str, Optional[str]],
+        user_context: Dict[str, Any],
+    ) -> Union[TokenInfo, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def get_consent_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -> ConsentRequest:
+        pass
+
+    @abstractmethod
+    async def accept_consent_request(
+        self,
+        challenge: str,
+        context: Optional[Any],
+        grant_access_token_audience: Optional[List[str]],
+        grant_scope: Optional[List[str]],
+        handled_at: Optional[str],
+        tenant_id: str,
+        rsub: str,
+        session_handle: str,
+        initial_access_token_payload: Optional[Dict[str, Any]],
+        initial_id_token_payload: Optional[Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -> RedirectResponse:
+        pass
+
+    @abstractmethod
+    async def reject_consent_request(
+        self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
+    ) -> RedirectResponse:
+        pass
+
+    @abstractmethod
+    async def get_login_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -> Union[LoginRequest, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def accept_login_request(
+        self,
+        challenge: str,
+        acr: Optional[str],
+        amr: Optional[List[str]],
+        context: Optional[Any],
+        extend_session_lifespan: Optional[bool],
+        identity_provider_session_id: Optional[str],
+        subject: str,
+        user_context: Dict[str, Any],
+    ) -> RedirectResponse:
+        pass
+
+    @abstractmethod
+    async def reject_login_request(
+        self,
+        challenge: str,
+        error: ErrorOAuth2Response,
+        user_context: Dict[str, Any],
+    ) -> RedirectResponse:
+        pass
+
+    @abstractmethod
+    async def get_oauth2_clients(
+        self,
+        page_size: Optional[int],
+        pagination_token: Optional[str],
+        client_name: Optional[str],
+        user_context: Dict[str, Any],
+    ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def get_oauth2_client(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def create_oauth2_client(
+        self,
+        user_context: Dict[str, Any],
+    ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def update_oauth2_client(
+        self,
+        user_context: Dict[str, Any],
+    ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def delete_oauth2_client(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def validate_oauth2_access_token(
+        self,
+        token: str,
+        requirements: Optional[OAuth2TokenValidationRequirements],
+        check_database: Optional[bool],
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def get_requested_scopes(
+        self,
+        recipe_user_id: Optional[RecipeUserId],
+        session_handle: Optional[str],
+        scope_param: List[str],
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -> List[str]:
+        pass
+
+    @abstractmethod
+    async def build_access_token_payload(
+        self,
+        user: Optional[User],
+        client: OAuth2Client,
+        session_handle: Optional[str],
+        scopes: List[str],
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def build_id_token_payload(
+        self,
+        user: Optional[User],
+        client: OAuth2Client,
+        session_handle: Optional[str],
+        scopes: List[str],
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def build_user_info(
+        self,
+        user: User,
+        access_token_payload: Dict[str, Any],
+        scopes: List[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def get_frontend_redirection_url(
+        self,
+        params: Union[
+            FrontendRedirectionURLTypeLogin,
+            FrontendRedirectionURLTypeTryRefresh,
+            FrontendRedirectionURLTypeLogoutConfirmation,
+            FrontendRedirectionURLTypePostLogoutFallback,
+        ],
+        user_context: Dict[str, Any],
+    ) -> str:
+        pass
+
+    @abstractmethod
+    async def revoke_token(
+        self,
+        params: Union[
+            RevokeTokenUsingAuthorizationHeader,
+            RevokeTokenUsingClientIDAndClientSecret,
+        ],
+        user_context: Dict[str, Any],
+    ) -> Optional[ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def revoke_tokens_by_client_id(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ):
+        pass
+
+    @abstractmethod
+    async def revoke_tokens_by_session_handle(
+        self,
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ):
+        pass
+
+    @abstractmethod
+    async def introspect_token(
+        self,
+        token: str,
+        scopes: Optional[List[str]],
+        user_context: Dict[str, Any],
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
+        pass
+
+    @abstractmethod
+    async def end_session(
+        self,
+        params: Dict[str, str],
+        should_try_refresh: bool,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def accept_logout_request(
+        self,
+        challenge: str,
+        user_context: Dict[str, Any],
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+        pass
+
+    @abstractmethod
+    async def reject_logout_request(
+        self,
+        challenge: str,
+        user_context: Dict[str, Any],
+    ):
+        pass
+
+
+class APIOptions:
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: OAuth2ProviderConfig,
+        recipe_implementation: RecipeInterface,
+    ):
+        self.request: BaseRequest = request
+        self.response: BaseResponse = response
+        self.recipe_id: str = recipe_id
+        self.config: OAuth2ProviderConfig = config
+        self.recipe_implementation: RecipeInterface = recipe_implementation
+
+
+class APIInterface:
+    def __init__(self):
+        self.disable_login_get = False
+        self.disable_auth_get = False
+        self.disable_token_post = False
+        self.disable_login_info_get = False
+        self.disable_user_info_get = False
+        self.disable_revoke_token_post = False
+        self.disable_introspect_token_post = False
+        self.disable_end_session_get = False
+        self.disable_end_session_post = False
+        self.disable_logout_post = False
+
+    @abstractmethod
+    async def login_get(
+        self,
+        login_challenge: str,
+        options: APIOptions,
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
+    ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def auth_get(
+        self,
+        params: Any,
+        cookie: Optional[str],
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def token_post(
+        self,
+        authorization_header: Optional[str],
+        body: Any,
+        options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -> Union[TokenInfo, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def login_info_get(
+        self,
+        login_challenge: str,
+        options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -> Union[
+        LoginInfo,
+        ErrorOAuth2Response,
+        GeneralErrorResponse,
+    ]:
+        pass
+
+    @abstractmethod
+    async def user_info_get(
+        self,
+        access_token_payload: Dict[str, Any],
+        user: User,
+        scopes: List[str],
+        tenant_id: str,
+        options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -> Union[Dict[str, Any], GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def revoke_token_post(
+        self,
+        options: APIOptions,
+        token: str,
+        authorization_header: Optional[str],
+        client_id: Optional[str],
+        client_secret: Optional[str],
+        user_context: Dict[str, Any],
+    ) -> Union[None, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def introspect_token_post(
+        self,
+        token: str,
+        scopes: Optional[List[str]],
+        options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def end_session_get(
+        self,
+        params: Dict[str, str],
+        options: APIOptions,
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
+    ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def end_session_post(
+        self,
+        params: Dict[str, str],
+        options: APIOptions,
+        session: Optional[SessionContainer],
+        should_try_refresh: bool,
+        user_context: Dict[str, Any],
+    ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass
+
+    @abstractmethod
+    async def logout_post(
+        self,
+        logout_challenge: str,
+        options: APIOptions,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -> Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
+        pass

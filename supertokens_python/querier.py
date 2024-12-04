@@ -402,28 +402,33 @@ class Querier:
         self,
         path: NormalisedURLPath,
         data: Union[Dict[str, Any], None],
+        query_params: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None],
     ) -> Dict[str, Any]:
         self.invalidate_core_call_cache(user_context)
         if data is None:
             data = {}
+        if query_params is None:
+            query_params = {}
 
         headers = await self.__get_headers_with_api_version(path, user_context)
         headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str, method: str) -> Response:
-            nonlocal headers, data
+            nonlocal headers, data, query_params
             if Querier.network_interceptor is not None:
                 (
                     url,
                     method,
                     headers,
-                    _,
+                    query_params,
                     data,
                 ) = Querier.network_interceptor(  # pylint:disable=not-callable
-                    url, method, headers, {}, data, user_context
+                    url, method, headers, query_params, data, user_context
                 )
-            return await self.api_request(url, method, 2, headers=headers, json=data)
+            return await self.api_request(
+                url, method, 2, headers=headers, json=data, params=query_params
+            )
 
         return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))
 

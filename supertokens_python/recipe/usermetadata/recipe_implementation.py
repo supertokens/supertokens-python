@@ -47,6 +47,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/user/metadata"),
             params,
+            None,
             user_context=user_context,
         )
         return MetadataResult(metadata=response["metadata"])

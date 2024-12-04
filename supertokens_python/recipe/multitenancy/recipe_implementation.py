@@ -147,6 +147,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/multitenancy/tenant/v2"),
             json_body,
+            None,
             user_context=user_context,
         )
         return CreateOrUpdateTenantOkResult(
@@ -217,6 +218,7 @@ class RecipeImplementation(RecipeInterface):
                 "config": config.to_json(),
                 "skipValidation": skip_validation is True,
             },
+            None,
             user_context=user_context,
         )
 
