@@ -173,6 +173,17 @@ class TokenInfo:
             token_type=json["token_type"],
         )
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "accessToken": self.access_token,
+            "expiresIn": self.expires_in,
+            "idToken": self.id_token,
+            "refreshToken": self.refresh_token,
+            "scope": self.scope,
+            "tokenType": self.token_type,
+        }
+
 
 class LoginInfo:
     def __init__(
@@ -647,9 +658,7 @@ class APIInterface:
         should_try_refresh: bool,
         options: APIOptions,
         user_context: Dict[str, Any] = {},
-    ) -> Union[
-        Dict[str, Union[str, Optional[str]]], ErrorOAuth2Response, GeneralErrorResponse
-    ]:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
