@@ -23,8 +23,6 @@ if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
         APIInterface,
-        ErrorOAuth2Response,
-        GeneralErrorResponse,
     )
 
 
@@ -34,6 +32,11 @@ async def revoke_token_post(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        GeneralErrorResponse,
+    )
+
     if api_implementation.disable_revoke_token_post is True:
         return None
 

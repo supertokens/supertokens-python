@@ -27,8 +27,6 @@ if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
         APIInterface,
-        FrontendRedirectResponse,
-        ErrorOAuth2Response,
     )
 
 
@@ -38,6 +36,11 @@ async def login(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
+    from ..interfaces import (
+        FrontendRedirectResponse,
+        ErrorOAuth2Response,
+    )
+
     if api_implementation.disable_login_get is True:
         return None
 
@@ -54,10 +57,7 @@ async def login(
         # We can handle this as if the session is not present, because then we redirect to the frontend,
         # which should handle the validation error
         session = None
-        if isinstance(error, TryRefreshTokenError):
-            should_try_refresh = True
-        else:
-            should_try_refresh = False
+        should_try_refresh = isinstance(error, TryRefreshTokenError)
 
     login_challenge = api_options.request.get_query_param(
         "login_challenge"

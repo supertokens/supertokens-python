@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
         APIInterface,
-        ErrorOAuth2Response,
     )
 
 
@@ -32,6 +31,10 @@ async def token_post(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
+    from ..interfaces import (
+        ErrorOAuth2Response,
+    )
+
     if api_implementation.disable_token_post is True:
         return None
 

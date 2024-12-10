@@ -11,3 +11,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Union
+
+from . import exceptions as ex
+from . import recipe
+
+exceptions = ex
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
+    from .utils import InputOverrideConfig
+
+
+def init(
+    override: Union[InputOverrideConfig, None] = None,
+) -> Callable[[AppInfo], RecipeModule]:
+    return recipe.OAuth2ProviderRecipe.init(override)

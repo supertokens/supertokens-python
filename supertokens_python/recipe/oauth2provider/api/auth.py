@@ -18,8 +18,6 @@ from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Dict
 from urllib.parse import parse_qsl
 
-from fastapi.responses import RedirectResponse
-
 from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 from supertokens_python.utils import send_200_response, send_non_200_response
@@ -28,8 +26,6 @@ if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
         APIInterface,
-        RedirectResponse,
-        ErrorOAuth2Response,
     )
 
 
@@ -39,6 +35,11 @@ async def auth_get(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
+    from ..interfaces import (
+        RedirectResponse,
+        ErrorOAuth2Response,
+    )
+
     if api_implementation.disable_auth_get is True:
         return None
 
@@ -57,12 +58,10 @@ async def auth_get(
         should_try_refresh = False
     except Exception as error:
         session = None
-        if isinstance(error, TryRefreshTokenError):
-            should_try_refresh = True
-        else:
-            # This should generally not happen, but we can handle this as if the session is not present,
-            # because then we redirect to the frontend, which should handle the validation error
-            should_try_refresh = False
+
+        # should_try_refresh = False should generally not happen, but we can handle this as if the session is not present,
+        # because then we redirect to the frontend, which should handle the validation error
+        should_try_refresh = isinstance(error, TryRefreshTokenError)
 
     response = await api_implementation.auth_get(
         params=params,

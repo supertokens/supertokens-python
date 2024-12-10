@@ -29,8 +29,6 @@ if TYPE_CHECKING:
         RecipeInterface,
         ErrorOAuth2Response,
         RedirectResponse,
-        FrontendRedirectionURLTypeTryRefresh,
-        FrontendRedirectionURLTypeLogin,
     )
     from supertokens_python.recipe.session.interfaces import SessionContainer
 
@@ -44,6 +42,13 @@ async def login_get(
     is_direct_call: bool,
     user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        RedirectResponse,
+        FrontendRedirectionURLTypeTryRefresh,
+        FrontendRedirectionURLTypeLogin,
+    )
+
     login_request = await recipe_implementation.get_login_request(
         challenge=login_challenge,
         user_context=user_context,

@@ -25,8 +25,6 @@ if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
         APIInterface,
-        FrontendRedirectResponse,
-        ErrorOAuth2Response,
     )
 
 
@@ -36,14 +34,20 @@ async def logout_post(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
+    from ..interfaces import (
+        FrontendRedirectResponse,
+        ErrorOAuth2Response,
+    )
+
     if api_implementation.disable_logout_post is True:
         return None
+
     session = None
     try:
         session = await get_session(
             api_options.request, session_required=False, user_context=user_context
         )
-    except:
+    except Exception as _:
         pass
 
     body = await api_options.request.json()

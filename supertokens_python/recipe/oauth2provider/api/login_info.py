@@ -17,14 +17,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.oauth2provider.interfaces import ErrorOAuth2Response
 from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
-    from ..interfaces import (
-        APIOptions,
-        APIInterface,
-    )
+    from ..interfaces import APIOptions, APIInterface
 
 
 async def login_info_get(
@@ -33,6 +29,8 @@ async def login_info_get(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
+    from ..interfaces import ErrorOAuth2Response
+
     if api_implementation.disable_login_info_get is True:
         return None
 

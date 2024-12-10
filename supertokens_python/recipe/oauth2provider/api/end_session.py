@@ -33,6 +33,11 @@ if TYPE_CHECKING:
         ErrorOAuth2Response,
     )
 
+    EndSessionCallable = Callable[
+        [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],
+        Awaitable[Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]],
+    ]
+
 
 async def end_session_get(
     _tenant_id: str,
@@ -70,12 +75,6 @@ async def end_session_post(
     )
 
 
-EndSessionCallable = Callable[
-    [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],
-    Awaitable[Union[RedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]],
-]
-
-
 async def end_session_common(
     params: Dict[str, str],
     api_implementation: Optional[EndSessionCallable],
@@ -98,10 +97,7 @@ async def end_session_common(
         # We can handle this as if the session is not present, because then we redirect to the frontend,
         # which should handle the validation error
         session = None
-        if isinstance(error, TryRefreshTokenError):
-            should_try_refresh = True
-        else:
-            should_try_refresh = False
+        should_try_refresh = isinstance(error, TryRefreshTokenError)
 
     response = await api_implementation(
         params,

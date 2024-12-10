@@ -11,10 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from typing import Callable, Union
 
-from .interfaces import APIInterface, RecipeInterface
+from typing import Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Union
+    from .interfaces import APIInterface, RecipeInterface
 
 
 class InputOverrideConfig:
