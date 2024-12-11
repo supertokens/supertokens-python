@@ -30,6 +30,7 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId, User
 
 from .interfaces import (
+    CreateOAuth2ClientInput,
     FrontendRedirectionURLTypeLogin,
     FrontendRedirectionURLTypeLogoutConfirmation,
     FrontendRedirectionURLTypePostLogoutFallback,
@@ -44,6 +45,7 @@ from .interfaces import (
     CreateOAuth2ClientOkResult,
     RevokeTokenUsingAuthorizationHeader,
     RevokeTokenUsingClientIDAndClientSecret,
+    UpdateOAuth2ClientInput,
     UpdateOAuth2ClientOkResult,
     DeleteOAuth2ClientOkResult,
     ConsentRequest,
@@ -570,11 +572,12 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_oauth2_client(
         self,
+        params: CreateOAuth2ClientInput,
         user_context: Dict[str, Any],
     ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients"),
-            {},  # Empty dict since no input params in function signature
+            params.to_json(),
             user_context=user_context,
         )
 
@@ -586,11 +589,12 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_oauth2_client(
         self,
+        params: UpdateOAuth2ClientInput,
         user_context: Dict[str, Any],
     ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/clients"),
-            {},  # TODO update params
+            params.to_json(),
             None,
             user_context=user_context,
         )
@@ -672,7 +676,7 @@ class RecipeImplementation(RecipeInterface):
             if response.get("active") is not True:
                 raise Exception("The token is expired, invalid or has been revoked")
 
-        return {"status": "OK", "payload": payload}
+        return payload
 
     async def get_requested_scopes(
         self,
@@ -787,7 +791,8 @@ class RecipeImplementation(RecipeInterface):
             request_body["authorizationHeader"] = params.authorization_header
         else:
             request_body["client_id"] = params.client_id
-            request_body["client_secret"] = params.client_secret
+            if params.client_secret is not None:
+                request_body["client_secret"] = params.client_secret
 
         res = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/token/revoke"),
