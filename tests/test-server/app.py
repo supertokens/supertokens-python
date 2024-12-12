@@ -278,7 +278,9 @@ def init_st(config: Dict[str, Any]):
                 _: BaseRequest, __: str, response: BaseResponse
             ) -> BaseResponse:
                 response.set_status_code(401)
-                response.set_json_content(content={"type": "UNAUTHORISED"})
+                response.set_json_content(
+                    content={"type": "UNAUTHORISED", "message": "unauthorised"}
+                )
                 return response
 
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
