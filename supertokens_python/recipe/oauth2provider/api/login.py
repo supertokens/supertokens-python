@@ -88,7 +88,7 @@ async def login(
                     httponly=morsel.get("httponly", True),
                     expires=datetime.strptime(morsel.get("expires", ""), "%a, %d %b %Y %H:%M:%S %Z").timestamp() * 1000,  # type: ignore
                     path=morsel.get("path", "/"),
-                    samesite=morsel.get("samesite", "lax"),
+                    samesite=morsel.get("samesite", "lax").lower(),
                 )
 
         return send_200_response(

@@ -310,14 +310,16 @@ class RecipeImplementation(RecipeInterface):
 
             payloads = {"idToken": id_token, "accessToken": access_token}
 
+        request_body = {
+            "params": {**params, "scope": " ".join(scopes)},
+            "iss": await OpenIdRecipe.get_issuer(user_context),
+            "session": payloads,
+        }
+        if cookies is not None:
+            request_body["cookies"] = cookies
         resp = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/auth"),
-            {
-                "params": {**params, "scope": " ".join(scopes)},
-                "iss": await OpenIdRecipe.get_issuer(user_context),
-                "cookies": cookies,
-                "session": payloads,
-            },
+            request_body,
             user_context,
         )
 
