@@ -387,7 +387,6 @@ class RecipeImplementation(RecipeInterface):
         request_body = {
             "iss": await OpenIdRecipe.get_issuer(user_context),
             "inputBody": body,
-            "authorizationHeader": authorization_header,
         }
 
         if body.get("grant_type") == "password":
@@ -846,7 +845,7 @@ class RecipeImplementation(RecipeInterface):
         # If it fails, the token is not active, and we return early
         if is_access_token:
             try:
-                await self.validate_oauth2_access_token(
+                payload = await self.validate_oauth2_access_token(
                     token=token,
                     requirements=(
                         OAuth2TokenValidationRequirements(scopes=scopes)
@@ -856,17 +855,19 @@ class RecipeImplementation(RecipeInterface):
                     check_database=False,
                     user_context=user_context,
                 )
+                return ActiveTokenResponse(payload=payload)
             except Exception:
                 return InactiveTokenResponse()
 
         # For tokens that passed local validation or if it's a refresh token,
         # validate the token with the database by calling the core introspection endpoint
+        request_body = {"token": token}
+        if scopes:
+            request_body["scope"] = " ".join(scopes)
+
         res = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/introspect"),
-            {
-                "token": token,
-                "scope": " ".join(scopes) if scopes else None,
-            },
+            request_body,
             user_context=user_context,
         )
 

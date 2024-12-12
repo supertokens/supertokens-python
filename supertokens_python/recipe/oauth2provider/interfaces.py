@@ -177,12 +177,12 @@ class TokenInfo:
     def to_json(self) -> Dict[str, Any]:
         return {
             "status": "OK",
-            "accessToken": self.access_token,
-            "expiresIn": self.expires_in,
-            "idToken": self.id_token,
-            "refreshToken": self.refresh_token,
+            "access_token": self.access_token,
+            "expires_in": self.expires_in,
+            "id_token": self.id_token,
+            "refresh_token": self.refresh_token,
             "scope": self.scope,
-            "tokenType": self.token_type,
+            "token_type": self.token_type,
         }
 
 
