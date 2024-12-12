@@ -27,7 +27,7 @@ def add_oauth2provider_routes(app: Flask):
         print("OAuth2Provider:createOAuth2Client", request.json)
 
         response = OAuth2Provider.create_oauth2_client(
-            params=CreateOAuth2ClientInput.from_json(request.json.get("input")),
+            params=CreateOAuth2ClientInput.from_json(request.json.get("input", {})),
             user_context=request.json.get("userContext"),
         )
         return jsonify(response.to_json())

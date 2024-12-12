@@ -45,12 +45,14 @@ class ErrorOAuth2Response(APIResponse):
         self.status_code = status_code
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        result: Dict[str, Any] = {
             "status": self.status,
             "error": self.error,
             "errorDescription": self.error_description,
-            "statusCode": self.status_code,
         }
+        if self.status_code is not None:
+            result["statusCode"] = self.status_code
+        return result
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
@@ -225,18 +227,18 @@ class LoginInfo:
 
 
 class RedirectResponse:
-    def __init__(self, redirect_to: str, cookies: Optional[str] = None):
+    def __init__(self, redirect_to: str, cookies: Optional[List[str]] = None):
         self.redirect_to = redirect_to
         self.cookies = cookies
 
 
 class FrontendRedirectResponse:
-    def __init__(self, frontend_redirect_to: str, cookies: Optional[str] = None):
+    def __init__(self, frontend_redirect_to: str, cookies: Optional[List[str]] = None):
         self.frontend_redirect_to = frontend_redirect_to
         self.cookies = cookies
 
     def to_json(self) -> Dict[str, Any]:
-        result = {
+        result: Dict[str, Any] = {
             "frontendRedirectTo": self.frontend_redirect_to,
         }
         if self.cookies is not None:

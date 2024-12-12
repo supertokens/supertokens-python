@@ -373,12 +373,10 @@ class RecipeImplementation(RecipeInterface):
             )
 
             return RedirectResponse(
-                redirect_to=consent_res.redirect_to, cookies=",".join(resp["cookies"])
+                redirect_to=consent_res.redirect_to, cookies=resp["cookies"]
             )
 
-        return RedirectResponse(
-            redirect_to=redirect_to, cookies=",".join(resp["cookies"])
-        )
+        return RedirectResponse(redirect_to=redirect_to, cookies=resp["cookies"])
 
     async def token_exchange(
         self,

@@ -245,32 +245,53 @@ class OAuth2Client:
         )
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        result: Dict[str, Any] = {
             "clientId": self.client_id,
             "clientName": self.client_name,
             "scope": self.scope,
             "tokenEndpointAuthMethod": self.token_endpoint_auth_method,
             "createdAt": self.created_at,
             "updatedAt": self.updated_at,
-            "clientSecret": self.client_secret,
-            "redirectUris": self.redirect_uris,
-            "postLogoutRedirectUris": self.post_logout_redirect_uris,
-            "authorizationCodeGrantAccessTokenLifespan": self.authorization_code_grant_access_token_lifespan,
-            "authorizationCodeGrantIdTokenLifespan": self.authorization_code_grant_id_token_lifespan,
-            "authorizationCodeGrantRefreshTokenLifespan": self.authorization_code_grant_refresh_token_lifespan,
-            "clientCredentialsGrantAccessTokenLifespan": self.client_credentials_grant_access_token_lifespan,
-            "implicitGrantAccessTokenLifespan": self.implicit_grant_access_token_lifespan,
-            "implicitGrantIdTokenLifespan": self.implicit_grant_id_token_lifespan,
-            "refreshTokenGrantAccessTokenLifespan": self.refresh_token_grant_access_token_lifespan,
-            "refreshTokenGrantIdTokenLifespan": self.refresh_token_grant_id_token_lifespan,
-            "refreshTokenGrantRefreshTokenLifespan": self.refresh_token_grant_refresh_token_lifespan,
             "clientUri": self.client_uri,
             "audience": self.audience,
-            "grantTypes": self.grant_types,
-            "responseTypes": self.response_types,
             "logoUri": self.logo_uri,
             "policyUri": self.policy_uri,
             "tosUri": self.tos_uri,
             "metadata": self.metadata,
             "enableRefreshTokenRotation": self.enable_refresh_token_rotation,
         }
+
+        if self.client_secret is not None:
+            result["clientSecret"] = self.client_secret
+        result["redirectUris"] = self.redirect_uris
+        if self.post_logout_redirect_uris is not None:
+            result["postLogoutRedirectUris"] = self.post_logout_redirect_uris
+        result["authorizationCodeGrantAccessTokenLifespan"] = (
+            self.authorization_code_grant_access_token_lifespan
+        )
+        result["authorizationCodeGrantIdTokenLifespan"] = (
+            self.authorization_code_grant_id_token_lifespan
+        )
+        result["authorizationCodeGrantRefreshTokenLifespan"] = (
+            self.authorization_code_grant_refresh_token_lifespan
+        )
+        result["clientCredentialsGrantAccessTokenLifespan"] = (
+            self.client_credentials_grant_access_token_lifespan
+        )
+        result["implicitGrantAccessTokenLifespan"] = (
+            self.implicit_grant_access_token_lifespan
+        )
+        result["implicitGrantIdTokenLifespan"] = self.implicit_grant_id_token_lifespan
+        result["refreshTokenGrantAccessTokenLifespan"] = (
+            self.refresh_token_grant_access_token_lifespan
+        )
+        result["refreshTokenGrantIdTokenLifespan"] = (
+            self.refresh_token_grant_id_token_lifespan
+        )
+        result["refreshTokenGrantRefreshTokenLifespan"] = (
+            self.refresh_token_grant_refresh_token_lifespan
+        )
+        result["grantTypes"] = self.grant_types
+        result["responseTypes"] = self.response_types
+
+        return result

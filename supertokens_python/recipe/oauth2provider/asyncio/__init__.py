@@ -124,7 +124,7 @@ async def validate_oauth2_access_token(
 
 async def create_token_for_client_credentials(
     client_id: str,
-    client_secret: str,
+    client_secret: Optional[str] = None,
     scope: Optional[List[str]] = None,
     audience: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
@@ -133,16 +133,21 @@ async def create_token_for_client_credentials(
         user_context = {}
     from ..recipe import OAuth2ProviderRecipe
 
+    body: Dict[str, Any] = {
+        "grant_type": "client_credentials",
+        "client_id": client_id,
+    }
+    if client_secret:
+        body["client_secret"] = client_secret
+    if scope:
+        body["scope"] = " ".join(scope)
+    if audience:
+        body["audience"] = audience
+
     return (
         await OAuth2ProviderRecipe.get_instance().recipe_implementation.token_exchange(
             authorization_header=None,
-            body={
-                "grant_type": "client_credentials",
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "scope": " ".join(scope) if scope else None,
-                "audience": audience,
-            },
+            body=body,
             user_context=user_context,
         )
     )

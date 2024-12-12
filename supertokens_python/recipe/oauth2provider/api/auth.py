@@ -75,19 +75,20 @@ async def auth_get(
 
     if isinstance(response, RedirectResponse):
         if response.cookies:
-            cookie = SimpleCookie()
-            cookie.load(response.cookies)
-            for morsel in cookie.values():
-                api_options.response.set_cookie(
-                    key=morsel.key,
-                    value=morsel.value,
-                    domain=morsel.get("domain"),
-                    secure=morsel.get("secure", True),
-                    httponly=morsel.get("httponly", True),
-                    expires=datetime.strptime(morsel.get("expires", ""), "%a, %d %b %Y %H:%M:%S %Z").timestamp() * 1000,  # type: ignore
-                    path=morsel.get("path", "/"),
-                    samesite=morsel.get("samesite", "lax").lower(),
-                )
+            for cookie_string in response.cookies:
+                cookie = SimpleCookie()
+                cookie.load(cookie_string)
+                for morsel in cookie.values():
+                    api_options.response.set_cookie(
+                        key=morsel.key,
+                        value=morsel.value,
+                        domain=morsel.get("domain"),
+                        secure=morsel.get("secure", True),
+                        httponly=morsel.get("httponly", True),
+                        expires=datetime.strptime(morsel.get("expires", ""), "%a, %d %b %Y %H:%M:%S %Z").timestamp() * 1000,  # type: ignore
+                        path=morsel.get("path", "/"),
+                        samesite=morsel.get("samesite", "lax"),
+                    )
         return api_options.response.redirect(response.redirect_to)
     elif isinstance(response, ErrorOAuth2Response):
         return send_non_200_response(

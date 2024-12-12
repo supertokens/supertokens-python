@@ -81,6 +81,8 @@ async def end_session_common(
     options: APIOptions,
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
+    from ..interfaces import RedirectResponse, ErrorOAuth2Response
+
     if api_implementation is None:
         return None
 

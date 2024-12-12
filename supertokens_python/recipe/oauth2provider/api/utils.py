@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import time
 
@@ -38,7 +38,7 @@ async def login_get(
     login_challenge: str,
     session: Optional[SessionContainer],
     should_try_refresh: bool,
-    cookies: Optional[str],
+    cookies: Optional[List[str]],
     is_direct_call: bool,
     user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
@@ -177,7 +177,7 @@ async def login_get(
     )
 
 
-def get_merged_cookies(orig_cookies: str, new_cookies: Optional[str]) -> str:
+def get_merged_cookies(orig_cookies: str, new_cookies: Optional[List[str]]) -> str:
     if not new_cookies:
         return orig_cookies
 
@@ -190,7 +190,8 @@ def get_merged_cookies(orig_cookies: str, new_cookies: Optional[str]) -> str:
     # Note: This is a simplified version. In production code you'd want to use a proper
     # cookie parsing library to handle all cookie attributes correctly
     if new_cookies:
-        for cookie in new_cookies.split(","):
+        for cookie_str in new_cookies:
+            cookie = cookie_str.split(";")[0].strip()
             if "=" in cookie:
                 name, value = cookie.split("=", 1)
                 cookie_map[name.strip()] = value
@@ -199,13 +200,13 @@ def get_merged_cookies(orig_cookies: str, new_cookies: Optional[str]) -> str:
 
 
 def merge_set_cookie_headers(
-    set_cookie1: Optional[str] = None, set_cookie2: Optional[str] = None
-) -> str:
+    set_cookie1: Optional[List[str]] = None, set_cookie2: Optional[List[str]] = None
+) -> List[str]:
     if not set_cookie1:
-        return set_cookie2 or ""
-    if not set_cookie2 or set_cookie1 == set_cookie2:
+        return set_cookie2 or []
+    if not set_cookie2 or set(set_cookie1) == set(set_cookie2):
         return set_cookie1
-    return f"{set_cookie1}, {set_cookie2}"
+    return set_cookie1 + set_cookie2
 
 
 def is_login_internal_redirect(redirect_to: str) -> bool:
