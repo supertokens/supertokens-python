@@ -28,6 +28,8 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.types import RecipeUserId
 from test_functions_mapper import (  # pylint: disable=import-error
     get_func,
@@ -55,6 +57,7 @@ from supertokens_python.recipe import (
     session,
     thirdparty,
     emailverification,
+    oauth2provider,
 )
 from supertokens_python.recipe.session import InputErrorHandlers, SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
@@ -222,6 +225,8 @@ def st_reset():
     AccountLinkingRecipe.reset()
     TOTPRecipe.reset()
     MultiFactorAuthRecipe.reset()
+    OAuth2ProviderRecipe.reset()
+    OpenIdRecipe.reset()
 
 
 def init_st(config: Dict[str, Any]):
@@ -593,6 +598,22 @@ def init_st(config: Dict[str, Any]):
                     )
                 )
             )
+        elif recipe_id == "oauth2provider":
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            recipe_list.append(
+                oauth2provider.init(
+                    override=oauth2provider.InputOverrideConfig(
+                        apis=override_builder_with_logging(
+                            "OAuth2Provider.override.apis",
+                            recipe_config_json.get("override", {}).get("apis"),
+                        ),
+                        functions=override_builder_with_logging(
+                            "OAuth2Provider.override.functions",
+                            recipe_config_json.get("override", {}).get("functions"),
+                        ),
+                    )
+                )
+            )
 
     interceptor_func = None
     if config.get("supertokens", {}).get("networkInterceptor") is not None:
@@ -821,6 +842,10 @@ add_usermetadata_routes(app)
 from multifactorauth import add_multifactorauth_routes
 
 add_multifactorauth_routes(app)
+
+from oauth2provider import add_oauth2provider_routes
+
+add_oauth2provider_routes(app)
 
 if __name__ == "__main__":
     default_st_init()

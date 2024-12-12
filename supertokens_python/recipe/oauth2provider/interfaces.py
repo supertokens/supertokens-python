@@ -254,6 +254,13 @@ class GetOAuth2ClientsOkResult:
             next_pagination_token=json["nextPaginationToken"],
         )
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "clients": [client.to_json() for client in self.clients],
+            "nextPaginationToken": self.next_pagination_token,
+        }
+
 
 class GetOAuth2ClientOkResult:
     def __init__(self, client: OAuth2Client):
@@ -272,6 +279,12 @@ class CreateOAuth2ClientOkResult:
     def from_json(json: Dict[str, Any]):
         return CreateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "client": self.client.to_json(),
+        }
+
 
 class UpdateOAuth2ClientOkResult:
     def __init__(self, client: OAuth2Client):
@@ -281,10 +294,21 @@ class UpdateOAuth2ClientOkResult:
     def from_json(json: Dict[str, Any]):
         return UpdateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
 
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+            "client": self.client.to_json(),
+        }
+
 
 class DeleteOAuth2ClientOkResult:
     def __init__(self):
         pass
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": "OK",
+        }
 
 
 PayloadBuilderFunction = Callable[

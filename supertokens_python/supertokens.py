@@ -259,9 +259,12 @@ class Supertokens:
         totp_found = False
         user_metadata_found = False
         multi_factor_auth_found = False
+        oauth2_found = False
+        openid_found = False
+        jwt_found = False
 
         def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
-            nonlocal multitenancy_found, totp_found, user_metadata_found, multi_factor_auth_found
+            nonlocal multitenancy_found, totp_found, user_metadata_found, multi_factor_auth_found, oauth2_found, openid_found, jwt_found
             recipe_module = recipe(self.app_info)
             if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True
@@ -271,20 +274,45 @@ class Supertokens:
                 multi_factor_auth_found = True
             elif recipe_module.get_recipe_id() == "totp":
                 totp_found = True
+            elif recipe_module.get_recipe_id() == "oauth2provider":
+                oauth2_found = True
+            elif recipe_module.get_recipe_id() == "openid":
+                openid_found = True
+            elif recipe_module.get_recipe_id() == "jwt":
+                jwt_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
+
+        if not jwt_found:
+            from supertokens_python.recipe.jwt.recipe import JWTRecipe
+
+            self.recipe_modules.append(JWTRecipe.init()(self.app_info))
+
+        if not openid_found:
+            from supertokens_python.recipe.openid.recipe import OpenIdRecipe
+
+            self.recipe_modules.append(OpenIdRecipe.init()(self.app_info))
 
         if not multitenancy_found:
             from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
             self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+
         if totp_found and not multi_factor_auth_found:
             raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
+
         if not user_metadata_found:
             from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
             self.recipe_modules.append(UserMetadataRecipe.init()(self.app_info))
+
+        if not oauth2_found:
+            from supertokens_python.recipe.oauth2provider.recipe import (
+                OAuth2ProviderRecipe,
+            )
+
+            self.recipe_modules.append(OAuth2ProviderRecipe.init()(self.app_info))
 
         self.telemetry = (
             telemetry

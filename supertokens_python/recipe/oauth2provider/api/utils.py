@@ -235,6 +235,8 @@ async def handle_login_internal_redirects(
     cookie: str,
     user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+    from ..interfaces import RedirectResponse, ErrorOAuth2Response
+
     if not is_login_internal_redirect(response.redirect_to):
         return response
 

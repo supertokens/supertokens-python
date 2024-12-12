@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from datetime import datetime
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.recipe.session.asyncio import get_session
@@ -84,7 +86,7 @@ async def login(
                     domain=morsel.get("domain"),
                     secure=morsel.get("secure", True),
                     httponly=morsel.get("httponly", True),
-                    expires=morsel.get("expires", None),
+                    expires=datetime.strptime(morsel.get("expires", ""), "%a, %d %b %Y %H:%M:%S %Z").timestamp() * 1000,  # type: ignore
                     path=morsel.get("path", "/"),
                     samesite=morsel.get("samesite", "lax"),
                 )

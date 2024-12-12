@@ -89,7 +89,8 @@ class DjangoResponse(BaseResponse):
             ).encode("utf-8")
             self.response_sent = True
 
-    def redirect(self, url: str):
+    def redirect(self, url: str) -> BaseResponse:
         if not self.response_sent:
             self.set_header("Location", url)
             self.set_status_code(302)
+        return self

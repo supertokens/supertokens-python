@@ -16,15 +16,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Union
 
 from . import exceptions as ex
-from . import recipe
+from . import recipe, utils
 
 exceptions = ex
+InputOverrideConfig = utils.InputOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
     from ...recipe_module import RecipeModule
-    from .utils import InputOverrideConfig
 
 
 def init(

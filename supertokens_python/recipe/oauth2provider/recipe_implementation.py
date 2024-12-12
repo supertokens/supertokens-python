@@ -20,7 +20,6 @@ import urllib.parse
 
 import jwt
 
-from supertokens_python import AppInfo
 from supertokens_python.asyncio import get_user
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
@@ -60,6 +59,7 @@ from .interfaces import (
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
+    from supertokens_python import AppInfo
 
 
 def get_updated_redirect_to(app_info: AppInfo, redirect_to: str) -> str:
@@ -371,10 +371,12 @@ class RecipeImplementation(RecipeInterface):
             )
 
             return RedirectResponse(
-                redirect_to=consent_res.redirect_to, cookies=resp["cookies"]
+                redirect_to=consent_res.redirect_to, cookies=",".join(resp["cookies"])
             )
 
-        return RedirectResponse(redirect_to=redirect_to, cookies=resp["cookies"])
+        return RedirectResponse(
+            redirect_to=redirect_to, cookies=",".join(resp["cookies"])
+        )
 
     async def token_exchange(
         self,

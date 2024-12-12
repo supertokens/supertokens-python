@@ -63,5 +63,5 @@ class BaseResponse(ABC):
         pass
 
     @abstractmethod
-    def redirect(self, url: str):
+    def redirect(self, url: str) -> "BaseResponse":
         pass
