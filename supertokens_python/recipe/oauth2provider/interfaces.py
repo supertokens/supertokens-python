@@ -166,24 +166,28 @@ class TokenInfo:
     @staticmethod
     def from_json(json: Dict[str, Any]):
         return TokenInfo(
-            access_token=json["access_token"],
+            access_token=json.get("access_token"),
             expires_in=json["expires_in"],
-            id_token=json["id_token"],
-            refresh_token=json["refresh_token"],
+            id_token=json.get("id_token"),
+            refresh_token=json.get("refresh_token"),
             scope=json["scope"],
             token_type=json["token_type"],
         )
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        result = {
             "status": "OK",
-            "access_token": self.access_token,
             "expires_in": self.expires_in,
-            "id_token": self.id_token,
-            "refresh_token": self.refresh_token,
             "scope": self.scope,
             "token_type": self.token_type,
         }
+        if self.access_token is not None:
+            result["access_token"] = self.access_token
+        if self.id_token is not None:
+            result["id_token"] = self.id_token
+        if self.refresh_token is not None:
+            result["refresh_token"] = self.refresh_token
+        return result
 
 
 class LoginInfo:

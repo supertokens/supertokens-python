@@ -633,12 +633,26 @@ class RecipeImplementation(RecipeInterface):
         # Verify token signature using session recipe's JWKS
         session_recipe = SessionRecipe.get_instance()
         matching_keys = get_latest_keys(session_recipe.config)
-        payload = jwt.decode(
-            token,
-            matching_keys[0].key,
-            algorithms=["RS256"],
-            options={"verify_signature": True, "verify_exp": True},
-        )
+        err: Optional[Exception] = None
+
+        payload: Dict[str, Any] = {}
+
+        for matching_key in matching_keys:
+            err = None
+            try:
+                payload = jwt.decode(
+                    token,
+                    matching_key.key,
+                    algorithms=["RS256"],
+                    options={"verify_signature": True, "verify_exp": True},
+                )
+            except Exception as e:
+                err = e
+                continue
+            break
+
+        if err is not None:
+            raise err
 
         if payload.get("stt") != 1:
             raise Exception("Wrong token type")
@@ -845,7 +859,7 @@ class RecipeImplementation(RecipeInterface):
         # If it fails, the token is not active, and we return early
         if is_access_token:
             try:
-                payload = await self.validate_oauth2_access_token(
+                await self.validate_oauth2_access_token(
                     token=token,
                     requirements=(
                         OAuth2TokenValidationRequirements(scopes=scopes)
@@ -855,7 +869,7 @@ class RecipeImplementation(RecipeInterface):
                     check_database=False,
                     user_context=user_context,
                 )
-                return ActiveTokenResponse(payload=payload)
+
             except Exception:
                 return InactiveTokenResponse()
 
