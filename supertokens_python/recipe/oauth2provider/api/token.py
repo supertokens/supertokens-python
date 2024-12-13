@@ -40,7 +40,7 @@ async def token_post(
 
     authorization_header = api_options.request.get_header("authorization")
 
-    body = await api_options.request.json()
+    body = await api_options.request.get_json_or_form_data()
 
     response = await api_implementation.token_post(
         authorization_header=authorization_header,

@@ -241,8 +241,6 @@ class FrontendRedirectResponse:
         result: Dict[str, Any] = {
             "frontendRedirectTo": self.frontend_redirect_to,
         }
-        if self.cookies is not None:
-            result["cookies"] = self.cookies
         return result
 
 
@@ -336,6 +334,14 @@ class OAuth2TokenValidationRequirements:
         self.client_id = client_id
         self.scopes = scopes
         self.audience = audience
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]):
+        return OAuth2TokenValidationRequirements(
+            client_id=json.get("clientId"),
+            scopes=json.get("scopes"),
+            audience=json.get("audience"),
+        )
 
 
 class FrontendRedirectionURLTypeLogin:

@@ -49,8 +49,10 @@ async def end_session_get(
         return None
 
     orig_url = api_options.request.get_original_url()
-    split_url = orig_url.split("?")
-    params = dict(urllib.parse.parse_qsl(split_url[1]))
+    split_url = orig_url.split("?", 1)
+    params = (
+        dict(urllib.parse.parse_qsl(split_url[1], True)) if len(split_url) > 1 else {}
+    )
 
     return await end_session_common(
         params, api_implementation.end_session_get, api_options, user_context
@@ -110,9 +112,9 @@ async def end_session_common(
     )
 
     if isinstance(response, RedirectResponse):
-        options.response.redirect(response.redirect_to)
+        return options.response.redirect(response.redirect_to)
     elif isinstance(response, ErrorOAuth2Response):
-        send_non_200_response(
+        return send_non_200_response(
             {
                 "error": response.error,
                 "error_description": response.error_description,

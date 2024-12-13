@@ -45,8 +45,8 @@ async def auth_get(
         return None
 
     original_url = api_options.request.get_original_url()
-    split_url = original_url.split("?")
-    params = dict(parse_qsl(split_url[1])) if len(split_url) > 1 else {}
+    split_url = original_url.split("?", 1)
+    params = dict(parse_qsl(split_url[1], True)) if len(split_url) > 1 else {}
 
     session = None
     should_try_refresh = False

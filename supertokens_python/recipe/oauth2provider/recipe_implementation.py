@@ -239,7 +239,9 @@ class RecipeImplementation(RecipeInterface):
 
         payloads = None
 
-        if not params.get("client_id") or not isinstance(params.get("client_id"), str):
+        if params.get("client_id") is None or not isinstance(
+            params.get("client_id"), str
+        ):
             return ErrorOAuth2Response(
                 status_code=400,
                 error="invalid_request",
@@ -644,7 +646,11 @@ class RecipeImplementation(RecipeInterface):
                     token,
                     matching_key.key,
                     algorithms=["RS256"],
-                    options={"verify_signature": True, "verify_exp": True},
+                    options={
+                        "verify_signature": True,
+                        "verify_exp": True,
+                        "verify_aud": False,
+                    },
                 )
             except Exception as e:
                 err = e
@@ -908,15 +914,24 @@ class RecipeImplementation(RecipeInterface):
         # CASE 3: end_session request with a logout_verifier (after accepting the logout request)
         #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
 
+        request_body: Dict[str, Any] = {}
+
+        if params.get("client_id") is not None:
+            request_body["clientId"] = params.get("client_id")
+        if params.get("id_token_hint") is not None:
+            request_body["idTokenHint"] = params.get("id_token_hint")
+        if params.get("post_logout_redirect_uri") is not None:
+            request_body["postLogoutRedirectUri"] = params.get(
+                "post_logout_redirect_uri"
+            )
+        if params.get("state") is not None:
+            request_body["state"] = params.get("state")
+        if params.get("logout_verifier") is not None:
+            request_body["logoutVerifier"] = params.get("logout_verifier")
+
         resp = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/sessions/logout"),
-            {
-                "clientId": params.get("client_id"),
-                "idTokenHint": params.get("id_token_hint"),
-                "postLogoutRedirectUri": params.get("post_logout_redirect_uri"),
-                "state": params.get("state"),
-                "logoutVerifier": params.get("logout_verifier"),
-            },
+            request_body,
             user_context=user_context,
         )
 

@@ -1,5 +1,9 @@
 from flask import Flask, request, jsonify
-from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
+from supertokens_python.recipe.oauth2provider.interfaces import (
+    CreateOAuth2ClientInput,
+    OAuth2TokenValidationRequirements,
+    UpdateOAuth2ClientInput,
+)
 import supertokens_python.recipe.oauth2provider.syncio as OAuth2Provider
 
 
@@ -38,7 +42,8 @@ def add_oauth2provider_routes(app: Flask):
         print("OAuth2Provider:updateOAuth2Client", request.json)
 
         response = OAuth2Provider.update_oauth2_client(
-            params=request.json["input"], user_context=request.json.get("userContext")
+            params=UpdateOAuth2ClientInput.from_json(request.json.get("input", {})),
+            user_context=request.json.get("userContext"),
         )
         return jsonify(response.to_json())
 
@@ -60,11 +65,17 @@ def add_oauth2provider_routes(app: Flask):
 
         response = OAuth2Provider.validate_oauth2_access_token(
             token=request.json["token"],
-            requirements=request.json["requirements"],
-            check_database=request.json["checkDatabase"],
+            requirements=(
+                OAuth2TokenValidationRequirements.from_json(
+                    request.json["requirements"]
+                )
+                if "requirements" in request.json
+                else None
+            ),
+            check_database=request.json.get("checkDatabase"),
             user_context=request.json.get("userContext"),
         )
-        return jsonify(response)
+        return jsonify({**response, "status": "OK"})
 
     @app.route("/test/oauth2provider/validateoauth2refreshtoken", methods=["POST"])  # type: ignore
     def validate_oauth2_refresh_token_api():  # type: ignore
