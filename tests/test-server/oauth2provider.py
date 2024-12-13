@@ -13,7 +13,7 @@ def add_oauth2provider_routes(app: Flask):
         assert request.json is not None
         print("OAuth2Provider:getOAuth2Clients", request.json)
 
-        data = request.json
+        data = request.json.get("input", {})
         if data is None:
             return jsonify({"status": "MISSING_DATA_ERROR"})
 
@@ -52,9 +52,11 @@ def add_oauth2provider_routes(app: Flask):
         assert request.json is not None
         print("OAuth2Provider:deleteOAuth2Client", request.json)
 
+        data = request.json.get("input", {})
+
         response = OAuth2Provider.delete_oauth2_client(
-            client_id=request.json["input"],
-            user_context=request.json.get("userContext"),
+            client_id=data.get("clientId"),
+            user_context=data.get("userContext"),
         )
         return jsonify(response.to_json())
 
@@ -75,7 +77,7 @@ def add_oauth2provider_routes(app: Flask):
             check_database=request.json.get("checkDatabase"),
             user_context=request.json.get("userContext"),
         )
-        return jsonify({**response, "status": "OK"})
+        return jsonify({"payload": response, "status": "OK"})
 
     @app.route("/test/oauth2provider/validateoauth2refreshtoken", methods=["POST"])  # type: ignore
     def validate_oauth2_refresh_token_api():  # type: ignore

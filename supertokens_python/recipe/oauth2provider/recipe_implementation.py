@@ -25,6 +25,9 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.jwks import get_latest_keys
+from supertokens_python.recipe.session.jwt import (
+    parse_jwt_without_signature_verification,
+)
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId, User
 
@@ -543,7 +546,7 @@ class RecipeImplementation(RecipeInterface):
                 clients=[
                     OAuth2Client.from_json(client) for client in response["clients"]
                 ],
-                next_pagination_token=response["nextPaginationToken"],
+                next_pagination_token=response.get("nextPaginationToken"),
             )
 
         return ErrorOAuth2Response(
@@ -632,9 +635,11 @@ class RecipeImplementation(RecipeInterface):
         check_database: Optional[bool],
         user_context: Dict[str, Any],
     ) -> Dict[str, Any]:
+        access_token_obj = parse_jwt_without_signature_verification(token)
+
         # Verify token signature using session recipe's JWKS
         session_recipe = SessionRecipe.get_instance()
-        matching_keys = get_latest_keys(session_recipe.config)
+        matching_keys = get_latest_keys(session_recipe.config, access_token_obj.kid)
         err: Optional[Exception] = None
 
         payload: Dict[str, Any] = {}

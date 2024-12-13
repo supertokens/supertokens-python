@@ -259,11 +259,13 @@ class GetOAuth2ClientsOkResult:
         )
 
     def to_json(self) -> Dict[str, Any]:
-        return {
+        result = {
             "status": "OK",
             "clients": [client.to_json() for client in self.clients],
-            "nextPaginationToken": self.next_pagination_token,
         }
+        if self.next_pagination_token is not None:
+            result["nextPaginationToken"] = self.next_pagination_token
+        return result
 
 
 class GetOAuth2ClientOkResult:
@@ -920,7 +922,7 @@ class UpdateOAuth2ClientInput:
             result["audience"] = self.audience
         if not isinstance(self.grant_types, NotSet):
             result["grantTypes"] = self.grant_types
-        if self.response_types is not None:
+        if not isinstance(self.response_types, NotSet):
             result["responseTypes"] = self.response_types
         if not isinstance(self.client_uri, NotSet):
             result["clientUri"] = self.client_uri
