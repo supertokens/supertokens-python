@@ -35,6 +35,8 @@ from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionRecipe
@@ -231,6 +233,8 @@ def reset(stop_core: bool = True):
     AccountLinkingRecipe.reset()
     MultiFactorAuthRecipe.reset()
     TOTPRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
 
 
 def get_cookie_from_response(
