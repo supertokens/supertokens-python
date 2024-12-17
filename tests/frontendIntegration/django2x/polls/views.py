@@ -27,6 +27,8 @@ from supertokens_python import get_all_cors_headers
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe import session
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import (
     InputErrorHandlers,
     SessionContainer,
@@ -575,6 +577,8 @@ def set_anti_csrf(request: HttpRequest):
         Supertokens.reset()
         SessionRecipe.reset()
         MultitenancyRecipe.reset()
+        OpenIdRecipe.reset()
+        OAuth2ProviderRecipe.reset()
         config(enable_csrf, False, None)
     return HttpResponse("success")
 
@@ -593,6 +597,8 @@ def set_enable_jwt(request: HttpRequest):
         Supertokens.reset()
         SessionRecipe.reset()
         MultitenancyRecipe.reset()
+        OpenIdRecipe.reset()
+        OAuth2ProviderRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return HttpResponse("success")
 
@@ -620,6 +626,8 @@ def reinitialize(request: HttpRequest):
     Supertokens.reset()
     SessionRecipe.reset()
     MultitenancyRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return HttpResponse("")
 

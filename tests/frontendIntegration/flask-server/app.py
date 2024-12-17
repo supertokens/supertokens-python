@@ -27,6 +27,8 @@ from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, ini
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import InputErrorHandlers, SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
@@ -567,6 +569,8 @@ def set_anti_csrf():
         Supertokens.reset()
         SessionRecipe.reset()
         MultitenancyRecipe.reset()
+        OpenIdRecipe.reset()
+        OAuth2ProviderRecipe.reset()
         config(enable_csrf, False, None)
     return "success", 200
 
@@ -586,6 +590,8 @@ def set_enable_jwt():
         Supertokens.reset()
         SessionRecipe.reset()
         MultitenancyRecipe.reset()
+        OpenIdRecipe.reset()
+        OAuth2ProviderRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return "success", 200
 
@@ -676,6 +682,8 @@ def reinitialize():
     Supertokens.reset()
     SessionRecipe.reset()
     MultitenancyRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return "", 200
 
