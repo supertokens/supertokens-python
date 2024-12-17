@@ -35,6 +35,7 @@ from supertokens_python.recipe import (
     accountlinking,
     emailpassword,
     emailverification,
+    oauth2provider,
     passwordless,
     session,
     thirdparty,
@@ -77,6 +78,10 @@ from supertokens_python.recipe.multitenancy.syncio import (
     delete_tenant,
     disassociate_user_from_tenant,
 )
+from supertokens_python.recipe.oauth2provider.syncio import create_oauth2_client
+from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless.syncio import update_user
 from supertokens_python.recipe.session.exceptions import (
     ClaimValidationError,
@@ -374,6 +379,8 @@ def custom_init():
     Supertokens.reset()
     TOTPRecipe.reset()
     MultiFactorAuthRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -1004,6 +1011,10 @@ def custom_init():
                 )
             ),
         },
+        {
+            "id": "oauth2provider",
+            "init": oauth2provider.init(),
+        },
     ]
 
     global accountlinking_config
@@ -1066,7 +1077,7 @@ def custom_init():
         supertokens_config=SupertokensConfig("http://localhost:9000"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
-            api_domain="0.0.0.0:" + get_api_port(),
+            api_domain="localhost:" + get_api_port(),
             website_domain=get_website_domain(),
         ),
         framework="flask",
@@ -1401,6 +1412,15 @@ def test_get_totp_code():
     return jsonify({"totp": code})
 
 
+@app.post("/test/create-oauth2-client")  # type: ignore
+def test_create_oauth2_client():
+    body = request.get_json()
+    if body is None:
+        raise Exception("Invalid request body")
+    client = create_oauth2_client(CreateOAuth2ClientInput.from_json(body))
+    return jsonify(client.to_json())
+
+
 @app.get("/test/getDevice")  # type: ignore
 def test_get_device():
     global code_store
@@ -1424,6 +1444,7 @@ def test_feature_flags():
         "mfa",
         "recipeConfig",
         "accountlinking-fixes",
+        "oauth2",
     ]
     return jsonify({"available": available})
 

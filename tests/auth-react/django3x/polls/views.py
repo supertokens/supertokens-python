@@ -27,6 +27,8 @@ from supertokens_python.recipe.emailverification import EmailVerificationClaim
 from supertokens_python.recipe.multifactorauth.asyncio import (
     add_to_required_secondary_factors_for_user,
 )
+from supertokens_python.recipe.oauth2provider.syncio import create_oauth2_client
+from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.thirdparty import ProviderConfig
@@ -457,6 +459,14 @@ def test_get_totp_code(request: HttpRequest):
     return JsonResponse({"totp": code})
 
 
+def test_create_oauth2_client(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+    client = create_oauth2_client(CreateOAuth2ClientInput.from_json(body))
+    return JsonResponse(client.to_json())
+
+
 def before_each(request: HttpRequest):
     import mysite.store
 
@@ -486,6 +496,7 @@ def test_feature_flags(request: HttpRequest):
                 "mfa",
                 "recipeConfig",
                 "accountlinking-fixes",
+                "oauth2",
             ]
         }
     )

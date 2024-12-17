@@ -10,6 +10,7 @@ from supertokens_python.recipe import (
     emailpassword,
     emailverification,
     multifactorauth,
+    oauth2provider,
     passwordless,
     session,
     thirdparty,
@@ -40,6 +41,8 @@ from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
     ContactEmailOrPhoneConfig,
@@ -315,6 +318,8 @@ def custom_init():
     Supertokens.reset()
     TOTPRecipe.reset()
     MultiFactorAuthRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -942,6 +947,10 @@ def custom_init():
                 )
             ),
         },
+        {
+            "id": "oauth2provider",
+            "init": oauth2provider.init(),
+        },
     ]
 
     accountlinking_config_input: Dict[str, Any] = {
@@ -1002,7 +1011,7 @@ def custom_init():
         supertokens_config=SupertokensConfig("http://localhost:9000"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
-            api_domain="0.0.0.0:" + get_api_port(),
+            api_domain="localhost:" + get_api_port(),
             website_domain=get_website_domain(),
         ),
         framework="django",
