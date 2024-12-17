@@ -47,6 +47,14 @@ class BaseRequest(ABC):
     async def form_data(self) -> Dict[str, Any]:
         pass
 
+    async def get_json_or_form_data(self) -> Union[Dict[str, Any], None]:
+        content_type = self.get_header("Content-Type")
+        if content_type is None:
+            return None
+        if content_type.startswith("application/json"):
+            return await self.json()
+        return await self.form_data()
+
     @abstractmethod
     def method(self) -> str:
         pass

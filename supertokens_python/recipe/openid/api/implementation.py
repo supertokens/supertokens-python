@@ -30,5 +30,15 @@ class APIImplementation(APIInterface):
             )
         )
         return OpenIdDiscoveryConfigurationGetResponse(
-            response.issuer, response.jwks_uri
+            issuer=response.issuer,
+            jwks_uri=response.jwks_uri,
+            authorization_endpoint=response.authorization_endpoint,
+            token_endpoint=response.token_endpoint,
+            userinfo_endpoint=response.userinfo_endpoint,
+            revocation_endpoint=response.revocation_endpoint,
+            token_introspection_endpoint=response.token_introspection_endpoint,
+            end_session_endpoint=response.end_session_endpoint,
+            subject_types_supported=response.subject_types_supported,
+            id_token_signing_alg_values_supported=response.id_token_signing_alg_values_supported,
+            response_types_supported=response.response_types_supported,
         )

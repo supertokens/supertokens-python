@@ -124,6 +124,7 @@ disable=raw-checker-failed,
         no-else-raise,
         too-many-nested-blocks,
         broad-exception-raised,
+        too-many-public-methods,
 
 
 # Enable the message, report, category or checker with the given id(s). You can

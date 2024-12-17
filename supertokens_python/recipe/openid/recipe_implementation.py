@@ -39,19 +39,45 @@ class RecipeImplementation(RecipeInterface):
     async def get_open_id_discovery_configuration(
         self, user_context: Dict[str, Any]
     ) -> GetOpenIdDiscoveryConfigurationResult:
+        from ..oauth2provider.constants import (
+            AUTH_PATH,
+            TOKEN_PATH,
+            USER_INFO_PATH,
+            REVOKE_TOKEN_PATH,
+            INTROSPECT_TOKEN_PATH,
+            END_SESSION_PATH,
+        )
+
         issuer = (
-            self.config.issuer_domain.get_as_string_dangerous()
-            + self.config.issuer_path.get_as_string_dangerous()
+            self.app_info.api_domain.get_as_string_dangerous()
+            + self.app_info.api_base_path.get_as_string_dangerous()
         )
 
         jwks_uri = (
-            self.config.issuer_domain.get_as_string_dangerous()
-            + self.config.issuer_path.append(
+            self.app_info.api_domain.get_as_string_dangerous()
+            + self.app_info.api_base_path.append(
                 NormalisedURLPath(GET_JWKS_API)
             ).get_as_string_dangerous()
         )
 
-        return GetOpenIdDiscoveryConfigurationResult(issuer, jwks_uri)
+        api_base_path: str = (
+            self.app_info.api_domain.get_as_string_dangerous()
+            + self.app_info.api_base_path.get_as_string_dangerous()
+        )
+
+        return GetOpenIdDiscoveryConfigurationResult(
+            issuer=issuer,
+            jwks_uri=jwks_uri,
+            authorization_endpoint=api_base_path + AUTH_PATH,
+            token_endpoint=api_base_path + TOKEN_PATH,
+            userinfo_endpoint=api_base_path + USER_INFO_PATH,
+            revocation_endpoint=api_base_path + REVOKE_TOKEN_PATH,
+            token_introspection_endpoint=api_base_path + INTROSPECT_TOKEN_PATH,
+            end_session_endpoint=api_base_path + END_SESSION_PATH,
+            subject_types_supported=["public"],
+            id_token_signing_alg_values_supported=["RS256"],
+            response_types_supported=["code", "id_token", "id_token token"],
+        )
 
     def __init__(
         self,

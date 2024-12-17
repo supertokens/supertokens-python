@@ -170,3 +170,10 @@ class OpenIdRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         OpenIdRecipe.__instance = None
+
+    @staticmethod
+    async def get_issuer(user_context: Dict[str, Any]) -> str:
+        open_id_config = await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
+            user_context
+        )
+        return open_id_config.issuer

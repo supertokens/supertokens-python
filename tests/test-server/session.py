@@ -195,6 +195,31 @@ def add_session_routes(app: Flask):
             }
         )
 
+    @app.route("/test/session/sessionobject/revokesession", methods=["POST"])  # type: ignore
+    def revoke_session():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        log_override_event("sessionobject.revokesession", "CALL", data)
+
+        try:
+            session = convert_session_to_container(data)
+            if not session:
+                raise Exception(
+                    "This should never happen: failed to deserialize session"
+                )
+            ret_val = session.sync_revoke_session(data.get("userContext", {}))
+            response = {
+                "retVal": ret_val,
+                "updatedSession": convert_session_to_json(session),
+            }
+            log_override_event("sessionobject.revokesession", "RES", ret_val)
+            return jsonify(response)
+        except Exception as e:
+            log_override_event("sessionobject.revokesession", "REJ", e)
+            return jsonify({"status": "ERROR", "message": str(e)}), 500
+
     @app.route("/test/session/mergeintoaccesspayload", methods=["POST"])  # type: ignore
     def merge_into_access_payload():  # type: ignore
         data = request.json

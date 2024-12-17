@@ -536,7 +536,7 @@ async def check_auth_type_and_linking_status(
         if session_user_result.status == "SHOULD_AUTOMATICALLY_LINK_FALSE":
             if should_try_linking_with_session_user is True:
                 raise BadInputError(
-                    "should_do_automatic_account_linking returned false when creating primary user but shouldTryLinkingWithSessionUser is true"
+                    "shouldDoAutomaticAccountLinking returned false when making the session user primary but shouldTryLinkingWithSessionUser is true"
                 )
             return OkFirstFactorResponse()
         elif (
@@ -565,7 +565,7 @@ async def check_auth_type_and_linking_status(
         if isinstance(should_link, ShouldNotAutomaticallyLink):
             if should_try_linking_with_session_user is True:
                 raise BadInputError(
-                    "should_do_automatic_account_linking returned false when creating primary user but shouldTryLinkingWithSessionUser is true"
+                    "shouldDoAutomaticAccountLinking returned false when making the session user primary but shouldTryLinkingWithSessionUser is true"
                 )
             return OkFirstFactorResponse()
         else:

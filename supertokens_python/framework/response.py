@@ -61,3 +61,7 @@ class BaseResponse(ABC):
     @abstractmethod
     def set_html_content(self, content: str):
         pass
+
+    @abstractmethod
+    def redirect(self, url: str) -> "BaseResponse":
+        pass
