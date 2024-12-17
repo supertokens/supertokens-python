@@ -34,6 +34,7 @@ from supertokens_python import (
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import InputErrorHandlers
@@ -551,6 +552,7 @@ async def set_anti_csrf(request: Request):
         MultitenancyRecipe.reset()
         OpenIdRecipe.reset()
         OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(enable_csrf, False, None)
     return PlainTextResponse(content="success")
 
@@ -572,6 +574,7 @@ async def set_enable_jwt(request: Request):
         MultitenancyRecipe.reset()
         OpenIdRecipe.reset()
         OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return PlainTextResponse(content="success")
 
@@ -672,6 +675,7 @@ async def reinitialize(request: Request):
     MultitenancyRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    JWTRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return PlainTextResponse(content="")
 

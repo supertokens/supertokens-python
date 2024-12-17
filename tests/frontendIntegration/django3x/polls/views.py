@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import (
@@ -581,6 +582,7 @@ def set_anti_csrf(request: HttpRequest):
         MultitenancyRecipe.reset()
         OpenIdRecipe.reset()
         OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(enable_csrf, False, None)
     return HttpResponse("success")
 
@@ -601,6 +603,7 @@ def set_enable_jwt(request: HttpRequest):
         MultitenancyRecipe.reset()
         OpenIdRecipe.reset()
         OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return HttpResponse("success")
 
@@ -630,6 +633,7 @@ async def reinitialize(request: HttpRequest):
     MultitenancyRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    JWTRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return HttpResponse("")
 

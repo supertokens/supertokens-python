@@ -27,6 +27,7 @@ from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, ini
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import InputErrorHandlers, SessionRecipe
@@ -210,7 +211,7 @@ def config(
                 supertokens_config=SupertokensConfig("http://localhost:9000"),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
-                    api_domain="0.0.0.0:" + get_app_port(),
+                    api_domain="localhost:" + get_app_port(),
                     website_domain="http://localhost.org:8080",
                 ),
                 framework="flask",
@@ -234,7 +235,7 @@ def config(
                 supertokens_config=SupertokensConfig("http://localhost:9000"),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
-                    api_domain="0.0.0.0:" + get_app_port(),
+                    api_domain="localhost:" + get_app_port(),
                     website_domain="http://localhost.org:8080",
                 ),
                 framework="flask",
@@ -257,7 +258,7 @@ def config(
             supertokens_config=SupertokensConfig("http://localhost:9000"),
             app_info=InputAppInfo(
                 app_name="SuperTokens Python SDK",
-                api_domain="0.0.0.0:" + get_app_port(),
+                api_domain="localhost:" + get_app_port(),
                 website_domain="http://localhost.org:8080",
             ),
             framework="flask",
@@ -571,6 +572,7 @@ def set_anti_csrf():
         MultitenancyRecipe.reset()
         OpenIdRecipe.reset()
         OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(enable_csrf, False, None)
     return "success", 200
 
@@ -592,6 +594,7 @@ def set_enable_jwt():
         MultitenancyRecipe.reset()
         OpenIdRecipe.reset()
         OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)
     return "success", 200
 
@@ -684,6 +687,7 @@ def reinitialize():
     MultitenancyRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    JWTRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
     return "", 200
 
