@@ -346,9 +346,8 @@ class OAuth2ProviderRecipe(RecipeModule):
             payload["emails"] = user.emails
 
         if "phoneNumber" in scopes:
-            payload["phoneNumber"] = (
-                user.phone_numbers[0] if user.phone_numbers else None
-            )
+            if user.phone_numbers:
+                payload["phoneNumber"] = user.phone_numbers[0]
             payload["phoneNumber_verified"] = (
                 any(
                     lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
@@ -387,9 +386,8 @@ class OAuth2ProviderRecipe(RecipeModule):
             payload["emails"] = user.emails
 
         if "phoneNumber" in scopes:
-            payload["phoneNumber"] = (
-                user.phone_numbers[0] if user.phone_numbers else None
-            )
+            if user.phone_numbers:
+                payload["phoneNumber"] = user.phone_numbers[0]
             payload["phoneNumber_verified"] = (
                 any(
                     lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified

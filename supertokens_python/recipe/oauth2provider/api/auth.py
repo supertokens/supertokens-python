@@ -14,10 +14,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Dict
 from urllib.parse import parse_qsl
+from dateutil import parser
 
 from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
@@ -85,7 +85,7 @@ async def auth_get(
                         domain=morsel.get("domain"),
                         secure=morsel.get("secure", True),
                         httponly=morsel.get("httponly", True),
-                        expires=datetime.strptime(morsel.get("expires", ""), "%a, %d %b %Y %H:%M:%S %Z").timestamp() * 1000,  # type: ignore
+                        expires=parser.parse(morsel.get("expires", "")).timestamp() * 1000,  # type: ignore
                         path=morsel.get("path", "/"),
                         samesite=morsel.get("samesite", "lax"),
                     )
