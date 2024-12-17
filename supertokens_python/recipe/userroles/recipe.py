@@ -21,19 +21,20 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.userroles.recipe_implementation import (
     RecipeImplementation,
 )
 from supertokens_python.recipe.userroles.utils import validate_and_normalise_user_input
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
-from supertokens_python.types import RecipeUserId
+from supertokens_python.types import RecipeUserId, User
 
 from ...post_init_callbacks import PostSTInitCallbacks
 from ..session import SessionRecipe
 from ..session.claim_base_classes.primitive_array_claim import PrimitiveArrayClaim
 from .exceptions import SuperTokensUserRolesError
-from .interfaces import GetPermissionsForRoleOkResult
+from .interfaces import GetPermissionsForRoleOkResult, UnknownRoleError
 from .utils import InputOverrideConfig
 
 
@@ -49,6 +50,8 @@ class UserRolesRecipe(RecipeModule):
         skip_adding_permissions_to_access_token: Optional[bool] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
+        from ..oauth2provider.recipe import OAuth2ProviderRecipe
+
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             self,
@@ -71,6 +74,109 @@ class UserRolesRecipe(RecipeModule):
                 SessionRecipe.get_instance().add_claim_from_other_recipe(
                     PermissionClaim
                 )
+
+            async def token_payload_builder(
+                user: User,
+                scopes: List[str],
+                session_handle: str,
+                user_context: Dict[str, Any],
+            ) -> Dict[str, Any]:
+                payload: Dict[str, Any] = {"roles": None, "permissions": None}
+
+                session_info = await get_session_information(
+                    session_handle, user_context
+                )
+
+                if session_info is None:
+                    raise Exception("should never come here")
+
+                user_roles: List[str] = []
+
+                if "roles" in scopes or "permissions" in scopes:
+                    res = await self.recipe_implementation.get_roles_for_user(
+                        tenant_id=session_info.tenant_id,
+                        user_id=user.id,
+                        user_context=user_context,
+                    )
+
+                    user_roles = res.roles
+
+                if "roles" in scopes:
+                    payload["roles"] = user_roles
+
+                if "permissions" in scopes:
+                    user_permissions: Set[str] = set()
+                    for role in user_roles:
+                        role_permissions = (
+                            await self.recipe_implementation.get_permissions_for_role(
+                                role=role,
+                                user_context=user_context,
+                            )
+                        )
+
+                        if isinstance(role_permissions, UnknownRoleError):
+                            raise Exception("Failed to fetch permissions for the role")
+
+                        for perm in role_permissions.permissions:
+                            user_permissions.add(perm)
+
+                    payload["permissions"] = list(user_permissions)
+
+                return payload
+
+            OAuth2ProviderRecipe.get_instance().add_access_token_builder_from_other_recipe(
+                token_payload_builder
+            )
+            OAuth2ProviderRecipe.get_instance().add_id_token_builder_from_other_recipe(
+                token_payload_builder
+            )
+
+            async def user_info_builder(
+                user: User,
+                _access_token_payload: Dict[str, Any],
+                scopes: List[str],
+                tenant_id: str,
+                user_context: Dict[str, Any],
+            ) -> Dict[str, Any]:
+                user_info: Dict[str, Any] = {"roles": None, "permissions": None}
+
+                user_roles = []
+
+                if "roles" in scopes or "permissions" in scopes:
+                    res = await self.recipe_implementation.get_roles_for_user(
+                        tenant_id=tenant_id,
+                        user_id=user.id,
+                        user_context=user_context,
+                    )
+
+                    user_roles = res.roles
+
+                if "roles" in scopes:
+                    user_info["roles"] = user_roles
+
+                if "permissions" in scopes:
+                    user_permissions: Set[str] = set()
+                    for role in user_roles:
+                        role_permissions = (
+                            await self.recipe_implementation.get_permissions_for_role(
+                                role=role,
+                                user_context=user_context,
+                            )
+                        )
+
+                        if isinstance(role_permissions, UnknownRoleError):
+                            raise Exception("Failed to fetch permissions for the role")
+
+                        for perm in role_permissions.permissions:
+                            user_permissions.add(perm)
+
+                    user_info["permissions"] = list(user_permissions)
+
+                return user_info
+
+            OAuth2ProviderRecipe.get_instance().add_user_info_builder_from_other_recipe(
+                user_info_builder
+            )
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 
