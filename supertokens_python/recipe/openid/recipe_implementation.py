@@ -24,15 +24,13 @@ if TYPE_CHECKING:
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
-from supertokens_python.recipe.jwt.interfaces import (
-    RecipeInterface as JWTRecipeInterface,
-)
 
 from .interfaces import (
     GetJWKSResult,
     GetOpenIdDiscoveryConfigurationResult,
     RecipeInterface,
 )
+from ..jwt.recipe import JWTRecipe
 
 
 class RecipeImplementation(RecipeInterface):
@@ -84,13 +82,11 @@ class RecipeImplementation(RecipeInterface):
         querier: Querier,
         config: OpenIdConfig,
         app_info: AppInfo,
-        jwt_recipe_implementation: JWTRecipeInterface,
     ):
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
-        self.jwt_recipe_implementation = jwt_recipe_implementation
 
     async def create_jwt(
         self,
@@ -99,14 +95,16 @@ class RecipeImplementation(RecipeInterface):
         use_static_signing_key: Optional[bool],
         user_context: Dict[str, Any],
     ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+        jwt_recipe = JWTRecipe.get_instance()
         issuer = (
             self.config.issuer_domain.get_as_string_dangerous()
             + self.config.issuer_path.get_as_string_dangerous()
         )
         payload = {"iss": issuer, **payload}
-        return await self.jwt_recipe_implementation.create_jwt(
+        return await jwt_recipe.recipe_implementation.create_jwt(
             payload, validity_seconds, use_static_signing_key, user_context
         )
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
-        return await self.jwt_recipe_implementation.get_jwks(user_context)
+        jwt_recipe = JWTRecipe.get_instance()
+        return await jwt_recipe.recipe_implementation.get_jwks(user_context)
