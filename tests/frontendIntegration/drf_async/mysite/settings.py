@@ -204,7 +204,7 @@ init(
     supertokens_config=SupertokensConfig("http://localhost:9000"),
     app_info=InputAppInfo(
         app_name="SuperTokens Python SDK",
-        api_domain="localhost:" + get_app_port(),
+        api_domain="0.0.0.0:" + get_app_port(),
         website_domain="http://localhost.org:8080",
     ),
     framework="django",
