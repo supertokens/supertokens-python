@@ -99,4 +99,5 @@ class FastApiResponse(BaseResponse):
         if not self.response_sent:
             self.set_header("Location", url)
             self.set_status_code(302)
+            self.response_sent = True
         return self
