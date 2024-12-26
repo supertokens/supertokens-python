@@ -29,11 +29,13 @@ from ..interfaces import (
     ErrorOAuth2Response,
     FrontendRedirectResponse,
     InactiveTokenResponse,
-    LoginInfo,
+    LoginInfoResponse,
     RedirectResponse,
+    RevokeTokenOkResponse,
     RevokeTokenUsingAuthorizationHeader,
     RevokeTokenUsingClientIDAndClientSecret,
-    TokenInfo,
+    TokenInfoResponse,
+    UserInfoResponse,
 )
 
 
@@ -110,7 +112,7 @@ class APIImplementation(APIInterface):
         body: Any,
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[TokenInfo, ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[TokenInfoResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         return await options.recipe_implementation.token_exchange(
             authorization_header=authorization_header,
             body=body,
@@ -122,7 +124,7 @@ class APIImplementation(APIInterface):
         login_challenge: str,
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[LoginInfo, ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[LoginInfoResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         login_res = await options.recipe_implementation.get_login_request(
             challenge=login_challenge,
             user_context=user_context,
@@ -133,7 +135,7 @@ class APIImplementation(APIInterface):
 
         client = login_res.client
 
-        return LoginInfo(
+        return LoginInfoResponse(
             client_id=client.client_id,
             client_name=client.client_name,
             tos_uri=client.tos_uri,
@@ -151,13 +153,15 @@ class APIImplementation(APIInterface):
         tenant_id: str,
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[Dict[str, Any], GeneralErrorResponse]:
-        return await options.recipe_implementation.build_user_info(
-            user=user,
-            access_token_payload=access_token_payload,
-            scopes=scopes,
-            tenant_id=tenant_id,
-            user_context=user_context,
+    ) -> Union[UserInfoResponse, GeneralErrorResponse]:
+        return UserInfoResponse(
+            await options.recipe_implementation.build_user_info(
+                user=user,
+                access_token_payload=access_token_payload,
+                scopes=scopes,
+                tenant_id=tenant_id,
+                user_context=user_context,
+            )
         )
 
     async def revoke_token_post(
@@ -168,7 +172,7 @@ class APIImplementation(APIInterface):
         client_id: Optional[str],
         client_secret: Optional[str],
         user_context: Dict[str, Any],
-    ) -> Union[None, ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[RevokeTokenOkResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         if authorization_header is not None:
             return await options.recipe_implementation.revoke_token(
                 params=RevokeTokenUsingAuthorizationHeader(

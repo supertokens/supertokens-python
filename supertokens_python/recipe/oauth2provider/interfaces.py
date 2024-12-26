@@ -63,7 +63,7 @@ class ErrorOAuth2Response(APIResponse):
         )
 
 
-class ConsentRequest:
+class ConsentRequestResponse:
     def __init__(
         self,
         challenge: str,  # ID/identifier of the consent authorization request
@@ -94,7 +94,7 @@ class ConsentRequest:
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return ConsentRequest(
+        return ConsentRequestResponse(
             acr=json["acr"],
             amr=json["amr"],
             challenge=json["challenge"],
@@ -110,7 +110,7 @@ class ConsentRequest:
         )
 
 
-class LoginRequest:
+class LoginRequestResponse:
     def __init__(
         self,
         challenge: str,  # ID/identifier of the login request
@@ -135,7 +135,7 @@ class LoginRequest:
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return LoginRequest(
+        return LoginRequestResponse(
             challenge=json["challenge"],
             client=OAuth2Client.from_json(json["client"]),
             request_url=json["requestUrl"],
@@ -148,7 +148,7 @@ class LoginRequest:
         )
 
 
-class TokenInfo:
+class TokenInfoResponse:
     def __init__(
         self,
         expires_in: int,  # Lifetime in seconds of the access token
@@ -167,7 +167,7 @@ class TokenInfo:
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return TokenInfo(
+        return TokenInfoResponse(
             access_token=json.get("access_token"),
             expires_in=json["expires_in"],
             id_token=json.get("id_token"),
@@ -192,7 +192,7 @@ class TokenInfo:
         return result
 
 
-class LoginInfo:
+class LoginInfoResponse:
     def __init__(
         self,
         client_id: str,
@@ -244,7 +244,7 @@ class FrontendRedirectResponse:
         return result
 
 
-class GetOAuth2ClientsOkResult:
+class OAuth2ClientsListResponse:
     def __init__(
         self, clients: List[OAuth2Client], next_pagination_token: Optional[str]
     ):
@@ -253,7 +253,7 @@ class GetOAuth2ClientsOkResult:
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return GetOAuth2ClientsOkResult(
+        return OAuth2ClientsListResponse(
             clients=[OAuth2Client.from_json(client) for client in json["clients"]],
             next_pagination_token=json["nextPaginationToken"],
         )
@@ -268,22 +268,24 @@ class GetOAuth2ClientsOkResult:
         return result
 
 
-class GetOAuth2ClientOkResult:
+class OAuth2ClientResponse:
     def __init__(self, client: OAuth2Client):
         self.client = client
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return GetOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+        return OAuth2ClientResponse(client=OAuth2Client.from_json(json["client"]))
 
 
-class CreateOAuth2ClientOkResult:
+class CreatedOAuth2ClientResponse:
     def __init__(self, client: OAuth2Client):
         self.client = client
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return CreateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+        return CreatedOAuth2ClientResponse(
+            client=OAuth2Client.from_json(json["client"])
+        )
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -292,13 +294,15 @@ class CreateOAuth2ClientOkResult:
         }
 
 
-class UpdateOAuth2ClientOkResult:
+class UpdatedOAuth2ClientResponse:
     def __init__(self, client: OAuth2Client):
         self.client = client
 
     @staticmethod
     def from_json(json: Dict[str, Any]):
-        return UpdateOAuth2ClientOkResult(client=OAuth2Client.from_json(json["client"]))
+        return UpdatedOAuth2ClientResponse(
+            client=OAuth2Client.from_json(json["client"])
+        )
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -307,7 +311,7 @@ class UpdateOAuth2ClientOkResult:
         }
 
 
-class DeleteOAuth2ClientOkResult:
+class DeleteOAuth2ClientOkResponse:
     def __init__(self):
         pass
 
@@ -398,6 +402,27 @@ class ActiveTokenResponse:
 
     def to_json(self):
         return {"active": True, **self.payload}
+
+
+class ValidatedAccessTokenResponse:
+    def __init__(self, payload: Dict[str, Any]):
+        self.payload = payload
+
+    def to_json(self):
+        return {"payload": self.payload}
+
+
+class RevokeTokenOkResponse:
+    def to_json(self):
+        return {"status": "OK"}
+
+
+class UserInfoResponse:
+    def __init__(self, payload: Dict[str, Any]):
+        self.payload = payload
+
+    def to_json(self):
+        return self.payload
 
 
 class OAuth2ClientOptions:
@@ -1006,13 +1031,13 @@ class RecipeInterface(ABC):
         authorization_header: Optional[str],
         body: Dict[str, Optional[str]],
         user_context: Dict[str, Any],
-    ) -> Union[TokenInfo, ErrorOAuth2Response]:
+    ) -> Union[TokenInfoResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
     async def get_consent_request(
         self, challenge: str, user_context: Dict[str, Any]
-    ) -> ConsentRequest:
+    ) -> ConsentRequestResponse:
         pass
 
     @abstractmethod
@@ -1041,7 +1066,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_login_request(
         self, challenge: str, user_context: Dict[str, Any]
-    ) -> Union[LoginRequest, ErrorOAuth2Response]:
+    ) -> Union[LoginRequestResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1074,7 +1099,7 @@ class RecipeInterface(ABC):
         pagination_token: Optional[str],
         client_name: Optional[str],
         user_context: Dict[str, Any],
-    ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
+    ) -> Union[OAuth2ClientsListResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1082,7 +1107,7 @@ class RecipeInterface(ABC):
         self,
         client_id: str,
         user_context: Dict[str, Any],
-    ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[OAuth2ClientResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1090,7 +1115,7 @@ class RecipeInterface(ABC):
         self,
         params: CreateOAuth2ClientInput,
         user_context: Dict[str, Any],
-    ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[CreatedOAuth2ClientResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1098,7 +1123,7 @@ class RecipeInterface(ABC):
         self,
         params: UpdateOAuth2ClientInput,
         user_context: Dict[str, Any],
-    ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[UpdatedOAuth2ClientResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1106,7 +1131,7 @@ class RecipeInterface(ABC):
         self,
         client_id: str,
         user_context: Dict[str, Any],
-    ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[DeleteOAuth2ClientOkResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1116,7 +1141,7 @@ class RecipeInterface(ABC):
         requirements: Optional[OAuth2TokenValidationRequirements],
         check_database: Optional[bool],
         user_context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> ValidatedAccessTokenResponse:
         pass
 
     @abstractmethod
@@ -1184,7 +1209,7 @@ class RecipeInterface(ABC):
             RevokeTokenUsingClientIDAndClientSecret,
         ],
         user_context: Dict[str, Any],
-    ) -> Optional[ErrorOAuth2Response]:
+    ) -> Union[RevokeTokenOkResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1298,7 +1323,7 @@ class APIInterface:
         body: Any,
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[TokenInfo, ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[TokenInfoResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -1308,7 +1333,7 @@ class APIInterface:
         options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
-        LoginInfo,
+        LoginInfoResponse,
         ErrorOAuth2Response,
         GeneralErrorResponse,
     ]:
@@ -1323,7 +1348,7 @@ class APIInterface:
         tenant_id: str,
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[Dict[str, Any], GeneralErrorResponse]:
+    ) -> Union[UserInfoResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -1335,7 +1360,7 @@ class APIInterface:
         client_id: Optional[str],
         client_secret: Optional[str],
         user_context: Dict[str, Any],
-    ) -> Union[None, ErrorOAuth2Response, GeneralErrorResponse]:
+    ) -> Union[RevokeTokenOkResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass
 
     @abstractmethod
