@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from supertokens_python.asyncio import get_user
 from supertokens_python.utils import (
     send_200_response,
     send_non_200_response_with_message,
@@ -35,6 +34,8 @@ async def user_info_get(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
+    from supertokens_python.asyncio import get_user
+
     if api_implementation.disable_user_info_get is True:
         return None
 

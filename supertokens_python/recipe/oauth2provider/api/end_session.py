@@ -19,8 +19,6 @@ import urllib.parse
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 from supertokens_python.types import GeneralErrorResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 
@@ -31,6 +29,8 @@ if TYPE_CHECKING:
         RedirectResponse,
         ErrorOAuth2Response,
     )
+    from supertokens_python.recipe.session import SessionContainer
+    from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     EndSessionCallable = Callable[
         [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],

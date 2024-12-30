@@ -21,7 +21,6 @@ import time
 
 from supertokens_python import Supertokens
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-from supertokens_python.recipe.session.asyncio import get_session_information
 from ..constants import LOGIN_PATH, AUTH_PATH, END_SESSION_PATH
 
 if TYPE_CHECKING:
@@ -48,6 +47,7 @@ async def login_get(
         FrontendRedirectionURLTypeTryRefresh,
         FrontendRedirectionURLTypeLogin,
     )
+    from supertokens_python.recipe.session.asyncio import get_session_information
 
     login_request = await recipe_implementation.get_login_request(
         challenge=login_challenge,

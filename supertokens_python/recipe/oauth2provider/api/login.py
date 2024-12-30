@@ -20,7 +20,6 @@ from dateutil import parser
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
-from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 from supertokens_python.utils import send_200_response, send_non_200_response
 from http.cookies import SimpleCookie
 
@@ -42,6 +41,7 @@ async def login(
         ErrorOAuth2Response,
     )
     from supertokens_python.recipe.session.asyncio import get_session
+    from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     if api_implementation.disable_login_get is True:
         return None

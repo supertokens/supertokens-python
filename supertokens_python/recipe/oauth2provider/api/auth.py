@@ -19,8 +19,6 @@ from typing import TYPE_CHECKING, Any, Dict
 from urllib.parse import parse_qsl
 from dateutil import parser
 
-from supertokens_python.recipe.session.asyncio import get_session
-from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
@@ -40,6 +38,8 @@ async def auth_get(
         RedirectResponse,
         ErrorOAuth2Response,
     )
+    from supertokens_python.recipe.session.asyncio import get_session
+    from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     if api_implementation.disable_auth_get is True:
         return None
