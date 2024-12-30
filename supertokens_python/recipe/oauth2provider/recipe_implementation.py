@@ -21,6 +21,7 @@ import urllib.parse
 import jwt
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.jwks import get_latest_keys
@@ -236,7 +237,6 @@ class RecipeImplementation(RecipeInterface):
         session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-        from supertokens_python.asyncio import get_user
 
         # we handle this in the backend SDK level
         if params.get("prompt") == "none":
@@ -284,7 +284,9 @@ class RecipeImplementation(RecipeInterface):
 
             client = client_info.client
 
-            user = await get_user(session.get_user_id())
+            user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                user_id=session.get_user_id(), user_context=user_context
+            )
             if not user:
                 return ErrorOAuth2Response(
                     status_code=400,
@@ -392,8 +394,6 @@ class RecipeImplementation(RecipeInterface):
         body: Dict[str, Optional[str]],
         user_context: Dict[str, Any],
     ) -> Union[TokenInfoResponse, ErrorOAuth2Response]:
-        from supertokens_python.asyncio import get_user
-
         request_body = {
             "iss": await OpenIdRecipe.get_issuer(user_context),
             "inputBody": body,
@@ -476,7 +476,9 @@ class RecipeImplementation(RecipeInterface):
                     )
 
                 client = client_info.client
-                user = await get_user(token_info.payload["sub"])
+                user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                    user_id=token_info.payload["sub"], user_context=user_context
+                )
 
                 if not user:
                     return ErrorOAuth2Response(
