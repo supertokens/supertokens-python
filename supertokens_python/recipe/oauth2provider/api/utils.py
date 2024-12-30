@@ -53,7 +53,6 @@ async def login_get(
         FrontendRedirectionURLTypeTryRefresh,
         FrontendRedirectionURLTypeLogin,
     )
-    from supertokens_python.recipe.session.asyncio import get_session_information
 
     login_request = await recipe_implementation.get_login_request(
         challenge=login_challenge,
@@ -64,7 +63,11 @@ async def login_get(
         return login_request
 
     session_info = (
-        await get_session_information(session.get_handle()) if session else None
+        await SessionRecipe.get_instance().recipe_implementation.get_session_information(
+            session.get_handle(), user_context
+        )
+        if session
+        else None
     )
     if not session_info:
         session = None

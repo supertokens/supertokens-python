@@ -20,6 +20,8 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 
+from .utils import get_session
+
 if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
@@ -37,7 +39,6 @@ async def logout_post(
         FrontendRedirectResponse,
         ErrorOAuth2Response,
     )
-    from supertokens_python.recipe.session.asyncio import get_session
 
     if api_implementation.disable_logout_post is True:
         return None

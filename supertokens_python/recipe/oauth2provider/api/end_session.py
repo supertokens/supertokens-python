@@ -22,6 +22,8 @@ from supertokens_python.framework import BaseResponse
 from supertokens_python.types import GeneralErrorResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 
+from .utils import get_session
+
 if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
@@ -82,7 +84,6 @@ async def end_session_common(
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
     from ..interfaces import RedirectResponse, ErrorOAuth2Response
-    from supertokens_python.recipe.session.asyncio import get_session
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     if api_implementation is None:

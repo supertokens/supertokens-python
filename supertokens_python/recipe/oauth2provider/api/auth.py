@@ -27,6 +27,8 @@ if TYPE_CHECKING:
         APIInterface,
     )
 
+from .utils import get_session
+
 
 async def auth_get(
     _tenant_id: str,
@@ -38,7 +40,6 @@ async def auth_get(
         RedirectResponse,
         ErrorOAuth2Response,
     )
-    from supertokens_python.recipe.session.asyncio import get_session
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     if api_implementation.disable_auth_get is True:
