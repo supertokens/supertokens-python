@@ -30,7 +30,6 @@ if TYPE_CHECKING:
         ErrorOAuth2Response,
     )
     from supertokens_python.recipe.session import SessionContainer
-    from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     EndSessionCallable = Callable[
         [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],
@@ -84,6 +83,7 @@ async def end_session_common(
 ) -> Optional[BaseResponse]:
     from ..interfaces import RedirectResponse, ErrorOAuth2Response
     from supertokens_python.recipe.session.asyncio import get_session
+    from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     if api_implementation is None:
         return None
