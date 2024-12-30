@@ -85,6 +85,8 @@ class DjangoRequest(BaseRequest):
 
     def get_header(self, key: str) -&gt; Union[None, str]:
         key = key.replace(&#34;-&#34;, &#34;_&#34;)
+        if key.upper() in self.request.META:
+            return self.request.META.get(key.upper())
         key = &#34;HTTP_&#34; + key
         return self.request.META.get(key.upper())
 
@@ -173,6 +175,8 @@ inheritance.</p></div>
 
     def get_header(self, key: str) -&gt; Union[None, str]:
         key = key.replace(&#34;-&#34;, &#34;_&#34;)
+        if key.upper() in self.request.META:
+            return self.request.META.get(key.upper())
         key = &#34;HTTP_&#34; + key
         return self.request.META.get(key.upper())
 

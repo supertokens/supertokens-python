@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.11.0" />
-<title>supertokens_python.recipe API documentation</title>
+<title>supertokens_python.recipe.oauth2provider.exceptions API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,80 +19,65 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.oauth2provider.exceptions</code></h1>
 </header>
 <section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
+
+from supertokens_python.exceptions import SuperTokensError
+
+
+class OAuth2ProviderError(SuperTokensError):
+    pass</code></pre>
+</details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="supertokens_python.recipe.accountlinking" href="accountlinking/index.html">supertokens_python.recipe.accountlinking</a></code></dt>
+<dt id="supertokens_python.recipe.oauth2provider.exceptions.OAuth2ProviderError"><code class="flex name class">
+<span>class <span class="ident">OAuth2ProviderError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.dashboard" href="dashboard/index.html">supertokens_python.recipe.dashboard</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.emailpassword" href="emailpassword/index.html">supertokens_python.recipe.emailpassword</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.emailverification" href="emailverification/index.html">supertokens_python.recipe.emailverification</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.jwt" href="jwt/index.html">supertokens_python.recipe.jwt</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.multifactorauth" href="multifactorauth/index.html">supertokens_python.recipe.multifactorauth</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.multitenancy" href="multitenancy/index.html">supertokens_python.recipe.multitenancy</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.oauth2provider" href="oauth2provider/index.html">supertokens_python.recipe.oauth2provider</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.openid" href="openid/index.html">supertokens_python.recipe.openid</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.passwordless" href="passwordless/index.html">supertokens_python.recipe.passwordless</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.session" href="session/index.html">supertokens_python.recipe.session</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.thirdparty" href="thirdparty/index.html">supertokens_python.recipe.thirdparty</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.totp" href="totp/index.html">supertokens_python.recipe.totp</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.usermetadata" href="usermetadata/index.html">supertokens_python.recipe.usermetadata</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="supertokens_python.recipe.userroles" href="userroles/index.html">supertokens_python.recipe.userroles</a></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OAuth2ProviderError(SuperTokensError):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.exceptions.SuperTokensError" href="../../exceptions.html#supertokens_python.exceptions.SuperTokensError">SuperTokensError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -103,26 +88,14 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python" href="../index.html">supertokens_python</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider" href="index.html">supertokens_python.recipe.oauth2provider</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="supertokens_python.recipe.accountlinking" href="accountlinking/index.html">supertokens_python.recipe.accountlinking</a></code></li>
-<li><code><a title="supertokens_python.recipe.dashboard" href="dashboard/index.html">supertokens_python.recipe.dashboard</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword" href="emailpassword/index.html">supertokens_python.recipe.emailpassword</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailverification" href="emailverification/index.html">supertokens_python.recipe.emailverification</a></code></li>
-<li><code><a title="supertokens_python.recipe.jwt" href="jwt/index.html">supertokens_python.recipe.jwt</a></code></li>
-<li><code><a title="supertokens_python.recipe.multifactorauth" href="multifactorauth/index.html">supertokens_python.recipe.multifactorauth</a></code></li>
-<li><code><a title="supertokens_python.recipe.multitenancy" href="multitenancy/index.html">supertokens_python.recipe.multitenancy</a></code></li>
-<li><code><a title="supertokens_python.recipe.oauth2provider" href="oauth2provider/index.html">supertokens_python.recipe.oauth2provider</a></code></li>
-<li><code><a title="supertokens_python.recipe.openid" href="openid/index.html">supertokens_python.recipe.openid</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless" href="passwordless/index.html">supertokens_python.recipe.passwordless</a></code></li>
-<li><code><a title="supertokens_python.recipe.session" href="session/index.html">supertokens_python.recipe.session</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty" href="thirdparty/index.html">supertokens_python.recipe.thirdparty</a></code></li>
-<li><code><a title="supertokens_python.recipe.totp" href="totp/index.html">supertokens_python.recipe.totp</a></code></li>
-<li><code><a title="supertokens_python.recipe.usermetadata" href="usermetadata/index.html">supertokens_python.recipe.usermetadata</a></code></li>
-<li><code><a title="supertokens_python.recipe.userroles" href="userroles/index.html">supertokens_python.recipe.userroles</a></code></li>
+<li>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.exceptions.OAuth2ProviderError" href="#supertokens_python.recipe.oauth2provider.exceptions.OAuth2ProviderError">OAuth2ProviderError</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

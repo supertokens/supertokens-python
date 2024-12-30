@@ -121,7 +121,14 @@ class FastApiResponse(BaseResponse):
             self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
             self.set_header(&#34;Content-Length&#34;, str(len(body)))
             self.response.body = body
-            self.response_sent = True</code></pre>
+            self.response_sent = True
+
+    def redirect(self, url: str) -&gt; BaseResponse:
+        if not self.response_sent:
+            self.set_header(&#34;Location&#34;, url)
+            self.set_status_code(302)
+            self.response_sent = True
+        return self</code></pre>
 </details>
 </section>
 <section>
@@ -218,7 +225,14 @@ inheritance.</p></div>
             self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
             self.set_header(&#34;Content-Length&#34;, str(len(body)))
             self.response.body = body
-            self.response_sent = True</code></pre>
+            self.response_sent = True
+
+    def redirect(self, url: str) -&gt; BaseResponse:
+        if not self.response_sent:
+            self.set_header(&#34;Location&#34;, url)
+            self.set_status_code(302)
+            self.response_sent = True
+        return self</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -236,6 +250,12 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.get_header"><code class="name flex">
 <span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.redirect"><code class="name flex">
+<span>def <span class="ident">redirect</span></span>(<span>self, url: str) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="../response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -299,6 +319,7 @@ inheritance.</p></div>
 <ul class="two-column">
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.Response" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.Response">Response</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.get_header" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.redirect" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.redirect">redirect</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.remove_header" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_cookie" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_header" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_header">set_header</a></code></li>

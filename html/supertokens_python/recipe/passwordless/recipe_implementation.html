@@ -475,6 +475,7 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user&#34;),
             data,
+            None,
             user_context=user_context,
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
@@ -488,6 +489,7 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user&#34;),
             data,
+            None,
             user_context=user_context,
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
@@ -552,6 +554,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user&#34;),
             input_dict,
+            None,
             user_context=user_context,
         )
         if response[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:
@@ -995,6 +998,7 @@ inheritance.</p></div>
         result = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user&#34;),
             data,
+            None,
             user_context=user_context,
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
@@ -1008,6 +1012,7 @@ inheritance.</p></div>
         result = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user&#34;),
             data,
+            None,
             user_context=user_context,
         )
         if result[&#34;status&#34;] == &#34;OK&#34;:
@@ -1072,6 +1077,7 @@ inheritance.</p></div>
         response = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user&#34;),
             input_dict,
+            None,
             user_context=user_context,
         )
         if response[&#34;status&#34;] == &#34;UNKNOWN_USER_ID_ERROR&#34;:

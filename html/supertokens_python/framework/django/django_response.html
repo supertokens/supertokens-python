@@ -115,7 +115,14 @@ class DjangoResponse(BaseResponse):
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
-            self.response_sent = True</code></pre>
+            self.response_sent = True
+
+    def redirect(self, url: str) -&gt; BaseResponse:
+        if not self.response_sent:
+            self.set_header(&#34;Location&#34;, url)
+            self.set_status_code(302)
+            self.response_sent = True
+        return self</code></pre>
 </details>
 </section>
 <section>
@@ -206,7 +213,14 @@ inheritance.</p></div>
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
-            self.response_sent = True</code></pre>
+            self.response_sent = True
+
+    def redirect(self, url: str) -&gt; BaseResponse:
+        if not self.response_sent:
+            self.set_header(&#34;Location&#34;, url)
+            self.set_status_code(302)
+            self.response_sent = True
+        return self</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -225,6 +239,12 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.framework.django.django_response.DjangoResponse.get_header"><code class="name flex">
 <span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.framework.django.django_response.DjangoResponse.redirect"><code class="name flex">
+<span>def <span class="ident">redirect</span></span>(<span>self, url: str) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="../response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -288,6 +308,7 @@ inheritance.</p></div>
 <ul class="two-column">
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.HttpResponse" href="#supertokens_python.framework.django.django_response.DjangoResponse.HttpResponse">HttpResponse</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.get_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.redirect" href="#supertokens_python.framework.django.django_response.DjangoResponse.redirect">redirect</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.remove_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_cookie" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_header">set_header</a></code></li>

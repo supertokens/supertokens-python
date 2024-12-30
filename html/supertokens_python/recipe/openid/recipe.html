@@ -72,7 +72,6 @@ class OpenIdRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        jwt_validity_seconds: Union[int, None] = None,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
@@ -80,18 +79,12 @@ class OpenIdRecipe(RecipeModule):
 
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, issuer, override)
-        jwt_feature = None
-        if override is not None:
-            jwt_feature = override.jwt_feature
-        self.jwt_recipe = JWTRecipe(
-            recipe_id, app_info, jwt_validity_seconds, jwt_feature
-        )
+        self.jwt_recipe = JWTRecipe.get_instance()
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id),
             self.config,
             app_info,
-            self.jwt_recipe.recipe_implementation,
         )
         self.recipe_implementation = (
             recipe_implementation
@@ -163,7 +156,6 @@ class OpenIdRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        jwt_validity_seconds: Union[int, None] = None,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
@@ -172,7 +164,6 @@ class OpenIdRecipe(RecipeModule):
                 OpenIdRecipe.__instance = OpenIdRecipe(
                     OpenIdRecipe.recipe_id,
                     app_info,
-                    jwt_validity_seconds,
                     issuer,
                     override,
                 )
@@ -197,7 +188,14 @@ class OpenIdRecipe(RecipeModule):
             environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
         ):
             raise_general_exception(&#34;calling testing function in non testing env&#34;)
-        OpenIdRecipe.__instance = None</code></pre>
+        OpenIdRecipe.__instance = None
+
+    @staticmethod
+    async def get_issuer(user_context: Dict[str, Any]) -&gt; str:
+        open_id_config = await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
+            user_context
+        )
+        return open_id_config.issuer</code></pre>
 </details>
 </section>
 <section>
@@ -211,7 +209,7 @@ class OpenIdRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.openid.recipe.OpenIdRecipe"><code class="flex name class">
 <span>class <span class="ident">OpenIdRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None, issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -228,7 +226,6 @@ inheritance.</p></div>
         self,
         recipe_id: str,
         app_info: AppInfo,
-        jwt_validity_seconds: Union[int, None] = None,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
@@ -236,18 +233,12 @@ inheritance.</p></div>
 
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, issuer, override)
-        jwt_feature = None
-        if override is not None:
-            jwt_feature = override.jwt_feature
-        self.jwt_recipe = JWTRecipe(
-            recipe_id, app_info, jwt_validity_seconds, jwt_feature
-        )
+        self.jwt_recipe = JWTRecipe.get_instance()
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id),
             self.config,
             app_info,
-            self.jwt_recipe.recipe_implementation,
         )
         self.recipe_implementation = (
             recipe_implementation
@@ -319,7 +310,6 @@ inheritance.</p></div>
 
     @staticmethod
     def init(
-        jwt_validity_seconds: Union[int, None] = None,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
@@ -328,7 +318,6 @@ inheritance.</p></div>
                 OpenIdRecipe.__instance = OpenIdRecipe(
                     OpenIdRecipe.recipe_id,
                     app_info,
-                    jwt_validity_seconds,
                     issuer,
                     override,
                 )
@@ -353,7 +342,14 @@ inheritance.</p></div>
             environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
         ):
             raise_general_exception(&#34;calling testing function in non testing env&#34;)
-        OpenIdRecipe.__instance = None</code></pre>
+        OpenIdRecipe.__instance = None
+
+    @staticmethod
+    async def get_issuer(user_context: Dict[str, Any]) -&gt; str:
+        open_id_config = await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
+            user_context
+        )
+        return open_id_config.issuer</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -379,8 +375,14 @@ inheritance.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_issuer"><code class="name flex">
+<span>async def <span class="ident">get_issuer</span></span>(<span>user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="supertokens_python.recipe.openid.recipe.OpenIdRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>jwt_validity_seconds: Union[int, None] = None, issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -448,6 +450,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_all_cors_headers" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_apis_handled" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_apis_handled">get_apis_handled</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_instance" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_issuer" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_issuer">get_issuer</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_tenant_id" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.handle_api_request" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.handle_api_request">handle_api_request</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe.handle_error" href="#supertokens_python.recipe.openid.recipe.OpenIdRecipe.handle_error">handle_error</a></code></li>

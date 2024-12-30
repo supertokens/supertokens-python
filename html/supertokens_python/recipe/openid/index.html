@@ -53,11 +53,10 @@ if TYPE_CHECKING:
 
 
 def init(
-    jwt_validity_seconds: Union[int, None] = None,
     issuer: Union[str, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
-    return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)</code></pre>
+    return OpenIdRecipe.init(issuer, override)</code></pre>
 </details>
 </section>
 <section>
@@ -107,7 +106,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.openid.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>jwt_validity_seconds: Union[int, None] = None, issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

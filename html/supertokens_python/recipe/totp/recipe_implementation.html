@@ -185,6 +185,7 @@ class RecipeImplementation(RecipeInterface):
         resp = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/totp/device&#34;),
             data,
+            None,
             user_context=user_context,
         )
 
@@ -437,6 +438,7 @@ inheritance.</p></div>
         resp = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/totp/device&#34;),
             data,
+            None,
             user_context=user_context,
         )
 

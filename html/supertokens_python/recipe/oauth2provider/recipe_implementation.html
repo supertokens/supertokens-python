@@ -1,0 +1,2294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.recipe.oauth2provider.recipe_implementation API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.oauth2provider.recipe_implementation</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
+
+import base64
+from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
+from urllib.parse import parse_qs, urlparse
+import urllib.parse
+
+import jwt
+
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
+from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.recipe.session.jwks import get_latest_keys
+from supertokens_python.recipe.session.jwt import (
+    parse_jwt_without_signature_verification,
+)
+from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.types import RecipeUserId, User
+
+from .interfaces import (
+    CreateOAuth2ClientInput,
+    FrontendRedirectionURLTypeLogin,
+    FrontendRedirectionURLTypeLogoutConfirmation,
+    FrontendRedirectionURLTypePostLogoutFallback,
+    FrontendRedirectionURLTypeTryRefresh,
+    OAuth2TokenValidationRequirements,
+    PayloadBuilderFunction,
+    RecipeInterface,
+    RedirectResponse,
+    ErrorOAuth2Response,
+    OAuth2ClientResponse,
+    OAuth2ClientsListResponse,
+    CreatedOAuth2ClientResponse,
+    RevokeTokenOkResponse,
+    RevokeTokenUsingAuthorizationHeader,
+    RevokeTokenUsingClientIDAndClientSecret,
+    UpdateOAuth2ClientInput,
+    UpdatedOAuth2ClientResponse,
+    DeleteOAuth2ClientOkResponse,
+    ConsentRequestResponse,
+    LoginRequestResponse,
+    OAuth2Client,
+    TokenInfoResponse,
+    UserInfoBuilderFunction,
+    ActiveTokenResponse,
+    InactiveTokenResponse,
+    ValidatedAccessTokenResponse,
+)
+
+
+if TYPE_CHECKING:
+    from supertokens_python.querier import Querier
+    from supertokens_python import AppInfo
+
+
+def get_updated_redirect_to(app_info: AppInfo, redirect_to: str) -&gt; str:
+    return redirect_to.replace(
+        &#34;{apiDomain}&#34;,
+        app_info.api_domain.get_as_string_dangerous()
+        + app_info.api_base_path.get_as_string_dangerous(),
+    )
+
+
+class RecipeImplementation(RecipeInterface):
+    def __init__(
+        self,
+        querier: Querier,
+        app_info: AppInfo,
+        get_default_access_token_payload: PayloadBuilderFunction,
+        get_default_id_token_payload: PayloadBuilderFunction,
+        get_default_user_info_payload: UserInfoBuilderFunction,
+    ):
+        super().__init__()
+        self.querier = querier
+        self.app_info = app_info
+        self._get_default_access_token_payload = get_default_access_token_payload
+        self._get_default_id_token_payload = get_default_id_token_payload
+        self._get_default_user_info_payload = get_default_user_info_payload
+
+    async def get_login_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -&gt; Union[LoginRequestResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/login&#34;),
+            {&#34;loginChallenge&#34;: challenge},
+            user_context=user_context,
+        )
+        if response[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                response[&#34;error&#34;],
+                response[&#34;errorDescription&#34;],
+                response[&#34;statusCode&#34;],
+            )
+
+        return LoginRequestResponse.from_json(response)
+
+    async def accept_login_request(
+        self,
+        challenge: str,
+        acr: Optional[str],
+        amr: Optional[List[str]],
+        context: Optional[Any],
+        extend_session_lifespan: Optional[bool],
+        identity_provider_session_id: Optional[str],
+        subject: str,
+        user_context: Dict[str, Any],
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/login/accept&#34;),
+            {
+                &#34;acr&#34;: acr,
+                &#34;amr&#34;: amr,
+                &#34;context&#34;: context,
+                &#34;extendSessionLifespan&#34;: extend_session_lifespan,
+                &#34;identityProviderSessionId&#34;: identity_provider_session_id,
+                &#34;subject&#34;: subject,
+            },
+            {
+                &#34;loginChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def reject_login_request(
+        self,
+        challenge: str,
+        error: ErrorOAuth2Response,
+        user_context: Dict[str, Any],
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/login/reject&#34;),
+            {
+                &#34;error&#34;: error.error,
+                &#34;errorDescription&#34;: error.error_description,
+                &#34;statusCode&#34;: error.status_code,
+            },
+            {
+                &#34;loginChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def get_consent_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -&gt; ConsentRequestResponse:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/consent&#34;),
+            {&#34;consentChallenge&#34;: challenge},
+            user_context=user_context,
+        )
+
+        return ConsentRequestResponse.from_json(response)
+
+    async def accept_consent_request(
+        self,
+        challenge: str,
+        context: Optional[Any],
+        grant_access_token_audience: Optional[List[str]],
+        grant_scope: Optional[List[str]],
+        handled_at: Optional[str],
+        tenant_id: str,
+        rsub: str,
+        session_handle: str,
+        initial_access_token_payload: Optional[Dict[str, Any]],
+        initial_id_token_payload: Optional[Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/consent/accept&#34;),
+            {
+                &#34;context&#34;: context,
+                &#34;grantAccessTokenAudience&#34;: grant_access_token_audience,
+                &#34;grantScope&#34;: grant_scope,
+                &#34;handledAt&#34;: handled_at,
+                &#34;iss&#34;: await OpenIdRecipe.get_issuer(user_context),
+                &#34;tId&#34;: tenant_id,
+                &#34;rsub&#34;: rsub,
+                &#34;sessionHandle&#34;: session_handle,
+                &#34;initialAccessTokenPayload&#34;: initial_access_token_payload,
+                &#34;initialIdTokenPayload&#34;: initial_id_token_payload,
+            },
+            {
+                &#34;consentChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def reject_consent_request(
+        self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/consent/reject&#34;),
+            {
+                &#34;error&#34;: error.error,
+                &#34;errorDescription&#34;: error.error_description,
+                &#34;statusCode&#34;: error.status_code,
+            },
+            {
+                &#34;consentChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def authorization(
+        self,
+        params: Dict[str, str],
+        cookies: Optional[str],
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+
+        # we handle this in the backend SDK level
+        if params.get(&#34;prompt&#34;) == &#34;none&#34;:
+            params[&#34;st_prompt&#34;] = &#34;none&#34;
+            del params[&#34;prompt&#34;]
+
+        payloads = None
+
+        if params.get(&#34;client_id&#34;) is None or not isinstance(
+            params.get(&#34;client_id&#34;), str
+        ):
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;client_id is required and must be a string&#34;,
+            )
+
+        scopes = await self.get_requested_scopes(
+            scope_param=params.get(&#34;scope&#34;, &#34;&#34;).split() if params.get(&#34;scope&#34;) else [],
+            client_id=params[&#34;client_id&#34;],
+            recipe_user_id=(
+                session.get_recipe_user_id() if session is not None else None
+            ),
+            session_handle=session.get_handle() if session else None,
+            user_context=user_context,
+        )
+
+        response_types = (
+            params.get(&#34;response_type&#34;, &#34;&#34;).split()
+            if params.get(&#34;response_type&#34;)
+            else []
+        )
+
+        if session is not None:
+            client_info = await self.get_oauth2_client(
+                client_id=params[&#34;client_id&#34;], user_context=user_context
+            )
+
+            if isinstance(client_info, ErrorOAuth2Response):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=client_info.error,
+                    error_description=client_info.error_description,
+                )
+
+            client = client_info.client
+
+            user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                user_id=session.get_user_id(), user_context=user_context
+            )
+            if not user:
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=&#34;invalid_request&#34;,
+                    error_description=&#34;User deleted&#34;,
+                )
+
+            # These default to empty dicts, because we want to keep them as required input
+            # but they&#39;ll not be actually used in flows where we are not building them
+            id_token = {}
+            if &#34;openid&#34; in scopes and (
+                &#34;id_token&#34; in response_types or &#34;code&#34; in response_types
+            ):
+                id_token = await self.build_id_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session.get_handle(),
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+            access_token = {}
+            if &#34;token&#34; in response_types or &#34;code&#34; in response_types:
+                access_token = await self.build_access_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session.get_handle(),
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+            payloads = {&#34;idToken&#34;: id_token, &#34;accessToken&#34;: access_token}
+
+        request_body = {
+            &#34;params&#34;: {**params, &#34;scope&#34;: &#34; &#34;.join(scopes)},
+            &#34;iss&#34;: await OpenIdRecipe.get_issuer(user_context),
+            &#34;session&#34;: payloads,
+        }
+        if cookies is not None:
+            request_body[&#34;cookies&#34;] = cookies
+        resp = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth&#34;),
+            request_body,
+            user_context,
+        )
+
+        if resp[&#34;status&#34;] == &#34;CLIENT_NOT_FOUND_ERROR&#34;:
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;The provided client_id is not valid&#34;,
+            )
+
+        if resp[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=resp[&#34;statusCode&#34;],
+                error=resp[&#34;error&#34;],
+                error_description=resp[&#34;errorDescription&#34;],
+            )
+
+        if resp.get(&#34;redirectTo&#34;) is None:
+            raise Exception(resp)
+        redirect_to = get_updated_redirect_to(self.app_info, resp[&#34;redirectTo&#34;])
+
+        redirect_to_query_params_str = urlparse(redirect_to).query
+        redirect_to_query_params: Dict[str, List[str]] = parse_qs(
+            redirect_to_query_params_str
+        )
+        consent_challenge: Optional[str] = None
+
+        if &#34;consent_challenge&#34; in redirect_to_query_params:
+            if len(redirect_to_query_params[&#34;consent_challenge&#34;]) &gt; 0:
+                consent_challenge = redirect_to_query_params[&#34;consent_challenge&#34;][0]
+
+        if consent_challenge is not None and session is not None:
+            consent_request = await self.get_consent_request(
+                challenge=consent_challenge, user_context=user_context
+            )
+
+            consent_res = await self.accept_consent_request(
+                challenge=consent_request.challenge,
+                context=None,
+                grant_access_token_audience=consent_request.requested_access_token_audience,
+                grant_scope=consent_request.requested_scope,
+                handled_at=None,
+                tenant_id=session.get_tenant_id(),
+                rsub=session.get_recipe_user_id().get_as_string(),
+                session_handle=session.get_handle(),
+                initial_access_token_payload=(
+                    payloads.get(&#34;accessToken&#34;) if payloads else None
+                ),
+                initial_id_token_payload=payloads.get(&#34;idToken&#34;) if payloads else None,
+                user_context=user_context,
+            )
+
+            return RedirectResponse(
+                redirect_to=consent_res.redirect_to, cookies=resp[&#34;cookies&#34;]
+            )
+
+        return RedirectResponse(redirect_to=redirect_to, cookies=resp[&#34;cookies&#34;])
+
+    async def token_exchange(
+        self,
+        authorization_header: Optional[str],
+        body: Dict[str, Optional[str]],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[TokenInfoResponse, ErrorOAuth2Response]:
+        request_body = {
+            &#34;iss&#34;: await OpenIdRecipe.get_issuer(user_context),
+            &#34;inputBody&#34;: body,
+        }
+
+        if body.get(&#34;grant_type&#34;) == &#34;password&#34;:
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;Unsupported grant type: password&#34;,
+            )
+
+        if body.get(&#34;grant_type&#34;) == &#34;client_credentials&#34;:
+            client_id = None
+            if authorization_header:
+                # Extract client_id from Basic auth header
+                decoded = base64.b64decode(
+                    authorization_header.replace(&#34;Basic &#34;, &#34;&#34;).strip()
+                ).decode()
+                client_id = decoded.split(&#34;:&#34;)[0]
+            else:
+                client_id = body.get(&#34;client_id&#34;)
+
+            if not client_id:
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=&#34;invalid_request&#34;,
+                    error_description=&#34;client_id is required&#34;,
+                )
+
+            scopes = str(body.get(&#34;scope&#34;, &#34;&#34;)).split() if body.get(&#34;scope&#34;) else []
+
+            client_info = await self.get_oauth2_client(
+                client_id=client_id, user_context=user_context
+            )
+
+            if isinstance(client_info, ErrorOAuth2Response):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=client_info.error,
+                    error_description=client_info.error_description,
+                )
+
+            client = client_info.client
+            request_body[&#34;id_token&#34;] = await self.build_id_token_payload(
+                user=None,
+                client=client,
+                session_handle=None,
+                scopes=scopes,
+                user_context=user_context,
+            )
+            request_body[&#34;access_token&#34;] = await self.build_access_token_payload(
+                user=None,
+                client=client,
+                session_handle=None,
+                scopes=scopes,
+                user_context=user_context,
+            )
+
+        if body.get(&#34;grant_type&#34;) == &#34;refresh_token&#34;:
+            scopes = str(body.get(&#34;scope&#34;, &#34;&#34;)).split() if body.get(&#34;scope&#34;) else []
+            token_info = await self.introspect_token(
+                token=str(body[&#34;refresh_token&#34;]),
+                scopes=scopes,
+                user_context=user_context,
+            )
+
+            if isinstance(token_info, ActiveTokenResponse):
+                session_handle = token_info.payload[&#34;sessionHandle&#34;]
+
+                client_info = await self.get_oauth2_client(
+                    client_id=token_info.payload[&#34;client_id&#34;], user_context=user_context
+                )
+
+                if isinstance(client_info, ErrorOAuth2Response):
+                    return ErrorOAuth2Response(
+                        status_code=400,
+                        error=client_info.error,
+                        error_description=client_info.error_description,
+                    )
+
+                client = client_info.client
+                user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                    user_id=token_info.payload[&#34;sub&#34;], user_context=user_context
+                )
+
+                if not user:
+                    return ErrorOAuth2Response(
+                        status_code=400,
+                        error=&#34;invalid_request&#34;,
+                        error_description=&#34;User not found&#34;,
+                    )
+
+                request_body[&#34;id_token&#34;] = await self.build_id_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session_handle,
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+                request_body[&#34;access_token&#34;] = await self.build_access_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session_handle,
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+        if authorization_header:
+            request_body[&#34;authorizationHeader&#34;] = authorization_header
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/token&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;CLIENT_NOT_FOUND_ERROR&#34;:
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;client_id not found&#34;,
+            )
+
+        if response[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=response[&#34;statusCode&#34;],
+                error=response[&#34;error&#34;],
+                error_description=response[&#34;errorDescription&#34;],
+            )
+
+        return TokenInfoResponse.from_json(response)
+
+    async def get_oauth2_clients(
+        self,
+        page_size: Optional[int],
+        pagination_token: Optional[str],
+        client_name: Optional[str],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[OAuth2ClientsListResponse, ErrorOAuth2Response]:
+        body: Dict[str, Any] = {}
+        if page_size is not None:
+            body[&#34;pageSize&#34;] = page_size
+        if pagination_token is not None:
+            body[&#34;pageToken&#34;] = pagination_token
+        if client_name is not None:
+            body[&#34;clientName&#34;] = client_name
+
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients/list&#34;),
+            body,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return OAuth2ClientsListResponse(
+                clients=[
+                    OAuth2Client.from_json(client) for client in response[&#34;clients&#34;]
+                ],
+                next_pagination_token=response.get(&#34;nextPaginationToken&#34;),
+            )
+
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;],
+            error_description=response[&#34;errorDescription&#34;],
+            status_code=response[&#34;statusCode&#34;],
+        )
+
+    async def get_oauth2_client(
+        self, client_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[OAuth2ClientResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients&#34;),
+            {&#34;clientId&#34;: client_id},
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return OAuth2ClientResponse(client=OAuth2Client.from_json(response))
+        elif response[&#34;status&#34;] == &#34;CLIENT_NOT_FOUND_ERROR&#34;:
+            return ErrorOAuth2Response(
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;The provided client_id is not valid or unknown&#34;,
+            )
+        else:
+            return ErrorOAuth2Response(
+                error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+            )
+
+    async def create_oauth2_client(
+        self,
+        params: CreateOAuth2ClientInput,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreatedOAuth2ClientResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients&#34;),
+            params.to_json(),
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return CreatedOAuth2ClientResponse(client=OAuth2Client.from_json(response))
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+        )
+
+    async def update_oauth2_client(
+        self,
+        params: UpdateOAuth2ClientInput,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[UpdatedOAuth2ClientResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients&#34;),
+            params.to_json(),
+            None,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return UpdatedOAuth2ClientResponse(client=OAuth2Client.from_json(response))
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+        )
+
+    async def delete_oauth2_client(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[DeleteOAuth2ClientOkResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients/remove&#34;),
+            {&#34;clientId&#34;: client_id},
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return DeleteOAuth2ClientOkResponse()
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+        )
+
+    async def validate_oauth2_access_token(
+        self,
+        token: str,
+        requirements: Optional[OAuth2TokenValidationRequirements],
+        check_database: Optional[bool],
+        user_context: Dict[str, Any],
+    ) -&gt; ValidatedAccessTokenResponse:
+        access_token_obj = parse_jwt_without_signature_verification(token)
+
+        # Verify token signature using session recipe&#39;s JWKS
+        session_recipe = SessionRecipe.get_instance()
+        matching_keys = get_latest_keys(session_recipe.config, access_token_obj.kid)
+        err: Optional[Exception] = None
+
+        payload: Dict[str, Any] = {}
+
+        for matching_key in matching_keys:
+            err = None
+            try:
+                payload = jwt.decode(
+                    token,
+                    matching_key.key,
+                    algorithms=[&#34;RS256&#34;],
+                    options={
+                        &#34;verify_signature&#34;: True,
+                        &#34;verify_exp&#34;: True,
+                        &#34;verify_aud&#34;: False,
+                    },
+                )
+            except Exception as e:
+                err = e
+                continue
+            break
+
+        if err is not None:
+            raise err
+
+        if payload.get(&#34;stt&#34;) != 1:
+            raise Exception(&#34;Wrong token type&#34;)
+
+        if requirements is not None and requirements.client_id is not None:
+            if payload.get(&#34;client_id&#34;) != requirements.client_id:
+                raise Exception(
+                    f&#34;The token doesn&#39;t belong to the specified client ({requirements.client_id} !== {payload.get(&#39;client_id&#39;)})&#34;
+                )
+
+        if requirements is not None and requirements.scopes is not None:
+            token_scopes = payload.get(&#34;scp&#34;, [])
+            if not isinstance(token_scopes, list):
+                token_scopes = [token_scopes]
+
+            if any(scope not in token_scopes for scope in requirements.scopes):
+                raise Exception(&#34;The token is missing some required scopes&#34;)
+
+        aud = payload.get(&#34;aud&#34;, [])
+        if not isinstance(aud, list):
+            aud = [aud]
+
+        if requirements is not None and requirements.audience is not None:
+            if requirements.audience not in aud:
+                raise Exception(&#34;The token doesn&#39;t belong to the specified audience&#34;)
+
+        if check_database:
+            response = await self.querier.send_post_request(
+                NormalisedURLPath(&#34;/recipe/oauth/introspect&#34;),
+                {
+                    &#34;token&#34;: token,
+                },
+                user_context=user_context,
+            )
+
+            if response.get(&#34;active&#34;) is not True:
+                raise Exception(&#34;The token is expired, invalid or has been revoked&#34;)
+
+        return ValidatedAccessTokenResponse(payload=payload)
+
+    async def get_requested_scopes(
+        self,
+        recipe_user_id: Optional[RecipeUserId],
+        session_handle: Optional[str],
+        scope_param: List[str],
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; List[str]:
+        _ = recipe_user_id
+        _ = session_handle
+        _ = client_id
+        _ = user_context
+
+        return scope_param
+
+    async def build_access_token_payload(
+        self,
+        user: Optional[User],
+        client: OAuth2Client,
+        session_handle: Optional[str],
+        scopes: List[str],
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        if user is None or session_handle is None:
+            return {}
+
+        _ = client
+
+        return await self._get_default_access_token_payload(
+            user, scopes, session_handle, user_context
+        )
+
+    async def build_id_token_payload(
+        self,
+        user: Optional[User],
+        client: OAuth2Client,
+        session_handle: Optional[str],
+        scopes: List[str],
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        if user is None or session_handle is None:
+            return {}
+
+        _ = client
+
+        return await self._get_default_id_token_payload(
+            user, scopes, session_handle, user_context
+        )
+
+    async def build_user_info(
+        self,
+        user: User,
+        access_token_payload: Dict[str, Any],
+        scopes: List[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        return await self._get_default_user_info_payload(
+            user, access_token_payload, scopes, tenant_id, user_context
+        )
+
+    async def get_frontend_redirection_url(
+        self,
+        params: Union[
+            FrontendRedirectionURLTypeLogin,
+            FrontendRedirectionURLTypeTryRefresh,
+            FrontendRedirectionURLTypeLogoutConfirmation,
+            FrontendRedirectionURLTypePostLogoutFallback,
+        ],
+        user_context: Dict[str, Any],
+    ) -&gt; str:
+        website_domain = self.app_info.get_origin(
+            None, user_context
+        ).get_as_string_dangerous()
+        website_base_path = self.app_info.api_base_path.get_as_string_dangerous()
+
+        if isinstance(params, FrontendRedirectionURLTypeLogin):
+            query_params: Dict[str, str] = {&#34;loginChallenge&#34;: params.login_challenge}
+            if params.tenant_id != &#34;public&#34;:  # DEFAULT_TENANT_ID is &#34;public&#34;
+                query_params[&#34;tenantId&#34;] = params.tenant_id
+            if params.hint is not None:
+                query_params[&#34;hint&#34;] = params.hint
+            if params.force_fresh_auth:
+                query_params[&#34;forceFreshAuth&#34;] = &#34;true&#34;
+
+            query_string = &#34;&amp;&#34;.join(
+                f&#34;{k}={urllib.parse.quote(str(v))}&#34; for k, v in query_params.items()
+            )
+            return f&#34;{website_domain}{website_base_path}?{query_string}&#34;
+
+        elif isinstance(params, FrontendRedirectionURLTypeTryRefresh):
+            return f&#34;{website_domain}{website_base_path}/try-refresh?loginChallenge={params.login_challenge}&#34;
+
+        elif isinstance(params, FrontendRedirectionURLTypePostLogoutFallback):
+            return f&#34;{website_domain}{website_base_path}&#34;
+
+        else:  # isinstance(params, FrontendRedirectionURLTypeLogoutConfirmation)
+            return f&#34;{website_domain}{website_base_path}/oauth/logout?logoutChallenge={params.logout_challenge}&#34;
+
+    async def revoke_token(
+        self,
+        params: Union[
+            RevokeTokenUsingAuthorizationHeader,
+            RevokeTokenUsingClientIDAndClientSecret,
+        ],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RevokeTokenOkResponse, ErrorOAuth2Response]:
+        request_body = {&#34;token&#34;: params.token}
+
+        if isinstance(params, RevokeTokenUsingAuthorizationHeader):
+            request_body[&#34;authorizationHeader&#34;] = params.authorization_header
+        else:
+            request_body[&#34;client_id&#34;] = params.client_id
+            if params.client_secret is not None:
+                request_body[&#34;client_secret&#34;] = params.client_secret
+
+        res = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/token/revoke&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if res.get(&#34;status&#34;) != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=res.get(&#34;statusCode&#34;),
+                error=str(res.get(&#34;error&#34;)),
+                error_description=str(res.get(&#34;errorDescription&#34;)),
+            )
+
+        return RevokeTokenOkResponse()
+
+    async def revoke_tokens_by_client_id(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ):
+        await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/session/revoke&#34;),
+            {&#34;client_id&#34;: client_id},
+            user_context=user_context,
+        )
+
+    async def revoke_tokens_by_session_handle(
+        self,
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ):
+        await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/session/revoke&#34;),
+            {&#34;sessionHandle&#34;: session_handle},
+            user_context=user_context,
+        )
+
+    async def introspect_token(
+        self,
+        token: str,
+        scopes: Optional[List[str]],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[ActiveTokenResponse, InactiveTokenResponse]:
+        # Determine if the token is an access token by checking if it doesn&#39;t start with &#34;st_rt&#34;
+        is_access_token = not token.startswith(&#34;st_rt&#34;)
+
+        # Attempt to validate the access token locally
+        # If it fails, the token is not active, and we return early
+        if is_access_token:
+            try:
+                await self.validate_oauth2_access_token(
+                    token=token,
+                    requirements=(
+                        OAuth2TokenValidationRequirements(scopes=scopes)
+                        if scopes
+                        else None
+                    ),
+                    check_database=False,
+                    user_context=user_context,
+                )
+
+            except Exception:
+                return InactiveTokenResponse()
+
+        # For tokens that passed local validation or if it&#39;s a refresh token,
+        # validate the token with the database by calling the core introspection endpoint
+        request_body = {&#34;token&#34;: token}
+        if scopes:
+            request_body[&#34;scope&#34;] = &#34; &#34;.join(scopes)
+
+        res = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/introspect&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if res.get(&#34;active&#34;):
+            return ActiveTokenResponse(payload=res)
+        else:
+            return InactiveTokenResponse()
+
+    async def end_session(
+        self,
+        params: Dict[str, str],
+        should_try_refresh: bool,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+        # NOTE: The API response has 3 possible cases:
+        #
+        # CASE 1: end_session request with a valid id_token_hint
+        #        - Redirects to /oauth/logout with a logout_challenge.
+        #
+        # CASE 2: end_session request with an already logged out id_token_hint
+        #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
+        #
+        # CASE 3: end_session request with a logout_verifier (after accepting the logout request)
+        #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
+
+        request_body: Dict[str, Any] = {}
+
+        if params.get(&#34;client_id&#34;) is not None:
+            request_body[&#34;clientId&#34;] = params.get(&#34;client_id&#34;)
+        if params.get(&#34;id_token_hint&#34;) is not None:
+            request_body[&#34;idTokenHint&#34;] = params.get(&#34;id_token_hint&#34;)
+        if params.get(&#34;post_logout_redirect_uri&#34;) is not None:
+            request_body[&#34;postLogoutRedirectUri&#34;] = params.get(
+                &#34;post_logout_redirect_uri&#34;
+            )
+        if params.get(&#34;state&#34;) is not None:
+            request_body[&#34;state&#34;] = params.get(&#34;state&#34;)
+        if params.get(&#34;logout_verifier&#34;) is not None:
+            request_body[&#34;logoutVerifier&#34;] = params.get(&#34;logout_verifier&#34;)
+
+        resp = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/sessions/logout&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if &#34;error&#34; in resp:
+            return ErrorOAuth2Response(
+                status_code=resp[&#34;statusCode&#34;],
+                error=resp[&#34;error&#34;],
+                error_description=resp[&#34;errorDescription&#34;],
+            )
+
+        redirect_to = get_updated_redirect_to(self.app_info, resp[&#34;redirectTo&#34;])
+
+        initial_redirect_url = urlparse(redirect_to)
+        query_params = parse_qs(initial_redirect_url.query)
+        logout_challenge = query_params.get(&#34;logout_challenge&#34;, [None])[0]
+
+        # CASE 1 (See above notes)
+        if logout_challenge is not None:
+            # Redirect to the frontend to ask for logout confirmation if there is a valid or expired supertokens session
+            if session is not None or should_try_refresh:
+                return RedirectResponse(
+                    redirect_to=await self.get_frontend_redirection_url(
+                        FrontendRedirectionURLTypeLogoutConfirmation(
+                            logout_challenge=logout_challenge
+                        ),
+                        user_context=user_context,
+                    )
+                )
+            else:
+                # Accept the logout challenge immediately as there is no supertokens session
+                accept_logout_response = await self.accept_logout_request(
+                    challenge=logout_challenge, user_context=user_context
+                )
+                if isinstance(accept_logout_response, ErrorOAuth2Response):
+                    return accept_logout_response
+                return RedirectResponse(redirect_to=accept_logout_response.redirect_to)
+
+        # CASE 2 or 3 (See above notes)
+
+        # NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
+        # In this case, we redirect the user to the /auth page.
+        if redirect_to.endswith(&#34;/fallbacks/logout/callback&#34;):
+            return RedirectResponse(
+                redirect_to=await self.get_frontend_redirection_url(
+                    FrontendRedirectionURLTypePostLogoutFallback(),
+                    user_context=user_context,
+                )
+            )
+
+        return RedirectResponse(redirect_to=redirect_to)
+
+    async def accept_logout_request(
+        self,
+        challenge: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+        resp = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/logout/accept&#34;),
+            {&#34;challenge&#34;: challenge},
+            None,
+            user_context=user_context,
+        )
+
+        if resp[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=resp[&#34;statusCode&#34;],
+                error=resp[&#34;error&#34;],
+                error_description=resp[&#34;errorDescription&#34;],
+            )
+
+        redirect_to = get_updated_redirect_to(self.app_info, resp[&#34;redirectTo&#34;])
+
+        if redirect_to.endswith(&#34;/fallbacks/logout/callback&#34;):
+            return RedirectResponse(
+                redirect_to=await self.get_frontend_redirection_url(
+                    FrontendRedirectionURLTypePostLogoutFallback(),
+                    user_context=user_context,
+                )
+            )
+
+        return RedirectResponse(redirect_to=redirect_to)
+
+    async def reject_logout_request(
+        self,
+        challenge: str,
+        user_context: Dict[str, Any],
+    ):
+        resp = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/logout/reject&#34;),
+            {},
+            {&#34;challenge&#34;: challenge},
+            user_context=user_context,
+        )
+
+        if resp[&#34;status&#34;] != &#34;OK&#34;:
+            raise Exception(resp[&#34;error&#34;])</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.get_updated_redirect_to"><code class="name flex">
+<span>def <span class="ident">get_updated_redirect_to</span></span>(<span>app_info: AppInfo, redirect_to: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation"><code class="flex name class">
+<span>class <span class="ident">RecipeImplementation</span></span>
+<span>(</span><span>querier: Querier, app_info: AppInfo, get_default_access_token_payload: PayloadBuilderFunction, get_default_id_token_payload: PayloadBuilderFunction, get_default_user_info_payload: UserInfoBuilderFunction)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RecipeImplementation(RecipeInterface):
+    def __init__(
+        self,
+        querier: Querier,
+        app_info: AppInfo,
+        get_default_access_token_payload: PayloadBuilderFunction,
+        get_default_id_token_payload: PayloadBuilderFunction,
+        get_default_user_info_payload: UserInfoBuilderFunction,
+    ):
+        super().__init__()
+        self.querier = querier
+        self.app_info = app_info
+        self._get_default_access_token_payload = get_default_access_token_payload
+        self._get_default_id_token_payload = get_default_id_token_payload
+        self._get_default_user_info_payload = get_default_user_info_payload
+
+    async def get_login_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -&gt; Union[LoginRequestResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/login&#34;),
+            {&#34;loginChallenge&#34;: challenge},
+            user_context=user_context,
+        )
+        if response[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                response[&#34;error&#34;],
+                response[&#34;errorDescription&#34;],
+                response[&#34;statusCode&#34;],
+            )
+
+        return LoginRequestResponse.from_json(response)
+
+    async def accept_login_request(
+        self,
+        challenge: str,
+        acr: Optional[str],
+        amr: Optional[List[str]],
+        context: Optional[Any],
+        extend_session_lifespan: Optional[bool],
+        identity_provider_session_id: Optional[str],
+        subject: str,
+        user_context: Dict[str, Any],
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/login/accept&#34;),
+            {
+                &#34;acr&#34;: acr,
+                &#34;amr&#34;: amr,
+                &#34;context&#34;: context,
+                &#34;extendSessionLifespan&#34;: extend_session_lifespan,
+                &#34;identityProviderSessionId&#34;: identity_provider_session_id,
+                &#34;subject&#34;: subject,
+            },
+            {
+                &#34;loginChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def reject_login_request(
+        self,
+        challenge: str,
+        error: ErrorOAuth2Response,
+        user_context: Dict[str, Any],
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/login/reject&#34;),
+            {
+                &#34;error&#34;: error.error,
+                &#34;errorDescription&#34;: error.error_description,
+                &#34;statusCode&#34;: error.status_code,
+            },
+            {
+                &#34;loginChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def get_consent_request(
+        self, challenge: str, user_context: Dict[str, Any]
+    ) -&gt; ConsentRequestResponse:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/consent&#34;),
+            {&#34;consentChallenge&#34;: challenge},
+            user_context=user_context,
+        )
+
+        return ConsentRequestResponse.from_json(response)
+
+    async def accept_consent_request(
+        self,
+        challenge: str,
+        context: Optional[Any],
+        grant_access_token_audience: Optional[List[str]],
+        grant_scope: Optional[List[str]],
+        handled_at: Optional[str],
+        tenant_id: str,
+        rsub: str,
+        session_handle: str,
+        initial_access_token_payload: Optional[Dict[str, Any]],
+        initial_id_token_payload: Optional[Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/consent/accept&#34;),
+            {
+                &#34;context&#34;: context,
+                &#34;grantAccessTokenAudience&#34;: grant_access_token_audience,
+                &#34;grantScope&#34;: grant_scope,
+                &#34;handledAt&#34;: handled_at,
+                &#34;iss&#34;: await OpenIdRecipe.get_issuer(user_context),
+                &#34;tId&#34;: tenant_id,
+                &#34;rsub&#34;: rsub,
+                &#34;sessionHandle&#34;: session_handle,
+                &#34;initialAccessTokenPayload&#34;: initial_access_token_payload,
+                &#34;initialIdTokenPayload&#34;: initial_id_token_payload,
+            },
+            {
+                &#34;consentChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def reject_consent_request(
+        self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
+    ) -&gt; RedirectResponse:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/consent/reject&#34;),
+            {
+                &#34;error&#34;: error.error,
+                &#34;errorDescription&#34;: error.error_description,
+                &#34;statusCode&#34;: error.status_code,
+            },
+            {
+                &#34;consentChallenge&#34;: challenge,
+            },
+            user_context=user_context,
+        )
+
+        return RedirectResponse(
+            redirect_to=get_updated_redirect_to(self.app_info, response[&#34;redirectTo&#34;])
+        )
+
+    async def authorization(
+        self,
+        params: Dict[str, str],
+        cookies: Optional[str],
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+
+        # we handle this in the backend SDK level
+        if params.get(&#34;prompt&#34;) == &#34;none&#34;:
+            params[&#34;st_prompt&#34;] = &#34;none&#34;
+            del params[&#34;prompt&#34;]
+
+        payloads = None
+
+        if params.get(&#34;client_id&#34;) is None or not isinstance(
+            params.get(&#34;client_id&#34;), str
+        ):
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;client_id is required and must be a string&#34;,
+            )
+
+        scopes = await self.get_requested_scopes(
+            scope_param=params.get(&#34;scope&#34;, &#34;&#34;).split() if params.get(&#34;scope&#34;) else [],
+            client_id=params[&#34;client_id&#34;],
+            recipe_user_id=(
+                session.get_recipe_user_id() if session is not None else None
+            ),
+            session_handle=session.get_handle() if session else None,
+            user_context=user_context,
+        )
+
+        response_types = (
+            params.get(&#34;response_type&#34;, &#34;&#34;).split()
+            if params.get(&#34;response_type&#34;)
+            else []
+        )
+
+        if session is not None:
+            client_info = await self.get_oauth2_client(
+                client_id=params[&#34;client_id&#34;], user_context=user_context
+            )
+
+            if isinstance(client_info, ErrorOAuth2Response):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=client_info.error,
+                    error_description=client_info.error_description,
+                )
+
+            client = client_info.client
+
+            user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                user_id=session.get_user_id(), user_context=user_context
+            )
+            if not user:
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=&#34;invalid_request&#34;,
+                    error_description=&#34;User deleted&#34;,
+                )
+
+            # These default to empty dicts, because we want to keep them as required input
+            # but they&#39;ll not be actually used in flows where we are not building them
+            id_token = {}
+            if &#34;openid&#34; in scopes and (
+                &#34;id_token&#34; in response_types or &#34;code&#34; in response_types
+            ):
+                id_token = await self.build_id_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session.get_handle(),
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+            access_token = {}
+            if &#34;token&#34; in response_types or &#34;code&#34; in response_types:
+                access_token = await self.build_access_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session.get_handle(),
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+            payloads = {&#34;idToken&#34;: id_token, &#34;accessToken&#34;: access_token}
+
+        request_body = {
+            &#34;params&#34;: {**params, &#34;scope&#34;: &#34; &#34;.join(scopes)},
+            &#34;iss&#34;: await OpenIdRecipe.get_issuer(user_context),
+            &#34;session&#34;: payloads,
+        }
+        if cookies is not None:
+            request_body[&#34;cookies&#34;] = cookies
+        resp = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth&#34;),
+            request_body,
+            user_context,
+        )
+
+        if resp[&#34;status&#34;] == &#34;CLIENT_NOT_FOUND_ERROR&#34;:
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;The provided client_id is not valid&#34;,
+            )
+
+        if resp[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=resp[&#34;statusCode&#34;],
+                error=resp[&#34;error&#34;],
+                error_description=resp[&#34;errorDescription&#34;],
+            )
+
+        if resp.get(&#34;redirectTo&#34;) is None:
+            raise Exception(resp)
+        redirect_to = get_updated_redirect_to(self.app_info, resp[&#34;redirectTo&#34;])
+
+        redirect_to_query_params_str = urlparse(redirect_to).query
+        redirect_to_query_params: Dict[str, List[str]] = parse_qs(
+            redirect_to_query_params_str
+        )
+        consent_challenge: Optional[str] = None
+
+        if &#34;consent_challenge&#34; in redirect_to_query_params:
+            if len(redirect_to_query_params[&#34;consent_challenge&#34;]) &gt; 0:
+                consent_challenge = redirect_to_query_params[&#34;consent_challenge&#34;][0]
+
+        if consent_challenge is not None and session is not None:
+            consent_request = await self.get_consent_request(
+                challenge=consent_challenge, user_context=user_context
+            )
+
+            consent_res = await self.accept_consent_request(
+                challenge=consent_request.challenge,
+                context=None,
+                grant_access_token_audience=consent_request.requested_access_token_audience,
+                grant_scope=consent_request.requested_scope,
+                handled_at=None,
+                tenant_id=session.get_tenant_id(),
+                rsub=session.get_recipe_user_id().get_as_string(),
+                session_handle=session.get_handle(),
+                initial_access_token_payload=(
+                    payloads.get(&#34;accessToken&#34;) if payloads else None
+                ),
+                initial_id_token_payload=payloads.get(&#34;idToken&#34;) if payloads else None,
+                user_context=user_context,
+            )
+
+            return RedirectResponse(
+                redirect_to=consent_res.redirect_to, cookies=resp[&#34;cookies&#34;]
+            )
+
+        return RedirectResponse(redirect_to=redirect_to, cookies=resp[&#34;cookies&#34;])
+
+    async def token_exchange(
+        self,
+        authorization_header: Optional[str],
+        body: Dict[str, Optional[str]],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[TokenInfoResponse, ErrorOAuth2Response]:
+        request_body = {
+            &#34;iss&#34;: await OpenIdRecipe.get_issuer(user_context),
+            &#34;inputBody&#34;: body,
+        }
+
+        if body.get(&#34;grant_type&#34;) == &#34;password&#34;:
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;Unsupported grant type: password&#34;,
+            )
+
+        if body.get(&#34;grant_type&#34;) == &#34;client_credentials&#34;:
+            client_id = None
+            if authorization_header:
+                # Extract client_id from Basic auth header
+                decoded = base64.b64decode(
+                    authorization_header.replace(&#34;Basic &#34;, &#34;&#34;).strip()
+                ).decode()
+                client_id = decoded.split(&#34;:&#34;)[0]
+            else:
+                client_id = body.get(&#34;client_id&#34;)
+
+            if not client_id:
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=&#34;invalid_request&#34;,
+                    error_description=&#34;client_id is required&#34;,
+                )
+
+            scopes = str(body.get(&#34;scope&#34;, &#34;&#34;)).split() if body.get(&#34;scope&#34;) else []
+
+            client_info = await self.get_oauth2_client(
+                client_id=client_id, user_context=user_context
+            )
+
+            if isinstance(client_info, ErrorOAuth2Response):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=client_info.error,
+                    error_description=client_info.error_description,
+                )
+
+            client = client_info.client
+            request_body[&#34;id_token&#34;] = await self.build_id_token_payload(
+                user=None,
+                client=client,
+                session_handle=None,
+                scopes=scopes,
+                user_context=user_context,
+            )
+            request_body[&#34;access_token&#34;] = await self.build_access_token_payload(
+                user=None,
+                client=client,
+                session_handle=None,
+                scopes=scopes,
+                user_context=user_context,
+            )
+
+        if body.get(&#34;grant_type&#34;) == &#34;refresh_token&#34;:
+            scopes = str(body.get(&#34;scope&#34;, &#34;&#34;)).split() if body.get(&#34;scope&#34;) else []
+            token_info = await self.introspect_token(
+                token=str(body[&#34;refresh_token&#34;]),
+                scopes=scopes,
+                user_context=user_context,
+            )
+
+            if isinstance(token_info, ActiveTokenResponse):
+                session_handle = token_info.payload[&#34;sessionHandle&#34;]
+
+                client_info = await self.get_oauth2_client(
+                    client_id=token_info.payload[&#34;client_id&#34;], user_context=user_context
+                )
+
+                if isinstance(client_info, ErrorOAuth2Response):
+                    return ErrorOAuth2Response(
+                        status_code=400,
+                        error=client_info.error,
+                        error_description=client_info.error_description,
+                    )
+
+                client = client_info.client
+                user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                    user_id=token_info.payload[&#34;sub&#34;], user_context=user_context
+                )
+
+                if not user:
+                    return ErrorOAuth2Response(
+                        status_code=400,
+                        error=&#34;invalid_request&#34;,
+                        error_description=&#34;User not found&#34;,
+                    )
+
+                request_body[&#34;id_token&#34;] = await self.build_id_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session_handle,
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+                request_body[&#34;access_token&#34;] = await self.build_access_token_payload(
+                    user=user,
+                    client=client,
+                    session_handle=session_handle,
+                    scopes=scopes,
+                    user_context=user_context,
+                )
+
+        if authorization_header:
+            request_body[&#34;authorizationHeader&#34;] = authorization_header
+
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/token&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;CLIENT_NOT_FOUND_ERROR&#34;:
+            return ErrorOAuth2Response(
+                status_code=400,
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;client_id not found&#34;,
+            )
+
+        if response[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=response[&#34;statusCode&#34;],
+                error=response[&#34;error&#34;],
+                error_description=response[&#34;errorDescription&#34;],
+            )
+
+        return TokenInfoResponse.from_json(response)
+
+    async def get_oauth2_clients(
+        self,
+        page_size: Optional[int],
+        pagination_token: Optional[str],
+        client_name: Optional[str],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[OAuth2ClientsListResponse, ErrorOAuth2Response]:
+        body: Dict[str, Any] = {}
+        if page_size is not None:
+            body[&#34;pageSize&#34;] = page_size
+        if pagination_token is not None:
+            body[&#34;pageToken&#34;] = pagination_token
+        if client_name is not None:
+            body[&#34;clientName&#34;] = client_name
+
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients/list&#34;),
+            body,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return OAuth2ClientsListResponse(
+                clients=[
+                    OAuth2Client.from_json(client) for client in response[&#34;clients&#34;]
+                ],
+                next_pagination_token=response.get(&#34;nextPaginationToken&#34;),
+            )
+
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;],
+            error_description=response[&#34;errorDescription&#34;],
+            status_code=response[&#34;statusCode&#34;],
+        )
+
+    async def get_oauth2_client(
+        self, client_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[OAuth2ClientResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients&#34;),
+            {&#34;clientId&#34;: client_id},
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return OAuth2ClientResponse(client=OAuth2Client.from_json(response))
+        elif response[&#34;status&#34;] == &#34;CLIENT_NOT_FOUND_ERROR&#34;:
+            return ErrorOAuth2Response(
+                error=&#34;invalid_request&#34;,
+                error_description=&#34;The provided client_id is not valid or unknown&#34;,
+            )
+        else:
+            return ErrorOAuth2Response(
+                error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+            )
+
+    async def create_oauth2_client(
+        self,
+        params: CreateOAuth2ClientInput,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreatedOAuth2ClientResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients&#34;),
+            params.to_json(),
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return CreatedOAuth2ClientResponse(client=OAuth2Client.from_json(response))
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+        )
+
+    async def update_oauth2_client(
+        self,
+        params: UpdateOAuth2ClientInput,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[UpdatedOAuth2ClientResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients&#34;),
+            params.to_json(),
+            None,
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return UpdatedOAuth2ClientResponse(client=OAuth2Client.from_json(response))
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+        )
+
+    async def delete_oauth2_client(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[DeleteOAuth2ClientOkResponse, ErrorOAuth2Response]:
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/clients/remove&#34;),
+            {&#34;clientId&#34;: client_id},
+            user_context=user_context,
+        )
+
+        if response[&#34;status&#34;] == &#34;OK&#34;:
+            return DeleteOAuth2ClientOkResponse()
+        return ErrorOAuth2Response(
+            error=response[&#34;error&#34;], error_description=response[&#34;errorDescription&#34;]
+        )
+
+    async def validate_oauth2_access_token(
+        self,
+        token: str,
+        requirements: Optional[OAuth2TokenValidationRequirements],
+        check_database: Optional[bool],
+        user_context: Dict[str, Any],
+    ) -&gt; ValidatedAccessTokenResponse:
+        access_token_obj = parse_jwt_without_signature_verification(token)
+
+        # Verify token signature using session recipe&#39;s JWKS
+        session_recipe = SessionRecipe.get_instance()
+        matching_keys = get_latest_keys(session_recipe.config, access_token_obj.kid)
+        err: Optional[Exception] = None
+
+        payload: Dict[str, Any] = {}
+
+        for matching_key in matching_keys:
+            err = None
+            try:
+                payload = jwt.decode(
+                    token,
+                    matching_key.key,
+                    algorithms=[&#34;RS256&#34;],
+                    options={
+                        &#34;verify_signature&#34;: True,
+                        &#34;verify_exp&#34;: True,
+                        &#34;verify_aud&#34;: False,
+                    },
+                )
+            except Exception as e:
+                err = e
+                continue
+            break
+
+        if err is not None:
+            raise err
+
+        if payload.get(&#34;stt&#34;) != 1:
+            raise Exception(&#34;Wrong token type&#34;)
+
+        if requirements is not None and requirements.client_id is not None:
+            if payload.get(&#34;client_id&#34;) != requirements.client_id:
+                raise Exception(
+                    f&#34;The token doesn&#39;t belong to the specified client ({requirements.client_id} !== {payload.get(&#39;client_id&#39;)})&#34;
+                )
+
+        if requirements is not None and requirements.scopes is not None:
+            token_scopes = payload.get(&#34;scp&#34;, [])
+            if not isinstance(token_scopes, list):
+                token_scopes = [token_scopes]
+
+            if any(scope not in token_scopes for scope in requirements.scopes):
+                raise Exception(&#34;The token is missing some required scopes&#34;)
+
+        aud = payload.get(&#34;aud&#34;, [])
+        if not isinstance(aud, list):
+            aud = [aud]
+
+        if requirements is not None and requirements.audience is not None:
+            if requirements.audience not in aud:
+                raise Exception(&#34;The token doesn&#39;t belong to the specified audience&#34;)
+
+        if check_database:
+            response = await self.querier.send_post_request(
+                NormalisedURLPath(&#34;/recipe/oauth/introspect&#34;),
+                {
+                    &#34;token&#34;: token,
+                },
+                user_context=user_context,
+            )
+
+            if response.get(&#34;active&#34;) is not True:
+                raise Exception(&#34;The token is expired, invalid or has been revoked&#34;)
+
+        return ValidatedAccessTokenResponse(payload=payload)
+
+    async def get_requested_scopes(
+        self,
+        recipe_user_id: Optional[RecipeUserId],
+        session_handle: Optional[str],
+        scope_param: List[str],
+        client_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; List[str]:
+        _ = recipe_user_id
+        _ = session_handle
+        _ = client_id
+        _ = user_context
+
+        return scope_param
+
+    async def build_access_token_payload(
+        self,
+        user: Optional[User],
+        client: OAuth2Client,
+        session_handle: Optional[str],
+        scopes: List[str],
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        if user is None or session_handle is None:
+            return {}
+
+        _ = client
+
+        return await self._get_default_access_token_payload(
+            user, scopes, session_handle, user_context
+        )
+
+    async def build_id_token_payload(
+        self,
+        user: Optional[User],
+        client: OAuth2Client,
+        session_handle: Optional[str],
+        scopes: List[str],
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        if user is None or session_handle is None:
+            return {}
+
+        _ = client
+
+        return await self._get_default_id_token_payload(
+            user, scopes, session_handle, user_context
+        )
+
+    async def build_user_info(
+        self,
+        user: User,
+        access_token_payload: Dict[str, Any],
+        scopes: List[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        return await self._get_default_user_info_payload(
+            user, access_token_payload, scopes, tenant_id, user_context
+        )
+
+    async def get_frontend_redirection_url(
+        self,
+        params: Union[
+            FrontendRedirectionURLTypeLogin,
+            FrontendRedirectionURLTypeTryRefresh,
+            FrontendRedirectionURLTypeLogoutConfirmation,
+            FrontendRedirectionURLTypePostLogoutFallback,
+        ],
+        user_context: Dict[str, Any],
+    ) -&gt; str:
+        website_domain = self.app_info.get_origin(
+            None, user_context
+        ).get_as_string_dangerous()
+        website_base_path = self.app_info.api_base_path.get_as_string_dangerous()
+
+        if isinstance(params, FrontendRedirectionURLTypeLogin):
+            query_params: Dict[str, str] = {&#34;loginChallenge&#34;: params.login_challenge}
+            if params.tenant_id != &#34;public&#34;:  # DEFAULT_TENANT_ID is &#34;public&#34;
+                query_params[&#34;tenantId&#34;] = params.tenant_id
+            if params.hint is not None:
+                query_params[&#34;hint&#34;] = params.hint
+            if params.force_fresh_auth:
+                query_params[&#34;forceFreshAuth&#34;] = &#34;true&#34;
+
+            query_string = &#34;&amp;&#34;.join(
+                f&#34;{k}={urllib.parse.quote(str(v))}&#34; for k, v in query_params.items()
+            )
+            return f&#34;{website_domain}{website_base_path}?{query_string}&#34;
+
+        elif isinstance(params, FrontendRedirectionURLTypeTryRefresh):
+            return f&#34;{website_domain}{website_base_path}/try-refresh?loginChallenge={params.login_challenge}&#34;
+
+        elif isinstance(params, FrontendRedirectionURLTypePostLogoutFallback):
+            return f&#34;{website_domain}{website_base_path}&#34;
+
+        else:  # isinstance(params, FrontendRedirectionURLTypeLogoutConfirmation)
+            return f&#34;{website_domain}{website_base_path}/oauth/logout?logoutChallenge={params.logout_challenge}&#34;
+
+    async def revoke_token(
+        self,
+        params: Union[
+            RevokeTokenUsingAuthorizationHeader,
+            RevokeTokenUsingClientIDAndClientSecret,
+        ],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RevokeTokenOkResponse, ErrorOAuth2Response]:
+        request_body = {&#34;token&#34;: params.token}
+
+        if isinstance(params, RevokeTokenUsingAuthorizationHeader):
+            request_body[&#34;authorizationHeader&#34;] = params.authorization_header
+        else:
+            request_body[&#34;client_id&#34;] = params.client_id
+            if params.client_secret is not None:
+                request_body[&#34;client_secret&#34;] = params.client_secret
+
+        res = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/token/revoke&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if res.get(&#34;status&#34;) != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=res.get(&#34;statusCode&#34;),
+                error=str(res.get(&#34;error&#34;)),
+                error_description=str(res.get(&#34;errorDescription&#34;)),
+            )
+
+        return RevokeTokenOkResponse()
+
+    async def revoke_tokens_by_client_id(
+        self,
+        client_id: str,
+        user_context: Dict[str, Any],
+    ):
+        await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/session/revoke&#34;),
+            {&#34;client_id&#34;: client_id},
+            user_context=user_context,
+        )
+
+    async def revoke_tokens_by_session_handle(
+        self,
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ):
+        await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/session/revoke&#34;),
+            {&#34;sessionHandle&#34;: session_handle},
+            user_context=user_context,
+        )
+
+    async def introspect_token(
+        self,
+        token: str,
+        scopes: Optional[List[str]],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[ActiveTokenResponse, InactiveTokenResponse]:
+        # Determine if the token is an access token by checking if it doesn&#39;t start with &#34;st_rt&#34;
+        is_access_token = not token.startswith(&#34;st_rt&#34;)
+
+        # Attempt to validate the access token locally
+        # If it fails, the token is not active, and we return early
+        if is_access_token:
+            try:
+                await self.validate_oauth2_access_token(
+                    token=token,
+                    requirements=(
+                        OAuth2TokenValidationRequirements(scopes=scopes)
+                        if scopes
+                        else None
+                    ),
+                    check_database=False,
+                    user_context=user_context,
+                )
+
+            except Exception:
+                return InactiveTokenResponse()
+
+        # For tokens that passed local validation or if it&#39;s a refresh token,
+        # validate the token with the database by calling the core introspection endpoint
+        request_body = {&#34;token&#34;: token}
+        if scopes:
+            request_body[&#34;scope&#34;] = &#34; &#34;.join(scopes)
+
+        res = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/oauth/introspect&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if res.get(&#34;active&#34;):
+            return ActiveTokenResponse(payload=res)
+        else:
+            return InactiveTokenResponse()
+
+    async def end_session(
+        self,
+        params: Dict[str, str],
+        should_try_refresh: bool,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+        # NOTE: The API response has 3 possible cases:
+        #
+        # CASE 1: end_session request with a valid id_token_hint
+        #        - Redirects to /oauth/logout with a logout_challenge.
+        #
+        # CASE 2: end_session request with an already logged out id_token_hint
+        #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
+        #
+        # CASE 3: end_session request with a logout_verifier (after accepting the logout request)
+        #        - Redirects to the post_logout_redirect_uri or the default logout fallback page.
+
+        request_body: Dict[str, Any] = {}
+
+        if params.get(&#34;client_id&#34;) is not None:
+            request_body[&#34;clientId&#34;] = params.get(&#34;client_id&#34;)
+        if params.get(&#34;id_token_hint&#34;) is not None:
+            request_body[&#34;idTokenHint&#34;] = params.get(&#34;id_token_hint&#34;)
+        if params.get(&#34;post_logout_redirect_uri&#34;) is not None:
+            request_body[&#34;postLogoutRedirectUri&#34;] = params.get(
+                &#34;post_logout_redirect_uri&#34;
+            )
+        if params.get(&#34;state&#34;) is not None:
+            request_body[&#34;state&#34;] = params.get(&#34;state&#34;)
+        if params.get(&#34;logout_verifier&#34;) is not None:
+            request_body[&#34;logoutVerifier&#34;] = params.get(&#34;logout_verifier&#34;)
+
+        resp = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/oauth/sessions/logout&#34;),
+            request_body,
+            user_context=user_context,
+        )
+
+        if &#34;error&#34; in resp:
+            return ErrorOAuth2Response(
+                status_code=resp[&#34;statusCode&#34;],
+                error=resp[&#34;error&#34;],
+                error_description=resp[&#34;errorDescription&#34;],
+            )
+
+        redirect_to = get_updated_redirect_to(self.app_info, resp[&#34;redirectTo&#34;])
+
+        initial_redirect_url = urlparse(redirect_to)
+        query_params = parse_qs(initial_redirect_url.query)
+        logout_challenge = query_params.get(&#34;logout_challenge&#34;, [None])[0]
+
+        # CASE 1 (See above notes)
+        if logout_challenge is not None:
+            # Redirect to the frontend to ask for logout confirmation if there is a valid or expired supertokens session
+            if session is not None or should_try_refresh:
+                return RedirectResponse(
+                    redirect_to=await self.get_frontend_redirection_url(
+                        FrontendRedirectionURLTypeLogoutConfirmation(
+                            logout_challenge=logout_challenge
+                        ),
+                        user_context=user_context,
+                    )
+                )
+            else:
+                # Accept the logout challenge immediately as there is no supertokens session
+                accept_logout_response = await self.accept_logout_request(
+                    challenge=logout_challenge, user_context=user_context
+                )
+                if isinstance(accept_logout_response, ErrorOAuth2Response):
+                    return accept_logout_response
+                return RedirectResponse(redirect_to=accept_logout_response.redirect_to)
+
+        # CASE 2 or 3 (See above notes)
+
+        # NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
+        # In this case, we redirect the user to the /auth page.
+        if redirect_to.endswith(&#34;/fallbacks/logout/callback&#34;):
+            return RedirectResponse(
+                redirect_to=await self.get_frontend_redirection_url(
+                    FrontendRedirectionURLTypePostLogoutFallback(),
+                    user_context=user_context,
+                )
+            )
+
+        return RedirectResponse(redirect_to=redirect_to)
+
+    async def accept_logout_request(
+        self,
+        challenge: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+        resp = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/logout/accept&#34;),
+            {&#34;challenge&#34;: challenge},
+            None,
+            user_context=user_context,
+        )
+
+        if resp[&#34;status&#34;] != &#34;OK&#34;:
+            return ErrorOAuth2Response(
+                status_code=resp[&#34;statusCode&#34;],
+                error=resp[&#34;error&#34;],
+                error_description=resp[&#34;errorDescription&#34;],
+            )
+
+        redirect_to = get_updated_redirect_to(self.app_info, resp[&#34;redirectTo&#34;])
+
+        if redirect_to.endswith(&#34;/fallbacks/logout/callback&#34;):
+            return RedirectResponse(
+                redirect_to=await self.get_frontend_redirection_url(
+                    FrontendRedirectionURLTypePostLogoutFallback(),
+                    user_context=user_context,
+                )
+            )
+
+        return RedirectResponse(redirect_to=redirect_to)
+
+    async def reject_logout_request(
+        self,
+        challenge: str,
+        user_context: Dict[str, Any],
+    ):
+        resp = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/oauth/auth/requests/logout/reject&#34;),
+            {},
+            {&#34;challenge&#34;: challenge},
+            user_context=user_context,
+        )
+
+        if resp[&#34;status&#34;] != &#34;OK&#34;:
+            raise Exception(resp[&#34;error&#34;])</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface">RecipeInterface</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_consent_request"><code class="name flex">
+<span>async def <span class="ident">accept_consent_request</span></span>(<span>self, challenge: str, context: Optional[Any], grant_access_token_audience: Optional[List[str]], grant_scope: Optional[List[str]], handled_at: Optional[str], tenant_id: str, rsub: str, session_handle: str, initial_access_token_payload: Optional[Dict[str, Any]], initial_id_token_payload: Optional[Dict[str, Any]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_login_request"><code class="name flex">
+<span>async def <span class="ident">accept_login_request</span></span>(<span>self, challenge: str, acr: Optional[str], amr: Optional[List[str]], context: Optional[Any], extend_session_lifespan: Optional[bool], identity_provider_session_id: Optional[str], subject: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_logout_request"><code class="name flex">
+<span>async def <span class="ident">accept_logout_request</span></span>(<span>self, challenge: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.authorization"><code class="name flex">
+<span>async def <span class="ident">authorization</span></span>(<span>self, params: Dict[str, str], cookies: Optional[str], session: Optional[SessionContainer], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">build_access_token_payload</span></span>(<span>self, user: Optional[User], client: OAuth2Client, session_handle: Optional[str], scopes: List[str], user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_id_token_payload"><code class="name flex">
+<span>async def <span class="ident">build_id_token_payload</span></span>(<span>self, user: Optional[User], client: OAuth2Client, session_handle: Optional[str], scopes: List[str], user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_user_info"><code class="name flex">
+<span>async def <span class="ident">build_user_info</span></span>(<span>self, user: User, access_token_payload: Dict[str, Any], scopes: List[str], tenant_id: str, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.create_oauth2_client"><code class="name flex">
+<span>async def <span class="ident">create_oauth2_client</span></span>(<span>self, params: CreateOAuth2ClientInput, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.CreatedOAuth2ClientResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.CreatedOAuth2ClientResponse">CreatedOAuth2ClientResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.delete_oauth2_client"><code class="name flex">
+<span>async def <span class="ident">delete_oauth2_client</span></span>(<span>self, client_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.DeleteOAuth2ClientOkResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.DeleteOAuth2ClientOkResponse">DeleteOAuth2ClientOkResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.end_session"><code class="name flex">
+<span>async def <span class="ident">end_session</span></span>(<span>self, params: Dict[str, str], should_try_refresh: bool, session: Optional[SessionContainer], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_consent_request"><code class="name flex">
+<span>async def <span class="ident">get_consent_request</span></span>(<span>self, challenge: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.oauth2provider.interfaces.ConsentRequestResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ConsentRequestResponse">ConsentRequestResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_frontend_redirection_url"><code class="name flex">
+<span>async def <span class="ident">get_frontend_redirection_url</span></span>(<span>self, params: Union[FrontendRedirectionURLTypeLogin, FrontendRedirectionURLTypeTryRefresh, FrontendRedirectionURLTypeLogoutConfirmation, FrontendRedirectionURLTypePostLogoutFallback], user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_login_request"><code class="name flex">
+<span>async def <span class="ident">get_login_request</span></span>(<span>self, challenge: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.LoginRequestResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.LoginRequestResponse">LoginRequestResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_oauth2_client"><code class="name flex">
+<span>async def <span class="ident">get_oauth2_client</span></span>(<span>self, client_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.OAuth2ClientResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.OAuth2ClientResponse">OAuth2ClientResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_oauth2_clients"><code class="name flex">
+<span>async def <span class="ident">get_oauth2_clients</span></span>(<span>self, page_size: Optional[int], pagination_token: Optional[str], client_name: Optional[str], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.OAuth2ClientsListResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.OAuth2ClientsListResponse">OAuth2ClientsListResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_requested_scopes"><code class="name flex">
+<span>async def <span class="ident">get_requested_scopes</span></span>(<span>self, recipe_user_id: Optional[RecipeUserId], session_handle: Optional[str], scope_param: List[str], client_id: str, user_context: Dict[str, Any]) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.introspect_token"><code class="name flex">
+<span>async def <span class="ident">introspect_token</span></span>(<span>self, token: str, scopes: Optional[List[str]], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.ActiveTokenResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ActiveTokenResponse">ActiveTokenResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.InactiveTokenResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.InactiveTokenResponse">InactiveTokenResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_consent_request"><code class="name flex">
+<span>async def <span class="ident">reject_consent_request</span></span>(<span>self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_login_request"><code class="name flex">
+<span>async def <span class="ident">reject_login_request</span></span>(<span>self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RedirectResponse">RedirectResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_logout_request"><code class="name flex">
+<span>async def <span class="ident">reject_logout_request</span></span>(<span>self, challenge: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_token"><code class="name flex">
+<span>async def <span class="ident">revoke_token</span></span>(<span>self, params: Union[RevokeTokenUsingAuthorizationHeader, RevokeTokenUsingClientIDAndClientSecret], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.RevokeTokenOkResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RevokeTokenOkResponse">RevokeTokenOkResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_tokens_by_client_id"><code class="name flex">
+<span>async def <span class="ident">revoke_tokens_by_client_id</span></span>(<span>self, client_id: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_tokens_by_session_handle"><code class="name flex">
+<span>async def <span class="ident">revoke_tokens_by_session_handle</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.token_exchange"><code class="name flex">
+<span>async def <span class="ident">token_exchange</span></span>(<span>self, authorization_header: Optional[str], body: Dict[str, Optional[str]], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.TokenInfoResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.TokenInfoResponse">TokenInfoResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.update_oauth2_client"><code class="name flex">
+<span>async def <span class="ident">update_oauth2_client</span></span>(<span>self, params: UpdateOAuth2ClientInput, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.oauth2provider.interfaces.UpdatedOAuth2ClientResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.UpdatedOAuth2ClientResponse">UpdatedOAuth2ClientResponse</a>, <a title="supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ErrorOAuth2Response">ErrorOAuth2Response</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.validate_oauth2_access_token"><code class="name flex">
+<span>async def <span class="ident">validate_oauth2_access_token</span></span>(<span>self, token: str, requirements: Optional[OAuth2TokenValidationRequirements], check_database: Optional[bool], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.oauth2provider.interfaces.ValidatedAccessTokenResponse" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.ValidatedAccessTokenResponse">ValidatedAccessTokenResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.oauth2provider" href="index.html">supertokens_python.recipe.oauth2provider</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.get_updated_redirect_to" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.get_updated_redirect_to">get_updated_redirect_to</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation">RecipeImplementation</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_consent_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_consent_request">accept_consent_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_login_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_login_request">accept_login_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_logout_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.accept_logout_request">accept_logout_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.authorization" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.authorization">authorization</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_access_token_payload" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_access_token_payload">build_access_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_id_token_payload" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_id_token_payload">build_id_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_user_info" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.build_user_info">build_user_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.create_oauth2_client" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.create_oauth2_client">create_oauth2_client</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.delete_oauth2_client" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.delete_oauth2_client">delete_oauth2_client</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.end_session" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.end_session">end_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_consent_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_consent_request">get_consent_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_frontend_redirection_url" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_frontend_redirection_url">get_frontend_redirection_url</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_login_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_login_request">get_login_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_oauth2_client" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_oauth2_client">get_oauth2_client</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_oauth2_clients" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_oauth2_clients">get_oauth2_clients</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_requested_scopes" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.get_requested_scopes">get_requested_scopes</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.introspect_token" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.introspect_token">introspect_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_consent_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_consent_request">reject_consent_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_login_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_login_request">reject_login_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_logout_request" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.reject_logout_request">reject_logout_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_token" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_token">revoke_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_tokens_by_client_id" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_tokens_by_client_id">revoke_tokens_by_client_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_tokens_by_session_handle" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.revoke_tokens_by_session_handle">revoke_tokens_by_session_handle</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.token_exchange" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.token_exchange">token_exchange</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.update_oauth2_client" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.update_oauth2_client">update_oauth2_client</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.validate_oauth2_access_token" href="#supertokens_python.recipe.oauth2provider.recipe_implementation.RecipeImplementation.validate_oauth2_access_token">validate_oauth2_access_token</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>

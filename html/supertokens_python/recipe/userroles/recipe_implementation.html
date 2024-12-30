@@ -78,6 +78,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
             params,
+            None,
             user_context=user_context,
         )
         if response[&#34;status&#34;] == &#34;OK&#34;:
@@ -136,6 +137,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/role&#34;),
             params,
+            None,
             user_context=user_context,
         )
         return CreateNewRoleOrAddPermissionsOkResult(
@@ -236,6 +238,7 @@ inheritance.</p></div>
         response = await self.querier.send_put_request(
             NormalisedURLPath(f&#34;{tenant_id}/recipe/user/role&#34;),
             params,
+            None,
             user_context=user_context,
         )
         if response[&#34;status&#34;] == &#34;OK&#34;:
@@ -294,6 +297,7 @@ inheritance.</p></div>
         response = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/role&#34;),
             params,
+            None,
             user_context=user_context,
         )
         return CreateNewRoleOrAddPermissionsOkResult(

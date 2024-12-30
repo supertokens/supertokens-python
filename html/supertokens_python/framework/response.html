@@ -88,6 +88,10 @@ class BaseResponse(ABC):
 
     @abstractmethod
     def set_html_content(self, content: str):
+        pass
+
+    @abstractmethod
+    def redirect(self, url: str) -&gt; &#34;BaseResponse&#34;:
         pass</code></pre>
 </details>
 </section>
@@ -155,6 +159,10 @@ inheritance.</p></div>
 
     @abstractmethod
     def set_html_content(self, content: str):
+        pass
+
+    @abstractmethod
+    def redirect(self, url: str) -&gt; &#34;BaseResponse&#34;:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -171,6 +179,12 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.framework.response.BaseResponse.get_header"><code class="name flex">
 <span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.framework.response.BaseResponse.redirect"><code class="name flex">
+<span>def <span class="ident">redirect</span></span>(<span>self, url: str) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -233,6 +247,7 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.framework.response.BaseResponse" href="#supertokens_python.framework.response.BaseResponse">BaseResponse</a></code></h4>
 <ul class="two-column">
 <li><code><a title="supertokens_python.framework.response.BaseResponse.get_header" href="#supertokens_python.framework.response.BaseResponse.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.response.BaseResponse.redirect" href="#supertokens_python.framework.response.BaseResponse.redirect">redirect</a></code></li>
 <li><code><a title="supertokens_python.framework.response.BaseResponse.remove_header" href="#supertokens_python.framework.response.BaseResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.response.BaseResponse.set_cookie" href="#supertokens_python.framework.response.BaseResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.response.BaseResponse.set_header" href="#supertokens_python.framework.response.BaseResponse.set_header">set_header</a></code></li>

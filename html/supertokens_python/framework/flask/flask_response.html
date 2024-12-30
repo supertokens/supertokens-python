@@ -112,7 +112,14 @@ class FlaskResponse(BaseResponse):
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
-            self.response_sent = True</code></pre>
+            self.response_sent = True
+
+    def redirect(self, url: str) -&gt; BaseResponse:
+        self.set_header(&#34;Location&#34;, url)
+        self.set_status_code(302)
+        self.response.data = b&#34;&#34;
+        self.response_sent = True
+        return self</code></pre>
 </details>
 </section>
 <section>
@@ -202,7 +209,14 @@ inheritance.</p></div>
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
-            self.response_sent = True</code></pre>
+            self.response_sent = True
+
+    def redirect(self, url: str) -&gt; BaseResponse:
+        self.set_header(&#34;Location&#34;, url)
+        self.set_status_code(302)
+        self.response.data = b&#34;&#34;
+        self.response_sent = True
+        return self</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -242,6 +256,12 @@ when testing to get the test client response data as JSON.</p>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers"><code class="name flex">
 <span>def <span class="ident">get_headers</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.redirect"><code class="name flex">
+<span>def <span class="ident">redirect</span></span>(<span>self, url: str) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="../response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -306,6 +326,7 @@ when testing to get the test client response data as JSON.</p>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.Response" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.Response">Response</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.get_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers">get_headers</a></code></li>
+<li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.redirect" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.redirect">redirect</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.remove_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.set_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.set_header">set_header</a></code></li>

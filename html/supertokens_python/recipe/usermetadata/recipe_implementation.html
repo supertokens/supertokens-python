@@ -75,6 +75,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
             params,
+            None,
             user_context=user_context,
         )
         return MetadataResult(metadata=response[&#34;metadata&#34;])
@@ -137,6 +138,7 @@ inheritance.</p></div>
         response = await self.querier.send_put_request(
             NormalisedURLPath(&#34;/recipe/user/metadata&#34;),
             params,
+            None,
             user_context=user_context,
         )
         return MetadataResult(metadata=response[&#34;metadata&#34;])
