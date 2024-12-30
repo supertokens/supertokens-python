@@ -20,7 +20,6 @@ import urllib.parse
 
 import jwt
 
-from supertokens_python.asyncio import get_user
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
@@ -237,6 +236,8 @@ class RecipeImplementation(RecipeInterface):
         session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
+        from supertokens_python.asyncio import get_user
+
         # we handle this in the backend SDK level
         if params.get("prompt") == "none":
             params["st_prompt"] = "none"
@@ -391,6 +392,8 @@ class RecipeImplementation(RecipeInterface):
         body: Dict[str, Optional[str]],
         user_context: Dict[str, Any],
     ) -> Union[TokenInfoResponse, ErrorOAuth2Response]:
+        from supertokens_python.asyncio import get_user
+
         request_body = {
             "iss": await OpenIdRecipe.get_issuer(user_context),
             "inputBody": body,
