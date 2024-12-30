@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, List, Union, Optional
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.jwt.interfaces import (
@@ -26,9 +26,48 @@ from .utils import OpenIdConfig
 
 
 class GetOpenIdDiscoveryConfigurationResult:
-    def __init__(self, issuer: str, jwks_uri: str):
+    def __init__(
+        self,
+        issuer: str,
+        jwks_uri: str,
+        authorization_endpoint: str,
+        token_endpoint: str,
+        userinfo_endpoint: str,
+        revocation_endpoint: str,
+        token_introspection_endpoint: str,
+        end_session_endpoint: str,
+        subject_types_supported: List[str],
+        id_token_signing_alg_values_supported: List[str],
+        response_types_supported: List[str],
+    ):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
+        self.authorization_endpoint = authorization_endpoint
+        self.token_endpoint = token_endpoint
+        self.userinfo_endpoint = userinfo_endpoint
+        self.revocation_endpoint = revocation_endpoint
+        self.token_introspection_endpoint = token_introspection_endpoint
+        self.end_session_endpoint = end_session_endpoint
+        self.subject_types_supported = subject_types_supported
+        self.id_token_signing_alg_values_supported = (
+            id_token_signing_alg_values_supported
+        )
+        self.response_types_supported = response_types_supported
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "issuer": self.issuer,
+            "jwks_uri": self.jwks_uri,
+            "authorization_endpoint": self.authorization_endpoint,
+            "token_endpoint": self.token_endpoint,
+            "userinfo_endpoint": self.userinfo_endpoint,
+            "revocation_endpoint": self.revocation_endpoint,
+            "token_introspection_endpoint": self.token_introspection_endpoint,
+            "end_session_endpoint": self.end_session_endpoint,
+            "subject_types_supported": self.subject_types_supported,
+            "id_token_signing_alg_values_supported": self.id_token_signing_alg_values_supported,
+            "response_types_supported": self.response_types_supported,
+        }
 
 
 class RecipeInterface(ABC):
@@ -75,12 +114,49 @@ class APIOptions:
 class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, issuer: str, jwks_uri: str):
+    def __init__(
+        self,
+        issuer: str,
+        jwks_uri: str,
+        authorization_endpoint: str,
+        token_endpoint: str,
+        userinfo_endpoint: str,
+        revocation_endpoint: str,
+        token_introspection_endpoint: str,
+        end_session_endpoint: str,
+        subject_types_supported: List[str],
+        id_token_signing_alg_values_supported: List[str],
+        response_types_supported: List[str],
+    ):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
+        self.authorization_endpoint = authorization_endpoint
+        self.token_endpoint = token_endpoint
+        self.userinfo_endpoint = userinfo_endpoint
+        self.revocation_endpoint = revocation_endpoint
+        self.token_introspection_endpoint = token_introspection_endpoint
+        self.end_session_endpoint = end_session_endpoint
+        self.subject_types_supported = subject_types_supported
+        self.id_token_signing_alg_values_supported = (
+            id_token_signing_alg_values_supported
+        )
+        self.response_types_supported = response_types_supported
 
     def to_json(self):
-        return {"status": self.status, "issuer": self.issuer, "jwks_uri": self.jwks_uri}
+        return {
+            "status": self.status,
+            "issuer": self.issuer,
+            "jwks_uri": self.jwks_uri,
+            "authorization_endpoint": self.authorization_endpoint,
+            "token_endpoint": self.token_endpoint,
+            "userinfo_endpoint": self.userinfo_endpoint,
+            "revocation_endpoint": self.revocation_endpoint,
+            "token_introspection_endpoint": self.token_introspection_endpoint,
+            "end_session_endpoint": self.end_session_endpoint,
+            "subject_types_supported": self.subject_types_supported,
+            "id_token_signing_alg_values_supported": self.id_token_signing_alg_values_supported,
+            "response_types_supported": self.response_types_supported,
+        }
 
 
 class APIInterface:

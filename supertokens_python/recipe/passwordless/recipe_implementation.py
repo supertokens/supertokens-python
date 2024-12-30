@@ -447,6 +447,7 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/user"),
             data,
+            None,
             user_context=user_context,
         )
         if result["status"] == "OK":
@@ -460,6 +461,7 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/user"),
             data,
+            None,
             user_context=user_context,
         )
         if result["status"] == "OK":
@@ -524,6 +526,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/user"),
             input_dict,
+            None,
             user_context=user_context,
         )
         if response["status"] == "UNKNOWN_USER_ID_ERROR":

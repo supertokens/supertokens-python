@@ -44,7 +44,6 @@ class OpenIdRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        jwt_validity_seconds: Union[int, None] = None,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
@@ -52,18 +51,12 @@ class OpenIdRecipe(RecipeModule):
 
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, issuer, override)
-        jwt_feature = None
-        if override is not None:
-            jwt_feature = override.jwt_feature
-        self.jwt_recipe = JWTRecipe(
-            recipe_id, app_info, jwt_validity_seconds, jwt_feature
-        )
+        self.jwt_recipe = JWTRecipe.get_instance()
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id),
             self.config,
             app_info,
-            self.jwt_recipe.recipe_implementation,
         )
         self.recipe_implementation = (
             recipe_implementation
@@ -135,7 +128,6 @@ class OpenIdRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        jwt_validity_seconds: Union[int, None] = None,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
@@ -144,7 +136,6 @@ class OpenIdRecipe(RecipeModule):
                 OpenIdRecipe.__instance = OpenIdRecipe(
                     OpenIdRecipe.recipe_id,
                     app_info,
-                    jwt_validity_seconds,
                     issuer,
                     override,
                 )
@@ -170,3 +161,10 @@ class OpenIdRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         OpenIdRecipe.__instance = None
+
+    @staticmethod
+    async def get_issuer(user_context: Dict[str, Any]) -> str:
+        open_id_config = await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
+            user_context
+        )
+        return open_id_config.issuer

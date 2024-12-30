@@ -15,8 +15,10 @@ from supertokens_python.recipe import (
     dashboard,
     emailverification,
     session,
+    usermetadata,
     thirdparty,
 )
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 
 load_dotenv()
@@ -46,6 +48,7 @@ init(
         session.init(),
         dashboard.init(),
         emailverification.init("REQUIRED"),
+        usermetadata.init(),
         thirdparty.init(
             sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                 providers=[
@@ -156,7 +159,7 @@ CORS(
 @app.route("/sessioninfo", methods=["GET"])  # type: ignore
 @verify_session()
 def get_session_info():
-    session_: session.SessionContainer = g.supertokens
+    session_: SessionContainer = g.supertokens
     return jsonify(
         {
             "sessionHandle": session_.get_handle(),

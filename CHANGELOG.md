@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.27.0] - 2024-12-30
+
+- Added OAuth2Provider recipe
+- Added support for FDIs: 4.0. Required by: auth-react >=0.48.0 and web-js>=0.14.0
+
 ## [0.26.1] - 2024-11-28
 
 - Fixes dependency for docs build

@@ -94,3 +94,10 @@ class FastApiResponse(BaseResponse):
             self.set_header("Content-Length", str(len(body)))
             self.response.body = body
             self.response_sent = True
+
+    def redirect(self, url: str) -> BaseResponse:
+        if not self.response_sent:
+            self.set_header("Location", url)
+            self.set_status_code(302)
+            self.response_sent = True
+        return self

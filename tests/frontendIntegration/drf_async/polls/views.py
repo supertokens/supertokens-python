@@ -12,6 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from django.http import HttpRequest
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
     RecipeInterface,
@@ -636,6 +639,9 @@ def set_anti_csrf(request: Request):  # type: ignore
         Supertokens.reset()
         SessionRecipe.reset()
         MultitenancyRecipe.reset()
+        OpenIdRecipe.reset()
+        OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(enable_csrf, False, None)  # type: ignore
     return Response("success")  # type: ignore
 
@@ -656,6 +662,9 @@ def set_enable_jwt(request: Request):  # type: ignore
         Supertokens.reset()
         SessionRecipe.reset()
         MultitenancyRecipe.reset()
+        OpenIdRecipe.reset()
+        OAuth2ProviderRecipe.reset()
+        JWTRecipe.reset()
         config(last_set_enable_anti_csrf, enable_jwt, None)  # type: ignore
     return Response("success")  # type: ignore
 
@@ -687,6 +696,9 @@ async def reinitialize(request: Request):  # type: ignore
     Supertokens.reset()
     SessionRecipe.reset()
     MultitenancyRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
+    JWTRecipe.reset()
     config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)  # type: ignore
     return Response("")  # type: ignore
 
