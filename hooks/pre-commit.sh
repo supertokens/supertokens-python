@@ -21,7 +21,7 @@ then
    git stash push -k -u -- ${files_to_stash} >/dev/null 2>/dev/null
 fi
 
-make check-lint >/dev/null 2>/dev/null
+make check-lint
 linted=$?
 
 echo "$(tput setaf 3)* Properly linted?$(tput sgr 0)"
