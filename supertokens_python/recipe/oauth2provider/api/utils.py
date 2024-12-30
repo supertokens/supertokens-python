@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import time
 
-from supertokens_python import Supertokens
+from supertokens_python.supertokens import Supertokens
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.session.recipe import SessionRecipe
