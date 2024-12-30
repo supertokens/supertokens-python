@@ -29,6 +29,7 @@ from .oauth2_client import OAuth2Client
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.supertokens import AppInfo
     from .utils import OAuth2ProviderConfig
 
 
@@ -1267,12 +1268,14 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(
         self,
+        app_info: AppInfo,
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
         config: OAuth2ProviderConfig,
         recipe_implementation: RecipeInterface,
     ):
+        self.app_info: AppInfo = app_info
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id

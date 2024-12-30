@@ -62,6 +62,7 @@ class APIImplementation(APIInterface):
             return response
 
         resp_after_internal_redirects = await handle_login_internal_redirects(
+            app_info=options.app_info,
             response=response,
             cookie=options.request.get_header("cookie") or "",
             recipe_implementation=options.recipe_implementation,
@@ -98,6 +99,7 @@ class APIImplementation(APIInterface):
             return response
 
         return await handle_login_internal_redirects(
+            app_info=options.app_info,
             response=response,
             recipe_implementation=options.recipe_implementation,
             cookie=cookie or "",
@@ -230,6 +232,7 @@ class APIImplementation(APIInterface):
             return response
 
         return await handle_logout_internal_redirects(
+            app_info=options.app_info,
             response=response,
             session=session,
             recipe_implementation=options.recipe_implementation,
@@ -255,6 +258,7 @@ class APIImplementation(APIInterface):
             return response
 
         return await handle_logout_internal_redirects(
+            app_info=options.app_info,
             response=response,
             session=session,
             recipe_implementation=options.recipe_implementation,
@@ -280,6 +284,7 @@ class APIImplementation(APIInterface):
             return response
 
         res = await handle_logout_internal_redirects(
+            app_info=options.app_info,
             response=response,
             recipe_implementation=options.recipe_implementation,
             session=session,

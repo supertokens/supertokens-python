@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import time
 
-from supertokens_python.supertokens import Supertokens
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.session.recipe import SessionRecipe
@@ -36,6 +35,7 @@ if TYPE_CHECKING:
         RedirectResponse,
     )
     from supertokens_python.recipe.session.interfaces import SessionContainer
+    from supertokens_python.supertokens import AppInfo
 
 
 async def login_get(
@@ -218,10 +218,9 @@ def merge_set_cookie_headers(
     return set_cookie1 + set_cookie2
 
 
-def is_login_internal_redirect(redirect_to: str) -> bool:
-    instance = Supertokens.get_instance()
-    api_domain = instance.app_info.api_domain.get_as_string_dangerous()
-    api_base_path = instance.app_info.api_base_path.get_as_string_dangerous()
+def is_login_internal_redirect(app_info: AppInfo, redirect_to: str) -> bool:
+    api_domain = app_info.api_domain.get_as_string_dangerous()
+    api_base_path = app_info.api_base_path.get_as_string_dangerous()
     base_path = f"{api_domain}{api_base_path}"
 
     return any(
@@ -229,15 +228,15 @@ def is_login_internal_redirect(redirect_to: str) -> bool:
     )
 
 
-def is_logout_internal_redirect(redirect_to: str) -> bool:
-    instance = Supertokens.get_instance()
-    api_domain = instance.app_info.api_domain.get_as_string_dangerous()
-    api_base_path = instance.app_info.api_base_path.get_as_string_dangerous()
+def is_logout_internal_redirect(app_info: AppInfo, redirect_to: str) -> bool:
+    api_domain = app_info.api_domain.get_as_string_dangerous()
+    api_base_path = app_info.api_base_path.get_as_string_dangerous()
     base_path = f"{api_domain}{api_base_path}"
     return redirect_to.startswith(f"{base_path}{END_SESSION_PATH}")
 
 
 async def handle_login_internal_redirects(
+    app_info: AppInfo,
     response: RedirectResponse,
     recipe_implementation: RecipeInterface,
     session: Optional[SessionContainer],
@@ -247,14 +246,14 @@ async def handle_login_internal_redirects(
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
     from ..interfaces import RedirectResponse, ErrorOAuth2Response
 
-    if not is_login_internal_redirect(response.redirect_to):
+    if not is_login_internal_redirect(app_info, response.redirect_to):
         return response
 
     max_redirects = 10
     redirect_count = 0
 
     while redirect_count < max_redirects and is_login_internal_redirect(
-        response.redirect_to
+        app_info, response.redirect_to
     ):
         cookie = get_merged_cookies(cookie, response.cookies)
 
@@ -314,19 +313,20 @@ async def handle_login_internal_redirects(
 
 
 async def handle_logout_internal_redirects(
+    app_info: AppInfo,
     response: RedirectResponse,
     recipe_implementation: RecipeInterface,
     session: Optional[SessionContainer],
     user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-    if not is_logout_internal_redirect(response.redirect_to):
+    if not is_logout_internal_redirect(app_info, response.redirect_to):
         return response
 
     max_redirects = 10
     redirect_count = 0
 
     while redirect_count < max_redirects and is_logout_internal_redirect(
-        response.redirect_to
+        app_info, response.redirect_to
     ):
         query_string = (
             response.redirect_to.split("?", 1)[1] if "?" in response.redirect_to else ""

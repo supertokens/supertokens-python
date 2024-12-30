@@ -195,11 +195,12 @@ class OAuth2ProviderRecipe(RecipeModule):
         user_context: Dict[str, Any],
     ) -> Union[BaseResponse, None]:
         api_options = APIOptions(
-            request,
-            response,
-            self.recipe_id,
-            self.config,
-            self.recipe_implementation,
+            app_info=self.app_info,
+            request=request,
+            response=response,
+            recipe_id=self.recipe_id,
+            config=self.config,
+            recipe_implementation=self.recipe_implementation,
         )
         if request_id == LOGIN_PATH:
             return await login(
