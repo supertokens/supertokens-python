@@ -21,8 +21,6 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.recipe.oauth2provider.api.introspect_token import (
     introspect_token_post,
 )
-from supertokens_python.recipe.oauth2provider.api.login import login
-from supertokens_python.recipe.oauth2provider.api.login_info import login_info_get
 from supertokens_python.recipe.oauth2provider.exceptions import OAuth2ProviderError
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.types import User
@@ -50,8 +48,9 @@ from supertokens_python.recipe.oauth2provider.api.implementation import (
 
 
 from .api import (
-    auth_get,
     login,
+    login_info_get,
+    auth_get,
     end_session_get,
     end_session_post,
     logout_post,
