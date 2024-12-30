@@ -83,7 +83,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.26.1",
+    version="0.27.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -127,6 +127,7 @@ setup(
         "aiosmtplib>=1.1.6,<4.0.0",
         "pkce<1.1.0",
         "pyotp<3",
+        "python-dateutil<3",
     ],
     python_requires=">=3.8",
     include_package_data=True,

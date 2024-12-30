@@ -34,6 +34,7 @@ jobs:
   test-backend-sdk-testing:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       cdi-version:
@@ -54,6 +55,7 @@ jobs:
   test-website-fastapi:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       fdi-version:
@@ -74,6 +76,7 @@ jobs:
   test-website-flask:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       fdi-version:
@@ -94,6 +97,7 @@ jobs:
   test-website-django:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       fdi-version:
@@ -114,6 +118,7 @@ jobs:
   test-website-drf-async:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       fdi-version:
@@ -134,6 +139,7 @@ jobs:
   test-website-drf-sync:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       fdi-version:
@@ -154,6 +160,7 @@ jobs:
   test-website-django2x:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     parameters:
       fdi-version:
@@ -174,6 +181,7 @@ jobs:
   test-website-flask-nest-asyncio:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     environment:
       SUPERTOKENS_NEST_ASYNCIO: "1"
@@ -197,6 +205,7 @@ jobs:
   test-authreact-fastapi:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     environment:
       MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
     parameters:
@@ -227,6 +236,7 @@ jobs:
   test-authreact-flask:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     environment:
       MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml
@@ -258,6 +268,7 @@ jobs:
   test-authreact-django:
     docker:
       - image: python:<< parameters.python-version >>
+      - image: rishabhpoddar/oauth-server-cicd
     resource_class: large
     environment:
       MOCHA_FILE: /root/test_report/report_node-<< parameters.fdi-version >>.xml

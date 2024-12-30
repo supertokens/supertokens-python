@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
     GetClaimValueOkResult,
@@ -489,7 +490,8 @@ async def create_jwt(
 ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
-    openid_recipe = SessionRecipe.get_instance().openid_recipe
+
+    openid_recipe = OpenIdRecipe.get_instance()
 
     return await openid_recipe.recipe_implementation.create_jwt(
         payload, validity_seconds, use_static_signing_key, user_context
@@ -499,7 +501,7 @@ async def create_jwt(
 async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSResult:
     if user_context is None:
         user_context = {}
-    openid_recipe = SessionRecipe.get_instance().openid_recipe
+    openid_recipe = OpenIdRecipe.get_instance()
     return await openid_recipe.recipe_implementation.get_jwks(user_context)
 
 
@@ -508,7 +510,7 @@ async def get_open_id_discovery_configuration(
 ) -> GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}
-    openid_recipe = SessionRecipe.get_instance().openid_recipe
+    openid_recipe = OpenIdRecipe.get_instance()
 
     return (
         await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(

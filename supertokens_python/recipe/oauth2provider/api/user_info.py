@@ -58,12 +58,14 @@ async def user_info_get(
     payload: Optional[Dict[str, Any]] = None
 
     try:
-        payload = await api_options.recipe_implementation.validate_oauth2_access_token(
-            token=access_token,
-            requirements=None,
-            check_database=None,
-            user_context=user_context,
-        )
+        payload = (
+            await api_options.recipe_implementation.validate_oauth2_access_token(
+                token=access_token,
+                requirements=None,
+                check_database=None,
+                user_context=user_context,
+            )
+        ).payload
 
     except Exception:
         api_options.response.set_header(

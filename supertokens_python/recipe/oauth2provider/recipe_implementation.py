@@ -42,21 +42,23 @@ from .interfaces import (
     RecipeInterface,
     RedirectResponse,
     ErrorOAuth2Response,
-    GetOAuth2ClientOkResult,
-    GetOAuth2ClientsOkResult,
-    CreateOAuth2ClientOkResult,
+    OAuth2ClientResponse,
+    OAuth2ClientsListResponse,
+    CreatedOAuth2ClientResponse,
+    RevokeTokenOkResponse,
     RevokeTokenUsingAuthorizationHeader,
     RevokeTokenUsingClientIDAndClientSecret,
     UpdateOAuth2ClientInput,
-    UpdateOAuth2ClientOkResult,
-    DeleteOAuth2ClientOkResult,
-    ConsentRequest,
-    LoginRequest,
+    UpdatedOAuth2ClientResponse,
+    DeleteOAuth2ClientOkResponse,
+    ConsentRequestResponse,
+    LoginRequestResponse,
     OAuth2Client,
-    TokenInfo,
+    TokenInfoResponse,
     UserInfoBuilderFunction,
     ActiveTokenResponse,
     InactiveTokenResponse,
+    ValidatedAccessTokenResponse,
 )
 
 
@@ -91,7 +93,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_login_request(
         self, challenge: str, user_context: Dict[str, Any]
-    ) -> Union[LoginRequest, ErrorOAuth2Response]:
+    ) -> Union[LoginRequestResponse, ErrorOAuth2Response]:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login"),
             {"loginChallenge": challenge},
@@ -104,7 +106,7 @@ class RecipeImplementation(RecipeInterface):
                 response["statusCode"],
             )
 
-        return LoginRequest.from_json(response)
+        return LoginRequestResponse.from_json(response)
 
     async def accept_login_request(
         self,
@@ -161,14 +163,14 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_consent_request(
         self, challenge: str, user_context: Dict[str, Any]
-    ) -> ConsentRequest:
+    ) -> ConsentRequestResponse:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
             {"consentChallenge": challenge},
             user_context=user_context,
         )
 
-        return ConsentRequest.from_json(response)
+        return ConsentRequestResponse.from_json(response)
 
     async def accept_consent_request(
         self,
@@ -388,7 +390,7 @@ class RecipeImplementation(RecipeInterface):
         authorization_header: Optional[str],
         body: Dict[str, Optional[str]],
         user_context: Dict[str, Any],
-    ) -> Union[TokenInfo, ErrorOAuth2Response]:
+    ) -> Union[TokenInfoResponse, ErrorOAuth2Response]:
         request_body = {
             "iss": await OpenIdRecipe.get_issuer(user_context),
             "inputBody": body,
@@ -518,7 +520,7 @@ class RecipeImplementation(RecipeInterface):
                 error_description=response["errorDescription"],
             )
 
-        return TokenInfo.from_json(response)
+        return TokenInfoResponse.from_json(response)
 
     async def get_oauth2_clients(
         self,
@@ -526,7 +528,7 @@ class RecipeImplementation(RecipeInterface):
         pagination_token: Optional[str],
         client_name: Optional[str],
         user_context: Dict[str, Any],
-    ) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
+    ) -> Union[OAuth2ClientsListResponse, ErrorOAuth2Response]:
         body: Dict[str, Any] = {}
         if page_size is not None:
             body["pageSize"] = page_size
@@ -542,7 +544,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
         if response["status"] == "OK":
-            return GetOAuth2ClientsOkResult(
+            return OAuth2ClientsListResponse(
                 clients=[
                     OAuth2Client.from_json(client) for client in response["clients"]
                 ],
@@ -557,7 +559,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_oauth2_client(
         self, client_id: str, user_context: Dict[str, Any]
-    ) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[OAuth2ClientResponse, ErrorOAuth2Response]:
         response = await self.querier.send_get_request(
             NormalisedURLPath("/recipe/oauth/clients"),
             {"clientId": client_id},
@@ -565,7 +567,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
         if response["status"] == "OK":
-            return GetOAuth2ClientOkResult(client=OAuth2Client.from_json(response))
+            return OAuth2ClientResponse(client=OAuth2Client.from_json(response))
         elif response["status"] == "CLIENT_NOT_FOUND_ERROR":
             return ErrorOAuth2Response(
                 error="invalid_request",
@@ -580,7 +582,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         params: CreateOAuth2ClientInput,
         user_context: Dict[str, Any],
-    ) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[CreatedOAuth2ClientResponse, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients"),
             params.to_json(),
@@ -588,7 +590,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
         if response["status"] == "OK":
-            return CreateOAuth2ClientOkResult(client=OAuth2Client.from_json(response))
+            return CreatedOAuth2ClientResponse(client=OAuth2Client.from_json(response))
         return ErrorOAuth2Response(
             error=response["error"], error_description=response["errorDescription"]
         )
@@ -597,7 +599,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         params: UpdateOAuth2ClientInput,
         user_context: Dict[str, Any],
-    ) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[UpdatedOAuth2ClientResponse, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/clients"),
             params.to_json(),
@@ -606,7 +608,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
         if response["status"] == "OK":
-            return UpdateOAuth2ClientOkResult(client=OAuth2Client.from_json(response))
+            return UpdatedOAuth2ClientResponse(client=OAuth2Client.from_json(response))
         return ErrorOAuth2Response(
             error=response["error"], error_description=response["errorDescription"]
         )
@@ -615,7 +617,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         client_id: str,
         user_context: Dict[str, Any],
-    ) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
+    ) -> Union[DeleteOAuth2ClientOkResponse, ErrorOAuth2Response]:
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/oauth/clients/remove"),
             {"clientId": client_id},
@@ -623,7 +625,7 @@ class RecipeImplementation(RecipeInterface):
         )
 
         if response["status"] == "OK":
-            return DeleteOAuth2ClientOkResult()
+            return DeleteOAuth2ClientOkResponse()
         return ErrorOAuth2Response(
             error=response["error"], error_description=response["errorDescription"]
         )
@@ -634,7 +636,7 @@ class RecipeImplementation(RecipeInterface):
         requirements: Optional[OAuth2TokenValidationRequirements],
         check_database: Optional[bool],
         user_context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> ValidatedAccessTokenResponse:
         access_token_obj = parse_jwt_without_signature_verification(token)
 
         # Verify token signature using session recipe's JWKS
@@ -702,7 +704,7 @@ class RecipeImplementation(RecipeInterface):
             if response.get("active") is not True:
                 raise Exception("The token is expired, invalid or has been revoked")
 
-        return payload
+        return ValidatedAccessTokenResponse(payload=payload)
 
     async def get_requested_scopes(
         self,
@@ -810,7 +812,7 @@ class RecipeImplementation(RecipeInterface):
             RevokeTokenUsingClientIDAndClientSecret,
         ],
         user_context: Dict[str, Any],
-    ) -> Optional[ErrorOAuth2Response]:
+    ) -> Union[RevokeTokenOkResponse, ErrorOAuth2Response]:
         request_body = {"token": params.token}
 
         if isinstance(params, RevokeTokenUsingAuthorizationHeader):
@@ -833,7 +835,7 @@ class RecipeImplementation(RecipeInterface):
                 error_description=str(res.get("errorDescription")),
             )
 
-        return None
+        return RevokeTokenOkResponse()
 
     async def revoke_tokens_by_client_id(
         self,

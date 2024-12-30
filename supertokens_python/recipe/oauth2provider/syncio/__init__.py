@@ -20,22 +20,24 @@ from supertokens_python.async_to_sync_wrapper import sync
 from ..interfaces import (
     ActiveTokenResponse,
     CreateOAuth2ClientInput,
-    CreateOAuth2ClientOkResult,
-    DeleteOAuth2ClientOkResult,
+    CreatedOAuth2ClientResponse,
+    DeleteOAuth2ClientOkResponse,
     ErrorOAuth2Response,
-    GetOAuth2ClientOkResult,
-    GetOAuth2ClientsOkResult,
+    OAuth2ClientResponse,
+    OAuth2ClientsListResponse,
     InactiveTokenResponse,
     OAuth2TokenValidationRequirements,
-    TokenInfo,
+    RevokeTokenOkResponse,
+    TokenInfoResponse,
     UpdateOAuth2ClientInput,
-    UpdateOAuth2ClientOkResult,
+    UpdatedOAuth2ClientResponse,
+    ValidatedAccessTokenResponse,
 )
 
 
 def get_oauth2_client(
     client_id: str, user_context: Optional[Dict[str, Any]] = None
-) -> Union[GetOAuth2ClientOkResult, ErrorOAuth2Response]:
+) -> Union[OAuth2ClientResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
 
@@ -49,7 +51,7 @@ def get_oauth2_clients(
     pagination_token: Optional[str] = None,
     client_name: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[GetOAuth2ClientsOkResult, ErrorOAuth2Response]:
+) -> Union[OAuth2ClientsListResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
 
@@ -63,7 +65,7 @@ def get_oauth2_clients(
 def create_oauth2_client(
     params: CreateOAuth2ClientInput,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[CreateOAuth2ClientOkResult, ErrorOAuth2Response]:
+) -> Union[CreatedOAuth2ClientResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
     from ..asyncio import create_oauth2_client
@@ -74,7 +76,7 @@ def create_oauth2_client(
 def update_oauth2_client(
     params: UpdateOAuth2ClientInput,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[UpdateOAuth2ClientOkResult, ErrorOAuth2Response]:
+) -> Union[UpdatedOAuth2ClientResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
 
@@ -85,7 +87,7 @@ def update_oauth2_client(
 
 def delete_oauth2_client(
     client_id: str, user_context: Optional[Dict[str, Any]] = None
-) -> Union[DeleteOAuth2ClientOkResult, ErrorOAuth2Response]:
+) -> Union[DeleteOAuth2ClientOkResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
     from ..asyncio import delete_oauth2_client
@@ -98,7 +100,7 @@ def validate_oauth2_access_token(
     requirements: Optional[OAuth2TokenValidationRequirements] = None,
     check_database: Optional[bool] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+) -> ValidatedAccessTokenResponse:
     if user_context is None:
         user_context = {}
 
@@ -115,7 +117,7 @@ def create_token_for_client_credentials(
     scope: Optional[List[str]] = None,
     audience: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[TokenInfo, ErrorOAuth2Response]:
+) -> Union[TokenInfoResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
 
@@ -133,7 +135,7 @@ def revoke_token(
     client_id: str,
     client_secret: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Optional[ErrorOAuth2Response]:
+) -> Union[RevokeTokenOkResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
     from ..asyncio import revoke_token

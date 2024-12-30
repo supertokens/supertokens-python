@@ -39,7 +39,6 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .constants import SESSION_REFRESH, SIGNOUT
@@ -111,13 +110,6 @@ class SessionRecipe(RecipeModule):
             expose_access_token_to_frontend_in_cookie_based_auth,
             jwks_refresh_interval_sec,
         )
-        self.openid_recipe = OpenIdRecipe(
-            recipe_id,
-            app_info,
-            None,
-            None,
-            override.openid_feature if override is not None else None,
-        )
         log_debug_message(
             "session init: anti_csrf: %s", self.config.anti_csrf_function_or_string
         )
@@ -170,7 +162,6 @@ class SessionRecipe(RecipeModule):
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensSessionError)
-            or self.openid_recipe.is_error_from_this_recipe_based_on_instance(err)
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
@@ -188,7 +179,6 @@ class SessionRecipe(RecipeModule):
                 self.api_implementation.disable_signout_post,
             ),
         ]
-        apis_handled.extend(self.openid_recipe.get_apis_handled())
 
         return apis_handled
 
@@ -226,9 +216,7 @@ class SessionRecipe(RecipeModule):
                 ),
                 user_context,
             )
-        return await self.openid_recipe.handle_api_request(
-            request_id, tenant_id, request, path, method, response, user_context
-        )
+        raise Exception("should never happen")
 
     async def handle_error(
         self,
@@ -280,7 +268,6 @@ class SessionRecipe(RecipeModule):
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = get_cors_allowed_headers()
-        cors_headers.extend(self.openid_recipe.get_all_cors_headers())
 
         return cors_headers
 

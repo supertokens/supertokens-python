@@ -57,6 +57,8 @@ class DjangoRequest(BaseRequest):
 
     def get_header(self, key: str) -> Union[None, str]:
         key = key.replace("-", "_")
+        if key.upper() in self.request.META:
+            return self.request.META.get(key.upper())
         key = "HTTP_" + key
         return self.request.META.get(key.upper())
 

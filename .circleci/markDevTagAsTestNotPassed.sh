@@ -21,7 +21,7 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
-responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PUT \
+responseStatus=`curl -s -o out.bin -w "%{http_code}" -X PUT \
   https://api.supertokens.io/0/driver \
   -H 'Content-Type: application/json' \
   -H 'api-version: 0' \
@@ -35,5 +35,6 @@ responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PUT \
 if [ $responseStatus -ne "200" ]
 then
     echo "failed core PUT API status code: $responseStatus. Exiting!"
+    cat out.bin
 	exit 1
 fi
