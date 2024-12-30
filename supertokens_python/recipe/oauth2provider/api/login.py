@@ -23,6 +23,8 @@ from supertokens_python.framework import BaseResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 from http.cookies import SimpleCookie
 
+from .utils import get_session
+
 if TYPE_CHECKING:
     from ..interfaces import (
         APIOptions,
@@ -40,7 +42,6 @@ async def login(
         FrontendRedirectResponse,
         ErrorOAuth2Response,
     )
-    from supertokens_python.recipe.session.asyncio import get_session
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 
     if api_implementation.disable_login_get is True:

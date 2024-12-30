@@ -15,12 +15,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import time
 
 from supertokens_python import Supertokens
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.session.session_request_functions import (
+    get_session_from_request,
+)
+from supertokens_python.types import MaybeAwaitable
 from ..constants import LOGIN_PATH, AUTH_PATH, END_SESSION_PATH
 
 if TYPE_CHECKING:
@@ -340,3 +346,38 @@ async def handle_logout_internal_redirects(
         redirect_count += 1
 
     return response
+
+
+async def get_session(
+    request: Any,
+    session_required: Optional[bool] = None,
+    anti_csrf_check: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[SessionContainer, None]:
+    if user_context is None:
+        user_context = {}
+
+    if session_required is None:
+        session_required = True
+
+    recipe_instance = SessionRecipe.get_instance()
+    recipe_interface_impl = recipe_instance.recipe_implementation
+    config = recipe_instance.config
+
+    return await get_session_from_request(
+        request,
+        config,
+        recipe_interface_impl,
+        session_required=session_required,
+        anti_csrf_check=anti_csrf_check,
+        check_database=check_database,
+        override_global_claim_validators=override_global_claim_validators,
+        user_context=user_context,
+    )
