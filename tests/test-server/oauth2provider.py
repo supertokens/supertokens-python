@@ -77,7 +77,7 @@ def add_oauth2provider_routes(app: Flask):
             check_database=request.json.get("checkDatabase"),
             user_context=request.json.get("userContext"),
         )
-        return jsonify({"payload": response, "status": "OK"})
+        return jsonify({"payload": response.payload, "status": "OK"})
 
     @app.route("/test/oauth2provider/validateoauth2refreshtoken", methods=["POST"])  # type: ignore
     def validate_oauth2_refresh_token_api():  # type: ignore
