@@ -24,6 +24,7 @@ from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderConfigForClient, ProviderInput
+from ..types import RawUserInfoFromProvider
 
 
 class GithubImpl(GenericProvider):
@@ -45,16 +46,18 @@ class GithubImpl(GenericProvider):
             "Accept": "application/vnd.github.v3+json",
         }
 
-        raw_response = {}
+        raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
 
         email_info: List[Any] = await do_get_request("https://api.github.com/user/emails", headers=headers)  # type: ignore
         user_info = await do_get_request("https://api.github.com/user", headers=headers)
 
-        raw_response["emails"] = email_info
-        raw_response["user"] = user_info
+        user_info["emails"] = email_info
+        raw_user_info_from_provider.from_user_info_api = user_info
 
         result = UserInfo(
             third_party_user_id=str(user_info.get("id")),
+            email=None,
+            raw_user_info_from_provider=raw_user_info_from_provider,
         )
 
         for info in email_info:
