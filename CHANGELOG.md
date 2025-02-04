@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.28.0]
+- Updates timestamps to use UTC instead of GMT as the timezone
+
 ## [0.27.0] - 2024-12-30
 
 - Added OAuth2Provider recipe
