@@ -14,15 +14,13 @@
 
 from __future__ import annotations
 
-from typing import Dict, Any, Optional
-
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderConfigForClient,
     ProviderInput,
     Provider,
 )
+from typing import Dict, Any, Optional
 from .custom import GenericProvider, NewProvider
-
 from .utils import do_get_request
 from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 
@@ -66,25 +64,22 @@ class BitbucketImpl(GenericProvider):
             headers=headers,
         )
 
-        if raw_user_info_from_provider.from_id_token_payload is None:
-            # Actually this should never happen but python type
-            # checker is not agreeing so doing this:
-            raw_user_info_from_provider.from_id_token_payload = {}
+        raw_user_info_from_provider.from_user_info_api["email"] = user_info_from_email
 
-        raw_user_info_from_provider.from_id_token_payload["email"] = (
-            user_info_from_email
-        )
-
-        email = None
-        is_verified = False
+        # Get the primary email from the Email response
+        # Create an object if primary email found
+        primary_email_info: UserInfoEmail | None = None
         for email_info in user_info_from_email["values"]:
             if email_info["is_primary"]:
-                email = email_info["email"]
-                is_verified = email_info["is_confirmed"]
+                primary_email_info = UserInfoEmail(
+                    email=email_info["email"],
+                    is_verified=email_info["is_confirmed"],
+                )
+                break
 
         return UserInfo(
             third_party_user_id=raw_user_info_from_provider.from_user_info_api["uuid"],
-            email=None if email is None else UserInfoEmail(email, is_verified),
+            email=primary_email_info,
             raw_user_info_from_provider=raw_user_info_from_provider,
         )
 
