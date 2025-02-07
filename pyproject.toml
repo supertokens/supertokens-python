@@ -1,14 +1,8 @@
 [tool.black]
-exclude = '''
+extend-exclude = '''
 /(
-    \.eggs         # exclude a few common directories in the
-  | \.git          # root of the project
-  | \.mypy_cache
-  | \.vscode
   | \.idea
-  | build
-  | dist
-  | venv
   | \./html/
+  | \./venv/
 )/
 '''
