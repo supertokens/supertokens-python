@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Return `raw_user_info_from_provider` in github provider [#474]
+
 ## [0.27.0] - 2024-12-30
 
 - Added OAuth2Provider recipe
@@ -277,7 +279,7 @@ async def change_email(req: ChangeEmailBody, session: SessionContainer = Depends
     # Update the email
     await update_email_or_password(
         session.get_recipe_user_id(),
-        email,   
+        email,
     )
 
     # ...
@@ -360,7 +362,7 @@ from supertokens_python.types import RecipeUserId
 
 def functions_override(original_implementation: RecipeInterface):
     o_create_new_session = original_implementation.create_new_session
-    
+
     async def n_create_new_session(
         user_id: str,
         recipe_user_id: RecipeUserId,
@@ -377,7 +379,7 @@ def functions_override(original_implementation: RecipeInterface):
         return await o_create_new_session(user_id, recipe_user_id, access_token_payload, session_data_in_database, disable_anti_csrf, tenant_id, user_context)
 
     original_implementation.create_new_session = n_create_new_session
-    
+
     return original_implementation
 
 session.init(override=session.InputOverrideConfig(functions=functions_override))
@@ -395,7 +397,7 @@ from supertokens_python.types import RecipeUserId
 
 def functions_override(original_implementation: RecipeInterface):
     o_create_new_session = original_implementation.create_new_session
-    
+
     async def n_create_new_session(
         user_id: str,
         recipe_user_id: RecipeUserId,
@@ -412,7 +414,7 @@ def functions_override(original_implementation: RecipeInterface):
         return await o_create_new_session(user_id, recipe_user_id, access_token_payload, session_data_in_database, disable_anti_csrf, tenant_id, user_context)
 
     original_implementation.create_new_session = n_create_new_session
-    
+
     return original_implementation
 
 session.init(override=session.InputOverrideConfig(functions=functions_override))
@@ -632,7 +634,7 @@ thirdparty.init(
                     third_party_id="google",
                     # rest of the config
                 ),
-                
+
                 # Add the following line to make this provider available in non-public tenants by default
                 include_in_non_public_tenants_by_default=True
             ),
@@ -641,7 +643,7 @@ thirdparty.init(
                     third_party_id="github",
                     # rest of the config
                 ),
-                
+
                 # Add the following line to make this provider available in non-public tenants by default
                 include_in_non_public_tenants_by_default=True
             ),
@@ -733,7 +735,7 @@ for tenant in tenants_res.tenants:
 
 - The way to get user information has changed:
     - If you are using `get_users_by_email` from `thirdpartyemailpassword` recipe:
-    
+
         Before:
         ```python
         from supertokens_python.recipe.thirdpartyemailpassword.syncio import get_users_by_email
@@ -745,20 +747,20 @@ for tenant in tenants_res.tenants:
         ```python
         from supertokens_python.recipe.thirdparty.syncio import get_users_by_email as get_users_by_email_third_party
         from supertokens_python.recipe.emailpassword.syncio import get_user_by_email as get_user_by_email_emailpassword
-        
+
         third_party_user_info = get_users_by_email_third_party("public", "test@example.com")
 
         email_password_user_info = get_user_by_email_emailpassword("public", "test@example.com")
 
         if email_password_user_info is not None:
             print(email_password_user_info)
-        
+
         if len(third_party_user_info) > 0:
             print(third_party_user_info)
         ```
 
     - If you are using `get_user_id` from `thirdpartyemailpassword` recipe:
-    
+
         Before:
         ```python
         from supertokens_python.recipe.thirdpartyemailpassword.syncio import get_user_by_id
@@ -783,9 +785,9 @@ for tenant in tenants_res.tenants:
         else:
             print(thirdparty_user)
         ```
-    
+
     - If you are using `get_users_by_email` from `thirdpartypasswordless` recipe:
-    
+
         Before:
         ```python
         from supertokens_python.recipe.thirdpartypasswordless.syncio import get_users_by_email
@@ -797,20 +799,20 @@ for tenant in tenants_res.tenants:
         ```python
         from supertokens_python.recipe.thirdparty.syncio import get_users_by_email as get_users_by_email_third_party
         from supertokens_python.recipe.passwordless.syncio import get_user_by_email as get_user_by_email_passwordless
-        
+
         third_party_user_info = get_users_by_email_third_party("public", "test@example.com")
 
         passwordless_user_info = get_user_by_email_passwordless("public", "test@example.com")
 
         if passwordless_user_info is not None:
             print(passwordless_user_info)
-        
+
         if len(third_party_user_info) > 0:
             print(third_party_user_info)
         ```
 
     - If you are using `get_user_id` from `thirdpartypasswordless` recipe:
-    
+
         Before:
         ```python
         from supertokens_python.recipe.thirdpartypasswordless.syncio import get_user_by_id
@@ -1022,7 +1024,7 @@ With this update, verify_session will return a 401 error if it detects multiple 
     )
     ```
 
-- In the session recipe, if there is an `UNAUTHORISED` or `TOKEN_THEFT_DETECTED` error, the session tokens are cleared in the response regardless of if you have provided your own `error_handlers` in `session.init` 
+- In the session recipe, if there is an `UNAUTHORISED` or `TOKEN_THEFT_DETECTED` error, the session tokens are cleared in the response regardless of if you have provided your own `error_handlers` in `session.init`
 
 ## [0.17.0] - 2023-11-14
 - Fixes `create_reset_password_link` in the emailpassword recipe wherein we passed the `rid` instead of the token in the link
