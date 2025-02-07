@@ -1,0 +1,50 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: trailing-whitespace
+    - id: check-ast
+    - id: check-merge-conflict
+    - id: end-of-file-fixer
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.9.4
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+  # # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
+  # - repo: https://github.com/psf/black-pre-commit-mirror
+  #   rev: 24.8.0
+  #   hooks:
+  #     - id: black
+  #       # It is recommended to specify the latest version of Python
+  #       # supported by your project here, or alternatively use
+  #       # pre-commit's default_language_version, see
+  #       # https://pre-commit.com/#top_level-default_language_version
+  #       language_version: python3.8
+  - repo: local
+    hooks:
+      - id: check-version
+        name: check-version
+        entry: hooks/check-version.sh
+        language: system
+        always_run: true
+      # - id: pylint
+      #   name: pylint
+      #   entry: pylint
+      #   language: system
+      #   types: [python]
+      #   require_serial: true
+      #   args:
+      #     [
+      #       # "-rn", # Only display messages
+      #       "-sn", # Don't display the score
+      #     ]
+      # - id: pyright
+      #   name: pyright
+      #   entry: pyright
+      #   language: system
+      #   types: [python]
