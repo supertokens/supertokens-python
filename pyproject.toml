@@ -1,7 +1,17 @@
+[tool.ruff]
+line-length = 88 # Match Black's formatting
+src = ["supertokens_python"]
+
+[tool.ruff.lint]
+extend-select = ["I"] # enable import sorting
+
+[tool.ruff.format]
+quote-style = "double" # Default
+indent-style = "space" # Default
+
 [tool.pyright]
 typeCheckingMode = "strict"
 reportImportCycles = false
-
 include = ["supertokens_python/", "tests/", "examples/"]
 
 [tool.pytest.ini_options]
