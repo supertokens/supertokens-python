@@ -1,136 +1,27 @@
-name: "Pre commit hook check"
+name: "Lint/Format"
 
 on:
-    pull_request:
-        types:
-            - opened
-            - reopened
-            - edited
-            - synchronize
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
 
 jobs:
-    pr-title-3_8:
-        name: Pre commit hook check (3.8)
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v5
-              with:
-                python-version: '3.8'
-            - name: Create virtual environment and install dependencies
-              run: |
-                python3 -m venv venv
-                source venv/bin/activate
-                make dev-install && rm -rf src
-            - name: Make a dummy change to README.md
-              run: |
-                echo "# Dummy change for PR check" >> README.md
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: |
-                source venv/bin/activate
-                ./hooks/pre-commit.sh
-
-    pr-title-3_9:
-        name: Pre commit hook check (3.9)
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v5
-              with:
-                python-version: '3.9'
-            - name: Create virtual environment and install dependencies
-              run: |
-                python3 -m venv venv
-                source venv/bin/activate
-                make dev-install && rm -rf src
-            - name: Make a dummy change to README.md
-              run: |
-                echo "# Dummy change for PR check" >> README.md
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: |
-                source venv/bin/activate
-                ./hooks/pre-commit.sh
-
-    pr-title-3_10:
-        name: Pre commit hook check (3.10)
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v5
-              with:
-                python-version: '3.10'
-            - name: Create virtual environment and install dependencies
-              run: |
-                python3 -m venv venv
-                source venv/bin/activate
-                make dev-install && rm -rf src
-            - name: Make a dummy change to README.md
-              run: |
-                echo "# Dummy change for PR check" >> README.md
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: |
-                source venv/bin/activate
-                ./hooks/pre-commit.sh
-
-    pr-title-3_11:
-        name: Pre commit hook check (3.11)
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v5
-              with:
-                python-version: '3.11'
-            - name: Create virtual environment and install dependencies
-              run: |
-                python3 -m venv venv
-                source venv/bin/activate
-                make dev-install && rm -rf src
-            - name: Make a dummy change to README.md
-              run: |
-                echo "# Dummy change for PR check" >> README.md
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: |
-                source venv/bin/activate
-                ./hooks/pre-commit.sh
-
-    pr-title-3_12:
-        name: Pre commit hook check (3.12)
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v5
-              with:
-                python-version: '3.12'
-            - name: Create virtual environment and install dependencies
-              run: |
-                python3 -m venv venv
-                source venv/bin/activate
-                make dev-install && rm -rf src
-            - name: Make a dummy change to README.md
-              run: |
-                echo "# Dummy change for PR check" >> README.md
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: |
-                source venv/bin/activate
-                ./hooks/pre-commit.sh
-
-    pr-title-3_13:
-        name: Pre commit hook check (3.13)
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-python@v5
-              with:
-                python-version: '3.13'
-            - name: Create virtual environment and install dependencies
-              run: |
-                python3 -m venv venv
-                source venv/bin/activate
-                make dev-install && rm -rf src
-            - name: Make a dummy change to README.md
-              run: |
-                echo "# Dummy change for PR check" >> README.md
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
-            - run: |
-                source venv/bin/activate
-                ./hooks/pre-commit.sh
+  lint-format:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        py_version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py_version }}
+      - name: Create virtual environment and install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          make dev-install && rm -rf src
+          make lint
