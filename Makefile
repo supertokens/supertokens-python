@@ -10,11 +10,10 @@ format:
 	black .
 
 check-lint:
-	pyright supertokens_python tests examples && pylint supertokens_python tests examples 
+	pyright supertokens_python tests examples && pylint supertokens_python tests examples
 
 set-up-hooks:
-	cp hooks/pre-commit.sh .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
+	pre-commit install
 
 test:
 	pytest -vv ./tests/
