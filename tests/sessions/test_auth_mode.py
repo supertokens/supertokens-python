@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional, Union
 from fastapi import Depends, FastAPI, Request
 from httpx import Response
 from pytest import fixture, mark
+from requests.cookies import RequestsCookieJar
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
@@ -67,9 +68,6 @@ def app():
         }
 
     return TestClient(fast)
-
-
-from requests.cookies import RequestsCookieJar
 
 
 def call_api(

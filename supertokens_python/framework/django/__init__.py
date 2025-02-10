@@ -12,5 +12,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.framework.django.django_middleware import (
-    middleware,  # type: ignore
+    middleware as middleware,
 )

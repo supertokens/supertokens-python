@@ -11,4 +11,4 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .login_methods import handle_login_methods_api  # type: ignore
+from .login_methods import handle_login_methods_api as handle_login_methods_api

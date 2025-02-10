@@ -20,21 +20,6 @@ from supertokens_python import init
 from supertokens_python.asyncio import get_user
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, multitenancy, session
-from supertokens_python.types import RecipeUserId
-
-from tests.utils import (
-    get_st_init_args,
-    setup_function,
-    setup_multitenancy_feature,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function
-_ = teardown_function
-
-pytestmark = mark.asyncio
-
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.recipe.multitenancy.asyncio import (
@@ -56,6 +41,20 @@ from supertokens_python.recipe.thirdparty.provider import (
     UserFields,
     UserInfoMap,
 )
+from supertokens_python.types import RecipeUserId
+
+from tests.utils import (
+    get_st_init_args,
+    setup_function,
+    setup_multitenancy_feature,
+    start_st,
+    teardown_function,
+)
+
+_ = setup_function
+_ = teardown_function
+
+pytestmark = mark.asyncio
 
 
 @fixture(scope="function")

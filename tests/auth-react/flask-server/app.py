@@ -156,6 +156,7 @@ from supertokens_python.recipe.thirdparty.provider import (
     RedirectUriInfo,
 )
 from supertokens_python.recipe.thirdparty.syncio import manually_create_or_update_user
+from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.userroles import (
     PermissionClaim,
@@ -317,9 +318,6 @@ async def check_for_general_error(
         is_general_error = await check_request_body_for_general_error(req)
 
     return is_general_error
-
-
-from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
@@ -1212,11 +1210,11 @@ def setup_tenant():
     core_config: Dict[str, Any] = "coreConfig" in body and body["coreConfig"] or {}
 
     first_factors: List[str] = []
-    if login_methods.get("emailPassword", {}).get("enabled") == True:
+    if login_methods.get("emailPassword", {}).get("enabled") is True:
         first_factors.append("emailpassword")
-    if login_methods.get("thirdParty", {}).get("enabled") == True:
+    if login_methods.get("thirdParty", {}).get("enabled") is True:
         first_factors.append("thirdparty")
-    if login_methods.get("passwordless", {}).get("enabled") == True:
+    if login_methods.get("passwordless", {}).get("enabled") is True:
         first_factors.extend(["otp-phone", "otp-email", "link-phone", "link-email"])
 
     core_resp = create_or_update_tenant(

@@ -594,7 +594,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
         async def func(
             i: Any,
-            l: Any,
+            l: Any,  # noqa: E741
             o: Any,
             u: Any,
             a: Any,  # pylint: disable=unused-argument

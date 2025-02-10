@@ -159,6 +159,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
+from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.userroles import (
     PermissionClaim,
@@ -337,8 +338,6 @@ form_fields = [
     InputFormField("age", validate=validate_age),
     InputFormField("country", optional=True),
 ]
-
-from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
@@ -1236,11 +1235,11 @@ async def setup_tenant(request: Request):
     core_config = body.get("coreConfig", {})
 
     first_factors: List[str] = []
-    if login_methods.get("emailPassword", {}).get("enabled") == True:
+    if login_methods.get("emailPassword", {}).get("enabled") is True:
         first_factors.append("emailpassword")
-    if login_methods.get("thirdParty", {}).get("enabled") == True:
+    if login_methods.get("thirdParty", {}).get("enabled") is True:
         first_factors.append("thirdparty")
-    if login_methods.get("passwordless", {}).get("enabled") == True:
+    if login_methods.get("passwordless", {}).get("enabled") is True:
         first_factors.extend(["otp-phone", "otp-email", "link-phone", "link-email"])
 
     core_resp = await create_or_update_tenant(

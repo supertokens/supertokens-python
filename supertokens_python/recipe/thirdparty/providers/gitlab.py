@@ -23,7 +23,7 @@ from supertokens_python.recipe.thirdparty.provider import (
     ProviderConfigForClient,
 )
 
-from ..provider import Provider, ProviderInput
+from ..provider import ProviderInput
 from .custom import GenericProvider, NewProvider
 from .utils import normalise_oidc_endpoint_to_include_well_known
 

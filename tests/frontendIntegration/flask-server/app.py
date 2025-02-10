@@ -19,7 +19,15 @@ from base64 import b64encode
 from functools import wraps
 from typing import Any, Dict, Union
 
-from flask import Flask, g, jsonify, make_response, render_template, request
+from flask import (
+    Flask,
+    g,
+    jsonify,
+    make_response,
+    render_template,
+    request,
+    send_from_directory,  # type: ignore
+)
 from flask.wrappers import Response
 from flask_cors import CORS
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
@@ -277,9 +285,6 @@ config(True, False, None)
 @app.route("/index.html", methods=["GET"])  # type: ignore
 def send_file():
     return render_template("index.html")
-
-
-from flask import send_from_directory  # type: ignore
 
 
 @app.route("/angular/<path:path>", methods=["GET"])  # type: ignore

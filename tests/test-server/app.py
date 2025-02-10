@@ -1,6 +1,7 @@
 import inspect
 import json
 import os
+import traceback
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 
 import override_logging
@@ -10,7 +11,9 @@ from emailverification import (
     add_emailverification_routes,
 )  # pylint: disable=import-error
 from flask import Flask, jsonify, request
+from multifactorauth import add_multifactorauth_routes
 from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
+from oauth2provider import add_oauth2provider_routes
 from passwordless import add_passwordless_routes  # pylint: disable=import-error
 from session import add_session_routes  # pylint: disable=import-error
 from supertokens_python import (
@@ -66,6 +69,9 @@ from test_functions_mapper import (  # pylint: disable=import-error
 )  # pylint: disable=import-error
 from thirdparty import add_thirdparty_routes  # pylint: disable=import-error
 from totp import add_totp_routes  # pylint: disable=import-error
+from usermetadata import add_usermetadata_routes
+
+from supertokens import add_supertokens_routes  # pylint: disable=import-error
 
 app = Flask(__name__)
 Middleware(app)
@@ -810,9 +816,6 @@ def not_found(error: Any) -> Any:  # pylint: disable=unused-argument
     return jsonify({"error": f"Route not found: {request.method} {request.path}"}), 404
 
 
-import traceback
-
-
 @app.errorhandler(Exception)  # type: ignore
 def handle_exception(e: Exception):
     # Print the error and stack trace
@@ -831,19 +834,9 @@ add_thirdparty_routes(app)
 add_accountlinking_routes(app)
 add_passwordless_routes(app)
 add_totp_routes(app)
-from supertokens import add_supertokens_routes  # pylint: disable=import-error
-
 add_supertokens_routes(app)
-from usermetadata import add_usermetadata_routes
-
 add_usermetadata_routes(app)
-
-from multifactorauth import add_multifactorauth_routes
-
 add_multifactorauth_routes(app)
-
-from oauth2provider import add_oauth2provider_routes
-
 add_oauth2provider_routes(app)
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.recipe.session.jwks import get_latest_keys
 from supertokens_python.recipe.session.utils import SessionConfig
 from supertokens_python.utils import get_timestamp_ms
 
@@ -42,9 +43,6 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
         return n
 
     return None
-
-
-from supertokens_python.recipe.session.jwks import get_latest_keys
 
 
 def get_info_from_access_token(

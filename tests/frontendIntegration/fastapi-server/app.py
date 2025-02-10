@@ -24,6 +24,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.requests import Request
+from starlette.staticfiles import StaticFiles
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -256,8 +257,6 @@ app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)  # type
 def send_file():
     return HTMLResponse(content=file_contents)
 
-
-from starlette.staticfiles import StaticFiles
 
 app.mount("/angular", StaticFiles(directory="templates/angular"), name="angular")
 # aiofiles must be installed for this to work

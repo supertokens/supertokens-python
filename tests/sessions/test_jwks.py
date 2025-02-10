@@ -7,13 +7,20 @@ from typing import Any, Callable, List
 import pytest
 import requests
 from _pytest.logging import LogCaptureFixture
+from fastapi import Depends, FastAPI, Request
+from pytest import fixture
 from supertokens_python import SupertokensConfig, init
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.interfaces import CreateJwtOkResult
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
+    create_jwt,
+    create_new_session,
     create_new_session_without_request_response,
     get_session_without_request_response,
 )
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.jwks import (
     JWKSConfig,
     get_cached_keys,
@@ -24,6 +31,7 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import get_timestamp_ms, utf_base64encode
 
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     get_st_init_args,
     min_api_version,
@@ -385,8 +393,8 @@ async def test_that_combined_jwks_throw_if_all_core_urls_are_invalid(
                 "http://random.com:3567;example.com:3567;localhost:90"
             ),
             "recipe_list": [session.init()],
-        }
-    )  # type: ignore
+        }  # type: ignore
+    )
     start_st()
 
     with pytest.raises(requests.exceptions.ConnectionError):
@@ -512,9 +520,6 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
     get_latest_keys(SessionRecipe.get_instance().config)
 
     assert next(urls_attempted_count) == 2
-
-
-from supertokens_python.recipe.session.asyncio import create_jwt
 
 
 async def test_session_verification_of_jwt_based_on_session_payload(
@@ -679,16 +684,6 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     # With cache lifetime being 2s, we expect the cache to be missed 5 times
     assert next(not_returned_from_cache_count) == 1 + 5  # 1 original + 5 misses
     JWKSConfig.update(original_jwks_config)
-
-
-from fastapi import Depends, FastAPI, Request
-from pytest import fixture
-from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.asyncio import create_new_session
-from supertokens_python.recipe.session.framework.fastapi import verify_session
-
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 
 
 @fixture(scope="function")

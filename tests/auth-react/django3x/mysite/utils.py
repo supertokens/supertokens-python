@@ -77,6 +77,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
+from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.types import GeneralErrorResponse, User
@@ -198,9 +199,6 @@ async def check_for_general_error(
         is_general_error = await check_request_body_for_general_error(req)
 
     return is_general_error
-
-
-from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
