@@ -25,5 +25,7 @@ jobs:
           source venv/bin/activate
           make dev-install && rm -rf src
       - name: Run checks
+        # New steps require sourcing the venv again
         run: |
+          source venv/bin/activate
           make lint
