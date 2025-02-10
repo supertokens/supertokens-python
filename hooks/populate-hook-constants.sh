@@ -9,5 +9,12 @@ setupVersion=$(sed -n 's/ *version *= *["]\([0-9\.]*\).*/\1/p' setup.py )
 
 newestVersion=$( if [[ "$constantsVersion" > "$setupVersion" ]]; then echo "$constantsVersion"; else echo "$setupVersion"; fi )
 
-currentBranch=$(git branch --show-current 2> /dev/null) || currentBranch="(unnamed branch)" # Get current branch
-currentBranch=${currentBranch##refs/heads/}  # Remove refs/heads/ if present
+# Target branch of the PR.
+# Ideally, this is all we want to check.
+if [[ "$GITHUB_BASE_REF" != "" ]]
+then
+    targetBranch="$GITHUB_BASE_REF"
+else # Fallback to current branch if not in a PR
+    targetBranch=$(git branch --show-current 2> /dev/null) || targetBranch="(unnamed branch)" # Get current branch
+fi
+targetBranch=${targetBranch##refs/heads/}  # Remove refs/heads/ if present
