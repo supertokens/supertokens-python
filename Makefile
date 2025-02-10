@@ -7,6 +7,7 @@ help:
 
 lint:
 	pre-commit run --all-files
+	pre-commit run --all-files --hook-stage manual pyright
 
 set-up-hooks:
 	pre-commit install
