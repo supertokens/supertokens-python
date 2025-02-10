@@ -15,7 +15,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+
 from typing_extensions import Literal
+
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import (
     APIResponse,
@@ -26,10 +28,10 @@ from supertokens_python.types import (
 
 from .oauth2_client import OAuth2Client
 
-
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.supertokens import AppInfo
+
     from .utils import OAuth2ProviderConfig
 
 

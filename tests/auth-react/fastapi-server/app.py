@@ -26,10 +26,6 @@ from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
-from typing_extensions import Literal
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
-from supertokens_python.recipe import multifactorauth, multitenancy, totp
-
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -38,18 +34,23 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
+from supertokens_python.asyncio import delete_user, get_user, list_users_by_account_info
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
+    accountlinking,
     emailpassword,
     emailverification,
+    multifactorauth,
+    multitenancy,
     oauth2provider,
     passwordless,
     session,
     thirdparty,
+    totp,
     userroles,
 )
-from supertokens_python.recipe import accountlinking
 from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.dashboard import DashboardRecipe
@@ -57,13 +58,15 @@ from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
+)
+from supertokens_python.recipe.emailpassword.interfaces import (
+    APIOptions as EPAPIOptions,
+)
+from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
     UnknownUserIdError,
     UpdateEmailOrPasswordEmailChangeNotAllowedError,
     UpdateEmailOrPasswordOkResult,
-)
-from supertokens_python.recipe.emailpassword.interfaces import (
-    APIOptions as EPAPIOptions,
 )
 from supertokens_python.recipe.emailpassword.types import (
     FormField,
@@ -107,9 +110,10 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantUnknownUserIdError,
     TenantConfigCreateOrUpdate,
 )
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.oauth2provider.asyncio import create_oauth2_client
 from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
-from supertokens_python.recipe.oauth2provider.asyncio import create_oauth2_client
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
@@ -120,15 +124,16 @@ from supertokens_python.recipe.passwordless import (
 from supertokens_python.recipe.passwordless.asyncio import update_user
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface as PasswordlessAPIInterface,
+)
+from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
+from supertokens_python.recipe.passwordless.interfaces import (
     PhoneNumberChangeNotAllowedError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsError,
     UpdateUserUnknownUserIdError,
 )
-from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.exceptions import (
     ClaimValidationError,
     InvalidClaimsError,
@@ -146,14 +151,15 @@ from supertokens_python.recipe.thirdparty import (
 from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
+)
+from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
+from supertokens_python.recipe.thirdparty.interfaces import (
     EmailChangeNotAllowedError,
     ManuallyCreateOrUpdateUserOkResult,
     SignInUpNotAllowed,
 )
-from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
-
 from supertokens_python.recipe.userroles import (
     PermissionClaim,
     UserRoleClaim,
@@ -169,8 +175,7 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
-from supertokens_python.asyncio import get_user, list_users_by_account_info
-from supertokens_python.asyncio import delete_user
+from typing_extensions import Literal
 
 load_dotenv()
 
@@ -847,9 +852,13 @@ def custom_init():
     global mfa_info
 
     from supertokens_python.recipe.multifactorauth.interfaces import (
-        RecipeInterface as MFARecipeInterface,
         APIInterface as MFAApiInterface,
+    )
+    from supertokens_python.recipe.multifactorauth.interfaces import (
         APIOptions as MFAApiOptions,
+    )
+    from supertokens_python.recipe.multifactorauth.interfaces import (
+        RecipeInterface as MFARecipeInterface,
     )
 
     def override_mfa_functions(original_implementation: MFARecipeInterface):
@@ -866,9 +875,7 @@ def custom_init():
                 return mfa_info["alreadySetup"]
             return res
 
-        og_assert_allowed_to_setup_factor = (
-            original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
-        )
+        og_assert_allowed_to_setup_factor = original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
 
         async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
             session: SessionContainer,
@@ -926,9 +933,7 @@ def custom_init():
             get_mfa_requirements_for_auth
         )
 
-        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = (
-            assert_allowed_to_setup_factor_else_throw_invalid_claim_error
-        )
+        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = assert_allowed_to_setup_factor_else_throw_invalid_claim_error
 
         original_implementation.get_factors_setup_for_user = get_factors_setup_for_user
         return original_implementation
@@ -1536,7 +1541,16 @@ class CustomCORSMiddleware(CORSMiddleware):
         expose_headers: typing.Sequence[str] = (),
         max_age: int = 600,
     ) -> None:
-        super().__init__(app_, allow_origins, allow_methods, allow_headers, allow_credentials, allow_origin_regex, expose_headers, max_age)  # type: ignore
+        super().__init__(
+            app_,
+            allow_origins,
+            allow_methods,
+            allow_headers,
+            allow_credentials,
+            allow_origin_regex,
+            expose_headers,
+            max_age,
+        )  # type: ignore
 
     def preflight_response(self, request_headers: Headers) -> Response:
         result = super().preflight_response(request_headers)

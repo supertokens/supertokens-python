@@ -17,7 +17,6 @@ from typing import Union
 from fastapi import FastAPI
 from fastapi.requests import Request
 from pytest import fixture, mark
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import delete_user, get_user_count
 from supertokens_python.framework.fastapi import get_middleware
@@ -32,6 +31,7 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
+
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     clean_st,

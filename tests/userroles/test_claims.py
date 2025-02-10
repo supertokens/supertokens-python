@@ -11,30 +11,31 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest.mock import MagicMock
 from typing import List
+from unittest.mock import MagicMock
 
 import pytest
 from pytest import mark
 from supertokens_python import init
-from supertokens_python.recipe import userroles, session
-from supertokens_python.recipe.session.exceptions import ClaimValidationError
-from supertokens_python.types import RecipeUserId
-from tests.utils import (
-    start_st,
-    setup_function,
-    teardown_function,
-    get_st_init_args,
-    min_api_version,
-)
+from supertokens_python.recipe import session, userroles
 from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.session.exceptions import ClaimValidationError
 from supertokens_python.recipe.userroles import (
-    UserRoleClaim,
     PermissionClaim,
+    UserRoleClaim,
 )
 from supertokens_python.recipe.userroles.asyncio import (
-    create_new_role_or_add_permissions,
     add_role_to_user,
+    create_new_role_or_add_permissions,
+)
+from supertokens_python.types import RecipeUserId
+
+from tests.utils import (
+    get_st_init_args,
+    min_api_version,
+    setup_function,
+    start_st,
+    teardown_function,
 )
 
 _ = setup_function  # type: ignore

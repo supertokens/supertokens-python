@@ -13,35 +13,37 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
 from typing_extensions import Literal
 
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.types import RecipeUserId, User
 
 from .interfaces import (
-    RecipeInterface,
-    GetUsersResult,
+    CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
     CanCreatePrimaryUserOkResult,
     CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError,
-    CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
-    CreatePrimaryUserOkResult,
-    CreatePrimaryUserRecipeUserIdAlreadyLinkedError,
-    CreatePrimaryUserAccountInfoAlreadyAssociatedError,
-    CanLinkAccountsOkResult,
-    CanLinkAccountsRecipeUserIdAlreadyLinkedError,
     CanLinkAccountsAccountInfoAlreadyAssociatedError,
     CanLinkAccountsInputUserNotPrimaryError,
-    LinkAccountsOkResult,
-    LinkAccountsRecipeUserIdAlreadyLinkedError,
+    CanLinkAccountsOkResult,
+    CanLinkAccountsRecipeUserIdAlreadyLinkedError,
+    CreatePrimaryUserAccountInfoAlreadyAssociatedError,
+    CreatePrimaryUserOkResult,
+    CreatePrimaryUserRecipeUserIdAlreadyLinkedError,
+    GetUsersResult,
     LinkAccountsAccountInfoAlreadyAssociatedError,
     LinkAccountsInputUserNotPrimaryError,
+    LinkAccountsOkResult,
+    LinkAccountsRecipeUserIdAlreadyLinkedError,
+    RecipeInterface,
     UnlinkAccountOkResult,
 )
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from .types import AccountLinkingConfig, RecipeLevelUser, AccountInfo
-from supertokens_python.types import User, RecipeUserId
+from .types import AccountInfo, AccountLinkingConfig, RecipeLevelUser
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
+
     from .recipe import AccountLinkingRecipe
 
 

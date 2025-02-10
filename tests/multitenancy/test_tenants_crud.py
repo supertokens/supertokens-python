@@ -11,22 +11,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from fastapi import FastAPI
-from pytest import mark, fixture
-from starlette.testclient import TestClient
 from typing import Any, Dict
 
+from fastapi import FastAPI
+from pytest import fixture, mark
+from starlette.testclient import TestClient
 from supertokens_python import init
 from supertokens_python.asyncio import get_user
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, multitenancy, session
 from supertokens_python.types import RecipeUserId
+
 from tests.utils import (
-    setup_function,
-    teardown_function,
     get_st_init_args,
-    start_st,
+    setup_function,
     setup_multitenancy_feature,
+    start_st,
+    teardown_function,
 )
 
 _ = setup_function
@@ -34,26 +35,26 @@ _ = teardown_function
 
 pytestmark = mark.asyncio
 
-from supertokens_python.recipe.multitenancy.asyncio import (
-    create_or_update_tenant,
-    list_all_tenants,
-    get_tenant,
-    delete_tenant,
-    create_or_update_third_party_config,
-    delete_third_party_config,
-    associate_user_to_tenant,
-    disassociate_user_from_tenant,
-)
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
+from supertokens_python.recipe.multitenancy.asyncio import (
+    associate_user_to_tenant,
+    create_or_update_tenant,
+    create_or_update_third_party_config,
+    delete_tenant,
+    delete_third_party_config,
+    disassociate_user_from_tenant,
+    get_tenant,
+    list_all_tenants,
+)
 from supertokens_python.recipe.multitenancy.interfaces import (
     TenantConfigCreateOrUpdate,
 )
 from supertokens_python.recipe.thirdparty.provider import (
-    ProviderConfig,
     ProviderClientConfig,
-    UserInfoMap,
+    ProviderConfig,
     UserFields,
+    UserInfoMap,
 )
 
 

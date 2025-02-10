@@ -31,6 +31,7 @@ from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtOkResult,
     RecipeInterface,
 )
+
 from tests.utils import clean_st, reset, setup_st, start_st
 
 

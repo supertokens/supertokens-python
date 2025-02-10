@@ -12,30 +12,29 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
-from supertokens_python.asyncio import get_user, list_users_by_account_info
-from supertokens_python.recipe import session, multitenancy, passwordless
 from supertokens_python import init
+from supertokens_python.asyncio import get_user, list_users_by_account_info
+from supertokens_python.recipe import multitenancy, passwordless, session
 from supertokens_python.recipe.multitenancy.asyncio import (
     create_or_update_tenant,
-)
-from supertokens_python.recipe.passwordless.asyncio import (
-    create_code,
-    consume_code,
-    ConsumeCodeOkResult,
 )
 from supertokens_python.recipe.multitenancy.interfaces import (
     TenantConfigCreateOrUpdate,
 )
+from supertokens_python.recipe.passwordless.asyncio import (
+    ConsumeCodeOkResult,
+    consume_code,
+    create_code,
+)
 from supertokens_python.types import AccountInfo
 
-from tests.utils import get_st_init_args
 from tests.utils import (
+    get_st_init_args,
     setup_function,
-    teardown_function,
     setup_multitenancy_feature,
     start_st,
+    teardown_function,
 )
-
 
 _ = setup_function
 _ = teardown_function

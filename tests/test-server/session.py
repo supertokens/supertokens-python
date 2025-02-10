@@ -1,5 +1,7 @@
 from typing import Any, Dict
-from flask import Flask, request, jsonify
+
+import supertokens_python.recipe.session.syncio as session
+from flask import Flask, jsonify, request
 from override_logging import log_override_event  # pylint: disable=import-error
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import TokenTheftError
@@ -10,15 +12,15 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
+from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
+
 from utils import (  # pylint: disable=import-error
+    deserialize_claim,  # pylint: disable=import-error
     deserialize_validator,
     get_max_version,
 )
-from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.recipe.session.session_class import Session
-import supertokens_python.recipe.session.syncio as session
-from utils import deserialize_claim  # pylint: disable=import-error
 
 
 def add_session_routes(app: Flask):

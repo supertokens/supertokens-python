@@ -13,44 +13,47 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Dict, Any, Union, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
 from supertokens_python.recipe.multitenancy.interfaces import (
-    AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdError,
     AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantOkResult,
     AssociateUserToTenantPhoneNumberAlreadyExistsError,
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    AssociateUserToTenantUnknownUserIdError,
     DisassociateUserFromTenantOkResult,
 )
 from supertokens_python.types import RecipeUserId
 
 from .interfaces import (
     AssociateUserToTenantNotAllowedError,
+    CreateOrUpdateTenantOkResult,
+    CreateOrUpdateThirdPartyConfigOkResult,
+    DeleteTenantOkResult,
+    DeleteThirdPartyConfigOkResult,
+    ListAllTenantsOkResult,
     RecipeInterface,
     TenantConfig,
-    CreateOrUpdateTenantOkResult,
-    DeleteTenantOkResult,
-    ListAllTenantsOkResult,
-    CreateOrUpdateThirdPartyConfigOkResult,
-    DeleteThirdPartyConfigOkResult,
     TenantConfigCreateOrUpdate,
 )
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
     from supertokens_python.recipe.thirdparty.provider import ProviderConfig
+
     from .utils import MultitenancyConfig
 
 from supertokens_python.querier import NormalisedURLPath
+
 from .constants import DEFAULT_TENANT_ID
 
 
 def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfig:
     from supertokens_python.recipe.thirdparty.provider import (
-        UserInfoMap,
-        UserFields,
         ProviderClientConfig,
         ProviderConfig,
+        UserFields,
+        UserInfoMap,
     )
 
     providers: List[ProviderConfig] = []

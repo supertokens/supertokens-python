@@ -11,37 +11,37 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
+
 from typing_extensions import Literal
+
 from supertokens_python import get_request_from_user_context
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
-
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
-from supertokens_python.recipe.session import SessionContainer
-
-from ..types import EmailTemplateVars
-from ...multitenancy.constants import DEFAULT_TENANT_ID
-from ....types import RecipeUserId
-
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordOkResult,
     ConsumePasswordResetTokenOkResult,
+    CreateResetPasswordOkResult,
+    EmailAlreadyExistsError,
+    PasswordPolicyViolationError,
     PasswordResetTokenInvalidError,
-    UpdateEmailOrPasswordOkResult,
+    SignInOkResult,
+    SignUpOkResult,
     UnknownUserIdError,
     UpdateEmailOrPasswordEmailChangeNotAllowedError,
-    PasswordPolicyViolationError,
-    SignUpOkResult,
-    EmailAlreadyExistsError,
-    SignInOkResult,
+    UpdateEmailOrPasswordOkResult,
     WrongCredentialsError,
 )
-from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
 from supertokens_python.recipe.emailpassword.types import (
     PasswordResetEmailTemplateVars,
     PasswordResetEmailTemplateVarsUser,
 )
+from supertokens_python.recipe.emailpassword.utils import get_password_reset_link
+from supertokens_python.recipe.session import SessionContainer
+
+from ....types import RecipeUserId
+from ...multitenancy.constants import DEFAULT_TENANT_ID
+from ..types import EmailTemplateVars
 
 
 async def sign_up(

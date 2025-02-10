@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Any, Dict, Optional, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate

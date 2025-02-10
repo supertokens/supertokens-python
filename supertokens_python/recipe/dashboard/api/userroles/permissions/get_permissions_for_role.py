@@ -1,11 +1,11 @@
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, List, Union
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.userroles.asyncio import get_permissions_for_role
 from supertokens_python.recipe.userroles.interfaces import (
     GetPermissionsForRoleOkResult,
 )
-
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 from supertokens_python.types import APIResponse
 

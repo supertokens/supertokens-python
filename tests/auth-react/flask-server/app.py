@@ -19,8 +19,6 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
 from flask_cors import CORS
-from typing_extensions import Literal
-
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -35,6 +33,8 @@ from supertokens_python.recipe import (
     accountlinking,
     emailpassword,
     emailverification,
+    multifactorauth,
+    multitenancy,
     oauth2provider,
     passwordless,
     session,
@@ -50,49 +50,15 @@ from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
+)
+from supertokens_python.recipe.emailpassword.interfaces import (
+    APIOptions as EPAPIOptions,
+)
+from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
     UnknownUserIdError,
     UpdateEmailOrPasswordEmailChangeNotAllowedError,
     UpdateEmailOrPasswordOkResult,
-)
-from supertokens_python.recipe.multifactorauth.interfaces import (
-    ResyncSessionAndFetchMFAInfoPUTOkResult,
-)
-from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
-from supertokens_python.recipe.multifactorauth.syncio import (
-    add_to_required_secondary_factors_for_user,
-)
-from supertokens_python.recipe.multifactorauth.types import MFARequirementList
-from supertokens_python.recipe.multitenancy.interfaces import (
-    AssociateUserToTenantEmailAlreadyExistsError,
-    AssociateUserToTenantOkResult,
-    AssociateUserToTenantPhoneNumberAlreadyExistsError,
-    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
-    AssociateUserToTenantUnknownUserIdError,
-    TenantConfigCreateOrUpdate,
-)
-from supertokens_python.recipe.multitenancy.syncio import (
-    associate_user_to_tenant,
-    create_or_update_tenant,
-    create_or_update_third_party_config,
-    delete_tenant,
-    disassociate_user_from_tenant,
-)
-from supertokens_python.recipe.oauth2provider.syncio import create_oauth2_client
-from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
-from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
-from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.passwordless.syncio import update_user
-from supertokens_python.recipe.session.exceptions import (
-    ClaimValidationError,
-    InvalidClaimsError,
-)
-from supertokens_python.recipe.thirdparty.provider import (
-    Provider,
-    RedirectUriInfo,
-)
-from supertokens_python.recipe.emailpassword.interfaces import (
-    APIOptions as EPAPIOptions,
 )
 from supertokens_python.recipe.emailpassword.types import (
     FormField,
@@ -113,6 +79,34 @@ from supertokens_python.recipe.emailverification.interfaces import (
 )
 from supertokens_python.recipe.emailverification.syncio import unverify_email
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.multifactorauth.interfaces import (
+    ResyncSessionAndFetchMFAInfoPUTOkResult,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.syncio import (
+    add_to_required_secondary_factors_for_user,
+)
+from supertokens_python.recipe.multifactorauth.types import MFARequirementList
+from supertokens_python.recipe.multitenancy.interfaces import (
+    AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantOkResult,
+    AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    AssociateUserToTenantUnknownUserIdError,
+    TenantConfigCreateOrUpdate,
+)
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.multitenancy.syncio import (
+    associate_user_to_tenant,
+    create_or_update_tenant,
+    create_or_update_third_party_config,
+    delete_tenant,
+    disassociate_user_from_tenant,
+)
+from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.oauth2provider.syncio import create_oauth2_client
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
     ContactEmailOrPhoneConfig,
@@ -121,16 +115,21 @@ from supertokens_python.recipe.passwordless import (
 )
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface as PasswordlessAPIInterface,
+)
+from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
+from supertokens_python.recipe.passwordless.interfaces import (
     EmailChangeNotAllowedError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsError,
     UpdateUserUnknownUserIdError,
 )
-from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
+from supertokens_python.recipe.passwordless.syncio import update_user
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.recipe import multitenancy
+from supertokens_python.recipe.session.exceptions import (
+    ClaimValidationError,
+    InvalidClaimsError,
+)
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
@@ -146,14 +145,18 @@ from supertokens_python.recipe.thirdparty import (
 )
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
+)
+from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
+from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
     SignInUpNotAllowed,
 )
-from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import (
+    Provider,
+    RedirectUriInfo,
+)
 from supertokens_python.recipe.thirdparty.syncio import manually_create_or_update_user
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
-
 from supertokens_python.recipe.userroles import (
     PermissionClaim,
     UserRoleClaim,
@@ -163,14 +166,14 @@ from supertokens_python.recipe.userroles.syncio import (
     add_role_to_user,
     create_new_role_or_add_permissions,
 )
+from supertokens_python.syncio import delete_user, get_user, list_users_by_account_info
 from supertokens_python.types import (
     AccountInfo,
+    GeneralErrorResponse,
     RecipeUserId,
     User,
-    GeneralErrorResponse,
 )
-from supertokens_python.syncio import delete_user, get_user, list_users_by_account_info
-from supertokens_python.recipe import multifactorauth
+from typing_extensions import Literal
 
 load_dotenv()
 
@@ -830,9 +833,13 @@ def custom_init():
     global mfa_info
 
     from supertokens_python.recipe.multifactorauth.interfaces import (
-        RecipeInterface as MFARecipeInterface,
         APIInterface as MFAApiInterface,
+    )
+    from supertokens_python.recipe.multifactorauth.interfaces import (
         APIOptions as MFAApiOptions,
+    )
+    from supertokens_python.recipe.multifactorauth.interfaces import (
+        RecipeInterface as MFARecipeInterface,
     )
 
     def override_mfa_functions(original_implementation: MFARecipeInterface):
@@ -849,9 +856,7 @@ def custom_init():
                 return mfa_info["alreadySetup"]
             return res
 
-        og_assert_allowed_to_setup_factor = (
-            original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
-        )
+        og_assert_allowed_to_setup_factor = original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
 
         async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
             session: SessionContainer,
@@ -909,9 +914,7 @@ def custom_init():
             get_mfa_requirements_for_auth
         )
 
-        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = (
-            assert_allowed_to_setup_factor_else_throw_invalid_claim_error
-        )
+        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = assert_allowed_to_setup_factor_else_throw_invalid_claim_error
 
         original_implementation.get_factors_setup_for_user = get_factors_setup_for_user
         return original_implementation
@@ -1123,8 +1126,8 @@ def change_email():
     body: Union[Any, None] = request.get_json()
     if body is None:
         raise Exception("Should never come here")
-    from supertokens_python.recipe.emailpassword.syncio import update_email_or_password
     from supertokens_python import convert_to_recipe_user_id
+    from supertokens_python.recipe.emailpassword.syncio import update_email_or_password
 
     if body["rid"] == "emailpassword":
         resp = update_email_or_password(

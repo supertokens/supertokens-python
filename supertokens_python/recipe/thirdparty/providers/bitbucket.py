@@ -14,14 +14,16 @@
 
 from __future__ import annotations
 
+from typing import Any, Dict, Optional
+
 from supertokens_python.recipe.thirdparty.provider import (
+    Provider,
     ProviderConfigForClient,
     ProviderInput,
-    Provider,
 )
-from typing import Dict, Any, Optional
 from .custom import GenericProvider, NewProvider
 from .utils import do_get_request
+
 from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 
 

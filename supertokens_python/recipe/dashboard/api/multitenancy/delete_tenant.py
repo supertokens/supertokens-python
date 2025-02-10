@@ -12,10 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Dict, Any, Union
+from typing import Any, Dict, Union
+
 from typing_extensions import Literal
+
 from supertokens_python.recipe.multitenancy.asyncio import delete_tenant
 from supertokens_python.types import APIResponse
+
 from ...interfaces import APIInterface, APIOptions
 
 

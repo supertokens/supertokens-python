@@ -1,14 +1,13 @@
-from typing import Union, List, Any, Dict
+import threading
+from typing import Any, Dict, List, Union
 
 import pytest
-import threading
-
 from supertokens_python.utils import (
+    RWMutex,
+    get_top_level_domain_for_same_site_resolution,
     humanize_time,
     is_version_gte,
-    get_top_level_domain_for_same_site_resolution,
 )
-from supertokens_python.utils import RWMutex
 
 from tests.utils import is_subset
 

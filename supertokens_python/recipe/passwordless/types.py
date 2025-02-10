@@ -15,13 +15,13 @@ from typing import List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
-    SMTPServiceInterface,
     EmailDeliveryInterface,
+    SMTPServiceInterface,
 )
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.ingredients.smsdelivery.types import (
-    TwilioServiceInterface,
     SMSDeliveryInterface,
+    TwilioServiceInterface,
 )
 
 

@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
+import supertokens_python.recipe.multitenancy.syncio as multitenancy
+from flask import Flask, jsonify, request
 from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantOkResult,
     TenantConfigCreateOrUpdate,
 )
-import supertokens_python.recipe.multitenancy.syncio as multitenancy
 from supertokens_python.recipe.thirdparty import (
     ProviderClientConfig,
     ProviderConfig,

@@ -1,5 +1,5 @@
-from typing import Callable, List, Union
-from typing import Dict, Any, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
+
 from supertokens_python.asyncio import list_users_by_account_info
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.accountlinking import (
@@ -46,8 +46,13 @@ from supertokens_python.recipe.thirdparty.types import (
     UserInfo,
     UserInfoEmail,
 )
-from supertokens_python.types import AccountInfo, GeneralErrorResponse, RecipeUserId
-from supertokens_python.types import APIResponse, User
+from supertokens_python.types import (
+    AccountInfo,
+    APIResponse,
+    GeneralErrorResponse,
+    RecipeUserId,
+    User,
+)
 
 
 class Info:
@@ -81,6 +86,8 @@ def get_func(eval_str: str) -> Callable[..., Any]:
     elif eval_str.startswith("multifactorauth.init.override.apis"):
         from supertokens_python.recipe.multifactorauth.interfaces import (
             APIInterface as MFAAPIInterface,
+        )
+        from supertokens_python.recipe.multifactorauth.interfaces import (
             APIOptions as MFAAPIOptions,
         )
 
@@ -147,6 +154,8 @@ def get_func(eval_str: str) -> Callable[..., Any]:
     elif eval_str.startswith("emailverification.init.emailDelivery.override"):
         from supertokens_python.recipe.emailverification.types import (
             EmailDeliveryOverrideInput as EVEmailDeliveryOverrideInput,
+        )
+        from supertokens_python.recipe.emailverification.types import (
             EmailTemplateVars as EVEmailTemplateVars,
         )
 
@@ -357,9 +366,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
     elif eval_str.startswith("passwordless.init.smsDelivery.service.sendSms"):
 
-        def func2(
-            template_vars: Any, user_context: Dict[str, Any]
-        ) -> None:  # pylint: disable=unused-argument
+        def func2(template_vars: Any, user_context: Dict[str, Any]) -> None:  # pylint: disable=unused-argument
             jsonified = {
                 "codeLifeTime": template_vars.code_life_time,
                 "phoneNumber": template_vars.phone_number,
@@ -414,13 +421,14 @@ def get_func(eval_str: str) -> Callable[..., Any]:
     elif eval_str.startswith("emailpassword.init.override.apis"):
         from supertokens_python.recipe.emailpassword.interfaces import (
             APIInterface as EmailPasswordAPIInterface,
+        )
+        from supertokens_python.recipe.emailpassword.interfaces import (
             APIOptions as EmailPasswordAPIOptions,
         )
 
         def ep_override_apis(
             original_implementation: EmailPasswordAPIInterface,
         ) -> EmailPasswordAPIInterface:
-
             og_password_reset_post = original_implementation.password_reset_post
             og_sign_up_post = original_implementation.sign_up_post
 
@@ -505,13 +513,14 @@ def get_func(eval_str: str) -> Callable[..., Any]:
     elif eval_str.startswith("thirdparty.init.override.apis"):
         from supertokens_python.recipe.thirdparty.interfaces import (
             APIInterface as ThirdPartyAPIInterface,
+        )
+        from supertokens_python.recipe.thirdparty.interfaces import (
             APIOptions as ThirdPartyAPIOptions,
         )
 
         def tp_override_apis(
             original_implementation: ThirdPartyAPIInterface,
         ) -> ThirdPartyAPIInterface:
-
             og_sign_in_up_post = original_implementation.sign_in_up_post
 
             async def sign_in_up_post(
@@ -584,7 +593,11 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return func4
 
         async def func(
-            i: Any, l: Any, o: Any, u: Any, a: Any  # pylint: disable=unused-argument
+            i: Any,
+            l: Any,
+            o: Any,
+            u: Any,
+            a: Any,  # pylint: disable=unused-argument
         ) -> Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]:
             if (
                 "()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!1})"
@@ -723,9 +736,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 ) -> Any:
                     return redirect_uri_info.redirect_uri_query_params
 
-                async def get_user_info2(
-                    oauth_tokens: Any, user_context: Any
-                ):  # pylint: disable=unused-argument
+                async def get_user_info2(oauth_tokens: Any, user_context: Any):  # pylint: disable=unused-argument
                     return UserInfo(
                         third_party_user_id=oauth_tokens.get("userId", "user"),
                         email=UserInfoEmail(
@@ -752,9 +763,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 ) -> Any:
                     return redirect_uri_info.redirect_uri_query_params
 
-                async def get_user_info3(
-                    oauth_tokens: Any, user_context: Any
-                ):  # pylint: disable=unused-argument
+                async def get_user_info3(oauth_tokens: Any, user_context: Any):  # pylint: disable=unused-argument
                     return UserInfo(
                         third_party_user_id=f"custom2{oauth_tokens['email']}",
                         email=UserInfoEmail(
@@ -781,9 +790,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 ) -> Any:
                     return redirect_uri_info.redirect_uri_query_params
 
-                async def get_user_info4(
-                    oauth_tokens: Any, user_context: Any
-                ):  # pylint: disable=unused-argument
+                async def get_user_info4(oauth_tokens: Any, user_context: Any):  # pylint: disable=unused-argument
                     return UserInfo(
                         third_party_user_id=oauth_tokens["email"],
                         email=UserInfoEmail(
@@ -810,9 +817,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 ) -> Any:
                     return redirect_uri_info.redirect_uri_query_params
 
-                async def get_user_info5(
-                    oauth_tokens: Any, user_context: Any
-                ):  # pylint: disable=unused-argument
+                async def get_user_info5(oauth_tokens: Any, user_context: Any):  # pylint: disable=unused-argument
                     if oauth_tokens.get("error"):
                         raise Exception("Credentials error")
                     return UserInfo(
@@ -982,7 +987,23 @@ def get_override_params() -> OverrideParams:
 
 
 def reset_override_params():
-    global send_email_to_user_id, token, user_post_password_reset, email_post_password_reset, send_email_callback_called, send_email_to_user_email, send_email_inputs, send_sms_inputs, send_email_to_recipe_user_id, user_in_callback, email_param, primary_user_in_callback, new_account_info_in_callback, user_id_in_callback, recipe_user_id_in_callback, store
+    global \
+        send_email_to_user_id, \
+        token, \
+        user_post_password_reset, \
+        email_post_password_reset, \
+        send_email_callback_called, \
+        send_email_to_user_email, \
+        send_email_inputs, \
+        send_sms_inputs, \
+        send_email_to_recipe_user_id, \
+        user_in_callback, \
+        email_param, \
+        primary_user_in_callback, \
+        new_account_info_in_callback, \
+        user_id_in_callback, \
+        recipe_user_id_in_callback, \
+        store
     send_email_to_user_id = None
     token = None
     user_post_password_reset = None

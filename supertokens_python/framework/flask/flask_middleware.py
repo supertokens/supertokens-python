@@ -31,21 +31,21 @@ class Middleware:
 
     def set_before_after_request(self):
         app = self.app
+        from flask.wrappers import Response
+
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python.supertokens import manage_session_post_response
         from supertokens_python.utils import default_user_context
 
-        from flask.wrappers import Response
-
         # There is an error in the typing provided by flask, so we ignore it
         # for now.
         @app.before_request  # type: ignore
         def _():
-            from supertokens_python import Supertokens
-
             from flask import request
             from flask.wrappers import Response
+
+            from supertokens_python import Supertokens
 
             st = Supertokens.get_instance()
 
@@ -85,18 +85,18 @@ class Middleware:
 
     def set_error_handler(self):
         app = self.app
-        from supertokens_python.exceptions import SuperTokensError
-
         from flask import request
+
+        from supertokens_python.exceptions import SuperTokensError
 
         @app.errorhandler(SuperTokensError)
         def _(error: Exception):
+            from flask.wrappers import Response
+
             from supertokens_python import Supertokens
             from supertokens_python.framework.flask.flask_request import FlaskRequest
             from supertokens_python.framework.flask.flask_response import FlaskResponse
             from supertokens_python.utils import default_user_context
-
-            from flask.wrappers import Response
 
             st = Supertokens.get_instance()
             response = Response(json.dumps({}), mimetype="application/json", status=200)

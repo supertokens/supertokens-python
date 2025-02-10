@@ -14,47 +14,45 @@
 import json
 import os
 import sys
+import time
+from base64 import b64encode
 from functools import wraps
 from typing import Any, Dict, Union
-from base64 import b64encode
-import time
 
 from flask import Flask, g, jsonify, make_response, render_template, request
 from flask.wrappers import Response
 from flask_cors import CORS
-
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
+from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.constants import VERSION
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.flask.flask_middleware import Middleware
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import InputErrorHandlers, SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
-    RecipeInterface,
-    JSONObject,
-    SessionClaimValidator,
     ClaimValidationResult,
+    JSONObject,
+    RecipeInterface,
+    SessionClaimValidator,
 )
 from supertokens_python.recipe.session.syncio import (
-    create_new_session,
     SessionContainer,
+    create_new_session,
+    get_session_information,
     merge_into_access_token_payload,
     revoke_all_sessions_for_user,
 )
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.constants import VERSION
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.session.syncio import get_session_information
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
-from supertokens_python.async_to_sync_wrapper import sync
 from werkzeug.exceptions import NotFound
-
 
 protected_prop_name = {
     "sub",
@@ -368,7 +366,12 @@ def multiple_interceptors_options():
 
 @app.route("/multipleInterceptors", methods=["POST"])  # type: ignore
 def multiple_interceptors():
-    result_bool = "success" if "interceptorheader2" in request.headers and "interceptorheader1" in request.headers else "failure"  # type: ignore
+    result_bool = (
+        "success"
+        if "interceptorheader2" in request.headers
+        and "interceptorheader1" in request.headers
+        else "failure"
+    )  # type: ignore
     return str(result_bool)
 
 

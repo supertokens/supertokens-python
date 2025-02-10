@@ -20,16 +20,17 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
+from ...post_init_callbacks import PostSTInitCallbacks
 from .api.implementation import APIImplementation
 from .interfaces import APIInterface, APIOptions, RecipeInterface
 from .recipe_implementation import RecipeImplementation
-from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
-    from .utils import SignInAndUpFeature, InputOverrideConfig
+
+    from .utils import InputOverrideConfig, SignInAndUpFeature
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe

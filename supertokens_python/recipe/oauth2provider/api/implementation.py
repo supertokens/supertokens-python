@@ -17,15 +17,10 @@ from typing import Any, Dict, List, Optional, Union
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import GeneralErrorResponse, User
 
-from .utils import (
-    handle_login_internal_redirects,
-    handle_logout_internal_redirects,
-    login_get,
-)
 from ..interfaces import (
+    ActiveTokenResponse,
     APIInterface,
     APIOptions,
-    ActiveTokenResponse,
     ErrorOAuth2Response,
     FrontendRedirectResponse,
     InactiveTokenResponse,
@@ -36,6 +31,11 @@ from ..interfaces import (
     RevokeTokenUsingClientIDAndClientSecret,
     TokenInfoResponse,
     UserInfoResponse,
+)
+from .utils import (
+    handle_login_internal_redirects,
+    handle_logout_internal_redirects,
+    login_get,
 )
 
 

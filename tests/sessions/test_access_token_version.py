@@ -1,11 +1,14 @@
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 import pytest
 from fastapi import Depends, FastAPI, Request
-
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session.access_token import get_info_from_access_token
+from supertokens_python.recipe.session.access_token import (
+    get_info_from_access_token,
+    validate_access_token_structure,
+)
 from supertokens_python.recipe.session.asyncio import (
     create_new_session_without_request_response,
     get_session_without_request_response,
@@ -13,11 +16,9 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
-from supertokens_python.recipe.session.access_token import (
-    validate_access_token_structure,
-)
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId
+
 from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
@@ -60,12 +61,12 @@ async def test_parsing_access_token_v2():
     assert parsed_info.payload["userId"] == "6fb4ddce-8911-4058-92ac-c76057fdaae8"
 
 
-from tests.testclient import TestClientWithNoCookieJar as TestClient
-
-from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.querier import NormalisedURLPath, Querier
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.querier import Querier, NormalisedURLPath
+from supertokens_python.recipe.session.interfaces import SessionContainer
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import extract_info
 
 
@@ -102,7 +103,9 @@ def app():
         }
 
     @fast.get("/verify-checkdb")
-    async def _verify_checkdb(session: SessionContainer = Depends(verify_session(check_database=True))):  # type: ignore
+    async def _verify_checkdb(  # type: ignore
+        session: SessionContainer = Depends(verify_session(check_database=True)),
+    ):
         return {
             "message": True,
             "sessionHandle": session.get_handle(),
@@ -111,7 +114,11 @@ def app():
         }
 
     @fast.get("/verify-optional")
-    async def _verify_optional(session: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
+    async def _verify_optional(  # type: ignore
+        session: Optional[SessionContainer] = Depends(
+            verify_session(session_required=False)
+        ),
+    ):
         return {
             "message": True,
             "sessionHandle": session.get_handle() if session is not None else None,

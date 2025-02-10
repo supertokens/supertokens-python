@@ -4,9 +4,8 @@ import uvicorn  # type: ignore
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse, PlainTextResponse
-from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
-
+from starlette.middleware.exceptions import ExceptionMiddleware
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -18,12 +17,11 @@ from supertokens_python.recipe import (
     dashboard,
     emailverification,
     session,
-    usermetadata,
     thirdparty,
+    usermetadata,
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-
 
 load_dotenv()
 

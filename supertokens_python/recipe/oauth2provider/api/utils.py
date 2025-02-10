@@ -15,9 +15,9 @@
 
 from __future__ import annotations
 
+import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
-import time
 
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
@@ -26,16 +26,18 @@ from supertokens_python.recipe.session.session_request_functions import (
     get_session_from_request,
 )
 from supertokens_python.types import MaybeAwaitable
-from ..constants import LOGIN_PATH, AUTH_PATH, END_SESSION_PATH
+
+from ..constants import AUTH_PATH, END_SESSION_PATH, LOGIN_PATH
 
 if TYPE_CHECKING:
-    from ..interfaces import (
-        RecipeInterface,
-        ErrorOAuth2Response,
-        RedirectResponse,
-    )
     from supertokens_python.recipe.session.interfaces import SessionContainer
     from supertokens_python.supertokens import AppInfo
+
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        RecipeInterface,
+        RedirectResponse,
+    )
 
 
 async def login_get(
@@ -49,9 +51,9 @@ async def login_get(
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
     from ..interfaces import (
         ErrorOAuth2Response,
-        RedirectResponse,
-        FrontendRedirectionURLTypeTryRefresh,
         FrontendRedirectionURLTypeLogin,
+        FrontendRedirectionURLTypeTryRefresh,
+        RedirectResponse,
     )
 
     login_request = await recipe_implementation.get_login_request(
@@ -244,7 +246,7 @@ async def handle_login_internal_redirects(
     cookie: str,
     user_context: Dict[str, Any],
 ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-    from ..interfaces import RedirectResponse, ErrorOAuth2Response
+    from ..interfaces import ErrorOAuth2Response, RedirectResponse
 
     if not is_login_internal_redirect(app_info, response.redirect_to):
         return response

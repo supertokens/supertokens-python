@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, Union, Optional, List, Callable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 if TYPE_CHECKING:
     from .types import UserInfo
@@ -41,9 +41,7 @@ class RedirectUriInfo:
 
 
 class Provider:
-    def __init__(
-        self, id: str, config: ProviderConfigForClient
-    ):  # pylint: disable=redefined-builtin
+    def __init__(self, id: str, config: ProviderConfigForClient):  # pylint: disable=redefined-builtin
         self.id = id
         self.config = config
 

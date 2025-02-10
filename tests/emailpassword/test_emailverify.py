@@ -14,13 +14,11 @@
 import asyncio
 import base64
 import json
-from urllib.parse import urlparse
 from typing import Any, Dict, Optional, Union
+from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import delete_user
@@ -33,9 +31,9 @@ from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
     revoke_email_verification_tokens,
+    send_email_verification_email,
     unverify_email,
     verify_email_using_token,
-    send_email_verification_email,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
@@ -55,9 +53,12 @@ from supertokens_python.recipe.session.asyncio import (
     refresh_session,
 )
 from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
+from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import (
     is_version_gte,
 )
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     email_verify_token_request,

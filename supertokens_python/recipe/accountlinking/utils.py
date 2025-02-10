@@ -12,18 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, Awaitable
+
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from .types import (
-        AccountLinkingConfig,
-        User,
-        RecipeLevelUser,
         AccountInfoWithRecipeIdAndUserId,
-        SessionContainer,
-        ShouldNotAutomaticallyLink,
-        ShouldAutomaticallyLink,
+        AccountLinkingConfig,
         InputOverrideConfig,
+        RecipeLevelUser,
+        SessionContainer,
+        ShouldAutomaticallyLink,
+        ShouldNotAutomaticallyLink,
+        User,
     )
 
 if TYPE_CHECKING:
@@ -75,9 +76,13 @@ def validate_and_normalise_user_input(
     override: Union[InputOverrideConfig, None] = None,
 ) -> AccountLinkingConfig:
     from .types import (
-        OverrideConfig,
-        InputOverrideConfig as IOC,
         AccountLinkingConfig as ALC,
+    )
+    from .types import (
+        InputOverrideConfig as IOC,
+    )
+    from .types import (
+        OverrideConfig,
     )
 
     global _did_use_default_should_do_automatic_account_linking

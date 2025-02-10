@@ -1,20 +1,19 @@
 from typing import Any, Dict, Union
-from supertokens_python.asyncio import get_user
 
+from supertokens_python.asyncio import get_user
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailverification.asyncio import (
-    send_email_verification_email,
     SendEmailVerificationEmailAlreadyVerifiedError,
+    send_email_verification_email,
 )
+from supertokens_python.types import RecipeUserId
 
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    UserEmailVerifyTokenPostAPIOkResponse,
     UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
+    UserEmailVerifyTokenPostAPIOkResponse,
 )
-
-from supertokens_python.types import RecipeUserId
 
 
 async def handle_email_verify_token_post(

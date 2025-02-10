@@ -35,7 +35,11 @@ urlpatterns = [  # type: ignore
         name="setEnabledRecipes",
     ),
     path("test/getTOTPCode", views.test_get_totp_code, name="getTotpCode"),  # type: ignore
-    path("test/create-oauth2-client", views.test_create_oauth2_client, name="createOAuth2Client"),  # type: ignore
+    path(
+        "test/create-oauth2-client",
+        views.test_create_oauth2_client,
+        name="createOAuth2Client",
+    ),  # type: ignore
     path("test/getDevice", views.test_get_device, name="getDevice"),  # type: ignore
     path("test/featureFlags", views.test_feature_flags, name="featureFlags"),  # type: ignore
     path("beforeeach", views.before_each, name="beforeeach"),  # type: ignore

@@ -12,13 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from base64 import b64decode
-import json
 
+import json
+from base64 import b64decode
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
-from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
 
+from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 from supertokens_python.recipe.session import SessionContainer

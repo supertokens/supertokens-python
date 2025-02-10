@@ -14,9 +14,9 @@
 from __future__ import annotations
 
 import base64
-from typing import TYPE_CHECKING, Dict, Optional, Any, Union, List
-from urllib.parse import parse_qs, urlparse
 import urllib.parse
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from urllib.parse import parse_qs, urlparse
 
 import jwt
 
@@ -32,39 +32,38 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId, User
 
 from .interfaces import (
+    ActiveTokenResponse,
+    ConsentRequestResponse,
+    CreatedOAuth2ClientResponse,
     CreateOAuth2ClientInput,
+    DeleteOAuth2ClientOkResponse,
+    ErrorOAuth2Response,
     FrontendRedirectionURLTypeLogin,
     FrontendRedirectionURLTypeLogoutConfirmation,
     FrontendRedirectionURLTypePostLogoutFallback,
     FrontendRedirectionURLTypeTryRefresh,
+    InactiveTokenResponse,
+    LoginRequestResponse,
+    OAuth2Client,
+    OAuth2ClientResponse,
+    OAuth2ClientsListResponse,
     OAuth2TokenValidationRequirements,
     PayloadBuilderFunction,
     RecipeInterface,
     RedirectResponse,
-    ErrorOAuth2Response,
-    OAuth2ClientResponse,
-    OAuth2ClientsListResponse,
-    CreatedOAuth2ClientResponse,
     RevokeTokenOkResponse,
     RevokeTokenUsingAuthorizationHeader,
     RevokeTokenUsingClientIDAndClientSecret,
-    UpdateOAuth2ClientInput,
-    UpdatedOAuth2ClientResponse,
-    DeleteOAuth2ClientOkResponse,
-    ConsentRequestResponse,
-    LoginRequestResponse,
-    OAuth2Client,
     TokenInfoResponse,
+    UpdatedOAuth2ClientResponse,
+    UpdateOAuth2ClientInput,
     UserInfoBuilderFunction,
-    ActiveTokenResponse,
-    InactiveTokenResponse,
     ValidatedAccessTokenResponse,
 )
 
-
 if TYPE_CHECKING:
-    from supertokens_python.querier import Querier
     from supertokens_python import AppInfo
+    from supertokens_python.querier import Querier
 
 
 def get_updated_redirect_to(app_info: AppInfo, redirect_to: str) -> str:
@@ -237,7 +236,6 @@ class RecipeImplementation(RecipeInterface):
         session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> Union[RedirectResponse, ErrorOAuth2Response]:
-
         # we handle this in the backend SDK level
         if params.get("prompt") == "none":
             params["st_prompt"] = "none"

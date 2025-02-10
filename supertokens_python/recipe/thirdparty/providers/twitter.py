@@ -15,12 +15,14 @@ from __future__ import annotations
 
 from base64 import b64encode
 from typing import Any, Dict, Optional
+
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 from supertokens_python.recipe.thirdparty.providers.utils import (
-    do_post_request,
     DEV_OAUTH_REDIRECT_URL,
+    do_post_request,
     get_actual_client_id_from_development_client_id,
 )
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -28,7 +30,6 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
-
 from .custom import (
     GenericProvider,
     NewProvider,
@@ -53,7 +54,6 @@ class TwitterImpl(GenericProvider):
     async def exchange_auth_code_for_oauth_tokens(
         self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
     ) -> Dict[str, Any]:
-
         client_id = self.config.client_id
         redirect_uri = redirect_uri_info.redirect_uri_on_provider_dashboard
 

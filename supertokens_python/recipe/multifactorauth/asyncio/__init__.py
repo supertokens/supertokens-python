@@ -14,15 +14,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
+from supertokens_python.recipe.accountlinking.asyncio import get_user
 from supertokens_python.recipe.session import SessionContainer
 
 from ..types import (
     MFARequirementList,
 )
 from ..utils import update_and_get_mfa_related_info_in_session
-from supertokens_python.recipe.accountlinking.asyncio import get_user
 
 
 async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(

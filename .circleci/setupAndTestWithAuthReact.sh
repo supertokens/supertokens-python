@@ -58,16 +58,16 @@ git checkout $2
 npm run init > /dev/null
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
-npm i git+https://github.com:supertokens/supertokens-node.git#$3  
-npm i  
+npm i git+https://github.com:supertokens/supertokens-node.git#$3
+npm i
 cd ../../../project/tests/auth-react/fastapi-server
 export PYTHONPATH="${PYTHONPATH}:/root/project"
 uvicorn app:app --host 0.0.0.0 --port 8083 &
 pid=$!
 cd ../../../../supertokens-auth-react/
 
-# When testing with supertokens-auth-react for version >= 0.18 the SKIP_OAUTH 
-# flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably. 
+# When testing with supertokens-auth-react for version >= 0.18 the SKIP_OAUTH
+# flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably.
 # In versions lower than 0.18 Github is used as the provider.
 
 # SKIP_OAUTH=true npm run test-with-non-node

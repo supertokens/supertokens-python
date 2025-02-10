@@ -83,4 +83,3 @@ fi
 
 # kill test-server
 kill $(lsof -t -i:$API_PORT)
-

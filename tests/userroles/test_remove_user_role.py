@@ -13,13 +13,13 @@
 # under the License.
 
 from pytest import mark, skip
-from supertokens_python.querier import Querier
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import userroles, session
+from supertokens_python.querier import Querier
+from supertokens_python.recipe import session, userroles
+from supertokens_python.recipe.userroles import asyncio, interfaces
 from supertokens_python.utils import is_version_gte
+
 from tests.utils import clean_st, reset, setup_st, start_st
-from supertokens_python.recipe.userroles import asyncio
-from supertokens_python.recipe.userroles import interfaces
 
 
 def setup_function(_):

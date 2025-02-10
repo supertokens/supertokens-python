@@ -1,9 +1,8 @@
-from flask import Flask, request, jsonify
-
+from flask import Flask, jsonify, request
 from supertokens_python.recipe.usermetadata.syncio import (
+    clear_user_metadata,
     get_user_metadata,
     update_user_metadata,
-    clear_user_metadata,
 )
 
 

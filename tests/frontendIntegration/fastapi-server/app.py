@@ -14,15 +14,15 @@
 import json
 import os
 import sys
-from typing import Any, Dict, Union
-from base64 import b64encode
 import time
+from base64 import b64encode
+from typing import Any, Dict, Union
 
 import uvicorn
 from fastapi import Depends, FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
-from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.requests import Request
 from supertokens_python import (
     InputAppInfo,
@@ -31,10 +31,14 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
+from supertokens_python.constants import VERSION
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import InputErrorHandlers
@@ -42,24 +46,20 @@ from supertokens_python.recipe.session.asyncio import (
     SessionContainer,
     SessionRecipe,
     create_new_session,
-    revoke_all_sessions_for_user,
+    get_session_information,
     merge_into_access_token_payload,
+    revoke_all_sessions_for_user,
 )
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
-    SessionClaimValidator,
     ClaimValidationResult,
     JSONObject,
     RecipeInterface,
+    SessionClaimValidator,
 )
-from supertokens_python.constants import VERSION
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.session.asyncio import get_session_information
-from supertokens_python.querier import Querier
-from supertokens_python.normalised_url_path import NormalisedURLPath
 
 protected_prop_name = {
     "sub",
@@ -437,7 +437,11 @@ def gcv_for_session_claim_err(*_):  # type: ignore
 
 
 @app.post("/session-claims-error")
-def session_claim_error_api(_session: SessionContainer = Depends(verify_session(override_global_claim_validators=gcv_for_session_claim_err))):  # type: ignore
+def session_claim_error_api(
+    _session: SessionContainer = Depends(
+        verify_session(override_global_claim_validators=gcv_for_session_claim_err)  # type: ignore
+    ),
+):
     return JSONResponse({})
 
 

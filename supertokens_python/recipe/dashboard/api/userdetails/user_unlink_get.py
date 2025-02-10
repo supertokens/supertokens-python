@@ -1,10 +1,13 @@
 from typing import Any, Dict
+
 from typing_extensions import Literal
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.accountlinking.asyncio import unlink_account
 from supertokens_python.recipe.dashboard.utils import RecipeUserId
-from ...interfaces import APIInterface, APIOptions
 from supertokens_python.types import APIResponse
+
+from ...interfaces import APIInterface, APIOptions
 
 
 class UserUnlinkGetOkResult(APIResponse):

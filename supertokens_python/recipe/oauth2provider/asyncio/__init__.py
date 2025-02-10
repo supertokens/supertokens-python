@@ -14,24 +14,24 @@
 from __future__ import annotations
 
 import base64
-from typing import Any, Dict, Union, Optional, List
+from typing import Any, Dict, List, Optional, Union
 
 from ..interfaces import (
     ActiveTokenResponse,
-    CreateOAuth2ClientInput,
     CreatedOAuth2ClientResponse,
+    CreateOAuth2ClientInput,
     DeleteOAuth2ClientOkResponse,
     ErrorOAuth2Response,
+    InactiveTokenResponse,
     OAuth2ClientResponse,
     OAuth2ClientsListResponse,
-    InactiveTokenResponse,
     OAuth2TokenValidationRequirements,
     RevokeTokenOkResponse,
     RevokeTokenUsingAuthorizationHeader,
     RevokeTokenUsingClientIDAndClientSecret,
     TokenInfoResponse,
-    UpdateOAuth2ClientInput,
     UpdatedOAuth2ClientResponse,
+    UpdateOAuth2ClientInput,
     ValidatedAccessTokenResponse,
 )
 

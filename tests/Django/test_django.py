@@ -13,50 +13,49 @@
 # under the License.
 
 import json
-from unittest.mock import Mock
-from urllib.parse import urlencode
+from base64 import b64encode
 from datetime import datetime
 from inspect import isawaitable
-from base64 import b64encode
 from typing import Any, Dict, Union
+from unittest.mock import Mock
+from urllib.parse import urlencode
 
+import pytest
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase, override_settings
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.django import middleware
 from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import (
     DjangoResponse as SuperTokensDjangoWrapper,
 )
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session, thirdparty
+from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.passwordless import ContactConfig, PasswordlessRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
+    create_new_session_without_request_response,
     get_session,
     refresh_session,
-    create_new_session_without_request_response,
 )
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
-
-import pytest
 from supertokens_python.types import RecipeUserId
+from supertokens_python.utils import is_version_gte
+
 from tests.utils import (
     clean_st,
+    create_users,
+    get_st_init_args,
     reset,
     setup_st,
     start_st,
-    create_users,
-    get_st_init_args,
 )
-from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
-from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
-from supertokens_python.framework import BaseRequest
-from supertokens_python.querier import Querier
-from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.passwordless import PasswordlessRecipe, ContactConfig
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
 
 
 def override_dashboard_functions(original_implementation: RecipeInterface):
@@ -968,7 +967,9 @@ class SupertokensTest(TestCase):
     async def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
         self,
     ):
-        args = get_st_init_args([session.init(get_token_transfer_method=lambda *_: "header")])  # type: ignore
+        args = get_st_init_args(
+            [session.init(get_token_transfer_method=lambda *_: "header")]  # type: ignore
+        )
         args.update({"framework": "django"})
         init(**args)  # type: ignore
         start_st()

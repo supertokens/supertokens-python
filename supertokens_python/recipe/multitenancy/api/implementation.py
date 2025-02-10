@@ -13,18 +13,18 @@
 # under the License.
 
 import importlib
-from typing import Any, Dict, Optional, Union, List
-from ..constants import DEFAULT_TENANT_ID
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.multitenancy.interfaces import (
     APIOptions,
-    LoginMethodsGetOkResult,
     LoginMethodEmailPassword,
     LoginMethodPasswordless,
+    LoginMethodsGetOkResult,
     LoginMethodThirdParty,
 )
 from supertokens_python.types import GeneralErrorResponse
 
+from ..constants import DEFAULT_TENANT_ID
 from ..interfaces import APIInterface, ThirdPartyProvider
 
 
@@ -39,13 +39,12 @@ class APIImplementation(APIInterface):
         module = importlib.import_module(
             "supertokens_python.recipe.multifactorauth.utils"
         )
-        from supertokens_python.recipe.thirdparty.providers.config_utils import (
-            merge_providers_from_core_and_static,
-            find_and_create_provider_instance,
-        )
-
         from supertokens_python.recipe.thirdparty.exceptions import (
             ClientTypeNotFoundError,
+        )
+        from supertokens_python.recipe.thirdparty.providers.config_utils import (
+            find_and_create_provider_instance,
+            merge_providers_from_core_and_static,
         )
 
         tenant_config = await api_options.recipe_implementation.get_tenant(

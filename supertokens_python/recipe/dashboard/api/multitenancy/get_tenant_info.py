@@ -12,24 +12,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
+
 from typing_extensions import Literal
 
-from supertokens_python.recipe.multitenancy.asyncio import get_tenant
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python import Supertokens
-from supertokens_python.types import APIResponse
-from .utils import (
-    get_normalised_first_factors_based_on_tenant_config_from_core_and_sdk_init,
-)
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+from supertokens_python.recipe.multitenancy.asyncio import get_tenant
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty.providers.config_utils import (
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.types import APIResponse
+
 from ...interfaces import APIInterface, APIOptions, CoreConfigFieldInfo
+from .utils import (
+    get_normalised_first_factors_based_on_tenant_config_from_core_and_sdk_init,
+)
 
 
 class ThirdPartyProvider:

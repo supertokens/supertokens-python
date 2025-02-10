@@ -19,13 +19,12 @@ import jwt
 from jwt.exceptions import DecodeError
 
 from supertokens_python.logger import log_debug_message
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.utils import SessionConfig
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
 from .jwt import ParsedJWTInfo
-
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 
 def sanitize_string(s: Any) -> Union[str, None]:

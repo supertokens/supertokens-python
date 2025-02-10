@@ -14,27 +14,25 @@
 import json
 
 from fastapi import FastAPI
-from pytest import mark, fixture
-
-from supertokens_python.framework.fastapi import get_middleware
-from tests.testclient import TestClientWithNoCookieJar as TestClient
-from supertokens_python.recipe import session, thirdparty, emailpassword, passwordless
+from pytest import fixture, mark
 from supertokens_python import init
+from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.recipe import emailpassword, passwordless, session, thirdparty
 from supertokens_python.recipe.multitenancy.asyncio import (
     create_or_update_third_party_config,
 )
 from supertokens_python.recipe.thirdparty.provider import (
-    ProviderConfig,
     ProviderClientConfig,
+    ProviderConfig,
 )
 
-from tests.utils import get_st_init_args
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
+    get_st_init_args,
     setup_function,
-    teardown_function,
     start_st,
+    teardown_function,
 )
-
 
 _ = setup_function
 _ = teardown_function

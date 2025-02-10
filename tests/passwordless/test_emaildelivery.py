@@ -20,7 +20,6 @@ import httpx
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
@@ -34,12 +33,27 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import passwordless, session, emailverification
+from supertokens_python.recipe import emailverification, passwordless, session
+from supertokens_python.recipe.emailverification.asyncio import (
+    create_email_verification_token,
+)
+from supertokens_python.recipe.emailverification.interfaces import (
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+)
+from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
+from supertokens_python.recipe.passwordless.asyncio import (
+    signinup,
+)
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import (
     SMTPService,
 )
-from supertokens_python.recipe.passwordless.types import EmailTemplateVars
+from supertokens_python.recipe.passwordless.types import (
+    EmailTemplateVars,
+    PasswordlessLoginEmailTemplateVars,
+)
 from supertokens_python.utils import is_version_gte
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     clean_st,
     reset,
@@ -48,20 +62,6 @@ from tests.utils import (
     sign_in_up_request_code_resend,
     start_st,
 )
-from supertokens_python.recipe.passwordless.types import (
-    PasswordlessLoginEmailTemplateVars,
-)
-from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
-from supertokens_python.recipe.passwordless.asyncio import (
-    signinup,
-)
-from supertokens_python.recipe.emailverification.asyncio import (
-    create_email_verification_token,
-)
-from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-)
-
 
 respx_mock = respx.MockRouter
 
@@ -254,7 +254,13 @@ async def test_pless_login_default_backward_compatibility(
         assert mocked_route.called
 
     def code_resend_api_side_effect(request: httpx.Request):
-        nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code, resend_called
+        nonlocal \
+            app_name, \
+            email, \
+            code_lifetime, \
+            url_with_link_code, \
+            user_input_code, \
+            resend_called
         body = json.loads(request.content)
 
         assert body["userInputCode"] != user_input_code  # Resend generates a new code
@@ -498,7 +504,13 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         assert mocked_route.called
 
     def code_resend_api_side_effect(request: httpx.Request):
-        nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code, resend_called
+        nonlocal \
+            app_name, \
+            email, \
+            code_lifetime, \
+            url_with_link_code, \
+            user_input_code, \
+            resend_called
         body = json.loads(request.content)
 
         app_name = body["appName"]

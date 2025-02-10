@@ -15,7 +15,8 @@
 from typing import Union
 
 from supertokens_python import AppInfo
-from .types import TOTPConfig, TOTPNormalisedConfig, OverrideConfig
+
+from .types import OverrideConfig, TOTPConfig, TOTPNormalisedConfig
 
 
 def validate_and_normalise_user_input(

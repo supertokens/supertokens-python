@@ -11,14 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import FastAPI
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
-
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,
@@ -37,6 +34,9 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import (
     RecipeInterface as SRecipeInterface,
 )
+from supertokens_python.types import RecipeUserId
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 
 from .utils import clean_st, reset, setup_st, sign_in_request, start_st
 

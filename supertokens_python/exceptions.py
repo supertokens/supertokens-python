@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, NoReturn
+from typing import NoReturn, Union
 
 
 def raise_general_exception(

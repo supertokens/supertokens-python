@@ -25,6 +25,6 @@ if TYPE_CHECKING:
 
 
 def init(
-    override: Union[utils.InputOverrideConfig, None] = None
+    override: Union[utils.InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return UserMetadataRecipe.init(override)

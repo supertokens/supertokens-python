@@ -12,22 +12,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Dict, Any, Union
+import asyncio
+from typing import Any, Dict, Union
+
 from typing_extensions import Literal
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.multitenancy.asyncio import (
-    get_tenant,
-    create_or_update_third_party_config,
     create_or_update_tenant,
+    create_or_update_third_party_config,
     delete_third_party_config,
+    get_tenant,
 )
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty import ProviderConfig
 from supertokens_python.types import APIResponse
+
 from ...interfaces import APIInterface, APIOptions
-import asyncio
 
 
 class DeleteThirdPartyConfigOkResult(APIResponse):

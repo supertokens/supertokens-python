@@ -14,8 +14,8 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from supertokens_python.asyncio import get_user, list_users_by_account_info
 
+from supertokens_python.asyncio import get_user, list_users_by_account_info
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
@@ -26,13 +26,13 @@ from supertokens_python.recipe.thirdparty.providers.config_utils import (
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
-from supertokens_python.types import AccountInfo, User, RecipeUserId
+from supertokens_python.types import AccountInfo, RecipeUserId, User
 
 if TYPE_CHECKING:
-    from supertokens_python.querier import Querier
     from supertokens_python.auth_utils import (
         LinkingToSessionUserFailedError,
     )
+    from supertokens_python.querier import Querier
 
 from .interfaces import (
     EmailChangeNotAllowedError,

@@ -12,14 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import Any, Dict
 
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
     APIOptions,
 )
-from supertokens_python.utils import send_200_response
 from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.utils import send_200_response
 
 
 async def handle_generate_email_verify_token_api(

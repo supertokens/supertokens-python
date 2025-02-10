@@ -1,25 +1,23 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import pkce
 from httpx import AsyncClient
-
 from jwt import decode  # type: ignore
 from jwt.algorithms import RSAAlgorithm
-import pkce
 
 from supertokens_python.recipe.thirdparty.exceptions import ClientTypeNotFoundError
 from supertokens_python.recipe.thirdparty.providers.utils import (
+    DEV_KEY_IDENTIFIER,
     DEV_OAUTH_AUTHORIZATION_URL,
+    DEV_OAUTH_CLIENT_IDS,
     DEV_OAUTH_REDIRECT_URL,
     do_get_request,
     do_post_request,
     get_actual_client_id_from_development_client_id,
     is_using_oauth_development_client_id,
-    DEV_KEY_IDENTIFIER,
-    DEV_OAUTH_CLIENT_IDS,
 )
 
-from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 from ..provider import (
     AuthorisationRedirect,
     Provider,
@@ -31,6 +29,7 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
+from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 
 
 def get_provider_config_for_client(
@@ -165,7 +164,12 @@ async def verify_id_token_from_jwks_endpoint_and_get_payload(
     err = Exception("id token verification failed")
     for key in public_keys:
         try:
-            return decode(jwt=id_token, key=key, audience=[audience], algorithms=["RS256"])  # type: ignore
+            return decode(
+                jwt=id_token,
+                key=key,  # type: ignore
+                audience=[audience],
+                algorithms=["RS256"],
+            )
         except Exception as e:
             err = e
     raise err

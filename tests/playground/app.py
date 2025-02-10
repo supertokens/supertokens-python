@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python import init, InputAppInfo, SupertokensConfig
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import emailpassword
 
 # from supertokens_python.recipe.emailpassword import InputFormField

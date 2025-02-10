@@ -1,7 +1,8 @@
-from pytest import fixture
-from supertokens_python.utils import get_timestamp_ms
-from pytest_mock.plugin import MockerFixture
 from typing import Tuple
+
+from pytest import fixture
+from pytest_mock.plugin import MockerFixture
+from supertokens_python.utils import get_timestamp_ms
 
 
 @fixture()

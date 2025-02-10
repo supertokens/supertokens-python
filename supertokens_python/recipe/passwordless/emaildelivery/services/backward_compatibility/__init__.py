@@ -19,6 +19,7 @@ from os import environ
 from typing import Any, Dict
 
 from httpx import AsyncClient, HTTPStatusError
+
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.types import (
@@ -46,7 +47,11 @@ async def create_and_send_email_with_supertokens_service(
 
     try:
         async with AsyncClient(timeout=30.0) as client:
-            resp = await client.post("https://api.supertokens.io/0/st/auth/passwordless/login", json=data, headers={"api-version": "0"})  # type: ignore
+            resp = await client.post(
+                "https://api.supertokens.io/0/st/auth/passwordless/login",
+                json=data,
+                headers={"api-version": "0"},
+            )  # type: ignore
             resp.raise_for_status()
             log_debug_message("Passwordless login email sent to %s", input_.email)
     except Exception as e:

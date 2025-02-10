@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, List, Optional, Union
+
 from supertokens_python import get_request_from_user_context
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
-
 from supertokens_python.recipe.passwordless.interfaces import (
     CheckCodeExpiredUserInputCodeError,
     CheckCodeIncorrectUserInputCodeError,

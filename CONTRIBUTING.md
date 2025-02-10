@@ -14,7 +14,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ## Development Setup
 
-You will need to setup the [supertokens-core](https://github.com/supertokens/supertokens-core) in order to run the `supertokens-python` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)  
+You will need to setup the [supertokens-core](https://github.com/supertokens/supertokens-core) in order to run the `supertokens-python` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)
 **Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.**
 
 ### Prerequisites
@@ -36,13 +36,13 @@ You will need to setup the [supertokens-core](https://github.com/supertokens/sup
 ## Modifying Code
 
 - Open the `supertokens-python` project in your IDE and you can start modifying the code.
-- Use `make check-lint` and `make format` to find lint/formatting errors before committing. (They will run anyways)
+- Use `make lint` to find lint/formatting errors before committing. (They will run anyways)
 
 ## Testing
 
 1. Navigate to the [supertokens-root](https://github.com/supertokens/supertokens-root) repository.
-2. Start the testing environment  
-   `./startTestEnv --wait`   
+2. Start the testing environment
+   `./startTestEnv --wait`
    and ensure the test environment is up and running.
 3. Open a new terminal and navigate to the `supertokens-python` respositry.
 4. Use `export SUPERTOKENS_PATH=path/to/supertokens-root` (**MANDATORY**)

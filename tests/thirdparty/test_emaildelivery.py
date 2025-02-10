@@ -19,10 +19,7 @@ import httpx
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -54,6 +51,9 @@ from supertokens_python.recipe.thirdparty.types import (
     UserInfo,
     UserInfoEmail,
 )
+from supertokens_python.types import RecipeUserId
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, email_verify_token_request, reset, setup_st, start_st
 
 respx_mock = respx.MockRouter

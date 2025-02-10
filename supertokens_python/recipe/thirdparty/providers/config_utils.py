@@ -1,31 +1,31 @@
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
+
+from ..provider import (
+    Provider,
+    ProviderConfig,
+    ProviderConfigForClient,
+    ProviderInput,
+    UserFields,
+    UserInfoMap,
+)
 from .active_directory import ActiveDirectory
 from .apple import Apple
 from .bitbucket import Bitbucket
 from .boxy_saml import BoxySAML
+from .custom import NewProvider
 from .discord import Discord
 from .facebook import Facebook
 from .github import Github
 from .gitlab import Gitlab
-from .google_workspaces import GoogleWorkspaces
 from .google import Google
+from .google_workspaces import GoogleWorkspaces
 from .linkedin import Linkedin
-from .twitter import Twitter
 from .okta import Okta
-from .custom import NewProvider
+from .twitter import Twitter
 from .utils import do_get_request
-
-from ..provider import (
-    ProviderConfig,
-    ProviderConfigForClient,
-    ProviderInput,
-    Provider,
-    UserFields,
-    UserInfoMap,
-)
 
 
 def merge_config(

@@ -15,8 +15,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional
-from supertokens_python.framework import BaseRequest
 
+from typing_extensions import Literal
+
+from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
@@ -24,7 +26,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from typing import Callable, Union
@@ -76,9 +77,9 @@ def validate_and_normalise_user_input(
             "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         )
 
-    def get_email_delivery_config() -> (
-        EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
-    ):
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[
+        VerificationEmailTemplateVars
+    ]:
         email_service = email_delivery.service if email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)

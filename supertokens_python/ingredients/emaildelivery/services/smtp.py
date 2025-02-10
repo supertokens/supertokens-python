@@ -18,6 +18,7 @@ from email.mime.text import MIMEText
 from typing import Any, Dict, TypeVar
 
 import aiosmtplib
+
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailContent,
     SMTPSettings,

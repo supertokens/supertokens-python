@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from supertokens_python.recipe.thirdparty.types import UserInfo
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -23,7 +24,6 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
-
 from .custom import (
     GenericProvider,
     NewProvider,

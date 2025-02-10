@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import threading
 import warnings
-from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
+from base64 import b64decode, b64encode, urlsafe_b64decode, urlsafe_b64encode
 from math import floor
 from re import fullmatch
 from time import time
@@ -28,9 +28,9 @@ from typing import (
     Callable,
     Dict,
     List,
+    Optional,
     TypeVar,
     Union,
-    Optional,
 )
 from urllib.parse import urlparse
 
@@ -47,10 +47,11 @@ from supertokens_python.logger import log_debug_message
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
 
-from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER, FDI_KEY_HEADER
+from supertokens_python.types import User
+
+from .constants import ERROR_MESSAGE_KEY, FDI_KEY_HEADER, RID_KEY_HEADER
 from .exceptions import raise_general_exception
 from .types import MaybeAwaitable
-from supertokens_python.types import User
 
 _T = TypeVar("_T")
 

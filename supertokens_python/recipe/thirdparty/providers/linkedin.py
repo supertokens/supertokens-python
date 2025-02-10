@@ -14,13 +14,14 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Union
-from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
 
+from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
 from supertokens_python.recipe.thirdparty.types import (
     RawUserInfoFromProvider,
     UserInfo,
     UserInfoEmail,
 )
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -28,7 +29,6 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
-
 from .custom import (
     GenericProvider,
     NewProvider,
@@ -70,7 +70,9 @@ class LinkedinImpl(GenericProvider):
             third_party_user_id=raw_user_info_from_provider.from_user_info_api["sub"],  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get("email"),  # type: ignore
-                is_verified=raw_user_info_from_provider.from_user_info_api.get("email_verified"),  # type: ignore
+                is_verified=raw_user_info_from_provider.from_user_info_api.get(
+                    "email_verified"
+                ),  # type: ignore
             ),
             raw_user_info_from_provider=raw_user_info_from_provider,
         )

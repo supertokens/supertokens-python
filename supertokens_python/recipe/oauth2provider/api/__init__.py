@@ -15,8 +15,8 @@
 from .auth import auth_get  # type: ignore
 from .end_session import end_session_get, end_session_post  # type: ignore
 from .introspect_token import introspect_token_post  # type: ignore
-from .login_info import login_info_get  # type: ignore
 from .login import login  # type: ignore
+from .login_info import login_info_get  # type: ignore
 from .logout import logout_post  # type: ignore
 from .revoke_token import revoke_token_post  # type: ignore
 from .token import token_post  # type: ignore

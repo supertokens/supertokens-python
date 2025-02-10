@@ -15,16 +15,15 @@
 from typing import List
 
 from pytest import mark
-from tests.utils import clean_st, reset, setup_st, start_st
-
-from supertokens_python import InputAppInfo, SupertokensConfig
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python import asyncio as st_asyncio
-from supertokens_python import init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword import asyncio as ep_asyncio
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.utils import is_version_gte
+
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
 def setup_function(_):

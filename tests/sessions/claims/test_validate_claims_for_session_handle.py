@@ -1,9 +1,9 @@
 # Session.validateClaimsForSessionHandle
 from unittest.mock import MagicMock
-from pytest import mark
 
-from supertokens_python.framework import BaseRequest
+from pytest import mark
 from supertokens_python import init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -14,12 +14,13 @@ from supertokens_python.recipe.session.interfaces import (
     SessionDoesNotExistError,
 )
 from supertokens_python.types import RecipeUserId
+
 from tests.sessions.claims.utils import (
-    get_st_init_args,
     NoneClaim,
     TrueClaim,
+    get_st_init_args,
 )
-from tests.utils import setup_function, teardown_function, start_st, st_init_common_args
+from tests.utils import setup_function, st_init_common_args, start_st, teardown_function
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Optional, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt.api.implementation import APIImplementation
@@ -129,8 +129,7 @@ class JWTRecipe(RecipeModule):
                 )
                 return JWTRecipe.__instance
             raise_general_exception(
-                "JWT recipe has already been initialised. Please check "
-                "your code for bugs."
+                "JWT recipe has already been initialised. Please check your code for bugs."
             )
 
         return func

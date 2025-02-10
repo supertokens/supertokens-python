@@ -20,7 +20,7 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
-    from ..interfaces import APIOptions, APIInterface
+    from ..interfaces import APIInterface, APIOptions
 
 
 async def login_info_get(

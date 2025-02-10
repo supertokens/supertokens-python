@@ -34,7 +34,7 @@ from ...logger import log_debug_message
 from ...post_init_callbacks import PostSTInitCallbacks
 from ...utils import get_timestamp_ms
 from ..session import SessionRecipe
-from ..session.asyncio import revoke_all_sessions_for_user, create_new_session
+from ..session.asyncio import create_new_session, revoke_all_sessions_for_user
 from ..session.claim_base_classes.boolean_claim import (
     BooleanClaim,
     BooleanClaimValidators,
@@ -68,7 +68,8 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
     from supertokens_python.types import RecipeUserId
-    from ...types import User, MaybeAwaitable
+
+    from ...types import MaybeAwaitable, User
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -460,7 +461,6 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
         max_age_in_seconds: Optional[int] = None,
         id_: Optional[str] = None,
     ) -> SessionClaimValidator:
-
         assert isinstance(self.claim, EmailVerificationClaimClass)
         return IsVerifiedSCV(
             (id_ or self.claim.key),
@@ -511,7 +511,6 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
-
         response = await api_options.recipe_implementation.verify_email_using_token(
             token, tenant_id, True, user_context
         )

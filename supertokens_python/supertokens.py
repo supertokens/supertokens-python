@@ -15,16 +15,15 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.logger import (
+    enable_debug_logging,
     get_maybe_none_as_str,
     log_debug_message,
-    enable_debug_logging,
 )
-
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
 from .exceptions import SuperTokensError
@@ -51,10 +50,11 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
+
+    from .recipe_module import RecipeModule
 
 import json
 
@@ -264,7 +264,14 @@ class Supertokens:
         jwt_found = False
 
         def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
-            nonlocal multitenancy_found, totp_found, user_metadata_found, multi_factor_auth_found, oauth2_found, openid_found, jwt_found
+            nonlocal \
+                multitenancy_found, \
+                totp_found, \
+                user_metadata_found, \
+                multi_factor_auth_found, \
+                oauth2_found, \
+                openid_found, \
+                jwt_found
             recipe_module = recipe(self.app_info)
             if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True

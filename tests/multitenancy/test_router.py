@@ -12,13 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from fastapi import FastAPI
-from pytest import mark, fixture
+from pytest import fixture, mark
 from starlette.testclient import TestClient
-
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe import session, emailpassword, dashboard
-from tests.utils import setup_function, teardown_function, get_st_init_args, start_st
+from supertokens_python.recipe import dashboard, emailpassword, session
+
+from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
 
 _ = setup_function
 _ = teardown_function

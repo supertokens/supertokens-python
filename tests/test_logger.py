@@ -8,14 +8,13 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.constants import VERSION
 from supertokens_python.logger import (
-    log_debug_message,
-    streamFormatter,
     NAMESPACE,
     enable_debug_logging,
+    log_debug_message,
+    streamFormatter,
 )
 from supertokens_python.recipe import session
 

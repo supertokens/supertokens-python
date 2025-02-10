@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import (
     SignInNotAllowedResponse,
@@ -23,7 +24,6 @@ from supertokens_python.auth_utils import (
     post_auth_checks,
     pre_auth_checks,
 )
-
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.accountlinking import (
     AccountInfoWithRecipeIdAndUserId,
@@ -63,6 +63,7 @@ from supertokens_python.recipe.emailpassword.types import (
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.totp.types import UnknownUserIdError
+
 from ..utils import get_password_reset_link
 
 if TYPE_CHECKING:

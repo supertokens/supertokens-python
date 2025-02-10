@@ -12,8 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
+from supertokens_python.asyncio import get_user
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
@@ -36,16 +39,13 @@ from ...jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+from ..constants import protected_props
 from ..session_request_functions import (
     create_new_session_in_request,
     get_session_from_request,
     refresh_session_in_request,
 )
-from ..constants import protected_props
 from ..utils import get_required_claim_validators
-
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
-from supertokens_python.asyncio import get_user
 
 _T = TypeVar("_T")
 
@@ -506,7 +506,7 @@ async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSR
 
 
 async def get_open_id_discovery_configuration(
-    user_context: Union[None, Dict[str, Any]] = None
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}

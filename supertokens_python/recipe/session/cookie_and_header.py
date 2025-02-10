@@ -18,11 +18,13 @@ from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
 
+from supertokens_python.constants import ONE_YEAR_IN_MS
 from supertokens_python.recipe.session.exceptions import (
     raise_clear_duplicate_session_cookies_exception,
 )
 from supertokens_python.recipe.session.interfaces import ResponseMutator
 
+from ...logger import log_debug_message
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
     ACCESS_TOKEN_COOKIE_KEY,
@@ -36,23 +38,22 @@ from .constants import (
     RID_HEADER_KEY,
     available_token_transfer_methods,
 )
-from ...logger import log_debug_message
-from supertokens_python.constants import ONE_YEAR_IN_MS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
+
     from .recipe import SessionRecipe
     from .utils import (
+        SessionConfig,
         TokenTransferMethod,
         TokenType,
-        SessionConfig,
     )
 
 from json import dumps
 from typing import Any, Dict
 
-from supertokens_python.utils import get_header, utf_base64encode, get_timestamp_ms
+from supertokens_python.utils import get_header, get_timestamp_ms, utf_base64encode
 
 
 def build_front_token(

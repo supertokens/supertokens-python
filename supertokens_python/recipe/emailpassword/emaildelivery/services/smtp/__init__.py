@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Callable, Union
+from typing import Any, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
 from supertokens_python.ingredients.emaildelivery.types import (

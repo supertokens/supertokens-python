@@ -15,11 +15,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
-
 if TYPE_CHECKING:
-    from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
+    from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions
 
-from supertokens_python.exceptions import raise_bad_input_exception, BadInputError
+from supertokens_python.exceptions import BadInputError, raise_bad_input_exception
 from supertokens_python.utils import send_200_response
 
 

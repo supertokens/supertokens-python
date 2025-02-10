@@ -17,9 +17,9 @@ import os
 import warnings
 
 import pytest
-
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.recipe import session
+
 from tests.utils import reset
 
 
@@ -51,9 +51,9 @@ async def test_telemetry():
         assert Supertokens.get_instance().telemetry is not None
 
         assert Supertokens.get_instance().telemetry
-        assert (
-            len(warning_list) == 0
-        ), f"Expected no warnings but got: {[str(w.message) for w in warning_list]}"
+        assert len(warning_list) == 0, (
+            f"Expected no warnings but got: {[str(w.message) for w in warning_list]}"
+        )
 
 
 @pytest.mark.asyncio
@@ -82,6 +82,6 @@ async def test_read_from_env():
         await asyncio.sleep(1)
 
         assert not Supertokens.get_instance().telemetry
-        assert (
-            len(warning_list) == 0
-        ), f"Expected no warnings but got: {[str(w.message) for w in warning_list]}"
+        assert len(warning_list) == 0, (
+            f"Expected no warnings but got: {[str(w.message) for w in warning_list]}"
+        )

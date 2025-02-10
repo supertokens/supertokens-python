@@ -12,14 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-import importlib
 
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, Set, Callable, List
+import importlib
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Set
 
 from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
     MultiFactorAuthClaim,
     MultiFactorAuthClaimClass,
 )
+from supertokens_python.recipe.multifactorauth.types import (
+    MFAClaimValue,
+    MFARequirementList,
+)
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.interfaces import (
     ClaimValidationResult,
     JSONObject,
@@ -29,17 +34,13 @@ from supertokens_python.recipe.usermetadata.asyncio import (
     get_user_metadata,
     update_user_metadata,
 )
-from supertokens_python.recipe.multifactorauth.types import (
-    MFAClaimValue,
-    MFARequirementList,
-)
-from supertokens_python.recipe.session import SessionContainer
-
 from supertokens_python.types import User
+
 from .interfaces import RecipeInterface
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
+
     from .recipe import MultiFactorAuthRecipe
 
 

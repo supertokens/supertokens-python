@@ -13,11 +13,11 @@
 # under the License.
 from __future__ import annotations
 
-
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from typing import Union
+
     from .interfaces import APIInterface, RecipeInterface
 
 
@@ -47,7 +47,7 @@ class OAuth2ProviderConfig:
 
 
 def validate_and_normalise_user_input(
-    override: Union[InputOverrideConfig, None] = None
+    override: Union[InputOverrideConfig, None] = None,
 ):
     if override is None:
         return OAuth2ProviderConfig(OverrideConfig())

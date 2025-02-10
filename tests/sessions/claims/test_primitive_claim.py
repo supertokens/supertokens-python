@@ -1,12 +1,12 @@
 from unittest.mock import MagicMock
 
 from pytest import mark
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import resolve
-from tests.utils import AsyncMock
 
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from tests.utils import AsyncMock
 
 val = {"foo": 1}
 SECONDS = 1_000
@@ -52,9 +52,7 @@ async def test_primitive_claim_fetch_value_params_correct():
         DEFAULT_TENANT_ID,
         {},
         {},
-    ) == sync_fetch_value.call_args_list[0][
-        0
-    ]  # extra [0] refers to call params
+    ) == sync_fetch_value.call_args_list[0][0]  # extra [0] refers to call params
 
 
 async def test_primitive_claim_fetch_value_none():
@@ -178,12 +176,15 @@ async def test_should_not_validate_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     res = await claim.validators.has_value(val, 600).validate({}, {})
     assert res.is_valid is False
-    assert res.reason == {
-        "expectedValue": val,
-        "actualValue": None,
-        "message": "value does not exist",  # TODO: Validate that this is actually correct.
-        # because this makes sense yet the node PR isn't aligned with this.
-    }
+    assert (
+        res.reason
+        == {
+            "expectedValue": val,
+            "actualValue": None,
+            "message": "value does not exist",  # TODO: Validate that this is actually correct.
+            # because this makes sense yet the node PR isn't aligned with this.
+        }
+    )
 
 
 async def test_has_fresh_value_should_not_validate_mismatching_payload():
@@ -212,7 +213,6 @@ async def test_should_validate_matching_payload():
 async def test_should_not_validate_old_values_as_well(
     patch_get_timestamp_ms: MagicMock,
 ):
-
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build(
         "user_id", RecipeUserId("user_id"), DEFAULT_TENANT_ID, {}, {}

@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.recipe.emailverification import EmailVerificationClaim
 import time
+
+from supertokens_python.recipe.emailverification import EmailVerificationClaim
 
 
 def test_claim_value_should_be_fetched_if_it_is_None():

@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python import SupertokensConfig, InputAppInfo
+from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword, session, usermetadata
 
 st_config = {

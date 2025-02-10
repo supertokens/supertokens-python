@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.session.access_token import (
@@ -29,6 +29,9 @@ from supertokens_python.recipe.session.cookie_and_header import (
     set_cookie_response_mutator,
 )
 from supertokens_python.recipe.session.exceptions import (
+    SuperTokensSessionError,
+    TokenTheftError,
+    UnauthorisedError,
     raise_try_refresh_token_exception,
     raise_unauthorised_exception,
 )
@@ -39,11 +42,6 @@ from supertokens_python.recipe.session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from supertokens_python.recipe.session.exceptions import (
-    SuperTokensSessionError,
-    TokenTheftError,
-    UnauthorisedError,
-)
 from supertokens_python.recipe.session.jwt import (
     ParsedJWTInfo,
     parse_jwt_without_signature_verification,
@@ -51,9 +49,10 @@ from supertokens_python.recipe.session.jwt import (
 from supertokens_python.recipe.session.utils import (
     SessionConfig,
     TokenTransferMethod,
-    get_required_claim_validators,
     get_auth_mode_from_header,
+    get_required_claim_validators,
 )
+from supertokens_python.supertokens import Supertokens
 from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import (
     FRAMEWORKS,
@@ -62,12 +61,13 @@ from supertokens_python.utils import (
     normalise_http_method,
     set_request_in_user_context_if_not_defined,
 )
-from supertokens_python.supertokens import Supertokens
+
 from .constants import protected_props
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.recipe import SessionRecipe
     from supertokens_python.supertokens import AppInfo
+
     from .interfaces import ResponseMutator
 
 LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"

@@ -14,13 +14,12 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional, List
+from typing import Callable, List, Optional
 
 from supertokens_python import AppInfo, RecipeModule
+from supertokens_python.recipe.dashboard import utils
 
 from .recipe import DashboardRecipe
-
-from supertokens_python.recipe.dashboard import utils
 
 InputOverrideConfig = utils.InputOverrideConfig
 

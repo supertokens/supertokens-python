@@ -1,9 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from supertokens_python.recipe.totp.syncio import create_device, verify_device
 from supertokens_python.recipe.totp.types import (
     CreateDeviceOkResult,
-)
-from supertokens_python.recipe.totp.types import (
     DeviceAlreadyExistsError,
     InvalidTOTPError,
     UnknownDeviceError,

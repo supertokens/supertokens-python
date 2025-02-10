@@ -15,23 +15,22 @@ from typing import Union
 
 
 def get_middleware():
-    from supertokens_python import Supertokens
-    from supertokens_python.utils import default_user_context
-    from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.framework import BaseResponse
-    from supertokens_python.recipe.session import SessionContainer
-    from supertokens_python.supertokens import manage_session_post_response
-
     from starlette.requests import Request
     from starlette.responses import Response
     from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+    from supertokens_python import Supertokens
+    from supertokens_python.exceptions import SuperTokensError
+    from supertokens_python.framework import BaseResponse
     from supertokens_python.framework.fastapi.fastapi_request import (
         FastApiRequest,
     )
     from supertokens_python.framework.fastapi.fastapi_response import (
         FastApiResponse,
     )
+    from supertokens_python.recipe.session import SessionContainer
+    from supertokens_python.supertokens import manage_session_post_response
+    from supertokens_python.utils import default_user_context
 
     class ASGIMiddleware:
         def __init__(self, app: ASGIApp) -> None:

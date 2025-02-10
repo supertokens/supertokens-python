@@ -12,20 +12,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from fastapi import Depends, FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.querier import Querier
+from supertokens_python.recipe import emailpassword, session, thirdparty
+from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EPAPIInterface,
 )
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from supertokens_python.recipe.passwordless import ContactConfig, PasswordlessRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -36,6 +40,10 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface
 from supertokens_python.recipe.session.interfaces import APIOptions as SessionAPIOptions
+from supertokens_python.types import RecipeUserId
+from supertokens_python.utils import is_version_gte
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
     TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
@@ -43,23 +51,14 @@ from tests.utils import (
     TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH,
     assert_info_clears_tokens,
     clean_st,
+    create_users,
     extract_all_cookies,
     extract_info,
     get_st_init_args,
     reset,
     setup_st,
     start_st,
-    create_users,
 )
-from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
-from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
-from supertokens_python.framework import BaseRequest
-from supertokens_python.querier import Querier
-from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.passwordless import PasswordlessRecipe, ContactConfig
-from supertokens_python.recipe import thirdparty
-
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
 
 
 def override_dashboard_functions(original_implementation: RecipeInterface):
@@ -121,7 +120,11 @@ def driver_config_client() -> TestClient:
         return {"s": session.get_handle()}
 
     @app.get("/handle-session-optional")
-    async def handle_get_optional(session: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
+    async def handle_get_optional(  # type: ignore
+        session: Optional[SessionContainer] = Depends(
+            verify_session(session_required=False)
+        ),
+    ):
         if session is None:
             return {"s": "empty session"}
         return {"s": session.get_handle()}  # type: ignore
@@ -451,7 +454,6 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
 @mark.asyncio
 async def test_custom_response(driver_config_client: TestClient):
     def override_email_password_apis(original_implementation: EPAPIInterface):
-
         original_func = original_implementation.email_exists_get
 
         async def email_exists_get(
@@ -498,7 +500,6 @@ async def test_custom_response(driver_config_client: TestClient):
 
 @mark.asyncio
 async def test_optional_session(driver_config_client: TestClient):
-
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(

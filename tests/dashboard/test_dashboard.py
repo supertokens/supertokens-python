@@ -2,10 +2,6 @@ from typing import Any, Dict, List
 
 from fastapi import FastAPI
 from pytest import fixture, mark
-from supertokens_python.recipe.thirdparty.interfaces import (
-    ManuallyCreateOrUpdateUserOkResult,
-)
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from supertokens_python import init
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
@@ -13,19 +9,24 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import (
     dashboard,
     emailpassword,
-    session,
-    usermetadata,
-    thirdparty,
     passwordless,
+    session,
+    thirdparty,
+    usermetadata,
 )
-from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 from supertokens_python.recipe.dashboard import InputOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import (
     RecipeInterface as DashboardRI,
 )
 from supertokens_python.recipe.dashboard.utils import DashboardConfig
 from supertokens_python.recipe.passwordless import ContactEmailOrPhoneConfig
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
+from supertokens_python.recipe.thirdparty.interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
+)
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     clean_st,
     get_st_init_args,

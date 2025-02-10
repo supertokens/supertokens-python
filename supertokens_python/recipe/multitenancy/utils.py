@@ -14,7 +14,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Awaitable, Optional, Callable
+from typing import TYPE_CHECKING, Awaitable, Callable, Optional
+
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.utils import (
@@ -23,10 +24,11 @@ from supertokens_python.utils import (
 
 if TYPE_CHECKING:
     from typing import Union
+
     from .interfaces import (
-        TypeGetAllowedDomainsForTenantId,
-        RecipeInterface,
         APIInterface,
+        RecipeInterface,
+        TypeGetAllowedDomainsForTenantId,
     )
 
 

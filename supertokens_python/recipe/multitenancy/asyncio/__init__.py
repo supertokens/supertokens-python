@@ -12,24 +12,24 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from supertokens_python.types import RecipeUserId
 
 from ..interfaces import (
-    AssociateUserToTenantNotAllowedError,
-    TenantConfig,
-    CreateOrUpdateTenantOkResult,
-    DeleteTenantOkResult,
-    ListAllTenantsOkResult,
-    CreateOrUpdateThirdPartyConfigOkResult,
-    DeleteThirdPartyConfigOkResult,
-    AssociateUserToTenantOkResult,
-    AssociateUserToTenantUnknownUserIdError,
     AssociateUserToTenantEmailAlreadyExistsError,
+    AssociateUserToTenantNotAllowedError,
+    AssociateUserToTenantOkResult,
     AssociateUserToTenantPhoneNumberAlreadyExistsError,
     AssociateUserToTenantThirdPartyUserAlreadyExistsError,
+    AssociateUserToTenantUnknownUserIdError,
+    CreateOrUpdateTenantOkResult,
+    CreateOrUpdateThirdPartyConfigOkResult,
+    DeleteTenantOkResult,
+    DeleteThirdPartyConfigOkResult,
     DisassociateUserFromTenantOkResult,
+    ListAllTenantsOkResult,
+    TenantConfig,
     TenantConfigCreateOrUpdate,
 )
 
@@ -78,7 +78,7 @@ async def get_tenant(
 
 
 async def list_all_tenants(
-    user_context: Optional[Dict[str, Any]] = None
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> ListAllTenantsOkResult:
     if user_context is None:
         user_context = {}

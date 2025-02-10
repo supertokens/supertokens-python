@@ -12,10 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, TypeVar, Union, Optional, TYPE_CHECKING
-from phonenumbers import format_number, parse  # type: ignore
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional, TypeVar, Union
+
 import phonenumbers  # type: ignore
+from phonenumbers import format_number, parse  # type: ignore
 from typing_extensions import Literal
 
 _T = TypeVar("_T")
@@ -163,11 +165,9 @@ class LoginMethod(AccountInfo):
                 else None
             ),
             third_party=(
-                (
-                    TPI(json["thirdParty"]["userId"], json["thirdParty"]["id"])
-                    if "thirdParty" in json and json["thirdParty"] is not None
-                    else None
-                )
+                TPI(json["thirdParty"]["userId"], json["thirdParty"]["id"])
+                if "thirdParty" in json and json["thirdParty"] is not None
+                else None
             ),
             time_joined=json["timeJoined"],
             verified=json["verified"],

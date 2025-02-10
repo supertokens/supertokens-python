@@ -1,21 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
+from session import convert_session_to_container
 from supertokens_python import async_to_sync_wrapper, convert_to_recipe_user_id
-from supertokens_python.recipe.accountlinking.syncio import can_create_primary_user
-from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.accountlinking.syncio import is_sign_in_allowed
-from supertokens_python.recipe.accountlinking.syncio import is_sign_up_allowed
-from supertokens_python.recipe.accountlinking.syncio import (
-    get_primary_user_that_can_be_linked_to_recipe_user_id,
-)
-from supertokens_python.recipe.accountlinking.syncio import (
-    create_primary_user_id_or_link_accounts,
-)
-from supertokens_python.recipe.accountlinking.syncio import unlink_account
-from supertokens_python.recipe.accountlinking.syncio import is_email_change_allowed
-from supertokens_python.recipe.accountlinking.syncio import (
-    link_accounts,
-    create_primary_user,
-)
 from supertokens_python.recipe.accountlinking.interfaces import (
     CanCreatePrimaryUserOkResult,
     CanCreatePrimaryUserRecipeUserIdAlreadyLinkedError,
@@ -25,11 +10,23 @@ from supertokens_python.recipe.accountlinking.interfaces import (
     LinkAccountsOkResult,
     LinkAccountsRecipeUserIdAlreadyLinkedError,
 )
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.accountlinking.syncio import (
+    can_create_primary_user,
+    create_primary_user,
+    create_primary_user_id_or_link_accounts,
+    get_primary_user_that_can_be_linked_to_recipe_user_id,
+    is_email_change_allowed,
+    is_sign_in_allowed,
+    is_sign_up_allowed,
+    link_accounts,
+    unlink_account,
+)
 from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import User
+
 from utils import serialize_user  # pylint: disable=import-error
-from session import convert_session_to_container
 
 
 def add_accountlinking_routes(app: Flask):
@@ -150,7 +147,9 @@ def add_accountlinking_routes(app: Flask):
             }
         )
 
-    @app.route("/test/accountlinking/createprimaryuseridorlinkaccounts", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/accountlinking/createprimaryuseridorlinkaccounts", methods=["POST"]
+    )  # type: ignore
     def create_primary_user_id_or_link_accounts_api():  # type: ignore
         assert request.json is not None
         recipe_user_id = convert_to_recipe_user_id(request.json["recipeUserId"])
@@ -165,7 +164,10 @@ def add_accountlinking_routes(app: Flask):
         )
         return jsonify(response.to_json())
 
-    @app.route("/test/accountlinking/getprimaryuserthatcanbelinkedtorecipeuserid", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/accountlinking/getprimaryuserthatcanbelinkedtorecipeuserid",
+        methods=["POST"],
+    )  # type: ignore
     def get_primary_user_that_can_be_linked_to_recipe_user_id_api():  # type: ignore
         assert request.json is not None
         recipe_user_id = convert_to_recipe_user_id(request.json["recipeUserId"])
@@ -228,7 +230,10 @@ def add_accountlinking_routes(app: Flask):
         )
         return jsonify(response)
 
-    @app.route("/test/accountlinking/verifyemailforrecipeuseriflinkedaccountsareverified", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/accountlinking/verifyemailforrecipeuseriflinkedaccountsareverified",
+        methods=["POST"],
+    )  # type: ignore
     def verify_email_for_recipe_user_if_linked_accounts_are_verified_api():  # type: ignore
         assert request.json is not None
         recipe_user_id = convert_to_recipe_user_id(request.json["recipeUserId"])

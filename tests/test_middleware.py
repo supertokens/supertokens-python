@@ -16,10 +16,10 @@ import json
 
 from fastapi import FastAPI
 from pytest import fixture, mark
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, passwordless, session
+
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
 

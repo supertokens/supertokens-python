@@ -12,35 +12,33 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
-from supertokens_python.asyncio import get_user
-from supertokens_python.recipe import session, multitenancy, thirdparty
 from supertokens_python import init
+from supertokens_python.asyncio import get_user, list_users_by_account_info
+from supertokens_python.recipe import multitenancy, session, thirdparty
 from supertokens_python.recipe.multitenancy.asyncio import (
     create_or_update_tenant,
     create_or_update_third_party_config,
 )
-from supertokens_python.recipe.thirdparty.asyncio import (
-    manually_create_or_update_user,
-    get_provider,
-)
 from supertokens_python.recipe.multitenancy.interfaces import (
     TenantConfigCreateOrUpdate,
+)
+from supertokens_python.recipe.thirdparty.asyncio import (
+    get_provider,
+    manually_create_or_update_user,
 )
 from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
 )
-from supertokens_python.asyncio import list_users_by_account_info
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import AccountInfo
 
-from tests.utils import get_st_init_args
 from tests.utils import (
+    get_st_init_args,
     setup_function,
-    teardown_function,
     setup_multitenancy_feature,
     start_st,
+    teardown_function,
 )
-
 
 _ = setup_function
 _ = teardown_function

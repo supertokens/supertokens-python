@@ -4,11 +4,12 @@ from unittest.mock import MagicMock
 
 from pytest import fixture, mark
 from pytest_mock import MockerFixture
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.claims import PrimitiveArrayClaim
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import get_timestamp_ms, resolve
+
 from tests.utils import AsyncMock
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 val = ["a"]
 included_item = "a"
@@ -90,9 +91,7 @@ async def test_primitive_claim_fetch_value_params_correct():
         DEFAULT_TENANT_ID,
         ctx,
         {},
-    ) == sync_fetch_value.call_args_list[0][
-        0
-    ]  # extra [0] refers to call params
+    ) == sync_fetch_value.call_args_list[0][0]  # extra [0] refers to call params
 
 
 async def test_primitive_claim_fetch_value_none():

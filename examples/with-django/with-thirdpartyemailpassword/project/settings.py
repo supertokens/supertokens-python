@@ -16,7 +16,6 @@ from typing import List
 
 from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
-
 from supertokens_python import (
     InputAppInfo,
     SupertokensConfig,

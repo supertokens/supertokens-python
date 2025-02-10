@@ -13,14 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Awaitable, Dict, Any
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional
 
 from supertokens_python.framework import BaseResponse
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
     from supertokens_python.types import APIResponse
 

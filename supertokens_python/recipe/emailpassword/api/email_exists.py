@@ -13,12 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
 from supertokens_python.exceptions import raise_bad_input_exception

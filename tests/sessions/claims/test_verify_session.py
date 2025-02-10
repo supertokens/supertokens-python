@@ -1,42 +1,42 @@
-from typing import List, Any, Dict, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 from unittest.mock import patch
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from pytest import fixture, mark
 from starlette.requests import Request
 from starlette.testclient import TestClient
-
 from supertokens_python import init
+from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.session.exceptions import (
-    raise_invalid_claims_exception,
     ClaimValidationError,
+    raise_invalid_claims_exception,
 )
 from supertokens_python.recipe.session.framework.fastapi import (
-    verify_session,
     session_exception_handler,
+    verify_session,
 )
-from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.recipe.session.interfaces import (
+    ClaimsValidationResult,
+    ClaimValidationResult,
+    JSONObject,
     RecipeInterface,
     SessionClaimValidator,
-    JSONObject,
-    ClaimValidationResult,
     SessionContainer,
-    ClaimsValidationResult,
 )
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
-from tests.sessions.claims.utils import TrueClaim, NoneClaim
+
+from tests.sessions.claims.utils import NoneClaim, TrueClaim
 from tests.utils import (
-    setup_function,
-    teardown_function,
-    start_st,
     AsyncMock,
     MagicMock,
+    setup_function,
     st_init_common_args,
+    start_st,
+    teardown_function,
 )
 
 _ = setup_function  # type:ignore
@@ -567,7 +567,14 @@ def client_without_middleware():
 async def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
     client_without_middleware: TestClient, fastapi_client: TestClient
 ):
-    init(**{**st_init_common_args, "recipe_list": [session.init(get_token_transfer_method=lambda *_: "cookie")]})  # type: ignore
+    init(
+        **{
+            **st_init_common_args,
+            "recipe_list": [
+                session.init(get_token_transfer_method=lambda *_: "cookie")  # type: ignore
+            ],
+        }
+    )
     start_st()
 
     res = fastapi_client.post("/verify")

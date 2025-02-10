@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import List, Dict, Any, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional
+
 from typing_extensions import Literal
-from .interfaces import RecipeInterface, APIInterface
 
 from supertokens_python.types import APIResponse
+
+from .interfaces import APIInterface, RecipeInterface
 
 
 class OkResult(APIResponse):
