@@ -1,8 +1,10 @@
-[tool.black]
-extend-exclude = '''
-/(
-  | \.idea
-  | \./html/
-  | \./venv/
-)/
-'''
+[tool.pyright]
+typeCheckingMode = "strict"
+reportImportCycles = false
+
+include = ["supertokens_python/", "tests/", "examples/"]
+
+[tool.pytest.ini_options]
+addopts = " -v -p no:warnings"
+python_paths = "."
+xfail_strict = true
