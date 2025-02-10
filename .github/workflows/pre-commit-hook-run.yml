@@ -24,4 +24,6 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           make dev-install && rm -rf src
+      - name: Run checks
+        run: |
           make lint
