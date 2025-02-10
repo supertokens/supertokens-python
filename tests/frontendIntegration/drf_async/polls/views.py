@@ -24,7 +24,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import render
 from rest_framework.decorators import api_view as api_view_sync  # type: ignore
-from rest_framework.decorators import renderer_classes
+from rest_framework.decorators import renderer_classes  # type: ignore
 from rest_framework.renderers import BaseRenderer, StaticHTMLRenderer  # type: ignore
 from rest_framework.request import Request  # type: ignore
 from rest_framework.response import Response  # type: ignore

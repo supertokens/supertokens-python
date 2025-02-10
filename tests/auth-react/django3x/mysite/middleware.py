@@ -32,8 +32,8 @@ def response_logging_middleware(get_response: Callable):  # type: ignore
 
         # Log the response
         print(
-            f"Path: {request.path} | Method: {request.method} | Status: {response.status_code}"
-        )  # type: ignore
+            f"Path: {request.path} | Method: {request.method} | Status: {response.status_code}"  # type: ignore
+        )
         if hasattr(response, "content"):  # type: ignore
             print(f"Response: {response.content.decode('utf-8')}")  # type: ignore
 
