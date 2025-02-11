@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import json
 from base64 import b64encode
 from typing import Dict, Any, Optional
@@ -208,7 +208,7 @@ async def test_signinup_when_validate_access_token_throws(fastapi_client: TestCl
 async def test_signinup_works_when_validate_access_token_does_not_throw(
     fastapi_client: TestClient, mocker: MockerFixture
 ):
-    time = str(datetime.datetime.now())
+    time = str(datetime.now(tz=timezone.utc))
     mocker.patch(
         "supertokens_python.recipe.thirdparty.providers.custom.get_supertokens_user_info_result_from_raw_user_info",
         return_value=UserInfo(
@@ -276,7 +276,7 @@ async def test_signinup_works_when_validate_access_token_does_not_throw(
 async def test_signinup_android_without_redirect_uri(
     fastapi_client: TestClient, mocker: MockerFixture
 ):
-    time = str(datetime.datetime.now())
+    time = str(datetime.now(tz=timezone.utc))
     mocker.patch(
         "supertokens_python.recipe.thirdparty.providers.custom.get_supertokens_user_info_result_from_raw_user_info",
         return_value=UserInfo(

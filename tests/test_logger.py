@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime as real_datetime
+from datetime import datetime as real_datetime, timezone
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
@@ -43,7 +43,7 @@ class LoggerTests(TestCase):
     @patch("supertokens_python.logger.datetime", wraps=real_datetime)
     def test_1_json_msg_format(self, datetime_mock: MagicMock):
         enable_debug_logging()
-        datetime_mock.now.return_value = real_datetime(2000, 1, 1)
+        datetime_mock.now.return_value = real_datetime(2000, 1, 1, tzinfo=timezone.utc)
 
         with self.assertLogs(level="DEBUG") as captured:
             log_debug_message("API replied with status 200")
@@ -52,7 +52,7 @@ class LoggerTests(TestCase):
         out = json.loads(record.msg)
 
         assert out == {
-            "t": "2000-01-01T00:00Z",
+            "t": "2000-01-01T00:00:00+00Z",
             "sdkVer": VERSION,
             "message": "API replied with status 200",
             "file": "../tests/test_logger.py:49",

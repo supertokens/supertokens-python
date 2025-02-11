@@ -13,7 +13,7 @@
 # under the License.
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
 from pathlib import Path
@@ -313,11 +313,7 @@ def assert_info_clears_tokens(info: Dict[str, Any], token_transfer_method: str):
 
 
 def get_unix_timestamp(expiry: str):
-    return int(
-        datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S GMT")
-        .replace(tzinfo=timezone.utc)
-        .timestamp()
-    )
+    return int(datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S UTC").timestamp())
 
 
 def verify_within_5_second_diff(n1: int, n2: int):
