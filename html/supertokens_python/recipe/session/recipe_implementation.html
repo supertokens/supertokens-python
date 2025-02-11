@@ -71,12 +71,14 @@ from .utils import SessionConfig, validate_claims_in_payload
 
 if TYPE_CHECKING:
     from typing import List, Union
+
     from supertokens_python import AppInfo
 
-from .interfaces import SessionContainer
-from .constants import protected_props
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+
+from .constants import protected_props
+from .interfaces import SessionContainer
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods

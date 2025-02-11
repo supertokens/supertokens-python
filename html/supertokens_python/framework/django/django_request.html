@@ -48,8 +48,9 @@ from urllib.parse import parse_qsl
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import SessionContainer
     from django.http import HttpRequest
+
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class DjangoRequest(BaseRequest):

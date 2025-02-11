@@ -45,21 +45,21 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.types import (
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
 )
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from supertokens_python.querier import Querier
 from supertokens_python.types import User
 
-from .recipe_implementation import RecipeImplementation
-from .api.implementation import APIImplementation
-from .interfaces import APIInterface, RecipeInterface
-from .utils import validate_and_normalise_user_input
 from ...post_init_callbacks import PostSTInitCallbacks
 from ..multifactorauth.recipe import MultiFactorAuthRecipe
+from .api.implementation import APIImplementation
+from .interfaces import APIInterface, RecipeInterface
+from .recipe_implementation import RecipeImplementation
+from .utils import validate_and_normalise_user_input
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -68,17 +68,17 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 
-from .api.list_devices import handle_list_devices_api
 from .api.create_device import handle_create_device_api
+from .api.list_devices import handle_list_devices_api
 from .api.remove_device import handle_remove_device_api
 from .api.verify_device import handle_verify_device_api
 from .api.verify_totp import handle_verify_totp_api
 from .constants import (
     CREATE_TOTP_DEVICE,
-    VERIFY_TOTP_DEVICE,
-    VERIFY_TOTP,
     LIST_TOTP_DEVICES,
     REMOVE_TOTP_DEVICE,
+    VERIFY_TOTP,
+    VERIFY_TOTP_DEVICE,
 )
 from .interfaces import APIOptions
 from .types import TOTPConfig

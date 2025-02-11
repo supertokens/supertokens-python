@@ -50,8 +50,9 @@ from supertokens_python.recipe.thirdparty.providers.utils import (
 )
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
-from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderConfigForClient, ProviderInput
+from ..types import RawUserInfoFromProvider
+from .custom import GenericProvider, NewProvider
 
 
 class GithubImpl(GenericProvider):
@@ -73,23 +74,32 @@ class GithubImpl(GenericProvider):
             &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
         }
 
-        raw_response = {}
-
-        email_info: List[Any] = await do_get_request(&#34;https://api.github.com/user/emails&#34;, headers=headers)  # type: ignore
+        # https://docs.github.com/en/rest/users/emails?apiVersion=2022-11-28
         user_info = await do_get_request(&#34;https://api.github.com/user&#34;, headers=headers)
+        user_email_info: List[Any] = await do_get_request(
+            &#34;https://api.github.com/user/emails&#34;, headers=headers
+        )  # type: ignore
 
-        raw_response[&#34;emails&#34;] = email_info
-        raw_response[&#34;user&#34;] = user_info
+        raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+        raw_user_info_from_provider.from_user_info_api = user_info
+        raw_user_info_from_provider.from_user_info_api[&#34;emails&#34;] = user_email_info
+
+        # Get the primary email from the Email response
+        # Create an object if primary email found
+        primary_email_info: UserInfoEmail | None = None
+        for email_detail in user_email_info:
+            if email_detail[&#34;primary&#34;]:
+                primary_email_info = UserInfoEmail(
+                    email=email_detail[&#34;email&#34;],
+                    is_verified=email_detail[&#34;verified&#34;],
+                )
+                break
 
         result = UserInfo(
-            third_party_user_id=str(user_info.get(&#34;id&#34;)),
+            third_party_user_id=str(user_info[&#34;id&#34;]),
+            email=primary_email_info,
+            raw_user_info_from_provider=raw_user_info_from_provider,
         )
-
-        for info in email_info:
-            if info.get(&#34;primary&#34;):
-                result.email = UserInfoEmail(
-                    email=info.get(&#34;email&#34;), is_verified=info.get(&#34;verified&#34;)
-                )
 
         return result
 
@@ -185,23 +195,32 @@ async def validate_access_token(
             &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
         }
 
-        raw_response = {}
-
-        email_info: List[Any] = await do_get_request(&#34;https://api.github.com/user/emails&#34;, headers=headers)  # type: ignore
+        # https://docs.github.com/en/rest/users/emails?apiVersion=2022-11-28
         user_info = await do_get_request(&#34;https://api.github.com/user&#34;, headers=headers)
+        user_email_info: List[Any] = await do_get_request(
+            &#34;https://api.github.com/user/emails&#34;, headers=headers
+        )  # type: ignore
 
-        raw_response[&#34;emails&#34;] = email_info
-        raw_response[&#34;user&#34;] = user_info
+        raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
+        raw_user_info_from_provider.from_user_info_api = user_info
+        raw_user_info_from_provider.from_user_info_api[&#34;emails&#34;] = user_email_info
+
+        # Get the primary email from the Email response
+        # Create an object if primary email found
+        primary_email_info: UserInfoEmail | None = None
+        for email_detail in user_email_info:
+            if email_detail[&#34;primary&#34;]:
+                primary_email_info = UserInfoEmail(
+                    email=email_detail[&#34;email&#34;],
+                    is_verified=email_detail[&#34;verified&#34;],
+                )
+                break
 
         result = UserInfo(
-            third_party_user_id=str(user_info.get(&#34;id&#34;)),
+            third_party_user_id=str(user_info[&#34;id&#34;]),
+            email=primary_email_info,
+            raw_user_info_from_provider=raw_user_info_from_provider,
         )
-
-        for info in email_info:
-            if info.get(&#34;primary&#34;):
-                result.email = UserInfoEmail(
-                    email=info.get(&#34;email&#34;), is_verified=info.get(&#34;verified&#34;)
-                )
 
         return result</code></pre>
 </details>

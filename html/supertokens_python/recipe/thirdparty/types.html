@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Union, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -86,6 +86,10 @@ class RawUserInfoFromProvider:
 
 
 class UserInfoEmail:
+    &#34;&#34;&#34;
+    Details about the user&#39;s - generally primary - email.
+    &#34;&#34;&#34;
+
     def __init__(self, email: str, is_verified: bool):
         self.id: str = email
         self.is_verified: bool = is_verified
@@ -339,12 +343,16 @@ class ThirdPartyIngredients:
 <span>(</span><span>email: str, is_verified: bool)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Details about the user's - generally primary - email.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UserInfoEmail:
+    &#34;&#34;&#34;
+    Details about the user&#39;s - generally primary - email.
+    &#34;&#34;&#34;
+
     def __init__(self, email: str, is_verified: bool):
         self.id: str = email
         self.is_verified: bool = is_verified

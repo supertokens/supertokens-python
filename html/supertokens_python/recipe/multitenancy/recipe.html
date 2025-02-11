@@ -52,24 +52,21 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.types import RecipeUserId
 
 from ...post_init_callbacks import PostSTInitCallbacks
-
 from .interfaces import (
     APIOptions,
     TypeGetAllowedDomainsForTenantId,
 )
-
 from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.supertokens import AppInfo
     from supertokens_python.recipe.thirdparty.provider import ProviderInput
+    from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multitenancy.api.implementation import APIImplementation
-
 
 from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS

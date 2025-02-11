@@ -41,11 +41,12 @@
 # under the License.
 from typing import Any, Dict, Optional
 
-from ..types import AccountInfoWithRecipeId
-from supertokens_python.types import User, RecipeUserId
-from ..recipe import AccountLinkingRecipe
-from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.asyncio import get_user
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import RecipeUserId, User
+
+from ..recipe import AccountLinkingRecipe
+from ..types import AccountInfoWithRecipeId
 
 
 async def create_primary_user_id_or_link_accounts(

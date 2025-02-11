@@ -41,11 +41,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union, Optional
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
-from . import utils
+from . import recipe, utils
 from .recipe import UserRolesRecipe
-from . import recipe
 
 PermissionClaim = recipe.PermissionClaim
 UserRoleClaim = recipe.UserRoleClaim

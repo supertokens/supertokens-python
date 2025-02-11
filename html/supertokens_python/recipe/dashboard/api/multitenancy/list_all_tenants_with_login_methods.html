@@ -40,9 +40,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.types import APIResponse
+
 from ...interfaces import APIInterface, APIOptions
 from .utils import (
     get_normalised_first_factors_based_on_tenant_config_from_core_and_sdk_init,

@@ -40,23 +40,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Dict, Any, Union
+import asyncio
+import json
+from typing import Any, Dict, Union
+
 from supertokens_python.exceptions import BadInputError
-from supertokens_python.recipe.multitenancy.asyncio import (
-    get_tenant,
-    create_or_update_third_party_config,
-)
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.multitenancy.asyncio import (
+    create_or_update_third_party_config,
+    get_tenant,
+)
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty import ProviderConfig
 from supertokens_python.recipe.thirdparty.providers.utils import do_post_request
 from supertokens_python.types import APIResponse
 from supertokens_python.utils import encode_base64
+
 from ...interfaces import APIInterface, APIOptions
-import asyncio
-import json
 
 
 class CreateOrUpdateThirdPartyConfigOkResult(APIResponse):

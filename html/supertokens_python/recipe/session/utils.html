@@ -64,16 +64,16 @@ from .exceptions import ClaimValidationError
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
-    from supertokens_python.supertokens import AppInfo
     from supertokens_python.recipe.openid import (
         InputOverrideConfig as OpenIdInputOverrideConfig,
     )
+    from supertokens_python.supertokens import AppInfo
 
     from .interfaces import (
         APIInterface,
         RecipeInterface,
-        SessionContainer,
         SessionClaimValidator,
+        SessionContainer,
     )
     from .recipe import SessionRecipe
 

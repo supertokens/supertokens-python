@@ -40,14 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Awaitable, Dict, Any, Union, List, Optional, Callable, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+
+from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
-from typing_extensions import Literal
-from supertokens_python.types import User, RecipeUserId
+from supertokens_python.types import RecipeUserId, User
 
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface
+    from .interfaces import APIInterface, RecipeInterface
 
 
 MFARequirementList = List[

@@ -46,8 +46,9 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import SessionContainer
     from flask.wrappers import Request
+
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FlaskRequest(BaseRequest):

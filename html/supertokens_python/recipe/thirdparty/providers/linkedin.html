@@ -42,13 +42,14 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Union
-from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
 
+from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
 from supertokens_python.recipe.thirdparty.types import (
     RawUserInfoFromProvider,
     UserInfo,
     UserInfoEmail,
 )
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -56,7 +57,6 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
-
 from .custom import (
     GenericProvider,
     NewProvider,
@@ -95,11 +95,14 @@ class LinkedinImpl(GenericProvider):
         raw_user_info_from_provider.from_user_info_api = user_info
 
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;sub&#34;),  # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api[&#34;sub&#34;],  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-                is_verified=raw_user_info_from_provider.from_user_info_api.get(&#34;email_verified&#34;),  # type: ignore
+                is_verified=raw_user_info_from_provider.from_user_info_api.get(
+                    &#34;email_verified&#34;
+                ),  # type: ignore
             ),
+            raw_user_info_from_provider=raw_user_info_from_provider,
         )
 
 
@@ -193,11 +196,14 @@ def Linkedin(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-
         raw_user_info_from_provider.from_user_info_api = user_info
 
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get(&#34;sub&#34;),  # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api[&#34;sub&#34;],  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get(&#34;email&#34;),  # type: ignore
-                is_verified=raw_user_info_from_provider.from_user_info_api.get(&#34;email_verified&#34;),  # type: ignore
+                is_verified=raw_user_info_from_provider.from_user_info_api.get(
+                    &#34;email_verified&#34;
+                ),  # type: ignore
             ),
+            raw_user_info_from_provider=raw_user_info_from_provider,
         )</code></pre>
 </details>
 <h3>Ancestors</h3>

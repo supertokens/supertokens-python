@@ -38,30 +38,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from supertokens_python import get_request_from_user_context
-
 from supertokens_python.recipe.emailverification.interfaces import (
-    GetEmailForUserIdOkResult,
-    EmailDoesNotExistError,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-    CreateEmailVerificationLinkOkResult,
     CreateEmailVerificationLinkEmailAlreadyVerifiedError,
-    SendEmailVerificationEmailOkResult,
-    SendEmailVerificationEmailAlreadyVerifiedError,
-    UnverifyEmailOkResult,
+    CreateEmailVerificationLinkOkResult,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     CreateEmailVerificationTokenOkResult,
+    EmailDoesNotExistError,
+    GetEmailForUserIdOkResult,
     RevokeEmailVerificationTokensOkResult,
+    SendEmailVerificationEmailAlreadyVerifiedError,
+    SendEmailVerificationEmailOkResult,
+    UnverifyEmailOkResult,
 )
-from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
-from supertokens_python.types import RecipeUserId
-from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 from supertokens_python.recipe.emailverification.types import (
+    EmailTemplateVars,
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
+from supertokens_python.recipe.emailverification.utils import get_email_verify_link
+from supertokens_python.types import RecipeUserId
 
 
 async def create_email_verification_token(

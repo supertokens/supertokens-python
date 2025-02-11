@@ -46,16 +46,16 @@ from typing import Any, Dict
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import log_debug_message, normalise_http_method
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.dashboard.constants import (
     DASHBOARD_ANALYTICS_API,
     SIGN_OUT_API,
 )
+from supertokens_python.utils import log_debug_message, normalise_http_method
 
+from .exceptions import DashboardOperationNotAllowedError
 from .interfaces import RecipeInterface
 from .utils import DashboardConfig, validate_api_key
-from .exceptions import DashboardOperationNotAllowedError
 
 
 class RecipeImplementation(RecipeInterface):

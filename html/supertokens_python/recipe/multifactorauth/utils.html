@@ -40,29 +40,32 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Optional, Union, Dict, Any
+
+import math
+import time
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from typing_extensions import Literal
+
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
     MultiFactorAuthClaim,
+)
+from supertokens_python.recipe.multifactorauth.types import (
+    FactorIds,
+    MFAClaimValue,
+    MFARequirementList,
 )
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
-from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.multifactorauth.types import (
-    MFAClaimValue,
-    MFARequirementList,
-    FactorIds,
-)
 from supertokens_python.types import RecipeUserId
-import math
-import time
-from typing_extensions import Literal
 from supertokens_python.utils import log_debug_message
 
 if TYPE_CHECKING:
-    from .types import OverrideConfig, MultiFactorAuthConfig
+    from .types import MultiFactorAuthConfig, OverrideConfig
 
 
 # IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
@@ -74,7 +77,8 @@ def validate_and_normalise_user_input(
     if first_factors is not None and len(first_factors) == 0:
         raise ValueError(&#34;&#39;first_factors&#39; can be either None or a non-empty list&#34;)
 
-    from .types import OverrideConfig as OC, MultiFactorAuthConfig as MFAC
+    from .types import MultiFactorAuthConfig as MFAC
+    from .types import OverrideConfig as OC
 
     if override is None:
         override = OC()
@@ -296,7 +300,6 @@ async def update_and_get_mfa_related_info_in_session(
 async def is_valid_first_factor(
     tenant_id: str, factor_id: str, user_context: Dict[str, Any]
 ) -&gt; Literal[&#34;OK&#34;, &#34;INVALID_FIRST_FACTOR_ERROR&#34;, &#34;TENANT_NOT_FOUND_ERROR&#34;]:
-
     mt_recipe = MultitenancyRecipe.get_instance()
     tenant_info = await get_tenant(tenant_id=tenant_id, user_context=user_context)
     if tenant_info is None:

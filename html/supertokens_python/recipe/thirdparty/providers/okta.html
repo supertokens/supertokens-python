@@ -42,15 +42,17 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from .custom import GenericProvider, NewProvider
+
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
     ProviderInput,
 )
+from .custom import GenericProvider, NewProvider
 from .utils import normalise_oidc_endpoint_to_include_well_known
-from supertokens_python.normalised_url_domain import NormalisedURLDomain
-from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class OktaImpl(GenericProvider):

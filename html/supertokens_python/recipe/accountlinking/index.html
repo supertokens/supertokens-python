@@ -41,12 +41,11 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Callable, Union, Optional, Dict, Any, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
-from . import types
 from ...types import User
 from ..session.interfaces import SessionContainer
-
+from . import types
 from .recipe import AccountLinkingRecipe
 
 InputOverrideConfig = types.InputOverrideConfig

@@ -40,10 +40,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, List, TypeVar, Union, Optional, TYPE_CHECKING
-from phonenumbers import format_number, parse  # type: ignore
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional, TypeVar, Union
+
 import phonenumbers  # type: ignore
+from phonenumbers import format_number, parse  # type: ignore
 from typing_extensions import Literal
 
 _T = TypeVar(&#34;_T&#34;)
@@ -191,11 +193,9 @@ class LoginMethod(AccountInfo):
                 else None
             ),
             third_party=(
-                (
-                    TPI(json[&#34;thirdParty&#34;][&#34;userId&#34;], json[&#34;thirdParty&#34;][&#34;id&#34;])
-                    if &#34;thirdParty&#34; in json and json[&#34;thirdParty&#34;] is not None
-                    else None
-                )
+                TPI(json[&#34;thirdParty&#34;][&#34;userId&#34;], json[&#34;thirdParty&#34;][&#34;id&#34;])
+                if &#34;thirdParty&#34; in json and json[&#34;thirdParty&#34;] is not None
+                else None
             ),
             time_joined=json[&#34;timeJoined&#34;],
             verified=json[&#34;verified&#34;],
@@ -651,11 +651,9 @@ inheritance.</p></div>
                 else None
             ),
             third_party=(
-                (
-                    TPI(json[&#34;thirdParty&#34;][&#34;userId&#34;], json[&#34;thirdParty&#34;][&#34;id&#34;])
-                    if &#34;thirdParty&#34; in json and json[&#34;thirdParty&#34;] is not None
-                    else None
-                )
+                TPI(json[&#34;thirdParty&#34;][&#34;userId&#34;], json[&#34;thirdParty&#34;][&#34;id&#34;])
+                if &#34;thirdParty&#34; in json and json[&#34;thirdParty&#34;] is not None
+                else None
             ),
             time_joined=json[&#34;timeJoined&#34;],
             verified=json[&#34;verified&#34;],

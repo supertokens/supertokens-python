@@ -47,8 +47,9 @@ from urllib.parse import parse_qsl
 from supertokens_python.framework.request import BaseRequest
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import SessionContainer
     from fastapi import Request
+
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FastApiRequest(BaseRequest):

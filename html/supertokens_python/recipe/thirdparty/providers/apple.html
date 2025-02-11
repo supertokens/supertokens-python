@@ -40,17 +40,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-import json
 
+import json
 from re import sub
-from typing import Any, Dict, Optional
-from jwt import encode  # type: ignore
 from time import time
+from typing import Any, Dict, Optional
+
+from jwt import encode  # type: ignore
 
 from supertokens_python.recipe.thirdparty.types import UserInfo
 
-from .custom import GenericProvider, NewProvider
 from ..provider import Provider, ProviderConfigForClient, ProviderInput, RedirectUriInfo
+from .custom import GenericProvider, NewProvider
 from .utils import (
     get_actual_client_id_from_development_client_id,
     normalise_oidc_endpoint_to_include_well_known,

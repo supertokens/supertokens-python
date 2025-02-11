@@ -41,12 +41,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
 from supertokens_python.utils import (
@@ -62,7 +62,6 @@ async def handle_validate_key_api(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
-
     is_valid_key = await validate_api_key(
         api_options.request, api_options.config, user_context
     )

@@ -41,15 +41,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
+import re
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-import re
 
 if TYPE_CHECKING:
-    from .utils import JWTConfig
     from supertokens_python.supertokens import AppInfo
+
+    from .utils import JWTConfig
 
 from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtOkResult,
@@ -59,7 +60,6 @@ from supertokens_python.recipe.jwt.interfaces import (
 )
 
 from .interfaces import JsonWebKey
-
 
 # This corresponds to the dynamicSigningKeyOverlapMS in the core
 DEFAULT_JWKS_MAX_AGE = 60

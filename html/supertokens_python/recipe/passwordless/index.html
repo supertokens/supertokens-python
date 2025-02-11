@@ -44,13 +44,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from typing_extensions import Literal
+
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.passwordless.types import (
     EmailTemplateVars,
     SMSTemplateVars,
 )
-from typing_extensions import Literal
 
 from . import types, utils
 from .emaildelivery import services as emaildelivery_services

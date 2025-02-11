@@ -42,12 +42,13 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from .custom import GenericProvider, NewProvider
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
     ProviderInput,
 )
+from .custom import GenericProvider, NewProvider
 from .utils import normalise_oidc_endpoint_to_include_well_known
 
 

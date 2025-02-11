@@ -39,28 +39,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
+
 from typing_extensions import Literal
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.emailpassword.interfaces import (
-    SignUpOkResult,
+    ConsumePasswordResetTokenOkResult,
+    CreateResetPasswordOkResult,
     EmailAlreadyExistsError,
     LinkingToSessionUserFailedError,
-    SignInOkResult,
-    WrongCredentialsError,
-    CreateResetPasswordOkResult,
-    ConsumePasswordResetTokenOkResult,
+    PasswordPolicyViolationError,
     PasswordResetTokenInvalidError,
-    UpdateEmailOrPasswordOkResult,
+    SignInOkResult,
+    SignUpOkResult,
     UnknownUserIdError,
     UpdateEmailOrPasswordEmailChangeNotAllowedError,
-    PasswordPolicyViolationError,
+    UpdateEmailOrPasswordOkResult,
+    WrongCredentialsError,
 )
 from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
 )
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import RecipeUserId
 
 

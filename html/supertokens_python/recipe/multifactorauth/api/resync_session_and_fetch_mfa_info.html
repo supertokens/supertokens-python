@@ -45,13 +45,12 @@ from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from ..interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
-from supertokens_python.utils import send_200_response
-
 from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.utils import send_200_response
 
 
 async def handle_resync_session_and_fetch_mfa_info_api(

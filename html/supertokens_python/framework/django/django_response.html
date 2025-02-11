@@ -79,7 +79,7 @@ class DjangoResponse(BaseResponse):
             key=key,
             value=value,
             expires=datetime.fromtimestamp(ceil(expires / 1000)).strftime(
-                &#34;%a, %d %b %Y %H:%M:%S GMT&#34;
+                &#34;%a, %d %b %Y %H:%M:%S UTC&#34;
             ),
             path=path,
             domain=domain,
@@ -177,7 +177,7 @@ inheritance.</p></div>
             key=key,
             value=value,
             expires=datetime.fromtimestamp(ceil(expires / 1000)).strftime(
-                &#34;%a, %d %b %Y %H:%M:%S GMT&#34;
+                &#34;%a, %d %b %Y %H:%M:%S UTC&#34;
             ),
             path=path,
             domain=domain,

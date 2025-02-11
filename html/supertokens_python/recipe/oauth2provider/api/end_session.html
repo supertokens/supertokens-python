@@ -42,8 +42,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 import urllib.parse
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
@@ -53,13 +53,14 @@ from supertokens_python.utils import send_200_response, send_non_200_response
 from .utils import get_session
 
 if TYPE_CHECKING:
-    from ..interfaces import (
-        APIOptions,
-        APIInterface,
-        RedirectResponse,
-        ErrorOAuth2Response,
-    )
     from supertokens_python.recipe.session import SessionContainer
+
+    from ..interfaces import (
+        APIInterface,
+        APIOptions,
+        ErrorOAuth2Response,
+        RedirectResponse,
+    )
 
     EndSessionCallable = Callable[
         [Dict[str, str], APIOptions, Optional[SessionContainer], bool, Dict[str, Any]],
@@ -111,8 +112,9 @@ async def end_session_common(
     options: APIOptions,
     user_context: Dict[str, Any],
 ) -&gt; Optional[BaseResponse]:
-    from ..interfaces import RedirectResponse, ErrorOAuth2Response
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
+
+    from ..interfaces import ErrorOAuth2Response, RedirectResponse
 
     if api_implementation is None:
         return None

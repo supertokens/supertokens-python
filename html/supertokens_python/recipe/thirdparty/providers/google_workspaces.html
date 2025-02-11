@@ -40,15 +40,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Any, Dict, Optional
 
-from .google import Google, GoogleImpl
+from typing import Any, Dict, Optional
 
 from ..provider import (
     Provider,
     ProviderConfigForClient,
     ProviderInput,
 )
+from .google import Google, GoogleImpl
 
 
 class GoogleWorkspacesImpl(GoogleImpl):

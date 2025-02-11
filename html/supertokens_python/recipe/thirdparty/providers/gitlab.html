@@ -42,17 +42,18 @@
 
 from __future__ import annotations
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.thirdparty.provider import (
     Provider,
     ProviderConfigForClient,
 )
+
+from ..provider import ProviderInput
 from .custom import GenericProvider, NewProvider
-from ..provider import Provider, ProviderInput
 from .utils import normalise_oidc_endpoint_to_include_well_known
-from supertokens_python.normalised_url_domain import NormalisedURLDomain
-from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class GitlabImpl(GenericProvider):

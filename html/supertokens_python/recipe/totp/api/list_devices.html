@@ -44,11 +44,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.framework import BaseResponse
-from supertokens_python.utils import send_200_response
 from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.utils import send_200_response
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.totp.interfaces import APIOptions, APIInterface
+    from supertokens_python.recipe.totp.interfaces import APIInterface, APIOptions
 
 
 async def handle_list_devices_api(

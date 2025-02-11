@@ -42,9 +42,11 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union, Optional
-from supertokens_python.auth_utils import is_fake_email
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
+from typing_extensions import Literal
+
+from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
@@ -67,11 +69,10 @@ from supertokens_python.recipe.passwordless.types import (
     PasswordlessIngredients,
     PasswordlessLoginSMSTemplateVars,
 )
-from typing_extensions import Literal
-
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import User, RecipeUserId
+from supertokens_python.types import RecipeUserId, User
 
+from ...post_init_callbacks import PostSTInitCallbacks
 from .api import (
     consume_code,
     create_code,
@@ -84,8 +85,8 @@ from .constants import (
     CONSUME_CODE_API,
     CREATE_CODE_API,
     DOES_EMAIL_EXIST_API,
-    DOES_PHONE_NUMBER_EXIST_API,
     DOES_EMAIL_EXIST_API_OLD,
+    DOES_PHONE_NUMBER_EXIST_API,
     DOES_PHONE_NUMBER_EXIST_API_OLD,
     RESEND_CODE_API,
 )
@@ -93,8 +94,8 @@ from .exceptions import SuperTokensPasswordlessError
 from .interfaces import (
     APIOptions,
     ConsumeCodeOkResult,
-    RecipeInterface,
     PasswordlessLoginEmailTemplateVars,
+    RecipeInterface,
 )
 from .recipe_implementation import RecipeImplementation
 from .utils import (
@@ -103,7 +104,6 @@ from .utils import (
     get_enabled_pwless_factors,
     validate_and_normalise_user_input,
 )
-from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -266,9 +266,8 @@ class PasswordlessRecipe(RecipeModule):
                         # This factor is not set up for email-based factors.
                         # We check for emails from other loginMethods and return those.
                         emails_result = []
-                        if (
-                            session_login_method.email is not None
-                            and not is_fake_email(session_login_method.email)
+                        if session_login_method.email is not None and not is_fake_email(
+                            session_login_method.email
                         ):
                             emails_result = [session_login_method.email]
 
@@ -564,8 +563,7 @@ class PasswordlessRecipe(RecipeModule):
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception(
-                &#34;Passwordless recipe has already been initialised. Please check &#34;
-                &#34;your code for bugs.&#34;
+                &#34;Passwordless recipe has already been initialised. Please check your code for bugs.&#34;
             )
 
         return func
@@ -827,9 +825,8 @@ inheritance.</p></div>
                         # This factor is not set up for email-based factors.
                         # We check for emails from other loginMethods and return those.
                         emails_result = []
-                        if (
-                            session_login_method.email is not None
-                            and not is_fake_email(session_login_method.email)
+                        if session_login_method.email is not None and not is_fake_email(
+                            session_login_method.email
                         ):
                             emails_result = [session_login_method.email]
 
@@ -1125,8 +1122,7 @@ inheritance.</p></div>
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception(
-                &#34;Passwordless recipe has already been initialised. Please check &#34;
-                &#34;your code for bugs.&#34;
+                &#34;Passwordless recipe has already been initialised. Please check your code for bugs.&#34;
             )
 
         return func
