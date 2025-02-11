@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - user_info.raw_user_info_from_provider.from_id_token_payload["email"]
     + user_info.raw_user_info_from_provider.from_user_info_api["email"]
     ```
+- Updates timestamps to use UTC instead of GMT as the timezone
 
 ## [0.27.0] - 2024-12-30
 
