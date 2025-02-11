@@ -12,12 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Any, Dict, List, Union, Callable, Optional, TypeVar
+
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
+from supertokens_python.recipe.session.recipe_implementation import RecipeUserId
 from supertokens_python.types import MaybeAwaitable
 
 from ...jwt.interfaces import (
@@ -26,15 +28,14 @@ from ...jwt.interfaces import (
     GetJWKSResult,
 )
 from ..interfaces import (
-    SessionContainer,
-    SessionInformationResult,
-    SessionClaimValidator,
-    SessionClaim,
     ClaimsValidationResult,
-    SessionDoesNotExistError,
     GetClaimValueOkResult,
+    SessionClaim,
+    SessionClaimValidator,
+    SessionContainer,
+    SessionDoesNotExistError,
+    SessionInformationResult,
 )
-from supertokens_python.recipe.session.recipe_implementation import RecipeUserId
 
 
 def create_new_session(
@@ -299,7 +300,7 @@ def get_jwks(user_context: Optional[Dict[str, Any]] = None) -> GetJWKSResult:
 
 
 def get_open_id_discovery_configuration(
-    user_context: Optional[Dict[str, Any]] = None
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> GetOpenIdDiscoveryConfigurationResult:
     from supertokens_python.recipe.session.asyncio import (
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration,

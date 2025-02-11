@@ -1,0 +1,55 @@
+# `pre-commit autoupdate` to update to the latest versions
+# `pre-commit run` to run locally on staged files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: trailing-whitespace # Remove trailing whitespaces
+    - id: check-ast # Ensure no syntax errors
+    - id: check-merge-conflict
+    - id: end-of-file-fixer # Adds empty line to EoF
+    - id: no-commit-to-branch # Always runs by default - checks master/main
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.5
+    hooks:
+      - id: ruff # Linter
+        args: [ --fix ]
+      - id: ruff-format # Formatter
+
+  - repo: local
+    hooks:
+      # Check versions match in setup.py and constants.py
+      - id: check-version
+        name: check-version
+        entry: hooks/check-version.sh
+        language: system
+        always_run: true
+      # Ensure direct commits to version branches match version in code
+      - id: check-branch
+        name: check-branch
+        entry: hooks/check-branch.sh
+        language: system
+        always_run: true
+      # Static type-checks, requires `pyright` to be installed locally.
+      # Can cause issues in VSCode, install globally to make it work.
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: system
+        types: [python]
+        stages:
+          - manual
+
+      # Disabling pylint in favor of ruff.
+      # - id: pylint
+      #   name: pylint
+      #   entry: pylint
+      #   language: system
+      #   types: [python]
+      #   require_serial: true
+      #   args:
+      #     [
+      #       # "-rn", # Only display messages
+      #       "-sn", # Don't display the score
+      #     ]

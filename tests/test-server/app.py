@@ -1,72 +1,77 @@
 import inspect
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
-from flask import Flask, request, jsonify
-from supertokens_python import process_state
+import json
+import os
+import traceback
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
+
+import override_logging
+from accountlinking import add_accountlinking_routes  # pylint: disable=import-error
+from emailpassword import add_emailpassword_routes  # pylint: disable=import-error
+from emailverification import (
+    add_emailverification_routes,
+)  # pylint: disable=import-error
+from flask import Flask, jsonify, request
+from multifactorauth import add_multifactorauth_routes
+from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
+from oauth2provider import add_oauth2provider_routes
+from passwordless import add_passwordless_routes  # pylint: disable=import-error
+from session import add_session_routes  # pylint: disable=import-error
+from supertokens_python import (
+    AppInfo,
+    InputAppInfo,
+    Supertokens,
+    SupertokensConfig,
+    init,
+    process_state,
+)
 from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
+from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe import (
     accountlinking,
     dashboard,
+    emailpassword,
+    emailverification,
     multifactorauth,
+    oauth2provider,
     passwordless,
+    session,
+    thirdparty,
     totp,
 )
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
-from supertokens_python.recipe.totp.recipe import TOTPRecipe
-from passwordless import add_passwordless_routes  # pylint: disable=import-error
-from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
 from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
-from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
-from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
-from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
+from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
+from supertokens_python.recipe.session import InputErrorHandlers, SessionContainer
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.thirdparty.provider import UserFields, UserInfoMap
+from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
+from supertokens_python.recipe.totp.recipe import TOTPRecipe
+from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
+from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.types import RecipeUserId
 from test_functions_mapper import (  # pylint: disable=import-error
     get_func,
     get_override_params,
     reset_override_params,
 )  # pylint: disable=import-error
-from totp import add_totp_routes  # pylint: disable=import-error
-from emailpassword import add_emailpassword_routes  # pylint: disable=import-error
 from thirdparty import add_thirdparty_routes  # pylint: disable=import-error
-from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
-from accountlinking import add_accountlinking_routes  # pylint: disable=import-error
-from emailverification import (
-    add_emailverification_routes,
-)  # pylint: disable=import-error
-from session import add_session_routes  # pylint: disable=import-error
-from supertokens_python import (
-    AppInfo,
-    Supertokens,
-    init,
-    InputAppInfo,
-    SupertokensConfig,
-)
-from supertokens_python.recipe import (
-    emailpassword,
-    session,
-    thirdparty,
-    emailverification,
-    oauth2provider,
-)
-from supertokens_python.recipe.session import InputErrorHandlers, SessionContainer
-from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.thirdparty.provider import UserFields, UserInfoMap
-from supertokens_python.recipe_module import RecipeModule
-from supertokens_python.framework.flask.flask_middleware import Middleware
-import os
-import json
-import override_logging
+from totp import add_totp_routes  # pylint: disable=import-error
+from usermetadata import add_usermetadata_routes
+
+from supertokens import add_supertokens_routes  # pylint: disable=import-error
 
 app = Flask(__name__)
 Middleware(app)
@@ -194,7 +199,8 @@ def callback_with_log(
         else:
 
             async def default_func(  # pylint: disable=unused-argument
-                *args: Any, **kwargs: Any  # pylint: disable=unused-argument
+                *args: Any,
+                **kwargs: Any,  # pylint: disable=unused-argument
             ) -> Any:  # pylint: disable=unused-argument
                 return default_value
 
@@ -459,11 +465,11 @@ def init_st(config: Dict[str, Any]):
         elif recipe_id == "emailverification":
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
 
-            from supertokens_python.recipe.emailverification.utils import (
-                OverrideConfig as EmailVerificationOverrideConfig,
-            )
             from supertokens_python.recipe.emailverification.interfaces import (
                 UnknownUserIdError,
+            )
+            from supertokens_python.recipe.emailverification.utils import (
+                OverrideConfig as EmailVerificationOverrideConfig,
             )
 
             recipe_list.append(
@@ -810,10 +816,6 @@ def not_found(error: Any) -> Any:  # pylint: disable=unused-argument
     return jsonify({"error": f"Route not found: {request.method} {request.path}"}), 404
 
 
-import traceback
-from flask import jsonify
-
-
 @app.errorhandler(Exception)  # type: ignore
 def handle_exception(e: Exception):
     # Print the error and stack trace
@@ -832,19 +834,9 @@ add_thirdparty_routes(app)
 add_accountlinking_routes(app)
 add_passwordless_routes(app)
 add_totp_routes(app)
-from supertokens import add_supertokens_routes  # pylint: disable=import-error
-
 add_supertokens_routes(app)
-from usermetadata import add_usermetadata_routes
-
 add_usermetadata_routes(app)
-
-from multifactorauth import add_multifactorauth_routes
-
 add_multifactorauth_routes(app)
-
-from oauth2provider import add_oauth2provider_routes
-
 add_oauth2provider_routes(app)
 
 if __name__ == "__main__":

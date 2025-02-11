@@ -10,7 +10,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     VerifyEmailUsingTokenInvalidTokenError,
 )
-
 from supertokens_python.types import RecipeUserId
 
 from ...interfaces import (

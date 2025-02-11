@@ -15,10 +15,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+
 from ...supertokens import AppInfo
 from ...types import (
     APIResponse,
@@ -30,8 +31,8 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
 
-    from .types import FormField
     from ...types import User
+    from .types import FormField
     from .utils import EmailPasswordConfig
 
 

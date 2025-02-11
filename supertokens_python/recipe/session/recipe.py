@@ -14,22 +14,23 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from supertokens_python.framework.response import BaseResponse
 from typing_extensions import Literal
 
+from supertokens_python.framework.response import BaseResponse
+
+from ...types import MaybeAwaitable
 from .cookie_and_header import (
     get_cors_allowed_headers,
 )
 from .exceptions import (
     ClearDuplicateSessionCookiesError,
+    InvalidClaimsError,
     SuperTokensSessionError,
     TokenTheftError,
     UnauthorisedError,
-    InvalidClaimsError,
 )
-from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -41,7 +42,9 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
+from .api import handle_refresh_api, handle_signout_api
 from .constants import SESSION_REFRESH, SIGNOUT
+from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .interfaces import (
     APIInterface,
     APIOptions,
@@ -53,14 +56,12 @@ from .interfaces import (
 from .recipe_implementation import (
     RecipeImplementation,
 )
-from .api import handle_refresh_api, handle_signout_api
 from .utils import (
     InputErrorHandlers,
     InputOverrideConfig,
     TokenTransferMethod,
     validate_and_normalise_user_input,
 )
-from .cookie_and_header import clear_session_from_all_token_transfer_methods
 
 
 class SessionRecipe(RecipeModule):

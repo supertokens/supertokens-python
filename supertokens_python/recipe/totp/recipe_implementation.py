@@ -16,28 +16,29 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from urllib.parse import quote
 
+from supertokens_python.asyncio import get_user
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.totp.interfaces import (
     RecipeInterface,
 )
+
 from .types import (
-    UnknownUserIdError,
-    UpdateDeviceOkResult,
-    ListDevicesOkResult,
-    RemoveDeviceOkResult,
-    VerifyDeviceOkResult,
-    VerifyTOTPOkResult,
-    UserIdentifierInfoOkResult,
-    UserIdentifierInfoDoesNotExistError,
     CreateDeviceOkResult,
     Device,
     DeviceAlreadyExistsError,
     InvalidTOTPError,
     LimitReachedError,
+    ListDevicesOkResult,
+    RemoveDeviceOkResult,
     TOTPNormalisedConfig,
     UnknownDeviceError,
+    UnknownUserIdError,
+    UpdateDeviceOkResult,
+    UserIdentifierInfoDoesNotExistError,
+    UserIdentifierInfoOkResult,
+    VerifyDeviceOkResult,
+    VerifyTOTPOkResult,
 )
-from supertokens_python.asyncio import get_user
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier

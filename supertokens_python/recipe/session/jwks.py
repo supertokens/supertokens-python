@@ -12,17 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import requests
 from os import environ
 from typing import List, Optional
+
+import requests
+from jwt import PyJWK, PyJWKSet
 from typing_extensions import TypedDict
 
-from jwt import PyJWK, PyJWKSet
-
-from supertokens_python.recipe.session.utils import SessionConfig
-from supertokens_python.utils import RWMutex, RWLockContext, get_timestamp_ms
-from supertokens_python.querier import Querier
 from supertokens_python.logger import log_debug_message
+from supertokens_python.querier import Querier
+from supertokens_python.recipe.session.utils import SessionConfig
+from supertokens_python.utils import RWLockContext, RWMutex, get_timestamp_ms
 
 
 class JWKSConfigType(TypedDict):

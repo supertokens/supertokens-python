@@ -13,25 +13,25 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, Union, Optional, Callable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
+from supertokens_python.asyncio import get_user
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.types import RecipeUserId, User
 
 from .interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     CreateEmailVerificationTokenOkResult,
+    EmailDoesNotExistError,
+    GetEmailForUserIdOkResult,
     RecipeInterface,
     RevokeEmailVerificationTokensOkResult,
+    UnknownUserIdError,
     UnverifyEmailOkResult,
     VerifyEmailUsingTokenInvalidTokenError,
     VerifyEmailUsingTokenOkResult,
-    GetEmailForUserIdOkResult,
-    EmailDoesNotExistError,
-    UnknownUserIdError,
 )
 from .types import EmailVerificationUser
-from supertokens_python.asyncio import get_user
-from supertokens_python.types import RecipeUserId, User
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier

@@ -6,19 +6,20 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_without_request_response,
     refresh_session_without_request_response,
 )
-from supertokens_python.recipe.session.session_class import SessionContainer
-from supertokens_python.types import RecipeUserId
-from tests.utils import (
-    get_st_init_args,
-    setup_function,
-    start_st,
-    teardown_function,
-    reset,
-)
+from supertokens_python.recipe.session.interfaces import GetSessionTokensDangerouslyDict
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
-from supertokens_python.recipe.session.interfaces import GetSessionTokensDangerouslyDict
+from supertokens_python.recipe.session.session_class import SessionContainer
+from supertokens_python.types import RecipeUserId
+
+from tests.utils import (
+    get_st_init_args,
+    reset,
+    setup_function,
+    start_st,
+    teardown_function,
+)
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -53,9 +54,9 @@ async def test_dynamic_key_switching():
         caught_exception = e
 
     # Check for the expected exception due to token signing key mismatch
-    assert (
-        caught_exception is not None
-    ), "Expected an exception to be thrown, but none was."
+    assert caught_exception is not None, (
+        "Expected an exception to be thrown, but none was."
+    )
     assert (
         str(caught_exception)
         == "The access token doesn't match the use_dynamic_access_token_signing_key setting"

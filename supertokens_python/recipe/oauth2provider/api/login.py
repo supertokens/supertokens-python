@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from dateutil import parser
@@ -21,14 +22,13 @@ from dateutil import parser
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
-from http.cookies import SimpleCookie
 
 from .utils import get_session
 
 if TYPE_CHECKING:
     from ..interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
 
@@ -38,11 +38,12 @@ async def login(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
-    from ..interfaces import (
-        FrontendRedirectResponse,
-        ErrorOAuth2Response,
-    )
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
+
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        FrontendRedirectResponse,
+    )
 
     if api_implementation.disable_login_get is True:
         return None
@@ -88,7 +89,8 @@ async def login(
                         domain=morsel.get("domain"),
                         secure=morsel.get("secure", True),
                         httponly=morsel.get("httponly", True),
-                        expires=parser.parse(morsel.get("expires", "")).timestamp() * 1000,  # type: ignore
+                        expires=parser.parse(morsel.get("expires", "")).timestamp()
+                        * 1000,  # type: ignore
                         path=morsel.get("path", "/"),
                         samesite=morsel.get("samesite", "lax").lower(),
                     )

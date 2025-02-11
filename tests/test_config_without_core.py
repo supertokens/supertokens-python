@@ -1,8 +1,8 @@
 from pytest import mark
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
+
 from tests.utils import reset
 
 

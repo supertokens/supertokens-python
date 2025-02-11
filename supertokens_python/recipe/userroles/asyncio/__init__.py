@@ -115,7 +115,7 @@ async def delete_role(
 
 
 async def get_all_roles(
-    user_context: Union[Dict[str, Any], None] = None
+    user_context: Union[Dict[str, Any], None] = None,
 ) -> GetAllRolesOkResult:
     if user_context is None:
         user_context = {}

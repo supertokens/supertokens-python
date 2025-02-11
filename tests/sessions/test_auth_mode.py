@@ -1,11 +1,9 @@
 from typing import Any, Dict, Optional, Union
-from httpx import Response
-from typing_extensions import Literal
 
 from fastapi import Depends, FastAPI, Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
+from httpx import Response
 from pytest import fixture, mark
+from requests.cookies import RequestsCookieJar
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
@@ -13,6 +11,10 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.utils import TokenTransferMethod
+from supertokens_python.types import RecipeUserId
+from typing_extensions import Literal
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     extract_info,
     get_st_init_args,
@@ -54,7 +56,11 @@ def app():
         }
 
     @fast.get("/verify-optional")
-    async def _verify_optional(session: Optional[SessionContainer] = Depends(verify_session(session_required=False))):  # type: ignore
+    async def _verify_optional(  # type: ignore
+        session: Optional[SessionContainer] = Depends(
+            verify_session(session_required=False)
+        ),
+    ):
         return {
             "message": True,
             "sessionHandle": session.get_handle() if session is not None else None,
@@ -62,9 +68,6 @@ def app():
         }
 
     return TestClient(fast)
-
-
-from requests.cookies import RequestsCookieJar
 
 
 def call_api(
@@ -134,9 +137,7 @@ def check_extracted_info(
 ):
     if expected_transfer_method == "header":
         for prop in ["accessToken", "refreshToken"]:
-            if (
-                passed_different_token
-            ):  # If method is header but we passed a different token in cookie with request
+            if passed_different_token:  # If method is header but we passed a different token in cookie with request
                 assert (
                     res.get(prop, "") == ""
                 )  # It should clear the cookie (if present)
@@ -153,9 +154,7 @@ def check_extracted_info(
         for prop in ["accessToken", "refreshToken", "antiCsrf"]:
             assert res[prop] != ""
         for prop in ["accessTokenFromHeader", "refreshTokenFromHeader"]:
-            if (
-                passed_different_token
-            ):  # If method is cookie but we passed a different token in header with request
+            if passed_different_token:  # If method is cookie but we passed a different token in header with request
                 assert res.get(prop, "") == ""  # clear the header (if present)
             else:
                 assert res[prop] is None
@@ -175,7 +174,9 @@ async def test_use_headers_if_get_token_transfer_method_returns_any_and_no_st_au
             [
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _, __, ___: "any",  # Always return "any"
+                    get_token_transfer_method=lambda _,
+                    __,
+                    ___: "any",  # Always return "any"
                 )
             ]
         )
@@ -204,7 +205,9 @@ async def test_should_use_cookies_if_get_token_transfer_method_returns_any_and_s
             [
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _, __, ___: "any",  # Always returns "any"
+                    get_token_transfer_method=lambda _,
+                    __,
+                    ___: "any",  # Always returns "any"
                 )
             ]
         )
@@ -231,7 +234,9 @@ async def test_use_headers_if_get_token_transfer_method_returns_any_and_st_auth_
             [
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _, __, ___: "any",  # Always returns "any"
+                    get_token_transfer_method=lambda _,
+                    __,
+                    ___: "any",  # Always returns "any"
                 )
             ]
         )

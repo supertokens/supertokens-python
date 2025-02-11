@@ -14,41 +14,41 @@
 from __future__ import annotations
 
 from os import environ
-from typing import Any, Dict, List, Union, TYPE_CHECKING, Optional, Callable, Awaitable
-from supertokens_python.supertokens import Supertokens
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import APIHandled, RecipeModule
-from .utils import validate_and_normalise_user_input
+from typing_extensions import Literal
+
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from .recipe_implementation import RecipeImplementation
-from supertokens_python.querier import Querier
 from supertokens_python.logger import (
     log_debug_message,
 )
+from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
-from typing_extensions import Literal
+from supertokens_python.querier import Querier
+from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python.supertokens import Supertokens
 
+from .interfaces import RecipeInterface
+from .recipe_implementation import RecipeImplementation
 from .types import (
+    AccountInfo,
+    AccountInfoWithRecipeId,
+    AccountInfoWithRecipeIdAndUserId,
+    InputOverrideConfig,
     RecipeLevelUser,
     ShouldAutomaticallyLink,
     ShouldNotAutomaticallyLink,
-    AccountInfoWithRecipeIdAndUserId,
-    InputOverrideConfig,
-    AccountInfoWithRecipeId,
-    AccountInfo,
 )
-
-from .interfaces import RecipeInterface
+from .utils import validate_and_normalise_user_input
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-    from supertokens_python.types import User, LoginMethod, RecipeUserId
-    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.emailverification.recipe import (
         EmailVerificationRecipe,
     )
+    from supertokens_python.recipe.session import SessionContainer
+    from supertokens_python.supertokens import AppInfo
+    from supertokens_python.types import LoginMethod, RecipeUserId, User
 
 
 class EmailChangeAllowedResult:

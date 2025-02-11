@@ -13,7 +13,7 @@
 # under the License.
 
 from . import interfaces
-from .claim_base_classes import boolean_claim, primitive_claim, primitive_array_claim
+from .claim_base_classes import boolean_claim, primitive_array_claim, primitive_claim
 
 SessionClaim = interfaces.SessionClaim
 BooleanClaim = boolean_claim.BooleanClaim

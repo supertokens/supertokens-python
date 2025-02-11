@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
+from session import convert_session_to_container  # pylint: disable=import-error
 from supertokens_python import convert_to_recipe_user_id
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
@@ -12,16 +13,16 @@ from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserUnknownUserIdError,
 )
 from supertokens_python.recipe.passwordless.syncio import (
-    signinup,
-    create_code,
-    update_user,
     consume_code,
+    create_code,
+    signinup,
+    update_user,
 )
+
 from utils import (  # pylint: disable=import-error
-    serialize_user,
     serialize_recipe_user_id,
+    serialize_user,
 )  # pylint: disable=import-error
-from session import convert_session_to_container  # pylint: disable=import-error
 
 
 def add_passwordless_routes(app: Flask):

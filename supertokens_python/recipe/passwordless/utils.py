@@ -15,7 +15,9 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+
+from typing_extensions import Literal
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -29,19 +31,20 @@ from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginSMSTemplateVars,
 )
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
+    from supertokens_python import AppInfo
+
     from .interfaces import (
         APIInterface,
-        RecipeInterface,
         PasswordlessLoginEmailTemplateVars,
+        RecipeInterface,
     )
-    from supertokens_python import AppInfo
 
 from re import fullmatch
 
 from phonenumbers import is_valid_number, parse  # type: ignore
+
 from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
@@ -184,13 +187,12 @@ def validate_and_normalise_user_input(
         SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
     ] = None,
 ) -> PasswordlessConfig:
-
     if override is None:
         override = OverrideConfig()
 
-    def get_email_delivery_config() -> (
-        EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
-    ):
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[
+        PasswordlessLoginEmailTemplateVars
+    ]:
         email_service = email_delivery.service if email_delivery is not None else None
 
         if email_service is None:
@@ -203,9 +205,9 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -> (
-        SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
-    ):
+    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[
+        PasswordlessLoginSMSTemplateVars
+    ]:
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if sms_service is None:

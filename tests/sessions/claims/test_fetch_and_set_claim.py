@@ -1,9 +1,9 @@
 from unittest.mock import patch
 
 from pytest import mark
-
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
+
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
 from tests.utils import AsyncMock, MagicMock
 

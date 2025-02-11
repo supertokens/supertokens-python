@@ -15,20 +15,21 @@ import json
 from typing import Any
 
 from fastapi import FastAPI
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, emailverification, session
+from supertokens_python.recipe.emailpassword import InputFormField
+from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
+from supertokens_python.types import RecipeUserId
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     setup_function,
     sign_up_request,
     start_st,
     teardown_function,
 )
-from supertokens_python.recipe.emailpassword import InputFormField
-from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 
 _ = setup_function  # type: ignore
 _ = teardown_function  # type: ignore

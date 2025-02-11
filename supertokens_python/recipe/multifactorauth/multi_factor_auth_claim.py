@@ -13,8 +13,8 @@
 # under the License.
 
 from __future__ import annotations
-import importlib
 
+import importlib
 from typing import Any, Dict, Optional, Set
 
 from supertokens_python.recipe.session.interfaces import (
@@ -168,7 +168,6 @@ class MultiFactorAuthClaimValidators:
     def has_completed_mfa_requirements_for_auth(
         self, claim_key: Optional[str] = None
     ) -> SessionClaimValidator:
-
         return HasCompletedMFARequirementsForAuthSCV(
             id_=claim_key or self.claim.key,
             claim=self.claim,

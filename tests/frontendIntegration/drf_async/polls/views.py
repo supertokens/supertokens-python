@@ -11,57 +11,61 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from django.http import HttpRequest
-from supertokens_python.recipe.jwt.recipe import JWTRecipe
-from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
-from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.session.interfaces import (
-    APIInterface,
-    RecipeInterface,
-    ClaimValidationResult,
-    JSONObject,
-    SessionClaimValidator,
-)
-from typing import Dict, Union, Any
 import json
 import os
 import sys
-from functools import wraps
-from base64 import b64encode
 import time
+from base64 import b64encode
+from functools import wraps
+from typing import Any, Dict, Union
 
-from django.shortcuts import render
-from django.conf import settings
-from rest_framework import status  # type: ignore
-from rest_framework.decorators import api_view as api_view_sync, renderer_classes  # type: ignore
 from adrf.decorators import api_view  # type: ignore
-from rest_framework.renderers import StaticHTMLRenderer, BaseRenderer  # type: ignore
+from django.conf import settings
+from django.http import HttpRequest
+from django.shortcuts import render
+from rest_framework.decorators import api_view as api_view_sync  # type: ignore
+from rest_framework.decorators import renderer_classes  # type: ignore
+from rest_framework.renderers import BaseRenderer, StaticHTMLRenderer  # type: ignore
 from rest_framework.request import Request  # type: ignore
 from rest_framework.response import Response  # type: ignore
-from supertokens_python import get_all_cors_headers
-from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
+from supertokens_python import (
+    InputAppInfo,
+    Supertokens,
+    SupertokensConfig,
+    get_all_cors_headers,
+    init,
+)
+from supertokens_python.constants import VERSION
 from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
+from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import (
     InputErrorHandlers,
     SessionContainer,
     SessionRecipe,
 )
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
     get_session,
+    get_session_information,
+    merge_into_access_token_payload,
     revoke_all_sessions_for_user,
 )
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
-from supertokens_python.recipe.session.asyncio import merge_into_access_token_payload
-
-from supertokens_python.constants import VERSION
+from supertokens_python.recipe.session.interfaces import (
+    APIInterface,
+    ClaimValidationResult,
+    JSONObject,
+    RecipeInterface,
+    SessionClaimValidator,
+)
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.session.asyncio import get_session_information
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
 
 protected_prop_name = {
     "sub",
@@ -144,7 +148,8 @@ def custom_decorator_for_update_jwt():  # type: ignore
 
                     body = request.data  # type: ignore
                     await session_.merge_into_access_token_payload(  # type: ignore
-                        {**clearing, **body}, {}  # type: ignore
+                        {**clearing, **body},
+                        {},  # type: ignore
                     )
 
                     Test.increment_get_session()
@@ -179,7 +184,8 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
 
                 body = request.data  # type: ignore
                 await merge_into_access_token_payload(
-                    session_.get_handle(), {**clearing, **body}  # type: ignore
+                    session_.get_handle(),  # type: ignore
+                    {**clearing, **body},
                 )
 
                 resp = Response(session_.get_access_token_payload())  # type: ignore

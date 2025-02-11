@@ -12,32 +12,31 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from pytest import mark
-from supertokens_python.recipe import session, userroles, emailpassword, multitenancy
 from supertokens_python import init
-from supertokens_python.recipe.multitenancy.asyncio import (
-    create_or_update_tenant,
-    associate_user_to_tenant,
-)
+from supertokens_python.recipe import emailpassword, multitenancy, session, userroles
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
+from supertokens_python.recipe.multitenancy.asyncio import (
+    associate_user_to_tenant,
+    create_or_update_tenant,
+)
 from supertokens_python.recipe.multitenancy.interfaces import (
     TenantConfigCreateOrUpdate,
 )
 from supertokens_python.recipe.userroles.asyncio import (
-    create_new_role_or_add_permissions,
     add_role_to_user,
+    create_new_role_or_add_permissions,
     get_roles_for_user,
 )
 from supertokens_python.types import RecipeUserId
 
-from tests.utils import get_st_init_args
 from tests.utils import (
+    get_st_init_args,
     setup_function,
-    teardown_function,
     setup_multitenancy_feature,
     start_st,
+    teardown_function,
 )
-
 
 _ = setup_function
 _ = teardown_function

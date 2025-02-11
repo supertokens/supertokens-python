@@ -1,6 +1,6 @@
 from django.http import HttpRequest, JsonResponse
-from supertokens_python.recipe.session.framework.django.syncio import verify_session
 from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session.framework.django.syncio import verify_session
 
 
 @verify_session()

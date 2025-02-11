@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
-from flask import Flask, request, jsonify
 
+from flask import Flask, jsonify, request
 from session import convert_session_to_container  # pylint: disable=import-error
 from supertokens_python.recipe.thirdparty.interfaces import (
     EmailChangeNotAllowedError,
@@ -8,9 +8,10 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.thirdparty.syncio import manually_create_or_update_user
+
 from utils import (  # pylint: disable=import-error
-    serialize_user,
     serialize_recipe_user_id,
+    serialize_user,
 )  # pylint: disable=import-error
 
 

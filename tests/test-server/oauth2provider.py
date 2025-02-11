@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+import supertokens_python.recipe.oauth2provider.syncio as OAuth2Provider
+from flask import Flask, jsonify, request
 from supertokens_python.recipe.oauth2provider.interfaces import (
     CreateOAuth2ClientInput,
     OAuth2TokenValidationRequirements,
     UpdateOAuth2ClientInput,
 )
-import supertokens_python.recipe.oauth2provider.syncio as OAuth2Provider
 
 
 def add_oauth2provider_routes(app: Flask):

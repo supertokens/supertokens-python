@@ -13,8 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union, List
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+
 from typing_extensions import Literal
+
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 
 if TYPE_CHECKING:
@@ -23,16 +25,16 @@ if TYPE_CHECKING:
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.types import User, RecipeUserId
+from supertokens_python.types import RecipeUserId, User
 from supertokens_python.utils import log_debug_message, normalise_email
 
 from ...normalised_url_path import NormalisedURLPath
 from .constants import (
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
-    SIGN_OUT_API,
-    SIGN_IN_API,
     SEARCH_TAGS_API,
+    SIGN_IN_API,
+    SIGN_OUT_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_EMAIL_VERIFY_TOKEN_API,
@@ -111,7 +113,6 @@ def validate_and_normalise_user_input(
     admins: Optional[List[str]],
     override: Optional[InputOverrideConfig] = None,
 ) -> DashboardConfig:
-
     if override is None:
         override = InputOverrideConfig()
 

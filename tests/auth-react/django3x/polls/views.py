@@ -13,7 +13,7 @@
 # under the License.
 import json
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from mysite.store import get_codes, get_url_with_token
@@ -22,23 +22,16 @@ from supertokens_python import convert_to_recipe_user_id
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
-
+from supertokens_python.recipe.emailpassword.interfaces import (
+    EmailAlreadyExistsError,
+    UnknownUserIdError,
+    UpdateEmailOrPasswordEmailChangeNotAllowedError,
+    UpdateEmailOrPasswordOkResult,
+)
 from supertokens_python.recipe.emailverification import EmailVerificationClaim
 from supertokens_python.recipe.multifactorauth.asyncio import (
     add_to_required_secondary_factors_for_user,
 )
-from supertokens_python.recipe.oauth2provider.syncio import create_oauth2_client
-from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.interfaces import SessionClaimValidator
-from supertokens_python.recipe.thirdparty import ProviderConfig
-from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
-from supertokens_python.recipe.thirdparty.interfaces import (
-    ManuallyCreateOrUpdateUserOkResult,
-    SignInUpNotAllowed,
-)
-from supertokens_python.recipe.userroles import UserRoleClaim, PermissionClaim
-from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.recipe.multitenancy.asyncio import (
     associate_user_to_tenant,
     create_or_update_tenant,
@@ -54,6 +47,8 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantUnknownUserIdError,
     TenantConfigCreateOrUpdate,
 )
+from supertokens_python.recipe.oauth2provider.interfaces import CreateOAuth2ClientInput
+from supertokens_python.recipe.oauth2provider.syncio import create_oauth2_client
 from supertokens_python.recipe.passwordless.asyncio import update_user
 from supertokens_python.recipe.passwordless.interfaces import (
     EmailChangeNotAllowedError,
@@ -62,12 +57,16 @@ from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserPhoneNumberAlreadyExistsError,
     UpdateUserUnknownUserIdError,
 )
-from supertokens_python.recipe.emailpassword.interfaces import (
-    EmailAlreadyExistsError,
-    UnknownUserIdError,
-    UpdateEmailOrPasswordEmailChangeNotAllowedError,
-    UpdateEmailOrPasswordOkResult,
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.recipe.thirdparty import ProviderConfig
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
+from supertokens_python.recipe.thirdparty.interfaces import (
+    ManuallyCreateOrUpdateUserOkResult,
+    SignInUpNotAllowed,
 )
+from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
+from supertokens_python.types import AccountInfo, RecipeUserId
 
 mode = os.environ.get("APP_MODE", "asgi")
 
@@ -95,14 +94,14 @@ async def override_global_claim_validators(
 
 
 if mode == "asgi":
+    from supertokens_python.recipe.emailverification.asyncio import unverify_email
     from supertokens_python.recipe.session.framework.django.asyncio import (
         verify_session,
     )
     from supertokens_python.recipe.userroles.asyncio import (
-        create_new_role_or_add_permissions,
         add_role_to_user,
+        create_new_role_or_add_permissions,
     )
-    from supertokens_python.recipe.emailverification.asyncio import unverify_email
 
     @verify_session()
     async def session_info(request: HttpRequest):  # type: ignore
@@ -138,8 +137,7 @@ if mode == "asgi":
         return JsonResponse({"status": "OK"})
 
     async def delete_user(request: HttpRequest):
-        from supertokens_python.asyncio import list_users_by_account_info
-        from supertokens_python.asyncio import delete_user
+        from supertokens_python.asyncio import delete_user, list_users_by_account_info
 
         body = json.loads(request.body)
         user = await list_users_by_account_info(
@@ -151,13 +149,15 @@ if mode == "asgi":
         return JsonResponse({"status": "OK"})
 
 else:
-    from supertokens_python.recipe.session.framework.django.syncio import verify_session
-    from supertokens_python.recipe.userroles.syncio import (
-        create_new_role_or_add_permissions as sync_create_new_role_or_add_permissions,
-        add_role_to_user as sync_add_role_to_user,
-    )
     from supertokens_python.recipe.emailverification.syncio import (
         unverify_email as sync_unverify_email,
+    )
+    from supertokens_python.recipe.session.framework.django.syncio import verify_session
+    from supertokens_python.recipe.userroles.syncio import (
+        add_role_to_user as sync_add_role_to_user,
+    )
+    from supertokens_python.recipe.userroles.syncio import (
+        create_new_role_or_add_permissions as sync_create_new_role_or_add_permissions,
     )
 
     @verify_session()
@@ -190,8 +190,7 @@ else:
         return JsonResponse({"status": "OK"})
 
     def sync_delete_user(request: HttpRequest):
-        from supertokens_python.syncio import list_users_by_account_info
-        from supertokens_python.syncio import delete_user
+        from supertokens_python.syncio import delete_user, list_users_by_account_info
 
         body = json.loads(request.body)
         user = list_users_by_account_info("public", AccountInfo(email=body["email"]))
@@ -312,11 +311,11 @@ async def setup_tenant(request: HttpRequest):
     core_config = body.get("coreConfig", {})
 
     first_factors: List[str] = []
-    if login_methods.get("emailPassword", {}).get("enabled") == True:
+    if login_methods.get("emailPassword", {}).get("enabled") is True:
         first_factors.append("emailpassword")
-    if login_methods.get("thirdParty", {}).get("enabled") == True:
+    if login_methods.get("thirdParty", {}).get("enabled") is True:
         first_factors.append("thirdparty")
-    if login_methods.get("passwordless", {}).get("enabled") == True:
+    if login_methods.get("passwordless", {}).get("enabled") is True:
         first_factors.extend(["otp-phone", "otp-email", "link-phone", "link-email"])
 
     core_resp = await create_or_update_tenant(
@@ -427,7 +426,8 @@ async def add_required_factor(request: HttpRequest):
         return JsonResponse({"error": "Invalid request body"}, status_code=400)
 
     await add_to_required_secondary_factors_for_user(
-        session_.get_user_id(), body["factorId"]  # type: ignore
+        session_.get_user_id(),  # type: ignore
+        body["factorId"],
     )
 
     return JsonResponse({"status": "OK"})

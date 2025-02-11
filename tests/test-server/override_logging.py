@@ -1,9 +1,8 @@
 import json
-from typing import Any, Callable, Coroutine, Dict, List, Set, Union
 import time
+from typing import Any, Callable, Coroutine, Dict, List, Set, Union
 
 from httpx import Response
-
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.accountlinking import RecipeLevelUser
 from supertokens_python.recipe.accountlinking.interfaces import (
@@ -11,12 +10,10 @@ from supertokens_python.recipe.accountlinking.interfaces import (
     LinkAccountsOkResult,
 )
 from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
-from supertokens_python.recipe.emailpassword.types import (
-    FormField,
-    PasswordResetEmailTemplateVars,
-)
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIOptions as EmailPasswordAPIOptions,
+)
+from supertokens_python.recipe.emailpassword.interfaces import (
     ConsumePasswordResetTokenOkResult,
     CreateResetPasswordOkResult,
     GeneratePasswordResetTokenPostOkResult,
@@ -25,6 +22,10 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpPostOkResult,
     UpdateEmailOrPasswordOkResult,
 )
+from supertokens_python.recipe.emailpassword.types import (
+    FormField,
+    PasswordResetEmailTemplateVars,
+)
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     CreateEmailVerificationTokenOkResult,
@@ -32,6 +33,9 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenOkResult,
 )
 from supertokens_python.recipe.emailverification.recipe import IsVerifiedSCV
+from supertokens_python.recipe.passwordless.interfaces import (
+    APIOptions as PasswordlessAPIOptions,
+)
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
@@ -41,9 +45,6 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIOptions as ThirdPartyAPIOptions,
-)
-from supertokens_python.recipe.passwordless.interfaces import (
-    APIOptions as PasswordlessAPIOptions,
 )
 from supertokens_python.recipe.thirdparty.provider import ProviderConfigForClient
 from supertokens_python.recipe.thirdparty.types import UserInfo as TPUserInfo

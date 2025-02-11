@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from supertokens_python.types import APIResponse, GeneralErrorResponse, RecipeUserId
 
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
         ProviderConfig,
         ProviderInput,
     )
+
     from .utils import MultitenancyConfig
 
 
@@ -297,9 +298,7 @@ class APIOptions:
 
 
 class ThirdPartyProvider:
-    def __init__(
-        self, id: str, name: Optional[str]
-    ):  # pylint: disable=redefined-builtin
+    def __init__(self, id: str, name: Optional[str]):  # pylint: disable=redefined-builtin
         self.id = id
         self.name = name
 

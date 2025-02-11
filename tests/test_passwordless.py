@@ -15,27 +15,25 @@
 from typing import Any, Dict
 
 from fastapi import FastAPI
-from supertokens_python.asyncio import get_user, list_users_by_account_info
-from supertokens_python.recipe.passwordless.asyncio import (
-    delete_email_for_user,
-    delete_phone_number_for_user,
-)
-from supertokens_python.types import AccountInfo, RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.asyncio import get_user, list_users_by_account_info
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.asyncio import (
-    update_user,
     create_magic_link,
+    delete_email_for_user,
+    delete_phone_number_for_user,
+    update_user,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserOkResult,
 )
+from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.utils import is_version_gte
 
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -144,7 +142,6 @@ async def test_passwordless_otp(driver_config_client: TestClient):
 async def test_passwordless_create_magic_link(
     driver_config_client: TestClient,  # pylint: disable=unused-argument
 ):
-
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(

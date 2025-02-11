@@ -16,14 +16,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ...types import APIResponse, User, GeneralErrorResponse, RecipeUserId
+from ...types import APIResponse, GeneralErrorResponse, RecipeUserId, User
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
+    from supertokens_python.auth_utils import LinkingToSessionUserFailedError
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
-    from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 
     from .types import RawUserInfoFromProvider
     from .utils import ThirdPartyConfig

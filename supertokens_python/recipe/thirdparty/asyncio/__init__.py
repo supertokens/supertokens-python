@@ -13,6 +13,7 @@
 # under the License.
 
 from typing import Any, Dict, Optional, Union
+
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.interfaces import (
@@ -20,7 +21,6 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
     SignInUpNotAllowed,
 )
-
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
 

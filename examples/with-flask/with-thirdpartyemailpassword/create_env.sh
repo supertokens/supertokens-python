@@ -7,4 +7,3 @@ virtualenv flask_example
 source flask_example/bin/activate
 
 pip install -r requirements.txt
-

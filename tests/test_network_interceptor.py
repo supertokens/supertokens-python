@@ -1,14 +1,15 @@
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 import pytest
 from fastapi import FastAPI
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe import session, emailpassword, userroles
+from supertokens_python.recipe import emailpassword, session, userroles
 from supertokens_python.recipe.emailpassword.asyncio import sign_in, sign_up
 from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 

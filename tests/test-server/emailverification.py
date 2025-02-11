@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify
-
+from flask import Flask, jsonify, request
 from supertokens_python import async_to_sync_wrapper
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.emailverification.interfaces import (
@@ -101,11 +100,14 @@ def add_emailverification_routes(app: Flask):
         unverify_email(recipe_user_id, email, user_context)
         return jsonify({"status": "OK"})
 
-    @app.route("/test/emailverification/updatesessionifrequiredpostemailverification", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/emailverification/updatesessionifrequiredpostemailverification",
+        methods=["POST"],
+    )  # type: ignore
     def update_session_if_required_post_email_verification():  # type: ignore
+        from session import convert_session_to_container, convert_session_to_json
         from supertokens_python.recipe.emailverification import EmailVerificationRecipe
         from supertokens_python.types import RecipeUserId
-        from session import convert_session_to_container, convert_session_to_json
 
         data = request.json
         if data is None:

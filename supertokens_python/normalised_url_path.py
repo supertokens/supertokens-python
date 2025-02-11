@@ -13,8 +13,10 @@
 # under the License.
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
+
 from .exceptions import raise_general_exception
 
 if TYPE_CHECKING:
@@ -77,7 +79,7 @@ def domain_given(input_str: str) -> bool:
     if "." not in input_str or input_str.startswith("/"):
         return False
     try:
-        if not "http://" in input_str and not "https://" in input_str:
+        if "http://" not in input_str and "https://" not in input_str:
             raise Exception("Trying with http")
         url = urlparse(input_str)
         return url.hostname is not None and "." in url.hostname

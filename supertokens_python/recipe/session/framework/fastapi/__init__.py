@@ -12,24 +12,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Union
 
-from typing import Any, Callable, Coroutine, Dict, Union, List, Optional
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 from supertokens_python import Supertokens
+from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
 from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.types import MaybeAwaitable
-from fastapi.responses import JSONResponse
-
-from ...interfaces import SessionContainer, SessionClaimValidator
 from supertokens_python.utils import (
-    set_request_in_user_context_if_not_defined,
     default_user_context,
+    set_request_in_user_context_if_not_defined,
 )
 
-from fastapi import Request
+from ...interfaces import SessionClaimValidator, SessionContainer
 
 
 def verify_session(

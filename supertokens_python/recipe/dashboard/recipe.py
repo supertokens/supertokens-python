@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Dict, Any
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.dashboard.api.multitenancy.create_or_update_third_party_config import (
@@ -119,34 +119,34 @@ from supertokens_python.exceptions import SuperTokensError, raise_general_except
 from supertokens_python.recipe.dashboard.utils import get_api_path_with_dashboard_base
 
 from .constants import (
+    CREATE_EMAIL_PASSWORD_USER,
+    CREATE_PASSWORDLESS_USER,
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
-    SIGN_OUT_API,
-    SIGN_IN_API,
+    LIST_TENANTS_WITH_LOGIN_METHODS,
     SEARCH_TAGS_API,
+    SIGN_IN_API,
+    SIGN_OUT_API,
+    TENANT_API,
+    TENANT_THIRD_PARTY_CONFIG_API,
+    UNLINK_USER,
+    UPDATE_TENANT_CORE_CONFIG_API,
+    UPDATE_TENANT_FIRST_FACTOR_API,
+    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_EMAIL_VERIFY_TOKEN_API,
     USER_METADATA_API,
     USER_PASSWORD_API,
     USER_SESSION_API,
-    USERS_COUNT_API,
-    USERS_LIST_GET_API,
-    VALIDATE_KEY_API,
-    TENANT_THIRD_PARTY_CONFIG_API,
-    TENANT_API,
-    LIST_TENANTS_WITH_LOGIN_METHODS,
-    UPDATE_TENANT_CORE_CONFIG_API,
-    UPDATE_TENANT_FIRST_FACTOR_API,
-    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
-    CREATE_EMAIL_PASSWORD_USER,
-    CREATE_PASSWORDLESS_USER,
-    UNLINK_USER,
     USERROLES_LIST_API,
     USERROLES_PERMISSIONS_API,
     USERROLES_REMOVE_PERMISSIONS_API,
     USERROLES_ROLE_API,
     USERROLES_USER_API,
+    USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    VALIDATE_KEY_API,
 )
 from .utils import (
     InputOverrideConfig,

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import Any, Callable, Dict, Optional
 
 from ..provider import (
@@ -22,7 +23,6 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
-
 from .custom import (
     GenericProvider,
     NewProvider,

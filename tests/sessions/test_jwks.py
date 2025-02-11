@@ -1,42 +1,49 @@
-import time
-import pytest
+import json
 import logging
 import threading
-import json
+import time
+from typing import Any, Callable, List
+
+import pytest
 import requests
-
-from typing import List, Any, Callable
-
-from supertokens_python import init, SupertokensConfig
+from _pytest.logging import LogCaptureFixture
+from fastapi import Depends, FastAPI, Request
+from pytest import fixture
+from supertokens_python import SupertokensConfig, init
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.interfaces import CreateJwtOkResult
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
+    create_jwt,
+    create_new_session,
     create_new_session_without_request_response,
     get_session_without_request_response,
 )
-from supertokens_python.recipe.session.recipe import SessionRecipe
-from supertokens_python.types import RecipeUserId
-from supertokens_python.utils import get_timestamp_ms
-from tests.utils import (
-    get_st_init_args,
-    setup_function,
-    start_st,
-    teardown_function as default_teardown_function,
-    set_key_value_in_config,
-    st_init_common_args,
-    reset,
-)
-
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.jwks import (
-    reset_jwks_cache,
     JWKSConfig,
     get_cached_keys,
     get_latest_keys,
+    reset_jwks_cache,
 )
-from supertokens_python.utils import utf_base64encode
-from tests.utils import min_api_version
+from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.types import RecipeUserId
+from supertokens_python.utils import get_timestamp_ms, utf_base64encode
 
-from _pytest.logging import LogCaptureFixture
+from tests.testclient import TestClientWithNoCookieJar as TestClient
+from tests.utils import (
+    get_st_init_args,
+    min_api_version,
+    reset,
+    set_key_value_in_config,
+    setup_function,
+    st_init_common_args,
+    start_st,
+)
+from tests.utils import (
+    teardown_function as default_teardown_function,
+)
 
 pytestmark = pytest.mark.asyncio
 _ = setup_function  # type:ignore
@@ -237,7 +244,13 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
 async def test_that_invalid_connection_uri_doesnot_throw_during_init_for_jwks():
     """This test makes sure that initialising SuperTokens and Session with an invalid connection uri does not
     result in an error during startup"""
-    init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"), "recipe_list": [session.init()]})  # type: ignore
+    init(
+        **{
+            **st_init_common_args,
+            "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"),
+            "recipe_list": [session.init()],
+        }  # type: ignore
+    )
     set_key_value_in_config(
         "access_token_dynamic_signing_key_update_interval", "0.0014"
     )  # ~5sec
@@ -315,7 +328,13 @@ async def test_that_combined_jwks_throws_for_invalid_connection(
     set_key_value_in_config(
         "access_token_dynamic_signing_key_update_interval", "0.0014"
     )  # ~5sec
-    init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"), "recipe_list": [session.init()]})  # type: ignore
+    init(
+        **{
+            **st_init_common_args,
+            "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"),
+            "recipe_list": [session.init()],
+        }  # type: ignore
+    )
     start_st()
 
     with pytest.raises(Exception):
@@ -341,7 +360,15 @@ async def test_that_combined_jwks_doesnot_throw_if_atleast_one_core_url_is_valid
     original_jwks_config = JWKSConfig.copy()
     JWKSConfig["request_timeout"] = 3000
 
-    init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("http://localhost:3567;example.com:3567;localhost:90"), "recipe_list": [session.init()]})  # type: ignore
+    init(
+        **{
+            **st_init_common_args,
+            "supertokens_config": SupertokensConfig(
+                "http://localhost:3567;example.com:3567;localhost:90"
+            ),
+            "recipe_list": [session.init()],
+        }  # type: ignore
+    )
     start_st()
 
     combined_jwks_res = get_latest_keys(SessionRecipe.get_instance().config)
@@ -359,7 +386,15 @@ async def test_that_combined_jwks_throw_if_all_core_urls_are_invalid(
     original_jwks_config = JWKSConfig.copy()
     JWKSConfig["request_timeout"] = 3000
 
-    init(**{**st_init_common_args, "supertokens_config": SupertokensConfig("http://random.com:3567;example.com:3567;localhost:90"), "recipe_list": [session.init()]})  # type: ignore
+    init(
+        **{
+            **st_init_common_args,
+            "supertokens_config": SupertokensConfig(
+                "http://random.com:3567;example.com:3567;localhost:90"
+            ),
+            "recipe_list": [session.init()],
+        }  # type: ignore
+    )
     start_st()
 
     with pytest.raises(requests.exceptions.ConnectionError):
@@ -440,7 +475,14 @@ async def test_that_sdk_tries_fetching_jwks_for_all_core_hosts(
     urls_attempted_count = get_log_occurence_count(caplog, "Attempting to fetch JWKS")
     get_combined_jwks_count = get_log_occurence_count(caplog, "Called find_jwk_client")
 
-    init(**{**get_st_init_args(recipe_list=[session.init()]), "supertokens_config": SupertokensConfig("example.com;localhost:90;http://localhost:3567")})  # type: ignore
+    init(
+        **{
+            **get_st_init_args(recipe_list=[session.init()]),
+            "supertokens_config": SupertokensConfig(
+                "example.com;localhost:90;http://localhost:3567"
+            ),
+        }  # type: ignore
+    )
     start_st()
 
     assert next(urls_attempted_count) == 0
@@ -478,9 +520,6 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
     get_latest_keys(SessionRecipe.get_instance().config)
 
     assert next(urls_attempted_count) == 2
-
-
-from supertokens_python.recipe.session.asyncio import create_jwt
 
 
 async def test_session_verification_of_jwt_based_on_session_payload(
@@ -611,7 +650,9 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
 
     def callback():
         nonlocal keys
-        current_keys: List[str] = [k.key_id for k in get_latest_keys(SessionRecipe.get_instance().config)]  # type: ignore
+        current_keys: List[str] = [
+            k.key_id for k in get_latest_keys(SessionRecipe.get_instance().config)
+        ]  # type: ignore
         new_keys = [k for k in current_keys if k not in keys]
         if len(new_keys) > 0:
             state["different_key_found_count"] += 1
@@ -643,15 +684,6 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     # With cache lifetime being 2s, we expect the cache to be missed 5 times
     assert next(not_returned_from_cache_count) == 1 + 5  # 1 original + 5 misses
     JWKSConfig.update(original_jwks_config)
-
-
-from pytest import fixture
-from fastapi import FastAPI, Request, Depends
-from tests.testclient import TestClientWithNoCookieJar as TestClient
-from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.session.asyncio import create_new_session
-from supertokens_python.recipe.session import SessionContainer
 
 
 @fixture(scope="function")

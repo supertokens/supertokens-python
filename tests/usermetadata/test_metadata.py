@@ -64,7 +64,7 @@ async def test_that_usermetadata_recipe_works_as_expected():
 
     TEST_USER_ID = "userId"
     TEST_METADATA: Dict[str, Any] = {
-        "role": "ädmin äÆ \uFDFD",  # Ensures that utf8 metadata is supported by the SDK
+        "role": "ädmin äÆ \ufdfd",  # Ensures that utf8 metadata is supported by the SDK
         "name": {"first": "John", "last": "Doe"},
     }
 

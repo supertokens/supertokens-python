@@ -26,10 +26,9 @@ from .interfaces import (
     APIInterface,
     APIOptions,
     PayloadBuilderFunction,
-    UserInfoBuilderFunction,
     RecipeInterface,
+    UserInfoBuilderFunction,
 )
-
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -43,29 +42,28 @@ from supertokens_python.recipe.oauth2provider.api.implementation import (
     APIImplementation,
 )
 
-
 from .api import (
-    login,
-    login_info_get,
     auth_get,
     end_session_get,
     end_session_post,
+    introspect_token_post,
+    login,
+    login_info_get,
     logout_post,
     revoke_token_post,
     token_post,
     user_info_get,
-    introspect_token_post,
 )
 from .constants import (
-    LOGIN_PATH,
     AUTH_PATH,
-    TOKEN_PATH,
-    LOGIN_INFO_PATH,
-    USER_INFO_PATH,
-    REVOKE_TOKEN_PATH,
-    INTROSPECT_TOKEN_PATH,
     END_SESSION_PATH,
+    INTROSPECT_TOKEN_PATH,
+    LOGIN_INFO_PATH,
+    LOGIN_PATH,
     LOGOUT_PATH,
+    REVOKE_TOKEN_PATH,
+    TOKEN_PATH,
+    USER_INFO_PATH,
 )
 from .utils import (
     InputOverrideConfig,

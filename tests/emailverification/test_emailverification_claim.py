@@ -12,15 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.recipe.emailverification import EmailVerificationClaim
 import time
+
+from supertokens_python.recipe.emailverification import EmailVerificationClaim
 
 
 def test_claim_value_should_be_fetched_if_it_is_None():
     validator = EmailVerificationClaim.validators.is_verified()
 
     should_refetch_none = validator.should_refetch({}, {})
-    assert should_refetch_none == True
+    assert should_refetch_none is True
 
 
 def test_claim_value_should_be_fetched_as_per_max_age_if_provided():
@@ -34,7 +35,7 @@ def test_claim_value_should_be_fetched_as_per_max_age_if_provided():
     }
 
     should_refetch_valid = validator.should_refetch(payload, {})
-    assert should_refetch_valid == False
+    assert should_refetch_valid is False
 
     payload = {
         "st-ev": {
@@ -44,7 +45,7 @@ def test_claim_value_should_be_fetched_as_per_max_age_if_provided():
     }
 
     should_refetch_expired = validator.should_refetch(payload, {})
-    assert should_refetch_expired == True
+    assert should_refetch_expired is True
 
 
 def test_claim_value_should_be_fetched_as_per_refetch_time_on_false_if_provided():
@@ -58,7 +59,7 @@ def test_claim_value_should_be_fetched_as_per_refetch_time_on_false_if_provided(
     }
 
     should_refetch_valid = validator.should_refetch(payload, {})
-    assert should_refetch_valid == False
+    assert should_refetch_valid is False
 
     payload = {
         "st-ev": {
@@ -68,7 +69,7 @@ def test_claim_value_should_be_fetched_as_per_refetch_time_on_false_if_provided(
     }
 
     should_refetch_expired = validator.should_refetch(payload, {})
-    assert should_refetch_expired == True
+    assert should_refetch_expired is True
 
 
 def test_claim_value_should_be_fetched_as_per_default_refetch_time_on_false_if_not_provided():
@@ -83,7 +84,7 @@ def test_claim_value_should_be_fetched_as_per_default_refetch_time_on_false_if_n
     }
 
     should_refetch_valid = validator.should_refetch(payload, {})
-    assert should_refetch_valid == False
+    assert should_refetch_valid is False
 
     payload = {
         "st-ev": {
@@ -93,4 +94,4 @@ def test_claim_value_should_be_fetched_as_per_default_refetch_time_on_false_if_n
     }
 
     should_refetch_expired = validator.should_refetch(payload, {})
-    assert should_refetch_expired == True
+    assert should_refetch_expired is True

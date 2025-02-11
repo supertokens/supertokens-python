@@ -11,11 +11,14 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from typing import List
+import sys
+from typing import Any, Dict, List, Union
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
-
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
 from supertokens_python.types import RecipeUserId
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -148,12 +151,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = "/static/"
-
-from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import session
-from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
-from typing import Dict, Union, Any
-import sys
 
 
 def get_app_port():

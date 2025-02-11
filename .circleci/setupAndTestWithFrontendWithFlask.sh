@@ -62,7 +62,7 @@ pid=$!
 python3 app.py --port 8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
-npm i git+https://github.com:supertokens/supertokens-node.git#$3  
+npm i git+https://github.com:supertokens/supertokens-node.git#$3
 npm i
 cd ../../
 npm i

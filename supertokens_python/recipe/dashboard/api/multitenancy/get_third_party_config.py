@@ -13,9 +13,12 @@
 # under the License.
 
 from typing import Any, Dict, List, Optional, Union
-from typing_extensions import Literal
-from supertokens_python.exceptions import raise_bad_input_exception
 
+from typing_extensions import Literal
+
+from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty import (
@@ -24,14 +27,13 @@ from supertokens_python.recipe.thirdparty import (
     ProviderInput,
 )
 from supertokens_python.recipe.thirdparty.provider import CommonProviderConfig, Provider
-from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
-from supertokens_python.types import APIResponse
 from supertokens_python.recipe.thirdparty.providers.config_utils import (
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
+from supertokens_python.types import APIResponse
+
 from ...interfaces import APIInterface, APIOptions
 
 

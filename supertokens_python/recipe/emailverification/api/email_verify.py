@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import Any, Dict
 
 from supertokens_python.exceptions import raise_bad_input_exception
@@ -19,11 +20,11 @@ from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
     APIOptions,
 )
+from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.utils import (
     normalise_http_method,
     send_200_response,
 )
-from supertokens_python.recipe.session.asyncio import get_session
 
 
 async def handle_email_verify_api(

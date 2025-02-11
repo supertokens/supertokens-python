@@ -11,30 +11,30 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import asyncio
+import json
+from typing import Any, Dict, Optional
+
+import httpx
+import respx
 from pytest import mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.querier import NormalisedURLPath, Querier
 from supertokens_python.recipe import (
-    session,
+    dashboard,
     emailpassword,
     emailverification,
-    dashboard,
+    session,
     thirdparty,
 )
-from supertokens_python import InputAppInfo
 from supertokens_python.recipe.emailpassword.asyncio import get_user, sign_up
-import asyncio
-import respx
-import httpx
-import json
-from supertokens_python import init, SupertokensConfig
-from supertokens_python.querier import Querier, NormalisedURLPath
 
-from tests.utils import get_st_init_args
 from tests.utils import (
+    get_st_init_args,
     setup_function,
-    teardown_function,
     start_st,
+    teardown_function,
 )
-from typing import Any, Dict, Optional
 
 _ = setup_function
 _ = teardown_function
@@ -197,7 +197,6 @@ async def test_querier_text_and_headers():
 
 
 async def test_caching_works():
-
     called_core = False
 
     def intercept(
@@ -261,7 +260,6 @@ async def test_caching_works():
 
 
 async def test_caching_gets_clear_with_non_get():
-
     called_core = False
 
     def intercept(
@@ -317,7 +315,6 @@ async def test_caching_gets_clear_with_non_get():
 
 
 async def test_no_caching_if_disabled_by_user():
-
     called_core = False
 
     def intercept(
@@ -367,7 +364,6 @@ async def test_no_caching_if_disabled_by_user():
 
 
 async def test_no_caching_if_headers_are_different():
-
     called_core = False
 
     def intercept(
@@ -423,7 +419,6 @@ async def test_no_caching_if_headers_are_different():
 
 
 async def test_caching_gets_clear_when_query_without_user_context():
-
     called_core = False
 
     def intercept(
@@ -473,7 +468,6 @@ async def test_caching_gets_clear_when_query_without_user_context():
 
 
 async def test_caching_does_not_get_clear_with_non_get_if_keep_alive():
-
     called_core = False
 
     def intercept(
@@ -543,7 +537,6 @@ async def test_caching_does_not_get_clear_with_non_get_if_keep_alive():
 
 
 async def test_caching_gets_clear_with_non_get_if_keep_alive_is_false():
-
     called_core = False
 
     def intercept(
@@ -613,7 +606,6 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_false():
 
 
 async def test_caching_gets_clear_with_non_get_if_keep_alive_is_not_set():
-
     called_core = False
 
     def intercept(

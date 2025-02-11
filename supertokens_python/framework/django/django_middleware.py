@@ -22,14 +22,14 @@ from supertokens_python.framework import BaseResponse
 
 
 def middleware(get_response: Any):
+    from django.http import HttpRequest
+
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
     from supertokens_python.framework.django.django_request import DjangoRequest
     from supertokens_python.framework.django.django_response import DjangoResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import manage_session_post_response
-
-    from django.http import HttpRequest
     from supertokens_python.utils import default_user_context
 
     if asyncio.iscoroutinefunction(get_response):
@@ -48,10 +48,13 @@ def middleware(get_response: Any):
                     result = await get_response(request)
                     result = DjangoResponse(result)
                 if hasattr(request, "supertokens") and isinstance(
-                    request.supertokens, SessionContainer  # type: ignore
+                    request.supertokens,  # type: ignore
+                    SessionContainer,
                 ):
                     manage_session_post_response(
-                        request.supertokens, result, user_context  # type: ignore
+                        request.supertokens,  # type: ignore
+                        result,
+                        user_context,
                     )
                 if isinstance(result, DjangoResponse):
                     return result.response
@@ -87,10 +90,13 @@ def middleware(get_response: Any):
                 raise Exception("should never happen")
 
             if hasattr(request, "supertokens") and isinstance(
-                request.supertokens, SessionContainer  # type: ignore
+                request.supertokens,  # type: ignore
+                SessionContainer,
             ):
                 manage_session_post_response(
-                    request.supertokens, result, user_context  # type: ignore
+                    request.supertokens,  # type: ignore
+                    result,
+                    user_context,
                 )
 
             return result.response

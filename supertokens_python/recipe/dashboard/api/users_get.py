@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, List, Dict
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, List
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
@@ -23,12 +23,12 @@ from ..utils import UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
-from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
 from supertokens_python.asyncio import get_users_newest_first, get_users_oldest_first
+from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
 
 
 async def handle_users_get_api(
@@ -114,7 +114,7 @@ async def handle_users_get_api(
 
 
 def get_search_params_from_url(path: str) -> Dict[str, str]:
-    from urllib.parse import urlparse, parse_qs
+    from urllib.parse import parse_qs, urlparse
 
     url_object = urlparse("https://example.com" + path)
     params = parse_qs(url_object.query)

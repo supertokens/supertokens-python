@@ -13,6 +13,9 @@
 # under the License.
 import asyncio
 import json
+
+# Import AsyncMock
+import sys
 from datetime import datetime
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
@@ -21,32 +24,36 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, Union, cast, Optional
+from typing import Any, Dict, List, Optional, Union, cast
+from unittest.mock import MagicMock
 from urllib.parse import unquote
 
 from fastapi.testclient import TestClient
-from requests.models import Response as RequestsResponse
 from httpx import Response as HTTPXResponse
-from yaml import FullLoader, dump, load
-
+from pytest import mark
+from requests.models import Response as RequestsResponse
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
+from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
+from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
-from supertokens_python.recipe.totp.recipe import TOTPRecipe
+from yaml import FullLoader, dump, load
 
 INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
@@ -247,7 +254,7 @@ def get_cookie_from_response(
 
 
 def extract_all_cookies(
-    response: Union[RequestsResponse, HTTPXResponse]
+    response: Union[RequestsResponse, HTTPXResponse],
 ) -> Dict[str, Any]:
     if response.headers.get("set-cookie") is None:
         return {}
@@ -470,7 +477,10 @@ def get_core_api_version() -> str:
 
     try:
         # If ST has been already initialized:
-        core_version = cast(loop.run_until_complete(asyncio.gather(get_api_version())), str)  # type: ignore
+        core_version = cast(  # type: ignore
+            loop.run_until_complete(asyncio.gather(get_api_version())),  # type: ignore
+            str,
+        )
         return core_version  # type: ignore
     except Exception:
         pass
@@ -498,9 +508,6 @@ def get_core_api_version() -> str:
     return core_version
 
 
-from pytest import mark
-
-
 def min_api_version(min_version: str) -> Any:
     """
     Skips the test if the local ST core doesn't satisfy
@@ -517,10 +524,6 @@ def min_api_version(min_version: str) -> Any:
 
     return wrapper
 
-
-# Import AsyncMock
-import sys
-from unittest.mock import MagicMock
 
 if sys.version_info >= (3, 8):
     from unittest.mock import AsyncMock
@@ -576,11 +579,6 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
         return False
 
     return dict1 == dict2
-
-
-from supertokens_python.recipe.emailpassword.asyncio import sign_up
-from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
-from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 
 
 async def create_users(

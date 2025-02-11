@@ -12,23 +12,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-import importlib
 
+import importlib
 from typing import Any, Dict, List, Union
+
+from supertokens_python.asyncio import get_user
 from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
     MultiFactorAuthClaim,
 )
-
-from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.multitenancy.asyncio import get_tenant
-from supertokens_python.asyncio import get_user
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import (
     InvalidClaimsError,
     SuperTokensSessionError,
     UnauthorisedError,
 )
-
 from supertokens_python.types import GeneralErrorResponse
+
 from ..interfaces import (
     APIInterface,
     APIOptions,
@@ -44,7 +44,6 @@ class APIImplementation(APIInterface):
         session: SessionContainer,
         user_context: Dict[str, Any],
     ) -> Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
-
         module = importlib.import_module(
             "supertokens_python.recipe.multifactorauth.utils"
         )

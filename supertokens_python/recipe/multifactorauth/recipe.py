@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-import importlib
 
+import importlib
 from os import environ
-from typing import Any, Dict, Optional, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -35,19 +35,20 @@ from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
-from supertokens_python.types import User, RecipeUserId
+from supertokens_python.types import RecipeUserId, User
+
+from .interfaces import APIOptions
 from .types import (
-    OverrideConfig,
-    GetFactorsSetupForUserFromOtherRecipesFunc,
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetEmailsForFactorFromOtherRecipesFunc,
-    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
-    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
-    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
     GetEmailsForFactorOkResult,
+    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsOkResult,
+    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+    OverrideConfig,
 )
-from .interfaces import APIOptions
 
 
 class MultiFactorAuthRecipe(RecipeModule):
@@ -241,7 +242,6 @@ class MultiFactorAuthRecipe(RecipeModule):
         GetEmailsForFactorOkResult,
         GetEmailsForFactorUnknownSessionRecipeUserIdResult,
     ]:
-
         factorIdToEmailsMap: Dict[str, List[str]] = {}
 
         for func in self.get_emails_for_factor_from_other_recipes_funcs:

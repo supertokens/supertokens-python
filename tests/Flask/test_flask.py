@@ -13,16 +13,26 @@
 # under the License.
 
 import json
-from typing import Any, Dict, Union
 from base64 import b64encode
+from typing import Any, Dict, Union
 
 import pytest
 from _pytest.fixtures import fixture
 from flask import Flask, g, jsonify, make_response, request
+from flask.wrappers import Response
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.flask import Middleware
+from supertokens_python.framework.flask.flask_response import (
+    FlaskResponse as SupertokensFlaskWrapper,
+)
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session, thirdparty
+from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.passwordless import ContactConfig, PasswordlessRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.syncio import (
@@ -33,6 +43,8 @@ from supertokens_python.recipe.session.syncio import (
     revoke_session,
 )
 from supertokens_python.types import RecipeUserId
+from supertokens_python.utils import is_version_gte
+
 from tests.Flask.utils import extract_all_cookies
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
@@ -52,19 +64,13 @@ from tests.utils import (
     TEST_REFRESH_TOKEN_PATH_CONFIG_KEY,
     TEST_REFRESH_TOKEN_PATH_KEY_VALUE,
     clean_st,
+    create_users,
+    get_st_init_args,
     reset,
     set_key_value_in_config,
     setup_st,
     start_st,
-    create_users,
 )
-from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
-from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
-from supertokens_python.framework import BaseRequest
-from supertokens_python.querier import Querier
-from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.passwordless import PasswordlessRecipe, ContactConfig
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
 
 
 def setup_function(_):
@@ -81,7 +87,6 @@ def teardown_function(_):
 @fixture(scope="function")
 def driver_config_app():
     def override_email_password_apis(original_implementation: APIInterface):
-
         original_func = original_implementation.email_exists_get
 
         async def email_exists_get(
@@ -504,12 +509,6 @@ def test_thirdparty_parsing_works(driver_config_app: Any):
     )
 
 
-from flask.wrappers import Response
-from supertokens_python.framework.flask.flask_response import (
-    FlaskResponse as SupertokensFlaskWrapper,
-)
-
-
 def test_remove_header_works():
     response = Response()
     st_response = SupertokensFlaskWrapper(response)
@@ -725,9 +724,6 @@ async def test_search_with_provider_google_and_phone_one(driver_config_app: Any)
     assert len(data_json["users"]) == 0
 
 
-from tests.utils import get_st_init_args
-
-
 @fixture(scope="function")
 def flask_app():
     app = Flask(__name__)
@@ -783,7 +779,14 @@ def flask_app():
 
 
 def test_verify_session_with_before_request_with_no_response(flask_app: Any):
-    init(**{**get_st_init_args([session.init(get_token_transfer_method=lambda *_: "cookie")]), "framework": "flask"})  # type: ignore
+    init(
+        **{
+            **get_st_init_args(
+                [session.init(get_token_transfer_method=lambda *_: "cookie")]  # type: ignore
+            ),
+            "framework": "flask",
+        }
+    )
     start_st()
 
     client = flask_app.test_client()
@@ -831,7 +834,14 @@ def flask_app_without_middleware():
 def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
     flask_app: Any, flask_app_without_middleware: Any
 ):
-    init(**{**get_st_init_args([session.init(get_token_transfer_method=lambda *_: "header")]), "framework": "flask"})  # type: ignore
+    init(
+        **{
+            **get_st_init_args(
+                [session.init(get_token_transfer_method=lambda *_: "header")]  # type: ignore
+            ),
+            "framework": "flask",
+        }
+    )
     start_st()
 
     client = flask_app.test_client()

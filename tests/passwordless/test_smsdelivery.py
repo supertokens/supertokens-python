@@ -23,7 +23,6 @@ import requests_mock
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
@@ -31,11 +30,11 @@ from supertokens_python.ingredients.smsdelivery.services.supertokens import (
     SUPERTOKENS_SMS_SERVICE_URL,
 )
 from supertokens_python.ingredients.smsdelivery.types import (
+    SMSContent,
     SMSDeliveryConfig,
     SMSDeliveryInterface,
-    TwilioSettings,
-    SMSContent,
     TwilioServiceInterface,
+    TwilioSettings,
 )
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
@@ -46,13 +45,15 @@ from supertokens_python.recipe.passwordless.types import (
     SMSTemplateVars,
 )
 from supertokens_python.utils import is_version_gte
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     clean_st,
     reset,
     setup_st,
+    sign_in_up_request_code_resend,
     sign_in_up_request_phone,
     start_st,
-    sign_in_up_request_code_resend,
 )
 
 respx_mock = respx.MockRouter
@@ -120,7 +121,13 @@ async def test_pless_login_default_backward_compatibility(
         return
 
     def api_side_effect(request: httpx.Request):
-        nonlocal app_name, phone_number, code_lifetime, url_with_link_code, user_input_code, api_key
+        nonlocal \
+            app_name, \
+            phone_number, \
+            code_lifetime, \
+            url_with_link_code, \
+            user_input_code, \
+            api_key
         body = json.loads(request.content)
         sms_input = body["smsInput"]
 
@@ -146,7 +153,13 @@ async def test_pless_login_default_backward_compatibility(
         assert mocked_route.called
 
     def code_resend_api_side_effect(request: httpx.Request):
-        nonlocal app_name, phone_number, code_lifetime, url_with_link_code, user_input_code, resend_called
+        nonlocal \
+            app_name, \
+            phone_number, \
+            code_lifetime, \
+            url_with_link_code, \
+            user_input_code, \
+            resend_called
         body = json.loads(request.content)["smsInput"]
 
         assert (
@@ -459,7 +472,13 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         assert mocked_route.called
 
     def code_resend_api_side_effect(request: httpx.Request):
-        nonlocal app_name, phone, code_lifetime, url_with_link_code, user_input_code, resend_called
+        nonlocal \
+            app_name, \
+            phone, \
+            code_lifetime, \
+            url_with_link_code, \
+            user_input_code, \
+            resend_called
         body = json.loads(request.content)["smsInput"]
 
         app_name = body["appName"]
@@ -503,7 +522,6 @@ async def test_pless_login_twilio_service(driver_config_client: TestClient):
     twilio_api_called = False
 
     def twilio_service_override(oi: TwilioServiceInterface[SMSTemplateVars]):
-
         oi_send_raw_sms = oi.send_raw_sms
 
         async def send_raw_email_override(

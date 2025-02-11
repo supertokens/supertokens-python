@@ -18,10 +18,7 @@ from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
 from pytest import fixture, mark, raises
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
@@ -36,6 +33,9 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
+from supertokens_python.types import RecipeUserId
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
 
 

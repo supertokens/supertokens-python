@@ -3,19 +3,19 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime as real_datetime, timezone
+from datetime import datetime as real_datetime
+from datetime import timezone
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.constants import VERSION
 from supertokens_python.logger import (
-    log_debug_message,
-    streamFormatter,
     NAMESPACE,
     enable_debug_logging,
+    log_debug_message,
+    streamFormatter,
 )
 from supertokens_python.recipe import session
 
@@ -55,7 +55,7 @@ class LoggerTests(TestCase):
             "t": "2000-01-01T00:00:00+00Z",
             "sdkVer": VERSION,
             "message": "API replied with status 200",
-            "file": "../tests/test_logger.py:49",
+            "file": "../tests/test_logger.py:48",
         }
 
     @staticmethod

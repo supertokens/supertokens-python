@@ -24,8 +24,8 @@ from .utils import get_session
 
 if TYPE_CHECKING:
     from ..interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
 
@@ -36,8 +36,8 @@ async def logout_post(
     user_context: Dict[str, Any],
 ) -> Optional[BaseResponse]:
     from ..interfaces import (
-        FrontendRedirectResponse,
         ErrorOAuth2Response,
+        FrontendRedirectResponse,
     )
 
     if api_implementation.disable_logout_post is True:

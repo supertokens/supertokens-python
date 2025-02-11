@@ -257,7 +257,6 @@ def validate_and_normalise_user_input(
     override: Union[InputOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> EmailPasswordConfig:
-
     # NOTE: We don't need to check the instance of sign_up_feature and override
     # as they will always be either None or the specified type.
 

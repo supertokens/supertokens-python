@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.28.0]
+- **[Breaking] Updates pre-commit hooks to use `pre-commit`**
+  - Migration:
+    ```bash
+    rm ./.git/hooks/pre-commit
+    make set-up-hooks
+    ```
 - Adds `raw_user_info_from_provider` to `UserInfo` data in LinkedIn and Github third-party recipes.
 - **[Breaking] Bitbucket third-party recipe**
   - Moves `email` from `from_id_token_payload` to `from_user_info_api` in `raw_user_info_from_provider`.

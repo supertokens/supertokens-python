@@ -1,4 +1,5 @@
 from typing import Any, Dict, Union
+
 from typing_extensions import Literal
 
 from supertokens_python.exceptions import raise_bad_input_exception
@@ -24,11 +25,11 @@ from supertokens_python.recipe.passwordless.asyncio import (
     update_user as pless_update_user,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
+    EmailChangeNotAllowedError,
+    PhoneNumberChangeNotAllowedError,
     UpdateUserEmailAlreadyExistsError,
     UpdateUserPhoneNumberAlreadyExistsError,
     UpdateUserUnknownUserIdError,
-    EmailChangeNotAllowedError,
-    PhoneNumberChangeNotAllowedError,
 )
 from supertokens_python.recipe.passwordless.utils import (
     default_validate_email,

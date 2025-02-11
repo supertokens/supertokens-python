@@ -14,15 +14,12 @@
 
 import json
 from typing import Any, Dict
-from pytest import fixture, mark, raises
 
 import httpx
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
-
+from pytest import fixture, mark, raises
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
@@ -34,6 +31,9 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.recipe import emailpassword, emailverification, session
+from supertokens_python.recipe.emailpassword.asyncio import (
+    send_reset_password_email,
+)
 from supertokens_python.recipe.emailpassword.emaildelivery.services import SMTPService
 from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
@@ -50,6 +50,9 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
+from supertokens_python.types import RecipeUserId
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     clean_st,
     email_verify_token_request,
@@ -58,9 +61,6 @@ from tests.utils import (
     setup_st,
     sign_up_request,
     start_st,
-)
-from supertokens_python.recipe.emailpassword.asyncio import (
-    send_reset_password_email,
 )
 
 respx_mock = respx.MockRouter
@@ -207,9 +207,7 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
         async def send_email(
             self,
             template_vars: emailpassword.EmailTemplateVars,
-            user_context: Dict[
-                str, Any
-            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ) -> None:
             nonlocal email, password_reset_url
             email = template_vars.user.email
@@ -742,9 +740,7 @@ async def test_email_verification_backward_compatibility(
         async def send_email(
             self,
             template_vars: emailverification.EmailTemplateVars,
-            user_context: Dict[
-                str, Any
-            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ) -> None:
             nonlocal email, email_verify_url
             email = template_vars.user.email
@@ -896,9 +892,7 @@ async def test_reset_password_backward_compatibility_non_existent_user(
         async def send_email(
             self,
             template_vars: emailpassword.EmailTemplateVars,
-            user_context: Dict[
-                str, Any
-            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ):
             nonlocal email, password_reset_url
             email = template_vars.user.email
@@ -1058,7 +1052,6 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
 async def test_send_reset_password_email(
     driver_config_client: TestClient,
 ):
-
     tenant_info, token_info, reset_url = "", "", ""
     query_length = -1
 
@@ -1068,9 +1061,7 @@ async def test_send_reset_password_email(
         async def send_email(
             self,
             template_vars: PasswordResetEmailTemplateVars,
-            user_context: Dict[
-                str, Any
-            ],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
+            user_context: Dict[str, Any],  # pylint: disable=unused-argument,  # pylint: disable=unused-argument
         ):
             nonlocal reset_url, token_info, tenant_info, query_length
             password_reset_url = template_vars.password_reset_link
@@ -1121,7 +1112,6 @@ async def test_send_reset_password_email(
 async def test_send_reset_password_email_invalid_input(
     driver_config_client: TestClient,
 ):
-
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(

@@ -11,27 +11,28 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing_extensions import Literal
-
 from pytest import mark, skip
 from supertokens_python import init
+from supertokens_python.asyncio import (
+    create_user_id_mapping,
+)
 from supertokens_python.interfaces import (
     CreateUserIdMappingOkResult,
 )
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailpassword.interfaces import (
-    SignUpOkResult,
-    SignInOkResult,
     CreateResetPasswordOkResult,
+    SignInOkResult,
+    SignUpOkResult,
     UpdateEmailOrPasswordOkResult,
 )
 from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.utils import is_version_gte
+from typing_extensions import Literal
+
 from tests.utils import clean_st, reset, setup_st, start_st
+
 from .utils import st_config
-from supertokens_python.asyncio import (
-    create_user_id_mapping,
-)
 
 
 def setup_function(_):
@@ -101,8 +102,8 @@ async def ep_get_existing_user_after_updating_email_and_sign_in(user_id: str) ->
     new_email = "bar@example.com"
 
     from supertokens_python.recipe.emailpassword.asyncio import (
-        update_email_or_password,
         sign_in,
+        update_email_or_password,
     )
 
     res = await update_email_or_password(

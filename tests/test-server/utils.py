@@ -1,17 +1,18 @@
+from typing import Any, Dict
+
+from override_logging import log_override_event  # pylint: disable=import-error
+from supertokens_python.recipe.emailverification import EmailVerificationClaim
 from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
     MultiFactorAuthClaim,
 )
-from supertokens_python.recipe.session.claims import SessionClaim
-
+from supertokens_python.recipe.session.claims import (
+    BooleanClaim,
+    PrimitiveClaim,
+    SessionClaim,
+)
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
 from supertokens_python.types import RecipeUserId, User
-from override_logging import log_override_event  # pylint: disable=import-error
-from supertokens_python.recipe.session.claims import BooleanClaim
-from supertokens_python.recipe.emailverification import EmailVerificationClaim
-from supertokens_python.recipe.userroles import UserRoleClaim
-from supertokens_python.recipe.userroles import PermissionClaim
-from typing import Any, Dict
-from supertokens_python.recipe.session.claims import PrimitiveClaim
 
 
 def mock_claim_builder(key: str, values: Any) -> PrimitiveClaim[Any]:

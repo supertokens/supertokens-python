@@ -15,10 +15,22 @@ urlpatterns = [  # type: ignore
         name="multipleInterceptors",
     ),
     path("", views.get_info, name="/"),  # type: ignore
-    path("check-rid-no-session", views.check_rid_no_session, name="check-rid-no-session"),  # type: ignore
+    path(
+        "check-rid-no-session",
+        views.check_rid_no_session,  # type: ignore
+        name="check-rid-no-session",
+    ),  # type: ignore
     path("update-jwt", views.update_jwt, name="update_jwt"),  # type: ignore
-    path("update-jwt-with-handle", views.update_jwt_with_handle, name="update_jwt_with_handle"),  # type: ignore
-    path("session-claims-error", views.session_claim_error_api, name="session_claim_error_api"),  # type: ignore
+    path(
+        "update-jwt-with-handle",
+        views.update_jwt_with_handle,  # type: ignore
+        name="update_jwt_with_handle",
+    ),
+    path(
+        "session-claims-error",
+        views.session_claim_error_api,  # type: ignore
+        name="session_claim_error_api",
+    ),
     path("403-without-body", views.without_body_403, name="without_body_403"),  # type: ignore
     path("testing", views.testing, name="testing"),  # type: ignore
     path("logout", views.logout, name="logout"),  # type: ignore

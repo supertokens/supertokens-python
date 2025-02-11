@@ -2,7 +2,6 @@ import os
 from typing import Any, Dict, List
 
 import pytest
-
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import (
     emailpassword,
@@ -18,6 +17,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
 )
 from supertokens_python.types import RecipeUserId
+
 from tests.utils import reset
 
 
@@ -286,9 +286,7 @@ providers_list: List[thirdparty.ProviderInput] = [
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get(
-                        "GOOGLE_CLIENT_SECRET"
-                    ),  # type: ignore
+                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
                 )
             ],
         )
@@ -299,9 +297,7 @@ providers_list: List[thirdparty.ProviderInput] = [
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get(
-                        "FACEBOOK_CLIENT_SECRET"
-                    ),  # type: ignore
+                    client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
                 )
             ],
         )
@@ -312,9 +308,7 @@ providers_list: List[thirdparty.ProviderInput] = [
             clients=[
                 thirdparty.ProviderClientConfig(
                     client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-                    client_secret=os.environ.get(
-                        "GITHUB_CLIENT_SECRET"
-                    ),  # type: ignore
+                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
                 )
             ],
         )

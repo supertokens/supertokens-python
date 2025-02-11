@@ -1,35 +1,35 @@
-from datetime import datetime, timezone
 import json
 from base64 import b64encode
-from typing import Dict, Any, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
 
 import respx
 from fastapi import FastAPI
 from pytest import fixture, mark
 from pytest_mock import MockerFixture
 from starlette.testclient import TestClient
-
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, thirdparty
 from supertokens_python.recipe.thirdparty.provider import (
+    Provider,
     ProviderClientConfig,
     ProviderConfig,
-    ProviderInput,
-    Provider,
-    RedirectUriInfo,
     ProviderConfigForClient,
+    ProviderInput,
+    RedirectUriInfo,
 )
 from supertokens_python.recipe.thirdparty.types import (
+    RawUserInfoFromProvider,
     UserInfo,
     UserInfoEmail,
-    RawUserInfoFromProvider,
 )
+
 from tests.utils import (
     setup_function,
-    teardown_function,
-    start_st,
     st_init_common_args,
+    start_st,
+    teardown_function,
 )
 
 _ = setup_function  # type:ignore

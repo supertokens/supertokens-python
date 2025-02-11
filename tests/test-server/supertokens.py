@@ -1,13 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
-from supertokens_python.types import AccountInfo
 from supertokens_python.syncio import (
-    get_user,
     delete_user,
-    list_users_by_account_info,
+    get_user,
     get_users_newest_first,
     get_users_oldest_first,
+    list_users_by_account_info,
 )
+from supertokens_python.types import AccountInfo
 
 
 def add_supertokens_routes(app: Flask):

@@ -16,9 +16,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Optional, Union
 
-
 from . import exceptions as ex
-from . import utils, provider
+from . import provider, utils
 from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig

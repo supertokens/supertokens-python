@@ -7,4 +7,3 @@ virtualenv fastapi_example
 source fastapi_example/bin/activate
 
 pip install -r requirements.txt
-

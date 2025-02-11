@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
-
 from supertokens_python import init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.session.asyncio import (
@@ -11,6 +10,7 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
+
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
 from tests.utils import AsyncMock, setup_function, start_st, teardown_function
 

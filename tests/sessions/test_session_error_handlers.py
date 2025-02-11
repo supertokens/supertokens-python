@@ -17,17 +17,11 @@ from typing import List
 from fastapi import FastAPI
 from fastapi.requests import Request
 from pytest import fixture, mark
-from supertokens_python.types import RecipeUserId
-from tests.testclient import TestClientWithNoCookieJar as TestClient
-
 from supertokens_python import init
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputErrorHandlers
-
-
-from tests.utils import clean_st, reset, setup_st, start_st
 from supertokens_python.recipe.session.exceptions import (
     ClaimValidationError,
     ClearDuplicateSessionCookiesError,
@@ -36,7 +30,10 @@ from supertokens_python.recipe.session.exceptions import (
     TryRefreshTokenError,
     UnauthorisedError,
 )
-from tests.utils import get_st_init_args
+from supertokens_python.types import RecipeUserId
+
+from tests.testclient import TestClientWithNoCookieJar as TestClient
+from tests.utils import clean_st, get_st_init_args, reset, setup_st, start_st
 
 pytestmark = mark.asyncio
 

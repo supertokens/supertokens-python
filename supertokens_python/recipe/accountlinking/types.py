@@ -13,21 +13,24 @@
 # under the License.
 
 from __future__ import annotations
-from typing import Callable, Dict, Any, Union, Optional, List, TYPE_CHECKING, Awaitable
+
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+
 from typing_extensions import Literal
+
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
 from supertokens_python.types import AccountInfo
 
 if TYPE_CHECKING:
+    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.types import (
+        LoginMethod,
         RecipeUserId,
         ThirdPartyInfo,
         User,
-        LoginMethod,
     )
-    from supertokens_python.recipe.session import SessionContainer
 
 
 class AccountInfoWithRecipeId(AccountInfo):

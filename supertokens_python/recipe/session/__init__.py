@@ -18,8 +18,9 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from ...recipe_module import RecipeModule
     from supertokens_python.supertokens import AppInfo, BaseRequest
+
+    from ...recipe_module import RecipeModule
     from .utils import TokenTransferMethod
 
 from . import exceptions as ex

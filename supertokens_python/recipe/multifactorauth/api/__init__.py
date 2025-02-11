@@ -12,4 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .resync_session_and_fetch_mfa_info import handle_resync_session_and_fetch_mfa_info_api  # type: ignore
+from .resync_session_and_fetch_mfa_info import (
+    handle_resync_session_and_fetch_mfa_info_api as handle_resync_session_and_fetch_mfa_info_api,
+)

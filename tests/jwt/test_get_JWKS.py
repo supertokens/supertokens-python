@@ -14,9 +14,10 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
+from typing import Any, Dict, Optional
+
 from _pytest.fixtures import fixture
 from fastapi import FastAPI
-from typing import Optional, Dict, Any
 from pytest import mark
 from starlette.requests import Request
 from starlette.testclient import TestClient
@@ -26,8 +27,8 @@ from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.interfaces import APIInterface, RecipeInterface
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.types import RecipeUserId
-from tests.utils import clean_st, reset, setup_st, start_st
 
+from tests.utils import clean_st, reset, setup_st, start_st
 
 pytestmark = mark.asyncio
 

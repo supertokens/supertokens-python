@@ -13,31 +13,33 @@
 # under the License.
 
 from __future__ import annotations
-from typing import Dict, Any, Union, TYPE_CHECKING, Optional
+
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 if TYPE_CHECKING:
-    from .types import (
-        UserIdentifierInfoOkResult,
-        UnknownUserIdError,
-        UserIdentifierInfoDoesNotExistError,
-        CreateDeviceOkResult,
-        DeviceAlreadyExistsError,
-        UpdateDeviceOkResult,
-        RemoveDeviceOkResult,
-        VerifyDeviceOkResult,
-        VerifyTOTPOkResult,
-        InvalidTOTPError,
-        LimitReachedError,
-        UnknownDeviceError,
-        ListDevicesOkResult,
-        TOTPNormalisedConfig,
-    )
-    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python import AppInfo
     from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.recipe.totp.recipe import TOTPRecipe
     from supertokens_python.types import GeneralErrorResponse
+
+    from .types import (
+        CreateDeviceOkResult,
+        DeviceAlreadyExistsError,
+        InvalidTOTPError,
+        LimitReachedError,
+        ListDevicesOkResult,
+        RemoveDeviceOkResult,
+        TOTPNormalisedConfig,
+        UnknownDeviceError,
+        UnknownUserIdError,
+        UpdateDeviceOkResult,
+        UserIdentifierInfoDoesNotExistError,
+        UserIdentifierInfoOkResult,
+        VerifyDeviceOkResult,
+        VerifyTOTPOkResult,
+    )
 
 
 class RecipeInterface(ABC):

@@ -11,16 +11,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from pytest import mark
+from typing import Any, Dict, Optional
 from unittest.mock import MagicMock
-from supertokens_python import InputAppInfo, SupertokensConfig, init, Supertokens
+
+from pytest import mark
+from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
+from supertokens_python.framework import BaseRequest
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session
-from typing import Optional, Dict, Any
-from supertokens_python.framework import BaseRequest
 from supertokens_python.types import RecipeUserId
 
 from tests.utils import clean_st, reset, setup_st, start_st

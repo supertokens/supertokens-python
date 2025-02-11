@@ -13,24 +13,25 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from supertokens_python.querier import Querier
 
 if TYPE_CHECKING:
-    from .utils import OpenIdConfig
-    from .interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm
     from supertokens_python.supertokens import AppInfo
+
+    from .interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm
+    from .utils import OpenIdConfig
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
 
+from ..jwt.recipe import JWTRecipe
 from .interfaces import (
     GetJWKSResult,
     GetOpenIdDiscoveryConfigurationResult,
     RecipeInterface,
 )
-from ..jwt.recipe import JWTRecipe
 
 
 class RecipeImplementation(RecipeInterface):
@@ -39,11 +40,11 @@ class RecipeImplementation(RecipeInterface):
     ) -> GetOpenIdDiscoveryConfigurationResult:
         from ..oauth2provider.constants import (
             AUTH_PATH,
+            END_SESSION_PATH,
+            INTROSPECT_TOKEN_PATH,
+            REVOKE_TOKEN_PATH,
             TOKEN_PATH,
             USER_INFO_PATH,
-            REVOKE_TOKEN_PATH,
-            INTROSPECT_TOKEN_PATH,
-            END_SESSION_PATH,
         )
 
         issuer = (

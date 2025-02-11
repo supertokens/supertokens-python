@@ -18,6 +18,7 @@ from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt import JWTRecipe
+
 from tests.utils import clean_st, reset, setup_st, start_st
 
 

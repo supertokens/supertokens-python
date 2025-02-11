@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+import supertokens_python.recipe.emailpassword.syncio as emailpassword
+from flask import Flask, jsonify, request
+from session import convert_session_to_container  # pylint: disable=import-error
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
     SignInOkResult,
@@ -8,12 +10,11 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordOkResult,
     WrongCredentialsError,
 )
-import supertokens_python.recipe.emailpassword.syncio as emailpassword
-from session import convert_session_to_container  # pylint: disable=import-error
 from supertokens_python.types import RecipeUserId
+
 from utils import (  # pylint: disable=import-error
-    serialize_user,
     serialize_recipe_user_id,
+    serialize_user,
 )  # pylint: disable=import-error
 
 

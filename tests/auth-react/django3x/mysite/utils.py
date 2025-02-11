@@ -2,14 +2,14 @@ import os
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
-from typing_extensions import Literal
-
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
+    accountlinking,
     emailpassword,
     emailverification,
     multifactorauth,
+    multitenancy,
     oauth2provider,
     passwordless,
     session,
@@ -18,6 +18,7 @@ from supertokens_python.recipe import (
     userroles,
 )
 from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -41,6 +42,12 @@ from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.multifactorauth.interfaces import (
+    ResyncSessionAndFetchMFAInfoPUTOkResult,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import MFARequirementList
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import (
@@ -56,7 +63,6 @@ from supertokens_python.recipe.passwordless.interfaces import (
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
 from supertokens_python.recipe.session import SessionContainer, SessionRecipe
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.exceptions import (
     ClaimValidationError,
     InvalidClaimsError,
@@ -71,21 +77,13 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions as TPAPIOptions
 from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
+from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
-
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.types import GeneralErrorResponse, User
+from typing_extensions import Literal
 
 from .store import save_code, save_url_with_token
-from supertokens_python.recipe import multitenancy
-from supertokens_python.recipe.multifactorauth.interfaces import (
-    ResyncSessionAndFetchMFAInfoPUTOkResult,
-)
-from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
-from supertokens_python.recipe.multifactorauth.types import MFARequirementList
-from supertokens_python.recipe import accountlinking
-from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
-from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 
 load_dotenv()
 
@@ -201,9 +199,6 @@ async def check_for_general_error(
         is_general_error = await check_request_body_for_general_error(req)
 
     return is_general_error
-
-
-from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
 
 def auth0_provider_override(oi: Provider) -> Provider:
@@ -766,9 +761,13 @@ def custom_init():
         return [tenant_id + ".example.com", "localhost"]
 
     from supertokens_python.recipe.multifactorauth.interfaces import (
-        RecipeInterface as MFARecipeInterface,
         APIInterface as MFAApiInterface,
+    )
+    from supertokens_python.recipe.multifactorauth.interfaces import (
         APIOptions as MFAApiOptions,
+    )
+    from supertokens_python.recipe.multifactorauth.interfaces import (
+        RecipeInterface as MFARecipeInterface,
     )
 
     def override_mfa_functions(original_implementation: MFARecipeInterface):
@@ -785,9 +784,7 @@ def custom_init():
                 return mysite.store.mfa_info["alreadySetup"]
             return res
 
-        og_assert_allowed_to_setup_factor = (
-            original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
-        )
+        og_assert_allowed_to_setup_factor = original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
 
         async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
             session: SessionContainer,
@@ -845,9 +842,7 @@ def custom_init():
             get_mfa_requirements_for_auth
         )
 
-        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = (
-            assert_allowed_to_setup_factor_else_throw_invalid_claim_error
-        )
+        original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error = assert_allowed_to_setup_factor_else_throw_invalid_claim_error
 
         original_implementation.get_factors_setup_for_user = get_factors_setup_for_user
         return original_implementation

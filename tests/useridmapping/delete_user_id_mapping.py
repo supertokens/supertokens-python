@@ -14,27 +14,28 @@
 from typing import cast
 
 import pytest
-from typing_extensions import Literal
-
 from pytest import mark, skip
 from supertokens_python import init
+from supertokens_python.asyncio import (
+    create_user_id_mapping,
+    delete_user_id_mapping,
+    get_user_id_mapping,
+)
 from supertokens_python.interfaces import (
-    DeleteUserIdMappingOkResult,
     CreateUserIdMappingOkResult,
+    DeleteUserIdMappingOkResult,
     UnknownMappingError,
 )
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from supertokens_python.utils import is_version_gte
+from typing_extensions import Literal
+
 from tests.utils import clean_st, reset, setup_st, start_st
-from supertokens_python.recipe.emailpassword.asyncio import sign_up
+
 from .utils import st_config
-from supertokens_python.asyncio import (
-    create_user_id_mapping,
-    get_user_id_mapping,
-    delete_user_id_mapping,
-)
 
 
 def setup_function(_):

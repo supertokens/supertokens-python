@@ -17,14 +17,15 @@ from __future__ import annotations
 from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Dict
 from urllib.parse import parse_qsl
+
 from dateutil import parser
 
 from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
     from ..interfaces import (
-        APIOptions,
         APIInterface,
+        APIOptions,
     )
 
 from .utils import get_session
@@ -36,11 +37,12 @@ async def auth_get(
     api_options: APIOptions,
     user_context: Dict[str, Any],
 ):
-    from ..interfaces import (
-        RedirectResponse,
-        ErrorOAuth2Response,
-    )
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
+
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        RedirectResponse,
+    )
 
     if api_implementation.disable_auth_get is True:
         return None
@@ -86,7 +88,8 @@ async def auth_get(
                         domain=morsel.get("domain"),
                         secure=morsel.get("secure", True),
                         httponly=morsel.get("httponly", True),
-                        expires=parser.parse(morsel.get("expires", "")).timestamp() * 1000,  # type: ignore
+                        expires=parser.parse(morsel.get("expires", "")).timestamp()
+                        * 1000,  # type: ignore
                         path=morsel.get("path", "/"),
                         samesite=morsel.get("samesite", "lax"),
                     )

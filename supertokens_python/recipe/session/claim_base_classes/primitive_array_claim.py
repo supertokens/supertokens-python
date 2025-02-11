@@ -12,20 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic, List
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union
 
 from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import (
+    ClaimValidationResult,
     JSONObject,
     JSONPrimitive,
+    JSONPrimitiveList,
     SessionClaim,
     SessionClaimValidator,
-    ClaimValidationResult,
-    JSONPrimitiveList,
 )
-
 
 Primitive = TypeVar("Primitive", bound=JSONPrimitive)
 PrimitiveList = TypeVar("PrimitiveList", bound=JSONPrimitiveList)

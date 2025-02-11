@@ -15,19 +15,29 @@
 import json
 import os
 import sys
+import time
+from base64 import b64encode
 from functools import wraps
 from typing import Any, Dict, Union
-from base64 import b64encode
-import time
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.conf import settings
-from supertokens_python import get_all_cors_headers
-from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
+from supertokens_python import (
+    InputAppInfo,
+    Supertokens,
+    SupertokensConfig,
+    get_all_cors_headers,
+    init,
+)
+from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.constants import VERSION
 from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session import (
@@ -35,28 +45,23 @@ from supertokens_python.recipe.session import (
     SessionContainer,
     SessionRecipe,
 )
-from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session.framework.django.syncio import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
-    RecipeInterface,
     ClaimValidationResult,
-    SessionClaimValidator,
     JSONObject,
+    RecipeInterface,
+    SessionClaimValidator,
 )
 from supertokens_python.recipe.session.syncio import (
     create_new_session,
     get_session,
-    revoke_all_sessions_for_user,
+    get_session_information,
     merge_into_access_token_payload,
+    revoke_all_sessions_for_user,
 )
-from supertokens_python.constants import VERSION
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
-from supertokens_python.recipe.session.syncio import get_session_information
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
-from supertokens_python.async_to_sync_wrapper import sync
 
 protected_prop_name = {
     "sub",
@@ -157,7 +162,8 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
 
                 body = json.loads(request.body)
                 merge_into_access_token_payload(
-                    session_.get_handle(), {**clearing, **body}  # type: ignore
+                    session_.get_handle(),  # type: ignore
+                    {**clearing, **body},
                 )
 
                 resp = JsonResponse(session_.get_access_token_payload())  # type: ignore

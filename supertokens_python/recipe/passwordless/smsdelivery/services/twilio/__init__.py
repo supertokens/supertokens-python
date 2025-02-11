@@ -14,7 +14,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Callable, Union, TypeVar
+from typing import Any, Callable, Dict, TypeVar, Union
+
+from twilio.rest import Client  # type: ignore
 
 from supertokens_python.ingredients.smsdelivery.services.twilio import (
     normalize_twilio_settings,
@@ -27,8 +29,6 @@ from supertokens_python.ingredients.smsdelivery.types import (
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginSMSTemplateVars,
 )
-
-from twilio.rest import Client  # type: ignore
 
 from .service_implementation import ServiceImplementation
 

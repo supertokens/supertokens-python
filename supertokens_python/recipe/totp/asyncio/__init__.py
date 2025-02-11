@@ -11,21 +11,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, Optional
-from ..recipe import TOTPRecipe
+from typing import Any, Dict, Optional, Union
+
 from supertokens_python.recipe.totp.types import (
     CreateDeviceOkResult,
     DeviceAlreadyExistsError,
-    UnknownUserIdError,
-    UpdateDeviceOkResult,
-    UnknownDeviceError,
-    ListDevicesOkResult,
-    RemoveDeviceOkResult,
-    VerifyDeviceOkResult,
     InvalidTOTPError,
     LimitReachedError,
+    ListDevicesOkResult,
+    RemoveDeviceOkResult,
+    UnknownDeviceError,
+    UnknownUserIdError,
+    UpdateDeviceOkResult,
+    VerifyDeviceOkResult,
     VerifyTOTPOkResult,
 )
+
+from ..recipe import TOTPRecipe
 
 
 async def create_device(

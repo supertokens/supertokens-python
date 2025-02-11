@@ -11,9 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from enum import Enum
 from os import environ
 from typing import List, Optional
-from enum import Enum
 
 
 class PROCESS_STATE(Enum):
@@ -58,7 +58,7 @@ class ProcessState:
     def wait_for_event(
         self, state: PROCESS_STATE, time_in_ms: int = 7000
     ) -> Optional[PROCESS_STATE]:
-        from time import time, sleep
+        from time import sleep, time
 
         start_time = time()
 

@@ -1,5 +1,8 @@
-from typing import Awaitable, Callable, Dict, Any, Optional, Union, List
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+
 from typing_extensions import Literal
+
+from supertokens_python.exceptions import BadInputError, raise_bad_input_exception
 from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.accountlinking import (
     AccountInfoWithRecipeIdAndUserId,
@@ -11,6 +14,9 @@ from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipe
 from supertokens_python.recipe.accountlinking.utils import (
     recipe_init_defined_should_do_automatic_account_linking,
 )
+from supertokens_python.recipe.emailverification import (
+    EmailVerificationClaim,
+)
 from supertokens_python.recipe.multifactorauth.asyncio import (
     mark_factor_as_complete_in_session,
 )
@@ -20,23 +26,18 @@ from supertokens_python.recipe.multifactorauth.utils import (
     update_and_get_mfa_related_info_in_session,
 )
 from supertokens_python.recipe.multitenancy.asyncio import associate_user_to_tenant
-from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.session.asyncio import create_new_session, get_session
+from supertokens_python.recipe.session.exceptions import UnauthorisedError
+from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
     AccountInfo,
-    User,
     LoginMethod,
-)
-from supertokens_python.types import (
     RecipeUserId,
+    User,
 )
-from supertokens_python.recipe.session.exceptions import UnauthorisedError
-from supertokens_python.recipe.emailverification import (
-    EmailVerificationClaim,
-)
-from supertokens_python.exceptions import BadInputError, raise_bad_input_exception
 from supertokens_python.utils import log_debug_message
+
 from .asyncio import get_user
 
 
@@ -925,7 +926,6 @@ async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
             async def get_mfa_requirements_for_auth():
                 nonlocal mfa_info_prom
                 if mfa_info_prom is None:
-
                     mfa_info_prom = await update_and_get_mfa_related_info_in_session(
                         input_session=session,
                         user_context=user_context,
@@ -993,7 +993,6 @@ async def load_session_in_auth_api_if_needed(
     should_try_linking_with_session_user: Optional[bool],
     user_context: Dict[str, Any],
 ) -> Optional[SessionContainer]:
-
     if should_try_linking_with_session_user is not False:
         return await get_session(
             request,

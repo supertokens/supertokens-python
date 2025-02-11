@@ -1,6 +1,6 @@
 from typing import List
-from flask import Flask, request, jsonify
 
+from flask import Flask, jsonify, request
 from supertokens_python import async_to_sync_wrapper
 from supertokens_python.recipe.multifactorauth.types import MFAClaimValue
 from supertokens_python.types import User
@@ -47,12 +47,14 @@ def add_multifactorauth_routes(app: Flask):
         )
         return jsonify(response)
 
-    @app.route("/test/assertallowedtosetupfactorelsethowinvalidclaimerror", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/assertallowedtosetupfactorelsethowinvalidclaimerror", methods=["POST"]
+    )  # type: ignore
     def assert_allowed_to_setup_factor_else_throw_invalid_claim_error_api():  # type: ignore
+        from session import convert_session_to_container
         from supertokens_python.recipe.multifactorauth.syncio import (
             assert_allowed_to_setup_factor_else_throw_invalid_claim_error,
         )
-        from session import convert_session_to_container
 
         assert request.json is not None
 
@@ -71,10 +73,10 @@ def add_multifactorauth_routes(app: Flask):
 
     @app.route("/test/multifactorauth/getmfarequirementsforauth", methods=["POST"])  # type: ignore
     def get_mfa_requirements_for_auth_api():  # type: ignore
+        from session import convert_session_to_container
         from supertokens_python.recipe.multifactorauth.syncio import (
             get_mfa_requirements_for_auth,
         )
-        from session import convert_session_to_container
 
         assert request.json is not None
 
@@ -92,10 +94,10 @@ def add_multifactorauth_routes(app: Flask):
 
     @app.route("/test/multifactorauth/markfactorascompleteinsession", methods=["POST"])  # type: ignore
     def mark_factor_as_complete_in_session_api():  # type: ignore
+        from session import convert_session_to_container
         from supertokens_python.recipe.multifactorauth.syncio import (
             mark_factor_as_complete_in_session,
         )
-        from session import convert_session_to_container
 
         assert request.json is not None
 
@@ -112,7 +114,9 @@ def add_multifactorauth_routes(app: Flask):
 
         return "", 200
 
-    @app.route("/test/multifactorauth/getrequiredsecondaryfactorsforuser", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/multifactorauth/getrequiredsecondaryfactorsforuser", methods=["POST"]
+    )  # type: ignore
     def get_required_secondary_factors_for_user_api():  # type: ignore
         from supertokens_python.recipe.multifactorauth.syncio import (
             get_required_secondary_factors_for_user,
@@ -127,7 +131,9 @@ def add_multifactorauth_routes(app: Flask):
 
         return jsonify(response)
 
-    @app.route("/test/multifactorauth/addtorequiredsecondaryfactorsforuser", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/multifactorauth/addtorequiredsecondaryfactorsforuser", methods=["POST"]
+    )  # type: ignore
     def add_to_required_secondary_factors_for_user_api():  # type: ignore
         from supertokens_python.recipe.multifactorauth.syncio import (
             add_to_required_secondary_factors_for_user,
@@ -143,7 +149,10 @@ def add_multifactorauth_routes(app: Flask):
 
         return "", 200
 
-    @app.route("/test/multifactorauth/removefromrequiredsecondaryfactorsforuser", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/multifactorauth/removefromrequiredsecondaryfactorsforuser",
+        methods=["POST"],
+    )  # type: ignore
     def remove_from_required_secondary_factors_for_user_api():  # type: ignore
         from supertokens_python.recipe.multifactorauth.syncio import (
             remove_from_required_secondary_factors_for_user,
@@ -159,7 +168,10 @@ def add_multifactorauth_routes(app: Flask):
 
         return "", 200
 
-    @app.route("/test/multifactorauth/recipeimplementation.getmfarequirementsforauth", methods=["POST"])  # type: ignore
+    @app.route(
+        "/test/multifactorauth/recipeimplementation.getmfarequirementsforauth",
+        methods=["POST"],
+    )  # type: ignore
     def get_mfa_requirements_for_auth_api2():  # type: ignore
         assert request.json is not None
         from supertokens_python.recipe.multifactorauth.recipe import (

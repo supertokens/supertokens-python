@@ -13,7 +13,7 @@
 # under the License.
 
 
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class OAuth2Client:

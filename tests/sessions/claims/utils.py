@@ -1,4 +1,4 @@
-from typing import Dict, Any, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.claims import (
@@ -7,6 +7,7 @@ from supertokens_python.recipe.session.claims import (
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 from supertokens_python.types import RecipeUserId
+
 from tests.utils import st_init_common_args
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___, _____, ______: True)

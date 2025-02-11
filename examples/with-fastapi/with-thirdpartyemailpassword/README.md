@@ -2,7 +2,7 @@
 
 # FastAPI example
 
-This is an example to show how to use supertokens-python library with FastAPI framework and ThirdpartyEmailpassword recipe. 
+This is an example to show how to use supertokens-python library with FastAPI framework and ThirdpartyEmailpassword recipe.
 
 This server code can be used to implement social auth using:
 - Google

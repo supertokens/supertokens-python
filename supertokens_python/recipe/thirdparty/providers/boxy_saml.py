@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from .custom import GenericProvider, NewProvider
+
 from ..provider import (
     Provider,
     ProviderConfigForClient,
@@ -22,6 +22,7 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
+from .custom import GenericProvider, NewProvider
 
 
 class BoxySAMLImpl(GenericProvider):

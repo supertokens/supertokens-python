@@ -17,8 +17,8 @@ from typing import Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
-    SMTPServiceInterface,
     EmailDeliveryInterface,
+    SMTPServiceInterface,
 )
 from supertokens_python.types import RecipeUserId
 

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict, Optional, Union
+
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import (
     OkResponse,
@@ -24,7 +25,6 @@ from supertokens_python.auth_utils import (
     post_auth_checks,
     pre_auth_checks,
 )
-
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
@@ -32,9 +32,9 @@ from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface,
     APIOptions,
-    CheckCodeOkResult,
-    CheckCodeIncorrectUserInputCodeError,
     CheckCodeExpiredUserInputCodeError,
+    CheckCodeIncorrectUserInputCodeError,
+    CheckCodeOkResult,
     CheckCodeRestartFlowError,
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
@@ -67,11 +67,12 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import (
     AccountInfo,
-    User,
     GeneralErrorResponse,
     LoginMethod,
     RecipeUserId,
+    User,
 )
+
 from ...emailverification import EmailVerificationRecipe
 from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult
 
@@ -495,8 +496,10 @@ class APIImplementation(APIInterface):
                             is_first_factor=auth_type_info.is_first_factor,
                         )
                     )
-                    await api_options.email_delivery.ingredient_interface_impl.send_email(
-                        passwordless_email_delivery_input, user_context
+                    await (
+                        api_options.email_delivery.ingredient_interface_impl.send_email(
+                            passwordless_email_delivery_input, user_context
+                        )
                     )
 
                 return ResendCodePostOkResult()
@@ -620,11 +623,13 @@ class APIImplementation(APIInterface):
                         user_context=user_context,
                     )
                     if isinstance(token_response, CreateEmailVerificationTokenOkResult):
-                        await ev_instance.recipe_implementation.verify_email_using_token(
-                            tenant_id=tenant_id,
-                            token=token_response.token,
-                            attempt_account_linking=False,
-                            user_context=user_context,
+                        await (
+                            ev_instance.recipe_implementation.verify_email_using_token(
+                                tenant_id=tenant_id,
+                                token=token_response.token,
+                                attempt_account_linking=False,
+                                user_context=user_context,
+                            )
                         )
 
         factor_id = (

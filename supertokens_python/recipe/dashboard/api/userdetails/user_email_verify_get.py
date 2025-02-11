@@ -1,15 +1,16 @@
+from typing import Any, Dict, Union
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+from supertokens_python.types import RecipeUserId
+
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    UserEmailVerifyGetAPIResponse,
     FeatureNotEnabledError,
+    UserEmailVerifyGetAPIResponse,
 )
-from supertokens_python.types import RecipeUserId
-
-from typing import Union, Dict, Any
 
 
 async def handle_user_email_verify_get(

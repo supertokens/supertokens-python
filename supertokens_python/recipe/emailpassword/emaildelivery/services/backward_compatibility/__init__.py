@@ -46,7 +46,11 @@ async def create_and_send_email_using_supertokens_service(
     }
     try:
         async with AsyncClient(timeout=30.0) as client:
-            resp = await client.post("https://api.supertokens.io/0/st/auth/password/reset", json=data, headers={"api-version": "0"})  # type: ignore
+            resp = await client.post(
+                "https://api.supertokens.io/0/st/auth/password/reset",
+                json=data,
+                headers={"api-version": "0"},
+            )  # type: ignore
             resp.raise_for_status()
             log_debug_message("Password reset email sent to %s", user.email)
     except Exception as e:

@@ -14,10 +14,10 @@
 from typing import Any, Dict, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import RecipeUserId
 
 from ..types import AccountInfoWithRecipeId
-from supertokens_python.types import RecipeUserId
-from supertokens_python.recipe.session import SessionContainer
 
 
 def create_primary_user_id_or_link_accounts(
