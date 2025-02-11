@@ -3,7 +3,8 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime as real_datetime, timezone
+from datetime import datetime as real_datetime
+from datetime import timezone
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 

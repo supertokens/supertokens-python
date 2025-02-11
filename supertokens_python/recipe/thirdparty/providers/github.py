@@ -48,7 +48,9 @@ class GithubImpl(GenericProvider):
 
         # https://docs.github.com/en/rest/users/emails?apiVersion=2022-11-28
         user_info = await do_get_request("https://api.github.com/user", headers=headers)
-        user_email_info: List[Any] = await do_get_request("https://api.github.com/user/emails", headers=headers)  # type: ignore
+        user_email_info: List[Any] = await do_get_request(
+            "https://api.github.com/user/emails", headers=headers
+        )  # type: ignore
 
         raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
         raw_user_info_from_provider.from_user_info_api = user_info

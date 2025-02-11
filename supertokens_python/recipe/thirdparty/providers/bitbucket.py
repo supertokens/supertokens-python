@@ -21,10 +21,10 @@ from supertokens_python.recipe.thirdparty.provider import (
     ProviderConfigForClient,
     ProviderInput,
 )
-from .custom import GenericProvider, NewProvider
-from .utils import do_get_request
 
 from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
+from .custom import GenericProvider, NewProvider
+from .utils import do_get_request
 
 
 class BitbucketImpl(GenericProvider):
