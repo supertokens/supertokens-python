@@ -58,6 +58,10 @@ class RawUserInfoFromProvider:
 
 
 class UserInfoEmail:
+    """
+    Details about the user's - generally primary - email.
+    """
+
     def __init__(self, email: str, is_verified: bool):
         self.id: str = email
         self.is_verified: bool = is_verified

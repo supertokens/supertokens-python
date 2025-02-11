@@ -67,11 +67,12 @@ class LinkedinImpl(GenericProvider):
         raw_user_info_from_provider.from_user_info_api = user_info
 
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get("sub"),  # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api["sub"],  # type: ignore
             email=UserInfoEmail(
                 email=raw_user_info_from_provider.from_user_info_api.get("email"),  # type: ignore
                 is_verified=raw_user_info_from_provider.from_user_info_api.get("email_verified"),  # type: ignore
             ),
+            raw_user_info_from_provider=raw_user_info_from_provider,
         )
 
 
