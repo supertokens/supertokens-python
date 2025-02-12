@@ -22,8 +22,8 @@ from fastapi import Depends, FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.datastructures import Headers
-from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 from supertokens_python import (

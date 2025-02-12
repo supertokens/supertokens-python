@@ -55,7 +55,7 @@ class LoggerTests(TestCase):
             "t": "2000-01-01T00:00:00+00Z",
             "sdkVer": VERSION,
             "message": "API replied with status 200",
-            "file": "../tests/test_logger.py:48",
+            "file": "../tests/test_logger.py:49",
         }
 
     @staticmethod
