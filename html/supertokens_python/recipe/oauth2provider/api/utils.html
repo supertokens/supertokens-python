@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.recipe.oauth2provider.api.utils API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.oauth2provider.api.utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+
+from __future__ import annotations
+
+import time
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from urllib.parse import parse_qs, urlparse
+
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.session.session_request_functions import (
+    get_session_from_request,
+)
+from supertokens_python.types import MaybeAwaitable
+
+from ..constants import AUTH_PATH, END_SESSION_PATH, LOGIN_PATH
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
+    from supertokens_python.supertokens import AppInfo
+
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        RecipeInterface,
+        RedirectResponse,
+    )
+
+
+async def login_get(
+    recipe_implementation: RecipeInterface,
+    login_challenge: str,
+    session: Optional[SessionContainer],
+    should_try_refresh: bool,
+    cookies: Optional[List[str]],
+    is_direct_call: bool,
+    user_context: Dict[str, Any],
+) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+    from ..interfaces import (
+        ErrorOAuth2Response,
+        FrontendRedirectionURLTypeLogin,
+        FrontendRedirectionURLTypeTryRefresh,
+        RedirectResponse,
+    )
+
+    login_request = await recipe_implementation.get_login_request(
+        challenge=login_challenge,
+        user_context=user_context,
+    )
+
+    if isinstance(login_request, ErrorOAuth2Response):
+        return login_request
+
+    session_info = (
+        await SessionRecipe.get_instance().recipe_implementation.get_session_information(
+            session.get_handle(), user_context
+        )
+        if session
+        else None
+    )
+    if not session_info:
+        session = None
+
+    incoming_auth_url_query_params = parse_qs(urlparse(login_request.request_url).query)
+    prompt_param = (
+        incoming_auth_url_query_params.get(&#34;prompt&#34;, [None])[0]
+        or incoming_auth_url_query_params.get(&#34;st_prompt&#34;, [None])[0]
+    )
+    max_age_param = incoming_auth_url_query_params.get(&#34;max_age&#34;, [None])[0]
+
+    if max_age_param is not None:
+        try:
+            max_age_parsed = int(max_age_param)
+
+            if max_age_parsed &lt; 0:
+                reject = await recipe_implementation.reject_login_request(
+                    challenge=login_challenge,
+                    error=ErrorOAuth2Response(
+                        error=&#34;invalid_request&#34;,
+                        error_description=&#34;max_age cannot be negative&#34;,
+                    ),
+                    user_context=user_context,
+                )
+                return RedirectResponse(
+                    redirect_to=reject.redirect_to,
+                    cookies=cookies,
+                )
+
+        except ValueError:
+            reject = await recipe_implementation.reject_login_request(
+                challenge=login_challenge,
+                error=ErrorOAuth2Response(
+                    error=&#34;invalid_request&#34;,
+                    error_description=&#34;max_age must be an integer&#34;,
+                ),
+                user_context=user_context,
+            )
+            return RedirectResponse(
+                redirect_to=reject.redirect_to,
+                cookies=cookies,
+            )
+
+    tenant_id_param = incoming_auth_url_query_params.get(&#34;tenant_id&#34;, [None])[0]
+
+    if (
+        session
+        and session_info
+        and (
+            not login_request.subject or session.get_user_id() == login_request.subject
+        )
+        and (not tenant_id_param or session.get_tenant_id() == tenant_id_param)
+        and (prompt_param != &#34;login&#34; or is_direct_call)
+        and (
+            max_age_param is None
+            or (max_age_param == &#34;0&#34; and is_direct_call)
+            or int(max_age_param) * 1000
+            &gt; time.time() * 1000 - session_info.time_created
+        )
+    ):
+        accept = await recipe_implementation.accept_login_request(
+            challenge=login_challenge,
+            acr=None,
+            amr=None,
+            context=None,
+            extend_session_lifespan=None,
+            subject=session.get_user_id(),
+            identity_provider_session_id=session.get_handle(),
+            user_context=user_context,
+        )
+        return RedirectResponse(
+            redirect_to=accept.redirect_to,
+            cookies=cookies,
+        )
+
+    if should_try_refresh and prompt_param != &#34;login&#34;:
+        return RedirectResponse(
+            redirect_to=await recipe_implementation.get_frontend_redirection_url(
+                params=FrontendRedirectionURLTypeTryRefresh(
+                    login_challenge=login_challenge,
+                ),
+                user_context=user_context,
+            ),
+            cookies=cookies,
+        )
+
+    if prompt_param == &#34;none&#34;:
+        reject = await recipe_implementation.reject_login_request(
+            challenge=login_challenge,
+            error=ErrorOAuth2Response(
+                error=&#34;login_required&#34;,
+                error_description=&#34;The Authorization Server requires End-User authentication. Prompt &#39;none&#39; was requested, but no existing or expired login session was found.&#34;,
+            ),
+            user_context=user_context,
+        )
+        return RedirectResponse(
+            redirect_to=reject.redirect_to,
+            cookies=cookies,
+        )
+
+    return RedirectResponse(
+        redirect_to=await recipe_implementation.get_frontend_redirection_url(
+            params=FrontendRedirectionURLTypeLogin(
+                login_challenge=login_challenge,
+                force_fresh_auth=session is not None or prompt_param == &#34;login&#34;,
+                tenant_id=tenant_id_param or DEFAULT_TENANT_ID,
+                hint=(
+                    login_request.oidc_context.get(&#34;login_hint&#34;)
+                    if login_request.oidc_context
+                    else None
+                ),
+            ),
+            user_context=user_context,
+        ),
+        cookies=cookies,
+    )
+
+
+def get_merged_cookies(orig_cookies: str, new_cookies: Optional[List[str]]) -&gt; str:
+    if not new_cookies:
+        return orig_cookies
+
+    cookie_map: Dict[str, str] = {}
+    for cookie in orig_cookies.split(&#34;;&#34;):
+        if &#34;=&#34; in cookie:
+            name, value = cookie.split(&#34;=&#34;, 1)
+            cookie_map[name.strip()] = value
+
+    # Note: This is a simplified version. In production code you&#39;d want to use a proper
+    # cookie parsing library to handle all cookie attributes correctly
+    if new_cookies:
+        for cookie_str in new_cookies:
+            cookie = cookie_str.split(&#34;;&#34;)[0].strip()
+            if &#34;=&#34; in cookie:
+                name, value = cookie.split(&#34;=&#34;, 1)
+                cookie_map[name.strip()] = value
+
+    return &#34;;&#34;.join(f&#34;{key}={value}&#34; for key, value in cookie_map.items())
+
+
+def merge_set_cookie_headers(
+    set_cookie1: Optional[List[str]] = None, set_cookie2: Optional[List[str]] = None
+) -&gt; List[str]:
+    if not set_cookie1:
+        return set_cookie2 or []
+    if not set_cookie2 or set(set_cookie1) == set(set_cookie2):
+        return set_cookie1
+    return set_cookie1 + set_cookie2
+
+
+def is_login_internal_redirect(app_info: AppInfo, redirect_to: str) -&gt; bool:
+    api_domain = app_info.api_domain.get_as_string_dangerous()
+    api_base_path = app_info.api_base_path.get_as_string_dangerous()
+    base_path = f&#34;{api_domain}{api_base_path}&#34;
+
+    return any(
+        redirect_to.startswith(f&#34;{base_path}{path}&#34;) for path in [LOGIN_PATH, AUTH_PATH]
+    )
+
+
+def is_logout_internal_redirect(app_info: AppInfo, redirect_to: str) -&gt; bool:
+    api_domain = app_info.api_domain.get_as_string_dangerous()
+    api_base_path = app_info.api_base_path.get_as_string_dangerous()
+    base_path = f&#34;{api_domain}{api_base_path}&#34;
+    return redirect_to.startswith(f&#34;{base_path}{END_SESSION_PATH}&#34;)
+
+
+async def handle_login_internal_redirects(
+    app_info: AppInfo,
+    response: RedirectResponse,
+    recipe_implementation: RecipeInterface,
+    session: Optional[SessionContainer],
+    should_try_refresh: bool,
+    cookie: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+    from ..interfaces import ErrorOAuth2Response, RedirectResponse
+
+    if not is_login_internal_redirect(app_info, response.redirect_to):
+        return response
+
+    max_redirects = 10
+    redirect_count = 0
+
+    while redirect_count &lt; max_redirects and is_login_internal_redirect(
+        app_info, response.redirect_to
+    ):
+        cookie = get_merged_cookies(cookie, response.cookies)
+
+        query_string = (
+            response.redirect_to.split(&#34;?&#34;, 1)[1] if &#34;?&#34; in response.redirect_to else &#34;&#34;
+        )
+        params = parse_qs(query_string)
+
+        if LOGIN_PATH in response.redirect_to:
+            login_challenge = (
+                params.get(&#34;login_challenge&#34;, [None])[0]
+                or params.get(&#34;loginChallenge&#34;, [None])[0]
+            )
+            if not login_challenge:
+                raise Exception(f&#34;Expected loginChallenge in {response.redirect_to}&#34;)
+
+            login_res = await login_get(
+                recipe_implementation=recipe_implementation,
+                login_challenge=login_challenge,
+                session=session,
+                should_try_refresh=should_try_refresh,
+                cookies=response.cookies,
+                is_direct_call=False,
+                user_context=user_context,
+            )
+
+            if isinstance(login_res, ErrorOAuth2Response):
+                return login_res
+
+            response = RedirectResponse(
+                redirect_to=login_res.redirect_to,
+                cookies=merge_set_cookie_headers(login_res.cookies, response.cookies),
+            )
+
+        elif AUTH_PATH in response.redirect_to:
+            auth_res = await recipe_implementation.authorization(
+                params={k: v[0] for k, v in params.items()},
+                cookies=cookie,
+                session=session,
+                user_context=user_context,
+            )
+
+            if isinstance(auth_res, ErrorOAuth2Response):
+                return auth_res
+
+            response = RedirectResponse(
+                redirect_to=auth_res.redirect_to,
+                cookies=merge_set_cookie_headers(auth_res.cookies, response.cookies),
+            )
+
+        else:
+            raise Exception(f&#34;Unexpected internal redirect {response.redirect_to}&#34;)
+
+        redirect_count += 1
+
+    return response
+
+
+async def handle_logout_internal_redirects(
+    app_info: AppInfo,
+    response: RedirectResponse,
+    recipe_implementation: RecipeInterface,
+    session: Optional[SessionContainer],
+    user_context: Dict[str, Any],
+) -&gt; Union[RedirectResponse, ErrorOAuth2Response]:
+    if not is_logout_internal_redirect(app_info, response.redirect_to):
+        return response
+
+    max_redirects = 10
+    redirect_count = 0
+
+    while redirect_count &lt; max_redirects and is_logout_internal_redirect(
+        app_info, response.redirect_to
+    ):
+        query_string = (
+            response.redirect_to.split(&#34;?&#34;, 1)[1] if &#34;?&#34; in response.redirect_to else &#34;&#34;
+        )
+        params = parse_qs(query_string)
+
+        if END_SESSION_PATH in response.redirect_to:
+            end_session_res = await recipe_implementation.end_session(
+                params={k: v[0] for k, v in params.items()},
+                session=session,
+                should_try_refresh=False,
+                user_context=user_context,
+            )
+            if isinstance(end_session_res, ErrorOAuth2Response):
+                return end_session_res
+            response = end_session_res
+        else:
+            raise Exception(f&#34;Unexpected internal redirect {response.redirect_to}&#34;)
+
+        redirect_count += 1
+
+    return response
+
+
+async def get_session(
+    request: Any,
+    session_required: Optional[bool] = None,
+    anti_csrf_check: Optional[bool] = None,
+    check_database: Optional[bool] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[SessionContainer, None]:
+    if user_context is None:
+        user_context = {}
+
+    if session_required is None:
+        session_required = True
+
+    recipe_instance = SessionRecipe.get_instance()
+    recipe_interface_impl = recipe_instance.recipe_implementation
+    config = recipe_instance.config
+
+    return await get_session_from_request(
+        request,
+        config,
+        recipe_interface_impl,
+        session_required=session_required,
+        anti_csrf_check=anti_csrf_check,
+        check_database=check_database,
+        override_global_claim_validators=override_global_claim_validators,
+        user_context=user_context,
+    )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.get_merged_cookies"><code class="name flex">
+<span>def <span class="ident">get_merged_cookies</span></span>(<span>orig_cookies: str, new_cookies: Optional[List[str]]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.get_session"><code class="name flex">
+<span>async def <span class="ident">get_session</span></span>(<span>request: Any, session_required: Optional[bool] = None, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Union[None, Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.handle_login_internal_redirects"><code class="name flex">
+<span>async def <span class="ident">handle_login_internal_redirects</span></span>(<span>app_info: AppInfo, response: RedirectResponse, recipe_implementation: RecipeInterface, session: Optional[SessionContainer], should_try_refresh: bool, cookie: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.handle_logout_internal_redirects"><code class="name flex">
+<span>async def <span class="ident">handle_logout_internal_redirects</span></span>(<span>app_info: AppInfo, response: RedirectResponse, recipe_implementation: RecipeInterface, session: Optional[SessionContainer], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.is_login_internal_redirect"><code class="name flex">
+<span>def <span class="ident">is_login_internal_redirect</span></span>(<span>app_info: AppInfo, redirect_to: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.is_logout_internal_redirect"><code class="name flex">
+<span>def <span class="ident">is_logout_internal_redirect</span></span>(<span>app_info: AppInfo, redirect_to: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.login_get"><code class="name flex">
+<span>async def <span class="ident">login_get</span></span>(<span>recipe_implementation: RecipeInterface, login_challenge: str, session: Optional[SessionContainer], should_try_refresh: bool, cookies: Optional[List[str]], is_direct_call: bool, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.api.utils.merge_set_cookie_headers"><code class="name flex">
+<span>def <span class="ident">merge_set_cookie_headers</span></span>(<span>set_cookie1: Optional[List[str]] = None, set_cookie2: Optional[List[str]] = None) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api" href="index.html">supertokens_python.recipe.oauth2provider.api</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.get_merged_cookies" href="#supertokens_python.recipe.oauth2provider.api.utils.get_merged_cookies">get_merged_cookies</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.get_session" href="#supertokens_python.recipe.oauth2provider.api.utils.get_session">get_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.handle_login_internal_redirects" href="#supertokens_python.recipe.oauth2provider.api.utils.handle_login_internal_redirects">handle_login_internal_redirects</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.handle_logout_internal_redirects" href="#supertokens_python.recipe.oauth2provider.api.utils.handle_logout_internal_redirects">handle_logout_internal_redirects</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.is_login_internal_redirect" href="#supertokens_python.recipe.oauth2provider.api.utils.is_login_internal_redirect">is_login_internal_redirect</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.is_logout_internal_redirect" href="#supertokens_python.recipe.oauth2provider.api.utils.is_logout_internal_redirect">is_logout_internal_redirect</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.login_get" href="#supertokens_python.recipe.oauth2provider.api.utils.login_get">login_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.api.utils.merge_set_cookie_headers" href="#supertokens_python.recipe.oauth2provider.api.utils.merge_set_cookie_headers">merge_set_cookie_headers</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>

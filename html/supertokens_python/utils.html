@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.utils API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+from __future__ import annotations
+
+import json
+import threading
+import warnings
+from base64 import b64decode, b64encode, urlsafe_b64decode, urlsafe_b64encode
+from math import floor
+from re import fullmatch
+from time import time
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+)
+from urllib.parse import urlparse
+
+from httpx import HTTPStatusError, Response
+from tldextract import extract  # type: ignore
+
+from supertokens_python.framework.django.framework import DjangoFramework
+from supertokens_python.framework.fastapi.framework import FastapiFramework
+from supertokens_python.framework.flask.framework import FlaskFramework
+from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework.response import BaseResponse
+from supertokens_python.logger import log_debug_message
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session import SessionContainer
+
+from supertokens_python.types import User
+
+from .constants import ERROR_MESSAGE_KEY, FDI_KEY_HEADER, RID_KEY_HEADER
+from .exceptions import raise_general_exception
+from .types import MaybeAwaitable
+
+_T = TypeVar(&#34;_T&#34;)
+
+if TYPE_CHECKING:
+    pass
+
+
+FRAMEWORKS = {
+    &#34;fastapi&#34;: FastapiFramework(),
+    &#34;flask&#34;: FlaskFramework(),
+    &#34;django&#34;: DjangoFramework(),
+}
+
+
+def is_an_ip_address(ip_address: str) -&gt; bool:
+    return (
+        fullmatch(
+            r&#34;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#34;
+            r&#34;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#34;,
+            ip_address,
+        )
+        is not None
+    )
+
+
+def normalise_http_method(method: str) -&gt; str:
+    return method.lower()
+
+
+def get_rid_from_header(request: BaseRequest) -&gt; Union[str, None]:
+    return get_header(request, RID_KEY_HEADER)
+
+
+def get_header(request: BaseRequest, key: str) -&gt; Union[str, None]:
+    return request.get_header(key)
+
+
+def find_max_version(versions_1: List[str], versions_2: List[str]) -&gt; Union[str, None]:
+    versions = list(set(versions_1) &amp; set(versions_2))
+    if len(versions) == 0:
+        return None
+
+    max_v = versions[0]
+    for i in range(1, len(versions)):
+        version = versions[i]
+        max_v = _get_max_version(max_v, version)
+
+    return max_v
+
+
+def is_version_gte(version: str, minimum_version: str) -&gt; bool:
+    return _get_max_version(version, minimum_version) == version
+
+
+def _get_max_version(v1: str, v2: str) -&gt; str:
+    v1_split = v1.split(&#34;.&#34;)
+    v2_split = v2.split(&#34;.&#34;)
+    max_loop = min(len(v1_split), len(v2_split))
+
+    for i in range(max_loop):
+        if int(v1_split[i]) &gt; int(v2_split[i]):
+            return v1
+        if int(v2_split[i]) &gt; int(v1_split[i]):
+            return v2
+
+    if len(v1_split) &gt; len(v2_split):
+        return v1
+
+    return v2
+
+
+def is_4xx_error(status_code: int) -&gt; bool:
+    return status_code // 100 == 4
+
+
+def is_5xx_error(status_code: int) -&gt; bool:
+    return status_code // 100 == 5
+
+
+def send_non_200_response(
+    body: Dict[str, Any], status_code: int, response: BaseResponse
+) -&gt; BaseResponse:
+    if status_code &lt; 300:
+        raise_general_exception(&#34;Calling sendNon200Response with status code &lt; 300&#34;)
+    log_debug_message(
+        &#34;Sending response to client with status code: %s&#34;, str(status_code)
+    )
+    response.set_status_code(status_code)
+    response.set_json_content(content=body)
+    return response
+
+
+def send_non_200_response_with_message(
+    message: str, status_code: int, response: BaseResponse
+) -&gt; BaseResponse:
+    return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)
+
+
+def send_unauthorised_access_response(response: BaseResponse) -&gt; BaseResponse:
+    return send_non_200_response_with_message(&#34;Unauthorised access&#34;, 401, response)
+
+
+def send_200_response(
+    data_json: Dict[str, Any], response: BaseResponse
+) -&gt; BaseResponse:
+    log_debug_message(&#34;Sending response to client with status code: 200&#34;)
+    response.set_json_content(data_json)
+    response.set_status_code(200)
+    return response
+
+
+def get_timestamp_ms() -&gt; int:
+    return int(time() * 1000)
+
+
+def utf_base64encode(s: str, urlsafe: bool) -&gt; str:
+    if urlsafe:
+        return urlsafe_b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
+
+    return b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
+
+
+def utf_base64decode(s: str, urlsafe: bool) -&gt; str:
+    # Adding extra &#34;==&#34; based on
+    # https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+    # Otherwise it can raise &#34;incorrect padding&#34; error
+    if urlsafe:
+        return urlsafe_b64decode(s.encode(&#34;utf-8&#34;) + b&#34;==&#34;).decode(&#34;utf-8&#34;)
+
+    return b64decode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
+
+
+def encode_base64(value: str) -&gt; str:
+    &#34;&#34;&#34;
+    Encode the passed value to base64 and return the encoded value.
+    &#34;&#34;&#34;
+    return b64encode(value.encode()).decode()
+
+
+def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -&gt; List[_T]:
+    return list(filter(func, given_list))
+
+
+def find_first_occurrence_in_list(
+    condition: Callable[[_T], bool], given_list: List[_T]
+) -&gt; Union[_T, None]:
+    for item in given_list:
+        if condition(item):
+            return item
+    return None
+
+
+def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
+    return get_rid_from_header(request) is not None
+
+
+def deprecated_warn(msg: str):
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+
+def handle_httpx_client_exceptions(
+    e: Exception, input_: Union[Dict[str, Any], None] = None
+):
+    if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
+        res = e.response  # type: ignore
+        log_debug_message(&#34;Error status: %s&#34;, res.status_code)  # type: ignore
+        log_debug_message(&#34;Error response: %s&#34;, res.json())
+    else:
+        log_debug_message(&#34;Error: %s&#34;, str(e))
+
+    if input_ is not None:
+        log_debug_message(&#34;Logging the input:&#34;)
+        log_debug_message(&#34;%s&#34;, json.dumps(input_))
+
+
+def humanize_time(ms: int) -&gt; str:
+    t = floor(ms / 1000)
+    suffix = &#34;&#34;
+
+    if t &lt; 60:
+        if t &gt; 1:
+            suffix = &#34;s&#34;
+        time_str = f&#34;{t} second{suffix}&#34;
+    elif t &lt; 3600:
+        m = floor(t / 60)
+        if m &gt; 1:
+            suffix = &#34;s&#34;
+        time_str = f&#34;{m} minute{suffix}&#34;
+    else:
+        h = floor(t / 360) / 10
+        if h &gt; 1:
+            suffix = &#34;s&#34;
+        if h % 1 == 0:
+            h = int(h)
+        time_str = f&#34;{h} hour{suffix}&#34;
+
+    return time_str
+
+
+def set_request_in_user_context_if_not_defined(
+    user_context: Optional[Dict[str, Any]], request: BaseRequest
+) -&gt; Dict[str, Any]:
+    if user_context is None:
+        user_context = {}
+
+    if &#34;_default&#34; not in user_context:
+        user_context[&#34;_default&#34;] = {}
+
+    if isinstance(user_context[&#34;_default&#34;], dict):
+        user_context[&#34;_default&#34;][&#34;request&#34;] = request
+        user_context[&#34;_default&#34;][&#34;keep_cache_alive&#34;] = True
+
+    return user_context
+
+
+def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
+    return set_request_in_user_context_if_not_defined({}, request)
+
+
+async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
+    &#34;&#34;&#34;Returns value or value of awaitable object passed&#34;&#34;&#34;
+    if isinstance(obj, Awaitable):
+        return await obj  # type: ignore
+    return obj  # type: ignore
+
+
+def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
+    url_obj = urlparse(url)
+    hostname = url_obj.hostname
+
+    if hostname is None:
+        raise Exception(&#34;Should not come here&#34;)
+
+    if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
+        return &#34;localhost&#34;
+
+    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
+    if parsed_url.domain == &#34;&#34;:  # type: ignore
+        # We need to do this because of https://github.com/supertokens/supertokens-python/issues/394
+        if hostname.endswith(&#34;.amazonaws.com&#34;) and parsed_url.suffix == hostname:
+            return hostname
+
+        raise Exception(
+            &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
+        )
+
+    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix
+
+
+def get_backwards_compatible_user_info(
+    req: BaseRequest,
+    user_info: User,
+    session_container: SessionContainer,
+    created_new_recipe_user: Union[bool, None],
+    user_context: Dict[str, Any],
+) -&gt; Dict[str, Any]:
+    resp: Dict[str, Any] = {}
+    # (&gt;= 1.18 &amp;&amp; &lt; 2.0) || &gt;= 3.0: This is because before 1.18, and between 2 and 3, FDI does not
+    # support account linking.
+    if (
+        has_greater_than_equal_to_fdi(req, &#34;1.18&#34;)
+        and not has_greater_than_equal_to_fdi(req, &#34;2.0&#34;)
+    ) or has_greater_than_equal_to_fdi(req, &#34;3.0&#34;):
+        resp = {&#34;user&#34;: user_info.to_json()}
+
+        if created_new_recipe_user is not None:
+            resp[&#34;createdNewRecipeUser&#34;] = created_new_recipe_user
+        return resp
+
+    login_method = next(
+        (
+            lm
+            for lm in user_info.login_methods
+            if lm.recipe_user_id.get_as_string()
+            == session_container.get_recipe_user_id(user_context).get_as_string()
+        ),
+        None,
+    )
+
+    if login_method is None:
+        # we pick the oldest login method here for the user.
+        # this can happen in case the user is implementing something like
+        # MFA where the session remains the same during the second factor as well.
+        login_method = min(user_info.login_methods, key=lambda lm: lm.time_joined)
+
+    user_obj: Dict[str, Any] = {
+        &#34;id&#34;: user_info.id,  # we purposely use this instead of the loginmethod&#39;s recipeUserId because if the oldest login method is deleted, then this userID should remain the same.
+        &#34;timeJoined&#34;: login_method.time_joined,
+    }
+    if login_method.third_party:
+        user_obj[&#34;thirdParty&#34;] = login_method.third_party.to_json()
+    if login_method.email:
+        user_obj[&#34;email&#34;] = login_method.email
+    if login_method.phone_number:
+        user_obj[&#34;phoneNumber&#34;] = login_method.phone_number
+
+    resp = {&#34;user&#34;: user_obj}
+
+    if created_new_recipe_user is not None:
+        resp[&#34;createdNewUser&#34;] = created_new_recipe_user
+
+    return resp
+
+
+def get_latest_fdi_version_from_fdi_list(fdi_header_value: str) -&gt; str:
+    versions = fdi_header_value.split(&#34;,&#34;)
+    max_version_str = versions[0]
+    for version in versions[1:]:
+        max_version_str = _get_max_version(max_version_str, version)
+    return max_version_str
+
+
+def has_greater_than_equal_to_fdi(req: BaseRequest, version: str) -&gt; bool:
+    request_fdi = req.get_header(FDI_KEY_HEADER)
+    if request_fdi is None:
+        # By default we assume they want to use the latest FDI, this also helps with tests
+        return True
+    request_fdi = get_latest_fdi_version_from_fdi_list(request_fdi)
+    if request_fdi == version or _get_max_version(version, request_fdi) != version:
+        return True
+    return False
+
+
+class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0 or self._reader_count &gt; 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()
+
+
+class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
+
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)
+
+
+def normalise_email(email: str) -&gt; str:
+    return email.strip().lower()
+
+
+def get_normalised_should_try_linking_with_session_user_flag(
+    req: BaseRequest, body: Dict[str, Any]
+) -&gt; Optional[bool]:
+    if has_greater_than_equal_to_fdi(req, &#34;3.1&#34;):
+        return body.get(&#34;shouldTryLinkingWithSessionUser&#34;, False)
+    return None</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.utils.default_user_context"><code class="name flex">
+<span>def <span class="ident">default_user_context</span></span>(<span>request: BaseRequest) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.deprecated_warn"><code class="name flex">
+<span>def <span class="ident">deprecated_warn</span></span>(<span>msg: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.encode_base64"><code class="name flex">
+<span>def <span class="ident">encode_base64</span></span>(<span>value: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Encode the passed value to base64 and return the encoded value.</p></div>
+</dd>
+<dt id="supertokens_python.utils.find_first_occurrence_in_list"><code class="name flex">
+<span>def <span class="ident">find_first_occurrence_in_list</span></span>(<span>condition: Callable[[_T], bool], given_list: List[_T]) ‑> Optional[~_T]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.find_max_version"><code class="name flex">
+<span>def <span class="ident">find_max_version</span></span>(<span>versions_1: List[str], versions_2: List[str]) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.frontend_has_interceptor"><code class="name flex">
+<span>def <span class="ident">frontend_has_interceptor</span></span>(<span>request: BaseRequest) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_backwards_compatible_user_info"><code class="name flex">
+<span>def <span class="ident">get_backwards_compatible_user_info</span></span>(<span>req: BaseRequest, user_info: User, session_container: SessionContainer, created_new_recipe_user: Union[bool, None], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_filtered_list"><code class="name flex">
+<span>def <span class="ident">get_filtered_list</span></span>(<span>func: Callable[[_T], bool], given_list: List[_T]) ‑> List[~_T]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_header"><code class="name flex">
+<span>def <span class="ident">get_header</span></span>(<span>request: BaseRequest, key: str) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_latest_fdi_version_from_fdi_list"><code class="name flex">
+<span>def <span class="ident">get_latest_fdi_version_from_fdi_list</span></span>(<span>fdi_header_value: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_normalised_should_try_linking_with_session_user_flag"><code class="name flex">
+<span>def <span class="ident">get_normalised_should_try_linking_with_session_user_flag</span></span>(<span>req: BaseRequest, body: Dict[str, Any]) ‑> Optional[bool]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_rid_from_header"><code class="name flex">
+<span>def <span class="ident">get_rid_from_header</span></span>(<span>request: BaseRequest) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_timestamp_ms"><code class="name flex">
+<span>def <span class="ident">get_timestamp_ms</span></span>(<span>) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_top_level_domain_for_same_site_resolution"><code class="name flex">
+<span>def <span class="ident">get_top_level_domain_for_same_site_resolution</span></span>(<span>url: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.handle_httpx_client_exceptions"><code class="name flex">
+<span>def <span class="ident">handle_httpx_client_exceptions</span></span>(<span>e: Exception, input_: Union[Dict[str, Any], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.has_greater_than_equal_to_fdi"><code class="name flex">
+<span>def <span class="ident">has_greater_than_equal_to_fdi</span></span>(<span>req: BaseRequest, version: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.humanize_time"><code class="name flex">
+<span>def <span class="ident">humanize_time</span></span>(<span>ms: int) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.is_4xx_error"><code class="name flex">
+<span>def <span class="ident">is_4xx_error</span></span>(<span>status_code: int) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.is_5xx_error"><code class="name flex">
+<span>def <span class="ident">is_5xx_error</span></span>(<span>status_code: int) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.is_an_ip_address"><code class="name flex">
+<span>def <span class="ident">is_an_ip_address</span></span>(<span>ip_address: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.is_version_gte"><code class="name flex">
+<span>def <span class="ident">is_version_gte</span></span>(<span>version: str, minimum_version: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.normalise_email"><code class="name flex">
+<span>def <span class="ident">normalise_email</span></span>(<span>email: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.normalise_http_method"><code class="name flex">
+<span>def <span class="ident">normalise_http_method</span></span>(<span>method: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.resolve"><code class="name flex">
+<span>async def <span class="ident">resolve</span></span>(<span>obj: MaybeAwaitable[_T]) ‑> ~_T</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns value or value of awaitable object passed</p></div>
+</dd>
+<dt id="supertokens_python.utils.send_200_response"><code class="name flex">
+<span>def <span class="ident">send_200_response</span></span>(<span>data_json: Dict[str, Any], response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.send_non_200_response"><code class="name flex">
+<span>def <span class="ident">send_non_200_response</span></span>(<span>body: Dict[str, Any], status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.send_non_200_response_with_message"><code class="name flex">
+<span>def <span class="ident">send_non_200_response_with_message</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.send_unauthorised_access_response"><code class="name flex">
+<span>def <span class="ident">send_unauthorised_access_response</span></span>(<span>response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.set_request_in_user_context_if_not_defined"><code class="name flex">
+<span>def <span class="ident">set_request_in_user_context_if_not_defined</span></span>(<span>user_context: Optional[Dict[str, Any]], request: BaseRequest) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.utf_base64decode"><code class="name flex">
+<span>def <span class="ident">utf_base64decode</span></span>(<span>s: str, urlsafe: bool) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.utf_base64encode"><code class="name flex">
+<span>def <span class="ident">utf_base64encode</span></span>(<span>s: str, urlsafe: bool) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.utils.RWLockContext"><code class="flex name class">
+<span>class <span class="ident">RWLockContext</span></span>
+<span>(</span><span>mutex: <a title="supertokens_python.utils.RWMutex" href="#supertokens_python.utils.RWMutex">RWMutex</a>, read: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RWLockContext:
+    def __init__(self, mutex: RWMutex, read: bool = True):
+        self.mutex = mutex
+        self.read = read
+
+    def __enter__(self):
+        if self.read:
+            self.mutex.r_lock()
+        else:
+            self.mutex.lock()
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if self.read:
+            self.mutex.r_unlock()
+        else:
+            self.mutex.unlock()
+
+        if exc_type is not None:
+            raise exc_type(exc_value).with_traceback(traceback)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.RWMutex"><code class="flex name class">
+<span>class <span class="ident">RWMutex</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RWMutex:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readers = threading.Condition(self._lock)
+        self._writers = threading.Condition(self._lock)
+        self._reader_count = 0
+        self._writer_count = 0
+
+    def lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0 or self._reader_count &gt; 0:
+                self._writers.wait()
+            self._writer_count += 1
+
+    def unlock(self):
+        with self._lock:
+            self._writer_count -= 1
+            self._readers.notify_all()
+            self._writers.notify_all()
+
+    def r_lock(self):
+        with self._lock:
+            while self._writer_count &gt; 0:
+                self._readers.wait()
+            self._reader_count += 1
+
+    def r_unlock(self):
+        with self._lock:
+            self._reader_count -= 1
+            if self._reader_count == 0:
+                self._writers.notify_all()</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.utils.RWMutex.lock"><code class="name flex">
+<span>def <span class="ident">lock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.RWMutex.r_lock"><code class="name flex">
+<span>def <span class="ident">r_lock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.RWMutex.r_unlock"><code class="name flex">
+<span>def <span class="ident">r_unlock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.RWMutex.unlock"><code class="name flex">
+<span>def <span class="ident">unlock</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.utils.default_user_context" href="#supertokens_python.utils.default_user_context">default_user_context</a></code></li>
+<li><code><a title="supertokens_python.utils.deprecated_warn" href="#supertokens_python.utils.deprecated_warn">deprecated_warn</a></code></li>
+<li><code><a title="supertokens_python.utils.encode_base64" href="#supertokens_python.utils.encode_base64">encode_base64</a></code></li>
+<li><code><a title="supertokens_python.utils.find_first_occurrence_in_list" href="#supertokens_python.utils.find_first_occurrence_in_list">find_first_occurrence_in_list</a></code></li>
+<li><code><a title="supertokens_python.utils.find_max_version" href="#supertokens_python.utils.find_max_version">find_max_version</a></code></li>
+<li><code><a title="supertokens_python.utils.frontend_has_interceptor" href="#supertokens_python.utils.frontend_has_interceptor">frontend_has_interceptor</a></code></li>
+<li><code><a title="supertokens_python.utils.get_backwards_compatible_user_info" href="#supertokens_python.utils.get_backwards_compatible_user_info">get_backwards_compatible_user_info</a></code></li>
+<li><code><a title="supertokens_python.utils.get_filtered_list" href="#supertokens_python.utils.get_filtered_list">get_filtered_list</a></code></li>
+<li><code><a title="supertokens_python.utils.get_header" href="#supertokens_python.utils.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.utils.get_latest_fdi_version_from_fdi_list" href="#supertokens_python.utils.get_latest_fdi_version_from_fdi_list">get_latest_fdi_version_from_fdi_list</a></code></li>
+<li><code><a title="supertokens_python.utils.get_normalised_should_try_linking_with_session_user_flag" href="#supertokens_python.utils.get_normalised_should_try_linking_with_session_user_flag">get_normalised_should_try_linking_with_session_user_flag</a></code></li>
+<li><code><a title="supertokens_python.utils.get_rid_from_header" href="#supertokens_python.utils.get_rid_from_header">get_rid_from_header</a></code></li>
+<li><code><a title="supertokens_python.utils.get_timestamp_ms" href="#supertokens_python.utils.get_timestamp_ms">get_timestamp_ms</a></code></li>
+<li><code><a title="supertokens_python.utils.get_top_level_domain_for_same_site_resolution" href="#supertokens_python.utils.get_top_level_domain_for_same_site_resolution">get_top_level_domain_for_same_site_resolution</a></code></li>
+<li><code><a title="supertokens_python.utils.handle_httpx_client_exceptions" href="#supertokens_python.utils.handle_httpx_client_exceptions">handle_httpx_client_exceptions</a></code></li>
+<li><code><a title="supertokens_python.utils.has_greater_than_equal_to_fdi" href="#supertokens_python.utils.has_greater_than_equal_to_fdi">has_greater_than_equal_to_fdi</a></code></li>
+<li><code><a title="supertokens_python.utils.humanize_time" href="#supertokens_python.utils.humanize_time">humanize_time</a></code></li>
+<li><code><a title="supertokens_python.utils.is_4xx_error" href="#supertokens_python.utils.is_4xx_error">is_4xx_error</a></code></li>
+<li><code><a title="supertokens_python.utils.is_5xx_error" href="#supertokens_python.utils.is_5xx_error">is_5xx_error</a></code></li>
+<li><code><a title="supertokens_python.utils.is_an_ip_address" href="#supertokens_python.utils.is_an_ip_address">is_an_ip_address</a></code></li>
+<li><code><a title="supertokens_python.utils.is_version_gte" href="#supertokens_python.utils.is_version_gte">is_version_gte</a></code></li>
+<li><code><a title="supertokens_python.utils.normalise_email" href="#supertokens_python.utils.normalise_email">normalise_email</a></code></li>
+<li><code><a title="supertokens_python.utils.normalise_http_method" href="#supertokens_python.utils.normalise_http_method">normalise_http_method</a></code></li>
+<li><code><a title="supertokens_python.utils.resolve" href="#supertokens_python.utils.resolve">resolve</a></code></li>
+<li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>
+<li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>
+<li><code><a title="supertokens_python.utils.send_non_200_response_with_message" href="#supertokens_python.utils.send_non_200_response_with_message">send_non_200_response_with_message</a></code></li>
+<li><code><a title="supertokens_python.utils.send_unauthorised_access_response" href="#supertokens_python.utils.send_unauthorised_access_response">send_unauthorised_access_response</a></code></li>
+<li><code><a title="supertokens_python.utils.set_request_in_user_context_if_not_defined" href="#supertokens_python.utils.set_request_in_user_context_if_not_defined">set_request_in_user_context_if_not_defined</a></code></li>
+<li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
+<li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.utils.RWLockContext" href="#supertokens_python.utils.RWLockContext">RWLockContext</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.utils.RWMutex" href="#supertokens_python.utils.RWMutex">RWMutex</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.utils.RWMutex.lock" href="#supertokens_python.utils.RWMutex.lock">lock</a></code></li>
+<li><code><a title="supertokens_python.utils.RWMutex.r_lock" href="#supertokens_python.utils.RWMutex.r_lock">r_lock</a></code></li>
+<li><code><a title="supertokens_python.utils.RWMutex.r_unlock" href="#supertokens_python.utils.RWMutex.r_unlock">r_unlock</a></code></li>
+<li><code><a title="supertokens_python.utils.RWMutex.unlock" href="#supertokens_python.utils.RWMutex.unlock">unlock</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>

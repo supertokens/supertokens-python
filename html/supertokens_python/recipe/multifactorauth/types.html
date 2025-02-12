@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.recipe.multifactorauth.types API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.multifactorauth.types</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+
+from typing_extensions import Literal
+
+from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.types import RecipeUserId, User
+
+if TYPE_CHECKING:
+    from .interfaces import APIInterface, RecipeInterface
+
+
+MFARequirementList = List[
+    Union[str, Dict[Union[Literal[&#34;oneOf&#34;], Literal[&#34;allOfInAnyOrder&#34;]], List[str]]]
+]
+
+
+class MFAClaimValue:
+    c: Dict[str, int]
+    v: bool
+
+    def __init__(self, c: Dict[str, Any], v: bool):
+        self.c = c
+        self.v = v
+
+
+class OverrideConfig:
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
+        self.functions = functions
+        self.apis = apis
+
+
+class MultiFactorAuthConfig:
+    def __init__(
+        self,
+        first_factors: Optional[List[str]],
+        override: OverrideConfig,
+    ):
+        self.first_factors = first_factors
+        self.override = override
+
+
+class FactorIds:
+    EMAILPASSWORD: Literal[&#34;emailpassword&#34;] = &#34;emailpassword&#34;
+    OTP_EMAIL: Literal[&#34;otp-email&#34;] = &#34;otp-email&#34;
+    OTP_PHONE: Literal[&#34;otp-phone&#34;] = &#34;otp-phone&#34;
+    LINK_EMAIL: Literal[&#34;link-email&#34;] = &#34;link-email&#34;
+    LINK_PHONE: Literal[&#34;link-phone&#34;] = &#34;link-phone&#34;
+    THIRDPARTY: Literal[&#34;thirdparty&#34;] = &#34;thirdparty&#34;
+    TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;
+
+
+class FactorIdsAndType:
+    def __init__(
+        self,
+        factor_ids: List[str],
+        type_: Union[Literal[&#34;string&#34;], Literal[&#34;oneOf&#34;], Literal[&#34;allOfInAnyOrder&#34;]],
+    ):
+        self.factor_ids = factor_ids
+        self.type_ = type_
+
+
+class GetFactorsSetupForUserFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[[User, Dict[str, Any]], Awaitable[List[str]]],
+    ):
+        self.func = func
+
+
+class GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[[TenantConfig], Awaitable[List[str]]],
+    ):
+        self.func = func
+
+
+class GetEmailsForFactorOkResult:
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+
+    def __init__(self, factor_id_to_emails_map: Dict[str, List[str]]):
+        self.factor_id_to_emails_map = factor_id_to_emails_map
+
+
+class GetEmailsForFactorUnknownSessionRecipeUserIdResult:
+    status: Literal[&#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;] = &#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;
+
+
+class GetEmailsForFactorFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[
+            [User, RecipeUserId],
+            Awaitable[
+                Union[
+                    GetEmailsForFactorOkResult,
+                    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+                ]
+            ],
+        ],
+    ):
+        self.func = func
+
+
+class GetPhoneNumbersForFactorsOkResult:
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+
+    def __init__(self, factor_id_to_phone_number_map: Dict[str, List[str]]):
+        self.factor_id_to_phone_number_map = factor_id_to_phone_number_map
+
+
+class GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult:
+    status: Literal[&#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;] = &#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;
+
+
+class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[
+            [User, RecipeUserId],
+            Awaitable[
+                Union[
+                    GetPhoneNumbersForFactorsOkResult,
+                    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+                ]
+            ],
+        ],
+    ):
+        self.func = func</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds"><code class="flex name class">
+<span>class <span class="ident">FactorIds</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FactorIds:
+    EMAILPASSWORD: Literal[&#34;emailpassword&#34;] = &#34;emailpassword&#34;
+    OTP_EMAIL: Literal[&#34;otp-email&#34;] = &#34;otp-email&#34;
+    OTP_PHONE: Literal[&#34;otp-phone&#34;] = &#34;otp-phone&#34;
+    LINK_EMAIL: Literal[&#34;link-email&#34;] = &#34;link-email&#34;
+    LINK_PHONE: Literal[&#34;link-phone&#34;] = &#34;link-phone&#34;
+    THIRDPARTY: Literal[&#34;thirdparty&#34;] = &#34;thirdparty&#34;
+    TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD"><code class="name">var <span class="ident">EMAILPASSWORD</span> : typing_extensions.Literal['emailpassword']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL"><code class="name">var <span class="ident">LINK_EMAIL</span> : typing_extensions.Literal['link-email']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE"><code class="name">var <span class="ident">LINK_PHONE</span> : typing_extensions.Literal['link-phone']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL"><code class="name">var <span class="ident">OTP_EMAIL</span> : typing_extensions.Literal['otp-email']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE"><code class="name">var <span class="ident">OTP_PHONE</span> : typing_extensions.Literal['otp-phone']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY"><code class="name">var <span class="ident">THIRDPARTY</span> : typing_extensions.Literal['thirdparty']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP"><code class="name">var <span class="ident">TOTP</span> : typing_extensions.Literal['totp']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIdsAndType"><code class="flex name class">
+<span>class <span class="ident">FactorIdsAndType</span></span>
+<span>(</span><span>factor_ids: List[str], type_: "Union[Literal['string'], Literal['oneOf'], Literal['allOfInAnyOrder']]")</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FactorIdsAndType:
+    def __init__(
+        self,
+        factor_ids: List[str],
+        type_: Union[Literal[&#34;string&#34;], Literal[&#34;oneOf&#34;], Literal[&#34;allOfInAnyOrder&#34;]],
+    ):
+        self.factor_ids = factor_ids
+        self.type_ = type_</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc"><code class="flex name class">
+<span>class <span class="ident">GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc</span></span>
+<span>(</span><span>func: Callable[[TenantConfig], Awaitable[List[str]]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[[TenantConfig], Awaitable[List[str]]],
+    ):
+        self.func = func</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorFromOtherRecipesFunc"><code class="flex name class">
+<span>class <span class="ident">GetEmailsForFactorFromOtherRecipesFunc</span></span>
+<span>(</span><span>func: Callable[[User, RecipeUserId], Awaitable[Union[<a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult">GetEmailsForFactorOkResult</a>, <a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult">GetEmailsForFactorUnknownSessionRecipeUserIdResult</a>]]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetEmailsForFactorFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[
+            [User, RecipeUserId],
+            Awaitable[
+                Union[
+                    GetEmailsForFactorOkResult,
+                    GetEmailsForFactorUnknownSessionRecipeUserIdResult,
+                ]
+            ],
+        ],
+    ):
+        self.func = func</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult"><code class="flex name class">
+<span>class <span class="ident">GetEmailsForFactorOkResult</span></span>
+<span>(</span><span>factor_id_to_emails_map: Dict[str, List[str]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetEmailsForFactorOkResult:
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+
+    def __init__(self, factor_id_to_emails_map: Dict[str, List[str]]):
+        self.factor_id_to_emails_map = factor_id_to_emails_map</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult"><code class="flex name class">
+<span>class <span class="ident">GetEmailsForFactorUnknownSessionRecipeUserIdResult</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetEmailsForFactorUnknownSessionRecipeUserIdResult:
+    status: Literal[&#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;] = &#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetFactorsSetupForUserFromOtherRecipesFunc"><code class="flex name class">
+<span>class <span class="ident">GetFactorsSetupForUserFromOtherRecipesFunc</span></span>
+<span>(</span><span>func: Callable[[User, Dict[str, Any]], Awaitable[List[str]]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetFactorsSetupForUserFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[[User, Dict[str, Any]], Awaitable[List[str]]],
+    ):
+        self.func = func</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsFromOtherRecipesFunc"><code class="flex name class">
+<span>class <span class="ident">GetPhoneNumbersForFactorsFromOtherRecipesFunc</span></span>
+<span>(</span><span>func: Callable[[User, RecipeUserId], Awaitable[Union[<a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult">GetPhoneNumbersForFactorsOkResult</a>, <a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult">GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult</a>]]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
+    def __init__(
+        self,
+        func: Callable[
+            [User, RecipeUserId],
+            Awaitable[
+                Union[
+                    GetPhoneNumbersForFactorsOkResult,
+                    GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
+                ]
+            ],
+        ],
+    ):
+        self.func = func</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult"><code class="flex name class">
+<span>class <span class="ident">GetPhoneNumbersForFactorsOkResult</span></span>
+<span>(</span><span>factor_id_to_phone_number_map: Dict[str, List[str]])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetPhoneNumbersForFactorsOkResult:
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+
+    def __init__(self, factor_id_to_phone_number_map: Dict[str, List[str]]):
+        self.factor_id_to_phone_number_map = factor_id_to_phone_number_map</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult"><code class="flex name class">
+<span>class <span class="ident">GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult:
+    status: Literal[&#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;] = &#34;UNKNOWN_SESSION_RECIPE_USER_ID&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.MFAClaimValue"><code class="flex name class">
+<span>class <span class="ident">MFAClaimValue</span></span>
+<span>(</span><span>c: Dict[str, Any], v: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MFAClaimValue:
+    c: Dict[str, int]
+    v: bool
+
+    def __init__(self, c: Dict[str, Any], v: bool):
+        self.c = c
+        self.v = v</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.MFAClaimValue.c"><code class="name">var <span class="ident">c</span> : Dict[str, int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.MFAClaimValue.v"><code class="name">var <span class="ident">v</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig"><code class="flex name class">
+<span>class <span class="ident">MultiFactorAuthConfig</span></span>
+<span>(</span><span>first_factors: Optional[List[str]], override: <a title="supertokens_python.recipe.multifactorauth.types.OverrideConfig" href="#supertokens_python.recipe.multifactorauth.types.OverrideConfig">OverrideConfig</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MultiFactorAuthConfig:
+    def __init__(
+        self,
+        first_factors: Optional[List[str]],
+        override: OverrideConfig,
+    ):
+        self.first_factors = first_factors
+        self.override = override</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.OverrideConfig"><code class="flex name class">
+<span>class <span class="ident">OverrideConfig</span></span>
+<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OverrideConfig:
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
+        self.functions = functions
+        self.apis = apis</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.multifactorauth" href="index.html">supertokens_python.recipe.multifactorauth</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds" href="#supertokens_python.recipe.multifactorauth.types.FactorIds">FactorIds</a></code></h4>
+<ul class="two-column">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD">EMAILPASSWORD</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL">LINK_EMAIL</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE">LINK_PHONE</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL">OTP_EMAIL</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE">OTP_PHONE</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY">THIRDPARTY</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP">TOTP</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIdsAndType" href="#supertokens_python.recipe.multifactorauth.types.FactorIdsAndType">FactorIdsAndType</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc" href="#supertokens_python.recipe.multifactorauth.types.GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc">GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorFromOtherRecipesFunc" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorFromOtherRecipesFunc">GetEmailsForFactorFromOtherRecipesFunc</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult">GetEmailsForFactorOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult.status" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult">GetEmailsForFactorUnknownSessionRecipeUserIdResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult.status" href="#supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetFactorsSetupForUserFromOtherRecipesFunc" href="#supertokens_python.recipe.multifactorauth.types.GetFactorsSetupForUserFromOtherRecipesFunc">GetFactorsSetupForUserFromOtherRecipesFunc</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsFromOtherRecipesFunc" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsFromOtherRecipesFunc">GetPhoneNumbersForFactorsFromOtherRecipesFunc</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult">GetPhoneNumbersForFactorsOkResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult.status" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult">GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult.status" href="#supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.MFAClaimValue" href="#supertokens_python.recipe.multifactorauth.types.MFAClaimValue">MFAClaimValue</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MFAClaimValue.c" href="#supertokens_python.recipe.multifactorauth.types.MFAClaimValue.c">c</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MFAClaimValue.v" href="#supertokens_python.recipe.multifactorauth.types.MFAClaimValue.v">v</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig">MultiFactorAuthConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.OverrideConfig" href="#supertokens_python.recipe.multifactorauth.types.OverrideConfig">OverrideConfig</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>
