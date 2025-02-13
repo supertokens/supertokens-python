@@ -33,25 +33,7 @@ from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import (
-    clean_st,
-    extract_all_cookies,
-    reset,
-    setup_st,
-    sign_up_request,
-    start_st,
-)
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import extract_all_cookies, get_new_core_app_url, sign_up_request
 
 
 @fixture(scope="function")
@@ -110,7 +92,7 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -126,7 +108,6 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(
             )
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.post(
         url="/auth/signin",
@@ -144,7 +125,7 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(
 @mark.asyncio
 async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -157,7 +138,6 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -188,7 +168,7 @@ async def test_singinAPI_works_when_input_is_fine_when_rid_is_tpep(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -201,7 +181,6 @@ async def test_singinAPI_works_when_input_is_fine_when_rid_is_tpep(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -233,7 +212,7 @@ async def test_singinAPI_works_when_input_is_fine_when_rid_is_emailpassword(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -246,7 +225,6 @@ async def test_singinAPI_works_when_input_is_fine_when_rid_is_emailpassword(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -278,7 +256,7 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -291,7 +269,6 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -320,7 +297,7 @@ async def test_singin_api_throws_an_error_when_email_does_not_match(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -333,7 +310,6 @@ async def test_singin_api_throws_an_error_when_email_does_not_match(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -362,7 +338,7 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -375,7 +351,6 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -402,7 +377,7 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(
 @mark.asyncio
 async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -415,7 +390,6 @@ async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClie
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -436,7 +410,7 @@ async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClie
 @mark.asyncio
 async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -449,7 +423,6 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -472,7 +445,7 @@ async def test_that_a_successful_signin_yields_a_session(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -488,7 +461,6 @@ async def test_that_a_successful_signin_yields_a_session(
             ),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -519,7 +491,7 @@ async def test_that_a_successful_signin_yields_a_session(
 @mark.asyncio
 async def test_email_field_validation_error(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -532,7 +504,6 @@ async def test_email_field_validation_error(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpassword123"
@@ -559,7 +530,7 @@ async def test_email_field_validation_error(driver_config_client: TestClient):
 @mark.asyncio
 async def test_formFields_has_no_email_field(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -572,7 +543,6 @@ async def test_formFields_has_no_email_field(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpassword123"
@@ -597,7 +567,7 @@ async def test_formFields_has_no_email_field(driver_config_client: TestClient):
 @mark.asyncio
 async def test_formFields_has_no_password_field(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -610,7 +580,6 @@ async def test_formFields_has_no_password_field(driver_config_client: TestClient
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpassword123"
@@ -635,7 +604,7 @@ async def test_formFields_has_no_password_field(driver_config_client: TestClient
 @mark.asyncio
 async def test_delete_user(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -645,7 +614,6 @@ async def test_delete_user(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[emailpassword.init(), session.init(anti_csrf="VIA_TOKEN")],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -677,7 +645,7 @@ async def test_delete_user(driver_config_client: TestClient):
 @mark.asyncio
 async def test_optional_custom_field_without_input(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -696,7 +664,6 @@ async def test_optional_custom_field_without_input(driver_config_client: TestCli
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpassword123"
@@ -725,7 +692,7 @@ async def test_non_optional_custom_field_with_boolean_value(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -744,7 +711,6 @@ async def test_non_optional_custom_field_with_boolean_value(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.post(
         url="/auth/signup",
@@ -767,7 +733,7 @@ async def test_invalid_type_for_email_and_password(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -782,7 +748,6 @@ async def test_invalid_type_for_email_and_password(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.post(
         url="/auth/signup",
@@ -844,7 +809,7 @@ async def test_invalid_type_for_email_and_password(
 @mark.asyncio
 async def test_too_many_fields(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -863,7 +828,6 @@ async def test_too_many_fields(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpassword123"
@@ -894,7 +858,7 @@ async def test_non_optional_custom_field_without_input(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -913,7 +877,6 @@ async def test_non_optional_custom_field_without_input(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpassword123"

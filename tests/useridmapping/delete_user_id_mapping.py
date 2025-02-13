@@ -33,21 +33,7 @@ from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from supertokens_python.utils import is_version_gte
 from typing_extensions import Literal
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-from .utils import st_config
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
+from .utils import get_st_config
 
 pytestmark = mark.asyncio
 
@@ -56,8 +42,7 @@ USER_TYPE = Literal["SUPERTOKENS", "EXTERNAL", "ANY"]
 
 @mark.parametrize("user_type", ["SUPERTOKENS", "EXTERNAL", "ANY"])
 async def test_delete_user_id_mapping(user_type: USER_TYPE):
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):
@@ -94,8 +79,7 @@ async def test_delete_user_id_mapping(user_type: USER_TYPE):
 
 
 async def test_delete_user_id_mapping_without_and_with_force():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):
@@ -141,8 +125,7 @@ async def test_delete_user_id_mapping_without_and_with_force():
 
 
 async def test_delete_unknown_user_id_mapping():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):

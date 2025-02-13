@@ -25,16 +25,7 @@ from supertokens_python.recipe.thirdparty.types import (
     UserInfoEmail,
 )
 
-from tests.utils import (
-    setup_function,
-    st_init_common_args,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
-_ = start_st  # type:ignore
+from tests.utils import get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
 
@@ -52,9 +43,9 @@ def fastapi_client():
 
 
 async def test_thirdpary_parsing_works(fastapi_client: TestClient):
-    st_init_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_init_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -78,9 +69,8 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
                 )
             ),
         ],
-    }
-    init(**st_init_args)  # type: ignore
-    start_st()
+    )
+    init(**st_init_args)
 
     state = b64encode(
         json.dumps({"frontendRedirectURI": "http://localhost:3000/redirect"}).encode()
@@ -154,9 +144,9 @@ async def valid_access_token(  # pylint: disable=unused-argument
 
 
 async def test_signinup_when_validate_access_token_throws(fastapi_client: TestClient):
-    st_init_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_init_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -186,9 +176,8 @@ async def test_signinup_when_validate_access_token_throws(fastapi_client: TestCl
                 )
             ),
         ],
-    }
-    init(**st_init_args)  # type: ignore
-    start_st()
+    )
+    init(**st_init_args)
 
     res = fastapi_client.post(
         "/auth/signinup",
@@ -218,9 +207,9 @@ async def test_signinup_works_when_validate_access_token_does_not_throw(
         ),
     )
 
-    st_init_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_init_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -250,10 +239,9 @@ async def test_signinup_works_when_validate_access_token_does_not_throw(
                 )
             ),
         ],
-    }
+    )
 
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     res = fastapi_client.post(
         "/auth/signinup",
@@ -285,9 +273,9 @@ async def test_signinup_android_without_redirect_uri(
             RawUserInfoFromProvider({}, {}),
         ),
     )
-    st_init_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_init_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -316,9 +304,8 @@ async def test_signinup_android_without_redirect_uri(
                 )
             ),
         ],
-    }
-    init(**st_init_args)  # type: ignore
-    start_st()
+    )
+    init(**st_init_args)
 
     res = fastapi_client.post(
         "/auth/signinup",
@@ -346,9 +333,9 @@ async def test_signinup_generating_fake_email(
             RawUserInfoFromProvider({}, {}),
         ),
     )
-    st_init_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_init_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -378,9 +365,8 @@ async def test_signinup_generating_fake_email(
                 )
             ),
         ],
-    }
-    init(**st_init_args)  # type: ignore
-    start_st()
+    )
+    init(**st_init_args)
 
     res = fastapi_client.post(
         "/auth/signinup",

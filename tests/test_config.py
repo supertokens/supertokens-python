@@ -14,6 +14,7 @@
 from typing import Any, Dict, Optional
 from unittest.mock import MagicMock
 
+import pytest
 from pytest import mark
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
@@ -24,18 +25,14 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.types import RecipeUserId
 
-from tests.utils import clean_st, reset, setup_st, start_st
+from tests.utils import get_new_core_app_url, reset
 
 
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+# Tests do not rely on the core.
+# Fine to generate a single app-id and re-use.
+@pytest.fixture(scope="module")
+def st_config() -> SupertokensConfig:
+    return SupertokensConfig(get_new_core_app_url())
 
 
 def testing_URL_path_normalisation():
@@ -255,12 +252,11 @@ def testing_URL_domain_normalisation():
         assert str(e) == "Please provide a valid domain name"
 
 
+# TODO: parametrize
 @mark.asyncio
-async def test_same_site_values():
-    start_st()
-
+async def test_same_site_values(st_config: SupertokensConfig):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -275,7 +271,7 @@ async def test_same_site_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -290,7 +286,7 @@ async def test_same_site_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -309,7 +305,7 @@ async def test_same_site_values():
     test_passed = True
     try:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=st_config,
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
@@ -328,7 +324,7 @@ async def test_same_site_values():
     test_passed = True
     try:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=st_config,
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
@@ -345,7 +341,7 @@ async def test_same_site_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -362,7 +358,7 @@ async def test_same_site_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://platform-services-uat.com",
@@ -379,12 +375,11 @@ async def test_same_site_values():
     reset()
 
 
+# TODO: parametrize
 @mark.asyncio
-async def test_config_values():
-    start_st()
-
+async def test_config_values(st_config: SupertokensConfig):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -405,7 +400,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -427,7 +422,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.com",
@@ -449,7 +444,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.co.uk",
@@ -471,7 +466,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="127.0.0.1:3000",
@@ -493,7 +488,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="127.0.0.1:3000",
@@ -515,7 +510,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -537,7 +532,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="127.0.0.1:3000",
@@ -559,7 +554,7 @@ async def test_config_values():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://localhost",
@@ -684,8 +679,9 @@ def testing_super_recipe_tests():
     assert m == 2
 
 
+# TODO: parametrize
 @mark.asyncio
-async def test_samesite_valid_config():
+async def test_samesite_valid_config(st_config: SupertokensConfig):
     domain_combinations = [
         ["http://localhost:3000", "http://localhost:8000"],
         ["http://127.0.0.1:3000", "http://localhost:8000"],
@@ -702,11 +698,9 @@ async def test_samesite_valid_config():
     ]
     for website_domain, api_domain in domain_combinations:
         reset()
-        clean_st()
-        setup_st()
 
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=st_config,
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 website_domain=website_domain,
@@ -717,12 +711,10 @@ async def test_samesite_valid_config():
         )
 
 
+# TODO: Check if we need to create new applications for each subtest
+# TODO: parametrize
 @mark.asyncio
-async def test_samesite_invalid_config():
-    reset()
-    clean_st()
-    setup_st()
-    start_st()
+async def test_samesite_invalid_config(st_config: SupertokensConfig):
     domain_combinations = [
         ["http://localhost:3000", "http://supertokensapi.io"],
         ["http://127.0.0.1:3000", "http://supertokensapi.io"],
@@ -731,10 +723,10 @@ async def test_samesite_invalid_config():
         ["http://supertokens.io", "http://supertokensapi.io"],
     ]
     for website_domain, api_domain in domain_combinations:
-        reset(False)
+        reset()
         try:
             init(
-                supertokens_config=SupertokensConfig("http://localhost:3567"),
+                supertokens_config=st_config,
                 app_info=InputAppInfo(
                     app_name="SuperTokens Demo",
                     website_domain=website_domain,
@@ -760,11 +752,12 @@ async def test_samesite_invalid_config():
             assert False, "Exception not raised"
 
 
+# TODO: Check if we need to create new applications for each subtest
+# TODO: parametrize
 @mark.asyncio
-async def test_cookie_samesite_with_ec2_public_url():
-    start_st()
+async def test_cookie_samesite_with_ec2_public_url(st_config: SupertokensConfig):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
@@ -786,7 +779,7 @@ async def test_cookie_samesite_with_ec2_public_url():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
@@ -806,7 +799,7 @@ async def test_cookie_samesite_with_ec2_public_url():
     reset()
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
@@ -825,9 +818,9 @@ async def test_cookie_samesite_with_ec2_public_url():
 
 
 @mark.asyncio
-async def test_samesite_explicit_config():
+async def test_samesite_explicit_config(st_config: SupertokensConfig):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             origin="http://localhost:3000",
@@ -846,10 +839,12 @@ async def test_samesite_explicit_config():
 
 
 @mark.asyncio
-async def test_that_exception_is_thrown_if_website_domain_and_origin_are_not_passed():
+async def test_that_exception_is_thrown_if_website_domain_and_origin_are_not_passed(
+    st_config: SupertokensConfig,
+):
     try:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=st_config,
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://localhost:3001",
@@ -864,9 +859,11 @@ async def test_that_exception_is_thrown_if_website_domain_and_origin_are_not_pas
 
 
 @mark.asyncio
-async def test_that_init_works_fine_when_using_origin_string():
+async def test_that_init_works_fine_when_using_origin_string(
+    st_config: SupertokensConfig,
+):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://localhost:3001",
@@ -885,9 +882,11 @@ async def test_that_init_works_fine_when_using_origin_string():
 
 
 @mark.asyncio
-async def test_that_init_works_fine_when_using_website_domain_string():
+async def test_that_init_works_fine_when_using_website_domain_string(
+    st_config: SupertokensConfig,
+):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://localhost:3001",
@@ -906,14 +905,16 @@ async def test_that_init_works_fine_when_using_website_domain_string():
 
 
 @mark.asyncio
-async def test_that_init_works_fine_when_using_origin_function():
+async def test_that_init_works_fine_when_using_origin_function(
+    st_config: SupertokensConfig,
+):
     def get_origin(_: Optional[BaseRequest], user_context: Dict[str, Any]) -> str:
         if "input" in user_context:
             return user_context["input"]
         return "localhost:3000"
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://localhost:3001",
@@ -939,9 +940,11 @@ async def test_that_init_works_fine_when_using_origin_function():
 
 
 @mark.asyncio
-async def test_that_init_chooses_origin_over_website_domain():
+async def test_that_init_chooses_origin_over_website_domain(
+    st_config: SupertokensConfig,
+):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=st_config,
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://localhost:3001",

@@ -24,23 +24,13 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import (
-    extract_info,
-    get_st_init_args,
-    setup_function,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
+from tests.utils import extract_info, get_new_core_app_url, get_st_init_args
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_access_token_v4():
-    init(**get_st_init_args([session.init()]))  # type:ignore
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))  # type:ignore
 
     access_token = (
         await create_new_session_without_request_response(
@@ -138,8 +128,7 @@ def app():
 
 
 async def test_should_validate_v2_tokens_with_check_database_enabled(app: TestClient):
-    init(**get_st_init_args([session.init()]))  # type:ignore
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))
 
     # This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
     # We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
@@ -184,8 +173,7 @@ async def test_should_validate_v2_tokens_with_check_database_enabled(app: TestCl
 
 
 async def test_should_validate_v3_tokens_with_check_database_enabled(app: TestClient):
-    init(**get_st_init_args([session.init()]))  # type:ignore
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))
 
     create_session_res = app.post("/create", data={})
     info = extract_info(create_session_res)
@@ -221,8 +209,7 @@ async def test_should_validate_v3_tokens_with_check_database_enabled(app: TestCl
 
 
 async def test_ignore_protected_props_in_create_session():
-    init(**get_st_init_args([session.init()]))
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))
 
     s = await create_new_session_without_request_response(
         "public",

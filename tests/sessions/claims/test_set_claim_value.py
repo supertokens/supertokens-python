@@ -12,10 +12,7 @@ from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
 
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
-from tests.utils import AsyncMock, setup_function, start_st, teardown_function
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
+from tests.utils import AsyncMock
 
 pytestmark = (
     mark.asyncio
@@ -55,8 +52,7 @@ async def test_should_merge_the_right_value(timestamp: int):
 
 
 async def test_should_overwrite_claim_value(timestamp: int):
-    init(**get_st_init_args(TrueClaim))  # type: ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
@@ -74,8 +70,7 @@ async def test_should_overwrite_claim_value(timestamp: int):
 
 
 async def test_should_overwrite_claim_value_using_session_handle(timestamp: int):
-    init(**get_st_init_args(TrueClaim))  # type: ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
@@ -95,8 +90,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
 
 
 async def test_should_work_ok_for_non_existing_handles():
-    init(**get_st_init_args(TrueClaim))  # type: ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     res = await set_claim_value("non-existing-handle", TrueClaim, False)
     assert res is False

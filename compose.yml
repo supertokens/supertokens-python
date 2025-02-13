@@ -1,0 +1,6 @@
+services:
+  core:
+    image: supertokens/supertokens-postgresql:latest
+    ports:
+      - 3567:3567
+    command: '/usr/lib/supertokens/jre/bin/java -classpath "/lib/supertokens/core/*:/lib/supertokens/plugin-interface/*:/lib/supertokens/ee/*" io.supertokens.Main /usr/lib/supertokens DEV host=0.0.0.0 test_mode'

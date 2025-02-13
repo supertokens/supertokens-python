@@ -32,18 +32,7 @@ from supertokens_python.recipe.jwt.interfaces import (
     RecipeInterface,
 )
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url
 
 
 @fixture(scope="function")
@@ -110,7 +99,7 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -119,7 +108,6 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
         framework="fastapi",
         recipe_list=[jwt.init(override=jwt.OverrideConfig(functions=custom_functions))],
     )
-    start_st()
 
     response = driver_config_client.post(
         url="/jwtcreate", json={"payload": {"someKey": "key"}}
@@ -152,7 +140,7 @@ async def test_overriding_APIs(driver_config_client: TestClient):
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -161,7 +149,6 @@ async def test_overriding_APIs(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[jwt.init(override=jwt.OverrideConfig(apis=custom_api))],
     )
-    start_st()
 
     response = driver_config_client.get(url="/auth/jwt/jwks.json")
 

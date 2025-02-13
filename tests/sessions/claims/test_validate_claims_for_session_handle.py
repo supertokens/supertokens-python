@@ -20,17 +20,14 @@ from tests.sessions.claims.utils import (
     TrueClaim,
     get_st_init_args,
 )
-from tests.utils import setup_function, st_init_common_args, start_st, teardown_function
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
+from tests.utils import get_new_core_app_url
+from tests.utils import get_st_init_args as base_get_st_init_args
 
 pytestmark = mark.asyncio
 
 
 async def test_should_return_the_right_validation_errors():
-    init(**get_st_init_args(TrueClaim))  # type:ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
@@ -51,14 +48,13 @@ async def test_should_return_the_right_validation_errors():
 
 
 async def test_should_work_for_not_existing_handle():
-    new_st_init = {
-        **st_init_common_args,
-        "recipe_list": [
+    new_st_init = base_get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
         ],
-    }
-    init(**new_st_init)  # type: ignore
-    start_st()
+    )
+    init(**new_st_init)
 
     res = await validate_claims_for_session_handle(
         "non-existing-handle", lambda _, __, ___: []

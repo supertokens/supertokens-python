@@ -18,22 +18,14 @@ from supertokens_python.recipe.emailverification.interfaces import (
 )
 from supertokens_python.types import RecipeUserId
 
-from tests.utils import reset
-
-
-def setup_function(_):
-    reset()
-
-
-def teardown_function(_):
-    reset()
+from tests.utils import get_new_core_app_url
 
 
 @pytest.mark.asyncio
 async def test_init_validation_emailpassword():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info="AppInfo",  # type: ignore
             framework="fastapi",
             recipe_list=[
@@ -44,7 +36,7 @@ async def test_init_validation_emailpassword():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -71,7 +63,7 @@ async def get_email_for_user_id(_: RecipeUserId, __: Dict[str, Any]):
 async def test_init_validation_emailverification():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -88,7 +80,7 @@ async def test_init_validation_emailverification():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -111,7 +103,7 @@ async def test_init_validation_emailverification():
 async def test_init_validation_jwt():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -125,7 +117,7 @@ async def test_init_validation_jwt():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -142,7 +134,7 @@ async def test_init_validation_jwt():
 async def test_init_validation_openid():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -187,7 +179,7 @@ async def test_init_validation_passwordless():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info="AppInfo",  # type: ignore
             framework="fastapi",
             recipe_list=[
@@ -207,7 +199,7 @@ async def test_init_validation_passwordless():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -235,7 +227,7 @@ async def test_init_validation_passwordless():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -254,7 +246,7 @@ async def test_init_validation_passwordless():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -320,7 +312,7 @@ providers_list: List[thirdparty.ProviderInput] = [
 async def test_init_validation_session():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -336,7 +328,7 @@ async def test_init_validation_session():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -355,7 +347,7 @@ async def test_init_validation_session():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -374,7 +366,7 @@ async def test_init_validation_session():
 async def test_init_validation_thirdparty():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -395,7 +387,7 @@ async def test_init_validation_thirdparty():
 
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -421,7 +413,7 @@ async def test_init_validation_thirdparty():
 async def test_init_validation_usermetadata():
     with pytest.raises(ValueError) as ex:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",

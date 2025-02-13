@@ -20,15 +20,14 @@ import pytest
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.recipe import session
 
-from tests.utils import reset
+from tests.utils import get_new_core_app_url
 
 
 @pytest.mark.asyncio
 async def test_telemetry():
-    reset()
     with warnings.catch_warnings(record=True) as warning_list:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -58,11 +57,10 @@ async def test_telemetry():
 
 @pytest.mark.asyncio
 async def test_read_from_env():
-    reset()
     os.environ["TEST_MODE"] = "testing"
     with warnings.catch_warnings(record=True) as warning_list:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",

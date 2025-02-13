@@ -27,27 +27,13 @@ from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from supertokens_python.utils import is_version_gte
 
-from tests.useridmapping.utils import st_config
-from tests.utils import clean_st, reset, setup_st, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
+from tests.useridmapping.utils import get_st_config
 
 pytestmark = mark.asyncio
 
 
 async def test_create_user_id_mapping():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):
@@ -77,8 +63,7 @@ async def test_create_user_id_mapping():
 
 
 async def test_create_user_id_mapping_without_and_with_force():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):
@@ -122,8 +107,7 @@ async def test_create_user_id_mapping_without_and_with_force():
 
 
 async def create_user_id_mapping_with_unknown_supertokens_id():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):
@@ -137,8 +121,7 @@ async def create_user_id_mapping_with_unknown_supertokens_id():
 
 
 async def create_user_id_mapping_when_mapping_already_exists():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):

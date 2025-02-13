@@ -38,21 +38,10 @@ from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 
-from .utils import clean_st, reset, setup_st, sign_in_request, start_st
+from .utils import get_new_core_app_url, sign_in_request
 
 works = False
 signUpContextWorks = False
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
 
 
 @fixture(scope="function")
@@ -193,7 +182,7 @@ async def test_user_context(driver_config_client: TestClient):
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -214,7 +203,6 @@ async def test_user_context(driver_config_client: TestClient):
             ),
         ],
     )
-    start_st()
 
     await sign_up(
         "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
@@ -322,7 +310,7 @@ async def test_default_context(driver_config_client: TestClient):
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -343,7 +331,6 @@ async def test_default_context(driver_config_client: TestClient):
             ),
         ],
     )
-    start_st()
 
     await sign_up(
         "public", "random@gmail.com", "validpass123", None, {"manualCall": True}
@@ -470,7 +457,7 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -491,7 +478,6 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
             ),
         ],
     )
-    start_st()
 
     await sign_up(
         "public", "random@gmail.com", "validpass123", None, {"manualCall": True}

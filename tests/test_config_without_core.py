@@ -3,8 +3,6 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 
-from tests.utils import reset
-
 
 @mark.parametrize(
     "api_domain,website_domain,cookie_same_site",
@@ -31,10 +29,9 @@ from tests.utils import reset
 def test_same_site_cookie_values(
     api_domain: str, website_domain: str, cookie_same_site: str
 ):
-    reset()
-
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        # Port points to a random number where core is not hosted
+        supertokens_config=SupertokensConfig("http://localhost:9999"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain=api_domain,

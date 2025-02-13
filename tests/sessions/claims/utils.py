@@ -8,7 +8,8 @@ from supertokens_python.recipe.session.claims import (
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 from supertokens_python.types import RecipeUserId
 
-from tests.utils import st_init_common_args
+from tests.utils import get_new_core_app_url
+from tests.utils import get_st_init_args as base_get_st_init_args
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __, ___, _____, ______: True)
 NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __, ___, _____, ______: None)
@@ -64,13 +65,13 @@ def session_functions_override_with_claim(
 
 
 def get_st_init_args(claim: SessionClaim[Any] = TrueClaim):
-    return {
-        **st_init_common_args,
-        "recipe_list": [
+    return base_get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 override=session.InputOverrideConfig(
                     functions=session_functions_override_with_claim(claim),
                 ),
             ),
         ],
-    }
+    )
