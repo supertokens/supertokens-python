@@ -47,6 +47,6 @@ jobs:
           source venv/bin/activate
           make dev-install && rm -rf src
       - name: Start core container
-        run: docker compose up
+        run: docker compose up -d
       - name: Run tests
         run: make test

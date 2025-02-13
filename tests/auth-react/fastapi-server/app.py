@@ -1117,7 +1117,7 @@ async def exception_handler(a, b):  # type: ignore
     return JSONResponse(status_code=500, content={})
 
 
-app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
+app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)  # type: ignore
 
 
 @app.post("/beforeeach")
