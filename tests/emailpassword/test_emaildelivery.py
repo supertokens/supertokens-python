@@ -54,27 +54,13 @@ from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
-    clean_st,
     email_verify_token_request,
-    reset,
+    get_new_core_app_url,
     reset_password_request,
-    setup_st,
     sign_up_request,
-    start_st,
 )
 
 respx_mock = respx.MockRouter
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
 
 
 @fixture(scope="function")
@@ -101,7 +87,7 @@ async def test_reset_password_default_backward_compatibility(
     password_reset_url = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -114,7 +100,6 @@ async def test_reset_password_default_backward_compatibility(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     sign_up_request(driver_config_client, "test@example.com", "1234abcd")
 
@@ -152,7 +137,7 @@ async def test_reset_password_default_backward_compatibility_suppress_error(
     password_reset_url = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -165,7 +150,6 @@ async def test_reset_password_default_backward_compatibility_suppress_error(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     sign_up_request(driver_config_client, "test@example.com", "1234abcd")
 
@@ -214,7 +198,7 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
             password_reset_url = template_vars.password_reset_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -229,7 +213,6 @@ async def test_reset_password_backward_compatibility(driver_config_client: TestC
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     res = reset_password_request(driver_config_client, "test@example.com")
@@ -264,7 +247,7 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -282,7 +265,6 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     sign_up_request(driver_config_client, "test@example.com", "1234abcd")
 
@@ -344,7 +326,7 @@ async def test_reset_password_custom_override_with_send_email_override(
             password_reset_url = template_vars.password_reset_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -362,7 +344,6 @@ async def test_reset_password_custom_override_with_send_email_override(
             session.init(),
         ],
     )
-    start_st()
 
     sign_up_request(driver_config_client, "test@example.com", "1234abcd")
 
@@ -453,7 +434,7 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -471,7 +452,6 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     resp = reset_password_request(driver_config_client, "test@example.com")
@@ -558,7 +538,7 @@ async def test_reset_password_for_non_existent_user(driver_config_client: TestCl
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -576,7 +556,6 @@ async def test_reset_password_for_non_existent_user(driver_config_client: TestCl
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     resp = reset_password_request(driver_config_client, "test@example.com")
 
@@ -603,7 +582,7 @@ async def test_email_verification_default_backward_compatibility(
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -617,7 +596,6 @@ async def test_email_verification_default_backward_compatibility(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     res = sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     user_id = res.json()["user"]["id"]
@@ -669,7 +647,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -683,7 +661,6 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     res = sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     user_id = res.json()["user"]["id"]
@@ -747,7 +724,7 @@ async def test_email_verification_backward_compatibility(
             email_verify_url = template_vars.email_verify_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -766,7 +743,6 @@ async def test_email_verification_backward_compatibility(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     res = sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     user_id = res.json()["user"]["id"]
@@ -818,7 +794,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -838,7 +814,6 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     res = sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     user_id = res.json()["user"]["id"]
@@ -899,7 +874,7 @@ async def test_reset_password_backward_compatibility_non_existent_user(
             password_reset_url = template_vars.password_reset_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -916,7 +891,6 @@ async def test_reset_password_backward_compatibility_non_existent_user(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     res = reset_password_request(driver_config_client, "test@example.com")
 
@@ -1001,7 +975,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -1021,7 +995,6 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     res = sign_up_request(driver_config_client, "test@example.com", "1234abcd")
     user_id = res.json()["user"]["id"]
@@ -1071,7 +1044,7 @@ async def test_send_reset_password_email(
             query_length = len(password_reset_url.split("?")[1].split("&"))
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1088,7 +1061,6 @@ async def test_send_reset_password_email(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -1113,7 +1085,7 @@ async def test_send_reset_password_email_invalid_input(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1126,7 +1098,6 @@ async def test_send_reset_password_email_invalid_input(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"

@@ -50,14 +50,11 @@ from tests.utils import (
     TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
     TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH,
     assert_info_clears_tokens,
-    clean_st,
     create_users,
     extract_all_cookies,
     extract_info,
+    get_new_core_app_url,
     get_st_init_args,
-    reset,
-    setup_st,
-    start_st,
 )
 
 
@@ -70,17 +67,6 @@ def override_dashboard_functions(original_implementation: RecipeInterface):
 
     original_implementation.should_allow_access = should_allow_access  # type: ignore
     return original_implementation
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
 
 
 @fixture(scope="function")
@@ -158,7 +144,7 @@ def apis_override_session(param: APIInterface):
 @mark.asyncio
 async def test_login_refresh(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -175,7 +161,6 @@ async def test_login_refresh(driver_config_client: TestClient):
             )
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -226,7 +211,7 @@ async def test_login_refresh(driver_config_client: TestClient):
 @mark.asyncio
 async def test_login_logout(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -242,7 +227,6 @@ async def test_login_logout(driver_config_client: TestClient):
             )
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -296,7 +280,7 @@ async def test_login_logout(driver_config_client: TestClient):
 @mark.asyncio
 async def test_login_info(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -312,7 +296,6 @@ async def test_login_info(driver_config_client: TestClient):
             )
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -349,7 +332,7 @@ async def test_login_info(driver_config_client: TestClient):
 @mark.asyncio
 async def test_login_handle(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -365,7 +348,6 @@ async def test_login_handle(driver_config_client: TestClient):
             )
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -402,7 +384,7 @@ async def test_login_handle(driver_config_client: TestClient):
 @mark.asyncio
 async def test_login_refresh_error_handler(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -418,7 +400,6 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
             )
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -471,7 +452,7 @@ async def test_custom_response(driver_config_client: TestClient):
         return original_implementation
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -487,7 +468,6 @@ async def test_custom_response(driver_config_client: TestClient):
             )
         ],
     )
-    start_st()
 
     response = driver_config_client.get(
         url="/auth/signup/email/exists?email=test@example.com",
@@ -501,7 +481,7 @@ async def test_custom_response(driver_config_client: TestClient):
 @mark.asyncio
 async def test_optional_session(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -513,7 +493,6 @@ async def test_optional_session(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
         ],
     )
-    start_st()
 
     response = driver_config_client.get(
         url="handle-session-optional",
@@ -536,7 +515,7 @@ async def test_optional_session(driver_config_client: TestClient):
 )
 def test_fastapi_root_path(fastapi_root_path: str):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -549,7 +528,6 @@ def test_fastapi_root_path(fastapi_root_path: str):
             emailpassword.init(),
         ],
     )
-    start_st()
 
     # Test with root_path
     if fastapi_root_path.startswith("/"):
@@ -588,15 +566,15 @@ async def test_should_clear_all_response_during_refresh_if_unauthorized(
 
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     override=session.InputOverrideConfig(apis=override_session_apis),
                 )
-            ]
+            ],
         )
-    )  # type: ignore
-    start_st()
+    )
 
     res = driver_config_client.post(
         "/create", headers={"st-auth-mode": token_transfer_method}
@@ -635,14 +613,14 @@ async def test_revoking_session_after_create_new_session_with_throwing_unauthori
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                 )
-            ]
+            ],
         )
-    )  # type: ignore
-    start_st()
+    )
 
     res = driver_config_client.post(
         "/create-throw", headers={"st-auth-mode": token_transfer_method}
@@ -659,14 +637,14 @@ async def test_session_with_legacy_refresh_token_and_unauthorized_should_clear_l
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                 )
-            ]
+            ],
         )
-    )  # type: ignore
-    start_st()
+    )
 
     headers: Dict[str, Any] = {}
     cookies: Dict[str, Any] = {}
@@ -692,7 +670,7 @@ async def test_session_with_legacy_refresh_token_and_unauthorized_should_clear_l
 @mark.asyncio
 async def test_search_with_email_t(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -713,7 +691,6 @@ async def test_search_with_email_t(driver_config_client: TestClient):
             emailpassword.init(),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -738,7 +715,7 @@ async def test_search_with_email_t(driver_config_client: TestClient):
 @mark.asyncio
 async def test_search_with_email_multiple_email_entry(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -759,7 +736,6 @@ async def test_search_with_email_multiple_email_entry(driver_config_client: Test
             emailpassword.init(),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -784,7 +760,7 @@ async def test_search_with_email_multiple_email_entry(driver_config_client: Test
 @mark.asyncio
 async def test_search_with_email_iresh(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -805,7 +781,6 @@ async def test_search_with_email_iresh(driver_config_client: TestClient):
             emailpassword.init(),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -830,7 +805,7 @@ async def test_search_with_email_iresh(driver_config_client: TestClient):
 @mark.asyncio
 async def test_search_with_phone_plus_one(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -854,7 +829,6 @@ async def test_search_with_phone_plus_one(driver_config_client: TestClient):
             ),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -879,7 +853,7 @@ async def test_search_with_phone_plus_one(driver_config_client: TestClient):
 @mark.asyncio
 async def test_search_with_phone_one_bracket(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -903,7 +877,6 @@ async def test_search_with_phone_one_bracket(driver_config_client: TestClient):
             ),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -928,7 +901,7 @@ async def test_search_with_phone_one_bracket(driver_config_client: TestClient):
 @mark.asyncio
 async def test_search_with_provider_google(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -991,7 +964,6 @@ async def test_search_with_provider_google(driver_config_client: TestClient):
             ),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -1018,7 +990,7 @@ async def test_search_with_provider_google_and_phone_1(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1085,7 +1057,6 @@ async def test_search_with_provider_google_and_phone_1(
             ),
         ],
     )
-    start_st()
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:

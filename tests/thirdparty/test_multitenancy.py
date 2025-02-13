@@ -33,25 +33,20 @@ from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import AccountInfo
 
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
-    setup_function,
-    setup_multitenancy_feature,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function
-_ = teardown_function
 
 pytestmark = mark.asyncio
 
 
 async def test_thirtyparty_multitenancy_functions():
     # test that different roles can be assigned for the same user for each tenant
-    args = get_st_init_args([session.init(), thirdparty.init(), multitenancy.init()])
-    init(**args)  # type: ignore
-    start_st()
-    setup_multitenancy_feature()
+    args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[session.init(), thirdparty.init(), multitenancy.init()],
+    )
+    init(**args)
 
     await create_or_update_tenant(
         "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
@@ -186,7 +181,8 @@ async def test_thirtyparty_multitenancy_functions():
 
 async def test_get_provider():
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -215,11 +211,9 @@ async def test_get_provider():
                 )
             ),
             multitenancy.init(),
-        ]
+        ],
     )
     init(**args)
-    start_st()
-    setup_multitenancy_feature()
 
     await create_or_update_tenant(
         "t1", TenantConfigCreateOrUpdate(first_factors=["thirdparty"])
@@ -296,10 +290,8 @@ async def test_get_provider():
 
 
 async def test_get_provider_returns_correct_config_from_core():
-    args = get_st_init_args([thirdparty.init()])
-    init(**args)  # type: ignore
-    start_st()
-    setup_multitenancy_feature()
+    args = get_st_init_args(url=get_new_core_app_url(), recipe_list=[thirdparty.init()])
+    init(**args)
 
     await create_or_update_third_party_config(
         "public",

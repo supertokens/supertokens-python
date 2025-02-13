@@ -1,4 +1,4 @@
-name: "Lint/Format"
+name: "Lint/Format Code"
 
 on:
   pull_request:
@@ -6,18 +6,31 @@ on:
       - opened
       - reopened
       - synchronize
+  push:
+    branches:
+      - master
+      - "v[0-9]+.[0-9]+"
+    tags:
+      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  lint-format:
+  define-versions:
     runs-on: ubuntu-latest
+    outputs:
+      pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+
+  lint-format:
+    name: Check linting and formatting
+    runs-on: ubuntu-latest
+    needs: define-versions
     strategy:
       matrix:
-        py_version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.py_version }}
+          python-version: ${{ matrix.py-version }}
       - name: Create virtual environment and install dependencies
         run: |
           python3 -m venv venv

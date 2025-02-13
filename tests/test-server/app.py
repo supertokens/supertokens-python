@@ -72,6 +72,7 @@ from totp import add_totp_routes  # pylint: disable=import-error
 from usermetadata import add_usermetadata_routes
 
 from supertokens import add_supertokens_routes  # pylint: disable=import-error
+from tests.utils import get_new_core_app_url
 
 app = Flask(__name__)
 Middleware(app)
@@ -100,7 +101,7 @@ def default_st_init():
             api_domain="http://api.supertokens.io",
             origin=origin_func,
         ),
-        supertokens_config=SupertokensConfig(connection_uri="http://localhost:3567"),
+        supertokens_config=SupertokensConfig(connection_uri=get_new_core_app_url()),
         framework="flask",
         recipe_list=[emailpassword.init(), session.init()],
     )

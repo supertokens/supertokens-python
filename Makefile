@@ -13,7 +13,9 @@ set-up-hooks:
 	pre-commit install
 
 test:
-	pytest -vv ./tests/
+	docker compose up --wait
+	pytest -vv ./tests/ --junit-xml=test-results/junit.xml $(ARGS)
+	docker compose down
 
 dev-install:
 	pip install -r dev-requirements.txt

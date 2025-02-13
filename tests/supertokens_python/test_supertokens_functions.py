@@ -23,24 +23,13 @@ from supertokens_python.recipe.emailpassword import asyncio as ep_asyncio
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.utils import is_version_gte
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url
 
 
 @mark.asyncio
 async def test_supertokens_functions():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -53,7 +42,6 @@ async def test_supertokens_functions():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     emails = [f"{u}@example.com" for u in ["foo", "bar", "baz"]]
     user_ids: List[str] = []

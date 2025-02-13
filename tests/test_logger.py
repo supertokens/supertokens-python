@@ -19,7 +19,7 @@ from supertokens_python.logger import (
 )
 from supertokens_python.recipe import session
 
-from tests.utils import clean_st, reset, setup_st, start_st
+from tests.utils import get_new_core_app_url, reset
 
 
 class LoggerTests(TestCase):
@@ -32,13 +32,10 @@ class LoggerTests(TestCase):
         # Setting the log level to a higher level so debug logs are not printed
         logging.getLogger(NAMESPACE).setLevel(logging.ERROR)
         reset()
-        clean_st()
-        setup_st()
 
     def teardown_method(self, _):
         self._caplog.clear()
         reset()
-        clean_st()
 
     @patch("supertokens_python.logger.datetime", wraps=real_datetime)
     def test_1_json_msg_format(self, datetime_mock: MagicMock):
@@ -55,7 +52,7 @@ class LoggerTests(TestCase):
             "t": "2000-01-01T00:00:00+00Z",
             "sdkVer": VERSION,
             "message": "API replied with status 200",
-            "file": "../tests/test_logger.py:49",
+            "file": "../tests/test_logger.py:46",
         }
 
     @staticmethod
@@ -66,9 +63,8 @@ class LoggerTests(TestCase):
         )
 
     def test_3_logger_config_with_debug_false(self):
-        start_st()
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
@@ -86,9 +82,8 @@ class LoggerTests(TestCase):
         assert logMsg not in self._caplog.text
 
     def test_4_logger_config_with_debug_true(self):
-        start_st()
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
@@ -106,9 +101,8 @@ class LoggerTests(TestCase):
         assert logMsg in self._caplog.text
 
     def test_5_logger_config_with_debug_not_set(self):
-        start_st()
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
@@ -130,9 +124,8 @@ class LoggerTests(TestCase):
         # environment variable was already set when the logger module was imported
         # since its being changed for the test, the module needs to be reloaded.
         importlib.reload(sys.modules["supertokens_python.logger"])
-        start_st()
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="api.supertokens.io",
