@@ -51,8 +51,8 @@ jobs:
           python-version: ${{ matrix.py_version }}
       - name: Install build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install build-essential
+          apt-get update
+          apt-get install build-essential
       - name: Create virtual environment and install dependencies
         run: |
           python3 -m venv venv
