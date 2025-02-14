@@ -52,7 +52,7 @@ jobs:
       - name: Install build dependencies
         run: |
           apt-get update
-          apt-get install build-essential
+          apt-get install -y make
       - name: Create virtual environment and install dependencies
         run: |
           python3 -m venv venv
