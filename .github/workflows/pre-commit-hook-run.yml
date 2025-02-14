@@ -32,6 +32,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         # TODO: Add CDI to matrix
         # TODO: Update docker to use correct image from CDI core tags
@@ -56,4 +57,12 @@ jobs:
       - name: Run tests
         run: |
           source venv/bin/activate
-          make test
+          make test ARGS="--junit-xml=test-results.xml"
+      - name: Surface failing tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          path: test-results.xml
+          # Add a summary of the results at the top of the report
+          summary: true
+          title: Py=${{ matrix.py_version }} Test Results
