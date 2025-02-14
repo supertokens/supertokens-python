@@ -66,6 +66,8 @@ jobs:
           driver-name: python
           cdi-version: ${{ matrix.cdi-version }}
           fdi-version: '4.0'
+        env:
+          SUPERTOKENS_API_KEY: ${{ env.SUPERTOKENS_API_KEY }}
       - run: |
           echo "${{ toJSON(steps.versions.outputs) }}"
       # - uses: actions/setup-python@v5
