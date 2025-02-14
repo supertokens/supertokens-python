@@ -31,11 +31,19 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    container: ubuntu
     strategy:
       matrix:
         # TODO: Add CDI to matrix
         # TODO: Update docker to use correct image from CDI core tags
         py_version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    services:
+      core:
+        image: supertokens/supertokens-postgresql:latest
+        ports:
+          - 3567:3567
+        # TODO: Switch to dev docker images, GHA does not support `command`
+        # command: '/usr/lib/supertokens/jre/bin/java -classpath "/lib/supertokens/core/*:/lib/supertokens/plugin-interface/*:/lib/supertokens/ee/*" io.supertokens.Main /usr/lib/supertokens DEV host=0.0.0.0 test_mode'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -46,8 +54,6 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           make dev-install && rm -rf src
-      - name: Start core container
-        run: docker compose up -d; ls
       - name: Run tests
         run: |
           source venv/bin/activate
