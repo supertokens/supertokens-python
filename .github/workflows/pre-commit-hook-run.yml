@@ -8,16 +8,26 @@ on:
       - synchronize
 
 jobs:
+  define-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      fdi-versions: ${{ steps.versions.outputs.fdi-versions }}
+      cdi-versions: ${{ steps.versions.outputs.cdi-versions }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supertokens/get-supported-versions-action@main
+        id: versions
+
   lint-format:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py_version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        py-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.py_version }}
+          python-version: ${{ matrix.py-version }}
       - name: Create virtual environment and install dependencies
         run: |
           python3 -m venv venv
@@ -31,12 +41,13 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs: define-matrix
     strategy:
       fail-fast: false
       matrix:
-        # TODO: Add CDI to matrix
         # TODO: Update docker to use correct image from CDI core tags
-        py_version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        py-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        cdi-version: ${{ fromJSON(needs.define-matrix.outputs.cdi-versions) }}
     services:
       core:
         image: supertokens/supertokens-postgresql:latest
@@ -46,23 +57,22 @@ jobs:
         # command: '/usr/lib/supertokens/jre/bin/java -classpath "/lib/supertokens/core/*:/lib/supertokens/plugin-interface/*:/lib/supertokens/ee/*" io.supertokens.Main /usr/lib/supertokens DEV host=0.0.0.0 test_mode'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.py_version }}
-      - name: Create virtual environment and install dependencies
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          make dev-install && rm -rf src
-      - name: Run tests
-        run: |
-          source venv/bin/activate
-          make test ARGS="--junit-xml=test-results.xml"
-      - name: Surface failing tests
-        if: always()
-        uses: pmeier/pytest-results-action@main
-        with:
-          path: test-results.xml
-          # Add a summary of the results at the top of the report
-          summary: true
-          title: Py=${{ matrix.py_version }} Test Results
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: ${{ matrix.py-version }}
+      # - name: Create virtual environment and install dependencies
+      #   run: |
+      #     python3 -m venv venv
+      #     source venv/bin/activate
+      #     make dev-install && rm -rf src
+      # - name: Run tests
+      #   run: |
+      #     source venv/bin/activate
+      #     make test ARGS="--junit-xml=test-results.xml"
+      # - name: Surface failing tests
+      #   if: always()
+      #   uses: pmeier/pytest-results-action@main
+      #   with:
+      #     path: test-results.xml
+      #     summary: true
+      #     title: '[CDI=${{ matrix.cdi-version }}][py=${{ matrix.py-version }}] Test Results'
