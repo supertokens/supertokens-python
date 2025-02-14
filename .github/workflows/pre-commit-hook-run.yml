@@ -17,6 +17,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supertokens/get-supported-versions-action@main
         id: versions
+        with:
+          has-fdi: true
+          has-cdi: true
 
   lint-format:
     runs-on: ubuntu-latest
@@ -57,6 +60,14 @@ jobs:
         # command: '/usr/lib/supertokens/jre/bin/java -classpath "/lib/supertokens/core/*:/lib/supertokens/plugin-interface/*:/lib/supertokens/ee/*" io.supertokens.Main /usr/lib/supertokens DEV host=0.0.0.0 test_mode'
     steps:
       - uses: actions/checkout@v4
+      - uses: supertokens/get-versions-action@main
+        id: versions
+        with:
+          driver-name: python
+          cdi-version: ${{ matrix.cdi-version }}
+          fdi-version: '4.0'
+      - run: |
+          echo "${{ toJSON(steps.versions.outputs) }}"
       # - uses: actions/setup-python@v5
       #   with:
       #     python-version: ${{ matrix.py-version }}
