@@ -27,15 +27,7 @@ from supertokens_python.recipe.thirdparty.provider import (
 )
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import (
-    get_st_init_args,
-    setup_function,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function
-_ = teardown_function
+from tests.utils import get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
 
@@ -50,16 +42,16 @@ def app():
 
 async def test_calling_authorisation_url_api_with_empty_init(app: TestClient):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 anti_csrf="VIA_TOKEN",
             ),
             thirdparty.init(),
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     res = app.get(
         "/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect"
@@ -74,16 +66,16 @@ async def test_calling_authorisation_url_api_with_empty_init_with_dynamic_thirdp
     app: TestClient,
 ):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 anti_csrf="VIA_TOKEN",
             ),
             thirdparty.init(),
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     await create_or_update_third_party_config(
         "public",
@@ -114,17 +106,17 @@ async def test_using_thirdpartyemailpassword_still_works(
     app: TestClient,
 ):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 anti_csrf="VIA_TOKEN",
             ),
             thirdparty.init(),
             emailpassword.init(),
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     await create_or_update_third_party_config(
         "public",
@@ -156,7 +148,8 @@ async def test_using_thirdpartypasswordless_still_works(
     app: TestClient,
 ):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 anti_csrf="VIA_TOKEN",
@@ -167,10 +160,9 @@ async def test_using_thirdpartypasswordless_still_works(
                 contact_config=passwordless.ContactConfig("EMAIL_OR_PHONE"),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     await create_or_update_third_party_config(
         "public",

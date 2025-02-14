@@ -33,20 +33,9 @@ from supertokens_python.recipe.session.exceptions import (
 from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import clean_st, get_st_init_args, reset, setup_st, start_st
+from tests.utils import get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
 
 
 @fixture(scope="function")
@@ -118,7 +107,8 @@ async def test_session_error_handlers_are_getting_overridden(
         return res
 
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
@@ -130,10 +120,9 @@ async def test_session_error_handlers_are_getting_overridden(
                     on_clear_duplicate_session_cookies=clear_duplicate_session_f,
                 ),
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     res = driver_config_client.post("test/unauthorized")
     assert res.status_code == 401

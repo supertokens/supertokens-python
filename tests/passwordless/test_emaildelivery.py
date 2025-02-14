@@ -55,26 +55,12 @@ from supertokens_python.utils import is_version_gte
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
-    clean_st,
-    reset,
-    setup_st,
+    get_new_core_app_url,
     sign_in_up_request,
     sign_in_up_request_code_resend,
-    start_st,
 )
 
 respx_mock = respx.MockRouter
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
 
 
 @fixture(scope="function")
@@ -154,7 +140,7 @@ async def test_email_verify_for_pless_user_no_callback():
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -175,7 +161,6 @@ async def test_email_verify_for_pless_user_no_callback():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
@@ -208,7 +193,7 @@ async def test_pless_login_default_backward_compatibility(
     resend_called = False
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -224,7 +209,6 @@ async def test_pless_login_default_backward_compatibility(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
@@ -304,7 +288,7 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(
     user_input_code = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -320,7 +304,6 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
@@ -377,7 +360,7 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
             user_input_code = template_vars.user_input_code
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -398,7 +381,6 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
@@ -459,7 +441,7 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -479,7 +461,6 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
@@ -613,7 +594,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -633,7 +614,6 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
@@ -694,7 +674,7 @@ async def test_magic_link_uses_correct_origin(
             login_url = template_vars.url_with_link_code
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -711,7 +691,6 @@ async def test_magic_link_uses_correct_origin(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_in_up_request(driver_config_client, "random@gmail.com", True)
     assert response_1.status_code == 200

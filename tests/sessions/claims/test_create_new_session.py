@@ -7,11 +7,11 @@ from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.types import RecipeUserId
 
 from tests.utils import (
+    get_new_core_app_url,
     min_api_version,
-    setup_function,
-    st_init_common_args,
-    start_st,
-    teardown_function,
+)
+from tests.utils import (
+    get_st_init_args as base_get_st_init_args,
 )
 
 from .utils import (
@@ -21,14 +21,10 @@ from .utils import (
     session_functions_override_with_claim,
 )
 
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
-
 
 @min_api_version("2.13")
 async def test_create_access_token_payload_with_session_claims(timestamp: int):
-    init(**get_st_init_args(TrueClaim))  # type:ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
@@ -40,8 +36,7 @@ async def test_create_access_token_payload_with_session_claims(timestamp: int):
 
 @min_api_version("2.13")
 async def test_should_create_access_token_payload_with_session_claims_with_an_none_value():
-    init(**get_st_init_args(NoneClaim))  # type:ignore
-    start_st()
+    init(**get_st_init_args(NoneClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))
@@ -53,9 +48,9 @@ async def test_should_create_access_token_payload_with_session_claims_with_an_no
 
 @min_api_version("2.13")
 async def test_should_merge_claims_and_passed_access_token_payload_obj(timestamp: int):
-    new_st_init = {
-        **st_init_common_args,
-        "recipe_list": [
+    new_st_init = base_get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 override=session.InputOverrideConfig(
                     functions=session_functions_override_with_claim(
@@ -64,9 +59,8 @@ async def test_should_merge_claims_and_passed_access_token_payload_obj(timestamp
                 )
             ),
         ],
-    }
-    init(**new_st_init)  # type:ignore
-    start_st()
+    )
+    init(**new_st_init)
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "public", RecipeUserId("someId"))

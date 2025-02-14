@@ -49,43 +49,19 @@ from tests.Flask.utils import extract_all_cookies
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     TEST_ACCESS_TOKEN_MAX_AGE_VALUE,
-    TEST_ACCESS_TOKEN_PATH_CONFIG_KEY,
-    TEST_ACCESS_TOKEN_PATH_VALUE,
-    TEST_COOKIE_DOMAIN_CONFIG_KEY,
-    TEST_COOKIE_DOMAIN_VALUE,
-    TEST_COOKIE_SAME_SITE_CONFIG_KEY,
-    TEST_COOKIE_SECURE_CONFIG_KEY,
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
     TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
     TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
     TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH,
     TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY,
     TEST_REFRESH_TOKEN_MAX_AGE_VALUE,
-    TEST_REFRESH_TOKEN_PATH_CONFIG_KEY,
-    TEST_REFRESH_TOKEN_PATH_KEY_VALUE,
-    clean_st,
     create_users,
+    get_new_core_app_url,
     get_st_init_args,
-    reset,
-    set_key_value_in_config,
-    setup_st,
-    start_st,
 )
 
 
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
-
-@fixture(scope="function")
-def driver_config_app():
+def get_driver_config_app(core_url: str) -> Flask:
     def override_email_password_apis(original_implementation: APIInterface):
         original_func = original_implementation.email_exists_get
 
@@ -119,7 +95,7 @@ def driver_config_app():
 
     app.testing = True
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(core_url),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -249,24 +225,14 @@ def driver_config_app():
     return app
 
 
-def test_cookie_login_and_refresh(driver_config_app: Flask):
-    start_st()
-
-    set_key_value_in_config(TEST_COOKIE_SAME_SITE_CONFIG_KEY, "None")
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_VALUE
+def test_cookie_login_and_refresh():
+    core_url = get_new_core_app_url(
+        core_config={
+            TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY: TEST_ACCESS_TOKEN_MAX_AGE_VALUE,
+            TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY: TEST_REFRESH_TOKEN_MAX_AGE_VALUE,
+        }
     )
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE)
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, TEST_REFRESH_TOKEN_MAX_AGE_VALUE
-    )
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_PATH_CONFIG_KEY, TEST_REFRESH_TOKEN_PATH_KEY_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_SECURE_CONFIG_KEY, "false")
+    driver_config_app = get_driver_config_app(core_url)
 
     response_1 = driver_config_app.test_client().get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -316,24 +282,14 @@ def test_cookie_login_and_refresh(driver_config_app: Flask):
     )
 
 
-def test_login_refresh_no_csrf(driver_config_app: Any):
-    start_st()
-
-    set_key_value_in_config(TEST_COOKIE_SAME_SITE_CONFIG_KEY, "None")
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_VALUE
+def test_login_refresh_no_csrf():
+    core_url = get_new_core_app_url(
+        core_config={
+            TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY: TEST_ACCESS_TOKEN_MAX_AGE_VALUE,
+            TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY: TEST_REFRESH_TOKEN_MAX_AGE_VALUE,
+        }
     )
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE)
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, TEST_REFRESH_TOKEN_MAX_AGE_VALUE
-    )
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_PATH_CONFIG_KEY, TEST_REFRESH_TOKEN_PATH_KEY_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_SECURE_CONFIG_KEY, "false")
+    driver_config_app = get_driver_config_app(core_url)
 
     response_1 = driver_config_app.test_client().get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -372,24 +328,14 @@ def test_login_refresh_no_csrf(driver_config_app: Any):
     assert result.status_code == 401
 
 
-def test_login_logout(driver_config_app: Any):
-    start_st()
-
-    set_key_value_in_config(TEST_COOKIE_SAME_SITE_CONFIG_KEY, "None")
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_VALUE
+def test_login_logout():
+    core_url = get_new_core_app_url(
+        core_config={
+            TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY: TEST_ACCESS_TOKEN_MAX_AGE_VALUE,
+            TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY: TEST_REFRESH_TOKEN_MAX_AGE_VALUE,
+        }
     )
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE)
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, TEST_REFRESH_TOKEN_MAX_AGE_VALUE
-    )
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_PATH_CONFIG_KEY, TEST_REFRESH_TOKEN_PATH_KEY_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_SECURE_CONFIG_KEY, "false")
+    driver_config_app = get_driver_config_app(core_url)
 
     response_1 = driver_config_app.test_client().get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -431,24 +377,14 @@ def test_login_logout(driver_config_app: Any):
     assert response_3.status_code == 200
 
 
-def test_login_handle(driver_config_app: Any):
-    start_st()
-
-    set_key_value_in_config(TEST_COOKIE_SAME_SITE_CONFIG_KEY, "None")
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_VALUE
+def test_login_handle():
+    core_url = get_new_core_app_url(
+        core_config={
+            TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY: TEST_ACCESS_TOKEN_MAX_AGE_VALUE,
+            TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY: TEST_REFRESH_TOKEN_MAX_AGE_VALUE,
+        }
     )
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE)
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, TEST_REFRESH_TOKEN_MAX_AGE_VALUE
-    )
-    set_key_value_in_config(
-        TEST_REFRESH_TOKEN_PATH_CONFIG_KEY, TEST_REFRESH_TOKEN_PATH_KEY_VALUE
-    )
-    set_key_value_in_config(TEST_COOKIE_SECURE_CONFIG_KEY, "false")
+    driver_config_app = get_driver_config_app(core_url)
 
     response_1 = driver_config_app.test_client().get("/login")
     cookies_1 = extract_all_cookies(response_1)
@@ -467,8 +403,9 @@ def test_login_handle(driver_config_app: Any):
     assert "s" in response_dict
 
 
-def test_custom_response(driver_config_app: Any):
-    start_st()
+def test_custom_response():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
 
     test_client = driver_config_app.test_client()
     response = test_client.get("/auth/signup/email/exists?email=test@example.com")
@@ -478,8 +415,9 @@ def test_custom_response(driver_config_app: Any):
     assert dict_response["custom"]
 
 
-def test_optional_session(driver_config_app: Any):
-    start_st()
+def test_optional_session():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
 
     test_client = driver_config_app.test_client()
     response = test_client.get("/handle-session-optional")
@@ -489,8 +427,9 @@ def test_optional_session(driver_config_app: Any):
     assert dict_response["s"] == "empty session"
 
 
-def test_thirdparty_parsing_works(driver_config_app: Any):
-    start_st()
+def test_thirdparty_parsing_works():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
 
     test_client = driver_config_app.test_client()
     state = b64encode(
@@ -520,8 +459,9 @@ def test_remove_header_works():
 
 
 @pytest.mark.asyncio
-async def test_dashboard_search_tags(driver_config_app: Any):
-    start_st()
+async def test_dashboard_search_tags():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdiVersion = await querier.get_api_version()
     if not cdiVersion:
@@ -543,8 +483,9 @@ async def test_dashboard_search_tags(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_email_t(driver_config_app: Any):
-    start_st()
+async def test_search_with_email_t():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -569,8 +510,9 @@ async def test_search_with_email_t(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_multiple_email_search_terms(driver_config_app: Any):
-    start_st()
+async def test_search_with_multiple_email_search_terms():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -595,8 +537,9 @@ async def test_search_with_multiple_email_search_terms(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_email_iresh(driver_config_app: Any):
-    start_st()
+async def test_search_with_email_iresh():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -621,8 +564,9 @@ async def test_search_with_email_iresh(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_phone_plus_one(driver_config_app: Any):
-    start_st()
+async def test_search_with_phone_plus_one():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -647,8 +591,9 @@ async def test_search_with_phone_plus_one(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_phone_one_bracket(driver_config_app: Any):
-    start_st()
+async def test_search_with_phone_one_bracket():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -673,8 +618,9 @@ async def test_search_with_phone_one_bracket(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_provider_google(driver_config_app: Any):
-    start_st()
+async def test_search_with_provider_google():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -699,8 +645,9 @@ async def test_search_with_provider_google(driver_config_app: Any):
 
 
 @pytest.mark.asyncio
-async def test_search_with_provider_google_and_phone_one(driver_config_app: Any):
-    start_st()
+async def test_search_with_provider_google_and_phone_one():
+    core_url = get_new_core_app_url()
+    driver_config_app = get_driver_config_app(core_url)
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
@@ -779,15 +726,18 @@ def flask_app():
 
 
 def test_verify_session_with_before_request_with_no_response(flask_app: Any):
+    core_url = get_new_core_app_url()
     init(
         **{
             **get_st_init_args(
-                [session.init(get_token_transfer_method=lambda *_: "cookie")]  # type: ignore
+                url=core_url,
+                recipe_list=[
+                    session.init(get_token_transfer_method=lambda *_: "cookie")  # type: ignore
+                ],
             ),
             "framework": "flask",
         }
     )
-    start_st()
 
     client = flask_app.test_client()
 
@@ -834,15 +784,18 @@ def flask_app_without_middleware():
 def test_that_verify_session_return_401_if_access_token_is_not_sent_and_middleware_is_not_added(
     flask_app: Any, flask_app_without_middleware: Any
 ):
+    core_url = get_new_core_app_url()
     init(
         **{
             **get_st_init_args(
-                [session.init(get_token_transfer_method=lambda *_: "header")]  # type: ignore
+                url=core_url,
+                recipe_list=[
+                    session.init(get_token_transfer_method=lambda *_: "header")  # type: ignore
+                ],
             ),
             "framework": "flask",
         }
     )
-    start_st()
 
     client = flask_app.test_client()
     client_without_middleware = flask_app_without_middleware.test_client()
@@ -884,7 +837,7 @@ def flask_app_that_checks_for_supertokens_in_g():
     Middleware(app)
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -912,8 +865,7 @@ def flask_app_that_checks_for_supertokens_in_g():
 def test_that_supertokens_is_not_in_g_if_middleware_is_not_added(
     flask_app_that_checks_for_supertokens_in_g: Any,
 ):
-    start_st()
-
+    get_new_core_app_url()
     client = flask_app_that_checks_for_supertokens_in_g.test_client()
 
     assert client.get("/create-session").status_code == 200

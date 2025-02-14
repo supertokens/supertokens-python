@@ -100,6 +100,7 @@ def default_st_init():
             api_domain="http://api.supertokens.io",
             origin=origin_func,
         ),
+        # TODO: Move to use new app-id with containerized st-core
         supertokens_config=SupertokensConfig(connection_uri="http://localhost:3567"),
         framework="flask",
         recipe_list=[emailpassword.init(), session.init()],

@@ -30,21 +30,7 @@ from supertokens_python.types import AccountInfo, RecipeUserId
 from supertokens_python.utils import is_version_gte
 from typing_extensions import Literal
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-from .utils import st_config
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
+from .utils import get_st_config
 
 pytestmark = mark.asyncio
 
@@ -118,8 +104,7 @@ async def ep_get_existing_user_after_updating_email_and_sign_in(user_id: str) ->
 
 @mark.parametrize("use_external_id_info", [(True,), (False,)])
 async def test_get_user_id_mapping(use_external_id_info: bool):
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):

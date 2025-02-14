@@ -36,18 +36,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url, sign_up_request
 
 
 @fixture(scope="function")
@@ -102,7 +91,7 @@ async def test_email_validation_checks_in_generate_token_API(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -112,7 +101,6 @@ async def test_email_validation_checks_in_generate_token_API(
         framework="fastapi",
         recipe_list=[emailpassword.init()],
     )
-    start_st()
 
     for invalid_email in ["random", 5]:
         res = driver_config_client.post(
@@ -155,7 +143,7 @@ async def test_that_generated_password_link_is_correct(
             query_length = len(password_reset_url_with_token.split("?")[1].split("&"))
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -170,7 +158,6 @@ async def test_that_generated_password_link_is_correct(
             ),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
@@ -195,7 +182,7 @@ async def test_that_generated_password_link_is_correct(
 @mark.asyncio
 async def test_password_validation(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -205,7 +192,6 @@ async def test_password_validation(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[emailpassword.init()],
     )
-    start_st()
 
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset",
@@ -235,7 +221,7 @@ async def test_password_validation(driver_config_client: TestClient):
 @mark.asyncio
 async def test_invalid_type_for_password_and_email(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -245,7 +231,6 @@ async def test_invalid_type_for_password_and_email(driver_config_client: TestCli
         framework="fastapi",
         recipe_list=[emailpassword.init()],
     )
-    start_st()
 
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset",
@@ -273,7 +258,7 @@ async def test_invalid_type_for_password_and_email(driver_config_client: TestCli
 @mark.asyncio
 async def test_token_missing_from_input(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -283,7 +268,6 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[emailpassword.init()],
     )
-    start_st()
 
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset",
@@ -321,7 +305,7 @@ async def test_valid_token_input_and_passoword_has_changed(
             assert len(password_reset_url_with_token.split("?")[1].split("&")) == 2
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -336,7 +320,6 @@ async def test_valid_token_input_and_passoword_has_changed(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -407,7 +390,7 @@ async def test_create_reset_password_link(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -420,7 +403,6 @@ async def test_create_reset_password_link(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -471,7 +453,7 @@ async def test_reset_password_link_uses_correct_origin(
             password_reset_url = template_vars.password_reset_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="localhost:3001",
@@ -486,7 +468,6 @@ async def test_reset_password_link_uses_correct_origin(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"

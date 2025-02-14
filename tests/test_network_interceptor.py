@@ -10,18 +10,7 @@ from supertokens_python.recipe.emailpassword.asyncio import sign_in, sign_up
 from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import clean_st, reset, setup_st, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url
 
 
 @fixture(scope="function")
@@ -50,7 +39,7 @@ async def test_network_interceptor_sanity(driver_config_client: TestClient):
 
     init(
         supertokens_config=SupertokensConfig(
-            "http://localhost:3567", network_interceptor=intercept
+            get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
@@ -64,7 +53,6 @@ async def test_network_interceptor_sanity(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
     resp = driver_config_client.post(
         url="/auth/signin",
         json={
@@ -104,7 +92,7 @@ async def test_network_interceptor_incorrect_core_url():
 
     init(
         supertokens_config=SupertokensConfig(
-            "http://localhost:3567", network_interceptor=intercept
+            get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
@@ -118,7 +106,6 @@ async def test_network_interceptor_incorrect_core_url():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
     with pytest.raises(Exception) as err:
         await sign_up("public", "testEmail@email.com", "validPassword123")
     assert "status code: 404" in str(err)
@@ -145,7 +132,7 @@ async def test_network_interceptor_incorrect_query_params():
 
     init(
         supertokens_config=SupertokensConfig(
-            "http://localhost:3567", network_interceptor=intercept
+            get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
@@ -160,7 +147,6 @@ async def test_network_interceptor_incorrect_query_params():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
     with pytest.raises(Exception) as err:
         await get_roles_for_user("public", "someUserId")
     assert "status code: 400" in str(err)
@@ -187,7 +173,7 @@ async def test_network_interceptor_incorrect_request_body():
 
     init(
         supertokens_config=SupertokensConfig(
-            "http://localhost:3567", network_interceptor=intercept
+            get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
@@ -201,7 +187,6 @@ async def test_network_interceptor_incorrect_request_body():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     with pytest.raises(Exception) as err:
         await sign_in("public", "testEmail@email.com", "validPassword123")

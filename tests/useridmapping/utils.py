@@ -15,17 +15,21 @@
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword, session, usermetadata
 
-st_config = {
-    "supertokens_config": SupertokensConfig("http://localhost:3567"),
-    "app_info": InputAppInfo(
-        app_name="SuperTokens Demo",
-        api_domain="https://api.supertokens.io",
-        website_domain="supertokens.io",
-    ),
-    "framework": "fastapi",
-    "recipe_list": [
-        emailpassword.init(),
-        usermetadata.init(),
-        session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
-    ],
-}
+from tests.utils import get_new_core_app_url
+
+
+def get_st_config():
+    return {
+        "supertokens_config": SupertokensConfig(get_new_core_app_url()),
+        "app_info": InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
+        ),
+        "framework": "fastapi",
+        "recipe_list": [
+            emailpassword.init(),
+            usermetadata.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
+    }

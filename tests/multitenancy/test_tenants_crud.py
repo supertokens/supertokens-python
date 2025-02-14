@@ -44,15 +44,9 @@ from supertokens_python.recipe.thirdparty.provider import (
 from supertokens_python.types import RecipeUserId
 
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
-    setup_function,
-    setup_multitenancy_feature,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function
-_ = teardown_function
 
 pytestmark = mark.asyncio
 
@@ -66,10 +60,10 @@ async def client():
 
 
 async def test_tenant_crud():
-    args = get_st_init_args([multitenancy.init()])
+    args = get_st_init_args(
+        url=get_new_core_app_url(), recipe_list=[multitenancy.init()]
+    )
     init(**args)
-    start_st()
-    setup_multitenancy_feature()
 
     await create_or_update_tenant(
         "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
@@ -146,10 +140,10 @@ async def test_tenant_crud():
 
 
 async def test_tenant_thirdparty_config():
-    args = get_st_init_args([multitenancy.init()])
+    args = get_st_init_args(
+        url=get_new_core_app_url(), recipe_list=[multitenancy.init()]
+    )
     init(**args)
-    start_st()
-    setup_multitenancy_feature()
 
     await create_or_update_tenant(
         "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])
@@ -275,10 +269,11 @@ async def test_tenant_thirdparty_config():
 
 
 async def test_user_association_and_disassociation_with_tenants():
-    args = get_st_init_args([session.init(), emailpassword.init(), multitenancy.init()])
+    args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[session.init(), emailpassword.init(), multitenancy.init()],
+    )
     init(**args)
-    start_st()
-    setup_multitenancy_feature()
 
     await create_or_update_tenant(
         "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])

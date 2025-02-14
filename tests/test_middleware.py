@@ -21,18 +21,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, passwordless, session
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url, sign_up_request
 
 
 @fixture(scope="function")
@@ -47,7 +36,7 @@ async def test_rid_with_session_and_non_existent_api_in_session_recipe_still_hit
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -59,7 +48,6 @@ async def test_rid_with_session_and_non_existent_api_in_session_recipe_still_hit
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response = driver_config_client.post(url="/auth/signin", headers={"rid": "session"})
     assert response.status_code == 200
@@ -72,7 +60,7 @@ async def test_no_rid_with_existent_API_does_not_give_404(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -84,7 +72,6 @@ async def test_no_rid_with_existent_API_does_not_give_404(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response = driver_config_client.post(url="/auth/signin")
     assert response.status_code == 200
@@ -97,7 +84,7 @@ async def test_rid_as_anticsrf_with_existent_API_does_not_give_404(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -109,7 +96,6 @@ async def test_rid_as_anticsrf_with_existent_API_does_not_give_404(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response = driver_config_client.post(
         url="/auth/signin", headers={"rid": "anti-csrf"}
@@ -124,7 +110,7 @@ async def test_random_rid_with_existent_API_does_hits_api(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="api.supertokens.io",
@@ -136,7 +122,6 @@ async def test_random_rid_with_existent_API_does_hits_api(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response = driver_config_client.post(url="/auth/signin", headers={"rid": "random"})
     assert response.status_code == 200
@@ -149,7 +134,7 @@ async def test_wrong_rid_with_existing_api_works(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -166,7 +151,6 @@ async def test_wrong_rid_with_existing_api_works(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -199,7 +183,7 @@ async def test_random_rid_with_existing_api_works(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -216,7 +200,6 @@ async def test_random_rid_with_existing_api_works(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validpass123"
@@ -249,7 +232,7 @@ async def test_wrong_rid_returns_404_if_recipe_missing(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -265,7 +248,6 @@ async def test_wrong_rid_returns_404_if_recipe_missing(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     response_2 = driver_config_client.post(
         url="/auth/signin",

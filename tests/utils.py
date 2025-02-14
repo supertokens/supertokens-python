@@ -17,17 +17,16 @@ import json
 # Import AsyncMock
 import sys
 from datetime import datetime
+from functools import lru_cache
 from http.cookies import SimpleCookie
-from os import environ, kill, remove, scandir
+from os import environ
 from pathlib import Path
-from shutil import rmtree
-from signal import SIGTERM
-from subprocess import DEVNULL, run
-from time import sleep
 from typing import Any, Dict, List, Optional, Union, cast
 from unittest.mock import MagicMock
 from urllib.parse import unquote
+from uuid import uuid4
 
+import requests
 from fastapi.testclient import TestClient
 from httpx import Response as HTTPXResponse
 from pytest import mark
@@ -53,15 +52,7 @@ from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.utils import is_version_gte
-from yaml import FullLoader, dump, load
 
-INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
-SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
-LICENSE_FILE_PATH = INSTALLATION_PATH + "/licenseKey"
-CONFIG_YAML_FILE_PATH = INSTALLATION_PATH + "/config.yaml"
-ORIGINAL_LICENSE_FILE_PATH = INSTALLATION_PATH + "/temp/licenseKey"
-ORIGINAL_CONFIG_YAML_FILE_PATH = INSTALLATION_PATH + "/temp/config.yaml"
-WEB_SERVER_TEMP_DIR = INSTALLATION_PATH + "/webserver-temp"
 API_VERSION_TEST_NON_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.1"]
 API_VERSION_TEST_NON_SUPPORTED_CV = ["0.1", "0.2", "1.2", "2.0", "3.0"]
 API_VERSION_TEST_MULTIPLE_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.1"]
@@ -72,26 +63,11 @@ API_VERSION_TEST_SINGLE_SUPPORTED_CV = ["0.1", "0.2", "1.1", "2.1", "3.0"]
 API_VERSION_TEST_SINGLE_SUPPORTED_RESULT = "1.1"
 API_VERSION_TEST_BASIC_RESULT = ["2.0", "2.1", "2.2", "2.3", "2.9"]
 SUPPORTED_CORE_DRIVER_INTERFACE_FILE = "./coreDriverInterfaceSupported.json"
-TEST_ENABLE_ANTI_CSRF_CONFIG_KEY = "enable_anti_csrf"
-TEST_ACCESS_TOKEN_PATH_VALUE = "/test"
-TEST_ACCESS_TOKEN_PATH_CONFIG_KEY = "access_token_path"
-TEST_REFRESH_TOKEN_PATH_KEY_VALUE = "/refresh"
-TEST_REFRESH_TOKEN_PATH_KEY_VALUE_TEST_DECORATOR = "/refresh"
-TEST_REFRESH_TOKEN_PATH_CONFIG_KEY = "refresh_api_path"
-TEST_SESSION_EXPIRED_STATUS_CODE_VALUE = 401
-TEST_SESSION_EXPIRED_STATUS_CODE_CONFIG_KEY = "session_expired_status_code"
-TEST_COOKIE_DOMAIN_VALUE = "test.supertokens.io"
-TEST_COOKIE_DOMAIN_CONFIG_KEY = "cookie_domain"
 TEST_ACCESS_TOKEN_MAX_AGE_VALUE: str = "7200"  # seconds
 TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY = "access_token_validity"
 TEST_REFRESH_TOKEN_MAX_AGE_VALUE: str = "720"  # minutes
 TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY = "refresh_token_validity"
-TEST_COOKIE_SAME_SITE_VALUE = "Lax"
-TEST_COOKIE_SAME_SITE_CONFIG_KEY = "cookie_same_site"
-TEST_COOKIE_SECURE_VALUE = False
-TEST_COOKIE_SECURE_CONFIG_KEY = "cookie_secure"
 TEST_DRIVER_CONFIG_COOKIE_DOMAIN = "supertokens.io"
-TEST_DRIVER_CONFIG_COOKIE_SECURE = False
 TEST_DRIVER_CONFIG_COOKIE_SAME_SITE = "lax"
 TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH = "/"
 TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH = "/auth/session/refresh"
@@ -103,127 +79,46 @@ ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_DISABLE = "id-refresh-token"
 TEST_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
-def set_key_value_in_config(key: str, value: str):
-    f = open(CONFIG_YAML_FILE_PATH, "r")
-    data = load(f, Loader=FullLoader)
-    f.close()
-    data[key] = value
-    f = open(CONFIG_YAML_FILE_PATH, "w")
-    dump(data, f)
-    f.close()
+def get_new_core_app_url(
+    *,
+    # TODO: Move host/port to ENV_VARs so that user can customize based on their setup
+    host: str = "localhost",
+    port: str = "3567",
+    core_config: Optional[Dict[str, str]] = None,
+) -> str:
+    """
+    Create a new application in the ST core, and return a URL to use it.
+    """
+    core_url = f"http://{host}:{port}"
 
+    if core_config is None:
+        core_config = {}
 
-def drop_key(key: str):
-    f = open(CONFIG_YAML_FILE_PATH, "r")
-    data = load(f, Loader=FullLoader)
-    f.close()
-    data.pop(key)
-    f = open(CONFIG_YAML_FILE_PATH, "w")
-    dump(data, f)
-    f.close()
+    app_id = str(uuid4())
 
-
-def __stop_st(retry: int = 50):
-    process_ids = __get_list_of_process_ids()
-    for pid in process_ids:
-        kill(int(pid), SIGTERM)
-    process_ids = __get_list_of_process_ids()
-    if len(process_ids) != 0:
-        if retry == 0:
-            raise Exception("")
-        sleep(0.5)
-        __stop_st(retry - 1)
-    sleep(1)
-
-
-def start_st(host: str = "localhost", port: str = "3567"):
-    pid_after = pid_before = __get_list_of_process_ids()
-    run(
-        "cd "
-        + INSTALLATION_PATH
-        + " && java -Djava.security.egd=file:/dev/urandom -classpath "
-        '"./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host='
-        + host
-        + " port="
-        + str(port)
-        + " test_mode &",
-        shell=True,
-        stdout=DEVNULL,
+    response = requests.put(
+        f"{core_url}/recipe/multitenancy/app/v2",
+        headers={
+            "Content-Type": "application/json",
+        },
+        json={
+            "appId": app_id,
+            "coreConfig": core_config,
+        },
     )
-    for _ in range(35):
-        pid_after = __get_list_of_process_ids()
-        if len(pid_after) != len(pid_before):
-            break
-        sleep(0.5)
-    if len(pid_after) == len(pid_before):
-        raise Exception("could not start ST process")
-    return f"http://{host}:{port}"
+
+    assert response.status_code == 200, (
+        f"ST Core App creation failed with: {response.text}"
+    )
+
+    res_json = response.json()
+    assert res_json["status"] == "OK"
+    assert res_json["createdNew"]
+
+    return f"{core_url}/appid-{app_id}"
 
 
-def setup_multitenancy_feature(host: str = "localhost", port: str = "3567"):
-    _ = host
-    _ = port
-    # inmemory core no longer requires license to function
-
-    # OPAQUE_KEY_WITH_MULTITENANCY_FEATURE = "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu"
-
-    # import requests
-
-    # requests.put(
-    #     f"http://{host}:{port}/ee/license",
-    #     json={
-    #         "licenseKey": OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
-    #     },
-    #     timeout=10,
-    # )
-
-
-def setup_st():
-    try:
-        run("cd " + INSTALLATION_PATH + " && cp temp/licenseKey ./licenseKey")
-    except BaseException:
-        run(
-            "cd " + INSTALLATION_PATH + " && cp temp/config.yaml ./config.yaml",
-            shell=True,
-        )
-
-
-def clean_st():
-    try:
-        remove(LICENSE_FILE_PATH)
-    except FileNotFoundError:
-        pass
-    try:
-        remove(CONFIG_YAML_FILE_PATH)
-    except FileNotFoundError:
-        pass
-    try:
-        rmtree(SUPERTOKENS_PROCESS_DIR)
-    except FileNotFoundError:
-        pass
-    try:
-        rmtree(WEB_SERVER_TEMP_DIR)
-    except FileNotFoundError:
-        pass
-
-
-def __get_list_of_process_ids() -> List[str]:
-    process_ids: List[str] = []
-    try:
-        processes = scandir(SUPERTOKENS_PROCESS_DIR)
-        for process in processes:
-            f = open(SUPERTOKENS_PROCESS_DIR + "/" + process.name, "r")
-            process_ids.append(f.readline())
-            f.close()
-    except FileNotFoundError:
-        pass
-    return process_ids
-
-
-def reset(stop_core: bool = True):
-    if stop_core:
-        __stop_st()
-
+def reset():
     ProcessState.get_instance().reset()
     Supertokens.reset()
     SessionRecipe.reset()
@@ -444,28 +339,12 @@ def email_verify_token_request(
             environ["SUPERTOKENS_ENV"] = "testing"
 
 
-def setup_function(_: Any) -> None:
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_: Any) -> None:
-    reset()
-    clean_st()
-
-
-core_version: str = ""
-
-
+# Cache the output to make sure this is only computed once
+@lru_cache
 def get_core_api_version() -> str:
     """
     Fetches the core api version only once
     """
-    global core_version
-    if core_version:
-        return core_version
-
     from supertokens_python import init
     from supertokens_python.querier import Querier
     from supertokens_python.recipe import session
@@ -485,10 +364,9 @@ def get_core_api_version() -> str:
     except Exception:
         pass
 
-    setup_function(None)
-
+    reset()
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -500,11 +378,10 @@ def get_core_api_version() -> str:
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     api_version = asyncio.gather(get_api_version())
     core_version = loop.run_until_complete(api_version)[0]  # type: ignore # pylint: disable=unused-variable
-    teardown_function(None)
+    reset()
     return core_version
 
 
@@ -541,7 +418,7 @@ else:
 
 
 st_init_common_args = {
-    "supertokens_config": SupertokensConfig("http://localhost:3567"),
+    "supertokens_config": SupertokensConfig(get_new_core_app_url()),
     "app_info": InputAppInfo(
         app_name="ST",
         api_domain="http://api.supertokens.io",
@@ -553,8 +430,19 @@ st_init_common_args = {
 }
 
 
-def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
-    return {**st_init_common_args, "recipe_list": recipe_list}
+def get_st_init_args(*, url: str, recipe_list: List[Any]) -> Dict[str, Any]:
+    return {
+        "supertokens_config": SupertokensConfig(url),
+        "app_info": InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        "framework": "fastapi",
+        "mode": "asgi",
+        "recipe_list": recipe_list,
+    }
 
 
 def is_subset(dict1: Any, dict2: Any) -> bool:

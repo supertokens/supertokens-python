@@ -19,24 +19,13 @@ from supertokens_python.recipe import session, userroles
 from supertokens_python.recipe.userroles import asyncio, interfaces
 from supertokens_python.utils import is_version_gte
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url
 
 
 @mark.asyncio
 async def test_get_permission_for_a_role():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -48,7 +37,6 @@ async def test_get_permission_for_a_role():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
@@ -72,7 +60,7 @@ async def test_get_permission_for_a_role():
 @mark.asyncio
 async def test_get_permission_for_non_existent_role():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -84,7 +72,6 @@ async def test_get_permission_for_non_existent_role():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):

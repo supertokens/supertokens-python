@@ -15,16 +15,7 @@ from supertokens_python.types import RecipeUserId
 from typing_extensions import Literal
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import (
-    extract_info,
-    get_st_init_args,
-    setup_function,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
+from tests.utils import extract_info, get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
 
@@ -171,17 +162,17 @@ async def test_use_headers_if_get_token_transfer_method_returns_any_and_no_st_au
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _,
                     __,
                     ___: "any",  # Always return "any"
                 )
-            ]
+            ],
         )
     )
-    start_st()
 
     # Create session without specifying st-auth-mode
     res = create_session(app)
@@ -202,17 +193,17 @@ async def test_should_use_cookies_if_get_token_transfer_method_returns_any_and_s
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _,
                     __,
                     ___: "any",  # Always returns "any"
                 )
-            ]
+            ],
         )
     )
-    start_st()
 
     # Creating session with st-auth-mode set to 'cookie'
     res = create_session(app, auth_mode_header="cookie")
@@ -231,17 +222,17 @@ async def test_use_headers_if_get_token_transfer_method_returns_any_and_st_auth_
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _,
                     __,
                     ___: "any",  # Always returns "any"
                 )
-            ]
+            ],
         )
     )
-    start_st()
 
     # Creating session with st-auth-mode set to 'header'
     res = create_session(app, auth_mode_header="header")
@@ -270,8 +261,12 @@ async def test_should_follow_auth_mode_header(
     auth_mode_header: Optional[str],
     expected_transfer_method: TokenTransferMethod,
 ):
-    init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))  # type:ignore
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+        )
+    )
 
     res = create_session(app, auth_mode_header)
 
@@ -301,15 +296,15 @@ async def test_should_follow_get_token_transfer_method(
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _, __, ___: token_transfer_method,  # type: ignore
                 )
-            ]
+            ],
         )
     )  # type:ignore
-    start_st()
 
     res = create_session(app, None, None, cookies=cookies, headers=headers)
 
@@ -366,15 +361,15 @@ def test_verify_session_parametrized(  # from behaviour table
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _, __, ___: transfer_method,
                 )
-            ]
+            ],
         )
     )
-    start_st()
 
     create_session_info = create_session(app, "cookie")
 
@@ -413,8 +408,12 @@ def test_verify_session_parametrized(  # from behaviour table
 
 
 async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
-    init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+        )
+    )
 
     res = create_session(
         app,
@@ -455,8 +454,12 @@ async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
 async def test_should_update_acccess_token_payload(
     app: TestClient, transfer_method: str
 ):
-    init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+        )
+    )
 
     res = create_session(app, transfer_method)
 
@@ -509,15 +512,15 @@ async def test_refresh_session_parametrized(
 ):
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     get_token_transfer_method=lambda _, __, ___: transfer_method,
                 )
-            ]
+            ],
         )
     )
-    start_st()
 
     # Token transfer method doesn't matter for this test
     res = create_session(app, "cookies")

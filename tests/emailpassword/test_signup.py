@@ -21,15 +21,10 @@ from supertokens_python.recipe import emailpassword, session
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
-    setup_function,
     sign_up_request,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function  # type: ignore
-_ = teardown_function  # type: ignore
 
 pytestmark = mark.asyncio
 
@@ -43,9 +38,10 @@ def app():
 
 
 async def test_field_error_on_existing_email_signup(app: TestClient):
-    init_args = get_st_init_args([emailpassword.init(), session.init()])
+    init_args = get_st_init_args(
+        url=get_new_core_app_url(), recipe_list=[emailpassword.init(), session.init()]
+    )
     init(**init_args)
-    start_st()
 
     response = json.loads(sign_up_request(app, "random@gmail.com", "validpass123").text)
     assert response["status"] == "OK"

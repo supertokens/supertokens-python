@@ -31,15 +31,9 @@ from supertokens_python.recipe.userroles.asyncio import (
 from supertokens_python.types import RecipeUserId
 
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
-    setup_function,
-    setup_multitenancy_feature,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function
-_ = teardown_function
 
 pytestmark = mark.asyncio
 
@@ -47,16 +41,15 @@ pytestmark = mark.asyncio
 async def test_multitenancy_in_user_roles():
     # test that different roles can be assigned for the same user for each tenant
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             userroles.init(),
             emailpassword.init(),
             multitenancy.init(),
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
-    setup_multitenancy_feature()
+    init(**args)
 
     await create_or_update_tenant(
         "t1", TenantConfigCreateOrUpdate(first_factors=["emailpassword"])

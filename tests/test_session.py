@@ -14,7 +14,6 @@
 
 import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 from fastapi import Depends, FastAPI
@@ -62,38 +61,25 @@ from supertokens_python.recipe.session.session_functions import (
     revoke_session,
 )
 from supertokens_python.types import RecipeUserId
+from typing_extensions import Any, Dict, List, Optional
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     assert_info_clears_tokens,
-    clean_st,
     extract_all_cookies,
     extract_info,
+    get_new_core_app_url,
     get_st_init_args,
     reset,
-    set_key_value_in_config,
-    setup_st,
-    start_st,
 )
 
 pytestmark = mark.asyncio
 
 
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
-
 async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -107,7 +93,6 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
             )
         ],
     )
-    start_st()
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, RecipeImplementation):
@@ -197,7 +182,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
 async def test_creating_many_sessions_for_one_user_and_looping():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -208,7 +193,6 @@ async def test_creating_many_sessions_for_one_user_and_looping():
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
         ],
     )
-    start_st()
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, RecipeImplementation):
@@ -309,7 +293,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -318,7 +302,6 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
         framework="fastapi",
         recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
     )
-    start_st()
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, RecipeImplementation):
@@ -354,7 +337,7 @@ async def test_signout_api_returns_401_without_session_tokens(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -363,7 +346,6 @@ async def test_signout_api_returns_401_without_session_tokens(
         framework="fastapi",
         recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
     )
-    start_st()
 
     signout_response = driver_config_client.post(
         url="/auth/signout",
@@ -389,7 +371,7 @@ async def test_should_use_override_functions_in_session_container_methods():
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -405,7 +387,6 @@ async def test_should_use_override_functions_in_session_container_methods():
             )
         ],
     )
-    start_st()
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, RecipeImplementation):
@@ -436,16 +417,16 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
         return oi
 
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     cookies = extract_all_cookies(response)
@@ -486,16 +467,16 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
         return oi
 
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -535,16 +516,16 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
         return oi
 
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -598,16 +579,16 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
         return oi
 
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -642,15 +623,15 @@ async def test_token_cookie_expires(
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             ),
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -705,7 +686,7 @@ async def test_token_cookie_expires(
 
 async def test_that_verify_session_doesnt_always_call_core():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -719,7 +700,6 @@ async def test_that_verify_session_doesnt_always_call_core():
             )
         ],
     )
-    start_st()
 
     # s = SessionRecipe.get_instance()
     # if not isinstance(s.recipe_implementation, RecipeImplementation):
@@ -787,15 +767,15 @@ async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access
     driver_config_client: TestClient,
 ):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_CUSTOM_HEADER",
                 get_token_transfer_method=lambda *_: "cookie",  # type: ignore
             )
-        ]
+        ],
     )
     init(**args)  # type: ignore
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -846,36 +826,37 @@ async def test_anti_csrf_header_via_custom_header_check_happens_only_when_access
     assert response.json() == {"message": "no session"}
 
 
+# TODO: parametrize test
 async def test_expose_access_token_to_frontend_in_cookie_based_auth(
     driver_config_client: TestClient,
 ):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 expose_access_token_to_frontend_in_cookie_based_auth=True,
                 get_token_transfer_method=lambda *_: "cookie",  # type: ignore
             )
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
     assert len(response.headers["st-access-token"]) > 0
 
-    reset(stop_core=True)
+    reset()
 
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 expose_access_token_to_frontend_in_cookie_based_auth=False,
                 get_token_transfer_method=lambda *_: "cookie",  # type: ignore
             )
-        ]
+        ],
     )
     init(**args)  # type: ignore
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -898,7 +879,7 @@ async def test_token_transfer_method_works_when_using_origin_function(
         return "header"
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://localhost:8000",
@@ -908,7 +889,6 @@ async def test_token_transfer_method_works_when_using_origin_function(
         framework="fastapi",
         recipe_list=[session.init(get_token_transfer_method=token_transfer_method)],
     )
-    start_st()
 
     response = driver_config_client.post("/create")
     assert response.status_code == 200
@@ -929,15 +909,15 @@ async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     cookies = extract_all_cookies(response)
@@ -966,21 +946,22 @@ async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_
     )
 
 
+# TODO: Add check to verify token expired before calling refresh
 async def test_clear_all_session_tokens_if_refresh_called_without_refresh_token_but_with_an_expired_access_token(
     driver_config_client: TestClient,
 ):
-    set_key_value_in_config(TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, "1")
-
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(
+            core_config={TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY: "1"}
+        ),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     cookies = extract_all_cookies(response)
@@ -1016,16 +997,16 @@ async def test_access_and_refresh_tokens_are_cleared_if_multiple_tokens_are_pass
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
                 older_cookie_domain="example.com",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     cookies = extract_all_cookies(response)
@@ -1076,15 +1057,15 @@ async def test_refresh_endpoint_throws_500_if_multiple_tokens_are_passed_and_old
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     cookies = extract_all_cookies(response)
@@ -1127,15 +1108,15 @@ async def test_verify_session_returns_401_if_multiple_tokens_are_passed_in_the_r
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     cookies = extract_all_cookies(response)
@@ -1174,14 +1155,14 @@ async def test_verify_session_returns_200_in_header_based_auth_even_if_multiple_
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 get_token_transfer_method=lambda _, __, ___: "header",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     info = extract_info(response)
@@ -1217,14 +1198,14 @@ async def test_refresh_endpoint_refreshes_the_token_in_header_based_auth_if_mult
     driver_config_client: TestClient,
 ):
     init_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 get_token_transfer_method=lambda _, __, ___: "header",
             )
-        ]
+        ],
     )
     init(**init_args)
-    start_st()
 
     response = driver_config_client.post("/create")
     info = extract_info(response)

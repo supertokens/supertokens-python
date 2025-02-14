@@ -29,15 +29,9 @@ from supertokens_python.recipe.passwordless.asyncio import (
 from supertokens_python.types import AccountInfo
 
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
-    setup_function,
-    setup_multitenancy_feature,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function
-_ = teardown_function
 
 pytestmark = mark.asyncio
 
@@ -45,18 +39,17 @@ pytestmark = mark.asyncio
 async def test_multitenancy_functions():
     # test that different roles can be assigned for the same user for each tenant
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             passwordless.init(
                 contact_config=passwordless.ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
             multitenancy.init(),
-        ]
+        ],
     )
     init(**args)
-    start_st()
-    setup_multitenancy_feature()
 
     await create_or_update_tenant(
         "t1",
