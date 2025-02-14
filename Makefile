@@ -13,7 +13,7 @@ set-up-hooks:
 	pre-commit install
 
 test:
-	pytest -vv ./tests/
+	pytest -vv ./tests/ $(ARGS)
 
 dev-install:
 	pip install -r dev-requirements.txt
