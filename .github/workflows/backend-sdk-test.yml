@@ -86,24 +86,27 @@ jobs:
         working-directory: backend-sdk-testing
         run: |
           npm install
-          # npm install mocha-junit-reporter --save-dev
-          npm install mocha-reporter-gha --save-dev
+          npm install mocha-junit-reporter --save-dev
+          # npm install mocha-reporter-gha --save-dev
           npm run build
 
       - name: Run tests
         working-directory: backend-sdk-testing
         run: |
-          # npm test -- --reporter mocha-junit-reporter
+          npm test -- --reporter mocha-junit-reporter
           # npm test -- --reporter-option output=test-results.json
-          npm test -- --reporter mocha-reporter-gha
+          # npm test -- --reporter mocha-reporter-gha
         env:
           SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
           TEST_MODE: testing
           NODE_PORT: 8081
 
-      # - name: Reporter
+      - name: Reporter
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        # with:
+
       #   uses: dorny/test-reporter@v1
-      #   if: always()
       #   with:
       #     reporter: mocha-json
       #     path: backend-sdk-testing/test-results.xml
