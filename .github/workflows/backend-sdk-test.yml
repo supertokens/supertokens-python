@@ -91,6 +91,7 @@ jobs:
           npm run build
 
       - name: Run tests
+        working-directory: backend-sdk-testing
         run: |
           # npm test -- --reporter mocha-junit-reporter
           # npm test -- --reporter-option output=test-results.json
