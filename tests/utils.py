@@ -417,19 +417,6 @@ else:
             return super().__call__(*args, **kwargs)
 
 
-st_init_common_args = {
-    "supertokens_config": SupertokensConfig(get_new_core_app_url()),
-    "app_info": InputAppInfo(
-        app_name="ST",
-        api_domain="http://api.supertokens.io",
-        website_domain="http://supertokens.io",
-        api_base_path="/auth",
-    ),
-    "framework": "fastapi",
-    "mode": "asgi",
-}
-
-
 def get_st_init_args(*, url: str, recipe_list: List[Any]) -> Dict[str, Any]:
     return {
         "supertokens_config": SupertokensConfig(url),
