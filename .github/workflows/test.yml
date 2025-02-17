@@ -54,7 +54,7 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           make dev-install && rm -rf src
-      - name: Run tests with Python ${{ matrix.py-version }}, Core ${{ toJSON(steps.versions.outputs)['core-version'] }}
+      - name: Run unit tests
         run: |
           source venv/bin/activate
           make test ARGS="--junit-xml=test-results.xml"
