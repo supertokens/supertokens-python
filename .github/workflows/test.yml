@@ -54,7 +54,7 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           make dev-install && rm -rf src
-      - name: Run tests
+      - name: Run tests with Python ${{ matrix.py-version }}, Core ${{ toJSON(steps.versions.outputs)['core-version'] }}
         run: |
           source venv/bin/activate
           make test ARGS="--junit-xml=test-results.xml"
@@ -66,4 +66,4 @@ jobs:
         with:
           path: test-results.xml
           summary: true
-          title: '[CDI=${{ matrix.cdi-version }}][py=${{ matrix.py-version }}] Unit Test Results'
+          title: "[Core=${{ toJSON(steps.versions.outputs)['core-version'] }}][py=${{ matrix.py-version }}] Unit Test Results"
