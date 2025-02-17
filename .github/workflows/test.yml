@@ -40,16 +40,16 @@ jobs:
         cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdi-versions) }}
     steps:
       - uses: actions/checkout@v4
-      # - uses: supertokens/get-versions-action@main
-      #   id: versions
-      #   with:
-      #     driver-name: python
-      #     cdi-version: ${{ matrix.cdi-version }}
-      #     fdi-version: '4.0'
-      #   env:
-      #     SUPERTOKENS_API_KEY: ${{ env.SUPERTOKENS_API_KEY }}
-      # - run: |
-      #     echo "${{ toJSON(steps.versions.outputs) }}"
+      - uses: supertokens/get-versions-action@main
+        id: versions
+        with:
+          driver-name: python
+          cdi-version: ${{ matrix.cdi-version }}
+          fdi-version: '4.0'
+        env:
+          SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+      - run: |
+          echo "${{ toJSON(steps.versions.outputs) }}"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py-version }}
@@ -62,6 +62,8 @@ jobs:
         run: |
           source venv/bin/activate
           make test ARGS="--junit-xml=test-results.xml"
+        # env:
+          # SUPERTOKENS_CORE_VERSION:
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
