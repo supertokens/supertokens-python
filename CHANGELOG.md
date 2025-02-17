@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
-- Upgrades `pip` and `setuptools` in CI publish job
-- Also upgrades `poetry` and it's dependency - `clikit`
 
 ## [0.29.0] - 2025-03-03
+- Adds option to disable `tldextract` HTTP calls by setting `SUPERTOKENS_TLDEXTRACT_DISABLE_HTTP=1`
+- Upgrades `pip` and `setuptools` in CI publish job
+  - Also upgrades `poetry` and it's dependency - `clikit`
 - Migrates unit tests to use a containerized core
   - Updates `Makefile` to use a Docker `compose` setup step
   - Migrates unit tests from CircleCI to Github Actions

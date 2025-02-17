@@ -16,6 +16,7 @@ import json
 
 # Import AsyncMock
 import sys
+from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache
 from http.cookies import SimpleCookie
@@ -487,3 +488,17 @@ async def create_users(
             await manually_create_or_update_user(
                 "public", user["provider"], user["userId"], user["email"], True, None
             )
+
+
+@contextmanager
+def outputs(val: Any):
+    """
+    Outputs a value to assert.
+
+    Usage:
+        @mark.parametrize(["input", "expectation"], [(1, outputs(1)), (0, raises(Exception))])
+        def test_fn(input, expectation):
+            with expectation as expected_output:
+                assert 1 / input == expected_output
+    """
+    yield val
