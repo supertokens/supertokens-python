@@ -17,7 +17,7 @@ jobs:
   define-versions:
     runs-on: ubuntu-latest
     outputs:
-      py-versions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+      pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
 
   lint-format:
     name: Check linting and formatting
@@ -25,7 +25,7 @@ jobs:
     needs: define-versions
     strategy:
       matrix:
-        py-version: ${{ fromJSON(needs.define-versions.outputs.py-versions) }}
+        py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

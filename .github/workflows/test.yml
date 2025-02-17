@@ -19,7 +19,7 @@ jobs:
     outputs:
       fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
       cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
-      py-versions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+      pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
     steps:
       - uses: actions/checkout@v4
       - uses: supertokens/get-supported-versions-action@main
@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        py-version: ${{ fromJSON(needs.define-versions.outputs.py-versions) }}
+        py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
         cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions) }}
     steps:
       - uses: actions/checkout@v4
