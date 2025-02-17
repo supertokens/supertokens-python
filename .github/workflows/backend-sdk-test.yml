@@ -12,9 +12,12 @@ jobs:
   define-versions:
     runs-on: ubuntu-latest
     outputs:
-      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
-      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
-      pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+      # fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      fdiVersions: '["4.0"]'
+      # cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+      cdiVersions: '["5.2"]'
+      # pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+      pyVersions: '["3.8"]'
       nodeVersions: '["20"]'
     steps:
       - uses: actions/checkout@v4
@@ -31,10 +34,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions)[-1] }}
-        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions)[-1] }}
-        py-version: ${{ fromJson(needs.define-versions.outputs.pyVersions)[0] }}
-        node-version: ${{ fromJson(needs.define-versions.outputs.nodeVersions)[0] }}
+        cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions) }}
+        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
+        py-version: ${{ fromJson(needs.define-versions.outputs.pyVersions) }}
+        node-version: ${{ fromJson(needs.define-versions.outputs.nodeVersions) }}
     env:
       API_PORT: 3030
       ST_CONNECTION_URI: http://localhost:8081
