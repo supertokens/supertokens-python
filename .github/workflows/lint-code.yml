@@ -1,0 +1,43 @@
+name: "Lint/Format Code"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  push:
+    branches:
+      - master
+      - "v[0-9]+.[0-9]+"
+    tags:
+      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  define-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      py-versions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+
+  lint-format:
+    name: Check linting and formatting
+    runs-on: ubuntu-latest
+    needs: define-versions
+    strategy:
+      matrix:
+        py-version: ${{ fromJSON(needs.define-versions.outputs.py-versions) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py-version }}
+      - name: Create virtual environment and install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          make dev-install && rm -rf src
+      - name: Run checks
+        # New steps require sourcing the venv again
+        run: |
+          source venv/bin/activate
+          make lint
