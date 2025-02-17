@@ -13,6 +13,11 @@ set-up-hooks:
 	pre-commit install
 
 test:
+	docker compose up --wait
+	$(MAKE) test-local
+	docker compose down
+
+test-local:
 	pytest -vv ./tests/ $(ARGS)
 
 dev-install:
