@@ -17,8 +17,8 @@ jobs:
   define-versions:
     runs-on: ubuntu-latest
     outputs:
-      fdi-versions: ${{ steps.versions.outputs.fdi-versions }}
-      cdi-versions: ${{ steps.versions.outputs.cdi-versions }}
+      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
       py-versions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         py-version: ${{ fromJSON(needs.define-versions.outputs.py-versions) }}
-        cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdi-versions) }}
+        cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: supertokens/get-versions-action@main
