@@ -49,6 +49,7 @@ You will need to setup the [supertokens-core](https://github.com/supertokens/sup
    2. [Docker Engine](https://docs.docker.com/engine/install/) is the minimum requirement to spin up containers required for tests.
 2. To run all tests, use `make test`.
    1. NOTE: This starts up a docker container, and is required for tests to run.
+   2. Set `SUPERTOKENS_CORE_VERSION` to pull a certain image, defaults to `latest`.
 3. To run individual tests
    1. `docker compose up --wait; pytest ./tests/path/to/test/file.py::test_function_name`
    2. OR use your IDE's in-built UI for running python tests. You may read [VSCode Python Testing](https://code.visualstudio.com/docs/python/testing) and [PyCharm Testing](https://www.jetbrains.com/help/pycharm/testing-your-first-python-application.html#debug-test) for more info.
