@@ -59,11 +59,11 @@ jobs:
           source venv/bin/activate
           make test ARGS="--junit-xml=test-results.xml"
         env:
-          SUPERTOKENS_CORE_VERSION: ${{ toJSON(steps.versions.outputs)['core-version'] }}
+          SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs['core-version'] }}
       - uses: pmeier/pytest-results-action@main
         name: Surface failing tests
         if: always()
         with:
           path: test-results.xml
           summary: true
-          title: "[Core=${{ toJSON(steps.versions.outputs)['core-version'] }}][py=${{ matrix.py-version }}] Unit Test Results"
+          title: "[Core=${{ steps.versions.outputs['core-version'] }}][py=${{ matrix.py-version }}] Unit Test Results"
