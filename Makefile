@@ -14,11 +14,8 @@ set-up-hooks:
 
 test:
 	docker compose up --wait
-	$(MAKE) test-local
-	docker compose down
-
-test-local:
 	pytest -vv ./tests/ $(ARGS)
+	docker compose down
 
 dev-install:
 	pip install -r dev-requirements.txt
