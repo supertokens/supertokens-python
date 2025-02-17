@@ -38,15 +38,6 @@ jobs:
         # TODO: Update docker to use correct image from CDI core tags
         py-version: ${{ fromJSON(needs.define-versions.outputs.py-versions) }}
         cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdi-versions) }}
-    # services:
-    #   core:
-    #     # See if this can be done with a simple docker run
-    #     # Will allow us to use matrix variables in the image name
-    #     image: supertokens/supertokens-postgresql:latest
-    #     ports:
-    #       - 3567:3567
-    #     # TODO: Switch to dev docker images, GHA does not support `command`
-    #     # command: '/usr/lib/supertokens/jre/bin/java -classpath "/lib/supertokens/core/*:/lib/supertokens/plugin-interface/*:/lib/supertokens/ee/*" io.supertokens.Main /usr/lib/supertokens DEV host=0.0.0.0 test_mode'
     steps:
       - uses: actions/checkout@v4
       # - uses: supertokens/get-versions-action@main
