@@ -74,13 +74,13 @@ jobs:
           source venv/bin/activate
           make dev-install && rm -rf src
       - name: Start core and server
-        working-directory: supertokens-python/tests/test-server
+        working-directory: supertokens-python
         env:
           SUPERTOKENS_ENV: testing
         run: |
           source venv/bin/activate
           docker compose up --wait
-          python3 app.py &
+          python3 tests/test-server/app.py &
 
       - name: Setup backend-sdk-testing
         working-directory: backend-sdk-testing
