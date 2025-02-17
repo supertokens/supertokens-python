@@ -1,0 +1,106 @@
+name: "Integration/E2E Test"
+
+on:
+  pull_request:
+    types:
+      - synchronize
+  push:
+    tags:
+      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  define-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+      pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+      nodeVersions: '["20"]'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supertokens/get-supported-versions-action@main
+        id: versions
+        with:
+          has-fdi: true
+          has-cdi: true
+
+  backend-sdk-test:
+    name: Backend SDK Tests
+    runs-on: ubuntu-latest
+    needs: define-versions
+    strategy:
+      fail-fast: false
+      matrix:
+        cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions)[-1] }}
+        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions)[-1] }}
+        py-version: ${{ fromJson(needs.define-versions.outputs.pyVersions)[0] }}
+        node-version: ${{ fromJson(needs.define-versions.outputs.nodeVersions)[0] }}
+    env:
+      API_PORT: 3030
+      ST_CONNECTION_URI: http://localhost:8081
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: supertokens-python
+      - uses: actions/checkout@v4
+        with:
+          repository: supertokens/backend-sdk-testing
+          ref: ${{ matrix.fdi-version }}
+          path: backend-sdk-testing
+
+      - uses: supertokens/get-versions-action@main
+        id: versions
+        with:
+          driver-name: python
+          cdi-version: ${{ matrix.cdi-version }}
+          fdi-version: ${{ matrix.fdi-version }}
+        env:
+          SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py-version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Create virtual environment and install dependencies
+        working-directory: supertokens-python
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          make dev-install && rm -rf src
+      - name: Start core and server
+        working-directory: supertokens-python/tests/test-server
+        env:
+          SUPERTOKENS_ENV: testing
+        run: |
+          source venv/bin/activate
+          docker compose up --wait
+          python3 app.py &
+
+      - name: Setup backend-sdk-testing
+        working-directory: backend-sdk-testing
+        run: |
+          npm install
+          # npm install mocha-junit-reporter --save-dev
+          npm install mocha-reporter-gha --save-dev
+          npm run build
+
+      - name: Run tests
+        run: |
+          # npm test -- --reporter mocha-junit-reporter
+          # npm test -- --reporter-option output=test-results.json
+          npm test -- --reporter mocha-reporter-gha
+        env:
+          SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
+          TEST_MODE: testing
+          NODE_PORT: 8081
+
+      # - name: Reporter
+      #   uses: dorny/test-reporter@v1
+      #   if: always()
+      #   with:
+      #     reporter: mocha-json
+      #     path: backend-sdk-testing/test-results.xml
+      #     working-directory: backend-sdk-testing
