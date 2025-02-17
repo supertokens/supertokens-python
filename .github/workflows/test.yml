@@ -35,7 +35,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO: Update docker to use correct image from CDI core tags
         py-version: ${{ fromJSON(needs.define-versions.outputs.py-versions) }}
         cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdi-versions) }}
     steps:
@@ -45,11 +44,8 @@ jobs:
         with:
           driver-name: python
           cdi-version: ${{ matrix.cdi-version }}
-          fdi-version: '4.0'
         env:
           SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
-      - run: |
-          echo "${{ toJSON(steps.versions.outputs) }}"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py-version }}
@@ -62,12 +58,12 @@ jobs:
         run: |
           source venv/bin/activate
           make test ARGS="--junit-xml=test-results.xml"
-        # env:
-          # SUPERTOKENS_CORE_VERSION:
-      - name: Surface failing tests
+        env:
+          SUPERTOKENS_CORE_VERSION: ${{ toJSON(steps.versions.outputs)['core-version'] }}
+      - uses: pmeier/pytest-results-action@main
+        name: Surface failing tests
         if: always()
-        uses: pmeier/pytest-results-action@main
         with:
           path: test-results.xml
           summary: true
-          title: '[CDI=${{ matrix.cdi-version }}][py=${{ matrix.py-version }}] Test Results'
+          title: '[CDI=${{ matrix.cdi-version }}][py=${{ matrix.py-version }}] Unit Test Results'
