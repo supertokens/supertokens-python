@@ -122,6 +122,7 @@ jobs:
 
       - name: Reporter 2
         uses: dorny/test-reporter@v1
+        if: always()
         with:
           name: Backend SDK Tests
           reporter: mocha-json
