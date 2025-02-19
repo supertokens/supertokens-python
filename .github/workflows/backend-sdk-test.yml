@@ -126,5 +126,5 @@ jobs:
         with:
           name: Backend SDK Tests
           reporter: mocha-json
-          path: backend-sdk-testing/test-results.json
+          path: '**/test-results.json'
           working-directory: backend-sdk-testing
