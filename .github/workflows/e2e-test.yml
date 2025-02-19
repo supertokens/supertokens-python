@@ -105,7 +105,8 @@ jobs:
       - name: Reporter
         uses: mikepenz/action-junit-report@v5
         if: always()
-        # with:
+        with:
+          report_paths: backend-sdk-testing/test-results.xml
 
       #   uses: dorny/test-reporter@v1
       #   with:
