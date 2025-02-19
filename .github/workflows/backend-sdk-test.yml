@@ -98,13 +98,11 @@ jobs:
           # npm test -- --reporter mocha-junit-reporter
           # npm test -- --reporter-option output=test-results.json
           # npm test -- --reporter mocha-reporter-gha
+          sed -i 's|${{github.workspace}}||g' test-results.xml
         env:
           SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
           TEST_MODE: testing
           NODE_PORT: 8081
-
-      - run: |
-          echo "${{ github.workspace }}"
 
       - name: Reporter
         uses: mikepenz/action-junit-report@v5
@@ -112,7 +110,7 @@ jobs:
         with:
           report_paths: backend-sdk-testing/test-results.xml
           check_name: Backend SDK Tests
-          transformers: '[{ "searchValue": "${{ github.workspace }}/backend-sdk-testing/test", "replaceValue": "" }]'
+          # transformers: '[{ "searchValue": "${{ github.workspace }}/backend-sdk-testing/test", "replaceValue": "" }]'
           # Include table with all test results in the summary
           detailed_summary: true
           # Group the testcases by test suite in the detailed_summary
