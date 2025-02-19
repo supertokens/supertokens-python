@@ -124,7 +124,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: Backend SDK Tests
+          name: Backend SDK Tests 2
           reporter: mocha-json
           path: '**/test-results.json'
           working-directory: backend-sdk-testing
