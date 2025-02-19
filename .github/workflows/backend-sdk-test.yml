@@ -87,17 +87,12 @@ jobs:
         working-directory: backend-sdk-testing
         run: |
           npm install
-          npm install mocha-junit-reporter --save-dev
-          # npm install mocha-reporter-gha --save-dev
           npm run build
 
       - name: Run tests
         working-directory: backend-sdk-testing
         run: |
           npm test
-          # npm test -- --reporter mocha-junit-reporter
-          # npm test -- --reporter-option output=test-results.json
-          # npm test -- --reporter mocha-reporter-gha
         env:
           SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
           TEST_MODE: testing
@@ -106,10 +101,8 @@ jobs:
       - name: Fix paths
         working-directory: backend-sdk-testing
         if: always()
-        run: |
-          cat test-results.xml | head -n 20
-          sed -i "s|$GITHUB_WORKSPACE||g" test-results.xml
-          cat test-results.xml | head -n 20
+        # Doing it in the shell since the Reporter's `transformers` don't seem to work
+        run: sed -i "s|$GITHUB_WORKSPACE/backend-sdk-testing/test||g" test-results.xml
 
       - name: Reporter
         uses: mikepenz/action-junit-report@v5
@@ -117,7 +110,6 @@ jobs:
         with:
           report_paths: backend-sdk-testing/test-results.xml
           check_name: Backend SDK Tests
-          # transformers: '[{ "searchValue": "${{ github.workspace }}/backend-sdk-testing/test", "replaceValue": "" }]'
           # Include table with all test results in the summary
           detailed_summary: true
           # Group the testcases by test suite in the detailed_summary
