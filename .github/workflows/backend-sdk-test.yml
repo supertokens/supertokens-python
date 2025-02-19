@@ -98,12 +98,15 @@ jobs:
           # npm test -- --reporter mocha-junit-reporter
           # npm test -- --reporter-option output=test-results.json
           # npm test -- --reporter mocha-reporter-gha
-          sed -i "s|$GITHUB_WORKSPACE||g" test-results.xml
-          cat test-results.xml
         env:
           SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
           TEST_MODE: testing
           NODE_PORT: 8081
+
+      - name: Fix paths
+        working-directory: backend-sdk-testing
+        run: |
+          sed -i "s|$GITHUB_WORKSPACE||g" test-results.xml
 
       - name: Reporter
         uses: mikepenz/action-junit-report@v5
