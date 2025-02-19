@@ -105,6 +105,7 @@ jobs:
 
       - name: Fix paths
         working-directory: backend-sdk-testing
+        if: always()
         run: |
           cat test-results.xml | head -n 20
           sed -i "s|$GITHUB_WORKSPACE||g" test-results.xml
