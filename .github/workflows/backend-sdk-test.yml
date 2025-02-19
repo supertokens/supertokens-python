@@ -98,7 +98,8 @@ jobs:
           # npm test -- --reporter mocha-junit-reporter
           # npm test -- --reporter-option output=test-results.json
           # npm test -- --reporter mocha-reporter-gha
-          sed -i 's|${{github.workspace}}||g' test-results.xml
+          sed -i "s|$GITHUB_WORKSPACE||g" test-results.xml
+          cat test-results.xml
         env:
           SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
           TEST_MODE: testing
