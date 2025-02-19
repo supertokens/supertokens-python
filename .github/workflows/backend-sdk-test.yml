@@ -120,8 +120,10 @@ jobs:
           fail_on_failure: true
 
 
-      #   uses: dorny/test-reporter@v1
-      #   with:
-      #     reporter: mocha-json
-      #     path: backend-sdk-testing/test-results.xml
-      #     working-directory: backend-sdk-testing
+      - name: Reporter 2
+        uses: dorny/test-reporter@v1
+        with:
+          name: Backend SDK Tests
+          reporter: mocha-json
+          path: backend-sdk-testing/test-results.json
+          working-directory: backend-sdk-testing
