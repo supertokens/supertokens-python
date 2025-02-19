@@ -106,7 +106,9 @@ jobs:
       - name: Fix paths
         working-directory: backend-sdk-testing
         run: |
+          cat test-results.xml | head -n 20
           sed -i "s|$GITHUB_WORKSPACE||g" test-results.xml
+          cat test-results.xml | head -n 20
 
       - name: Reporter
         uses: mikepenz/action-junit-report@v5
