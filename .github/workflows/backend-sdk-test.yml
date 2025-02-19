@@ -27,7 +27,7 @@ jobs:
           has-fdi: true
           has-cdi: true
 
-  backend-sdk-test:
+  test:
     name: Backend SDK Tests
     runs-on: ubuntu-latest
     needs: define-versions
@@ -107,6 +107,17 @@ jobs:
         if: always()
         with:
           report_paths: backend-sdk-testing/test-results.xml
+          check_name: Backend SDK Tests
+          check_annotations: true
+          # Include table with all test results in the summary
+          detailed_summary: true
+          # Group the testcases by test suite in the detailed_summary
+          group_suite: true
+          # Fail if no test are found.
+          require_tests: true
+          # Fail the build in case of a test failure.
+          fail_on_failure: true
+
 
       #   uses: dorny/test-reporter@v1
       #   with:
