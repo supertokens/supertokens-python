@@ -104,35 +104,18 @@ jobs:
         # Doing it in the shell since the Reporter's `transformers` don't seem to work
         run: sed -i "s|$GITHUB_WORKSPACE/backend-sdk-testing/test||g" test-results.xml
 
-      # - name: Reporter
-      #   uses: mikepenz/action-junit-report@v5
-      #   if: always()
-      #   with:
-      #     report_paths: backend-sdk-testing/test-results.xml
-      #     check_name: Backend SDK Tests
-      #     # Include table with all test results in the summary
-      #     detailed_summary: true
-      #     # Group the testcases by test suite in the detailed_summary
-      #     group_suite: true
-      #     # Fail if no test are found.
-      #     require_tests: true
-      #     # Fail the build in case of a test failure.
-      #     fail_on_failure: true
-
-
-      # - name: Reporter 2
-      #   uses: dorny/test-reporter@v1
-      #   if: always()
-      #   with:
-      #     name: Backend SDK Tests 2
-      #     reporter: mocha-json
-      #     path: '**/test-results.json'
-      #     working-directory: backend-sdk-testing
-
-      - uses: pmeier/pytest-results-action@main
-        name: Surface failing tests
+      - name: Reporter
+        # Alternative: dorny/test-reporter@v1 - does not create a summary
+        uses: mikepenz/action-junit-report@v5
         if: always()
         with:
-          path: backend-sdk-testing/test-results.xml
-          summary: true
-          # title: "[Core=${{ steps.versions.outputs.coreVersionXy }}][py=${{ matrix.py-version }}] Unit Test Results"
+          report_paths: backend-sdk-testing/test-results.xml
+          check_name: Backend SDK Tests (${{matrix.cdi-version}}, ${{matrix.fdi-version}}, ${{matrix.py-version}}, ${{matrix.node-version}})
+          # Include table with all test results in the summary
+          detailed_summary: true
+          # Group the testcases by test suite in the detailed_summary
+          group_suite: true
+          # Fail if no test are found.
+          require_tests: true
+          # Fail the build in case of a test failure.
+          fail_on_failure: true
