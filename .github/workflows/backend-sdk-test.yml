@@ -120,11 +120,19 @@ jobs:
       #     fail_on_failure: true
 
 
-      - name: Reporter 2
-        uses: dorny/test-reporter@v1
+      # - name: Reporter 2
+      #   uses: dorny/test-reporter@v1
+      #   if: always()
+      #   with:
+      #     name: Backend SDK Tests 2
+      #     reporter: mocha-json
+      #     path: '**/test-results.json'
+      #     working-directory: backend-sdk-testing
+
+      - uses: pmeier/pytest-results-action@main
+        name: Surface failing tests
         if: always()
         with:
-          name: Backend SDK Tests 2
-          reporter: mocha-json
-          path: '**/test-results.json'
-          working-directory: backend-sdk-testing
+          path: backend-sdk-testing/test-results.xml
+          summary: true
+          # title: "[Core=${{ steps.versions.outputs.coreVersionXy }}][py=${{ matrix.py-version }}] Unit Test Results"
