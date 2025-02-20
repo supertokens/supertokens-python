@@ -1,4 +1,4 @@
-name: "Integration/E2E Test"
+name: "Backend SDK Tests"
 
 on:
   pull_request:
