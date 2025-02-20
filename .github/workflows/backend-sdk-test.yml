@@ -44,13 +44,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Checking out to a custom path since the test repo will also be cloned
           path: supertokens-python
-      - uses: actions/checkout@v4
-        with:
-          repository: supertokens/backend-sdk-testing
-          # ref: ${{ matrix.fdi-version }}
-          ref: ci/github-actions/containerized-core/4.0
-          path: backend-sdk-testing
 
       - uses: supertokens/get-versions-action@main
         id: versions
@@ -60,10 +55,6 @@ jobs:
           fdi-version: ${{ matrix.fdi-version }}
         env:
           SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.py-version }}
 
       - uses: actions/setup-node@v4
         with:
@@ -86,39 +77,45 @@ jobs:
           docker compose up --build --wait
           python3 tests/test-server/app.py &
 
-      - name: Setup backend-sdk-testing
-        working-directory: backend-sdk-testing
-        run: |
-          npm install
-          npm run build
-
-      - name: Run tests
-        working-directory: backend-sdk-testing
-        run: |
-          npm test
-        env:
-          SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
-          TEST_MODE: testing
-          NODE_PORT: 8081
-
-      - name: Fix paths
-        working-directory: backend-sdk-testing
-        if: always()
-        # Doing it in the shell since the Reporter's `transformers` don't seem to work
-        run: sed -i "s|$GITHUB_WORKSPACE/backend-sdk-testing/test||g" test-results.xml
-
-      - name: Reporter
-        # Alternative: dorny/test-reporter@v1 - does not create a summary
-        uses: mikepenz/action-junit-report@v5
-        if: always()
+      - uses: supertokens/backend-sdk-testing-action@main
         with:
-          report_paths: backend-sdk-testing/test-results.xml
-          check_name: Backend SDK Tests (${{matrix.cdi-version}}, ${{matrix.fdi-version}}, ${{matrix.py-version}}, ${{matrix.node-version}})
-          # Include table with all test results in the summary
-          detailed_summary: true
-          # Group the testcases by test suite in the detailed_summary
-          group_suite: true
-          # Fail if no test are found.
-          require_tests: true
-          # Fail the build in case of a test failure.
-          fail_on_failure: true
+          # version: ${{ matrix.fdi-version }}
+          version: ci/github-actions/containerized-core/4.0
+          path: backend-sdk-testing
+
+      # - name: Setup backend-sdk-testing
+      #   working-directory: backend-sdk-testing
+      #   run: |
+      #     npm install
+      #     npm run build
+
+      # - name: Run tests
+      #   working-directory: backend-sdk-testing
+      #   run: |
+      #     npm test
+      #   env:
+      #     SUPERTOKENS_CORE_TAG: ${{ steps.versions.outputs.coreTag }}
+      #     TEST_MODE: testing
+      #     NODE_PORT: 8081
+
+      # - name: Fix paths
+      #   working-directory: backend-sdk-testing
+      #   if: always()
+      #   # Doing it in the shell since the Reporter's `transformers` don't seem to work
+      #   run: sed -i "s|$GITHUB_WORKSPACE/backend-sdk-testing/test||g" test-results.xml
+
+      # - name: Reporter
+      #   # Alternative: dorny/test-reporter@v1 - does not create a summary
+      #   uses: mikepenz/action-junit-report@v5
+      #   if: always()
+      #   with:
+      #     report_paths: backend-sdk-testing/test-results.xml
+      #     check_name: Backend SDK Tests (${{matrix.cdi-version}}, ${{matrix.fdi-version}}, ${{matrix.node-version}})
+      #     # Include table with all test results in the summary
+      #     detailed_summary: true
+      #     # Group the testcases by test suite in the detailed_summary
+      #     group_suite: true
+      #     # Fail if no test are found.
+      #     require_tests: true
+      #     # Fail the build in case of a test failure.
+      #     fail_on_failure: true
