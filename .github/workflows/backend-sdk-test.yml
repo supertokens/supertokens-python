@@ -64,6 +64,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py-version }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
@@ -74,10 +75,12 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           make dev-install && rm -rf src
+
       - name: Start core and server
         working-directory: supertokens-python
         env:
           SUPERTOKENS_ENV: testing
+          SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersionXy }}
         run: |
           source venv/bin/activate
           docker compose up --build --wait
