@@ -82,8 +82,8 @@ TEST_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIi
 def get_new_core_app_url(
     *,
     # TODO: Move host/port to ENV_VARs so that user can customize based on their setup
-    host: str = "localhost",
-    port: str = "3567",
+    host: str = environ.get("SUPERTOKENS_CORE_HOST", "localhost"),
+    port: str = environ.get("SUPERTOKENS_CORE_PORT", "3567"),
     core_config: Optional[Dict[str, str]] = None,
 ) -> str:
     """
