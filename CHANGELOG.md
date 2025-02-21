@@ -9,10 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.29.0] - 2025-02-17
+- Fixes an issue where `removeDevice` API allowed removing TOTP devices without the user completing MFA.
+  - Brings SDK in-line with Node SDK v21.1.0
+
+### Test infrastructure
 - Migrates unit tests to use a containerized core
   - Updates `Makefile` to use a Docker `compose` setup step
   - Migrates unit tests from CircleCI to Github Actions
-  - Adds lint/format checks to Github Actions
+- Adds lint/format checks to Github Actions
+- Migrates backend-sdk-testing test to use a containerized core
+  - Migrates unit tests from CircleCI to Github Actions
+
 
 ## [0.28.0] - 2025-02-10
 - **[Breaking] Updates pre-commit hooks to use `pre-commit`**
