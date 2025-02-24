@@ -51,9 +51,9 @@ jobs:
       - name: Create virtual environment and install dependencies
         # Upgrade `pip` and `setuptools` to have the latest versions before further installs
         run: |
-          python3 -m pip install pip setuptools --upgrade
           python3 -m venv venv
           source venv/bin/activate
+          python3 -m pip install pip setuptools --upgrade
           make dev-install && rm -rf src
       - name: Run unit tests
         run: |
