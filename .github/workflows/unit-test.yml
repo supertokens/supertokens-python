@@ -49,7 +49,7 @@ jobs:
         with:
           python-version: ${{ matrix.py-version }}
       - name: Create virtual environment and install dependencies
-        # Upgrade `pip` and `setuptools` to have the latest versions before further installs
+        # Updrade `pip` and `setuptools` to have the latest versions before further installs
         run: |
           python3 -m venv venv
           source venv/bin/activate
