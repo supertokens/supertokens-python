@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Optional
 from unittest.mock import MagicMock
 
 import pytest
@@ -24,8 +23,9 @@ from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.types import RecipeUserId
+from typing_extensions import Any, Dict, Optional
 
-from tests.utils import get_new_core_app_url, reset
+from tests.utils import get_new_core_app_url, outputs, reset
 
 
 # Tests do not rely on the core.
@@ -35,109 +35,73 @@ def st_config() -> SupertokensConfig:
     return SupertokensConfig(get_new_core_app_url())
 
 
-def testing_URL_path_normalisation():
+@mark.parametrize(
+    ("input", "expectation"),
+    [
+        ("exists?email=john.doe%40gmail.com", outputs("/exists")),
+        (
+            "/auth/email/exists?email=john.doe%40gmail.com",
+            outputs("/auth/email/exists"),
+        ),
+        ("http://api.example.com", outputs("")),
+        ("https://api.example.com", outputs("")),
+        ("http://api.example.com?hello=1", outputs("")),
+        ("http://api.example.com/hello", outputs("/hello")),
+        ("http://api.example.com/HellO", outputs("/HellO")),
+        ("http://api.example.com/", outputs("")),
+        ("http://api.example.com:8080", outputs("")),
+        ("api.example.com/", outputs("")),
+        ("api.example.com#random", outputs("")),
+        (".example.com", outputs("")),
+        ("api.example.com/?hello=1&bye=2", outputs("")),
+        ("exists", outputs("/exists")),
+        ("eXiStS", outputs("/eXiStS")),
+        ("/exists", outputs("/exists")),
+        ("/eXiStS", outputs("/eXiStS")),
+        ("/exists?email=john.doe%40gmail.com", outputs("/exists")),
+        ("http://api.example.com/one/two", outputs("/one/two")),
+        ("http://1.2.3.4/one/two", outputs("/one/two")),
+        ("1.2.3.4/one/two", outputs("/one/two")),
+        ("https://api.example.com/one/two/", outputs("/one/two")),
+        ("http://api.example.com/one/two?hello=1", outputs("/one/two")),
+        ("http://api.example.com/hello/", outputs("/hello")),
+        ("http://api.example.com/one/two/", outputs("/one/two")),
+        ("http://api.example.com/one/two#random2", outputs("/one/two")),
+        ("api.example.com/one/two", outputs("/one/two")),
+        (".example.com/one/two", outputs("/one/two")),
+        ("api.example.com/one/two?hello=1&bye=2", outputs("/one/two")),
+        ("/one/two", outputs("/one/two")),
+        ("one/two", outputs("/one/two")),
+        ("one/two/", outputs("/one/two")),
+        ("/one", outputs("/one")),
+        ("one", outputs("/one")),
+        ("one/", outputs("/one")),
+        ("/one/two/", outputs("/one/two")),
+        ("/one/two?hello=1", outputs("/one/two")),
+        ("one/two?hello=1", outputs("/one/two")),
+        ("/one/two/#randm,", outputs("/one/two")),
+        ("one/two#random", outputs("/one/two")),
+        ("localhost:4000/one/two", outputs("/one/two")),
+        ("127.0.0.1:4000/one/two", outputs("/one/two")),
+        ("127.0.0.1/one/two", outputs("/one/two")),
+        ("https://127.0.0.1:80/one/two", outputs("/one/two")),
+        ("/", outputs("")),
+        ("", outputs("")),
+        ("/.netlify/functions/api", outputs("/.netlify/functions/api")),
+        ("/netlify/.functions/api", outputs("/netlify/.functions/api")),
+        ("app.example.com/.netlify/functions/api", outputs("/.netlify/functions/api")),
+        ("app.example.com/netlify/.functions/api", outputs("/netlify/.functions/api")),
+        ("/app.example.com", outputs("/app.example.com")),
+    ],
+)
+def testing_URL_path_normalisation(input: str, expectation: Any) -> None:
     def normalise_url_path_or_throw_error(
         input: str,
     ):  # pylint: disable=redefined-builtin
         return NormalisedURLPath(input).get_as_string_dangerous()
 
-    assert (
-        normalise_url_path_or_throw_error("exists?email=john.doe%40gmail.com")
-        == "/exists"
-    )
-    assert (
-        normalise_url_path_or_throw_error(
-            "/auth/email/exists?email=john.doe%40gmail.com"
-        )
-        == "/auth/email/exists"
-    )
-    assert normalise_url_path_or_throw_error("exists") == "/exists"
-    assert normalise_url_path_or_throw_error("/exists") == "/exists"
-    assert (
-        normalise_url_path_or_throw_error("/exists?email=john.doe%40gmail.com")
-        == "/exists"
-    )
-    assert normalise_url_path_or_throw_error("http://api.example.com") == ""
-    assert normalise_url_path_or_throw_error("https://api.example.com") == ""
-    assert normalise_url_path_or_throw_error("http://api.example.com?hello=1") == ""
-    assert normalise_url_path_or_throw_error("http://api.example.com/hello") == "/hello"
-    assert normalise_url_path_or_throw_error("http://api.example.com/") == ""
-    assert normalise_url_path_or_throw_error("http://api.example.com:8080") == ""
-    assert normalise_url_path_or_throw_error("api.example.com/") == ""
-    assert normalise_url_path_or_throw_error("api.example.com#random") == ""
-    assert normalise_url_path_or_throw_error(".example.com") == ""
-    assert normalise_url_path_or_throw_error("api.example.com/?hello=1&bye=2") == ""
-
-    assert (
-        normalise_url_path_or_throw_error("http://api.example.com/one/two")
-        == "/one/two"
-    )
-    assert normalise_url_path_or_throw_error("http://1.2.3.4/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("1.2.3.4/one/two") == "/one/two"
-    assert (
-        normalise_url_path_or_throw_error("https://api.example.com/one/two/")
-        == "/one/two"
-    )
-    assert (
-        normalise_url_path_or_throw_error("http://api.example.com/one/two?hello=1")
-        == "/one/two"
-    )
-    assert (
-        normalise_url_path_or_throw_error("http://api.example.com/hello/") == "/hello"
-    )
-    assert (
-        normalise_url_path_or_throw_error("http://api.example.com/one/two/")
-        == "/one/two"
-    )
-    assert (
-        normalise_url_path_or_throw_error("http://api.example.com/one/two#random2")
-        == "/one/two"
-    )
-    assert normalise_url_path_or_throw_error("api.example.com/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error(".example.com/one/two") == "/one/two"
-    assert (
-        normalise_url_path_or_throw_error("api.example.com/one/two?hello=1&bye=2")
-        == "/one/two"
-    )
-
-    assert normalise_url_path_or_throw_error("/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("one/two/") == "/one/two"
-    assert normalise_url_path_or_throw_error("/one") == "/one"
-    assert normalise_url_path_or_throw_error("one") == "/one"
-    assert normalise_url_path_or_throw_error("one/") == "/one"
-    assert normalise_url_path_or_throw_error("/one/two/") == "/one/two"
-    assert normalise_url_path_or_throw_error("/one/two?hello=1") == "/one/two"
-    assert normalise_url_path_or_throw_error("one/two?hello=1") == "/one/two"
-    assert normalise_url_path_or_throw_error("/one/two/#randm,") == "/one/two"
-    assert normalise_url_path_or_throw_error("one/two#random") == "/one/two"
-
-    assert normalise_url_path_or_throw_error("localhost:4000/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("127.0.0.1:4000/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("127.0.0.1/one/two") == "/one/two"
-    assert (
-        normalise_url_path_or_throw_error("https://127.0.0.1:80/one/two") == "/one/two"
-    )
-    assert normalise_url_path_or_throw_error("/") == ""
-    assert normalise_url_path_or_throw_error("") == ""
-
-    assert (
-        normalise_url_path_or_throw_error("/.netlify/functions/api")
-        == "/.netlify/functions/api"
-    )
-    assert (
-        normalise_url_path_or_throw_error("/netlify/.functions/api")
-        == "/netlify/.functions/api"
-    )
-    assert (
-        normalise_url_path_or_throw_error("app.example.com/.netlify/functions/api")
-        == "/.netlify/functions/api"
-    )
-    assert (
-        normalise_url_path_or_throw_error("app.example.com/netlify/.functions/api")
-        == "/netlify/.functions/api"
-    )
-    assert normalise_url_path_or_throw_error("/app.example.com") == "/app.example.com"
+    with expectation as output:
+        assert normalise_url_path_or_throw_error(input) == output
 
 
 def testing_URL_domain_normalisation():
