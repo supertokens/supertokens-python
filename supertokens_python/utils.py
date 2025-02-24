@@ -35,8 +35,9 @@ from typing import (
 from urllib.parse import urlparse
 
 from httpx import HTTPStatusError, Response
-from tldextract import extract  # type: ignore
+from tldextract import TLDExtract
 
+from supertokens_python.env.base import FLAG_tldextract_disable_http
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
@@ -288,7 +289,16 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
     if hostname.startswith("localhost") or is_an_ip_address(hostname):
         return "localhost"
 
-    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
+    extract = TLDExtract(fallback_to_snapshot=True, include_psl_private_domains=True)
+    # Explicitly disable HTTP calls, use snapshot bundled into library
+    if FLAG_tldextract_disable_http():
+        extract = TLDExtract(
+            suffix_list_urls=(),  # Ensures no HTTP calls
+            fallback_to_snapshot=True,
+            include_psl_private_domains=True,
+        )
+
+    parsed_url: Any = extract(hostname)
     if parsed_url.domain == "":  # type: ignore
         # We need to do this because of https://github.com/supertokens/supertokens-python/issues/394
         if hostname.endswith(".amazonaws.com") and parsed_url.suffix == hostname:

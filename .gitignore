@@ -8,7 +8,7 @@ __pycache__
 releasePassword
 apiPassword
 venv/
-env/
+./env/
 .env
 .DS_Store
 bin/

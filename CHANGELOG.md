@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.29.0] - 2025-02-17
+- Adds option to disable `tldextract` HTTP calls by setting `SUPERTOKENS_TLDEXTRACT_DISABLE_HTTP=1`
+
 ## [0.28.0]
 - **[Breaking] Updates pre-commit hooks to use `pre-commit`**
   - Migration:
