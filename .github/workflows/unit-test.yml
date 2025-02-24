@@ -1,4 +1,4 @@
-name: "Test"
+name: "Unit Tests"
 
 on:
   pull_request:
@@ -29,7 +29,6 @@ jobs:
           has-cdi: true
 
   test:
-    name: Unit Tests
     runs-on: ubuntu-latest
     needs: define-versions
     strategy:
