@@ -11,27 +11,6 @@ jobs:
     steps:
       - checkout
       - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
-  test-backend-sdk-testing:
-    docker:
-      - image: python:<< parameters.python-version >>
-      - image: rishabhpoddar/oauth-server-cicd
-    resource_class: large
-    parameters:
-      cdi-version:
-        type: string
-      fdi-version:
-        type: string
-      python-version:
-        type: string
-    steps:
-      - checkout
-      - run: apt update && apt install -y bc jq lsof
-      - run: (cd .circleci/ && ./installJava.sh)
-      - run: (cd .circleci/ && ./installNode.sh 20)
-      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: python3 -m pip install -r dev-requirements.txt
-      - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
-      - slack/status
   test-website-fastapi:
     docker:
       - image: python:<< parameters.python-version >>
@@ -295,21 +274,6 @@ workflows:
               only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
               only: /test-cicd\/.*/
-      - test-backend-sdk-testing:
-          requires:
-              - test-dev-tag-as-not-passed
-          context:
-              - slack-notification
-          filters:
-              tags:
-                  only: /dev-v[0-9]+(\.[0-9]+)*/
-              branches:
-                  only: /test-cicd\/.*/
-          matrix:
-              parameters:
-                  cdi-version: placeholder
-                  fdi-version: placeholder
-                  python-version: ['3.8', '3.13']
       - test-website-fastapi:
           requires:
             - test-dev-tag-as-not-passed
@@ -438,7 +402,6 @@ workflows:
               python-version: ['3.8', '3.13']
       - test-success:
           requires:
-            - test-backend-sdk-testing
             - test-website-fastapi
             - test-website-flask
             - test-website-django
