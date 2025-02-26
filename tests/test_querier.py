@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import asyncio
-import json
 from typing import Any, Dict, Optional
 
 import httpx
@@ -84,9 +83,7 @@ async def test_network_call_is_retried_as_expected():
         try:
             await q.send_get_request(NormalisedURLPath("/api1"), None, None)
         except Exception as e:
-            if "with status code: 429" in str(
-                e
-            ) and 'message: {"status": "RATE_ERROR"}' in str(e):
+            if "with status code: 429" in str(e) and '"RATE_ERROR"' in str(e):
                 pass
             else:
                 raise e
@@ -186,12 +183,16 @@ async def test_querier_text_and_headers():
         )
 
         res = await q.send_get_request(NormalisedURLPath("/json-api"), None, None)
+        assert "content-length" in res["_headers"]
+        # httpx 0.28.0 seems to have changed their `json.dumps` signature in https://github.com/encode/httpx/issues/3363
+        # Does not make sense to keep up to date with minor changes like this
+        # Dropping content-length checks to avoid flake here
+        res["_headers"].pop("content-length")
         assert res == {
             "bar": "baz",
             "_headers": {
                 "greet": "hi",
                 "content-type": "application/json",
-                "content-length": str(len(json.dumps(body))),
             },
         }
 

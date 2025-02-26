@@ -18,6 +18,6 @@ pytest-mock==3.14.0
 pytest-rerunfailures==14.0
 pyyaml==6.0.2
 requests-mock==1.12.1
-respx==0.21.1
+respx>=0.13.0, <1.0.0
 uvicorn==0.32.0
 -e .

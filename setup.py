@@ -15,7 +15,6 @@ extras_require = {
     # on changes in these frameworks
     "fastapi": (
         [
-            "respx==0.21.1",
             "fastapi",
             "uvicorn",
             "python-dotenv==1.0.1",
@@ -83,7 +82,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.28.0",
+    version="0.28.1",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -116,7 +115,7 @@ setup(
         # [crypto] ensures that it installs the `cryptography` library as well
         # based on constraints specified in https://github.com/jpadilla/pyjwt/blob/master/setup.cfg#L50
         "PyJWT[crypto]>=2.5.0,<3.0.0",
-        "httpx>=0.15.0,<=0.27.2",
+        "httpx>=0.15.0,<1.0.0",
         "pycryptodome<3.21.0",
         "tldextract<5.1.3",
         "asgiref>=3.4.1,<4",
