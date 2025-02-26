@@ -26,6 +26,7 @@ jobs:
       - run: apt update && apt install -y bc jq lsof
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: (cd .circleci/ && ./installJava.sh)
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make dev-install
       - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
       - store_test_results:
@@ -49,6 +50,7 @@ jobs:
       - run: (cd .circleci/ && ./installJava.sh)
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: python3 -m pip install -r dev-requirements.txt
       - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
       - slack/status
@@ -70,6 +72,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-fastapi
       - run: (cd .circleci/ && ./websiteFastApi.sh << parameters.fdi-version >>)
       - slack/status
@@ -91,6 +94,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-flask
       - run: (cd .circleci/ && ./websiteFlask.sh << parameters.fdi-version >>)
       - slack/status
@@ -112,6 +116,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-django
       - run: (cd .circleci/ && ./websiteDjango.sh << parameters.fdi-version >>)
       - slack/status
@@ -133,6 +138,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-drf
       - run: (cd .circleci/ && ./websiteDrfAsync.sh << parameters.fdi-version >>)
       - slack/status
@@ -154,6 +160,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-drf
       - run: (cd .circleci/ && ./websiteDrfSync.sh << parameters.fdi-version >>)
       - slack/status
@@ -175,6 +182,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-django2x
       - run: (cd .circleci/ && ./websiteDjango2x.sh << parameters.fdi-version >>)
       - slack/status
@@ -198,6 +206,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-flask
       - run: python -m pip install nest-asyncio
       - run: (cd .circleci/ && ./websiteFlask.sh << parameters.fdi-version >>)
@@ -223,6 +232,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-fastapi
       - run: (cd .circleci && ./authReactFastApi.sh << parameters.fdi-version >>)
       - store_test_results:
@@ -255,6 +265,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-flask
       - run: (cd .circleci && ./authReactFlask.sh << parameters.fdi-version >>)
       - store_test_results:
@@ -287,6 +298,7 @@ jobs:
       - run: (cd .circleci/ && ./installNode.sh 20)
       - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: python3 -m pip install pip setuptools --upgrade
       - run: make with-django
       - run: (cd .circleci && ./authReactDjango.sh << parameters.fdi-version >>)
       - store_test_results:

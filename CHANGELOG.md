@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)
 - Removes `respx` dependency from `fastapi` install
+- Upgrades `pip` and `setuptools` in CI runs
 
 ## [0.28.0]
 - **[Breaking] Updates pre-commit hooks to use `pre-commit`**
