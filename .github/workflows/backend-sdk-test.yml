@@ -38,7 +38,8 @@ jobs:
 
     env:
       API_PORT: 3030
-      ST_CONNECTION_URI: http://localhost:8081
+      SUPERTOKENS_CORE_PORT: 3567
+      SUPERTOKENS_CORE_HOST: localhost
 
     steps:
       - uses: actions/checkout@v4
@@ -82,4 +83,5 @@ jobs:
         with:
           # version: ${{ matrix.fdi-version }}
           version: ci/github-actions/containerized-core/${{ matrix.fdi-version }}
+          check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=${{ matrix.node-version }}]'
           path: backend-sdk-testing
