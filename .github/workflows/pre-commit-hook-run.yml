@@ -22,6 +22,7 @@ jobs:
         run: |
           python3 -m venv venv
           source venv/bin/activate
+          python3 -m pip install pip setuptools --upgrade
           make dev-install && rm -rf src
       - name: Run checks
         # New steps require sourcing the venv again
