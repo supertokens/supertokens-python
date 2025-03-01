@@ -54,20 +54,9 @@ from supertokens_python.recipe.thirdparty.types import (
 from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import clean_st, email_verify_token_request, reset, setup_st, start_st
+from tests.utils import email_verify_token_request, get_new_core_app_url
 
 respx_mock = respx.MockRouter
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
 
 
 @fixture(scope="function")
@@ -119,7 +108,7 @@ async def test_email_verify_default_backward_compatibility(
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -137,7 +126,6 @@ async def test_email_verify_default_backward_compatibility(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     resp = await manually_create_or_update_user(
         "public", "supertokens", "test-user-id", "test@example.com", False, None
@@ -193,7 +181,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -211,7 +199,6 @@ async def test_email_verify_default_backward_compatibility_supress_error(
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     resp = await manually_create_or_update_user(
         "public", "supertokens", "test-user-id", "test@example.com", False, None
@@ -277,7 +264,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
             email_verify_url = template_vars.email_verify_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -301,7 +288,6 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     resp = await manually_create_or_update_user(
         "public", "supertokens", "test-user-id", "test@example.com", False, None
@@ -355,7 +341,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -379,7 +365,6 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     resp = await manually_create_or_update_user(
         "public", "supertokens", "test-user-id", "test@example.com", False, None
@@ -495,7 +480,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
@@ -519,7 +504,6 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
-    start_st()
 
     resp = await manually_create_or_update_user(
         "public", "supertokens", "test-user-id", "test@example.com", False, None

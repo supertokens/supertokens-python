@@ -28,26 +28,11 @@ from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
-    clean_st,
+    get_new_core_app_url,
     get_st_init_args,
     min_api_version,
-    reset,
-    setup_st,
     sign_up_request,
-    start_st,
 )
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
 
 pytestmark = mark.asyncio
 
@@ -73,16 +58,16 @@ async def test_dashboard_recipe(app: TestClient):
         return oi
 
     st_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             dashboard.init(
                 api_key="someKey",
                 override=InputOverrideConfig(functions=override_dashboard_functions),
             ),
-        ]
+        ],
     )
     init(**st_args)
-    start_st()
 
     expected_url = (
         f"https://cdn.jsdelivr.net/gh/supertokens/dashboard@v{DASHBOARD_VERSION}/build/"
@@ -107,7 +92,8 @@ async def test_dashboard_users_get(app: TestClient):
         return oi
 
     st_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             emailpassword.init(),
             usermetadata.init(),
@@ -117,10 +103,9 @@ async def test_dashboard_users_get(app: TestClient):
                     functions=override_dashboard_functions,
                 ),
             ),
-        ]
+        ],
     )
     init(**st_args)
-    start_st()
 
     user_ids: List[str] = []
 
@@ -143,14 +128,15 @@ async def test_dashboard_users_get(app: TestClient):
 
 
 async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
-    connection_uri = start_st()
+    connection_uri = get_new_core_app_url()
     connection_uri_without_protocol = connection_uri.replace("http://", "")
 
     st_args = get_st_init_args(
-        [
+        url=connection_uri,
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             dashboard.init(api_key="someKey"),
-        ]
+        ],
     )
 
     st_config = st_args.get("supertokens_config")
@@ -163,19 +149,20 @@ async def test_connection_uri_has_http_prefix_if_localhost(app: TestClient):
     assert res.status_code == 200
     assert f'window.connectionURI = "{connection_uri}"' in str(res.text)
     if st_config:
-        st_config.connection_uri = "http://localhost:3567"
+        st_config.connection_uri = connection_uri
 
 
 async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient):
-    start_st()
     connection_uri = "https://try.supertokens.com/appid-public"
     connection_uri_without_protocol = connection_uri.replace("https://", "")
 
+    core_url = get_new_core_app_url()
     st_args = get_st_init_args(
-        [
+        url=core_url,
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             dashboard.init(api_key="someKey"),
-        ]
+        ],
     )
 
     st_config = st_args.get("supertokens_config")
@@ -188,22 +175,23 @@ async def test_connection_uri_has_https_prefix_if_not_localhost(app: TestClient)
     assert res.status_code == 200
     assert f'window.connectionURI = "{connection_uri}"' in str(res.text)
     if st_config:
-        st_config.connection_uri = "http://localhost:3567"
+        st_config.connection_uri = core_url
 
 
 async def test_that_first_connection_uri_is_selected_among_multiple_uris(
     app: TestClient,
 ):
-    start_st()
     first_connection_uri = "https://try.supertokens.com/appid-public"
     second_connection_uri = "https://test.supertokens.com/"
     multiple_connection_uris = f"{first_connection_uri};{second_connection_uri}"
 
+    core_url = get_new_core_app_url()
     st_args = get_st_init_args(
-        [
+        url=core_url,
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             dashboard.init(api_key="someKey"),
-        ]
+        ],
     )
 
     st_config = st_args.get("supertokens_config")
@@ -216,7 +204,7 @@ async def test_that_first_connection_uri_is_selected_among_multiple_uris(
     assert res.status_code == 200
     assert f'window.connectionURI = "{first_connection_uri}"' in str(res.text)
     if st_config:
-        st_config.connection_uri = "http://localhost:3567"
+        st_config.connection_uri = core_url
 
 
 async def test_that_get_user_works_with_combination_recipes(app: TestClient):
@@ -232,7 +220,8 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
         return oi
 
     st_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             thirdparty.init(),
             passwordless.init(
@@ -246,10 +235,9 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
                     functions=override_dashboard_functions,
                 ),
             ),
-        ]
+        ],
     )
     init(**st_args)
-    start_st()
 
     pluser = await manually_create_or_update_user(
         "public", "google", "googleid", "test@example.com", True, None

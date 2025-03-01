@@ -11,26 +11,6 @@ jobs:
     steps:
       - checkout
       - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
-  test-unit:
-    docker:
-      - image: python:<< parameters.python-version >>
-    resource_class: large
-    parameters:
-      cdi-version:
-        type: string
-      python-version:
-        type: string
-    parallelism: 4
-    steps:
-      - checkout
-      - run: apt update && apt install -y bc jq lsof
-      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: (cd .circleci/ && ./installJava.sh)
-      - run: make dev-install
-      - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
-      - store_test_results:
-          path: test-results/junit.xml
-      - slack/status
   test-backend-sdk-testing:
     docker:
       - image: python:<< parameters.python-version >>
@@ -315,20 +295,6 @@ workflows:
               only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
               only: /test-cicd\/.*/
-      - test-unit:
-          requires:
-            - test-dev-tag-as-not-passed
-          context:
-            - slack-notification
-          filters:
-            tags:
-              only: /dev-v[0-9]+(\.[0-9]+)*/
-            branches:
-              only: /test-cicd\/.*/
-          matrix:
-            parameters:
-              cdi-version: placeholder
-              python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
       - test-backend-sdk-testing:
           requires:
               - test-dev-tag-as-not-passed
@@ -472,7 +438,6 @@ workflows:
               python-version: ['3.8', '3.13']
       - test-success:
           requires:
-            - test-unit
             - test-backend-sdk-testing
             - test-website-fastapi
             - test-website-flask

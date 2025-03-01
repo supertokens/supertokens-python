@@ -13,10 +13,7 @@ from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
 
 from tests.sessions.claims.utils import TrueClaim, get_st_init_args
-from tests.utils import AsyncMock, setup_function, start_st, teardown_function
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
+from tests.utils import AsyncMock
 
 pytestmark = mark.asyncio
 
@@ -54,8 +51,7 @@ async def test_should_attempt_to_set_claim_to_none():
 
 
 async def test_should_clear_previously_set_claim(timestamp: int):
-    init(**get_st_init_args(TrueClaim))  # type:ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s: SessionContainer = await create_new_session(
@@ -68,8 +64,7 @@ async def test_should_clear_previously_set_claim(timestamp: int):
 
 
 async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
-    init(**get_st_init_args(TrueClaim))  # type:ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     dummy_req: BaseRequest = MagicMock()
     s: SessionContainer = await create_new_session(
@@ -92,8 +87,7 @@ async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
 
 
 async def test_should_work_ok_for_non_existing_handle():
-    init(**get_st_init_args(TrueClaim))  # type:ignore
-    start_st()
+    init(**get_st_init_args(TrueClaim))
 
     res = await remove_claim("non-existing-handle", TrueClaim)
     assert res is False

@@ -94,13 +94,18 @@ def default_st_init():
             return origin
         return "http://localhost:8080"
 
+    core_host: str = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+    core_port: str = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+    core_url = f"http://{core_host}:{core_port}"
+
     init(
         app_info=InputAppInfo(
             app_name="SuperTokens",
             api_domain="http://api.supertokens.io",
             origin=origin_func,
         ),
-        supertokens_config=SupertokensConfig(connection_uri="http://localhost:3567"),
+        # TODO: Move to use new app-id with containerized st-core
+        supertokens_config=SupertokensConfig(connection_uri=core_url),
         framework="flask",
         recipe_list=[emailpassword.init(), session.init()],
     )

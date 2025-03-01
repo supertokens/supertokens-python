@@ -20,18 +20,9 @@ from supertokens_python.recipe.session.recipe_implementation import RecipeImplem
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
 
-from tests.utils import (
-    get_st_init_args,
-    setup_function,
-    st_init_common_args,
-    start_st,
-    teardown_function,
-)
+from tests.utils import get_new_core_app_url, get_st_init_args
 
 from .utils import TrueClaim
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
 
 _T = TypeVar("_T")
 
@@ -39,14 +30,13 @@ pytestmark = mark.asyncio
 
 
 async def test_should_not_throw_for_empty_array():
-    st_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
         ],
-    }
-    init(**st_args)  # type:ignore
-    start_st()
+    )
+    init(**st_args)
 
     s = SessionRecipe.get_instance()
     assert isinstance(s.recipe_implementation, RecipeImplementation)
@@ -76,14 +66,13 @@ async def test_should_not_throw_for_empty_array():
 
 
 async def test_should_call_validate_with_the_same_payload_object():
-    st_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
         ],
-    }
-    init(**st_args)  # type:ignore
-    start_st()
+    )
+    init(**st_args)
 
     s = SessionRecipe.get_instance()
     assert isinstance(s.recipe_implementation, RecipeImplementation)
@@ -144,8 +133,7 @@ async def test_should_call_validate_with_the_same_payload_object():
 
 
 async def test_assert_claims_should_work():
-    init(**get_st_init_args([session.init()]))
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))
 
     validator = TrueClaim.validators.is_true(1)
     s = await create_new_session_without_request_response(

@@ -29,15 +29,7 @@ from supertokens_python.recipe import (
 )
 from supertokens_python.recipe.emailpassword.asyncio import get_user, sign_up
 
-from tests.utils import (
-    get_st_init_args,
-    setup_function,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function
-_ = teardown_function
+from tests.utils import get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
 respx_mock = respx.MockRouter
@@ -47,16 +39,16 @@ async def test_network_call_is_retried_as_expected():
     # Test that network call is retried properly
     # Test that rate limiting errors are thrown back to the user
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(),
             emailpassword.init(),
             emailverification.init(mode="OPTIONAL"),
             dashboard.init(),
-        ]
+        ],
     )
     args["supertokens_config"] = SupertokensConfig("http://localhost:6789")
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     Querier.api_version = "3.0"
     q = Querier.get_instance()
@@ -103,16 +95,17 @@ async def test_network_call_is_retried_as_expected():
 
 
 async def test_parallel_calls_have_independent_counters():
+    core_url = get_new_core_app_url()
     args = get_st_init_args(
-        [
+        url=core_url,
+        recipe_list=[
             session.init(),
             emailpassword.init(),
             emailverification.init(mode="OPTIONAL"),
             dashboard.init(),
-        ]
+        ],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     Querier.api_version = "3.0"
     q = Querier.get_instance()
@@ -132,7 +125,7 @@ async def test_parallel_calls_have_independent_counters():
         return httpx.Response(429, json={})
 
     with respx_mock() as mocker:
-        api = mocker.get("http://localhost:3567/api").mock(side_effect=api_side_effect)
+        api = mocker.get(f"{core_url}/api").mock(side_effect=api_side_effect)
 
         async def call_api(id_: int):
             try:
@@ -156,10 +149,9 @@ async def test_parallel_calls_have_independent_counters():
 
 
 async def test_querier_text_and_headers():
-    args = get_st_init_args([session.init()])
+    args = get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()])
     args["supertokens_config"] = SupertokensConfig("http://localhost:6789")
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     Querier.api_version = "3.0"
     q = Querier.get_instance()
@@ -213,7 +205,7 @@ async def test_caching_works():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567", network_interceptor=intercept
+            connection_uri=get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="ST",
@@ -229,8 +221,7 @@ async def test_caching_works():
             dashboard.init(),
             thirdparty.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {}
     user = await get_user("random", user_context)
 
@@ -276,7 +267,7 @@ async def test_caching_gets_clear_with_non_get():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567", network_interceptor=intercept
+            connection_uri=get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="ST",
@@ -291,8 +282,7 @@ async def test_caching_gets_clear_with_non_get():
             emailpassword.init(),
             dashboard.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {}
     user = await get_user("random", user_context)
 
@@ -331,7 +321,7 @@ async def test_no_caching_if_disabled_by_user():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567",
+            connection_uri=get_new_core_app_url(),
             network_interceptor=intercept,
             disable_core_call_cache=True,
         ),
@@ -348,8 +338,7 @@ async def test_no_caching_if_disabled_by_user():
             emailpassword.init(),
             dashboard.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {}
     user = await get_user("random", user_context)
 
@@ -380,7 +369,7 @@ async def test_no_caching_if_headers_are_different():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567",
+            connection_uri=get_new_core_app_url(),
             network_interceptor=intercept,
         ),
         app_info=InputAppInfo(
@@ -397,8 +386,7 @@ async def test_no_caching_if_headers_are_different():
             dashboard.init(),
             thirdparty.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {}
     user = await get_user("random", user_context)
 
@@ -435,7 +423,7 @@ async def test_caching_gets_clear_when_query_without_user_context():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567", network_interceptor=intercept
+            connection_uri=get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="ST",
@@ -450,8 +438,7 @@ async def test_caching_gets_clear_when_query_without_user_context():
             emailpassword.init(),
             dashboard.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {}
     user = await get_user("random", user_context)
 
@@ -484,7 +471,7 @@ async def test_caching_does_not_get_clear_with_non_get_if_keep_alive():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567", network_interceptor=intercept
+            connection_uri=get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="ST",
@@ -499,8 +486,7 @@ async def test_caching_does_not_get_clear_with_non_get_if_keep_alive():
             emailpassword.init(),
             dashboard.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {"_default": {"keep_cache_alive": True}}
     user_context_2: Dict[str, Any] = {}
 
@@ -553,7 +539,7 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_false():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567", network_interceptor=intercept
+            connection_uri=get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="ST",
@@ -568,8 +554,7 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_false():
             emailpassword.init(),
             dashboard.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {"_default": {"keep_cache_alive": False}}
     user_context_2: Dict[str, Any] = {}
 
@@ -622,7 +607,7 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_not_set():
 
     init(
         supertokens_config=SupertokensConfig(
-            connection_uri="http://localhost:3567", network_interceptor=intercept
+            connection_uri=get_new_core_app_url(), network_interceptor=intercept
         ),
         app_info=InputAppInfo(
             app_name="ST",
@@ -637,8 +622,7 @@ async def test_caching_gets_clear_with_non_get_if_keep_alive_is_not_set():
             emailpassword.init(),
             dashboard.init(),
         ],
-    )  # type: ignore
-    start_st()
+    )
     user_context: Dict[str, Any] = {}
     user_context_2: Dict[str, Any] = {}
 

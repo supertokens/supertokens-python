@@ -25,14 +25,9 @@ from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
-    setup_function,
+    get_new_core_app_url,
     sign_up_request,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function  # type: ignore
-_ = teardown_function  # type: ignore
 
 pytestmark = mark.asyncio
 
@@ -49,7 +44,7 @@ async def test_update_email_or_password_with_default_validator(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -66,7 +61,6 @@ async def test_update_email_or_password_with_default_validator(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
 
@@ -98,7 +92,7 @@ async def test_update_email_or_password_with_custom_validator(
         return None  # means that there is no error
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -119,7 +113,6 @@ async def test_update_email_or_password_with_custom_validator(
             ),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
 

@@ -30,18 +30,7 @@ from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.types import RecipeUserId
 
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
-from tests.utils import (
-    AsyncMock,
-    MagicMock,
-    setup_function,
-    st_init_common_args,
-    start_st,
-    teardown_function,
-)
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
-_ = start_st  # type:ignore
+from tests.utils import AsyncMock, MagicMock, get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
 
@@ -62,9 +51,9 @@ def st_init_generator_with_overriden_global_validators(
         oi.get_global_claim_validators = new_get_global_claim_validators  # type: ignore
         return oi
 
-    return {
-        **st_init_common_args,
-        "recipe_list": [
+    return get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
@@ -73,7 +62,7 @@ def st_init_generator_with_overriden_global_validators(
                 ),
             )
         ],
-    }
+    )
 
 
 def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidator):
@@ -90,9 +79,9 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
         oi.get_global_claim_validators = new_get_global_claim_validators  # type: ignore
         return oi
 
-    return {
-        **st_init_common_args,
-        "recipe_list": [
+    return get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
@@ -101,7 +90,7 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
                 ),
             )
         ],
-    }
+    )
 
 
 class AlwaysValidValidator(SessionClaimValidator):
@@ -242,20 +231,20 @@ def create_session(fastapi_client: TestClient):
     return res
 
 
+# TODO: parametrize
 async def test_should_allow_without_claims_required_or_present(
     fastapi_client: TestClient,
 ):
-    st_init_args = {
-        **st_init_common_args,
-        "recipe_list": [
+    st_init_args = get_st_init_args(
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             )
         ],
-    }
-    init(**st_init_args)  # type: ignore
-    start_st()
+    )
+    init(**st_init_args)
 
     create_session(fastapi_client)
 
@@ -270,8 +259,7 @@ async def test_should_allow_with_claim_valid_after_refetching(
     st_init_args = st_init_generator_with_claim_validator(
         TrueClaim.validators.has_value(True)
     )
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
 
@@ -285,8 +273,7 @@ async def test_should_reject_with_claim_required_but_not_added(
     st_init_args = st_init_generator_with_claim_validator(
         NoneClaim.validators.has_value(True)  # type: ignore
     )
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
 
@@ -313,8 +300,7 @@ async def test_should_allow_with_custom_validator_returning_true(
     custom_validator = AlwaysValidValidator()
 
     st_init_args = st_init_generator_with_claim_validator(custom_validator)
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     res = fastapi_client.get("/default-claims")
@@ -328,8 +314,7 @@ async def test_should_reject_with_custom_validator_returning_false_without_reaso
     custom_validator = AlwaysInvalidValidator(reason=None)
 
     st_init_args = st_init_generator_with_claim_validator(custom_validator)
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     response = fastapi_client.get("/default-claims")
@@ -346,8 +331,7 @@ async def test_should_reject_with_custom_validator_returning_false_with_reason(
     custom_validator = AlwaysInvalidValidator(reason={"message": "foo"})
 
     st_init_args = st_init_generator_with_claim_validator(custom_validator)
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     response = fastapi_client.get("/default-claims")
@@ -365,8 +349,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
 ):
     validator = AlwaysValidValidator()
     st_init_args = st_init_generator_with_overriden_global_validators([validator])
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     recipe_implementation_mock = AsyncMock()
     session_config_mock = MagicMock()
@@ -412,8 +395,7 @@ async def test_should_allow_if_assert_claims_returns_no_error(
 ):
     validator = AlwaysValidValidator()
     st_init_args = st_init_generator_with_overriden_global_validators([validator])
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     recipe_impl_mock = AsyncMock()
     recipe_impl_mock.validate_claims.return_value = ClaimsValidationResult(  # type: ignore
@@ -461,8 +443,7 @@ async def test_should_allow_with_empty_list_as_override(fastapi_client: TestClie
     st_init_args = st_init_generator_with_claim_validator(
         NoneClaim.validators.has_value(True)
     )
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     res = fastapi_client.get("/no-claims")
@@ -476,8 +457,7 @@ async def test_should_allow_with_refetched_claim(fastapi_client: TestClient):
     st_init_args = st_init_generator_with_claim_validator(
         NoneClaim.validators.has_value(True)
     )
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     res = fastapi_client.get("/refetched-claim")
@@ -491,8 +471,7 @@ async def test_should_reject_with_invalid_refetched_claim(fastapi_client: TestCl
     st_init_args = st_init_generator_with_claim_validator(
         NoneClaim.validators.has_value(True)
     )
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     res = fastapi_client.get("/refetched-claim-false")
@@ -521,8 +500,7 @@ async def test_should_reject_with_custom_claim_returning_false(
         reason={"message": "does not matter because of override"}
     )
     st_init_args = st_init_generator_with_claim_validator(cv)
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     res = fastapi_client.get("/refetched-claim-isvalid-false")
@@ -542,8 +520,7 @@ async def test_should_allow_with_custom_claim_returning_true(
     # in "/refetched-claim-isvalid-true" api
     cv = AlwaysValidValidator()
     st_init_args = st_init_generator_with_claim_validator(cv)
-    init(**st_init_args)  # type: ignore
-    start_st()
+    init(**st_init_args)
 
     create_session(fastapi_client)
     res = fastapi_client.get("/refetched-claim-isvalid-true")
@@ -568,14 +545,13 @@ async def test_that_verify_session_return_401_if_access_token_is_not_sent_and_mi
     client_without_middleware: TestClient, fastapi_client: TestClient
 ):
     init(
-        **{
-            **st_init_common_args,
-            "recipe_list": [
+        **get_st_init_args(
+            url=get_new_core_app_url(),
+            recipe_list=[
                 session.init(get_token_transfer_method=lambda *_: "cookie")  # type: ignore
             ],
-        }
+        )
     )
-    start_st()
 
     res = fastapi_client.post("/verify")
     assert res.status_code == 401
