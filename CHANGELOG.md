@@ -9,13 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.29.0] - 2025-02-17
-- **[Breaking] Makes URL path normalization case sensitive**
+### Breaking changes
+- Makes URL path normalization case sensitive
   - Updates `normalise_url_path_or_throw_error` to be case sensitive
   - URL paths will not be converted to lower-case, and will be kept as-is.
+
+### Changes
 - Fixes an issue where `removeDevice` API allowed removing TOTP devices without the user completing MFA.
   - Brings SDK in-line with Node SDK v21.1.0
 
-### Test infrastructure
+#### Test infrastructure
 - Migrates unit tests to use a containerized core
   - Updates `Makefile` to use a Docker `compose` setup step
   - Migrates unit tests from CircleCI to Github Actions
