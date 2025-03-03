@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
+### 2025-03-03
+- Upgrades `pip` and `setuptools` in CI publish job
+  - Also upgrades `poetry` and it's dependency - `clikit`
 
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)
