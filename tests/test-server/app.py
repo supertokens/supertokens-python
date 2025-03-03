@@ -744,6 +744,12 @@ def reset_override_params_api():
     return jsonify({"ok": True})
 
 
+@app.route("/test/resetoverridelogs", methods=["GET"])  # type: ignore
+def reset_override_logs():
+    override_logging.reset_override_logs()
+    return jsonify({"ok": True})
+
+
 @app.route("/test/getoverridelogs", methods=["GET"])  # type: ignore
 def get_override_logs():
     return jsonify({"logs": override_logging.override_logs})
