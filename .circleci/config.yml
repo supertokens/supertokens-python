@@ -23,6 +23,7 @@ jobs:
             - image: circleci/python:3.8
         steps:
             - checkout
+            - run: python3 -m pip install pip setuptools packaging poetry clikit --upgrade
             - run: sudo make dev-install
             - run: pip install setuptools wheel twine
             - run: sudo python setup.py sdist bdist_wheel
