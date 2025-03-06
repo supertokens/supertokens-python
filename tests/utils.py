@@ -491,14 +491,25 @@ async def create_users(
 
 
 @contextmanager
-def outputs(val: Any):
+def outputs(value: Any):
     """
     Outputs a value to assert.
+    Can be used for a common interface in test parameters.
 
-    Usage:
-        @mark.parametrize(["input", "expectation"], [(1, outputs(1)), (0, raises(Exception))])
-        def test_fn(input, expectation):
-            with expectation as expected_output:
-                assert 1 / input == expected_output
+    Example:
+    ```python
+    @mark.parametrize(
+    ("input", "expectation"),
+        [
+            (1, outputs(1)),
+            (0, raises(Exception)),
+        ]
+    )
+    def test(input, expectation):
+        # In case of exceptions, the `raises` will catch it
+        # In normal execution, the `expected_output` contains the assertion value
+        with expectation as expected_output:
+            assert 1 / input == expected_output
+    ```
     """
-    yield val
+    yield value

@@ -45,23 +45,26 @@ class NormalisedURLPath:
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
-    input_str = input_str.strip().lower()
+    input_str = input_str.strip()
+    input_str_lower = input_str.lower()
+
     try:
-        if not input_str.startswith("http://") and not input_str.startswith("https://"):
+        if not input_str_lower.startswith(("http://", "https://")):
             raise Exception("converting to proper URL")
+
         url_obj = urlparse(input_str)
-        input_str = url_obj.path
-        if input_str.endswith("/"):
-            return input_str[:-1]
-        return input_str
+        url_path = url_obj.path
+
+        if url_path.endswith("/"):
+            return url_path[:-1]
+
+        return url_path
     except Exception:
         pass
 
     if (
-        (domain_given(input_str) or input_str.startswith("localhost"))
-        and not input_str.startswith("http://")
-        and not input_str.startswith("https://")
-    ):
+        domain_given(input_str_lower) or input_str_lower.startswith("localhost")
+    ) and not input_str_lower.startswith(("http://", "https://")):
         input_str = "http://" + input_str
         return normalise_url_path_or_throw_error(input_str)
 
@@ -69,8 +72,8 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
         input_str = "/" + input_str
 
     try:
-        urlparse("http://example.com" + input_str)
-        return normalise_url_path_or_throw_error("http://example.com" + input_str)
+        urlparse(f"http://example.com{input_str}")
+        return normalise_url_path_or_throw_error(f"http://example.com{input_str}")
     except Exception:
         raise_general_exception("Please provide a valid URL path")
 

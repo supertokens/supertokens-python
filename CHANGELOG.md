@@ -9,13 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.29.0] - 2025-03-03
+### Breaking changes
+- Makes URL path normalization case sensitive
+  - Updates `normalise_url_path_or_throw_error` to be case sensitive
+  - URL paths will not be converted to lower-case, and will be kept as-is.
+
+### Changes
 - Adds option to disable `tldextract` HTTP calls by setting `SUPERTOKENS_TLDEXTRACT_DISABLE_HTTP=1`
+
+### Infrastructure
 - Upgrades `pip` and `setuptools` in CI publish job
   - Also upgrades `poetry` and it's dependency - `clikit`
 - Migrates unit tests to use a containerized core
   - Updates `Makefile` to use a Docker `compose` setup step
   - Migrates unit tests from CircleCI to Github Actions
   - Adds lint/format checks to Github Actions
+
 
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)
