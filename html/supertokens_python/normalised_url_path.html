@@ -73,23 +73,26 @@ class NormalisedURLPath:
 
 
 def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
-    input_str = input_str.strip().lower()
+    input_str = input_str.strip()
+    input_str_lower = input_str.lower()
+
     try:
-        if not input_str.startswith(&#34;http://&#34;) and not input_str.startswith(&#34;https://&#34;):
+        if not input_str_lower.startswith((&#34;http://&#34;, &#34;https://&#34;)):
             raise Exception(&#34;converting to proper URL&#34;)
+
         url_obj = urlparse(input_str)
-        input_str = url_obj.path
-        if input_str.endswith(&#34;/&#34;):
-            return input_str[:-1]
-        return input_str
+        url_path = url_obj.path
+
+        if url_path.endswith(&#34;/&#34;):
+            return url_path[:-1]
+
+        return url_path
     except Exception:
         pass
 
     if (
-        (domain_given(input_str) or input_str.startswith(&#34;localhost&#34;))
-        and not input_str.startswith(&#34;http://&#34;)
-        and not input_str.startswith(&#34;https://&#34;)
-    ):
+        domain_given(input_str_lower) or input_str_lower.startswith(&#34;localhost&#34;)
+    ) and not input_str_lower.startswith((&#34;http://&#34;, &#34;https://&#34;)):
         input_str = &#34;http://&#34; + input_str
         return normalise_url_path_or_throw_error(input_str)
 
@@ -97,8 +100,8 @@ def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
         input_str = &#34;/&#34; + input_str
 
     try:
-        urlparse(&#34;http://example.com&#34; + input_str)
-        return normalise_url_path_or_throw_error(&#34;http://example.com&#34; + input_str)
+        urlparse(f&#34;http://example.com{input_str}&#34;)
+        return normalise_url_path_or_throw_error(f&#34;http://example.com{input_str}&#34;)
     except Exception:
         raise_general_exception(&#34;Please provide a valid URL path&#34;)
 
