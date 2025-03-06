@@ -2,14 +2,14 @@ import json
 import logging
 import threading
 import time
-from typing import Any, Callable, List
+from typing import Callable, List
 
 import pytest
 import requests
 from _pytest.logging import LogCaptureFixture
 from fastapi import Depends, FastAPI, Request
 from pytest import fixture
-from supertokens_python import SupertokensConfig, init
+from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.jwt.interfaces import CreateJwtOkResult
@@ -33,25 +33,21 @@ from supertokens_python.utils import get_timestamp_ms, utf_base64encode
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
     min_api_version,
     reset,
-    set_key_value_in_config,
-    setup_function,
-    st_init_common_args,
-    start_st,
-)
-from tests.utils import (
-    teardown_function as default_teardown_function,
 )
 
 pytestmark = pytest.mark.asyncio
-_ = setup_function  # type:ignore
 
 
-def teardown_function(_: Any):
+@pytest.fixture(autouse=True)
+def teardown_function():
+    # Yield to test
+    yield
+    # Teardown
     reset_jwks_cache()
-    default_teardown_function(_)
 
 
 def get_log_occurence_count(
@@ -86,10 +82,10 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
     well_known_count = get_log_occurence_count(caplog)
     init(
         **get_st_init_args(
-            recipe_list=[session.init(jwks_refresh_interval_sec=jwk_max_age_sec)]
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(jwks_refresh_interval_sec=jwk_max_age_sec)],
         )
     )
-    start_st()
 
     assert next(well_known_count) == 0
 
@@ -124,11 +120,17 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
 
     original_jwks_config = JWKSConfig.copy()
 
-    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
-    set_key_value_in_config(
-        "access_token_dynamic_signing_key_update_interval", "0.0004"
-    )  # ~1.5 sec
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(
+                # NOTE: This works only when core is started with `DEV` + `test_mode`
+                core_config={
+                    "access_token_dynamic_signing_key_update_interval": "0.0004",
+                },  # ~1.5 s
+            ),
+            recipe_list=[session.init(jwks_refresh_interval_sec=2)],
+        )
+    )
 
     assert next(jwks_refresh_count) == 0
 
@@ -173,11 +175,17 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
     """
     caplog.set_level(logging.DEBUG)
 
-    init(**get_st_init_args(recipe_list=[session.init()]))
-    set_key_value_in_config(
-        "access_token_dynamic_signing_key_update_interval", "0.0014"
-    )  # ~5sec
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(
+                core_config={
+                    # NOTE: This works only when core is started with `DEV` + `test_mode`
+                    "access_token_dynamic_signing_key_update_interval": "0.0014"
+                }  # ~5sec
+            ),
+            recipe_list=[session.init()],
+        )
+    )
 
     well_known_count = get_log_occurence_count(caplog)
 
@@ -245,16 +253,15 @@ async def test_that_invalid_connection_uri_doesnot_throw_during_init_for_jwks():
     """This test makes sure that initialising SuperTokens and Session with an invalid connection uri does not
     result in an error during startup"""
     init(
-        **{
-            **st_init_common_args,
-            "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"),
-            "recipe_list": [session.init()],
-        }  # type: ignore
+        **get_st_init_args(
+            url="https://invalid.url.supertokens.io:3567",
+            recipe_list=[session.init()],
+        )
     )
-    set_key_value_in_config(
-        "access_token_dynamic_signing_key_update_interval", "0.0014"
-    )  # ~5sec
-    start_st()
+
+    # set_key_value_in_config(
+    #     "access_token_dynamic_signing_key_update_interval", "0.0014"
+    # )  # ~5sec
 
 
 async def test_jwks_cache_logic(caplog: LogCaptureFixture):
@@ -273,8 +280,12 @@ async def test_jwks_cache_logic(caplog: LogCaptureFixture):
 
     jwks_refresh_count = get_log_occurence_count(caplog)
 
-    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(jwks_refresh_interval_sec=2)],
+        )
+    )
 
     assert next(jwks_refresh_count) == 0
 
@@ -325,17 +336,12 @@ async def test_that_combined_jwks_throws_for_invalid_connection(
     original_jwks_config = JWKSConfig.copy()
     JWKSConfig["request_timeout"] = 3000
 
-    set_key_value_in_config(
-        "access_token_dynamic_signing_key_update_interval", "0.0014"
-    )  # ~5sec
     init(
-        **{
-            **st_init_common_args,
-            "supertokens_config": SupertokensConfig("https://try.supertokens.io:3567"),
-            "recipe_list": [session.init()],
-        }  # type: ignore
+        **get_st_init_args(
+            url="https://invalid.url.supertokens.io:3567",
+            recipe_list=[session.init()],
+        )
     )
-    start_st()
 
     with pytest.raises(Exception):
         get_latest_keys(SessionRecipe.get_instance().config)
@@ -361,15 +367,11 @@ async def test_that_combined_jwks_doesnot_throw_if_atleast_one_core_url_is_valid
     JWKSConfig["request_timeout"] = 3000
 
     init(
-        **{
-            **st_init_common_args,
-            "supertokens_config": SupertokensConfig(
-                "http://localhost:3567;example.com:3567;localhost:90"
-            ),
-            "recipe_list": [session.init()],
-        }  # type: ignore
+        **get_st_init_args(
+            url=f"{get_new_core_app_url()};example.com:3567;localhost:90",
+            recipe_list=[session.init()],
+        )
     )
-    start_st()
 
     combined_jwks_res = get_latest_keys(SessionRecipe.get_instance().config)
     assert len(combined_jwks_res) > 0
@@ -387,15 +389,11 @@ async def test_that_combined_jwks_throw_if_all_core_urls_are_invalid(
     JWKSConfig["request_timeout"] = 3000
 
     init(
-        **{
-            **st_init_common_args,
-            "supertokens_config": SupertokensConfig(
-                "http://random.com:3567;example.com:3567;localhost:90"
-            ),
-            "recipe_list": [session.init()],
-        }  # type: ignore
+        **get_st_init_args(
+            url="http://random.com:3567;example.com:3567;localhost:90",
+            recipe_list=[session.init()],
+        )
     )
-    start_st()
 
     with pytest.raises(requests.exceptions.ConnectionError):
         get_latest_keys(SessionRecipe.get_instance().config)
@@ -424,8 +422,12 @@ async def test_that_jwks_returns_from_cache_correctly(caplog: LogCaptureFixture)
 
     original_jwks_config = JWKSConfig.copy()
 
-    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(jwks_refresh_interval_sec=2)],
+        )
+    )
 
     s = await create_new_session_without_request_response(
         "public", RecipeUserId("userId"), {}, {}
@@ -476,14 +478,11 @@ async def test_that_sdk_tries_fetching_jwks_for_all_core_hosts(
     get_combined_jwks_count = get_log_occurence_count(caplog, "Called find_jwk_client")
 
     init(
-        **{
-            **get_st_init_args(recipe_list=[session.init()]),
-            "supertokens_config": SupertokensConfig(
-                "example.com;localhost:90;http://localhost:3567"
-            ),
-        }  # type: ignore
+        **get_st_init_args(
+            url=f"example.com;localhost:90;{get_new_core_app_url()}",
+            recipe_list=[session.init()],
+        ),
     )
-    start_st()
 
     assert next(urls_attempted_count) == 0
     assert next(get_combined_jwks_count) == 0
@@ -506,14 +505,12 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
     urls_attempted_count = get_log_occurence_count(caplog, "Attempting to fetch JWKS")
 
     init(
-        **{  # type: ignore
-            **get_st_init_args(recipe_list=[session.init()]),
-            "supertokens_config": SupertokensConfig(
-                "example.com;http://localhost:3567;localhost:90"
-            ),  # Note that the second one is valid
-        }
+        **get_st_init_args(
+            url=f"example.com;{get_new_core_app_url()};localhost:90",
+            recipe_list=[session.init()],
+        ),
+        # Note that the second one is valid
     )
-    start_st()
 
     assert next(urls_attempted_count) == 0
 
@@ -525,8 +522,7 @@ async def test_that_sdk_fetches_jwks_from_core_hosts_until_a_valid_response(
 async def test_session_verification_of_jwt_based_on_session_payload(
     # _: LogCaptureFixture,
 ):
-    init(**get_st_init_args(recipe_list=[session.init()]))
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))
 
     s = await create_new_session_without_request_response(
         "public", RecipeUserId("userId"), {}, {}
@@ -549,8 +545,7 @@ async def test_session_verification_of_jwt_based_on_session_payload(
 
 @min_api_version("3.0")
 async def test_session_verification_of_jwt_based_on_session_payload_with_check_db():
-    init(**get_st_init_args(recipe_list=[session.init()]))
-    start_st()
+    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))
 
     s = await create_new_session_without_request_response(
         "public", RecipeUserId("userId"), {}, {}
@@ -574,10 +569,10 @@ async def test_session_verification_of_jwt_based_on_session_payload_with_check_d
 async def test_session_verification_of_jwt_with_dynamic_signing_key():
     init(
         **get_st_init_args(
-            recipe_list=[session.init(use_dynamic_access_token_signing_key=False)]
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(use_dynamic_access_token_signing_key=False)],
         )
     )
-    start_st()
 
     s = await create_new_session_without_request_response(
         "public", RecipeUserId("userId"), {}, {}
@@ -618,11 +613,17 @@ async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
 
     original_jwks_config = JWKSConfig.copy()
 
-    set_key_value_in_config(
-        "access_token_dynamic_signing_key_update_interval", "0.0014"
-    )  # ~5s
-    init(**get_st_init_args(recipe_list=[session.init(jwks_refresh_interval_sec=2)]))
-    start_st()
+    init(
+        **get_st_init_args(
+            url=get_new_core_app_url(
+                core_config={
+                    # NOTE: This works only when core is started with `DEV` + `test_mode`
+                    "access_token_dynamic_signing_key_update_interval": "0.0014"
+                }  # ~5s
+            ),
+            recipe_list=[session.init(jwks_refresh_interval_sec=2)],
+        )
+    )
 
     state = {
         "should_stop": False,
@@ -709,10 +710,10 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_a
     client: TestClient,
 ):
     args = get_st_init_args(
-        recipe_list=[session.init(use_dynamic_access_token_signing_key=False)]
+        url=get_new_core_app_url(),
+        recipe_list=[session.init(use_dynamic_access_token_signing_key=False)],
     )
-    init(**args)  # type: ignore
-    start_st()
+    init(**args)
 
     # Create a session:
     res = client.get("/login")
@@ -726,13 +727,14 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_a
     assert res.status_code == 200
     assert res.json()["user_id"] == "test"
 
-    reset(stop_core=False)
+    reset()
 
     # initalize again with use_dynamic_access_token_signing_key=True
     args = get_st_init_args(
-        recipe_list=[session.init(use_dynamic_access_token_signing_key=True)]
+        url=get_new_core_app_url(),
+        recipe_list=[session.init(use_dynamic_access_token_signing_key=True)],
     )
-    init(**args)  # type: ignore
+    init(**args)
 
     from supertokens_python.recipe.session.exceptions import TryRefreshTokenError
 

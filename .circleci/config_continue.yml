@@ -25,7 +25,6 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: (cd .circleci/ && ./installJava.sh)
       - run: python3 -m pip install pip setuptools --upgrade
       - run: make dev-install
       - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
@@ -329,18 +328,18 @@ workflows:
               only: /test-cicd\/.*/
       - test-unit:
           requires:
-            - test-dev-tag-as-not-passed
+              - test-dev-tag-as-not-passed
           context:
-            - slack-notification
+              - slack-notification
           filters:
-            tags:
-              only: /dev-v[0-9]+(\.[0-9]+)*/
-            branches:
-              only: /test-cicd\/.*/
+              tags:
+                  only: /dev-v[0-9]+(\.[0-9]+)*/
+              branches:
+                  only: /test-cicd\/.*/
           matrix:
-            parameters:
-              cdi-version: placeholder
-              python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+              parameters:
+                  cdi-version: placeholder
+                  python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
       - test-backend-sdk-testing:
           requires:
               - test-dev-tag-as-not-passed

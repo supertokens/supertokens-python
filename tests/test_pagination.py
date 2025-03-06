@@ -18,24 +18,13 @@ from supertokens_python.asyncio import get_users_newest_first, get_users_oldest_
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url
 
 
 @mark.asyncio
 async def test_get_users_pagination():
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="https://api.supertokens.io",
@@ -44,7 +33,6 @@ async def test_get_users_pagination():
         framework="fastapi",
         recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
-    start_st()
 
     for i in range(5):
         await sign_up("public", f"dummy{i}@gmail.com", "validpass123")

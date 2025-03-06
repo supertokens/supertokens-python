@@ -48,14 +48,7 @@ from supertokens_python.recipe.session.framework.django.asyncio import verify_se
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import is_version_gte
 
-from tests.utils import (
-    clean_st,
-    create_users,
-    get_st_init_args,
-    reset,
-    setup_st,
-    start_st,
-)
+from tests.utils import create_users, get_new_core_app_url, get_st_init_args, reset
 
 
 def override_dashboard_functions(original_implementation: RecipeInterface):
@@ -132,16 +125,13 @@ class SupertokensTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         reset()
-        clean_st()
-        setup_st()
 
     def tearDown(self):
         reset()
-        clean_st()
 
     async def test_login_refresh(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -158,8 +148,6 @@ class SupertokensTest(TestCase):
                 ),
             ],
         )
-
-        start_st()
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get("/login", {"user_id": "user_id"})
@@ -214,7 +202,7 @@ class SupertokensTest(TestCase):
 
     async def test_login_logout(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -231,8 +219,6 @@ class SupertokensTest(TestCase):
                 )
             ],
         )
-
-        start_st()
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get("/login", {"user_id": "user_id"})
@@ -262,7 +248,7 @@ class SupertokensTest(TestCase):
 
     async def test_login_handle(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -279,8 +265,6 @@ class SupertokensTest(TestCase):
                 )
             ],
         )
-
-        start_st()
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get("/login", {"user_id": "user_id"})
@@ -317,7 +301,7 @@ class SupertokensTest(TestCase):
 
     async def test_login_refresh_error_handler(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -334,8 +318,6 @@ class SupertokensTest(TestCase):
                 )
             ],
         )
-
-        start_st()
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get("/login", {"user_id": "user_id"})
@@ -377,7 +359,7 @@ class SupertokensTest(TestCase):
             return original_implementation
 
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -395,8 +377,6 @@ class SupertokensTest(TestCase):
             ],
         )
 
-        start_st()
-
         my_middleware = middleware(custom_response_view)
         request = self.factory.get("/auth/signup/email/exists?email=test@example.com")
         temp = my_middleware(request)
@@ -410,7 +390,7 @@ class SupertokensTest(TestCase):
 
     async def test_optional_session(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -423,8 +403,6 @@ class SupertokensTest(TestCase):
                 session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
             ],
         )
-
-        start_st()
 
         my_middleware = middleware(optional_session)
         request = self.factory.get("/handle-session-optional")
@@ -439,7 +417,7 @@ class SupertokensTest(TestCase):
 
     async def test_thirdparty_parsing_works(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -472,8 +450,6 @@ class SupertokensTest(TestCase):
                 ),
             ],
         )
-
-        start_st()
 
         state = b64encode(
             json.dumps(
@@ -505,7 +481,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_multiple_emails(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -528,8 +504,6 @@ class SupertokensTest(TestCase):
                 emailpassword.init(),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -558,7 +532,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_email_t(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -581,8 +555,6 @@ class SupertokensTest(TestCase):
                 emailpassword.init(),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -609,7 +581,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_email_iresh(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -632,8 +604,6 @@ class SupertokensTest(TestCase):
                 emailpassword.init(),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -662,7 +632,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_phone_plus_one(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -688,8 +658,6 @@ class SupertokensTest(TestCase):
                 ),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -718,7 +686,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_phone_one_bracket(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -744,8 +712,6 @@ class SupertokensTest(TestCase):
                 ),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -774,7 +740,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_provider_google(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -839,8 +805,6 @@ class SupertokensTest(TestCase):
                 ),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -869,7 +833,7 @@ class SupertokensTest(TestCase):
     @pytest.mark.asyncio
     async def test_search_with_provider_google_and_phone_one(self):
         init(
-            supertokens_config=SupertokensConfig("http://localhost:3567"),
+            supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
                 app_name="SuperTokens Demo",
                 api_domain="http://api.supertokens.io",
@@ -938,8 +902,6 @@ class SupertokensTest(TestCase):
                 ),
             ],
         )
-
-        start_st()
         querier = Querier.get_instance(DashboardRecipe.recipe_id)
         cdi_version = await querier.get_api_version()
         if not cdi_version:
@@ -968,11 +930,11 @@ class SupertokensTest(TestCase):
         self,
     ):
         args = get_st_init_args(
-            [session.init(get_token_transfer_method=lambda *_: "header")]  # type: ignore
+            url=get_new_core_app_url(),
+            recipe_list=[session.init(get_token_transfer_method=lambda *_: "header")],  # type: ignore
         )
         args.update({"framework": "django"})
-        init(**args)  # type: ignore
-        start_st()
+        init(**args)
 
         # Try with middleware
         request = self.factory.get("/verify")

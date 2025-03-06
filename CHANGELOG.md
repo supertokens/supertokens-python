@@ -10,12 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrades `pip` and `setuptools` in CI publish job
 - Also upgrades `poetry` and it's dependency - `clikit`
 
+## [0.29.0] - 2025-03-03
+- Migrates unit tests to use a containerized core
+  - Updates `Makefile` to use a Docker `compose` setup step
+  - Migrates unit tests from CircleCI to Github Actions
+  - Adds lint/format checks to Github Actions
+
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)
 - Removes `respx` dependency from `fastapi` install
 - Upgrades `pip` and `setuptools` in CI runs
 
-## [0.28.0]
+## [0.28.0] - 2025-02-10
 - **[Breaking] Updates pre-commit hooks to use `pre-commit`**
   - Migration:
     ```bash

@@ -14,7 +14,6 @@
 import asyncio
 import base64
 import json
-from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
 
 from fastapi import FastAPI
@@ -57,23 +56,18 @@ from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import (
     is_version_gte,
 )
+from typing_extensions import Any, Dict, Optional, Union
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     email_verify_token_request,
     extract_all_cookies,
+    get_new_core_app_url,
     get_st_init_args,
     min_api_version,
-    set_key_value_in_config,
-    setup_function,
     sign_up_request,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function
-_ = teardown_function
 
 pytestmark = mark.asyncio
 
@@ -129,7 +123,7 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -146,7 +140,6 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
 
@@ -171,7 +164,7 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -188,7 +181,6 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
 
@@ -221,7 +213,7 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -238,7 +230,6 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.post(url="/auth/user/email/verify/token")
     assert response_1.status_code == 401
@@ -249,10 +240,12 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
 async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_try_refresh_token_is_returned(
     driver_config_client: TestClient,
 ):
-    set_key_value_in_config(TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, "2")
-
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(
+            get_new_core_app_url(
+                core_config={TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY: "2"}
+            )
+        ),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -269,7 +262,6 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
@@ -340,7 +332,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
             email_token = template_vars.email_verify_link
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -363,7 +355,6 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -409,7 +400,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
             )[0]
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -431,7 +422,6 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -491,7 +481,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
             )[0]
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -513,7 +503,6 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -573,7 +562,7 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
             )[0]
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -595,7 +584,6 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -679,7 +667,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -702,7 +690,6 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -769,7 +756,7 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
             )[0]
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -791,7 +778,6 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -845,7 +831,7 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -862,7 +848,6 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_4 = driver_config_client.get(url="/auth/user/email/verify")
 
@@ -914,7 +899,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -937,7 +922,6 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -1022,7 +1006,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         return param
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1048,7 +1032,6 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
@@ -1094,7 +1077,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1111,7 +1094,6 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.9"):
@@ -1140,7 +1122,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1157,7 +1139,6 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
             emailpassword.init(),
         ],
     )
-    start_st()
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.9"):
@@ -1199,7 +1180,8 @@ async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
             return
 
     st_args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             emailpassword.init(),
             emailverification.init(
                 "OPTIONAL",
@@ -1208,10 +1190,9 @@ async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
                 ),
             ),
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
-        ]
+        ],
     )
     init(**st_args)
-    start_st()
 
     res = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     dict_response = json.loads(res.text)
@@ -1252,7 +1233,8 @@ async def test_generate_email_verification_token_api_updates_session_claims(
 
     init(
         **get_st_init_args(
-            [
+            url=get_new_core_app_url(),
+            recipe_list=[
                 emailpassword.init(),
                 emailverification.init(
                     "OPTIONAL",
@@ -1261,10 +1243,9 @@ async def test_generate_email_verification_token_api_updates_session_claims(
                     ),
                 ),
                 session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
-            ]
+            ],
         )
     )
-    start_st()
 
     # Create user:
     res = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
@@ -1355,7 +1336,7 @@ async def test_generate_email_verification_uses_correct_origin(
         return "https://supertokens.io"
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -1372,7 +1353,6 @@ async def test_generate_email_verification_uses_correct_origin(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200

@@ -30,18 +30,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.types import RecipeUserId
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
-from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+from tests.utils import get_new_core_app_url, sign_up_request
 
 
 @fixture(scope="function")
@@ -99,7 +88,7 @@ def apis_override_email_password(param: APIInterface):
 @mark.asyncio
 async def test_good_input_email_exists(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -112,7 +101,6 @@ async def test_good_input_email_exists(driver_config_client: TestClient):
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validPass123"
@@ -131,7 +119,7 @@ async def test_good_input_email_exists(driver_config_client: TestClient):
 @mark.asyncio
 async def test_good_input_email_does_not_exists(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -144,7 +132,6 @@ async def test_good_input_email_does_not_exists(driver_config_client: TestClient
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get(
         url="/auth/signup/email/exists", params={"email": "random@gmail.com"}
@@ -161,7 +148,7 @@ async def test_good_input_email_does_not_exists_new_path(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -174,7 +161,6 @@ async def test_good_input_email_does_not_exists_new_path(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get(
         url="/auth/emailpassword/email/exists", params={"email": "random@gmail.com"}
@@ -191,7 +177,7 @@ async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -208,7 +194,6 @@ async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(
             ),
         ],
     )
-    start_st()
 
     response_1 = driver_config_client.get(
         url="/auth/signup/email/exists", params={"email": "random@gmail.com"}
@@ -222,7 +207,7 @@ async def test_email_exists_a_syntactically_invalid_email(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -235,7 +220,6 @@ async def test_email_exists_a_syntactically_invalid_email(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validPass123"
@@ -259,7 +243,7 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -272,7 +256,6 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validPass123"
@@ -294,7 +277,7 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(
 @mark.asyncio
 async def test_bad_input_do_not_pass_email(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -307,7 +290,6 @@ async def test_bad_input_do_not_pass_email(driver_config_client: TestClient):
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validPass123"
@@ -327,7 +309,7 @@ async def test_passing_an_array_instead_of_a_string_in_the_email(
     driver_config_client: TestClient,
 ):
     init(
-        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        supertokens_config=SupertokensConfig(get_new_core_app_url()),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
@@ -340,7 +322,6 @@ async def test_passing_an_array_instead_of_a_string_in_the_email(
             emailpassword.init(),
         ],
     )
-    start_st()
 
     response_1 = sign_up_request(
         driver_config_client, "random@gmail.com", "validPass123"

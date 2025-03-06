@@ -30,21 +30,7 @@ from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
 from supertokens_python.utils import is_version_gte
 from typing_extensions import Literal
 
-from tests.utils import clean_st, reset, setup_st, start_st
-
-from .utils import st_config
-
-
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
-
+from .utils import get_st_config
 
 pytestmark = mark.asyncio
 
@@ -53,8 +39,7 @@ USER_TYPE = Literal["SUPERTOKENS", "EXTERNAL", "ANY"]
 
 @mark.parametrize("use_external_id_info", [True, False])
 async def test_get_user_id_mapping(use_external_id_info: bool):
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):
@@ -100,8 +85,7 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
 
 
 async def test_get_unknown__user_id_mapping():
-    init(**st_config)  # type: ignore
-    start_st()
+    init(**get_st_config())  # type: ignore
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.15"):

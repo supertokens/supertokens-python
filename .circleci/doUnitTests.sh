@@ -16,12 +16,7 @@ then
     echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
     exit 1
 fi
-coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
-./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
-if [[ $? -ne 0 ]]
-then
-    echo "test failed... exiting!"
-    exit 1
-fi
-rm -rf ../../supertokens-root
+export SUPERTOKENS_CORE_VERSION=$(echo $coreFree | jq .core | tr -d '"')
+
+make test

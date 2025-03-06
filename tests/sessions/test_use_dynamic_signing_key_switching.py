@@ -14,22 +14,22 @@ from supertokens_python.recipe.session.session_class import SessionContainer
 from supertokens_python.types import RecipeUserId
 
 from tests.utils import (
+    get_new_core_app_url,
     get_st_init_args,
     reset,
-    setup_function,
-    start_st,
-    teardown_function,
 )
-
-_ = setup_function  # type:ignore
-_ = teardown_function  # type:ignore
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_dynamic_key_switching():
-    init(**get_st_init_args([session.init(use_dynamic_access_token_signing_key=True)]))
-    start_st()
+    st_core_url = get_new_core_app_url()
+    init(
+        **get_st_init_args(
+            url=st_core_url,
+            recipe_list=[session.init(use_dynamic_access_token_signing_key=True)],
+        )
+    )
 
     # Create a new session without an actual HTTP request-response flow
     create_res: SessionContainer = await create_new_session_without_request_response(
@@ -41,8 +41,13 @@ async def test_dynamic_key_switching():
     check_access_token_signing_key_type(tokens, True)
 
     # Reset and reinitialize with dynamic signing key disabled
-    reset(stop_core=False)
-    init(**get_st_init_args([session.init(use_dynamic_access_token_signing_key=False)]))
+    reset()
+    init(
+        **get_st_init_args(
+            url=st_core_url,
+            recipe_list=[session.init(use_dynamic_access_token_signing_key=False)],
+        )
+    )
 
     caught_exception = None
     try:
@@ -64,8 +69,13 @@ async def test_dynamic_key_switching():
 
 
 async def test_refresh_session():
-    init(**get_st_init_args([session.init(use_dynamic_access_token_signing_key=True)]))
-    start_st()
+    st_core_url = get_new_core_app_url()
+    init(
+        **get_st_init_args(
+            url=st_core_url,
+            recipe_list=[session.init(use_dynamic_access_token_signing_key=True)],
+        )
+    )
 
     # Create a new session without an actual HTTP request-response flow
     create_res: SessionContainer = await create_new_session_without_request_response(
@@ -77,8 +87,13 @@ async def test_refresh_session():
     check_access_token_signing_key_type(tokens, True)
 
     # Reset and reinitialize with dynamic signing key disabled
-    reset(stop_core=False)
-    init(**get_st_init_args([session.init(use_dynamic_access_token_signing_key=False)]))
+    reset()
+    init(
+        **get_st_init_args(
+            url=st_core_url,
+            recipe_list=[session.init(use_dynamic_access_token_signing_key=False)],
+        )
+    )
 
     assert tokens["refreshToken"] is not None
 

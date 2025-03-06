@@ -18,10 +18,7 @@ from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import dashboard, emailpassword, session
 
-from tests.utils import get_st_init_args, setup_function, start_st, teardown_function
-
-_ = setup_function
-_ = teardown_function
+from tests.utils import get_new_core_app_url, get_st_init_args
 
 pytestmark = mark.asyncio
 
@@ -36,13 +33,13 @@ def client():
 
 async def test_emailpassword_router(client: TestClient):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda *_: "cookie"),  # type: ignore
             emailpassword.init(),
-        ]
+        ],
     )
     init(**args)
-    start_st()
 
     res = client.post(
         "/auth/public/signup",
@@ -75,14 +72,14 @@ async def test_emailpassword_router(client: TestClient):
 
 async def test_dashboard_apis_router(client: TestClient):
     args = get_st_init_args(
-        [
+        url=get_new_core_app_url(),
+        recipe_list=[
             session.init(get_token_transfer_method=lambda *_: "cookie"),  # type: ignore
             emailpassword.init(),
             dashboard.init(),
-        ]
+        ],
     )
     init(**args)
-    start_st()
 
     res = client.post(
         "/auth/public/dashboard/api/signin",
