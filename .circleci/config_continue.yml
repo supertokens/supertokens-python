@@ -27,7 +27,7 @@ jobs:
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: python3 -m pip install pip setuptools --upgrade
       - run: make dev-install
-      - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
+      - run: .circleci/doUnitTests.sh << parameters.cdi-version >>
       - store_test_results:
           path: test-results/junit.xml
       - slack/status
