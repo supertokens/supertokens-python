@@ -1,7 +1,10 @@
+import os
 import threading
+from contextlib import ExitStack
 from typing import Any, Dict, List, Union
+from unittest.mock import patch
 
-import pytest
+from pytest import mark, param, raises
 from supertokens_python.utils import (
     RWMutex,
     get_top_level_domain_for_same_site_resolution,
@@ -9,10 +12,10 @@ from supertokens_python.utils import (
     is_version_gte,
 )
 
-from tests.utils import is_subset
+from tests.utils import is_subset, outputs
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "version,min_minor_version,is_gte",
     [
         (
@@ -72,7 +75,7 @@ MINUTE = 60 * SECOND
 HOUR = 60 * MINUTE
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "ms,out",
     [
         (1 * SECOND, "1 second"),
@@ -91,7 +94,7 @@ def test_humanize_time(ms: int, out: str):
     assert humanize_time(ms) == out
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "d1,d2,result",
     [
         ({"a": {"b": [1, 2]}, "c": 1}, {"c": 1}, True),
@@ -176,7 +179,7 @@ def test_rw_mutex_writes():
     assert actual_balance == expected_balance, "Incorrect account balance"
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "url,res",
     [
         ("http://localhost:3001", "localhost"),
@@ -196,3 +199,41 @@ def test_rw_mutex_writes():
 )
 def test_tld_for_same_site(url: str, res: str):
     assert get_top_level_domain_for_same_site_resolution(url) == res
+
+
+@mark.parametrize(
+    ["internet_disabled", "env_val", "expectation"],
+    [
+        param(True, "False", raises(RuntimeError), id="Internet disabled, flag unset"),
+        param(True, "True", outputs("google.com"), id="Internet disabled, flag set"),
+        param(False, "False", outputs("google.com"), id="Internet enabled, flag unset"),
+        param(False, "True", outputs("google.com"), id="Internet enabled, flag set"),
+    ],
+)
+def test_tldextract_http_toggle(
+    internet_disabled: bool,
+    env_val: str,
+    expectation: Any,
+    # pyfakefs fixture, mocks the filesystem
+    # Mocking `tldextract`'s cache path does not work in repeated tests
+    fs: Any,
+):
+    import socket
+
+    # Disable sockets, will raise errors on HTTP calls
+    socket_patch = patch.object(socket, "socket", side_effect=RuntimeError)
+    environ_patch = patch.dict(
+        os.environ,
+        {"SUPERTOKENS_TLDEXTRACT_DISABLE_HTTP": env_val},
+    )
+
+    stack = ExitStack()
+    stack.enter_context(environ_patch)
+    if internet_disabled:
+        stack.enter_context(socket_patch)
+
+    # if `expectation` is raises, checks for raise
+    # if `outputs`, value used in `assert` statement
+    with stack, expectation as expected_output:
+        output = get_top_level_domain_for_same_site_resolution("https://google.com")
+        assert output == expected_output

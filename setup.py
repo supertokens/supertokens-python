@@ -117,7 +117,7 @@ setup(
         "PyJWT[crypto]>=2.5.0,<3.0.0",
         "httpx>=0.15.0,<1.0.0",
         "pycryptodome<3.21.0",
-        "tldextract<5.1.3",
+        "tldextract<6.0.0",
         "asgiref>=3.4.1,<4",
         "typing_extensions>=4.1.1,<5.0.0",
         "Deprecated<1.3.0",
