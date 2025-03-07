@@ -25,9 +25,10 @@ jobs:
       - checkout
       - run: apt update && apt install -y bc jq lsof
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: (cd .circleci/ && ./installJava.sh)
       - run: python3 -m pip install pip setuptools --upgrade
       - run: make dev-install
-      - run: .circleci/doUnitTests.sh << parameters.cdi-version >>
+      - run: (cd .circleci && ./doUnitTests.sh << parameters.cdi-version >>)
       - store_test_results:
           path: test-results/junit.xml
       - slack/status
