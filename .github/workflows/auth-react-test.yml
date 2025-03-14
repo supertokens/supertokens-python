@@ -81,7 +81,7 @@ jobs:
           cd tests/auth-react/django3x
 
           set -a
-          source auth-react.env
+          source ../auth-react.env
           set +a
 
           uvicorn mysite.asgi:application --port 8083 &
@@ -95,7 +95,7 @@ jobs:
           cd tests/auth-react/fastapi-server
 
           set -a
-          source auth-react.env
+          source ../auth-react.env
           set +a
 
           uvicorn app:app --host 0.0.0.0 --port 8083 &
@@ -109,7 +109,7 @@ jobs:
           cd tests/auth-react/flask-server
 
           set -a
-          source auth-react.env
+          source ../auth-react.env
           set +a
 
           python3 app.py --port 8083 &
