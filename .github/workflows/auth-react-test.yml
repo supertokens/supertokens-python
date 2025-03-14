@@ -79,6 +79,11 @@ jobs:
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/django3x
+
+          set -a
+          source auth-react.env
+          set +a
+
           uvicorn mysite.asgi:application --port 8083 &
 
       - name: Start Server (fastapi)
@@ -88,6 +93,11 @@ jobs:
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/fastapi-server
+
+          set -a
+          source auth-react.env
+          set +a
+
           uvicorn app:app --host 0.0.0.0 --port 8083 &
 
       - name: Start Server (flask)
@@ -97,6 +107,11 @@ jobs:
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/flask-server
+
+          set -a
+          source auth-react.env
+          set +a
+
           python3 app.py --port 8083 &
 
       - uses: supertokens/auth-react-testing-action@main
