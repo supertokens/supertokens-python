@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updates test-servers to work with updated tests
 - Adds workflow to test supertokens-website
   - Updates `frontendIntegration` servers
+- Sets up workflow to run auth-react tests
+  - Updates test-servers to work with updated tests
 
 ## [0.29.1] - 2025-04-11
 - Fixes an issue where `removeDevice` API allowed removing verified TOTP devices without the user completing MFA.

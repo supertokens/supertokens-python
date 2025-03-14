@@ -17,23 +17,11 @@ urlpatterns = [  # type: ignore
         name="removeUserFromTenant",
     ),  # type: ignore
     path("addUserToTenant", views.add_user_to_tenant, name="addUserToTenant"),  # type: ignore
-    path("test/setFlow", views.test_set_flow, name="setFlow"),  # type: ignore
-    path(
-        "test/setAccountLinkingConfig",
-        views.test_set_account_linking_config,  # type: ignore
-        name="setAccountLinkingConfig",
-    ),  # type: ignore
-    path("setMFAInfo", views.set_mfa_info, name="setMfaInfo"),  # type: ignore
     path(
         "addRequiredFactor",
         views.add_required_factor,  # type: ignore
         name="addRequiredFactor",
     ),  # type: ignore
-    path(
-        "test/setEnabledRecipes",
-        views.test_set_enabled_recipes,  # type: ignore
-        name="setEnabledRecipes",
-    ),
     path("test/getTOTPCode", views.test_get_totp_code, name="getTotpCode"),  # type: ignore
     path(
         "test/create-oauth2-client",
@@ -42,7 +30,12 @@ urlpatterns = [  # type: ignore
     ),  # type: ignore
     path("test/getDevice", views.test_get_device, name="getDevice"),  # type: ignore
     path("test/featureFlags", views.test_feature_flags, name="featureFlags"),  # type: ignore
-    path("beforeeach", views.before_each, name="beforeeach"),  # type: ignore
+    path("test/before", views.before, name="before"),
+    path("test/beforeEach", views.before_each, name="beforeeach"),
+    path("test/after", views.after, name="after"),
+    path("test/afterEach", views.after_each, name="afterEach"),
+    path("test/setup/app", views.setup_core_app),
+    path("test/setup/st", views.setup_st),
 ]
 
 mode = os.environ.get("APP_MODE", "asgi")

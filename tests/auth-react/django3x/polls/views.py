@@ -18,6 +18,7 @@ from typing import Any, Dict, List
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from mysite.store import get_codes, get_url_with_token
 from mysite.utils import custom_init
+from mysite.utils import setup_core_app as setup_core_app_impl
 from supertokens_python import convert_to_recipe_user_id
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
@@ -387,37 +388,6 @@ async def remove_tenant(request: HttpRequest):
     return JsonResponse({"status": "OK", "didExist": core_resp.did_exist})
 
 
-async def test_set_flow(request: HttpRequest):
-    body = json.loads(request.body)
-    import mysite.store
-
-    mysite.store.contact_method = body["contactMethod"]
-    mysite.store.flow_type = body["flowType"]
-    custom_init()
-    return HttpResponse("")
-
-
-async def test_set_account_linking_config(request: HttpRequest):
-    import mysite.store
-
-    body = json.loads(request.body)
-    if body is None:
-        raise Exception("Invalid request body")
-    mysite.store.accountlinking_config = body
-    custom_init()
-    return HttpResponse("")
-
-
-async def set_mfa_info(request: HttpRequest):
-    import mysite.store
-
-    body = json.loads(request.body)
-    if body is None:
-        return JsonResponse({"error": "Invalid request body"}, status_code=400)
-    mysite.store.mfa_info = body
-    return JsonResponse({"status": "OK"})
-
-
 @verify_session()
 async def add_required_factor(request: HttpRequest):
     session_: SessionContainer = request.supertokens  # type: ignore
@@ -431,18 +401,6 @@ async def add_required_factor(request: HttpRequest):
     )
 
     return JsonResponse({"status": "OK"})
-
-
-def test_set_enabled_recipes(request: HttpRequest):
-    import mysite.store
-
-    body = json.loads(request.body)
-    if body is None:
-        raise Exception("Invalid request body")
-    mysite.store.enabled_recipes = body.get("enabledRecipes")
-    mysite.store.enabled_providers = body.get("enabledProviders")
-    custom_init()
-    return HttpResponse("")
 
 
 def test_get_totp_code(request: HttpRequest):
@@ -467,18 +425,24 @@ def test_create_oauth2_client(request: HttpRequest):
     return JsonResponse(client.to_json())
 
 
+def before(request: HttpRequest):
+    return HttpResponse("")
+
+
 def before_each(request: HttpRequest):
     import mysite.store
 
-    mysite.store.contact_method = "EMAIL_OR_PHONE"
-    mysite.store.flow_type = "USER_INPUT_CODE_AND_MAGIC_LINK"
     mysite.store.latest_url_with_token = ""
     mysite.store.code_store = dict()
-    mysite.store.accountlinking_config = {}
-    mysite.store.enabled_providers = None
-    mysite.store.enabled_recipes = None
-    mysite.store.mfa_info = {}
-    custom_init()
+
+    return HttpResponse("")
+
+
+def after_each(request: HttpRequest):
+    return HttpResponse("")
+
+
+def after(request: HttpRequest):
     return HttpResponse("")
 
 
@@ -500,3 +464,22 @@ def test_feature_flags(request: HttpRequest):
             ]
         }
     )
+
+
+def setup_core_app(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    url = setup_core_app_impl(**body)
+
+    return HttpResponse(url)
+
+
+def setup_st(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    custom_init(**body)
+    return HttpResponse("")
