@@ -80,7 +80,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/django3x
 
-          uvicorn mysite.asgi:application --port 8083 &
+          uvicorn mysite.asgi:application --port 8083 &> output.log &
 
       - name: Start Server (fastapi)
         if: matrix.framework == 'fastapi'
@@ -90,7 +90,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/fastapi-server
 
-          uvicorn app:app --host 0.0.0.0 --port 8083 &
+          uvicorn app:app --host 0.0.0.0 --port 8083 &> output.log &
 
       - name: Start Server (flask)
         if: matrix.framework == 'flask'
@@ -100,7 +100,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/flask-server
 
-          python3 app.py --port 8083 &
+          python3 app.py --port 8083 &> output.log &
 
       - uses: supertokens/auth-react-testing-action@main
         with:
