@@ -301,7 +301,7 @@ def get_core_url():
     host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
     port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
 
-    return f"http://localhost:{host}:{port}"
+    return f"http://{host}:{port}"
 
 
 def setup_core_app(
