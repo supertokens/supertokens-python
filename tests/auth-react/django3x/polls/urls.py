@@ -30,12 +30,12 @@ urlpatterns = [  # type: ignore
     ),  # type: ignore
     path("test/getDevice", views.test_get_device, name="getDevice"),  # type: ignore
     path("test/featureFlags", views.test_feature_flags, name="featureFlags"),  # type: ignore
-    path("/test/before", views.before, name="before"),
-    path("/test/beforeEach", views.before_each, name="beforeeach"),
-    path("/test/after", views.after, name="after"),
-    path("/test/afterEach", views.after_each, name="afterEach"),
-    path("/test/setup/app", views.setup_core_app),
-    path("/test/setup/st", views.setup_st),
+    path("test/before", views.before, name="before"),
+    path("test/beforeEach", views.before_each, name="beforeeach"),
+    path("test/after", views.after, name="after"),
+    path("test/afterEach", views.after_each, name="afterEach"),
+    path("test/setup/app", views.setup_core_app),
+    path("test/setup/st", views.setup_st),
 ]
 
 mode = os.environ.get("APP_MODE", "asgi")
