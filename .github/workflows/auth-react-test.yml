@@ -43,12 +43,8 @@ jobs:
           - flask
 
     env:
-      # Core
       SUPERTOKENS_CORE_PORT: 3567
       SUPERTOKENS_CORE_HOST: localhost
-      # Auth-react
-      APP_SERVER: 8083
-      NODE_PORT: 8082
       TEST_MODE: testing
 
     steps:
