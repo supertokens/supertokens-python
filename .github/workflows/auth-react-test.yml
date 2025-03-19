@@ -43,10 +43,12 @@ jobs:
           - flask
 
     env:
-      REACT_APP_API_PORT: 8083
+      # Core
+      SUPERTOKENS_CORE_PORT: 3567
+      SUPERTOKENS_CORE_HOST: localhost
+      # Auth-react
       APP_SERVER: 8083
       TEST_MODE: testing
-      NODE_PORT: 8082
 
     steps:
       - uses: actions/checkout@v4
