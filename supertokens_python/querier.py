@@ -24,9 +24,9 @@ from .constants import (
     API_KEY_HEADER,
     API_VERSION,
     API_VERSION_HEADER,
+    RATE_LIMIT_STATUS_CODE,
     RID_KEY_HEADER,
     SUPPORTED_CDI_VERSIONS,
-    RATE_LIMIT_STATUS_CODE,
 )
 from .normalised_url_path import NormalisedURLPath
 
@@ -35,11 +35,14 @@ if TYPE_CHECKING:
 
 from typing import List, Set, Union
 
+from sniffio import AsyncLibraryNotFoundError
+
+from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
+from supertokens_python.logger import log_debug_message
+
 from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
-from sniffio import AsyncLibraryNotFoundError
-from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
 
 
 class Querier:
@@ -361,7 +364,9 @@ class Querier:
         no_of_tries: int,
         retry_info_map: Optional[Dict[str, int]] = None,
     ) -> Dict[str, Any]:
+        log_debug_message(f"[Querier] path={path.get_as_string_dangerous()} {method=} [{no_of_tries=}]")
         if no_of_tries == 0:
+            log_debug_message(f"[Querier][Failed] path={path.get_as_string_dangerous()} {method=} failed after retries")
             raise_general_exception("No SuperTokens core available to query")
 
         try:
@@ -428,7 +433,9 @@ class Querier:
 
             return res
 
-        except (ConnectionError, NetworkError, ConnectTimeout) as _:
+        except (ConnectionError, NetworkError, ConnectTimeout) as err:
+            log_debug_message(f"[Querier][Error] path={path.get_as_string_dangerous()} {method=} failed with {repr(err)=}")
+            log_debug_message(f"[Querier][Error] path={path.get_as_string_dangerous()} {method=} failed, retrying. {no_of_tries=}")
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1, retry_info_map
             )
