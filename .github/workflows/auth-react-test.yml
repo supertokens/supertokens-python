@@ -72,6 +72,13 @@ jobs:
       SUPERTOKENS_CORE_PORT: 3567
       SUPERTOKENS_CORE_HOST: localhost
       TEST_MODE: testing
+      # Auth react setup envs
+      AUTH_REACT__LOG_DIR: ${{ needs.setup-auth-react.outputs.AUTH_REACT__LOG_DIR }}
+      AUTH_REACT__SCREENSHOT_DIR: ${{ needs.setup-auth-react.outputs.AUTH_REACT__SCREENSHOT_DIR }}
+      AUTH_REACT__APP_SERVER: ${{ needs.setup-auth-react.outputs.AUTH_REACT__APP_SERVER }}
+      AUTH_REACT__NODE_PORT: ${{ needs.setup-auth-react.outputs.AUTH_REACT__NODE_PORT }}
+      AUTH_REACT__TEST_MODE: ${{ needs.setup-auth-react.outputs.AUTH_REACT__TEST_MODE }}
+      AUTH_REACT__PORT: ${{ needs.setup-auth-react.outputs.AUTH_REACT__PORT }}
 
     steps:
       - uses: actions/checkout@v4
