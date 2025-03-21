@@ -44,6 +44,7 @@ jobs:
       AUTH_REACT__NODE_PORT: ${{ steps.envs.outputs.AUTH_REACT__NODE_PORT }}
       AUTH_REACT__TEST_MODE: ${{ steps.envs.outputs.AUTH_REACT__TEST_MODE }}
       AUTH_REACT__PORT: ${{ steps.envs.outputs.AUTH_REACT__PORT }}
+      specs: ${{ steps.envs.outputs.specs }}
 
     steps:
       - uses: supertokens/get-versions-action@main
@@ -77,6 +78,7 @@ jobs:
           - django
           - fastapi
           - flask
+        spec: ${{ fromJson(needs.setup-auth-react.outputs.specs) }}
 
     env:
       SUPERTOKENS_CORE_PORT: 3567
@@ -148,5 +150,6 @@ jobs:
       - uses: supertokens/auth-react-testing-action@main
         with:
           fdi-version: ${{ matrix.fdi-version }}
-          check-name-suffix: '[FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Framework=${{ matrix.framework }}]'
+          check-name-suffix: '[FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Framework=${{ matrix.framework }}][File=${{ matrix.spec }}]'
           path: supertokens-auth-react
+          spec: ${{ matrix.spec }}
