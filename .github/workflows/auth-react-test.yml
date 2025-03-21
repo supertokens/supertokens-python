@@ -46,11 +46,15 @@ jobs:
           SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
 
       - uses: supertokens/auth-react-testing-action/setup@main
+        id: envs
         with:
           # auth-react-version: ${{ steps.versions.outputs.authReactTag }}
           auth-react-version: ci/github-actions/auth-react/v0.48.0
           node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
           fdi-version: ${{ matrix.fdi-version }}
+
+      - run: |
+          echo ${{ toJson(steps.envs.outputs) }}
 
   test:
     runs-on: ubuntu-latest
@@ -110,7 +114,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/django3x
 
-          uvicorn mysite.asgi:application --port 8083 &> output.log &
+          uvicorn mysite.asgi:application --port 8083 &> AUTH_REACT__LOG_DIR/django.log &
 
       - name: Start Server (fastapi)
         if: matrix.framework == 'fastapi'
@@ -120,7 +124,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/fastapi-server
 
-          uvicorn app:app --host 0.0.0.0 --port 8083 &> output.log &
+          uvicorn app:app --host 0.0.0.0 --port 8083 &> AUTH_REACT__LOG_DIR/fastapi.log &
 
       - name: Start Server (flask)
         if: matrix.framework == 'flask'
@@ -130,7 +134,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/auth-react/flask-server
 
-          python3 app.py --port 8083 &> output.log &
+          python3 app.py --port 8083 &> AUTH_REACT__LOG_DIR/flask.log &
 
       - uses: supertokens/auth-react-testing-action@main
         with:
