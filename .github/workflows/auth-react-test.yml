@@ -63,6 +63,10 @@ jobs:
           node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
           fdi-version: ${{ matrix.fdi-version }}
 
+      - run: |
+          echo "${{ steps.envs.outputs.specs }}"
+          echo "${{ fromJson(steps.envs.outputs.specs) }}"
+
   test:
     runs-on: ubuntu-latest
     needs:
