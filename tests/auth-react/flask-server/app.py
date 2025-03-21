@@ -16,6 +16,7 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
+import requests
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
 from flask_cors import CORS
@@ -176,7 +177,7 @@ from supertokens_python.types import (
 )
 from typing_extensions import Literal
 
-load_dotenv()
+load_dotenv("../auth-react.env")
 
 
 def get_api_port():
@@ -362,9 +363,56 @@ def mock_provider_override(oi: Provider) -> Provider:
     return oi
 
 
-def custom_init():
-    global contact_method
-    global flow_type
+def get_core_url():
+    host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+    port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+
+    return f"http://{host}:{port}"
+
+
+def setup_core_app(
+    *, appId: Optional[str] = None, coreConfig: Optional[Dict[str, Any]] = None
+):
+    core_url = get_core_url()
+
+    if appId is None:
+        appId = ""
+
+    if coreConfig is None:
+        coreConfig = {}
+
+    response = requests.put(
+        f"{core_url}/recipe/multitenancy/app/v2",
+        headers={
+            "Content-Type": "application/json",
+        },
+        data={
+            "appId": appId,
+            "coreConfig": coreConfig,
+        },
+    )
+
+    response_body = response.json()
+    assert response_body["status"] == "OK"
+
+    return f"{core_url}/appid-{appId}"
+
+
+def custom_init(
+    *,
+    coreUrl: str = get_core_url(),
+    accountLinkingConfig: Optional[Dict[str, Any]] = None,
+    enabledRecipes: Optional[List[str]] = None,
+    enabledProviders: Optional[List[str]] = None,
+    passwordlessFlowType: Optional[str] = "USER_INPUT_CODE_AND_MAGIC_LINK",
+    passwordlessContactMethod: Optional[str] = "EMAIL_OR_PHONE",
+    mfaInfo: Optional[Dict[str, Any]] = None,
+):
+    if accountLinkingConfig is None:
+        accountLinkingConfig = {}
+
+    if mfaInfo is None:
+        mfaInfo = {}
 
     AccountLinkingRecipe.reset()
     UserRolesRecipe.reset()
@@ -773,28 +821,27 @@ def custom_init():
         ),
     ]
 
-    global enabled_providers
-    if enabled_providers is not None:
+    if enabledProviders is not None:
         providers_list = [
             provider
             for provider in providers_list
-            if provider.config.third_party_id in enabled_providers
+            if provider.config.third_party_id in enabledProviders
         ]
 
-    if contact_method is not None and flow_type is not None:
-        if contact_method == "PHONE":
+    if passwordlessContactMethod is not None and passwordlessFlowType is not None:
+        if passwordlessContactMethod == "PHONE":
             passwordless_init = passwordless.init(
                 contact_config=ContactPhoneOnlyConfig(),
-                flow_type=flow_type,
+                flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
-        elif contact_method == "EMAIL":
+        elif passwordlessContactMethod == "EMAIL":
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(),
-                flow_type=flow_type,
+                flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
@@ -805,7 +852,7 @@ def custom_init():
         else:
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(),
-                flow_type=flow_type,
+                flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
@@ -828,8 +875,6 @@ def custom_init():
     ) -> List[str]:
         return [tenant_id + ".example.com", "localhost"]
 
-    global mfa_info
-
     from supertokens_python.recipe.multifactorauth.interfaces import (
         APIInterface as MFAApiInterface,
     )
@@ -850,8 +895,8 @@ def custom_init():
             user_context: Dict[str, Any],
         ):
             res = await og_get_factors_setup_for_user(user, user_context)
-            if "alreadySetup" in mfa_info:
-                return mfa_info["alreadySetup"]
+            if "alreadySetup" in mfaInfo:
+                return mfaInfo["alreadySetup"]
             return res
 
         og_assert_allowed_to_setup_factor = original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
@@ -863,8 +908,8 @@ def custom_init():
             factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
             user_context: Dict[str, Any],
         ):
-            if "allowedToSetup" in mfa_info:
-                if factor_id not in mfa_info["allowedToSetup"]:
+            if "allowedToSetup" in mfaInfo:
+                if factor_id not in mfaInfo["allowedToSetup"]:
                     raise InvalidClaimsError(
                         msg="INVALID_CLAIMS",
                         payload=[
@@ -904,8 +949,8 @@ def custom_init():
                 required_secondary_factors_for_tenant,
                 user_context,
             )
-            if "requirements" in mfa_info:
-                return mfa_info["requirements"]
+            if "requirements" in mfaInfo:
+                return mfaInfo["requirements"]
             return res
 
         original_implementation.get_mfa_requirements_for_auth = (
@@ -932,10 +977,10 @@ def custom_init():
             )
 
             if isinstance(res, ResyncSessionAndFetchMFAInfoPUTOkResult):
-                if "alreadySetup" in mfa_info:
-                    res.factors.already_setup = mfa_info["alreadySetup"][:]
+                if "alreadySetup" in mfaInfo:
+                    res.factors.already_setup = mfaInfo["alreadySetup"][:]
 
-                if "noContacts" in mfa_info:
+                if "noContacts" in mfaInfo:
                     res.emails = {}
                     res.phone_numbers = {}
 
@@ -996,7 +1041,7 @@ def custom_init():
         {
             "id": "multifactorauth",
             "init": multifactorauth.init(
-                first_factors=mfa_info.get("firstFactors", None),
+                first_factors=mfaInfo.get("firstFactors", None),
                 override=multifactorauth.OverrideConfig(
                     functions=override_mfa_functions,
                     apis=override_mfa_apis,
@@ -1018,15 +1063,13 @@ def custom_init():
         },
     ]
 
-    global accountlinking_config
-
     accountlinking_config_input: Dict[str, Any] = {
         "enabled": False,
         "shouldAutoLink": {
             "shouldAutomaticallyLink": True,
             "shouldRequireVerification": True,
         },
-        **accountlinking_config,
+        **accountLinkingConfig,
     }
 
     async def should_do_automatic_account_linking(
@@ -1061,27 +1104,28 @@ def custom_init():
             }
         )
 
-    global enabled_recipes
-    if enabled_recipes is not None:
+    if enabledRecipes is not None:
         new_recipe_list = []
         for item in recipe_list:
-            for recipe_id in enabled_recipes:
+            for recipe_id in enabledRecipes:
                 if item["id"] in recipe_id:
                     new_recipe_list.append(item["init"])  # type: ignore
                     break
 
         recipe_list = new_recipe_list
+
     else:
         recipe_list = [item["init"] for item in recipe_list]
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:9000"),
+        supertokens_config=SupertokensConfig(coreUrl),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="localhost:" + get_api_port(),
             website_domain=get_website_domain(),
         ),
-        framework="flask",
+        framework="django",
+        mode=os.environ.get("APP_MODE", "asgi"),  # type: ignore
         recipe_list=recipe_list,
         telemetry=False,
     )
@@ -1315,60 +1359,46 @@ def get_token():
     return jsonify({"latestURLWithToken": latest_url_with_token})
 
 
-@app.route("/beforeeach", methods=["POST"])  # type: ignore
+@app.route("/test/before", methods=["POST"])  # type: ignore
+def before():
+    return ""
+
+
+@app.route("/test/beforeEach", methods=["POST"])  # type: ignore
 def before_each():
     global code_store
-    global accountlinking_config
-    global enabled_providers
-    global enabled_recipes
-    global mfa_info
     global latest_url_with_token
-    global contact_method
-    global flow_type
-    contact_method = "EMAIL_OR_PHONE"
-    flow_type = "USER_INPUT_CODE_AND_MAGIC_LINK"
+
     latest_url_with_token = ""
     code_store = dict()
-    accountlinking_config = {}
-    enabled_providers = None
-    enabled_recipes = None
-    mfa_info = {}
-    custom_init()
+
     return ""
 
 
-@app.route("/test/setFlow", methods=["POST"])  # type: ignore
-def test_set_flow():
-    body: Union[Any, None] = request.get_json()
-    if body is None:
-        raise Exception("Should never come here")
-    global contact_method
-    global flow_type
-    contact_method = body["contactMethod"]
-    flow_type = body["flowType"]
-    custom_init()
+@app.route("/test/afterEach", methods=["POST"])  # type: ignore
+def after_each():
     return ""
 
 
-@app.route("/test/setAccountLinkingConfig", methods=["POST"])  # type: ignore
-def test_set_account_linking_config():
-    global accountlinking_config
-    body = request.get_json()
-    if body is None:
-        raise Exception("Invalid request body")
-    accountlinking_config = body
-    custom_init()
-    return "", 200
+@app.route("/test/after", methods=["POST"])  # type: ignore
+def after():
+    return ""
 
 
-@app.route("/setMFAInfo", methods=["POST"])  # type: ignore
-def set_mfa_info():
-    global mfa_info
+@app.route("/test/setup/app", methods=["POST"])
+def setup_core_app_handler():
     body = request.get_json()
-    if body is None:
-        return jsonify({"error": "Invalid request body"}), 400
-    mfa_info = body
-    return jsonify({"status": "OK"})
+    url = setup_core_app(**body)
+
+    return url
+
+
+@app.route("/test/setup/st", methods=["POST"])
+def setup_st():
+    body = request.get_json()
+    custom_init(**body)
+
+    return ""
 
 
 @app.route("/addRequiredFactor", methods=["POST"])  # type: ignore
@@ -1383,19 +1413,6 @@ def add_required_factor():
     add_to_required_secondary_factors_for_user(session_.get_user_id(), body["factorId"])
 
     return jsonify({"status": "OK"})
-
-
-@app.route("/test/setEnabledRecipes", methods=["POST"])  # type: ignore
-def test_set_enabled_recipes():
-    global enabled_recipes
-    global enabled_providers
-    body = request.get_json()
-    if body is None:
-        raise Exception("Invalid request body")
-    enabled_recipes = body.get("enabledRecipes")
-    enabled_providers = body.get("enabledProviders")
-    custom_init()
-    return "", 200
 
 
 @app.route("/test/getTOTPCode", methods=["POST"])  # type: ignore
