@@ -36,6 +36,15 @@ jobs:
       matrix:
         # fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
         fdi-version: ['4.0']
+
+    outputs:
+      AUTH_REACT__LOG_DIR: ${{ steps.envs.outputs.AUTH_REACT__LOG_DIR }}
+      AUTH_REACT__SCREENSHOT_DIR: ${{ steps.envs.outputs.AUTH_REACT__SCREENSHOT_DIR }}
+      AUTH_REACT__APP_SERVER: ${{ steps.envs.outputs.AUTH_REACT__APP_SERVER }}
+      AUTH_REACT__NODE_PORT: ${{ steps.envs.outputs.AUTH_REACT__NODE_PORT }}
+      AUTH_REACT__TEST_MODE: ${{ steps.envs.outputs.AUTH_REACT__TEST_MODE }}
+      AUTH_REACT__PORT: ${{ steps.envs.outputs.AUTH_REACT__PORT }}
+
     steps:
       - uses: supertokens/get-versions-action@main
         id: versions
