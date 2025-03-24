@@ -69,7 +69,7 @@ jobs:
           echo "${{ fromJson(steps.envs.outputs.specs) }}"
 
       - id: setup-matrix
-        uses: druzsan/setup-matrix@v1
+        uses: druzsan/setup-matrix@v2
         with:
           # fdi-version: ${{ needs.define-versions.outputs.fdiVersions }}
           matrix: |
