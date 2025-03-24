@@ -68,6 +68,8 @@ jobs:
           echo "${{ steps.envs.outputs.specs }}"
           echo "${{ fromJson(steps.envs.outputs.specs) }}"
 
+          echo "${{ needs.define-versions.outputs.pyVersions }}"
+
       - id: setup-matrix
         uses: druzsan/setup-matrix@v2
         with:
@@ -83,8 +85,8 @@ jobs:
         with:
           matrix: ${{ steps.setup-matrix.outputs.matrix }}
           sort-by: '[.fdi-version, .py-version, .framework, .spec] | join("-")'
-          # group-by: '.spec'
-          nested-matrices-count: '1'
+          group-by: '.spec'
+          nested-matrices-count: '2'
 
   launch-tests:
     if: ${{ needs.setup-auth-react.outputs.matrix != '{"include":[]}' }}
