@@ -28,6 +28,28 @@ jobs:
           has-fdi: true
           has-cdi: true
 
+  setup-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - id: setup-matrix
+        uses: druzsan/setup-matrix@v1
+        with:
+          matrix: |
+            os: ubuntu-latest windows-latest macos-latest
+            python-version: 3.8 3.9 3.10
+            arch: arm64 amd64
+
+      - uses: cloudposse/github-action-matrix-extended@main
+        id: extend
+        with:
+          matrix: ${{ steps.setup-matrix.outputs.matrix }}
+          sort-by: '[.python-version, .os, .arch] | join("-")'
+          group-by: '.arch'
+          nested-matrices-count: '1'
+
+      - run: |
+          echo '${{ steps.extend.outputs.matrix }}'
+
   setup-auth-react:
     runs-on: ubuntu-latest
     needs: define-versions
