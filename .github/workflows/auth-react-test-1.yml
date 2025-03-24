@@ -71,14 +71,11 @@ jobs:
       - id: setup-matrix
         uses: druzsan/setup-matrix@v1
         with:
+          # fdi-version: ${{ needs.define-versions.outputs.fdiVersions }}
           matrix: |
-            # fdi-version: ${{ needs.define-versions.outputs.fdiVersions }}
             fdi-version: ["4.0"]
             py-version: ${{ needs.define-versions.outputs.pyVersions }}
-            framework:
-              - django
-              - fastapi
-              - flask
+            framework: ["django", "fastapi", "flask"]
             spec: ${{ steps.envs.outputs.specs }}
 
       - uses: cloudposse/github-action-matrix-extended@main
