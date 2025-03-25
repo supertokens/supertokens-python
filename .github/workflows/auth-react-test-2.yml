@@ -67,7 +67,7 @@ jobs:
     name: Group ${{ matrix.name }}
     with:
       matrix: ${{ matrix.items }}
-      fdi-version: ${{ matrix.fdi-version }}
+      fdi-version: ${{ inputs.artifact-id }}
       AUTH_REACT__LOG_DIR: ${{ inputs.AUTH_REACT__LOG_DIR }}
       AUTH_REACT__SCREENSHOT_DIR: ${{ inputs.AUTH_REACT__SCREENSHOT_DIR }}
       AUTH_REACT__APP_SERVER: ${{ inputs.AUTH_REACT__APP_SERVER }}
