@@ -43,9 +43,9 @@ jobs:
         id: extend
         with:
           matrix: ${{ steps.setup-matrix.outputs.matrix }}
-          sort-by: '[.python-version, .os, .arch] | join("-")'
+          sort-by: '[.["python-version"], .os, .arch] | join("-")'
           group-by: '.arch'
-          nested-matrices-count: '1'
+          nested-matrices-count: '2'
 
       - run: |
           echo '${{ steps.extend.outputs.matrix }}'
@@ -106,7 +106,7 @@ jobs:
         id: extend
         with:
           matrix: ${{ steps.setup-matrix.outputs.matrix }}
-          sort-by: '[.fdi-version, .py-version, .framework, .spec] | join("-")'
+          sort-by: '[.["fdi-version"], .["py-version"], .framework, .spec] | join("-")'
           group-by: '.spec'
           nested-matrices-count: '2'
 
