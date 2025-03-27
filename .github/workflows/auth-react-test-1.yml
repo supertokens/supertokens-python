@@ -60,21 +60,13 @@ jobs:
         id: envs
         with:
           # auth-react-version: ${{ steps.versions.outputs.authReactTag }}
-          auth-react-version: ci/github-actions/auth-react/v0.48.0
+          auth-react-version: ci/github-actions/auth-react/v0.49.0
           node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
           fdi-version: ${{ matrix.fdi-version }}
-
-      - run: |
-          echo "${{ steps.envs.outputs.specs }}"
-          echo "${{ fromJson(steps.envs.outputs.specs) }}"
-
-          echo "${{ needs.define-versions.outputs.pyVersions }}"
 
       - id: setup-matrix
         uses: supertokens/extended-matrix-action@main
         with:
-          # fdi-version: ${{ needs.define-versions.outputs.fdiVersions }}
-          # fdi-version: ["4.0"]
           artifact-id: ${{ matrix.fdi-version }}
           matrix: |
             py-version: ${{ needs.define-versions.outputs.pyVersions }}
