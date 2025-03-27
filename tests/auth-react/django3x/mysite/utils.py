@@ -1,6 +1,7 @@
 import os
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
+import requests
 from dotenv import load_dotenv
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.request import BaseRequest
@@ -85,7 +86,7 @@ from typing_extensions import Literal
 
 from .store import save_code, save_url_with_token
 
-load_dotenv()
+load_dotenv("../auth-react.env")
 
 
 def get_api_port():
@@ -296,8 +297,56 @@ def mock_provider_override(oi: Provider) -> Provider:
     return oi
 
 
-def custom_init():
-    import mysite.store
+def get_core_url():
+    host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+    port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+
+    return f"http://{host}:{port}"
+
+
+def setup_core_app(
+    *, appId: Optional[str] = None, coreConfig: Optional[Dict[str, Any]] = None
+):
+    core_url = get_core_url()
+
+    if appId is None:
+        appId = ""
+
+    if coreConfig is None:
+        coreConfig = {}
+
+    response = requests.put(
+        f"{core_url}/recipe/multitenancy/app/v2",
+        headers={
+            "Content-Type": "application/json",
+        },
+        data={
+            "appId": appId,
+            "coreConfig": coreConfig,
+        },
+    )
+
+    response_body = response.json()
+    assert response_body["status"] == "OK"
+
+    return f"{core_url}/appid-{appId}"
+
+
+def custom_init(
+    *,
+    coreUrl: str = get_core_url(),
+    accountLinkingConfig: Optional[Dict[str, Any]] = None,
+    enabledRecipes: Optional[List[str]] = None,
+    enabledProviders: Optional[List[str]] = None,
+    passwordlessFlowType: Optional[str] = "USER_INPUT_CODE_AND_MAGIC_LINK",
+    passwordlessContactMethod: Optional[str] = "EMAIL_OR_PHONE",
+    mfaInfo: Optional[Dict[str, Any]] = None,
+):
+    if accountLinkingConfig is None:
+        accountLinkingConfig = {}
+
+    if mfaInfo is None:
+        mfaInfo = {}
 
     AccountLinkingRecipe.reset()
     UserRolesRecipe.reset()
@@ -706,27 +755,27 @@ def custom_init():
         ),
     ]
 
-    if mysite.store.enabled_providers is not None:
+    if enabledProviders is not None:
         providers_list = [
             provider
             for provider in providers_list
-            if provider.config.third_party_id in mysite.store.enabled_providers
+            if provider.config.third_party_id in enabledProviders
         ]
 
-    if mysite.store.contact_method is not None and mysite.store.flow_type is not None:
-        if mysite.store.contact_method == "PHONE":
+    if passwordlessContactMethod is not None and passwordlessFlowType is not None:
+        if passwordlessContactMethod == "PHONE":
             passwordless_init = passwordless.init(
                 contact_config=ContactPhoneOnlyConfig(),
-                flow_type=mysite.store.flow_type,
+                flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
                 override=passwordless.InputOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
-        elif mysite.store.contact_method == "EMAIL":
+        elif passwordlessContactMethod == "EMAIL":
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(),
-                flow_type=mysite.store.flow_type,
+                flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
@@ -737,7 +786,7 @@ def custom_init():
         else:
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(),
-                flow_type=mysite.store.flow_type,
+                flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
@@ -780,8 +829,8 @@ def custom_init():
             user_context: Dict[str, Any],
         ):
             res = await og_get_factors_setup_for_user(user, user_context)
-            if "alreadySetup" in mysite.store.mfa_info:
-                return mysite.store.mfa_info["alreadySetup"]
+            if "alreadySetup" in mfaInfo:
+                return mfaInfo["alreadySetup"]
             return res
 
         og_assert_allowed_to_setup_factor = original_implementation.assert_allowed_to_setup_factor_else_throw_invalid_claim_error
@@ -793,8 +842,8 @@ def custom_init():
             factors_set_up_for_user: Callable[[], Awaitable[List[str]]],
             user_context: Dict[str, Any],
         ):
-            if "allowedToSetup" in mysite.store.mfa_info:
-                if factor_id not in mysite.store.mfa_info["allowedToSetup"]:
+            if "allowedToSetup" in mfaInfo:
+                if factor_id not in mfaInfo["allowedToSetup"]:
                     raise InvalidClaimsError(
                         msg="INVALID_CLAIMS",
                         payload=[
@@ -834,8 +883,8 @@ def custom_init():
                 required_secondary_factors_for_tenant,
                 user_context,
             )
-            if "requirements" in mysite.store.mfa_info:
-                return mysite.store.mfa_info["requirements"]
+            if "requirements" in mfaInfo:
+                return mfaInfo["requirements"]
             return res
 
         original_implementation.get_mfa_requirements_for_auth = (
@@ -862,10 +911,10 @@ def custom_init():
             )
 
             if isinstance(res, ResyncSessionAndFetchMFAInfoPUTOkResult):
-                if "alreadySetup" in mysite.store.mfa_info:
-                    res.factors.already_setup = mysite.store.mfa_info["alreadySetup"][:]
+                if "alreadySetup" in mfaInfo:
+                    res.factors.already_setup = mfaInfo["alreadySetup"][:]
 
-                if "noContacts" in mysite.store.mfa_info:
+                if "noContacts" in mfaInfo:
                     res.emails = {}
                     res.phone_numbers = {}
 
@@ -926,7 +975,7 @@ def custom_init():
         {
             "id": "multifactorauth",
             "init": multifactorauth.init(
-                first_factors=mysite.store.mfa_info.get("firstFactors", None),
+                first_factors=mfaInfo.get("firstFactors", None),
                 override=multifactorauth.OverrideConfig(
                     functions=override_mfa_functions,
                     apis=override_mfa_apis,
@@ -954,7 +1003,7 @@ def custom_init():
             "shouldAutomaticallyLink": True,
             "shouldRequireVerification": True,
         },
-        **mysite.store.accountlinking_config,
+        **accountLinkingConfig,
     }
 
     async def should_do_automatic_account_linking(
@@ -989,10 +1038,10 @@ def custom_init():
             }
         )
 
-    if mysite.store.enabled_recipes is not None:
+    if enabledRecipes is not None:
         new_recipe_list = []
         for item in recipe_list:
-            for recipe_id in mysite.store.enabled_recipes:
+            for recipe_id in enabledRecipes:
                 if item["id"] in recipe_id:
                     new_recipe_list.append(item["init"])  # type: ignore
                     break
@@ -1003,7 +1052,7 @@ def custom_init():
         recipe_list = [item["init"] for item in recipe_list]
 
     init(
-        supertokens_config=SupertokensConfig("http://localhost:9000"),
+        supertokens_config=SupertokensConfig(coreUrl),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="localhost:" + get_api_port(),
