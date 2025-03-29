@@ -106,8 +106,8 @@ class InputAppInfo:
         api_domain: str,
         api_gateway_path: str = "",
         api_base_path: str = "/auth",
-        website_base_path: str = "/auth",
-        website_domain: Optional[str] = None,
+        client_base_path: str = "/auth",
+        client_domain: Optional[str] = None,
         origin: Optional[
             Union[str, Callable[[Optional[BaseRequest], Dict[str, Any]], str]]
         ] = None,
@@ -115,10 +115,10 @@ class InputAppInfo:
         self.app_name = app_name
         self.api_gateway_path = api_gateway_path
         self.api_domain = api_domain
-        self.website_domain = website_domain
+        self.client_domain = client_domain
         self.origin = origin
         self.api_base_path = api_base_path
-        self.website_base_path = website_base_path
+        self.client_base_path = client_base_path
 
 
 class AppInfo:
@@ -238,9 +238,11 @@ class Supertokens:
         hosts = list(
             map(
                 lambda h: Host(
-                    NormalisedURLDomain(h.strip()), NormalisedURLPath(h.strip())
+                    NormalisedURLDomain(
+                        h.strip()), NormalisedURLPath(h.strip())
                 ),
-                filter(lambda x: x != "", supertokens_config.connection_uri.split(";")),
+                filter(lambda x: x != "",
+                       supertokens_config.connection_uri.split(";")),
             )
         )
         Querier.init(
@@ -289,7 +291,8 @@ class Supertokens:
                 jwt_found = True
             return recipe_module
 
-        self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
+        self.recipe_modules: List[RecipeModule] = list(
+            map(make_recipe, recipe_list))
 
         if not jwt_found:
             from supertokens_python.recipe.jwt.recipe import JWTRecipe
@@ -304,22 +307,26 @@ class Supertokens:
         if not multitenancy_found:
             from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
-            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                MultitenancyRecipe.init()(self.app_info))
 
         if totp_found and not multi_factor_auth_found:
-            raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
+            raise Exception(
+                "Please initialize the MultiFactorAuth recipe to use TOTP.")
 
         if not user_metadata_found:
             from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
-            self.recipe_modules.append(UserMetadataRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                UserMetadataRecipe.init()(self.app_info))
 
         if not oauth2_found:
             from supertokens_python.recipe.oauth2provider.recipe import (
                 OAuth2ProviderRecipe,
             )
 
-            self.recipe_modules.append(OAuth2ProviderRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                OAuth2ProviderRecipe.init()(self.app_info))
 
         self.telemetry = (
             telemetry
@@ -354,7 +361,8 @@ class Supertokens:
         if ("SUPERTOKENS_ENV" not in environ) or (
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
-            raise_general_exception("calling testing function in non testing env")
+            raise_general_exception(
+                "calling testing function in non testing env")
         from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
         UserMetadataRecipe.reset()
@@ -442,7 +450,8 @@ class Supertokens:
 
             raise_general_exception("Unknown response")
 
-        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+        raise_general_exception(
+            "Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def get_user_id_mapping(
         self,
@@ -476,7 +485,8 @@ class Supertokens:
 
             raise_general_exception("Unknown response")
 
-        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+        raise_general_exception(
+            "Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def delete_user_id_mapping(
         self,
@@ -508,7 +518,8 @@ class Supertokens:
 
             raise_general_exception("Unknown response")
 
-        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+        raise_general_exception(
+            "Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def update_or_delete_user_id_mapping_info(
         self,
@@ -538,7 +549,8 @@ class Supertokens:
 
             raise_general_exception("Unknown response")
 
-        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+        raise_general_exception(
+            "Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def middleware(
         self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
@@ -595,7 +607,8 @@ class Supertokens:
                         return None
                     log_debug_message("middleware: Ended")
                     return api_resp
-            log_debug_message("middleware: Not handling because no recipe matched")
+            log_debug_message(
+                "middleware: Not handling because no recipe matched")
             return None
 
         if request_rid is not None:
@@ -672,7 +685,8 @@ class Supertokens:
     ) -> Optional[BaseResponse]:
         log_debug_message("errorHandler: Started")
         log_debug_message(
-            "errorHandler: Error is from SuperTokens recipe. Message: %s", str(err)
+            "errorHandler: Error is from SuperTokens recipe. Message: %s", str(
+                err)
         )
         if isinstance(err, GeneralError):
             raise err
