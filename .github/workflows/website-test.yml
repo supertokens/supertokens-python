@@ -68,6 +68,13 @@ jobs:
         working-directory: supertokens-python
         run: docker compose up --wait
 
+      - name: Setup venv
+        working-directory: supertokens-python
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          python3 -m pip install pip setuptools --upgrade
+
       - name: Install dependencies and start servers (django2x)
         if: matrix.framework == 'django2x'
         working-directory: supertokens-python
