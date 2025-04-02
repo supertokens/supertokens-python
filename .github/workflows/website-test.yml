@@ -62,7 +62,7 @@ jobs:
           driver-name: python
           fdi-version: ${{ matrix.fdi-version }}
         env:
-          SUPERTOKENS_API_KEY: ${{ env.SUPERTOKENS_API_KEY }}
+          SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
 
       - name: Start core
         working-directory: supertokens-python
