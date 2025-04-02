@@ -30,15 +30,15 @@ DEBUG = True
 ALLOWED_HOSTS = ["localhost.org", "localhost", "0.0.0.0"]
 
 CORS_ORIGIN_WHITELIST = [
-    "http://localhost.org:8080",
+    "http://localhost:8080",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost.org:8080",
+    "http://localhost:8080",
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    "http://localhost.org:8080",
+    "http://localhost:8080",
 ]
 
 CORS_ALLOW_METHODS = [
