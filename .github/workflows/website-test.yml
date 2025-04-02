@@ -79,8 +79,9 @@ jobs:
         if: matrix.framework == 'django2x'
         working-directory: supertokens-python
         run: |
-          source venv/bin/activate
+          echo "127.0.0.1 localhost.org" >> /etc/hosts
 
+          source venv/bin/activate
           make with-django2x
 
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
