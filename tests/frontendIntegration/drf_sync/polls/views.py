@@ -350,18 +350,21 @@ def get_app_port():
 
 
 def config(
-    enable_anti_csrf: bool, enable_jwt: bool, _jwt_property_name: Union[str, None]
+    core_url: str,
+    enable_anti_csrf: bool,
+    enable_jwt: bool,
+    jwt_property_name: Union[str, None],
 ):
     anti_csrf = "VIA_TOKEN" if enable_anti_csrf else "NONE"
 
     if enable_jwt:
         if is_version_gte(VERSION, "0.13.0"):
             init(
-                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                supertokens_config=SupertokensConfig(core_url),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
                     api_domain="0.0.0.0:" + get_app_port(),
-                    website_domain="http://localhost.org:8080",
+                    website_domain="http://localhost:8080",
                 ),
                 framework="django",
                 recipe_list=[
@@ -381,11 +384,11 @@ def config(
             )
         else:
             init(
-                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                supertokens_config=SupertokensConfig(core_url),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
                     api_domain="0.0.0.0:" + get_app_port(),
-                    website_domain="http://localhost.org:8080",
+                    website_domain="http://localhost:8080",
                 ),
                 framework="django",
                 recipe_list=[
@@ -404,11 +407,11 @@ def config(
             )
     else:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:9000"),
+            supertokens_config=SupertokensConfig(core_url),
             app_info=InputAppInfo(
                 app_name="SuperTokens Python SDK",
                 api_domain="0.0.0.0:" + get_app_port(),
-                website_domain="http://localhost.org:8080",
+                website_domain="http://localhost:8080",
             ),
             framework="django",
             recipe_list=[
@@ -490,7 +493,16 @@ def login_218(request: Request):  # type: ignore
 @api_view(["GET", "POST"])
 @renderer_classes([JsonTextRenderer])  # type: ignore
 def before_each(request: Request):  # type: ignore
-    config(True, False, None)  # type: ignore
+    if request.method == "POST":  # type: ignore
+        Test.reset()
+        return Response("")  # type: ignore
+    else:
+        return send_options_api_response()  # type: ignore
+
+
+@api_view(["GET", "POST"])
+@renderer_classes([JsonTextRenderer])  # type: ignore
+def after(request: Request):  # type: ignore
     if request.method == "POST":  # type: ignore
         Test.reset()
         return Response("")  # type: ignore
@@ -633,51 +645,6 @@ def refresh(request: Request):  # type: ignore
 
 @api_view(["GET", "POST"])
 @renderer_classes([JsonTextRenderer])  # type: ignore
-def set_anti_csrf(request: Request):  # type: ignore
-    global last_set_enable_anti_csrf
-    data = request.data  # type: ignore
-    if "enableAntiCsrf" not in data:  # type: ignore
-        enable_csrf = True
-    else:
-        enable_csrf = data["enableAntiCsrf"]  # type: ignore
-
-    last_set_enable_anti_csrf = enable_csrf  # type: ignore
-    if enable_csrf is not None:
-        Supertokens.reset()
-        SessionRecipe.reset()
-        MultitenancyRecipe.reset()
-        OpenIdRecipe.reset()
-        OAuth2ProviderRecipe.reset()
-        JWTRecipe.reset()
-        config(enable_csrf, False, None)  # type: ignore
-    return Response("success")  # type: ignore
-
-
-@api_view(["GET", "POST"])
-@renderer_classes([JsonTextRenderer])  # type: ignore
-def set_enable_jwt(request: Request):  # type: ignore
-    global last_set_enable_jwt
-    global last_set_enable_anti_csrf
-    data = request.data  # type: ignore
-    if "enableJWT" not in data:  # type: ignore
-        enable_jwt = False
-    else:
-        enable_jwt = data["enableJWT"]  # type: ignore
-
-    last_set_enable_jwt = enable_jwt  # type: ignore
-    if enable_jwt is not None:
-        Supertokens.reset()
-        SessionRecipe.reset()
-        MultitenancyRecipe.reset()
-        OpenIdRecipe.reset()
-        OAuth2ProviderRecipe.reset()
-        JWTRecipe.reset()
-        config(last_set_enable_anti_csrf, enable_jwt, None)  # type: ignore
-    return Response("success")  # type: ignore
-
-
-@api_view(["GET", "POST"])
-@renderer_classes([JsonTextRenderer])  # type: ignore
 def feature_flags(request: Request):  # type: ignore
     global last_set_enable_jwt
     return Response(
@@ -706,7 +673,37 @@ def reinitialize(request: Request):  # type: ignore
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
-    config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)  # type: ignore
+    config(
+        data["coreUrl"],  # type: ignore
+        last_set_enable_anti_csrf,
+        last_set_enable_jwt,
+        jwt_property_name,  # type: ignore
+    )
+    return Response("")  # type: ignore
+
+
+@api_view(["POST"])
+@renderer_classes([JsonTextRenderer])  # type: ignore
+def setup_st(request: HttpRequest):  # type: ignore
+    global last_set_enable_jwt
+    global last_set_enable_anti_csrf
+    data = json.loads(request.body)
+
+    Supertokens.reset()
+    SessionRecipe.reset()
+    MultitenancyRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
+    JWTRecipe.reset()
+    config(
+        core_url=data["coreUrl"],
+        enable_anti_csrf=data.get("enableAntiCsrf"),
+        enable_jwt=data.get("enableJWT"),
+        jwt_property_name=data.get("jwtPropertyName"),
+    )
+
+    last_set_enable_anti_csrf = data.get("enableAntiCsrf")
+    last_set_enable_jwt = data.get("enableJWT")
     return Response("")  # type: ignore
 
 
