@@ -7,7 +7,13 @@ urlpatterns = [  # type: ignore
     path("index.html", views.send_file, name="index.html"),  # type: ignore
     path("login", views.login, name="login"),  # type: ignore
     path("login-2.18", views.login_218, name="login_218"),  # type: ignore
+    path(
+        "test/setup/st",
+        views.setup_st,  # type: ignore
+        name="setup_st",
+    ),
     path("beforeeach", views.before_each, name="beforeeach"),  # type: ignore
+    path("after", views.after, name="after"),  # type: ignore
     path("testUserConfig", views.test_config, name="testUserConfig"),  # type: ignore
     path(
         "multipleInterceptors",
@@ -42,8 +48,6 @@ urlpatterns = [  # type: ignore
         name="refreshAttemptedTime",
     ),
     path("auth/session/refresh", views.refresh, name="refresh"),  # type: ignore
-    path("setAntiCsrf", views.set_anti_csrf, name="setAntiCsrf"),  # type: ignore
-    path("setEnableJWT", views.set_enable_jwt, name="setEnableJWT"),  # type: ignore
     path("featureFlags", views.feature_flags, name="featureFlags"),  # type: ignore
     path(
         "reinitialiseBackendConfig",

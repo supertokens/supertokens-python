@@ -40,12 +40,12 @@ jobs:
           - '4.0'
         framework:
           - django2x
-          # - django3x
-          # - drf_sync
-          # - drf_async
-          # - fastapi
-          # - flask
-          # - flask-nest-asyncio
+          - django3x
+          - drf_sync
+          - drf_async
+          - fastapi
+          - flask
+          - flask-nest-asyncio
 
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +89,97 @@ jobs:
 
           gunicorn mysite.wsgi --bind 0.0.0.0:8080 &
           gunicorn mysite.wsgi --bind 0.0.0.0:8082 &
+
+      - name: Install dependencies and start servers (django3x)
+        if: matrix.framework == 'django3x'
+        working-directory: supertokens-python
+        run: |
+          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
+
+          source venv/bin/activate
+          make with-django3x
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/django3x
+
+          uvicorn mysite.asgi:application --port 8080 &
+          uvicorn mysite.asgi:application --port 8082 &
+
+      - name: Install dependencies and start servers (drf_sync)
+        if: matrix.framework == 'drf_sync'
+        working-directory: supertokens-python
+        run: |
+          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
+
+          source venv/bin/activate
+          make with-drf
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/drf_sync
+
+          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &
+
+      - name: Install dependencies and start servers (drf_async)
+        if: matrix.framework == 'drf_async'
+        working-directory: supertokens-python
+        run: |
+          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
+
+          source venv/bin/activate
+          make with-drf
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/drf_async
+
+          uvicorn mysite.asgi:application --port 8080 &
+          uvicorn mysite.asgi:application --port 8082 &
+
+      - name: Install dependencies and start servers (fastapi)
+        if: matrix.framework == 'fastapi'
+        working-directory: supertokens-python
+        run: |
+          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
+
+          source venv/bin/activate
+          make with-fastapi
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/fastapi-server
+
+          uvicorn app:app --host 0.0.0.0 --port 8080 &
+          uvicorn app:app --host 0.0.0.0 --port 8082 &
+
+      - name: Install dependencies and start servers (flask)
+        if: matrix.framework == 'flask'
+        working-directory: supertokens-python
+        run: |
+          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
+
+          source venv/bin/activate
+          make with-flask
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/flask-server
+
+          python3 app.py --port 8080 &
+          python3 app.py --port 8082 &
+
+      - name: Install dependencies and start servers (flask)
+        if: matrix.framework == 'flask'
+        working-directory: supertokens-python
+        run: |
+          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
+
+          source venv/bin/activate
+          make with-flask
+          python -m pip install nest-asyncio
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/flask-server
+
+          python3 app.py --port 8080 &
+          python3 app.py --port 8082 &
 
       - uses: supertokens/website-testing-action@main
         with:
