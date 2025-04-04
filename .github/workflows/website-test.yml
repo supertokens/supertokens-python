@@ -93,7 +93,7 @@ jobs:
         working-directory: supertokens-python
         run: |
           source venv/bin/activate
-          make with-django3x
+          make with-django
 
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/django3x
