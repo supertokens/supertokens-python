@@ -176,18 +176,21 @@ def get_app_port():
 
 
 def config(
-    enable_anti_csrf: bool, enable_jwt: bool, _jwt_property_name: Union[str, None]
+    core_url: str,
+    enable_anti_csrf: bool,
+    enable_jwt: bool,
+    jwt_property_name: Union[str, None],
 ):
     anti_csrf = "VIA_TOKEN" if enable_anti_csrf else "NONE"
 
     if enable_jwt:
         if is_version_gte(VERSION, "0.13.0"):
             init(
-                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                supertokens_config=SupertokensConfig(core_url),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
                     api_domain="0.0.0.0:" + get_app_port(),
-                    website_domain="http://localhost.org:8080",
+                    website_domain="http://localhost:8080",
                 ),
                 framework="fastapi",
                 recipe_list=[
@@ -207,11 +210,11 @@ def config(
             )
         else:
             init(
-                supertokens_config=SupertokensConfig("http://localhost:9000"),
+                supertokens_config=SupertokensConfig(core_url),
                 app_info=InputAppInfo(
                     app_name="SuperTokens Python SDK",
                     api_domain="0.0.0.0:" + get_app_port(),
-                    website_domain="http://localhost.org:8080",
+                    website_domain="http://localhost:8080",
                 ),
                 framework="fastapi",
                 recipe_list=[
@@ -230,11 +233,11 @@ def config(
             )
     else:
         init(
-            supertokens_config=SupertokensConfig("http://localhost:9000"),
+            supertokens_config=SupertokensConfig(core_url),
             app_info=InputAppInfo(
                 app_name="SuperTokens Python SDK",
                 api_domain="0.0.0.0:" + get_app_port(),
-                website_domain="http://localhost.org:8080",
+                website_domain="http://localhost:8080",
             ),
             framework="fastapi",
             recipe_list=[
@@ -248,7 +251,14 @@ def config(
         )
 
 
-config(True, False, None)
+core_host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+core_port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+config(
+    core_url=f"http://{core_host}:{core_port}",
+    enable_anti_csrf=True,
+    enable_jwt=False,
+    jwt_property_name=None,
+)
 
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)  # type: ignore
 
@@ -322,6 +332,17 @@ def before_each_options():
 
 @app.post("/beforeeach")
 def before_each():
+    Test.reset()
+    return PlainTextResponse("")
+
+
+@app.options("/after")
+def afer_options():
+    return send_options_api_response()
+
+
+@app.post("/after")
+def afer():
     Test.reset()
     return PlainTextResponse("")
 
@@ -539,49 +560,6 @@ async def refresh(request: Request):
     return PlainTextResponse(content="refresh success")
 
 
-@app.post("/setAntiCsrf")
-async def set_anti_csrf(request: Request):
-    global last_set_enable_anti_csrf
-    json = await request.json()
-    if "enableAntiCsrf" not in json:
-        enable_csrf = True
-    else:
-        enable_csrf = json["enableAntiCsrf"]
-
-    last_set_enable_anti_csrf = enable_csrf
-    if enable_csrf is not None:
-        Supertokens.reset()
-        SessionRecipe.reset()
-        MultitenancyRecipe.reset()
-        OpenIdRecipe.reset()
-        OAuth2ProviderRecipe.reset()
-        JWTRecipe.reset()
-        config(enable_csrf, False, None)
-    return PlainTextResponse(content="success")
-
-
-@app.post("/setEnableJWT")
-async def set_enable_jwt(request: Request):
-    global last_set_enable_jwt
-    global last_set_enable_anti_csrf  # pylint: disable=global-variable-not-assigned
-    json = await request.json()
-    if "enableJWT" not in json:
-        enable_jwt = False
-    else:
-        enable_jwt = json["enableJWT"]
-
-    last_set_enable_jwt = enable_jwt
-    if enable_jwt is not None:
-        Supertokens.reset()
-        SessionRecipe.reset()
-        MultitenancyRecipe.reset()
-        OpenIdRecipe.reset()
-        OAuth2ProviderRecipe.reset()
-        JWTRecipe.reset()
-        config(last_set_enable_anti_csrf, enable_jwt, None)
-    return PlainTextResponse(content="success")
-
-
 @app.options("/refreshCalledTime")
 def refresh_called_time_options():
     return send_options_api_response()
@@ -679,8 +657,37 @@ async def reinitialize(request: Request):
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
-    config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
+    config(
+        json["coreUrl"],
+        last_set_enable_anti_csrf,
+        last_set_enable_jwt,
+        jwt_property_name,
+    )
     return PlainTextResponse(content="")
+
+
+@app.post("/test/setup/st")
+async def setup_st(request: Request):
+    global last_set_enable_jwt
+    global last_set_enable_anti_csrf
+    json = await request.json()
+
+    Supertokens.reset()
+    SessionRecipe.reset()
+    MultitenancyRecipe.reset()
+    OpenIdRecipe.reset()
+    OAuth2ProviderRecipe.reset()
+    JWTRecipe.reset()
+    config(
+        core_url=json["coreUrl"],
+        enable_anti_csrf=json.get("enableAntiCsrf"),
+        enable_jwt=json.get("enableJWT"),
+        jwt_property_name=json.get("jwtPropertyName"),
+    )
+
+    last_set_enable_anti_csrf = json.get("enableAntiCsrf")
+    last_set_enable_jwt = json.get("enableJWT")
+    return PlainTextResponse("")
 
 
 @app.options("/checkAllowCredentials")
@@ -713,7 +720,7 @@ def f_405(_, __: Exception):
 
 app = CORSMiddleware(
     app=app,
-    allow_origins=["http://localhost.org:8080"],
+    allow_origins=["http://localhost:8080"],
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Content-Type"] + get_all_cors_headers(),

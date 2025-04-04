@@ -11,3 +11,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  oauth:
+    image: supertokens/oauth2-test:latest
+    platform: linux/amd64
