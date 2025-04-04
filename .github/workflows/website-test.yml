@@ -79,8 +79,6 @@ jobs:
         if: matrix.framework == 'django2x'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-django2x
 
@@ -94,8 +92,6 @@ jobs:
         if: matrix.framework == 'django3x'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-django3x
 
@@ -109,8 +105,6 @@ jobs:
         if: matrix.framework == 'drf_sync'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-drf
 
@@ -124,8 +118,6 @@ jobs:
         if: matrix.framework == 'drf_async'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-drf
 
@@ -139,8 +131,6 @@ jobs:
         if: matrix.framework == 'fastapi'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-fastapi
 
@@ -154,8 +144,6 @@ jobs:
         if: matrix.framework == 'flask'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-flask
 
@@ -169,8 +157,6 @@ jobs:
         if: matrix.framework == 'flask'
         working-directory: supertokens-python
         run: |
-          sudo echo "127.0.0.1 localhost.org" >> /etc/hosts
-
           source venv/bin/activate
           make with-flask
           python -m pip install nest-asyncio
