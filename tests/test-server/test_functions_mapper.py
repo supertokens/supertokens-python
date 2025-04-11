@@ -142,6 +142,10 @@ def get_func(eval_str: str) -> Callable[..., Any]:
                 required_secondary_factors_for_tenant: Any,
                 user_context: Dict[str, Any],
             ) -> MFARequirementList:
+                # Test specifies an override, return the required data
+                if 'getMFARequirementsForAuth:async()=>["totp"]' in eval_str:
+                    return ["totp"]
+
                 return ["otp-phone"] if user_context.get("requireFactor") else []
 
             original_implementation.get_mfa_requirements_for_auth = (
