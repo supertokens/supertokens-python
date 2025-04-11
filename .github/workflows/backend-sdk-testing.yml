@@ -3,8 +3,13 @@ name: "Backend SDK Tests"
 on:
   pull_request:
     types:
+      - opened
+      - reopened
       - synchronize
   push:
+    branches:
+      - master
+      - "v[0-9]+.[0-9]+"
     tags:
       - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
 
