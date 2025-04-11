@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
+- Sets up workflow to run backend-sdk-testing
+  - Updates test-servers to work with updated tests
 
 ## [0.29.1] - 2025-04-11
 - Fixes an issue where `removeDevice` API allowed removing TOTP devices without the user completing MFA.
