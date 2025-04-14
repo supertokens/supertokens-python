@@ -114,23 +114,28 @@ async def get_third_party_config(
 
     # query param may be passed if we are creating a new third party config, check and update accordingly
 
-    if third_party_id in ["okta", "active-directory", "boxy-saml", "google-workspaces"]:
-        if third_party_id == "okta":
+    if any(
+        [
+            third_party_id.startswith(tp_id)
+            for tp_id in ["okta", "active-directory", "boxy-saml", "google-workspaces"]
+        ]
+    ):
+        if third_party_id.startswith("okta"):
             okta_domain = options.request.get_query_param("oktaDomain")
             if okta_domain is not None:
                 additional_config = {"oktaDomain": okta_domain}
-        elif third_party_id == "active-directory":
+        elif third_party_id.startswith("active-directory"):
             directory_id = options.request.get_query_param("directoryId")
             if directory_id is not None:
                 additional_config = {"directoryId": directory_id}
-        elif third_party_id == "boxy-saml":
+        elif third_party_id.startswith("boxy-saml"):
             boxy_url = options.request.get_query_param("boxyUrl")
             boxy_api_key = options.request.get_query_param("boxyAPIKey")
             if boxy_url is not None:
                 additional_config = {"boxyURL": boxy_url}
                 if boxy_api_key is not None:
                     additional_config["boxyAPIKey"] = boxy_api_key
-        elif third_party_id == "google-workspaces":
+        elif third_party_id.startswith("google-workspaces"):
             hd = options.request.get_query_param("hd")
             if hd is not None:
                 additional_config = {"hd": hd}

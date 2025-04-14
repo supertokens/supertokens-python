@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.29.1] - 2025-04-11
 - Fixes an issue where `removeDevice` API allowed removing TOTP devices without the user completing MFA.
+- Fixes issue with ThirdParty provider info on dashboard
 
 ## [0.29.0] - 2025-03-03
 ### Breaking changes
