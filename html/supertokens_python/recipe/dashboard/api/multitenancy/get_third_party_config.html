@@ -142,23 +142,28 @@ async def get_third_party_config(
 
     # query param may be passed if we are creating a new third party config, check and update accordingly
 
-    if third_party_id in [&#34;okta&#34;, &#34;active-directory&#34;, &#34;boxy-saml&#34;, &#34;google-workspaces&#34;]:
-        if third_party_id == &#34;okta&#34;:
+    if any(
+        [
+            third_party_id.startswith(tp_id)
+            for tp_id in [&#34;okta&#34;, &#34;active-directory&#34;, &#34;boxy-saml&#34;, &#34;google-workspaces&#34;]
+        ]
+    ):
+        if third_party_id.startswith(&#34;okta&#34;):
             okta_domain = options.request.get_query_param(&#34;oktaDomain&#34;)
             if okta_domain is not None:
                 additional_config = {&#34;oktaDomain&#34;: okta_domain}
-        elif third_party_id == &#34;active-directory&#34;:
+        elif third_party_id.startswith(&#34;active-directory&#34;):
             directory_id = options.request.get_query_param(&#34;directoryId&#34;)
             if directory_id is not None:
                 additional_config = {&#34;directoryId&#34;: directory_id}
-        elif third_party_id == &#34;boxy-saml&#34;:
+        elif third_party_id.startswith(&#34;boxy-saml&#34;):
             boxy_url = options.request.get_query_param(&#34;boxyUrl&#34;)
             boxy_api_key = options.request.get_query_param(&#34;boxyAPIKey&#34;)
             if boxy_url is not None:
                 additional_config = {&#34;boxyURL&#34;: boxy_url}
                 if boxy_api_key is not None:
                     additional_config[&#34;boxyAPIKey&#34;] = boxy_api_key
-        elif third_party_id == &#34;google-workspaces&#34;:
+        elif third_party_id.startswith(&#34;google-workspaces&#34;):
             hd = options.request.get_query_param(&#34;hd&#34;)
             if hd is not None:
                 additional_config = {&#34;hd&#34;: hd}
