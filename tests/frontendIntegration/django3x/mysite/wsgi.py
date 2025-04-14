@@ -17,6 +17,14 @@ if True:
     # to help middleware function with uvicorn (to ensure supertokens init is called)
     from polls.views import config
 
-    config(True, False, None)
+    core_host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+    core_port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+
+    config(
+        core_url=f"http://{core_host}:{core_port}",
+        enable_anti_csrf=True,
+        enable_jwt=False,
+        jwt_property_name=None,
+    )
 
 application = get_wsgi_application()
