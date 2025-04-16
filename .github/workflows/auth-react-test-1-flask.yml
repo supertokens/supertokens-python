@@ -1,4 +1,4 @@
-name: Auth-React Tests - L1
+name: Auth-React Tests - L1 - Flask
 
 on:
   pull_request:
@@ -69,7 +69,7 @@ jobs:
           artifact-id: ${{ matrix.fdi-version }}
           matrix: |
             py-version: ${{ needs.define-versions.outputs.pyVersions }}
-            framework: ["django", "fastapi", "flask"]
+            framework: ["flask"]
             spec: ${{ steps.envs.outputs.specs }}
 
   launch-fdi-workflows:
