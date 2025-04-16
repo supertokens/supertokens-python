@@ -17,9 +17,12 @@ from typing import Any, Dict, Union
 from supertokens_python.recipe.multifactorauth.asyncio import (
     assert_allowed_to_setup_factor_else_throw_invalid_claim_error,
 )
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.exceptions import UnauthorisedError
+from supertokens_python.recipe.session.exceptions import UnauthorisedError  # noqa: E402
 from supertokens_python.types import GeneralErrorResponse
 
 from ..interfaces import APIInterface, APIOptions
@@ -89,6 +92,23 @@ class APIImplementation(APIInterface):
         user_context: Dict[str, Any],
     ) -> Union[RemoveDeviceOkResult, GeneralErrorResponse]:
         user_id = session.get_user_id()
+
+        device_list = await options.recipe_implementation.list_devices(
+            user_id=user_id, user_context=user_context
+        )
+
+        # MFA should be completed when trying to remove a verified TOTP device
+        if any(
+            [
+                device.name == device_name and device.verified
+                for device in device_list.devices
+            ]
+        ):
+            await session.assert_claims(
+                [
+                    MultiFactorAuthClaim.validators.has_completed_mfa_requirements_for_auth()
+                ]
+            )
 
         return await options.recipe_implementation.remove_device(
             user_id=user_id,
