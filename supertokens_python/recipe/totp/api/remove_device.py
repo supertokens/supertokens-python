@@ -35,9 +35,7 @@ async def handle_remove_device_api(
 
     session = await get_session(
         api_options.request,
-        override_global_claim_validators=lambda global_claim_validators, __, ___: [
-            gcv for gcv in global_claim_validators if gcv.id == "st-mfa"
-        ],
+        override_global_claim_validators=lambda _, __, ___: [],
         session_required=True,
         user_context=user_context,
     )
