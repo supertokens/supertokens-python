@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.querier API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.querier</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+from __future__ import annotations
+
+import asyncio
+from json import JSONDecodeError
+from os import environ
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Tuple
+
+from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
+
+from .constants import (
+    API_KEY_HEADER,
+    API_VERSION,
+    API_VERSION_HEADER,
+    RATE_LIMIT_STATUS_CODE,
+    RID_KEY_HEADER,
+    SUPPORTED_CDI_VERSIONS,
+)
+from .normalised_url_path import NormalisedURLPath
+
+if TYPE_CHECKING:
+    from .supertokens import Host
+
+from typing import List, Set, Union
+
+from sniffio import AsyncLibraryNotFoundError
+
+from supertokens_python.async_to_sync_wrapper import create_or_get_event_loop
+from supertokens_python.utils import get_timestamp_ms
+
+from .process_state import PROCESS_STATE, ProcessState
+from .utils import find_max_version, is_4xx_error, is_5xx_error
+
+
+class Querier:
+    __init_called = False
+    __hosts: List[Host] = []
+    __api_key: Union[None, str] = None
+    api_version = None
+    __last_tried_index: int = 0
+    __hosts_alive_for_testing: Set[str] = set()
+    network_interceptor: Optional[
+        Callable[
+            [
+                str,
+                str,
+                Dict[str, Any],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+            ],
+            Tuple[
+                str,
+                str,
+                Dict[str, Any],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+            ],
+        ]
+    ] = None
+    __global_cache_tag = get_timestamp_ms()
+    __disable_cache = False
+
+    def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
+        self.__hosts = hosts
+        self.__rid_to_core = None
+        if rid_to_core is not None:
+            self.__rid_to_core = rid_to_core
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise Exception(&#34;calling testing function in non testing env&#34;)
+        Querier.__init_called = False
+
+    @staticmethod
+    def get_hosts_alive_for_testing():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise Exception(&#34;calling testing function in non testing env&#34;)
+        return Querier.__hosts_alive_for_testing
+
+    async def api_request(
+        self,
+        url: str,
+        method: str,
+        attempts_remaining: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -&gt; Response:
+        if attempts_remaining == 0:
+            raise Exception(&#34;Retry request failed&#34;)
+
+        try:
+            async with AsyncClient(timeout=30.0) as client:
+                if method == &#34;GET&#34;:
+                    return await client.get(url, *args, **kwargs)  # type: ignore
+                if method == &#34;POST&#34;:
+                    return await client.post(url, *args, **kwargs)  # type: ignore
+                if method == &#34;PUT&#34;:
+                    return await client.put(url, *args, **kwargs)  # type: ignore
+                if method == &#34;DELETE&#34;:
+                    return await client.delete(url, *args, **kwargs)  # type: ignore
+                raise Exception(&#34;Shouldn&#39;t come here&#34;)
+        except AsyncLibraryNotFoundError:
+            # Retry
+            loop = create_or_get_event_loop()
+            return loop.run_until_complete(
+                self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
+            )
+
+    async def get_api_version(self, user_context: Union[Dict[str, Any], None] = None):
+        if user_context is None:
+            user_context = {}
+
+        if Querier.api_version is not None:
+            return Querier.api_version
+
+        ProcessState.get_instance().add_state(
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION
+        )
+
+        async def f(url: str, method: str) -&gt; Response:
+            from supertokens_python.supertokens import (
+                Supertokens,
+                get_request_from_user_context,
+            )
+
+            headers = {}
+            if Querier.__api_key is not None:
+                headers = {API_KEY_HEADER: Querier.__api_key}
+
+            # Get app info
+            app_info = Supertokens.get_instance().app_info
+
+            req = get_request_from_user_context(user_context)
+            website_domain = app_info.get_origin(req, user_context)
+            # Prepare query parameters
+            query_params = {
+                &#34;apiDomain&#34;: app_info.api_domain.get_as_string_dangerous(),
+                &#34;websiteDomain&#34;: website_domain.get_as_string_dangerous(),
+            }
+
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    query_params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, query_params, {}, user_context
+                )
+
+            return await self.api_request(
+                url, method, 2, headers=headers, params=query_params
+            )
+
+        response = await self.__send_request_helper(
+            NormalisedURLPath(API_VERSION), &#34;GET&#34;, f, len(self.__hosts)
+        )
+        cdi_supported_by_server = response[&#34;versions&#34;]
+        api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
+
+        if api_version is None:
+            raise Exception(
+                &#34;The running SuperTokens core version is not compatible with this python &#34;
+                &#34;SDK. Please visit https://supertokens.io/docs/community/compatibility-table &#34;
+                &#34;to find the right versions&#34;
+            )
+
+        Querier.api_version = api_version
+        return Querier.api_version
+
+    @staticmethod
+    def get_instance(rid_to_core: Union[str, None] = None):
+        if not Querier.__init_called:
+            raise Exception(
+                &#34;Please call the supertokens.init function before using SuperTokens&#34;
+            )
+        return Querier(Querier.__hosts, rid_to_core)
+
+    @staticmethod
+    def init(
+        hosts: List[Host],
+        api_key: Union[str, None] = None,
+        network_interceptor: Optional[
+            Callable[
+                [
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+                Tuple[
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+            ]
+        ] = None,
+        disable_cache: bool = False,
+    ):
+        if not Querier.__init_called:
+            Querier.__init_called = True
+            Querier.__hosts = hosts
+            Querier.__api_key = api_key
+            Querier.api_version = None
+            Querier.__last_tried_index = 0
+            Querier.__hosts_alive_for_testing = set()
+            Querier.network_interceptor = network_interceptor
+            Querier.__disable_cache = disable_cache
+
+    async def __get_headers_with_api_version(
+        self, path: NormalisedURLPath, user_context: Union[Dict[str, Any], None]
+    ):
+        headers = {API_VERSION_HEADER: await self.get_api_version(user_context)}
+        if Querier.__api_key is not None:
+            headers = {**headers, API_KEY_HEADER: Querier.__api_key}
+        if path.is_a_recipe_path() and self.__rid_to_core is not None:
+            headers = {**headers, RID_KEY_HEADER: self.__rid_to_core}
+        return headers
+
+    async def send_get_request(
+        self,
+        path: NormalisedURLPath,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+    ) -&gt; Dict[str, Any]:
+        if params is None:
+            params = {}
+
+        async def f(url: str, method: str) -&gt; Response:
+            headers = await self.__get_headers_with_api_version(path, user_context)
+            nonlocal params
+
+            assert params is not None
+
+            # Sort the keys for deterministic order
+            sorted_keys = sorted(params.keys())
+            sorted_header_keys = sorted(headers.keys())
+
+            # Start with the path as the unique key
+            unique_key = path.get_as_string_dangerous()
+
+            # Append sorted params to the unique key
+            for key in sorted_keys:
+                value = params[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            # Append a separator for headers
+            unique_key += &#34;;hdrs&#34;
+
+            # Append sorted headers to the unique key
+            for key in sorted_header_keys:
+                value = headers[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            if user_context is not None:
+                if (
+                    user_context.get(&#34;_default&#34;, {}).get(&#34;global_cache_tag&#34;, -1)
+                    != Querier.__global_cache_tag
+                ):
+                    self.invalidate_core_call_cache(user_context, False)
+
+                if not Querier.__disable_cache and unique_key in user_context.get(
+                    &#34;_default&#34;, {}
+                ).get(&#34;core_call_cache&#34;, {}):
+                    return user_context[&#34;_default&#34;][&#34;core_call_cache&#34;][unique_key]
+
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, params, {}, user_context
+                )
+
+            response = await self.api_request(
+                url,
+                method,
+                2,
+                headers=headers,
+                params=params,
+            )
+
+            if (
+                response.status_code == 200
+                and not Querier.__disable_cache
+                and user_context is not None
+            ):
+                user_context[&#34;_default&#34;] = {
+                    **user_context.get(&#34;_default&#34;, {}),
+                    &#34;core_call_cache&#34;: {
+                        **user_context.get(&#34;_default&#34;, {}).get(&#34;core_call_cache&#34;, {}),
+                        unique_key: response,
+                    },
+                    &#34;global_cache_tag&#34;: Querier.__global_cache_tag,
+                }
+
+            return response
+
+        return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))
+
+    async def send_post_request(
+        self,
+        path: NormalisedURLPath,
+        data: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+        test: bool = False,
+    ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
+        if data is None:
+            data = {}
+
+        if (
+            (&#34;SUPERTOKENS_ENV&#34; in environ)
+            and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;)
+            and test
+        ):
+            return data
+
+        headers = await self.__get_headers_with_api_version(path, user_context)
+        headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
+
+        async def f(url: str, method: str) -&gt; Response:
+            nonlocal headers, data
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    _,
+                    data,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, {}, data, user_context
+                )
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=headers,
+                json=data,
+            )
+
+        return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))
+
+    async def send_delete_request(
+        self,
+        path: NormalisedURLPath,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+    ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
+        if params is None:
+            params = {}
+
+        async def f(url: str, method: str) -&gt; Response:
+            headers = await self.__get_headers_with_api_version(path, user_context)
+            nonlocal params
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, params, {}, user_context
+                )
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=headers,
+                params=params,
+            )
+
+        return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))
+
+    async def send_put_request(
+        self,
+        path: NormalisedURLPath,
+        data: Union[Dict[str, Any], None],
+        query_params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+    ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
+        if data is None:
+            data = {}
+        if query_params is None:
+            query_params = {}
+
+        headers = await self.__get_headers_with_api_version(path, user_context)
+        headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
+
+        async def f(url: str, method: str) -&gt; Response:
+            nonlocal headers, data, query_params
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    query_params,
+                    data,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, query_params, data, user_context
+                )
+            return await self.api_request(
+                url, method, 2, headers=headers, json=data, params=query_params
+            )
+
+        return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))
+
+    def invalidate_core_call_cache(
+        self,
+        user_context: Union[Dict[str, Any], None],
+        upd_global_cache_tag_if_necessary: bool = True,
+    ):
+        if user_context is None:
+            # this is done so that the code below runs as expected.
+            # It will reset the __global_cache_tag if needed, and the
+            # stuff we assign to the user_context will just be ignored (as expected)
+            user_context = {}
+
+        if upd_global_cache_tag_if_necessary and (
+            user_context.get(&#34;_default&#34;, {}).get(&#34;keep_cache_alive&#34;, False) is not True
+        ):
+            # there can be race conditions here, but i think we can ignore them.
+            Querier.__global_cache_tag = get_timestamp_ms()
+
+        user_context[&#34;_default&#34;] = {
+            **user_context.get(&#34;_default&#34;, {}),
+            &#34;core_call_cache&#34;: {},
+        }
+
+    def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
+        normalized_path = NormalisedURLPath(path)
+
+        result: List[str] = []
+
+        for h in self.__hosts:
+            current_domain = h.domain.get_as_string_dangerous()
+            current_base_path = h.base_path.get_as_string_dangerous()
+
+            result.append(
+                current_domain
+                + current_base_path
+                + normalized_path.get_as_string_dangerous()
+            )
+        return result
+
+    async def __send_request_helper(
+        self,
+        path: NormalisedURLPath,
+        method: str,
+        http_function: Callable[[str, str], Awaitable[Response]],
+        no_of_tries: int,
+        retry_info_map: Optional[Dict[str, int]] = None,
+    ) -&gt; Dict[str, Any]:
+        if no_of_tries == 0:
+            raise Exception(&#34;No SuperTokens core available to query&#34;)
+
+        try:
+            current_host_domain = self.__hosts[
+                Querier.__last_tried_index
+            ].domain.get_as_string_dangerous()
+            current_host_base_path = self.__hosts[
+                Querier.__last_tried_index
+            ].base_path.get_as_string_dangerous()
+            current_host: str = current_host_domain + current_host_base_path
+            Querier.__last_tried_index += 1
+            Querier.__last_tried_index %= len(self.__hosts)
+            url = current_host + path.get_as_string_dangerous()
+
+            max_retries = 5
+
+            if retry_info_map is None:
+                retry_info_map = {}
+
+            if retry_info_map.get(url) is None:
+                retry_info_map[url] = max_retries
+
+            ProcessState.get_instance().add_state(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER
+            )
+            response = await http_function(url, method)
+            if (&#34;SUPERTOKENS_ENV&#34; in environ) and (
+                environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
+            ):
+                Querier.__hosts_alive_for_testing.add(current_host)
+
+            if response.status_code == RATE_LIMIT_STATUS_CODE:
+                retries_left = retry_info_map[url]
+
+                if retries_left &gt; 0:
+                    retry_info_map[url] = retries_left - 1
+
+                    attempts_made = max_retries - retries_left
+                    delay = (10 + attempts_made * 250) / 1000
+
+                    await asyncio.sleep(delay)
+                    return await self.__send_request_helper(
+                        path, method, http_function, no_of_tries, retry_info_map
+                    )
+
+            if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
+                raise Exception(
+                    &#34;SuperTokens core threw an error for a &#34;
+                    + method
+                    + &#34; request to path: &#39;&#34;
+                    + path.get_as_string_dangerous()
+                    + &#34;&#39; with status code: &#34;
+                    + str(response.status_code)
+                    + &#34; and message: &#34;
+                    + response.text  # type: ignore
+                )
+
+            res: Dict[str, Any] = {&#34;_headers&#34;: dict(response.headers)}
+
+            try:
+                res.update(response.json())
+            except JSONDecodeError:
+                res[&#34;_text&#34;] = response.text
+
+            return res
+
+        except (ConnectionError, NetworkError, ConnectTimeout) as _:
+            return await self.__send_request_helper(
+                path, method, http_function, no_of_tries - 1, retry_info_map
+            )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.querier.Querier"><code class="flex name class">
+<span>class <span class="ident">Querier</span></span>
+<span>(</span><span>hosts: List[Host], rid_to_core: Union[None, str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Querier:
+    __init_called = False
+    __hosts: List[Host] = []
+    __api_key: Union[None, str] = None
+    api_version = None
+    __last_tried_index: int = 0
+    __hosts_alive_for_testing: Set[str] = set()
+    network_interceptor: Optional[
+        Callable[
+            [
+                str,
+                str,
+                Dict[str, Any],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+            ],
+            Tuple[
+                str,
+                str,
+                Dict[str, Any],
+                Optional[Dict[str, Any]],
+                Optional[Dict[str, Any]],
+            ],
+        ]
+    ] = None
+    __global_cache_tag = get_timestamp_ms()
+    __disable_cache = False
+
+    def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
+        self.__hosts = hosts
+        self.__rid_to_core = None
+        if rid_to_core is not None:
+            self.__rid_to_core = rid_to_core
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise Exception(&#34;calling testing function in non testing env&#34;)
+        Querier.__init_called = False
+
+    @staticmethod
+    def get_hosts_alive_for_testing():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise Exception(&#34;calling testing function in non testing env&#34;)
+        return Querier.__hosts_alive_for_testing
+
+    async def api_request(
+        self,
+        url: str,
+        method: str,
+        attempts_remaining: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -&gt; Response:
+        if attempts_remaining == 0:
+            raise Exception(&#34;Retry request failed&#34;)
+
+        try:
+            async with AsyncClient(timeout=30.0) as client:
+                if method == &#34;GET&#34;:
+                    return await client.get(url, *args, **kwargs)  # type: ignore
+                if method == &#34;POST&#34;:
+                    return await client.post(url, *args, **kwargs)  # type: ignore
+                if method == &#34;PUT&#34;:
+                    return await client.put(url, *args, **kwargs)  # type: ignore
+                if method == &#34;DELETE&#34;:
+                    return await client.delete(url, *args, **kwargs)  # type: ignore
+                raise Exception(&#34;Shouldn&#39;t come here&#34;)
+        except AsyncLibraryNotFoundError:
+            # Retry
+            loop = create_or_get_event_loop()
+            return loop.run_until_complete(
+                self.api_request(url, method, attempts_remaining - 1, *args, **kwargs)
+            )
+
+    async def get_api_version(self, user_context: Union[Dict[str, Any], None] = None):
+        if user_context is None:
+            user_context = {}
+
+        if Querier.api_version is not None:
+            return Querier.api_version
+
+        ProcessState.get_instance().add_state(
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION
+        )
+
+        async def f(url: str, method: str) -&gt; Response:
+            from supertokens_python.supertokens import (
+                Supertokens,
+                get_request_from_user_context,
+            )
+
+            headers = {}
+            if Querier.__api_key is not None:
+                headers = {API_KEY_HEADER: Querier.__api_key}
+
+            # Get app info
+            app_info = Supertokens.get_instance().app_info
+
+            req = get_request_from_user_context(user_context)
+            website_domain = app_info.get_origin(req, user_context)
+            # Prepare query parameters
+            query_params = {
+                &#34;apiDomain&#34;: app_info.api_domain.get_as_string_dangerous(),
+                &#34;websiteDomain&#34;: website_domain.get_as_string_dangerous(),
+            }
+
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    query_params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, query_params, {}, user_context
+                )
+
+            return await self.api_request(
+                url, method, 2, headers=headers, params=query_params
+            )
+
+        response = await self.__send_request_helper(
+            NormalisedURLPath(API_VERSION), &#34;GET&#34;, f, len(self.__hosts)
+        )
+        cdi_supported_by_server = response[&#34;versions&#34;]
+        api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
+
+        if api_version is None:
+            raise Exception(
+                &#34;The running SuperTokens core version is not compatible with this python &#34;
+                &#34;SDK. Please visit https://supertokens.io/docs/community/compatibility-table &#34;
+                &#34;to find the right versions&#34;
+            )
+
+        Querier.api_version = api_version
+        return Querier.api_version
+
+    @staticmethod
+    def get_instance(rid_to_core: Union[str, None] = None):
+        if not Querier.__init_called:
+            raise Exception(
+                &#34;Please call the supertokens.init function before using SuperTokens&#34;
+            )
+        return Querier(Querier.__hosts, rid_to_core)
+
+    @staticmethod
+    def init(
+        hosts: List[Host],
+        api_key: Union[str, None] = None,
+        network_interceptor: Optional[
+            Callable[
+                [
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+                Tuple[
+                    str,
+                    str,
+                    Dict[str, Any],
+                    Optional[Dict[str, Any]],
+                    Optional[Dict[str, Any]],
+                ],
+            ]
+        ] = None,
+        disable_cache: bool = False,
+    ):
+        if not Querier.__init_called:
+            Querier.__init_called = True
+            Querier.__hosts = hosts
+            Querier.__api_key = api_key
+            Querier.api_version = None
+            Querier.__last_tried_index = 0
+            Querier.__hosts_alive_for_testing = set()
+            Querier.network_interceptor = network_interceptor
+            Querier.__disable_cache = disable_cache
+
+    async def __get_headers_with_api_version(
+        self, path: NormalisedURLPath, user_context: Union[Dict[str, Any], None]
+    ):
+        headers = {API_VERSION_HEADER: await self.get_api_version(user_context)}
+        if Querier.__api_key is not None:
+            headers = {**headers, API_KEY_HEADER: Querier.__api_key}
+        if path.is_a_recipe_path() and self.__rid_to_core is not None:
+            headers = {**headers, RID_KEY_HEADER: self.__rid_to_core}
+        return headers
+
+    async def send_get_request(
+        self,
+        path: NormalisedURLPath,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+    ) -&gt; Dict[str, Any]:
+        if params is None:
+            params = {}
+
+        async def f(url: str, method: str) -&gt; Response:
+            headers = await self.__get_headers_with_api_version(path, user_context)
+            nonlocal params
+
+            assert params is not None
+
+            # Sort the keys for deterministic order
+            sorted_keys = sorted(params.keys())
+            sorted_header_keys = sorted(headers.keys())
+
+            # Start with the path as the unique key
+            unique_key = path.get_as_string_dangerous()
+
+            # Append sorted params to the unique key
+            for key in sorted_keys:
+                value = params[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            # Append a separator for headers
+            unique_key += &#34;;hdrs&#34;
+
+            # Append sorted headers to the unique key
+            for key in sorted_header_keys:
+                value = headers[key]
+                unique_key += f&#34;;{key}={value}&#34;
+
+            if user_context is not None:
+                if (
+                    user_context.get(&#34;_default&#34;, {}).get(&#34;global_cache_tag&#34;, -1)
+                    != Querier.__global_cache_tag
+                ):
+                    self.invalidate_core_call_cache(user_context, False)
+
+                if not Querier.__disable_cache and unique_key in user_context.get(
+                    &#34;_default&#34;, {}
+                ).get(&#34;core_call_cache&#34;, {}):
+                    return user_context[&#34;_default&#34;][&#34;core_call_cache&#34;][unique_key]
+
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, params, {}, user_context
+                )
+
+            response = await self.api_request(
+                url,
+                method,
+                2,
+                headers=headers,
+                params=params,
+            )
+
+            if (
+                response.status_code == 200
+                and not Querier.__disable_cache
+                and user_context is not None
+            ):
+                user_context[&#34;_default&#34;] = {
+                    **user_context.get(&#34;_default&#34;, {}),
+                    &#34;core_call_cache&#34;: {
+                        **user_context.get(&#34;_default&#34;, {}).get(&#34;core_call_cache&#34;, {}),
+                        unique_key: response,
+                    },
+                    &#34;global_cache_tag&#34;: Querier.__global_cache_tag,
+                }
+
+            return response
+
+        return await self.__send_request_helper(path, &#34;GET&#34;, f, len(self.__hosts))
+
+    async def send_post_request(
+        self,
+        path: NormalisedURLPath,
+        data: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+        test: bool = False,
+    ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
+        if data is None:
+            data = {}
+
+        if (
+            (&#34;SUPERTOKENS_ENV&#34; in environ)
+            and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;)
+            and test
+        ):
+            return data
+
+        headers = await self.__get_headers_with_api_version(path, user_context)
+        headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
+
+        async def f(url: str, method: str) -&gt; Response:
+            nonlocal headers, data
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    _,
+                    data,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, {}, data, user_context
+                )
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=headers,
+                json=data,
+            )
+
+        return await self.__send_request_helper(path, &#34;POST&#34;, f, len(self.__hosts))
+
+    async def send_delete_request(
+        self,
+        path: NormalisedURLPath,
+        params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+    ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
+        if params is None:
+            params = {}
+
+        async def f(url: str, method: str) -&gt; Response:
+            headers = await self.__get_headers_with_api_version(path, user_context)
+            nonlocal params
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    params,
+                    _,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, params, {}, user_context
+                )
+            return await self.api_request(
+                url,
+                method,
+                2,
+                headers=headers,
+                params=params,
+            )
+
+        return await self.__send_request_helper(path, &#34;DELETE&#34;, f, len(self.__hosts))
+
+    async def send_put_request(
+        self,
+        path: NormalisedURLPath,
+        data: Union[Dict[str, Any], None],
+        query_params: Union[Dict[str, Any], None],
+        user_context: Union[Dict[str, Any], None],
+    ) -&gt; Dict[str, Any]:
+        self.invalidate_core_call_cache(user_context)
+        if data is None:
+            data = {}
+        if query_params is None:
+            query_params = {}
+
+        headers = await self.__get_headers_with_api_version(path, user_context)
+        headers[&#34;content-type&#34;] = &#34;application/json; charset=utf-8&#34;
+
+        async def f(url: str, method: str) -&gt; Response:
+            nonlocal headers, data, query_params
+            if Querier.network_interceptor is not None:
+                (
+                    url,
+                    method,
+                    headers,
+                    query_params,
+                    data,
+                ) = Querier.network_interceptor(  # pylint:disable=not-callable
+                    url, method, headers, query_params, data, user_context
+                )
+            return await self.api_request(
+                url, method, 2, headers=headers, json=data, params=query_params
+            )
+
+        return await self.__send_request_helper(path, &#34;PUT&#34;, f, len(self.__hosts))
+
+    def invalidate_core_call_cache(
+        self,
+        user_context: Union[Dict[str, Any], None],
+        upd_global_cache_tag_if_necessary: bool = True,
+    ):
+        if user_context is None:
+            # this is done so that the code below runs as expected.
+            # It will reset the __global_cache_tag if needed, and the
+            # stuff we assign to the user_context will just be ignored (as expected)
+            user_context = {}
+
+        if upd_global_cache_tag_if_necessary and (
+            user_context.get(&#34;_default&#34;, {}).get(&#34;keep_cache_alive&#34;, False) is not True
+        ):
+            # there can be race conditions here, but i think we can ignore them.
+            Querier.__global_cache_tag = get_timestamp_ms()
+
+        user_context[&#34;_default&#34;] = {
+            **user_context.get(&#34;_default&#34;, {}),
+            &#34;core_call_cache&#34;: {},
+        }
+
+    def get_all_core_urls_for_path(self, path: str) -&gt; List[str]:
+        normalized_path = NormalisedURLPath(path)
+
+        result: List[str] = []
+
+        for h in self.__hosts:
+            current_domain = h.domain.get_as_string_dangerous()
+            current_base_path = h.base_path.get_as_string_dangerous()
+
+            result.append(
+                current_domain
+                + current_base_path
+                + normalized_path.get_as_string_dangerous()
+            )
+        return result
+
+    async def __send_request_helper(
+        self,
+        path: NormalisedURLPath,
+        method: str,
+        http_function: Callable[[str, str], Awaitable[Response]],
+        no_of_tries: int,
+        retry_info_map: Optional[Dict[str, int]] = None,
+    ) -&gt; Dict[str, Any]:
+        if no_of_tries == 0:
+            raise Exception(&#34;No SuperTokens core available to query&#34;)
+
+        try:
+            current_host_domain = self.__hosts[
+                Querier.__last_tried_index
+            ].domain.get_as_string_dangerous()
+            current_host_base_path = self.__hosts[
+                Querier.__last_tried_index
+            ].base_path.get_as_string_dangerous()
+            current_host: str = current_host_domain + current_host_base_path
+            Querier.__last_tried_index += 1
+            Querier.__last_tried_index %= len(self.__hosts)
+            url = current_host + path.get_as_string_dangerous()
+
+            max_retries = 5
+
+            if retry_info_map is None:
+                retry_info_map = {}
+
+            if retry_info_map.get(url) is None:
+                retry_info_map[url] = max_retries
+
+            ProcessState.get_instance().add_state(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER
+            )
+            response = await http_function(url, method)
+            if (&#34;SUPERTOKENS_ENV&#34; in environ) and (
+                environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;
+            ):
+                Querier.__hosts_alive_for_testing.add(current_host)
+
+            if response.status_code == RATE_LIMIT_STATUS_CODE:
+                retries_left = retry_info_map[url]
+
+                if retries_left &gt; 0:
+                    retry_info_map[url] = retries_left - 1
+
+                    attempts_made = max_retries - retries_left
+                    delay = (10 + attempts_made * 250) / 1000
+
+                    await asyncio.sleep(delay)
+                    return await self.__send_request_helper(
+                        path, method, http_function, no_of_tries, retry_info_map
+                    )
+
+            if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
+                raise Exception(
+                    &#34;SuperTokens core threw an error for a &#34;
+                    + method
+                    + &#34; request to path: &#39;&#34;
+                    + path.get_as_string_dangerous()
+                    + &#34;&#39; with status code: &#34;
+                    + str(response.status_code)
+                    + &#34; and message: &#34;
+                    + response.text  # type: ignore
+                )
+
+            res: Dict[str, Any] = {&#34;_headers&#34;: dict(response.headers)}
+
+            try:
+                res.update(response.json())
+            except JSONDecodeError:
+                res[&#34;_text&#34;] = response.text
+
+            return res
+
+        except (ConnectionError, NetworkError, ConnectTimeout) as _:
+            return await self.__send_request_helper(
+                path, method, http_function, no_of_tries - 1, retry_info_map
+            )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.querier.Querier.api_version"><code class="name">var <span class="ident">api_version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.network_interceptor"><code class="name">var <span class="ident">network_interceptor</span> : Optional[Callable[[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]], Tuple[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.querier.Querier.get_hosts_alive_for_testing"><code class="name flex">
+<span>def <span class="ident">get_hosts_alive_for_testing</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.get_instance"><code class="name flex">
+<span>def <span class="ident">get_instance</span></span>(<span>rid_to_core: Union[str, None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.init"><code class="name flex">
+<span>def <span class="ident">init</span></span>(<span>hosts: List[Host], api_key: Union[str, None] = None, network_interceptor: Optional[Callable[[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]], Tuple[str, str, Dict[str, Any], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]] = None, disable_cache: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.querier.Querier.api_request"><code class="name flex">
+<span>async def <span class="ident">api_request</span></span>(<span>self, url: str, method: str, attempts_remaining: int, *args: Any, **kwargs: Any) ‑> httpx.Response</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.get_all_core_urls_for_path"><code class="name flex">
+<span>def <span class="ident">get_all_core_urls_for_path</span></span>(<span>self, path: str) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.get_api_version"><code class="name flex">
+<span>async def <span class="ident">get_api_version</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.invalidate_core_call_cache"><code class="name flex">
+<span>def <span class="ident">invalidate_core_call_cache</span></span>(<span>self, user_context: Union[Dict[str, Any], None], upd_global_cache_tag_if_necessary: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.send_delete_request"><code class="name flex">
+<span>async def <span class="ident">send_delete_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None], user_context: Union[Dict[str, Any], None]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.send_get_request"><code class="name flex">
+<span>async def <span class="ident">send_get_request</span></span>(<span>self, path: NormalisedURLPath, params: Union[Dict[str, Any], None], user_context: Union[Dict[str, Any], None]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.send_post_request"><code class="name flex">
+<span>async def <span class="ident">send_post_request</span></span>(<span>self, path: NormalisedURLPath, data: Union[Dict[str, Any], None], user_context: Union[Dict[str, Any], None], test: bool = False) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.querier.Querier.send_put_request"><code class="name flex">
+<span>async def <span class="ident">send_put_request</span></span>(<span>self, path: NormalisedURLPath, data: Union[Dict[str, Any], None], query_params: Union[Dict[str, Any], None], user_context: Union[Dict[str, Any], None]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.querier.Querier" href="#supertokens_python.querier.Querier">Querier</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.querier.Querier.api_request" href="#supertokens_python.querier.Querier.api_request">api_request</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.api_version" href="#supertokens_python.querier.Querier.api_version">api_version</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.get_all_core_urls_for_path" href="#supertokens_python.querier.Querier.get_all_core_urls_for_path">get_all_core_urls_for_path</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.get_api_version" href="#supertokens_python.querier.Querier.get_api_version">get_api_version</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.get_hosts_alive_for_testing" href="#supertokens_python.querier.Querier.get_hosts_alive_for_testing">get_hosts_alive_for_testing</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.get_instance" href="#supertokens_python.querier.Querier.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.init" href="#supertokens_python.querier.Querier.init">init</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.invalidate_core_call_cache" href="#supertokens_python.querier.Querier.invalidate_core_call_cache">invalidate_core_call_cache</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.network_interceptor" href="#supertokens_python.querier.Querier.network_interceptor">network_interceptor</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.reset" href="#supertokens_python.querier.Querier.reset">reset</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.send_delete_request" href="#supertokens_python.querier.Querier.send_delete_request">send_delete_request</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.send_get_request" href="#supertokens_python.querier.Querier.send_get_request">send_get_request</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.send_post_request" href="#supertokens_python.querier.Querier.send_post_request">send_post_request</a></code></li>
+<li><code><a title="supertokens_python.querier.Querier.send_put_request" href="#supertokens_python.querier.Querier.send_put_request">send_put_request</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>
