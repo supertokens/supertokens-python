@@ -1,0 +1,178 @@
+name: "Website Tests"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  push:
+    branches:
+      - master
+      - "v[0-9]+.[0-9]+"
+    tags:
+      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  define-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+      pyVersions: '["3.8", "3.13"]'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supertokens/get-supported-versions-action@main
+        id: versions
+        with:
+          has-fdi: true
+          has-cdi: true
+
+  test:
+    runs-on: ubuntu-latest
+    needs: define-versions
+    strategy:
+      fail-fast: false
+      matrix:
+        py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
+        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
+        framework:
+          - django2x
+          - django3x
+          - drf_sync
+          - drf_async
+          - fastapi
+          - flask
+          - flask-nest-asyncio
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: supertokens-python
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py-version }}
+
+      - uses: supertokens/get-versions-action@main
+        id: versions
+        with:
+          driver-name: python
+          fdi-version: ${{ matrix.fdi-version }}
+        env:
+          SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+
+      - name: Start core
+        working-directory: supertokens-python
+        run: docker compose up --wait
+
+      - name: Setup venv
+        working-directory: supertokens-python
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          python3 -m pip install pip setuptools --upgrade
+
+      - name: Install dependencies and start servers (django2x)
+        if: matrix.framework == 'django2x'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-django2x
+
+          # Django2 uses `cgi`, deprecated in 3.13
+          if [ ${{ matrix.py-version == '3.13' }} ]; then
+            pip install legacy-cgi
+          fi
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/django2x
+
+          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> app-server.log &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (django3x)
+        if: matrix.framework == 'django3x'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-django
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/django3x
+
+          uvicorn mysite.asgi:application --port 8080 &> app-server.log &
+          uvicorn mysite.asgi:application --port 8082 &> app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (drf_sync)
+        if: matrix.framework == 'drf_sync'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-drf
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/drf_sync
+
+          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> app-server.log &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (drf_async)
+        if: matrix.framework == 'drf_async'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-drf
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/drf_async
+
+          uvicorn mysite.asgi:application --port 8080 &> app-server.log &
+          uvicorn mysite.asgi:application --port 8082 &> app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (fastapi)
+        if: matrix.framework == 'fastapi'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-fastapi
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/fastapi-server
+
+          uvicorn app:app --host 0.0.0.0 --port 8080 &> app-server.log &
+          uvicorn app:app --host 0.0.0.0 --port 8082 &> app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (flask)
+        if: matrix.framework == 'flask'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-flask
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/flask-server
+
+          python3 app.py --port 8080 &> app-server.log &
+          python3 app.py --port 8082 &> app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (flask-nest-asyncio)
+        if: matrix.framework == 'flask-nest-asyncio'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-flask
+          python -m pip install nest-asyncio
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/flask-server
+
+          python3 app.py --port 8080 &> app-server.log &
+          python3 app.py --port 8082 &> app-server-cross-domain.log &
+
+      - uses: supertokens/website-testing-action@main
+        with:
+          version: ${{ steps.versions.outputs.frontendVersionXy }}
+          node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
+          path: supertokens-website
+          check-name-suffix: '[Py=${{ matrix.py-version }}][FDI=${{ matrix.fdi-version }}][Framework=${{ matrix.framework }}]'
