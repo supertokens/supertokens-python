@@ -73,6 +73,7 @@ jobs:
           source venv/bin/activate
           python3 -m pip install pip setuptools --upgrade
           make dev-install && rm -rf src
+
       - name: Start core and server
         working-directory: supertokens-python
         env:
@@ -82,9 +83,9 @@ jobs:
           source venv/bin/activate
           docker compose up --build --wait
           python3 tests/test-server/app.py &
+
       - uses: supertokens/backend-sdk-testing-action@main
         with:
-          # version: ${{ matrix.fdi-version }}
-          version: ci/github-actions/containerized-core/${{ matrix.fdi-version }}
+          version: ${{ matrix.fdi-version }}
           check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=${{ matrix.node-version }}]'
           path: backend-sdk-testing
