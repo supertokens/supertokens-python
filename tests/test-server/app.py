@@ -94,13 +94,17 @@ def default_st_init():
             return origin
         return "http://localhost:8080"
 
+    core_host: str = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+    core_port: str = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+    core_url = f"http://{core_host}:{core_port}"
+
     init(
         app_info=InputAppInfo(
             app_name="SuperTokens",
             api_domain="http://api.supertokens.io",
             origin=origin_func,
         ),
-        supertokens_config=SupertokensConfig(connection_uri="http://localhost:3567"),
+        supertokens_config=SupertokensConfig(connection_uri=core_url),
         framework="flask",
         recipe_list=[emailpassword.init(), session.init()],
     )
@@ -736,6 +740,12 @@ def feature_flag():
 def reset_override_params_api():
     override_logging.reset_override_logs()
     reset_override_params()
+    return jsonify({"ok": True})
+
+
+@app.route("/test/resetoverridelogs", methods=["GET"])  # type: ignore
+def reset_override_logs():
+    override_logging.reset_override_logs()
     return jsonify({"ok": True})
 
 
