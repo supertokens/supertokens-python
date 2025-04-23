@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Dict, Optional, Protocol, TypeVar
 
 from typing_extensions import TypeAlias
 
@@ -11,6 +11,10 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 # TODO: Should `UserContext` be optional to handle `None` and init with `{}`?
 # TODO: Make this generic and re-use across codebase?
 UserContext: TypeAlias = Dict[str, Any]
+
+
+InterfaceType = TypeVar("InterfaceType")
+"""Generic Type for use in `InterfaceOverride`"""
 
 
 # TODO: Check if we want to use a different naming convention for these types
@@ -78,48 +82,30 @@ class ValidateEmailAddress(Protocol):
     ) -> Optional[str]: ...
 
 
-# TODO: [Py3.12] replace `OverrideFunctions`/`OverrideApis` with generic class
-# I = TypeVar("I")
-# class OverrideInterface[I](Protocol):
-#     def __call__(self, original_implementation: I) -> I: ...
-
-
-# TODO: See if these can be made private and/or nested
-class OverrideFunctions(Protocol):
+class InterfaceOverride(Protocol[InterfaceType]):
     """
-    Callable signature for `WebauthnConfig.override.functions`.
+    Callable signature for `WebauthnConfig.override.*`.
     """
 
     def __call__(
         self,
-        original_implementation: RecipeInterface,
-    ) -> RecipeInterface: ...
+        original_implementation: InterfaceType,
+    ) -> InterfaceType: ...
 
 
-class OverrideApis(Protocol):
-    """
-    Callable signature for `WebauthnConfig.override.apis`.
-    """
-
-    def __call__(
-        self,
-        original_implementation: ApiInterface,
-    ) -> ApiInterface: ...
-
-
-class WebauthnConfigOverride:
+class OverrideConfig:
     """
     `WebauthnConfig.override`
     """
 
-    functions: Optional[OverrideFunctions]
-    apis: Optional[OverrideApis]
+    functions: Optional[InterfaceOverride[RecipeInterface]]
+    apis: Optional[InterfaceOverride[ApiInterface]]
 
     def __init__(
         self,
         *,
-        functions: Optional[OverrideFunctions] = None,
-        apis: Optional[OverrideApis] = None,
+        functions: Optional[InterfaceOverride[RecipeInterface]] = None,
+        apis: Optional[InterfaceOverride[ApiInterface]] = None,
     ):
         self.functions = functions
         self.apis = apis
@@ -131,7 +117,7 @@ class WebauthnConfig:
     get_origin: GetOrigin
     get_email_delivery_config: GetEmailDeliveryConfig
     validate_email_address: ValidateEmailAddress
-    override: WebauthnConfigOverride
+    override: OverrideConfig
 
     def __init__(
         self,
@@ -141,7 +127,7 @@ class WebauthnConfig:
         get_origin: GetOrigin,
         get_email_delivery_config: GetEmailDeliveryConfig,
         validate_email_address: ValidateEmailAddress,
-        override: WebauthnConfigOverride,
+        override: OverrideConfig,
     ):
         self.get_relying_party_id = get_relying_party_id
         self.get_relying_party_name = get_relying_party_name
