@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Dict, Optional, Protocol, TypeVar
 
 from typing_extensions import TypeAlias
@@ -111,6 +112,7 @@ class OverrideConfig:
         self.apis = apis
 
 
+@dataclass
 class WebauthnConfig:
     get_relying_party_id: GetRelyingPartyId
     get_relying_party_name: GetRelyingPartyName
@@ -118,20 +120,3 @@ class WebauthnConfig:
     get_email_delivery_config: GetEmailDeliveryConfig
     validate_email_address: ValidateEmailAddress
     override: OverrideConfig
-
-    def __init__(
-        self,
-        *,
-        get_relying_party_id: GetRelyingPartyId,
-        get_relying_party_name: GetRelyingPartyName,
-        get_origin: GetOrigin,
-        get_email_delivery_config: GetEmailDeliveryConfig,
-        validate_email_address: ValidateEmailAddress,
-        override: OverrideConfig,
-    ):
-        self.get_relying_party_id = get_relying_party_id
-        self.get_relying_party_name = get_relying_party_name
-        self.get_origin = get_origin
-        self.get_email_delivery_config = get_email_delivery_config
-        self.validate_email_address = validate_email_address
-        self.override = override
