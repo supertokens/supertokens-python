@@ -1,18 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Protocol, TypeVar
-
-from typing_extensions import TypeAlias
+from typing import Optional, Protocol, TypeVar
 
 from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.webauthn.interfaces.api import ApiInterface
 from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
-
-# TODO: Should `UserContext` be optional to handle `None` and init with `{}`?
-# TODO: Make this generic and re-use across codebase?
-UserContext: TypeAlias = Dict[str, Any]
-
+from supertokens_python.recipe.webauthn.types.base import UserContext
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""

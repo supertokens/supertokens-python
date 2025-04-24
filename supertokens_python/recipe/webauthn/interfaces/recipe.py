@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, List, Literal, Optional, TypeVar, Union
 
-from supertokens_python.recipe.webauthn.types.config import UserContext
+from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.types import APIResponse
 
 Status = TypeVar("Status")
