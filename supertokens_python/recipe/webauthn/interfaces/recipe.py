@@ -1,18 +1,36 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, List, Literal, Optional, TypeVar, Union
+from typing import Generic, List, Literal, Optional, Protocol, TypeVar, Union
+
+from dataclasses_json import LetterCase, dataclass_json
 
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.types import APIResponse
 
-Status = TypeVar("Status")
-"""Generic type for use in `APIResponse` subclasses"""
+Status = TypeVar("Status", bound=str)
+"""
+Generic type for use in `APIResponse` subclasses.
+
+Constrained to be a subtype of string.
+"""
 
 
+# TODO: Move to supertokens_python types
+class HasStatus(Protocol, Generic[Status]):
+    status: Status
+
+
+class HasErr(Protocol, Generic[Status]):
+    err: Status
+
+
+class HasReason(Protocol, Generic[Status]):
+    reason: Status
+
+
+@dataclass_json
 @dataclass
-class BaseApiResponse(APIResponse, Generic[Status]):
+class StatusResponse(APIResponse, HasStatus[Status]):
     """
     Generic response object with a `status` field.
     """
@@ -20,30 +38,32 @@ class BaseApiResponse(APIResponse, Generic[Status]):
     status: Status
 
 
+@dataclass_json
 @dataclass
-class ErrorReasonApiResponse(BaseApiResponse[Status]):
+class StatusReasonResponse(StatusResponse[Status]):
     """
-    Generic error response object with additional `reason` field.
+    Generic error response object with `status` and `reason` fields.
     """
 
     reason: str
 
 
+@dataclass_json
 @dataclass
-class ErrorErrApiResponse(BaseApiResponse[Status]):
+class StatusErrResponse(StatusResponse[Status]):
     """
-    Generic error response object with additional `err` field.
+    Generic error response object with `status` and `err` fields.
     """
 
     err: str
 
 
-class OkApiResponse(BaseApiResponse[Literal["OK"]]):
+class OkResponse(HasStatus[Literal["OK"]]):
     """
     Basic success response object with `status = "OK"`
     """
 
-    status = "OK"
+    status: Literal["OK"] = "OK"
 
 
 ResidentKey = Literal["required", "preferred", "discouraged"]
@@ -53,28 +73,33 @@ Transports = Literal["ble", "hybrid", "internal", "nfc", "usb"]
 
 
 # Base class adds the `status: OK` param
+@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the enum
 @dataclass
-class RegisterOptionsResponse(OkApiResponse):
+class RegisterOptionsResponse(OkResponse):
     # for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
     # and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
 
+    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the enum
     @dataclass
     class RelyingParty:
-        rp_id: str
+        id: str
         name: str
 
+    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the enum
     @dataclass
     class User:
-        user_id: str
+        id: str
         name: str  # user email
         display_name: str  # user email
 
+    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the enum
     @dataclass
     class ExcludeCredentials:
-        exclude_id: str
-        cred_type: Literal["public-key"]
+        id: str
+        type: Literal["public-key"]
         transports: List[Transports]
 
+    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the enum
     @dataclass
     class PubKeyCredParams:
         # we will default to [-8, -7, -257] as supported algorithms.
@@ -82,6 +107,7 @@ class RegisterOptionsResponse(OkApiResponse):
         alg: int
         cred_type: Literal["public-key"]
 
+    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the enum
     @dataclass
     class AuthenticatorSelection:
         require_resident_key: bool
@@ -101,10 +127,35 @@ class RegisterOptionsResponse(OkApiResponse):
     authenticator_selection: AuthenticatorSelection
 
 
+# # TODO: Will we ever initialize these objects? Or type-check based on these?
+# # If not, we can get away with just typing it, and not actually defining these subclasses
+# @dataclass_json
+# @dataclass
+# class RecoverAccountTokenInvalidErrorResponse(
+#     StatusResponse[Literal["RECOVER_ACCOUNT_TOKEN_INVALID_ERROR"]]
+# ):
+#     status: Literal["RECOVER_ACCOUNT_TOKEN_INVALID_ERROR"] = "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR"
+
+
+# @dataclass_json
+# @dataclass
+# class InvalidEmailErrorResponse(StatusErrResponse[Literal["INVALID_EMAIL_ERROR"]]):
+#     status: Literal["INVALID_EMAIL_ERROR"] = "INVALID_EMAIL_ERROR"
+
+
+# @dataclass_json
+# @dataclass
+# class InvalidOptionsErrorResponse(StatusResponse[Literal["INVALID_OPTIONS_ERROR"]]):
+#     status:Literal["INVALID_OPTIONS_ERROR"] = "INVALID_OPTIONS_ERROR"
+
+
 RegisterOptionsErrorResponse = Union[
-    BaseApiResponse[Literal["RECOVER_ACCOUNT_TOKEN_INVALID_ERROR"]],
-    ErrorErrApiResponse[Literal["INVALID_EMAIL_ERROR"]],
-    BaseApiResponse[Literal["INVALID_OPTIONS_ERROR"]],
+    StatusResponse[Literal["RECOVER_ACCOUNT_TOKEN_INVALID_ERROR"]],
+    # RecoverAccountTokenInvalidErrorResponse,
+    StatusErrResponse[Literal["INVALID_EMAIL_ERROR"]],
+    # InvalidEmailErrorResponse,
+    StatusResponse[Literal["INVALID_OPTIONS_ERROR"]],
+    # InvalidOptionsErrorResponse,
 ]
 
 
@@ -121,7 +172,7 @@ class RecipeInterface(ABC):
         resident_key: Optional[ResidentKey],
         user_verification: Optional[UserVerification],
         attestation: Optional[Attestation],
-        supportedAlgorithmIds: Optional[list[int]],
+        supportedAlgorithmIds: Optional[List[int]],
         timeout: Optional[int],
         tenantId: str,
         userContext: UserContext,

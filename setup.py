@@ -127,6 +127,7 @@ setup(
         "pkce<1.1.0",
         "pyotp<3",
         "python-dateutil<3",
+        "dataclasses-json>=0.6.7,<0.7.0",
     ],
     python_requires=">=3.8",
     include_package_data=True,
