@@ -172,7 +172,7 @@ class RegisterOptionsResponse(OkResponse):
     class ExcludeCredentials:
         id: str
         transports: List[Literal["ble", "hybrid", "internal", "nfc", "usb"]]
-        type: Literal["public-key"] = "public-key"
+        type: Literal["public-key"]
 
     @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
@@ -180,7 +180,7 @@ class RegisterOptionsResponse(OkResponse):
         # we will default to [-8, -7, -257] as supported algorithms.
         # See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
         alg: int
-        type: Literal["public-key"] = "public-key"
+        type: Literal["public-key"]
 
     @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
