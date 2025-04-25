@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from platform import python_version
 from typing import TYPE_CHECKING, Any, Dict
 
 from httpx import AsyncClient
@@ -84,6 +85,7 @@ async def handle_analytics_post(
         "appName": appName,
         "sdk": "python",
         "sdkVersion": SDKVersion,
+        "pyVersion": python_version(),
         "numberOfUsers": number_of_users,
         "email": email,
         "dashboardVersion": dashboard_version,
