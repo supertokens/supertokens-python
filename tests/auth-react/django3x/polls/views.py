@@ -451,7 +451,6 @@ def test_feature_flags(request: HttpRequest):
         {
             "available": [
                 "passwordless",
-                "thirdpartypasswordless",
                 "generalerror",
                 "userroles",
                 "multitenancy",

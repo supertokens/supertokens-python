@@ -1428,7 +1428,6 @@ def test_get_device(request: Request):
 def test_feature_flags(request: Request):
     available = [
         "passwordless",
-        "thirdpartypasswordless",
         "generalerror",
         "userroles",
         "multitenancy",
