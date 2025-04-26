@@ -21,12 +21,15 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import GeneralErrorResponse, RecipeUserId, User
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class TypeWebauthnRecoverAccountEmailDeliveryInput:
+    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
+    @dataclass
     class User:
         id: str
         recipe_user_id: Optional[RecipeUserId]
@@ -44,13 +47,13 @@ TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 @dataclass
 class APIOptions:
     recipe_implementation: RecipeInterface
-    # TODO: appInfo: NormalisedAppinfo
+    appInfo: AppInfo
     config: WebauthnConfig
     recipe_id: str
     is_in_serverless_env: bool
     req: BaseRequest
     res: BaseResponse
-    emailDelivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
