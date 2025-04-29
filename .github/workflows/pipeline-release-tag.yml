@@ -1,0 +1,32 @@
+name: "Release Pipeline"
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+"
+  workflow_call:
+
+jobs:
+  mark-as-success:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          ./hooks/populate-hook-constants.sh
+
+          curl --fail-with-body -X PUT \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+                \"version\":\"$setupVersion\",
+                \"name\": \"python\",
+                \"testPassed\": true
+              }"`
+
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: ""

@@ -1,0 +1,153 @@
+name: "Release Pipeline"
+# TODO: Set workflow concurrency to 1 based on the input
+
+on:
+  push:
+    tags:
+      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+  workflow_call:
+    inputs:
+      branch:
+        description: The branch to create the release tag on
+        type: string
+        required: false
+
+      # TODO: This will become usable if we use a JS action, easier to work with conditionals
+      sha:
+        description: The commit SHA to create the release tag on
+        type: string
+        required: false
+
+jobs:
+  # TODO: Convert to re-usable action
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+
+      - name: Check if branch needs master merge
+        run: |
+          if [[ $(git log origin/master ^HEAD) ]]; then
+            echo "You need to merge master into this branch."
+            exit 1
+          fi
+
+      - name: Check tag and branch correctness
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          if ! [[ $setupVersion == ${{ inputs.branch }}* ]]
+          then
+            echo "Adding tag to wrong branch"
+            exit 1
+          fi
+
+          if git rev-parse v$setupVersion >/dev/null 2>&1
+          then
+              echo "The released version of this tag already exists."
+              exit 1
+          fi
+
+      - name: Check commit already tagged
+        # TODO: Allow a way to force-update the tag in the workflow
+        # TODO: How do we want to get the commit hash?
+        run: |
+          if [[ `git tag -l --points-at $commit_hash` == "" ]]
+          then
+            continue=1
+          else
+            echo "This commit already has a tag. Please remove that and re-run."
+            echo "git tag --delete <tagName>"
+            echo "git push --delete origin <tagName>"
+            exit 1
+          fi
+
+      # TODO: I want to move the docs to the release script, instead of the dev script
+
+      - name: Create and push tag
+      # TODO: Use github script action
+      # TODO: Get a github token added
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          git tag dev-v$setupVersion $commit_hash
+          git push --tags
+
+
+  mark-dev-tag-as-not-passed:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+
+    steps:
+      - id: versions
+        uses: supertokens/get-supported-versions-action@main
+        with:
+          has-cdi: true
+          has-fdi: true
+
+      - run: |
+          ./hooks/populate-hook-constants.sh
+
+          curl --fail-with-body -X PUT \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+                \"version\":\"$setupVersion\",
+                \"name\": \"python\",
+                \"frontendDriverInterfaces\": ${{ steps.versions.outputs.fdiVersions }},
+                \"coreDriverInterfaces\": ${{ steps.versions.outputs.cdiVersions }}
+              }"`
+
+  unit-test:
+    needs: mark-dev-tag-as-not-passed
+    uses: ./.github/workflows/unit-test.yml
+
+  backend-sdk-test:
+    needs: mark-dev-tag-as-not-passed
+    uses: ./.github/workflows/backend-sdk-testing.yml
+
+  website-test:
+    needs: mark-dev-tag-as-not-passed
+    uses: ./.github/workflows/website-test.yml
+
+  # auth-react-test:
+  #   needs: mark-dev-tag-as-not-passed
+  #   strategy:
+  #     matrix:
+  #       framework:
+  #         - django
+  #         - fastapi
+  #         - flask
+
+  #   uses: ./.github/workflows/auth-react-test-1-${{ matrix.framework }}.yml
+
+  mark-as-success:
+    runs-on: ubuntu-latest
+
+    needs:
+      - unit-test
+      - backend-sdk-test
+      - website-test
+      # - auth-react-test
+
+    steps:
+      - run: |
+          ./hooks/populate-hook-constants.sh
+
+          curl --fail-with-body -X PUT \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+                \"version\":\"$setupVersion\",
+                \"name\": \"python\",
+                \"testPassed\": true
+              }"`
