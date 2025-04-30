@@ -48,11 +48,10 @@ from supertokens_python.recipe.thirdparty.types import (
 )
 from supertokens_python.types import (
     AccountInfo,
-    APIResponse,
-    GeneralErrorResponse,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 
 class Info:

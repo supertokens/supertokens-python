@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from supertokens_python.framework import BaseResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 
+from ....types.response import GeneralErrorResponse
+
 if TYPE_CHECKING:
     from ..interfaces import (
         APIInterface,
@@ -34,7 +36,6 @@ async def revoke_token_post(
 ) -> Optional[BaseResponse]:
     from ..interfaces import (
         ErrorOAuth2Response,
-        GeneralErrorResponse,
     )
 
     if api_implementation.disable_revoke_token_post is True:

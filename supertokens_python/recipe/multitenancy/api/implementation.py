@@ -22,7 +22,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     LoginMethodsGetOkResult,
     LoginMethodThirdParty,
 )
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..constants import DEFAULT_TENANT_ID
 from ..interfaces import APIInterface, ThirdPartyProvider

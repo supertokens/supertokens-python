@@ -27,7 +27,7 @@ from supertokens_python.recipe.session.exceptions import (
     SuperTokensSessionError,
     UnauthorisedError,
 )
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..interfaces import (
     APIInterface,

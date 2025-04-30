@@ -1,3 +1,7 @@
+"""
+Types in `supertokens_python.types` as of 0.29
+"""
+
 # Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -13,7 +17,6 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional, TypeVar, Union
 
 import phonenumbers  # type: ignore
@@ -235,21 +238,6 @@ class User:
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )
-
-
-class APIResponse(ABC):
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
-
-
-class GeneralErrorResponse(APIResponse):
-    def __init__(self, message: str):
-        self.status = "GENERAL_ERROR"
-        self.message = message
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "message": self.message}
 
 
 MaybeAwaitable = Union[Awaitable[_T], _T]

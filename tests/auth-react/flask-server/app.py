@@ -171,10 +171,10 @@ from supertokens_python.recipe.userroles.syncio import (
 from supertokens_python.syncio import delete_user, get_user, list_users_by_account_info
 from supertokens_python.types import (
     AccountInfo,
-    GeneralErrorResponse,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import GeneralErrorResponse
 from typing_extensions import Literal
 
 load_dotenv("../auth-react.env")

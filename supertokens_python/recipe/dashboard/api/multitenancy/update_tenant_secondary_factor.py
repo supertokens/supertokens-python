@@ -20,7 +20,7 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from ...interfaces import APIInterface, APIOptions
 from .utils import (

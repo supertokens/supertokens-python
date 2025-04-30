@@ -2,33 +2,33 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Literal, Optional, TypedDict, Union
 
-from dataclasses_json import LetterCase, dataclass_json
-
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
-    OkResponse,
     RecipeInterface,
     RegisterOptionsErrorResponse,
     RegistrationPayload,
     ResidentKey,
     SignInOptionsErrorResponse,
-    StatusReasonResponse,
-    StatusResponse,
     UserVerification,
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.supertokens import AppInfo
-from supertokens_python.types import GeneralErrorResponse, RecipeUserId, User
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.response import (
+    CamelCaseDataclass,
+    GeneralErrorResponse,
+    OkResponse,
+    StatusReasonResponse,
+    StatusResponse,
+)
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class TypeWebauthnRecoverAccountEmailDeliveryInput:
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
+class TypeWebauthnRecoverAccountEmailDeliveryInput(CamelCaseDataclass):
     @dataclass
     class User:
         id: str
@@ -43,9 +43,8 @@ class TypeWebauthnRecoverAccountEmailDeliveryInput:
 TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class APIOptions:
+class APIOptions(CamelCaseDataclass):
     recipe_implementation: RecipeInterface
     appInfo: AppInfo
     config: WebauthnConfig
@@ -56,38 +55,32 @@ class APIOptions:
     email_delivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class RegisterOptionsPOSTResponse(OkResponse):
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class RelyingParty:
+    class RelyingParty(CamelCaseDataclass):
         id: str
         name: str
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class User:
+    class User(CamelCaseDataclass):
         id: str
         name: str
         display_name: str
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class ExcludeCredentials:
+    class ExcludeCredentials(CamelCaseDataclass):
         id: str
         type: Literal["public-key"]
         transports: List[Literal["ble", "hybrid", "internal", "nfc", "usb"]]
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class PubKeyCredParams:
+    class PubKeyCredParams(CamelCaseDataclass):
         alg: int
         type: str
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class AuthenticatorSelection:
+    class AuthenticatorSelection(CamelCaseDataclass):
         require_resident_key: bool
         resident_key: ResidentKey
         user_verification: UserVerification
@@ -108,7 +101,6 @@ class RegisterOptionsPOSTResponse(OkResponse):
 RegisterOptionsPOSTErrorResponse = RegisterOptionsErrorResponse
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class SignInOptionsPOSTResponse(OkResponse):
     webauthn_generated_options_id: str
@@ -171,27 +163,23 @@ RegisterCredentialPOSTErrorResponse = Union[
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class EmailExistsGetResponse(OkResponse):
     exists: bool
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class RecoverAccountPOSTResponse(OkResponse):
     user: User
     email: str
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class SignUpPOSTResponse(OkResponse):
     user: User
     session: SessionContainer
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class SignInPOSTResponse(OkResponse):
     user: User

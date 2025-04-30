@@ -6,7 +6,7 @@ from supertokens_python.recipe.userroles.asyncio import (
     create_new_role_or_add_permissions,
 )
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 
 class OkResponse(APIResponse):

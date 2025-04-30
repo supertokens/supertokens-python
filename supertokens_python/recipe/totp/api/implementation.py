@@ -23,7 +23,7 @@ from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError  # noqa: E402
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..interfaces import APIInterface, APIOptions
 from ..types import (

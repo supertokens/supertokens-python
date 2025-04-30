@@ -25,7 +25,6 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     GetUserFromRecoverAccountTokenErrorResponse,
     GetUserFromRecoverAccountTokenResponse,
     ListCredentialsResponse,
-    OkResponse,
     RecipeInterface,
     RegisterCredentialErrorResponse,
     RegisterOptionsErrorResponse,
@@ -40,7 +39,6 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     SignInResponse,
     SignUpErrorResponse,
     SignUpReponse,
-    StatusErrResponse,
     UpdateUserEmailErrorResponse,
     UserVerification,
     VerifyCredentialsErrorResponse,
@@ -49,6 +47,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.response import OkResponse, StatusErrResponse
 
 
 class RecipeImplementation(RecipeInterface):
@@ -199,9 +198,7 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
         if link_result.status != "OK":
-            # Type error because response classes are not protocols, will work once we get that working
-            # Protocols will allow older classes to co-exist with our current type hierarchy
-            return link_result  # type: ignore - older class format does not match newer format
+            return link_result
 
         return SignUpReponse(
             status="OK",
@@ -265,7 +262,7 @@ class RecipeImplementation(RecipeInterface):
 
         # TODO: Node uses `!= "LINKING_TO_SESSION_USER_FAILED"` - Why? Shouldn't we return ALL error responses as-is?
         if link_result.status != "OK":
-            return link_result  # type: ignore - older class format does not match newer format
+            return link_result
 
         signed_in_user = link_result.user
 

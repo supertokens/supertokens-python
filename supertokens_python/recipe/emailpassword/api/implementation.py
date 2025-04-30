@@ -63,13 +63,14 @@ from supertokens_python.recipe.emailpassword.types import (
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.totp.types import UnknownUserIdError
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..utils import get_password_reset_link
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
-from supertokens_python.types import AccountInfo, GeneralErrorResponse, RecipeUserId
+from supertokens_python.types import AccountInfo, RecipeUserId
 
 
 class APIImplementation(APIInterface):

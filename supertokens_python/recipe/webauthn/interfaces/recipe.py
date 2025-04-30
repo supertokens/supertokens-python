@@ -3,113 +3,35 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Dict,
-    Generic,
     List,
     Literal,
     Optional,
-    Protocol,
     TypedDict,
-    TypeVar,
     Union,
-    runtime_checkable,
 )
 
-from dataclasses_json import LetterCase, dataclass_json
-
+from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.types.base import UserContext
-from supertokens_python.types import APIResponse, RecipeUserId, User
-
-Status = TypeVar("Status", bound=str)
-Reason = TypeVar("Reason", bound=str)
-Status_co = TypeVar("Status_co", bound=str, covariant=True)
-Reason_co = TypeVar("Reason_co", bound=str, covariant=True)
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.response import (
+    CamelCaseDataclass,
+    OkResponse,
+    StatusErrResponse,
+    StatusReasonResponse,
+    StatusResponse,
+)
 
 Base64URLString = str
 COSEAlgorithmIdentifier = int
-
-
-"""
-Protocol classes will allow use of older classes with these new types
-They're like interfaces and allow classes to be interpreted as per their properties,
-instead of their actual types, allowing use with the `StatusResponse` types.
-
-Issue: Generic Protocols require the generic to be `invariant` - types need to be exact
-The current types are defined as `StatusResponse[Literal["A", "B"]]`, and only one of these is returned.
-This requires the generic to be `covariant`, which is not allowed in Protocols.
-
-Potential Solution: Refactor the types to be `StatusResponse[Literal["A"]] | StatusResponse[Literal["B"]]`
-Needs to be tried out, but should work intuitively. Types become more repetitive.
-"""
-
-
-@runtime_checkable
-class HasStatus(Protocol, Generic[Status]):
-    status: Status
-
-
-@runtime_checkable
-class HasErr(Protocol, Generic[Status]):
-    err: Status
-
-
-@runtime_checkable
-class HasReason(Protocol, Generic[Status]):
-    reason: Status
-
-
-# TODO: Move to supertokens_python types
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
-@dataclass
-class StatusResponse(APIResponse, Generic[Status_co]):
-    """
-    Generic response object with a `status` field.
-    """
-
-    status: Status_co
-
-    def to_json(self) -> Dict[str, Any]:
-        return {}
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
-@dataclass
-class StatusReasonResponse(StatusResponse[Status_co], Generic[Status_co, Reason_co]):
-    """
-    Generic error response object with `status` and `reason` fields.
-    """
-
-    reason: Reason_co
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
-@dataclass
-class StatusErrResponse(StatusResponse[Status_co]):
-    """
-    Generic error response object with `status` and `err` fields.
-    """
-
-    err: str
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
-@dataclass
-class OkResponse(StatusResponse[Literal["OK"]]):
-    """
-    Basic success response object with `status = "OK"`
-    """
-
-    status: Literal["OK"]
-
 
 ResidentKey = Literal["required", "preferred", "discouraged"]
 UserVerification = Literal["required", "preferred", "discouraged"]
 Attestation = Literal["none", "indirect", "direct", "enterprise"]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class CredentialPayloadBase:
+class CredentialPayloadBase(CamelCaseDataclass):
     id: str
     rawId: str
     authenticatorAttachment: Optional[Literal["platform", "cross-platform"]]
@@ -117,24 +39,21 @@ class CredentialPayloadBase:
     type: Literal["public-key"]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class AuthenticatorAssertionResponseJSON:
+class AuthenticatorAssertionResponseJSON(CamelCaseDataclass):
     clientDataJSON: Base64URLString
     authenticatorData: Base64URLString
     signature: Base64URLString
     userHandle: Optional[Base64URLString]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class AuthenticationPayload(CredentialPayloadBase):
     response: AuthenticatorAssertionResponseJSON
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class AuthenticatorAttestationResponseJSON:
+class AuthenticatorAttestationResponseJSON(CamelCaseDataclass):
     clientDataJSON: Base64URLString
     attestationObject: Base64URLString
     authenticatorData: Optional[Base64URLString]
@@ -145,18 +64,15 @@ class AuthenticatorAttestationResponseJSON:
     publicKey: Optional[Base64URLString]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class RegistrationPayload(CredentialPayloadBase):
     response: AuthenticatorAttestationResponseJSON
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class CredentialPayload(CredentialPayloadBase):
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class Response:
+    class Response(CamelCaseDataclass):
         client_data_json: str
         attestation_object: str
         transports: Optional[
@@ -171,43 +87,37 @@ class CredentialPayload(CredentialPayloadBase):
     response: Response
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class RegisterOptionsResponse(OkResponse):
     # for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
     # and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class RelyingParty:
+    class RelyingParty(CamelCaseDataclass):
         id: str
         name: str
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class User:
+    class User(CamelCaseDataclass):
         id: str
         name: str  # user email
         display_name: str  # user email
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class ExcludeCredentials:
+    class ExcludeCredentials(CamelCaseDataclass):
         id: str
         transports: List[Literal["ble", "hybrid", "internal", "nfc", "usb"]]
         type: Literal["public-key"]
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class PubKeyCredParams:
+    class PubKeyCredParams(CamelCaseDataclass):
         # we will default to [-8, -7, -257] as supported algorithms.
         # See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
         alg: int
         type: Literal["public-key"]
 
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class AuthenticatorSelection:
+    class AuthenticatorSelection(CamelCaseDataclass):
         require_resident_key: bool
         resident_key: ResidentKey
         user_verification: UserVerification
@@ -226,17 +136,12 @@ class RegisterOptionsResponse(OkResponse):
 
 
 RegisterOptionsErrorResponse = Union[
-    StatusResponse[
-        Literal[
-            "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
-            "INVALID_OPTIONS_ERROR",
-        ]
-    ],
+    StatusResponse[Literal["RECOVER_ACCOUNT_TOKEN_INVALID_ERROR"]],
+    StatusResponse[Literal["INVALID_OPTIONS_ERROR"]],
     StatusErrResponse[Literal["INVALID_EMAIL_ERROR"]],
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class SignInOptionsResponse(OkResponse):
     webauthn_generated_options_id: str
@@ -250,7 +155,6 @@ class SignInOptionsResponse(OkResponse):
 SignInOptionsErrorResponse = StatusResponse[Literal["INVALID_OPTIONS_ERROR"]]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class CreateNewRecipeUserResponse(OkResponse):
     user: User
@@ -270,7 +174,6 @@ CreateNewRecipeUserErrorResponse = Union[
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class SignUpReponse(OkResponse):
     user: User
@@ -279,19 +182,10 @@ class SignUpReponse(OkResponse):
 
 SignUpErrorResponse = Union[
     CreateNewRecipeUserErrorResponse,
-    StatusReasonResponse[
-        Literal["LINKING_TO_SESSION_USER_FAILED"],
-        Literal[
-            "EMAIL_VERIFICATION_REQUIRED",
-            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        ],
-    ],
+    LinkingToSessionUserFailedError,
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class VerifyCredentialsResponse(OkResponse):
     user: User
@@ -310,7 +204,6 @@ VerifyCredentialsErrorResponse = StatusResponse[
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class SignInResponse(OkResponse):
     user: User
@@ -319,20 +212,10 @@ class SignInResponse(OkResponse):
 
 SignInErrorResponse = Union[
     VerifyCredentialsErrorResponse,
-    # TODO: This is the type of `LinkingToSessionUserFailedError` - See if it can be ported to use new types
-    StatusReasonResponse[
-        Literal["LINKING_TO_SESSION_USER_FAILED"],
-        Literal[
-            "EMAIL_VERIFICATION_REQUIRED",
-            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        ],
-    ],
+    LinkingToSessionUserFailedError,
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class GenerateRecoverAccountTokenResponse(OkResponse):
     token: str
@@ -343,7 +226,6 @@ GenerateRecoverAccountTokenErrorResponse = StatusResponse[
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class ConsumeRecoverAccountTokenResponse(OkResponse):
     email: str
@@ -367,7 +249,6 @@ RegisterCredentialErrorResponse = Union[
 ]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class GetUserFromRecoverAccountTokenResponse(OkResponse):
     user: User
@@ -381,7 +262,6 @@ GetUserFromRecoverAccountTokenErrorResponse = StatusResponse[
 RemoveCredentialErrorResponse = StatusResponse[Literal["CREDENTIAL_NOT_FOUND_ERROR"]]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class GetCredentialResponse(OkResponse):
     webauthn_credential_id: str
@@ -393,12 +273,10 @@ class GetCredentialResponse(OkResponse):
 GetCredentialErrorResponse = StatusResponse[Literal["CREDENTIAL_NOT_FOUND_ERROR"]]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class ListCredentialsResponse(OkResponse):
-    @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
     @dataclass
-    class Credential:
+    class Credential(CamelCaseDataclass):
         webauthn_credential_id: str
         relying_party_id: str
         recipe_user_id: str
@@ -410,7 +288,6 @@ class ListCredentialsResponse(OkResponse):
 RemoveGeneratedOptionsErrorResponse = StatusResponse[Literal["OPTIONS_NOT_FOUND_ERROR"]]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
 class GetGeneratedOptionsResponse(OkResponse):
     webauthn_generated_options_id: str

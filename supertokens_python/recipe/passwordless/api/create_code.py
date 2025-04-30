@@ -26,7 +26,7 @@ from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOrPhoneConfig,
     ContactPhoneOnlyConfig,
 )
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 from supertokens_python.utils import (
     get_normalised_should_try_linking_with_session_user_flag,
     send_200_response,

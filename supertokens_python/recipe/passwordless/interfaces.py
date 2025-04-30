@@ -23,11 +23,10 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import (
-    APIResponse,
-    GeneralErrorResponse,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...supertokens import AppInfo
 

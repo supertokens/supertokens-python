@@ -81,7 +81,8 @@ from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriI
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
-from supertokens_python.types import GeneralErrorResponse, User
+from supertokens_python.types import User
+from supertokens_python.types.response import GeneralErrorResponse
 from typing_extensions import Literal
 
 from .store import save_code, save_url_with_token

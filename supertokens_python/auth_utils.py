@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
@@ -36,13 +37,27 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import CamelCaseDataclass, HasReason, HasStatus
 from supertokens_python.utils import log_debug_message
 
 from .asyncio import get_user
 
 
-class LinkingToSessionUserFailedError:
-    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
+# TODO: [Py3.10] Subclass from `StatusReasonResponse` and use `kw_only` to avoid declaring types for `status` and `reason`
+@dataclass
+class LinkingToSessionUserFailedError(
+    CamelCaseDataclass,
+    HasStatus[Literal["LINKING_TO_SESSION_USER_FAILED"],],
+    HasReason[
+        Literal[
+            "EMAIL_VERIFICATION_REQUIRED",
+            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+            "INPUT_USER_IS_NOT_A_PRIMARY_USER",
+        ],
+    ],
+):
     reason: Literal[
         "EMAIL_VERIFICATION_REQUIRED",
         "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
@@ -50,18 +65,7 @@ class LinkingToSessionUserFailedError:
         "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
         "INPUT_USER_IS_NOT_A_PRIMARY_USER",
     ]
-
-    def __init__(
-        self,
-        reason: Literal[
-            "EMAIL_VERIFICATION_REQUIRED",
-            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "INPUT_USER_IS_NOT_A_PRIMARY_USER",
-        ],
-    ):
-        self.reason = reason
+    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
 
 
 class OkResponse:

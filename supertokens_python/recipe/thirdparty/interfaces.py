@@ -16,7 +16,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ...types import APIResponse, GeneralErrorResponse, RecipeUserId, User
+from ...types import RecipeUserId, User
+from ...types.response import APIResponse, GeneralErrorResponse
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:

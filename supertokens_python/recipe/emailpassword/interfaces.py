@@ -22,10 +22,9 @@ from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 
 from ...supertokens import AppInfo
 from ...types import (
-    APIResponse,
-    GeneralErrorResponse,
     RecipeUserId,
 )
+from ...types.response import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse

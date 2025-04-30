@@ -20,7 +20,7 @@ from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .utils import OpenIdConfig
 

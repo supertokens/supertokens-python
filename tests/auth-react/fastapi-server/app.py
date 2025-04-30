@@ -173,10 +173,10 @@ from supertokens_python.recipe.userroles.asyncio import (
 )
 from supertokens_python.types import (
     AccountInfo,
-    GeneralErrorResponse,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import GeneralErrorResponse
 from typing_extensions import Literal
 
 load_dotenv("../auth-react.env")
