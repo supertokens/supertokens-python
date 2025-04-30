@@ -11,6 +11,7 @@ from typing import (
     TypedDict,
     TypeVar,
     Union,
+    runtime_checkable,
 )
 
 from dataclasses_json import LetterCase, dataclass_json
@@ -21,47 +22,69 @@ from supertokens_python.types import APIResponse, RecipeUserId, User
 
 Status = TypeVar("Status", bound=str)
 Reason = TypeVar("Reason", bound=str)
+Status_co = TypeVar("Status_co", bound=str, covariant=True)
+Reason_co = TypeVar("Reason_co", bound=str, covariant=True)
 
 Base64URLString = str
 COSEAlgorithmIdentifier = int
 
 
-# TODO: Move to supertokens_python types
+"""
+Protocol classes will allow use of older classes with these new types
+They're like interfaces and allow classes to be interpreted as per their properties,
+instead of their actual types, allowing use with the `StatusResponse` types.
+
+Issue: Generic Protocols require the generic to be `invariant` - types need to be exact
+The current types are defined as `StatusResponse[Literal["A", "B"]]`, and only one of these is returned.
+This requires the generic to be `covariant`, which is not allowed in Protocols.
+
+Potential Solution: Refactor the types to be `StatusResponse[Literal["A"]] | StatusResponse[Literal["B"]]`
+Needs to be tried out, but should work intuitively. Types become more repetitive.
+"""
+
+
+@runtime_checkable
 class HasStatus(Protocol, Generic[Status]):
     status: Status
 
 
+@runtime_checkable
 class HasErr(Protocol, Generic[Status]):
     err: Status
 
 
+@runtime_checkable
 class HasReason(Protocol, Generic[Status]):
     reason: Status
 
 
-@dataclass_json
+# TODO: Move to supertokens_python types
+@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class StatusResponse(APIResponse, HasStatus[Status]):
+class StatusResponse(APIResponse, Generic[Status_co]):
     """
     Generic response object with a `status` field.
     """
 
-    status: Status
+    status: Status_co
+
+    def to_json(self) -> Dict[str, Any]:
+        return {}
 
 
-@dataclass_json
+@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class StatusReasonResponse(StatusResponse[Status], Generic[Status, Reason]):
+class StatusReasonResponse(StatusResponse[Status_co], Generic[Status_co, Reason_co]):
     """
     Generic error response object with `status` and `reason` fields.
     """
 
-    reason: Reason
+    reason: Reason_co
 
 
-@dataclass_json
+@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class StatusErrResponse(StatusResponse[Status]):
+class StatusErrResponse(StatusResponse[Status_co]):
     """
     Generic error response object with `status` and `err` fields.
     """
@@ -71,7 +94,7 @@ class StatusErrResponse(StatusResponse[Status]):
 
 @dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore - Type Errors in the library enum
 @dataclass
-class OkResponse(HasStatus[Literal["OK"]]):
+class OkResponse(StatusResponse[Literal["OK"]]):
     """
     Basic success response object with `status = "OK"`
     """
@@ -296,6 +319,7 @@ class SignInResponse(OkResponse):
 
 SignInErrorResponse = Union[
     VerifyCredentialsErrorResponse,
+    # TODO: This is the type of `LinkingToSessionUserFailedError` - See if it can be ported to use new types
     StatusReasonResponse[
         Literal["LINKING_TO_SESSION_USER_FAILED"],
         Literal[
@@ -347,7 +371,7 @@ RegisterCredentialErrorResponse = Union[
 @dataclass
 class GetUserFromRecoverAccountTokenResponse(OkResponse):
     user: User
-    recipe_user_id: RecipeUserId
+    recipe_user_id: Optional[RecipeUserId]
 
 
 GetUserFromRecoverAccountTokenErrorResponse = StatusResponse[
@@ -442,6 +466,7 @@ class RecipeInterface(ABC):
         relying_party_id: str,
         relying_party_name: str,
         origin: str,
+        user_verification: Optional[UserVerification],
         user_presence: Optional[bool],
         timeout: Optional[int],
         tenant_id: str,
@@ -467,9 +492,9 @@ class RecipeInterface(ABC):
         webauthn_generated_options_id: str,
         credential: AuthenticationPayload,
         session: Optional[SessionContainer],
-        shouldTryLinkingWithSessionUser: Optional[bool],
-        tenantId: str,
-        userContext: UserContext,
+        should_try_linking_with_session_user: Optional[bool],
+        tenant_id: str,
+        user_context: UserContext,
     ) -> Union[SignInResponse, SignInErrorResponse]: ...
 
     @abstractmethod
@@ -478,8 +503,8 @@ class RecipeInterface(ABC):
         *,
         webauthn_generated_options_id: str,
         credential: AuthenticationPayload,
-        tenantId: str,
-        userContext: UserContext,
+        tenant_id: str,
+        user_context: UserContext,
     ) -> Union[VerifyCredentialsResponse, VerifyCredentialsErrorResponse]: ...
 
     @abstractmethod
