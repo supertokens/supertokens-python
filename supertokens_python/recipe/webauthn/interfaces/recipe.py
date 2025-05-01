@@ -10,6 +10,8 @@ from typing import (
     Union,
 )
 
+from typing_extensions import NotRequired, Unpack
+
 from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.types.base import UserContext
@@ -310,14 +312,22 @@ UpdateUserEmailErrorResponse = StatusResponse[
 ]
 
 
+class RecoverAccountTokenInput(TypedDict):
+    recover_account_token: str
+
+
+class DisplayNameEmailInput(TypedDict):
+    display_name: Optional[str]
+    email: str
+
+
+class RegisterOptionsKwargsInput(TypedDict):
+    recover_account_token: NotRequired[str]
+    display_name: NotRequired[str]
+    email: NotRequired[str]
+
+
 class RecipeInterface(ABC):
-    class _RecoverAccountTokenInput(TypedDict):
-        recover_account_token: str
-
-    class _DisplayNameEmailInput(TypedDict):
-        display_name: Optional[str]
-        email: str
-
     @abstractmethod
     async def register_options(
         self,
@@ -333,7 +343,7 @@ class RecipeInterface(ABC):
         timeout: Optional[int],
         tenant_id: str,
         user_context: UserContext,
-        **kwargs: Union[_RecoverAccountTokenInput, _DisplayNameEmailInput],
+        **kwargs: Unpack[RegisterOptionsKwargsInput],
     ) -> Union[RegisterOptionsResponse, RegisterOptionsErrorResponse]: ...
 
     @abstractmethod

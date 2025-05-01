@@ -1,4 +1,6 @@
-from typing import Any, Callable, List, Optional, Union, cast
+from typing import Callable, List, Optional, Union, cast
+
+from typing_extensions import Unpack
 
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import (
@@ -16,6 +18,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     ConsumeRecoverAccountTokenResponse,
     CreateNewRecipeUserErrorResponse,
     CreateNewRecipeUserResponse,
+    DisplayNameEmailInput,
     GenerateRecoverAccountTokenErrorResponse,
     GenerateRecoverAccountTokenResponse,
     GetCredentialErrorResponse,
@@ -26,8 +29,10 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     GetUserFromRecoverAccountTokenResponse,
     ListCredentialsResponse,
     RecipeInterface,
+    RecoverAccountTokenInput,
     RegisterCredentialErrorResponse,
     RegisterOptionsErrorResponse,
+    RegisterOptionsKwargsInput,
     RegisterOptionsResponse,
     RegistrationPayload,
     RemoveCredentialErrorResponse,
@@ -71,17 +76,35 @@ class RecipeImplementation(RecipeInterface):
         user_verification: Optional[UserVerification] = None,
         user_presence: Optional[bool] = None,
         resident_key: Optional[ResidentKey] = None,
-        **kwargs: Any,
+        **kwargs: Unpack[RegisterOptionsKwargsInput],
     ) -> Union[RegisterOptionsResponse, RegisterOptionsErrorResponse]:
-        email_input = kwargs.get("email")
-        recover_account_token_input = kwargs.get("recover_account_token")
+        kwargs_obj: Union[DisplayNameEmailInput, RecoverAccountTokenInput]
+        has_email_input: bool = False
+        has_recover_account_token_input: bool = False
+
+        if "email" in kwargs:
+            has_email_input = True
+            kwargs_obj = DisplayNameEmailInput(
+                email=kwargs["email"],
+                display_name=kwargs.get("display_name"),
+            )
+        elif "recover_account_token" in kwargs:
+            has_recover_account_token_input = True
+            kwargs_obj = RecoverAccountTokenInput(
+                recover_account_token=kwargs["recover_account_token"],
+            )
+        else:
+            raise ValueError(
+                "Either 'email' or 'recover_account_token' must be provided in kwargs."
+            )
 
         email: Optional[str] = None
-        if email_input is not None:
-            email = email_input
-        elif recover_account_token_input is not None:
+        if has_email_input:
+            email = cast(DisplayNameEmailInput, kwargs_obj)["email"]
+        elif has_recover_account_token_input:
+            token = cast(RecoverAccountTokenInput, kwargs_obj)["recover_account_token"]
             result = await self.get_user_from_recover_account_token(
-                token=recover_account_token_input,
+                token=token,
                 tenant_id=tenant_id,
                 user_context=user_context,
             )
@@ -102,7 +125,7 @@ class RecipeImplementation(RecipeInterface):
                     email = login_method.email
                     break
 
-        if not email:
+        if email is None:
             return StatusErrResponse(
                 status="INVALID_EMAIL_ERROR",
                 err="The email is missing",
@@ -117,8 +140,15 @@ class RecipeImplementation(RecipeInterface):
             return StatusErrResponse(status="INVALID_EMAIL_ERROR", err=validate_result)
 
         display_name: str
-        if kwargs.get("display_name") is not None:
-            display_name = kwargs["display_name"]
+        # Doing a double check with `.get` since someone could explicitly pass `None`
+        if has_email_input and kwargs.get("display_name") is not None:
+            # If email is provided, and `display_name` is provided in kwargs, access directly
+            kwargs_display_name = cast(
+                DisplayNameEmailInput,
+                kwargs_obj,
+            )["display_name"]
+            # Additional type-cast since Pylance doesn't understand the type narrowing done above
+            display_name = cast(str, kwargs_display_name)
         else:
             display_name = email
 
