@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Literal, Optional, TypedDict, Union
 
+from typing_extensions import NotRequired, Unpack
+
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -19,7 +21,7 @@ from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.response import (
-    CamelCaseDataclass,
+    ApiResponseDataclass,
     GeneralErrorResponse,
     OkResponse,
     StatusReasonResponse,
@@ -28,7 +30,7 @@ from supertokens_python.types.response import (
 
 
 @dataclass
-class TypeWebauthnRecoverAccountEmailDeliveryInput(CamelCaseDataclass):
+class TypeWebauthnRecoverAccountEmailDeliveryInput(ApiResponseDataclass):
     @dataclass
     class User:
         id: str
@@ -44,7 +46,7 @@ TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 
 
 @dataclass
-class APIOptions(CamelCaseDataclass):
+class APIOptions(ApiResponseDataclass):
     recipe_implementation: RecipeInterface
     appInfo: AppInfo
     config: WebauthnConfig
@@ -58,29 +60,29 @@ class APIOptions(CamelCaseDataclass):
 @dataclass
 class RegisterOptionsPOSTResponse(OkResponse):
     @dataclass
-    class RelyingParty(CamelCaseDataclass):
+    class RelyingParty(ApiResponseDataclass):
         id: str
         name: str
 
     @dataclass
-    class User(CamelCaseDataclass):
+    class User(ApiResponseDataclass):
         id: str
         name: str
         display_name: str
 
     @dataclass
-    class ExcludeCredentials(CamelCaseDataclass):
+    class ExcludeCredentials(ApiResponseDataclass):
         id: str
         type: Literal["public-key"]
         transports: List[Literal["ble", "hybrid", "internal", "nfc", "usb"]]
 
     @dataclass
-    class PubKeyCredParams(CamelCaseDataclass):
+    class PubKeyCredParams(ApiResponseDataclass):
         alg: int
         type: str
 
     @dataclass
-    class AuthenticatorSelection(CamelCaseDataclass):
+    class AuthenticatorSelection(ApiResponseDataclass):
         require_resident_key: bool
         resident_key: ResidentKey
         user_verification: UserVerification
@@ -186,6 +188,20 @@ class SignInPOSTResponse(OkResponse):
     session: SessionContainer
 
 
+class RecoverAccountTokenInput(TypedDict):
+    recover_account_token: str
+
+
+class DisplayNameEmailInput(TypedDict):
+    display_name: Optional[str]
+    email: str
+
+
+class RegisterOptionsPOSTKwargsInput(TypedDict):
+    recover_account_token: NotRequired[str]
+    display_name: NotRequired[str]
+    email: NotRequired[str]
+
 class ApiInterface(ABC):
     disable_register_options_post: bool = False
     disable_sign_in_options_post: bool = False
@@ -196,13 +212,6 @@ class ApiInterface(ABC):
     disable_register_credential_post: bool = False
     disable_email_exists_get: bool = False
 
-    class _RecoverAccountTokenInput(TypedDict):
-        recover_account_token: str
-
-    class _DisplayNameEmailInput(TypedDict):
-        display_name: Optional[str]
-        email: str
-
     @abstractmethod
     async def register_options_post(
         self,
@@ -210,7 +219,7 @@ class ApiInterface(ABC):
         tenant_id: str,
         options: APIOptions,
         user_context: UserContext,
-        **kwargs: Union[_RecoverAccountTokenInput, _DisplayNameEmailInput],
+        **kwargs: Unpack[RegisterOptionsPOSTKwargsInput],
     ) -> Union[
         RegisterOptionsPOSTResponse,
         GeneralErrorResponse,

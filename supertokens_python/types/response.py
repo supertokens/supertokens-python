@@ -23,7 +23,7 @@ class GeneralErrorResponse(APIResponse):
         return {"status": self.status, "message": self.message}
 
 
-class CamelCaseDataclass(DataClassJsonMixin):
+class ApiResponseDataclass(DataClassJsonMixin):
     dataclass_json_config = {  # type: ignore - library type issues
         "letter_case": LetterCase.CAMEL,  # type: ignore - library type issues
     }
@@ -61,7 +61,7 @@ class HasReason(Protocol[Status]):
 # implementation. The type-ignores are unavoidable to allow things to work without lint errors.
 # TODO: Figure out a way to subclass from `APIResponse` and make it compatible with `DataClassJsonMixin`
 @dataclass
-class StatusResponse(CamelCaseDataclass, HasStatus[Status]):  # type: ignore
+class StatusResponse(ApiResponseDataclass, HasStatus[Status]):  # type: ignore
     """
     Generic response object with a `status` field.
     """

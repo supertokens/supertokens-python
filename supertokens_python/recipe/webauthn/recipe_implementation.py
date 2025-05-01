@@ -114,7 +114,6 @@ class RecipeImplementation(RecipeInterface):
             user = result.user
             # if the recipeUserId is not present, it means that the user does not have a webauthn login method and we should just use the user id
             # this will make account recovery act as a sign up
-            # TODO: Check with Victor if these types are wrong - recipe_user_id is not defined as optional in Node
             user_id = user.id
             if result.recipe_user_id is not None:
                 user_id = result.recipe_user_id.get_as_string()

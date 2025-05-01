@@ -17,7 +17,9 @@ from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.response import (
-    CamelCaseDataclass,
+    ApiResponseDataclass,
+    HasErr,
+    HasStatus,
     OkResponse,
     StatusErrResponse,
     StatusReasonResponse,
@@ -33,7 +35,7 @@ Attestation = Literal["none", "indirect", "direct", "enterprise"]
 
 
 @dataclass
-class CredentialPayloadBase(CamelCaseDataclass):
+class CredentialPayloadBase(ApiResponseDataclass):
     id: str
     rawId: str
     authenticatorAttachment: Optional[Literal["platform", "cross-platform"]]
@@ -42,7 +44,7 @@ class CredentialPayloadBase(CamelCaseDataclass):
 
 
 @dataclass
-class AuthenticatorAssertionResponseJSON(CamelCaseDataclass):
+class AuthenticatorAssertionResponseJSON(ApiResponseDataclass):
     clientDataJSON: Base64URLString
     authenticatorData: Base64URLString
     signature: Base64URLString
@@ -55,7 +57,7 @@ class AuthenticationPayload(CredentialPayloadBase):
 
 
 @dataclass
-class AuthenticatorAttestationResponseJSON(CamelCaseDataclass):
+class AuthenticatorAttestationResponseJSON(ApiResponseDataclass):
     clientDataJSON: Base64URLString
     attestationObject: Base64URLString
     authenticatorData: Optional[Base64URLString]
@@ -74,7 +76,7 @@ class RegistrationPayload(CredentialPayloadBase):
 @dataclass
 class CredentialPayload(CredentialPayloadBase):
     @dataclass
-    class Response(CamelCaseDataclass):
+    class Response(ApiResponseDataclass):
         client_data_json: str
         attestation_object: str
         transports: Optional[
@@ -95,31 +97,31 @@ class RegisterOptionsResponse(OkResponse):
     # and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
 
     @dataclass
-    class RelyingParty(CamelCaseDataclass):
+    class RelyingParty(ApiResponseDataclass):
         id: str
         name: str
 
     @dataclass
-    class User(CamelCaseDataclass):
+    class User(ApiResponseDataclass):
         id: str
         name: str  # user email
         display_name: str  # user email
 
     @dataclass
-    class ExcludeCredentials(CamelCaseDataclass):
+    class ExcludeCredentials(ApiResponseDataclass):
         id: str
         transports: List[Literal["ble", "hybrid", "internal", "nfc", "usb"]]
         type: Literal["public-key"]
 
     @dataclass
-    class PubKeyCredParams(CamelCaseDataclass):
+    class PubKeyCredParams(ApiResponseDataclass):
         # we will default to [-8, -7, -257] as supported algorithms.
         # See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
-        alg: int
+        alg: List[int]
         type: Literal["public-key"]
 
     @dataclass
-    class AuthenticatorSelection(CamelCaseDataclass):
+    class AuthenticatorSelection(ApiResponseDataclass):
         require_resident_key: bool
         resident_key: ResidentKey
         user_verification: UserVerification
@@ -278,7 +280,7 @@ GetCredentialErrorResponse = StatusResponse[Literal["CREDENTIAL_NOT_FOUND_ERROR"
 @dataclass
 class ListCredentialsResponse(OkResponse):
     @dataclass
-    class Credential(CamelCaseDataclass):
+    class Credential(ApiResponseDataclass):
         webauthn_credential_id: str
         relying_party_id: str
         recipe_user_id: str

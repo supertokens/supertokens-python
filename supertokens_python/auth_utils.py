@@ -37,7 +37,7 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
-from supertokens_python.types.response import CamelCaseDataclass, HasReason, HasStatus
+from supertokens_python.types.response import ApiResponseDataclass, HasReason, HasStatus
 from supertokens_python.utils import log_debug_message
 
 from .asyncio import get_user
@@ -46,7 +46,7 @@ from .asyncio import get_user
 # TODO: [Py3.10] Subclass from `StatusReasonResponse` and use `kw_only` to avoid declaring types for `status` and `reason`
 @dataclass
 class LinkingToSessionUserFailedError(
-    CamelCaseDataclass,
+    ApiResponseDataclass,
     HasStatus[Literal["LINKING_TO_SESSION_USER_FAILED"],],
     HasReason[
         Literal[
