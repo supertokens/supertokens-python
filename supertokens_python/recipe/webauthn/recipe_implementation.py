@@ -9,7 +9,6 @@ from supertokens_python.auth_utils import (
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     Attestation,
@@ -18,7 +17,9 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     ConsumeRecoverAccountTokenResponse,
     CreateNewRecipeUserErrorResponse,
     CreateNewRecipeUserResponse,
+    CredentialNotFoundErrorResponse,
     DisplayNameEmailInput,
+    EmailAlreadyExistsErrorResponse,
     GenerateRecoverAccountTokenErrorResponse,
     GenerateRecoverAccountTokenResponse,
     GetCredentialErrorResponse,
@@ -27,9 +28,15 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     GetGeneratedOptionsResponse,
     GetUserFromRecoverAccountTokenErrorResponse,
     GetUserFromRecoverAccountTokenResponse,
+    InvalidAuthenticatorErrorResponse,
+    InvalidCredentialsErrorResponse,
+    InvalidEmailErrorResponse,
+    InvalidOptionsErrorResponse,
     ListCredentialsResponse,
+    OptionsNotFoundErrorResponse,
     RecipeInterface,
     RecoverAccountTokenInput,
+    RecoverAccountTokenInvalidErrorResponse,
     RegisterCredentialErrorResponse,
     RegisterOptionsErrorResponse,
     RegisterOptionsKwargsInput,
@@ -44,6 +51,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     SignInResponse,
     SignUpErrorResponse,
     SignUpReponse,
+    UnknownUserIdErrorResponse,
     UpdateUserEmailErrorResponse,
     UserVerification,
     VerifyCredentialsErrorResponse,
@@ -51,8 +59,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
-from supertokens_python.types import RecipeUserId, User
-from supertokens_python.types.response import OkResponse, StatusErrResponse
+from supertokens_python.types.response import OkResponseBaseModel
 
 
 class RecipeImplementation(RecipeInterface):
@@ -125,10 +132,7 @@ class RecipeImplementation(RecipeInterface):
                     break
 
         if email is None:
-            return StatusErrResponse(
-                status="INVALID_EMAIL_ERROR",
-                err="The email is missing",
-            )
+            return InvalidEmailErrorResponse(err="The email is missing")
 
         validate_result = await self.get_webauthn_config().validate_email_address(
             email=email,
@@ -136,7 +140,7 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
         if validate_result:
-            return StatusErrResponse(status="INVALID_EMAIL_ERROR", err=validate_result)
+            return InvalidEmailErrorResponse(err=validate_result)
 
         display_name: str
         # Doing a double check with `.get` since someone could explicitly pass `None`
@@ -151,11 +155,9 @@ class RecipeImplementation(RecipeInterface):
         else:
             display_name = email
 
-        resp = await self.querier.send_post_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/options/register"
-            ),
-            {
+        response = await self.querier.send_post_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options/register"),
+            data={
                 "email": email,
                 "displayName": display_name,
                 "relyingPartyName": relying_party_name,
@@ -168,10 +170,20 @@ class RecipeImplementation(RecipeInterface):
                 "userPresence": user_presence,
                 "residentKey": resident_key,
             },
-            user_context,
+            user_context=user_context,
         )
 
-        return cast(Union[RegisterOptionsResponse, RegisterOptionsErrorResponse], resp)
+        if response["status"] != "OK":
+            if response["status"] == "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR":
+                return RecoverAccountTokenInvalidErrorResponse()
+            if response["status"] == "INVALID_OPTIONS_ERROR":
+                return InvalidOptionsErrorResponse()
+            if response["status"] == "INVALID_EMAIL_ERROR":
+                return InvalidEmailErrorResponse(err=response["err"])
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return RegisterOptionsResponse.from_json(response)
 
     async def sign_in_options(
         self,
@@ -185,9 +197,9 @@ class RecipeImplementation(RecipeInterface):
         tenant_id: str,
         user_context: UserContext,
     ) -> Union[SignInOptionsResponse, SignInOptionsErrorResponse]:
-        resp = await self.querier.send_post_request(
-            NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options/signin"),
-            {
+        response = await self.querier.send_post_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options/signin"),
+            data={
                 "userVerification": user_verification,
                 "userPresence": user_presence,
                 "relyingPartyId": relying_party_id,
@@ -195,9 +207,16 @@ class RecipeImplementation(RecipeInterface):
                 "origin": origin,
                 "timeout": timeout,
             },
-            user_context,
+            user_context=user_context,
         )
-        return cast(Union[SignInOptionsResponse, SignInOptionsErrorResponse], resp)
+
+        if response["status"] != "OK":
+            if response["status"] == "INVALID_OPTIONS_ERROR":
+                return InvalidOptionsErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return SignInOptionsResponse.from_json(response)
 
     async def sign_up(
         self,
@@ -289,7 +308,6 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
-        # TODO: Node uses `!= "LINKING_TO_SESSION_USER_FAILED"` - Why? Shouldn't we return ALL error responses as-is?
         if link_result.status != "OK":
             return link_result
 
@@ -306,105 +324,117 @@ class RecipeImplementation(RecipeInterface):
         *,
         credential: AuthenticationPayload,
         webauthn_generated_options_id: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
     ) -> Union[VerifyCredentialsResponse, VerifyCredentialsErrorResponse]:
         response = await self.querier.send_post_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/signin"
-            ),
-            {
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/signin"),
+            data={
                 "credential": credential,
                 "webauthnGeneratedOptionsId": webauthn_generated_options_id,
             },
-            user_context,
+            user_context=user_context,
         )
 
-        if response.get("status") == "OK":
-            return VerifyCredentialsResponse(
-                status="OK",
-                user=User.from_json(response["user"]),
-                recipe_user_id=RecipeUserId(response["recipeUserId"]),
-            )
+        if response["status"] != "OK":
+            if response["status"] == "INVALID_CREDENTIALS_ERROR":
+                return InvalidCredentialsErrorResponse()
+            if response["status"] == "INVALID_OPTIONS_ERROR":
+                InvalidOptionsErrorResponse()
+            if response["status"] == "INVALID_AUTHENTICATOR_ERROR":
+                return InvalidAuthenticatorErrorResponse(reason=response["reason"])
+            if response["status"] == "CREDENTIAL_NOT_FOUND_ERROR":
+                return CredentialNotFoundErrorResponse()
+            if response["status"] == "UNKNOWN_USER_ID_ERROR":
+                return UnknownUserIdErrorResponse()
+            if response["status"] == "OPTIONS_NOT_FOUND_ERROR":
+                return OptionsNotFoundErrorResponse()
 
-        return cast(VerifyCredentialsErrorResponse, response)
+            raise Exception(f"Unknown Error: {response}")
+
+        return VerifyCredentialsResponse.from_json(response)
 
     async def create_new_recipe_user(
         self,
         *,
         credential: RegistrationPayload,
         webauthn_generated_options_id: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
     ) -> Union[CreateNewRecipeUserResponse, CreateNewRecipeUserErrorResponse]:
-        resp = await self.querier.send_post_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/signup"
-            ),
-            {
+        response = await self.querier.send_post_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/signup"),
+            data={
                 "webauthnGeneratedOptionsId": webauthn_generated_options_id,
                 "credential": credential,
             },
-            user_context,
+            user_context=user_context,
         )
 
-        if resp.get("status") == "OK":
-            return CreateNewRecipeUserResponse(
-                status="OK",
-                user=User.from_json(resp["user"]),
-                recipe_user_id=RecipeUserId(resp["recipeUserId"]),
-            )
+        if response.get("status") != "OK":
+            if response["status"] == "EMAIL_ALREADY_EXISTS_ERROR":
+                return EmailAlreadyExistsErrorResponse()
+            if response["status"] == "OPTIONS_NOT_FOUND_ERROR":
+                return OptionsNotFoundErrorResponse()
+            if response["status"] == "INVALID_OPTIONS_ERROR":
+                return InvalidOptionsErrorResponse()
+            if response["status"] == "INVALID_CREDENTIALS_ERROR":
+                return InvalidCredentialsErrorResponse()
+            if response["status"] == "INVALID_AUTHENTICATOR_ERROR":
+                return InvalidAuthenticatorErrorResponse(reason=response["reason"])
 
-        return cast(CreateNewRecipeUserErrorResponse, resp)
+            raise Exception(f"Unknown Error: {response}")
+
+        return CreateNewRecipeUserResponse.from_json(response)
 
     async def generate_recover_account_token(
         self,
         *,
         user_id: str,
         email: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
     ) -> Union[
         GenerateRecoverAccountTokenResponse, GenerateRecoverAccountTokenErrorResponse
     ]:
-        resp = await self.querier.send_post_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/user/recover/token"
-            ),
-            {"userId": user_id, "email": email},
-            user_context,
+        response = await self.querier.send_post_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/user/recover/token"),
+            data={"userId": user_id, "email": email},
+            user_context=user_context,
         )
-        return cast(
-            Union[
-                GenerateRecoverAccountTokenResponse,
-                GenerateRecoverAccountTokenErrorResponse,
-            ],
-            resp,
-        )
+
+        if response["status"] != "OK":
+            if response["status"] == "UNKNOWN_USER_ID_ERROR":
+                return UnknownUserIdErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return GenerateRecoverAccountTokenResponse.from_json(response)
 
     async def consume_recover_account_token(
         self,
         *,
         token: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
     ) -> Union[
         ConsumeRecoverAccountTokenResponse, ConsumeRecoverAccountTokenErrorResponse
     ]:
-        resp = await self.querier.send_post_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/user/recover/token/consume"
+        response = await self.querier.send_post_request(
+            path=NormalisedURLPath(
+                f"/{tenant_id}/recipe/webauthn/user/recover/token/consume"
             ),
-            {"token": token},
-            user_context,
+            data={"token": token},
+            user_context=user_context,
         )
-        return cast(
-            Union[
-                ConsumeRecoverAccountTokenResponse,
-                ConsumeRecoverAccountTokenErrorResponse,
-            ],
-            resp,
-        )
+
+        if response["status"] != "OK":
+            if response["status"] == "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR":
+                return RecoverAccountTokenInvalidErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return ConsumeRecoverAccountTokenResponse.from_json(response)
 
     async def register_credential(
         self,
@@ -413,44 +443,54 @@ class RecipeImplementation(RecipeInterface):
         credential: RegistrationPayload,
         recipe_user_id: str,
         user_context: UserContext,
-    ) -> Union[OkResponse, RegisterCredentialErrorResponse]:
-        resp = await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/webauthn/user/credential/register"),
-            {
+    ) -> Union[OkResponseBaseModel, RegisterCredentialErrorResponse]:
+        response = await self.querier.send_post_request(
+            path=NormalisedURLPath("/recipe/webauthn/user/credential/register"),
+            data={
                 "recipeUserId": recipe_user_id,
                 "webauthnGeneratedOptionsId": webauthn_generated_options_id,
                 "credential": credential,
             },
-            user_context,
+            user_context=user_context,
         )
-        return cast(Union[OkResponse, RegisterCredentialErrorResponse], resp)
+
+        if response["status"] != "OK":
+            if response["status"] == "INVALID_CREDENTIALS_ERROR":
+                return InvalidCredentialsErrorResponse()
+            if response["status"] == "OPTIONS_NOT_FOUND_ERROR":
+                return OptionsNotFoundErrorResponse()
+            if response["status"] == "INVALID_OPTIONS_ERROR":
+                return InvalidOptionsErrorResponse()
+            if response["status"] == "INVALID_AUTHENTICATOR_ERROR":
+                return InvalidAuthenticatorErrorResponse(reason=response["reason"])
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return OkResponseBaseModel()
 
     async def get_user_from_recover_account_token(
         self,
         *,
         token: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
     ) -> Union[
         GetUserFromRecoverAccountTokenResponse,
         GetUserFromRecoverAccountTokenErrorResponse,
     ]:
-        resp = await self.querier.send_get_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/user/recover"
-            ),
-            {"token": token},
-            user_context,
+        response = await self.querier.send_get_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/user/recover"),
+            params={"token": token},
+            user_context=user_context,
         )
 
-        if resp.get("status") == "OK":
-            return GetUserFromRecoverAccountTokenResponse(
-                status="OK",
-                user=User.from_json(resp["user"]),
-                recipe_user_id=RecipeUserId(resp["recipeUserId"]),
-            )
+        if response["status"] != "OK":
+            if response["status"] == "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR":
+                return RecoverAccountTokenInvalidErrorResponse()
 
-        return cast(GetUserFromRecoverAccountTokenErrorResponse, resp)
+            raise Exception(f"Unknown Error: {response}")
+
+        return GetUserFromRecoverAccountTokenResponse.from_json(response)
 
     async def remove_credential(
         self,
@@ -458,16 +498,23 @@ class RecipeImplementation(RecipeInterface):
         webauthn_credential_id: str,
         recipe_user_id: str,
         user_context: UserContext,
-    ) -> Union[OkResponse, RemoveCredentialErrorResponse]:
-        resp = await self.querier.send_delete_request(
-            NormalisedURLPath("/recipe/webauthn/user/credential/remove"),
-            {
+    ) -> Union[OkResponseBaseModel, RemoveCredentialErrorResponse]:
+        response = await self.querier.send_delete_request(
+            path=NormalisedURLPath("/recipe/webauthn/user/credential/remove"),
+            params={
                 "recipeUserId": recipe_user_id,
                 "webauthnCredentialId": webauthn_credential_id,
             },
-            user_context,
+            user_context=user_context,
         )
-        return cast(Union[OkResponse, RemoveCredentialErrorResponse], resp)
+
+        if response["status"] != "OK":
+            if response["status"] == "CREDENTIAL_NOT_FOUND_ERROR":
+                return CredentialNotFoundErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return OkResponseBaseModel()
 
     async def get_credential(
         self,
@@ -476,25 +523,22 @@ class RecipeImplementation(RecipeInterface):
         recipe_user_id: str,
         user_context: UserContext,
     ) -> Union[GetCredentialResponse, GetCredentialErrorResponse]:
-        resp = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/webauthn/user/credential"),
-            {
+        response = await self.querier.send_get_request(
+            path=NormalisedURLPath("/recipe/webauthn/user/credential"),
+            params={
                 "webauthnCredentialId": webauthn_credential_id,
                 "recipeUserId": recipe_user_id,
             },
-            user_context,
+            user_context=user_context,
         )
 
-        if resp.get("status") == "OK":
-            return GetCredentialResponse(
-                status="OK",
-                webauthn_credential_id=resp["webauthnCredentialId"],
-                relying_party_id=resp["relyingPartyId"],
-                recipe_user_id=RecipeUserId(resp["recipeUserId"]),
-                created_at=resp["createdAt"],
-            )
+        if response["status"] != "OK":
+            if response["status"] == "CREDENTIAL_NOT_FOUND_ERROR":
+                return CredentialNotFoundErrorResponse()
 
-        return cast(GetCredentialErrorResponse, resp)
+            raise Exception(f"Unknown Error: {response}")
+
+        return GetCredentialResponse.from_json(response)
 
     async def list_credentials(
         self,
@@ -502,61 +546,77 @@ class RecipeImplementation(RecipeInterface):
         recipe_user_id: str,
         user_context: UserContext,
     ) -> ListCredentialsResponse:
-        resp = await self.querier.send_get_request(
-            NormalisedURLPath("/recipe/webauthn/user/credential/list"),
-            {"recipeUserId": recipe_user_id},
-            user_context,
+        response = await self.querier.send_get_request(
+            path=NormalisedURLPath("/recipe/webauthn/user/credential/list"),
+            params={"recipeUserId": recipe_user_id},
+            user_context=user_context,
         )
-        return cast(ListCredentialsResponse, resp)
+
+        return ListCredentialsResponse.from_json(response)
 
     async def remove_generated_options(
         self,
         *,
         webauthn_generated_options_id: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
-    ) -> Union[OkResponse, RemoveGeneratedOptionsErrorResponse]:
-        resp = await self.querier.send_delete_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/options/remove"
-            ),
-            {"webauthnGeneratedOptionsId": webauthn_generated_options_id},
-            user_context,
+    ) -> Union[OkResponseBaseModel, RemoveGeneratedOptionsErrorResponse]:
+        response = await self.querier.send_delete_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options/remove"),
+            params={"webauthnGeneratedOptionsId": webauthn_generated_options_id},
+            user_context=user_context,
         )
-        return cast(Union[OkResponse, RemoveGeneratedOptionsErrorResponse], resp)
+
+        if response["status"] != "OK":
+            if response["status"] == "OPTIONS_NOT_FOUND_ERROR":
+                return RemoveGeneratedOptionsErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return OkResponseBaseModel()
 
     async def get_generated_options(
         self,
         *,
         webauthn_generated_options_id: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
     ) -> Union[GetGeneratedOptionsResponse, GetGeneratedOptionsErrorResponse]:
-        resp = await self.querier.send_get_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/options"
-            ),
-            {"webauthnGeneratedOptionsId": webauthn_generated_options_id},
-            user_context,
+        response = await self.querier.send_get_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options"),
+            params={"webauthnGeneratedOptionsId": webauthn_generated_options_id},
+            user_context=user_context,
         )
-        return cast(
-            Union[GetGeneratedOptionsResponse, GetGeneratedOptionsErrorResponse], resp
-        )
+
+        if response["status"] != "OK":
+            if response["status"] == "OPTIONS_NOT_FOUND_ERROR":
+                return OptionsNotFoundErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return GetGeneratedOptionsResponse.from_json(response)
 
     async def update_user_email(
         self,
         *,
         email: str,
         recipe_user_id: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str,
         user_context: UserContext,
-    ) -> Union[OkResponse, UpdateUserEmailErrorResponse]:
-        resp = await self.querier.send_put_request(
-            NormalisedURLPath(
-                f"/{tenant_id or DEFAULT_TENANT_ID}/recipe/webauthn/user/email"
-            ),
-            {"email": email, "recipeUserId": recipe_user_id},
-            {},
-            user_context,
+    ) -> Union[OkResponseBaseModel, UpdateUserEmailErrorResponse]:
+        response = await self.querier.send_put_request(
+            path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/user/email"),
+            data={"email": email, "recipeUserId": recipe_user_id},
+            query_params={},
+            user_context=user_context,
         )
-        return cast(Union[OkResponse, UpdateUserEmailErrorResponse], resp)
+
+        if response["status"] != "OK":
+            if response["status"] == "EMAIL_ALREADY_EXISTS_ERROR":
+                return EmailAlreadyExistsErrorResponse()
+            if response["status"] == "UNKNOWN_USER_ID_ERROR":
+                return UnknownUserIdErrorResponse()
+
+            raise Exception(f"Unknown Error: {response}")
+
+        return OkResponseBaseModel()

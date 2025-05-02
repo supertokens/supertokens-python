@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import List, Literal, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired, Unpack
@@ -9,7 +8,13 @@ from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
+    EmailAlreadyExistsErrorResponse,
+    InvalidAuthenticatorErrorResponse,
+    InvalidCredentialsErrorResponse,
+    InvalidOptionsErrorResponse,
+    OptionsNotFoundErrorResponse,
     RecipeInterface,
+    RecoverAccountTokenInvalidErrorResponse,
     RegisterOptionsErrorResponse,
     RegistrationPayload,
     ResidentKey,
@@ -21,18 +26,41 @@ from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.response import (
-    ApiResponseDataclass,
+    CamelCaseBaseModel,
     GeneralErrorResponse,
-    OkResponse,
-    StatusReasonResponse,
-    StatusResponse,
+    OkResponseBaseModel,
+    StatusReasonResponseBaseModel,
 )
 
 
-@dataclass
-class TypeWebauthnRecoverAccountEmailDeliveryInput(ApiResponseDataclass):
-    @dataclass
-    class User:
+class SignUpNotAllowedErrorResponse(
+    StatusReasonResponseBaseModel[Literal["SIGN_UP_NOT_ALLOWED"], str]
+):
+    status: Literal["SIGN_UP_NOT_ALLOWED"] = "SIGN_UP_NOT_ALLOWED"
+
+
+class SignInNotAllowedErrorResponse(
+    StatusReasonResponseBaseModel[Literal["SIGN_IN_NOT_ALLOWED"], str]
+):
+    status: Literal["SIGN_IN_NOT_ALLOWED"] = "SIGN_IN_NOT_ALLOWED"
+
+
+class RecoverAccountNotAllowedErrorResponse(
+    StatusReasonResponseBaseModel[Literal["RECOVER_ACCOUNT_NOT_ALLOWED"], str]
+):
+    status: Literal["RECOVER_ACCOUNT_NOT_ALLOWED"] = "RECOVER_ACCOUNT_NOT_ALLOWED"
+
+
+class RegisterCredentialNotAllowedErrorResponse(
+    StatusReasonResponseBaseModel[Literal["REGISTER_CREDENTIAL_NOT_ALLOWED"], str]
+):
+    status: Literal["REGISTER_CREDENTIAL_NOT_ALLOWED"] = (
+        "REGISTER_CREDENTIAL_NOT_ALLOWED"
+    )
+
+
+class TypeWebauthnRecoverAccountEmailDeliveryInput(CamelCaseBaseModel):
+    class User(CamelCaseBaseModel):
         id: str
         recipe_user_id: Optional[RecipeUserId]
 
@@ -45,8 +73,7 @@ class TypeWebauthnRecoverAccountEmailDeliveryInput(ApiResponseDataclass):
 TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 
 
-@dataclass
-class APIOptions(ApiResponseDataclass):
+class APIOptions(CamelCaseBaseModel):
     recipe_implementation: RecipeInterface
     appInfo: AppInfo
     config: WebauthnConfig
@@ -57,32 +84,26 @@ class APIOptions(ApiResponseDataclass):
     email_delivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
 
 
-@dataclass
-class RegisterOptionsPOSTResponse(OkResponse):
-    @dataclass
-    class RelyingParty(ApiResponseDataclass):
+class RegisterOptionsPOSTResponse(OkResponseBaseModel):
+    class RelyingParty(CamelCaseBaseModel):
         id: str
         name: str
 
-    @dataclass
-    class User(ApiResponseDataclass):
+    class User(CamelCaseBaseModel):
         id: str
         name: str
         display_name: str
 
-    @dataclass
-    class ExcludeCredentials(ApiResponseDataclass):
+    class ExcludeCredentials(CamelCaseBaseModel):
         id: str
         type: Literal["public-key"]
         transports: List[Literal["ble", "hybrid", "internal", "nfc", "usb"]]
 
-    @dataclass
-    class PubKeyCredParams(ApiResponseDataclass):
+    class PubKeyCredParams(CamelCaseBaseModel):
         alg: int
         type: str
 
-    @dataclass
-    class AuthenticatorSelection(ApiResponseDataclass):
+    class AuthenticatorSelection(CamelCaseBaseModel):
         require_resident_key: bool
         resident_key: ResidentKey
         user_verification: UserVerification
@@ -103,8 +124,7 @@ class RegisterOptionsPOSTResponse(OkResponse):
 RegisterOptionsPOSTErrorResponse = RegisterOptionsErrorResponse
 
 
-@dataclass
-class SignInOptionsPOSTResponse(OkResponse):
+class SignInOptionsPOSTResponse(OkResponseBaseModel):
     webauthn_generated_options_id: str
     created_at: str
     expires_at: str
@@ -117,73 +137,53 @@ class SignInOptionsPOSTResponse(OkResponse):
 SignInOptionsPOSTErrorResponse = SignInOptionsErrorResponse
 
 SignUpPOSTErrorResponse = Union[
-    StatusReasonResponse[
-        Literal["SIGN_UP_NOT_ALLOWED", "INVALID_AUTHENTICATOR_ERROR"], str
-    ],
-    StatusResponse[
-        Literal[
-            "EMAIL_ALREADY_EXISTS_ERROR",
-            "INVALID_CREDENTIALS_ERROR",
-            "OPTIONS_NOT_FOUND_ERROR",
-            "INVALID_OPTIONS_ERROR",
-        ]
-    ],
+    SignUpNotAllowedErrorResponse,
+    InvalidAuthenticatorErrorResponse,
+    EmailAlreadyExistsErrorResponse,
+    InvalidCredentialsErrorResponse,
+    OptionsNotFoundErrorResponse,
+    InvalidOptionsErrorResponse,
 ]
 
 SignInPOSTErrorResponse = Union[
-    StatusResponse[Literal["INVALID_CREDENTIALS_ERROR"]],
-    StatusReasonResponse[Literal["SIGN_IN_NOT_ALLOWED"], str],
+    InvalidCredentialsErrorResponse,
+    SignInNotAllowedErrorResponse,
 ]
 
-GenerateRecoverAccountTokenPOSTErrorResponse = StatusReasonResponse[
-    Literal["RECOVER_ACCOUNT_NOT_ALLOWED"], str
-]
+GenerateRecoverAccountTokenPOSTErrorResponse = RecoverAccountNotAllowedErrorResponse
 
 RecoverAccountPOSTErrorResponse = Union[
-    StatusResponse[
-        Literal[
-            "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
-            "INVALID_CREDENTIALS_ERROR",
-            "OPTIONS_NOT_FOUND_ERROR",
-            "INVALID_OPTIONS_ERROR",
-        ]
-    ],
-    StatusReasonResponse[Literal["INVALID_AUTHENTICATOR_ERROR"], str],
+    RecoverAccountTokenInvalidErrorResponse,
+    InvalidCredentialsErrorResponse,
+    OptionsNotFoundErrorResponse,
+    InvalidOptionsErrorResponse,
+    InvalidAuthenticatorErrorResponse,
 ]
 
 RegisterCredentialPOSTErrorResponse = Union[
-    StatusResponse[
-        Literal[
-            "INVALID_CREDENTIALS_ERROR",
-            "OPTIONS_NOT_FOUND_ERROR",
-            "INVALID_OPTIONS_ERROR",
-        ]
-    ],
-    StatusReasonResponse[
-        Literal["REGISTER_CREDENTIAL_NOT_ALLOWED", "INVALID_AUTHENTICATOR_ERROR"], str
-    ],
+    InvalidCredentialsErrorResponse,
+    OptionsNotFoundErrorResponse,
+    InvalidOptionsErrorResponse,
+    RegisterCredentialNotAllowedErrorResponse,
+    InvalidAuthenticatorErrorResponse,
 ]
 
 
-@dataclass
-class EmailExistsGetResponse(OkResponse):
+class EmailExistsGetResponse(OkResponseBaseModel):
     exists: bool
 
 
-@dataclass
-class RecoverAccountPOSTResponse(OkResponse):
+class RecoverAccountPOSTResponse(OkResponseBaseModel):
     user: User
     email: str
 
 
-@dataclass
-class SignUpPOSTResponse(OkResponse):
+class SignUpPOSTResponse(OkResponseBaseModel):
     user: User
     session: SessionContainer
 
 
-@dataclass
-class SignInPOSTResponse(OkResponse):
+class SignInPOSTResponse(OkResponseBaseModel):
     user: User
     session: SessionContainer
 
@@ -201,6 +201,7 @@ class RegisterOptionsPOSTKwargsInput(TypedDict):
     recover_account_token: NotRequired[str]
     display_name: NotRequired[str]
     email: NotRequired[str]
+
 
 class ApiInterface(ABC):
     disable_register_options_post: bool = False
@@ -272,7 +273,9 @@ class ApiInterface(ABC):
         options: APIOptions,
         user_context: UserContext,
     ) -> Union[
-        OkResponse, GeneralErrorResponse, GenerateRecoverAccountTokenPOSTErrorResponse
+        OkResponseBaseModel,
+        GeneralErrorResponse,
+        GenerateRecoverAccountTokenPOSTErrorResponse,
     ]: ...
 
     @abstractmethod
@@ -302,7 +305,7 @@ class ApiInterface(ABC):
         options: APIOptions,
         user_context: UserContext,
     ) -> Union[
-        OkResponse, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
+        OkResponseBaseModel, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
     ]: ...
 
     @abstractmethod

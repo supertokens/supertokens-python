@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
@@ -37,18 +36,15 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
-from supertokens_python.types.response import ApiResponseDataclass, HasReason, HasStatus
+from supertokens_python.types.response import StatusReasonResponseBaseModel
 from supertokens_python.utils import log_debug_message
 
 from .asyncio import get_user
 
 
-# TODO: [Py3.10] Subclass from `StatusReasonResponse` and use `kw_only` to avoid declaring types for `status` and `reason`
-@dataclass
 class LinkingToSessionUserFailedError(
-    ApiResponseDataclass,
-    HasStatus[Literal["LINKING_TO_SESSION_USER_FAILED"],],
-    HasReason[
+    StatusReasonResponseBaseModel[
+        Literal["LINKING_TO_SESSION_USER_FAILED"],
         Literal[
             "EMAIL_VERIFICATION_REQUIRED",
             "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
@@ -56,8 +52,9 @@ class LinkingToSessionUserFailedError(
             "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
             "INPUT_USER_IS_NOT_A_PRIMARY_USER",
         ],
-    ],
+    ]
 ):
+    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
     reason: Literal[
         "EMAIL_VERIFICATION_REQUIRED",
         "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
@@ -65,7 +62,6 @@ class LinkingToSessionUserFailedError(
         "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
         "INPUT_USER_IS_NOT_A_PRIMARY_USER",
     ]
-    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
 
 
 class OkResponse:

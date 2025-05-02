@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Protocol, TypeVar
+from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.types.base import UserContext
+from supertokens_python.types.response import CamelCaseBaseModel
 
 # These imports are only required for type-hints, not for runtime use
 # Prevents circular import errors
@@ -17,6 +17,7 @@ InterfaceType = TypeVar("InterfaceType")
 
 
 # TODO: Check if we want to use a different naming convention for these types
+@runtime_checkable
 class GetRelyingPartyId(Protocol):
     """
     Callable signature for `WebauthnConfig.get_relying_party_id`.
@@ -31,6 +32,7 @@ class GetRelyingPartyId(Protocol):
     ) -> str: ...
 
 
+@runtime_checkable
 class GetRelyingPartyName(Protocol):
     """
     Callable signature for `WebauthnConfig.get_relying_party_name`.
@@ -45,6 +47,7 @@ class GetRelyingPartyName(Protocol):
     ) -> str: ...
 
 
+@runtime_checkable
 class GetOrigin(Protocol):
     """
     Callable signature for `WebauthnConfig.get_origin`.
@@ -59,6 +62,7 @@ class GetOrigin(Protocol):
     ) -> str: ...
 
 
+@runtime_checkable
 class GetEmailDeliveryConfig(Protocol):
     """
     Callable signature for `WebauthnConfig.get_email_delivery_config`.
@@ -71,6 +75,7 @@ class GetEmailDeliveryConfig(Protocol):
         ...
 
 
+@runtime_checkable
 class ValidateEmailAddress(Protocol):
     """
     Callable signature for `WebauthnConfig.validate_email_address`.
@@ -81,6 +86,7 @@ class ValidateEmailAddress(Protocol):
     ) -> Optional[str]: ...
 
 
+@runtime_checkable
 class InterfaceOverride(Protocol[InterfaceType]):
     """
     Callable signature for `WebauthnConfig.override.*`.
@@ -110,8 +116,8 @@ class OverrideConfig:
         self.apis = apis
 
 
-@dataclass
-class WebauthnConfig:
+# TODO: Figure out if we want/need pydantic here. Validation errors might be tough to resolve
+class WebauthnConfig(CamelCaseBaseModel):
     get_relying_party_id: GetRelyingPartyId
     get_relying_party_name: GetRelyingPartyName
     get_origin: GetOrigin

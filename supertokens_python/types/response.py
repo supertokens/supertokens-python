@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, Literal, Protocol, TypeVar, runtime_checkable
+from typing import Any, Dict, Generic, Literal, Protocol, TypeVar, runtime_checkable
 
 from dataclasses_json import DataClassJsonMixin, LetterCase
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
+from typing_extensions import Self
 
 Status = TypeVar("Status", bound=str)
 Reason = TypeVar("Reason", bound=str)
-_T = TypeVar("_T")
 
 
 class APIResponse(ABC):
@@ -27,6 +28,28 @@ class ApiResponseDataclass(DataClassJsonMixin):
     dataclass_json_config = {  # type: ignore - library type issues
         "letter_case": LetterCase.CAMEL,  # type: ignore - library type issues
     }
+
+
+class CamelCaseBaseModel(APIResponse, BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        # Support interop between Pydantic and old classes
+        arbitrary_types_allowed=True,
+    )
+
+    @classmethod
+    def from_json(cls, obj: Dict[str, Any]) -> Self:
+        """
+        Converts a dictionary to a Pydantic model.
+        """
+        return cls.model_validate(obj)
+
+    def to_json(self) -> Dict[str, Any]:
+        """
+        Converts the Pydantic model to a dictionary.
+        """
+        return self.model_dump(by_alias=True)
 
 
 """
@@ -57,40 +80,19 @@ class HasReason(Protocol[Status]):
     reason: Status
 
 
-# Pylance complains about incompatible overrides between `APIResponse` and `DataClassJsonMixin`'s `to_json`
-# implementation. The type-ignores are unavoidable to allow things to work without lint errors.
-# TODO: Figure out a way to subclass from `APIResponse` and make it compatible with `DataClassJsonMixin`
-@dataclass
-class StatusResponse(ApiResponseDataclass, HasStatus[Status]):  # type: ignore
-    """
-    Generic response object with a `status` field.
-    """
-
+class StatusResponseBaseModel(CamelCaseBaseModel, Generic[Status]):
     status: Status
 
 
-@dataclass
-class StatusReasonResponse(StatusResponse[Status], HasReason[Reason]):
-    """
-    Generic error response object with `status` and `reason` fields.
-    """
-
+class StatusReasonResponseBaseModel(
+    StatusResponseBaseModel[Status], Generic[Status, Reason]
+):
     reason: Reason
 
 
-@dataclass
-class StatusErrResponse(StatusResponse[Status]):
-    """
-    Generic error response object with `status` and `err` fields.
-    """
+class OkResponseBaseModel(StatusResponseBaseModel[Literal["OK"]]):
+    status: Literal["OK"] = "OK"
 
+
+class StatusErrResponseBaseModel(StatusResponseBaseModel[Status]):
     err: str
-
-
-@dataclass
-class OkResponse(StatusResponse[Literal["OK"]]):
-    """
-    Basic success response object with `status = "OK"`
-    """
-
-    status: Literal["OK"]
