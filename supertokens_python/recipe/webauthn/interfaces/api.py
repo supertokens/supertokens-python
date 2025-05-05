@@ -8,6 +8,7 @@ from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
+    AuthenticationPayload,
     EmailAlreadyExistsErrorResponse,
     InvalidAuthenticatorErrorResponse,
     InvalidCredentialsErrorResponse,
@@ -256,7 +257,7 @@ class ApiInterface(ABC):
         self,
         *,
         webauthn_generated_options_id: str,
-        credential: RegistrationPayload,
+        credential: AuthenticationPayload,
         tenant_id: str,
         session: Optional[SessionContainer],
         should_try_linking_with_session_user: Optional[bool],

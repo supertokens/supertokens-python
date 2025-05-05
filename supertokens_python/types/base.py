@@ -70,7 +70,7 @@ class AccountInfo:
 class LoginMethod(AccountInfo):
     def __init__(
         self,
-        recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
+        recipe_id: Literal["emailpassword", "thirdparty", "passwordless", "webauthn"],
         recipe_user_id: str,
         tenant_ids: List[str],
         email: Union[str, None],
@@ -80,9 +80,9 @@ class LoginMethod(AccountInfo):
         verified: bool,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal["emailpassword", "thirdparty", "passwordless"] = (
-            recipe_id
-        )
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless", "webauthn"
+        ] = recipe_id
         self.recipe_user_id = RecipeUserId(recipe_user_id)
         self.tenant_ids: List[str] = tenant_ids
         self.time_joined = time_joined

@@ -30,6 +30,7 @@ from supertokens_python.recipe.session.asyncio import create_new_session, get_se
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
+from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
 from supertokens_python.types import (
     AccountInfo,
     LoginMethod,
@@ -286,6 +287,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
     email: Optional[str],
     phone_number: Optional[str],
     third_party: Optional[ThirdPartyInfo],
+    webauthn: Optional[WebauthnInfo],
     tenant_id: str,
     session: Optional[SessionContainer],
     check_credentials_on_tenant: Callable[[str], Awaitable[bool]],

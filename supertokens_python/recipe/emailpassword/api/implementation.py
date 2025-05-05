@@ -566,6 +566,7 @@ class APIImplementation(APIInterface):
                 email=email,
                 phone_number=None,
                 third_party=None,
+                webauthn=None,
                 user_context=user_context,
                 recipe_id=recipe_id,
                 session=session,

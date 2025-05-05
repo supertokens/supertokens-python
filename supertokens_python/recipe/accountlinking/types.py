@@ -25,10 +25,10 @@ from supertokens_python.types import AccountInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
+    from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
     from supertokens_python.types import (
         LoginMethod,
         RecipeUserId,
-        ThirdPartyInfo,
         User,
     )
 
@@ -36,15 +36,15 @@ if TYPE_CHECKING:
 class AccountInfoWithRecipeId(AccountInfo):
     def __init__(
         self,
-        recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
+        recipe_id: Literal["emailpassword", "thirdparty", "passwordless", "webauthn"],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
     ):
         super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal["emailpassword", "thirdparty", "passwordless"] = (
-            recipe_id
-        )
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless", "webauthn"
+        ] = recipe_id
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -58,7 +58,7 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         self,
         tenant_ids: List[str],
         time_joined: int,
-        recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
+        recipe_id: Literal["emailpassword", "thirdparty", "passwordless", "webauthn"],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
@@ -66,9 +66,9 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         super().__init__(recipe_id, email, phone_number, third_party)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id: Literal["emailpassword", "thirdparty", "passwordless"] = (
-            recipe_id
-        )
+        self.recipe_id: Literal[
+            "emailpassword", "thirdparty", "passwordless", "webauthn"
+        ] = recipe_id
 
     @staticmethod
     def from_login_method(
@@ -88,7 +88,7 @@ class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
     def __init__(
         self,
         recipe_user_id: Optional[RecipeUserId],
-        recipe_id: Literal["emailpassword", "thirdparty", "passwordless"],
+        recipe_id: Literal["emailpassword", "thirdparty", "passwordless", "webauthn"],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
