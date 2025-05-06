@@ -25,7 +25,8 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
-from supertokens_python.types import AccountInfo, User
+from supertokens_python.types import User
+from supertokens_python.types.base import AccountInfoInput
 
 
 def get_users_oldest_first(
@@ -164,7 +165,7 @@ def update_or_delete_user_id_mapping_info(
 
 def list_users_by_account_info(
     tenant_id: str,
-    account_info: AccountInfo,
+    account_info: AccountInfoInput,
     do_union_of_account_info: bool = False,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> List[User]:

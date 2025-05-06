@@ -23,7 +23,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     UserVerification,
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
-from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.response import (
@@ -60,13 +60,15 @@ class RegisterCredentialNotAllowedErrorResponse(
     )
 
 
-class TypeWebauthnRecoverAccountEmailDeliveryInput(CamelCaseBaseModel):
-    class User(CamelCaseBaseModel):
-        id: str
-        recipe_user_id: Optional[RecipeUserId]
+class WebauthnRecoverAccountEmailDeliveryUser(CamelCaseBaseModel):
+    id: str
+    recipe_user_id: Optional[RecipeUserId]
+    email: str
 
+
+class TypeWebauthnRecoverAccountEmailDeliveryInput(CamelCaseBaseModel):
     type: Literal["RECOVER_ACCOUNT"]
-    user: User
+    user: WebauthnRecoverAccountEmailDeliveryUser
     recover_account_link: str
     tenant_id: str
 
@@ -76,8 +78,8 @@ TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 
 class APIOptions(CamelCaseBaseModel):
     recipe_implementation: RecipeInterface
-    appInfo: AppInfo
-    config: WebauthnConfig
+    app_info: AppInfo
+    config: NormalisedWebauthnConfig
     recipe_id: str
     is_in_serverless_env: bool
     req: BaseRequest

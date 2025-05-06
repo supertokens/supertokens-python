@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig,
+    EmailDeliveryConfigWithService,
+)
 from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.types.response import CamelCaseBaseModel
@@ -10,7 +14,10 @@ from supertokens_python.types.response import CamelCaseBaseModel
 # These imports are only required for type-hints, not for runtime use
 # Prevents circular import errors
 if TYPE_CHECKING:
-    from supertokens_python.recipe.webauthn.interfaces.api import ApiInterface
+    from supertokens_python.recipe.webauthn.interfaces.api import (
+        ApiInterface,
+        TypeWebauthnEmailDeliveryInput,
+    )
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""
@@ -33,9 +40,38 @@ class GetRelyingPartyId(Protocol):
 
 
 @runtime_checkable
+class NormalisedGetRelyingPartyId(Protocol):
+    """
+    Callable signature for `WebauthnNormalisedConfig.get_relying_party_id`.
+    """
+
+    async def __call__(
+        self,
+        *,
+        tenant_id: str,
+        request: Optional[BaseRequest],
+        user_context: UserContext,
+    ) -> str: ...
+
+
+@runtime_checkable
 class GetRelyingPartyName(Protocol):
     """
     Callable signature for `WebauthnConfig.get_relying_party_name`.
+    """
+
+    async def __call__(
+        self,
+        *,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -> str: ...
+
+
+@runtime_checkable
+class NormalisedGetRelyingPartyName(Protocol):
+    """
+    Callable signature for `WebauthnNormalisedConfig.get_relying_party_name`.
     """
 
     async def __call__(
@@ -63,22 +99,57 @@ class GetOrigin(Protocol):
 
 
 @runtime_checkable
-class GetEmailDeliveryConfig(Protocol):
+class NormalisedGetOrigin(Protocol):
     """
-    Callable signature for `WebauthnConfig.get_email_delivery_config`.
+    Callable signature for `WebauthnNormalisedConfig.get_origin`.
     """
 
-    # TODO: implement return types
+    async def __call__(
+        self,
+        *,
+        tenant_id: str,
+        request: BaseRequest,
+        user_context: UserContext,
+    ) -> str: ...
+
+
+@runtime_checkable
+class GetEmailDeliveryConfig(Protocol):
+    """
+    Callable signature for `WebauthnNormalisedConfig.get_email_delivery_config`.
+    """
+
     async def __call__(
         self, is_in_serverless_env: bool
-    ):  # -> EmailDeliveryTypeInputWithService<TypeWebauthnEmailDeliveryInput>
-        ...
+    ) -> EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]: ...
+
+
+@runtime_checkable
+class NormalisedGetEmailDeliveryConfig(Protocol):
+    """
+    Callable signature for `WebauthnNormalisedConfig.get_email_delivery_config`.
+    """
+
+    async def __call__(
+        self, is_in_serverless_env: bool
+    ) -> EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]: ...
 
 
 @runtime_checkable
 class ValidateEmailAddress(Protocol):
     """
     Callable signature for `WebauthnConfig.validate_email_address`.
+    """
+
+    async def __call__(
+        self, *, email: str, tenant_id: str, user_context: UserContext
+    ) -> Optional[str]: ...
+
+
+@runtime_checkable
+class NormalisedValidateEmailAddress(Protocol):
+    """
+    Callable signature for `WebauthnNormalisedConfig.validate_email_address`.
     """
 
     async def __call__(
@@ -118,9 +189,20 @@ class OverrideConfig:
 
 # TODO: Figure out if we want/need pydantic here. Validation errors might be tough to resolve
 class WebauthnConfig(CamelCaseBaseModel):
-    get_relying_party_id: GetRelyingPartyId
-    get_relying_party_name: GetRelyingPartyName
-    get_origin: GetOrigin
-    get_email_delivery_config: GetEmailDeliveryConfig
-    validate_email_address: ValidateEmailAddress
+    get_relying_party_id: Optional[Union[str, GetRelyingPartyId]]
+    get_relying_party_name: Optional[Union[str, GetRelyingPartyName]]
+    get_origin: Optional[GetOrigin]
+    email_delivery: Optional[
+        EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]
+    ]
+    validate_email_address: Optional[ValidateEmailAddress]
+    override: Optional[OverrideConfig]
+
+
+class NormalisedWebauthnConfig(CamelCaseBaseModel):
+    get_relying_party_id: NormalisedGetRelyingPartyId
+    get_relying_party_name: NormalisedGetRelyingPartyName
+    get_origin: NormalisedGetOrigin
+    get_email_delivery_config: NormalisedGetEmailDeliveryConfig
+    validate_email_address: NormalisedValidateEmailAddress
     override: OverrideConfig

@@ -27,11 +27,11 @@ from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import Supertokens
+from supertokens_python.types.base import AccountInfoInput
 
 from .interfaces import RecipeInterface
 from .recipe_implementation import RecipeImplementation
 from .types import (
-    AccountInfo,
     AccountInfoWithRecipeId,
     AccountInfoWithRecipeIdAndUserId,
     InputOverrideConfig,
@@ -210,7 +210,15 @@ class AccountLinkingRecipe(RecipeModule):
         # Then, we try and find a primary user based on the email / phone number / third party ID.
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=user.login_methods[0],
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don't need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user "will identify the same user" which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -266,7 +274,15 @@ class AccountLinkingRecipe(RecipeModule):
         # Then, we try and find matching users based on the email / phone number / third party ID.
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=user.login_methods[0],
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don't need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user "will identify the same user" which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -346,7 +362,15 @@ class AccountLinkingRecipe(RecipeModule):
 
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=account_info,
+            account_info=AccountInfoInput(
+                email=account_info.email,
+                phone_number=account_info.phone_number,
+                third_party=account_info.third_party,
+                # We don't need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user "will identify the same user" which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -548,7 +572,7 @@ class AccountLinkingRecipe(RecipeModule):
             existing_users_with_new_email = (
                 await self.recipe_implementation.list_users_by_account_info(
                     tenant_id=tenant_id,
-                    account_info=AccountInfo(email=new_email),
+                    account_info=AccountInfoInput(email=new_email),
                     do_union_of_account_info=False,
                     user_context=user_context,
                 )

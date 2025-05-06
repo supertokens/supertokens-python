@@ -23,6 +23,11 @@ import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse  # type: ignore
 from typing_extensions import Literal
 
+from supertokens_python.recipe.webauthn.types.base import (
+    WebauthnInfo,
+    WebauthnInfoInput,
+)
+
 _T = TypeVar("_T")
 
 if TYPE_CHECKING:
@@ -48,10 +53,12 @@ class AccountInfo:
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
         self.email = email
         self.phone_number = phone_number
         self.third_party = third_party
+        self.webauthn = webauthn
 
     def to_json(self) -> Dict[str, Any]:
         json_repo: Dict[str, Any] = {}
@@ -63,6 +70,41 @@ class AccountInfo:
             json_repo["thirdParty"] = {
                 "id": self.third_party.id,
                 "userId": self.third_party.user_id,
+            }
+        if self.webauthn is not None:
+            json_repo["webauthn"] = {
+                "credentialIds": self.webauthn.credential_ids,
+            }
+        return json_repo
+
+
+class AccountInfoInput:
+    def __init__(
+        self,
+        email: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfoInput] = None,
+    ):
+        self.email = email
+        self.phone_number = phone_number
+        self.third_party = third_party
+        self.webauthn = webauthn
+
+    def to_json(self) -> Dict[str, Any]:
+        json_repo: Dict[str, Any] = {}
+        if self.email is not None:
+            json_repo["email"] = self.email
+        if self.phone_number is not None:
+            json_repo["phoneNumber"] = self.phone_number
+        if self.third_party is not None:
+            json_repo["thirdParty"] = {
+                "id": self.third_party.id,
+                "userId": self.third_party.user_id,
+            }
+        if self.webauthn is not None:
+            json_repo["webauthn"] = {
+                "credentialId": self.webauthn.credential_id,
             }
         return json_repo
 
@@ -76,10 +118,11 @@ class LoginMethod(AccountInfo):
         email: Union[str, None],
         phone_number: Union[str, None],
         third_party: Union[ThirdPartyInfo, None],
+        webauthn: Optional[WebauthnInfo],
         time_joined: int,
         verified: bool,
     ):
-        super().__init__(email, phone_number, third_party)
+        super().__init__(email, phone_number, third_party, webauthn=webauthn)
         self.recipe_id: Literal[
             "emailpassword", "thirdparty", "passwordless", "webauthn"
         ] = recipe_id
@@ -135,6 +178,15 @@ class LoginMethod(AccountInfo):
             and self.third_party.user_id.strip() == third_party.user_id.strip()
         )
 
+    def has_same_webauthn_info_as(self, webauthn: Optional[WebauthnInfoInput]) -> bool:
+        if webauthn is None:
+            return False
+
+        return (
+            self.webauthn is not None
+            and webauthn.credential_id in self.webauthn.credential_ids
+        )
+
     def to_json(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {
             "recipeId": self.recipe_id,
@@ -149,6 +201,8 @@ class LoginMethod(AccountInfo):
             result["phoneNumber"] = self.phone_number
         if self.third_party is not None:
             result["thirdParty"] = self.third_party.to_json()
+        if self.webauthn is not None:
+            result["webauthn"] = self.webauthn.to_json()
         return result
 
     @staticmethod
@@ -172,6 +226,11 @@ class LoginMethod(AccountInfo):
                 if "thirdParty" in json and json["thirdParty"] is not None
                 else None
             ),
+            webauthn=(
+                WebauthnInfo(credential_ids=json["webauthn"]["credentialIds"])
+                if "webauthn" in json and json["webauthn"] is not None
+                else None
+            ),
             time_joined=json["timeJoined"],
             verified=json["verified"],
         )
@@ -186,6 +245,7 @@ class User:
         emails: List[str],
         phone_numbers: List[str],
         third_party: List[ThirdPartyInfo],
+        webauthn: List[WebauthnInfo],
         login_methods: List[LoginMethod],
         time_joined: int,
     ):
@@ -195,6 +255,7 @@ class User:
         self.emails = emails
         self.phone_numbers = phone_numbers
         self.third_party = third_party
+        self.webauthn = webauthn
         self.login_methods = login_methods
         self.time_joined = time_joined
 
@@ -207,6 +268,7 @@ class User:
                 and self.emails == other.emails
                 and self.phone_numbers == other.phone_numbers
                 and self.third_party == other.third_party
+                and self.webauthn == other.webauthn
                 and self.login_methods == other.login_methods
                 and self.time_joined == other.time_joined
             )
@@ -220,6 +282,7 @@ class User:
             "emails": self.emails,
             "phoneNumbers": self.phone_numbers,
             "thirdParty": [tp.to_json() for tp in self.third_party],
+            "webauthn": [w.to_json() for w in self.webauthn],
             "loginMethods": [lm.to_json() for lm in self.login_methods],
             "timeJoined": self.time_joined,
         }
@@ -235,6 +298,7 @@ class User:
             emails=json["emails"],
             phone_numbers=json["phoneNumbers"],
             third_party=[TPI.from_json(tp) for tp in json["thirdParty"]],
+            webauthn=[WebauthnInfo.from_json(w) for w in json["webauthn"]],
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )

@@ -21,6 +21,7 @@ from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
+from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
 from supertokens_python.types import AccountInfo
 
 if TYPE_CHECKING:
@@ -40,8 +41,9 @@ class AccountInfoWithRecipeId(AccountInfo):
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(email, phone_number, third_party)
+        super().__init__(email, phone_number, third_party, webauthn=webauthn)
         self.recipe_id: Literal[
             "emailpassword", "thirdparty", "passwordless", "webauthn"
         ] = recipe_id
@@ -62,8 +64,9 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(recipe_id, email, phone_number, third_party)
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
         self.recipe_id: Literal[
@@ -81,6 +84,7 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
             email=login_method.email,
             phone_number=login_method.phone_number,
             third_party=login_method.third_party,
+            webauthn=login_method.webauthn,
         )
 
 
@@ -92,8 +96,9 @@ class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(recipe_id, email, phone_number, third_party)
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
         self.recipe_user_id = recipe_user_id
 
     @staticmethod
@@ -109,6 +114,7 @@ class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
             email=account_info.email,
             phone_number=account_info.phone_number,
             third_party=account_info.third_party,
+            webauthn=account_info.webauthn,
             recipe_user_id=(
                 account_info.recipe_user_id if isinstance(account_info, LM) else None
             ),

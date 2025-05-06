@@ -19,6 +19,7 @@ from typing_extensions import Literal
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.base import AccountInfoInput
 
 from .interfaces import (
     CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
@@ -39,7 +40,7 @@ from .interfaces import (
     RecipeInterface,
     UnlinkAccountOkResult,
 )
-from .types import AccountInfo, AccountLinkingConfig, RecipeLevelUser
+from .types import AccountLinkingConfig, RecipeLevelUser
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -327,7 +328,7 @@ class RecipeImplementation(RecipeInterface):
     async def list_users_by_account_info(
         self,
         tenant_id: str,
-        account_info: AccountInfo,
+        account_info: AccountInfoInput,
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
     ) -> List[User]:
@@ -342,6 +343,9 @@ class RecipeImplementation(RecipeInterface):
         if account_info.third_party:
             params["thirdPartyId"] = account_info.third_party.id
             params["thirdPartyUserId"] = account_info.third_party.user_id
+
+        if account_info.webauthn:
+            params["webauthnCredentialId"] = account_info.webauthn.credential_id
 
         response = await self.querier.send_get_request(
             NormalisedURLPath(f"/{tenant_id or 'public'}/users/by-accountinfo"),

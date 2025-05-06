@@ -58,13 +58,16 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     VerifyCredentialsResponse,
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
-from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.types.response import OkResponseBaseModel
 
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
-        self, *, querier: Querier, get_webauthn_config: Callable[[], WebauthnConfig]
+        self,
+        *,
+        querier: Querier,
+        get_webauthn_config: Callable[[], NormalisedWebauthnConfig],
     ):
         self.querier = querier
         self.get_webauthn_config = get_webauthn_config

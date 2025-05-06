@@ -26,7 +26,8 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.types import AccountInfo, User
+from supertokens_python.types import User
+from supertokens_python.types.base import AccountInfoInput
 
 
 async def get_users_oldest_first(
@@ -159,7 +160,7 @@ async def update_or_delete_user_id_mapping_info(
 
 async def list_users_by_account_info(
     tenant_id: str,
-    account_info: AccountInfo,
+    account_info: AccountInfoInput,
     do_union_of_account_info: bool = False,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> List[User]:

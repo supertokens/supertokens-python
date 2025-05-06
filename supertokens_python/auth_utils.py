@@ -30,13 +30,13 @@ from supertokens_python.recipe.session.asyncio import create_new_session, get_se
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
-from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
+from supertokens_python.recipe.webauthn.types.base import WebauthnInfoInput
 from supertokens_python.types import (
-    AccountInfo,
     LoginMethod,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.types.response import StatusReasonResponseBaseModel
 from supertokens_python.utils import log_debug_message
 
@@ -287,7 +287,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
     email: Optional[str],
     phone_number: Optional[str],
     third_party: Optional[ThirdPartyInfo],
-    webauthn: Optional[WebauthnInfo],
+    webauthn: Optional[WebauthnInfoInput],
     tenant_id: str,
     session: Optional[SessionContainer],
     check_credentials_on_tenant: Callable[[str], Awaitable[bool]],
@@ -305,8 +305,11 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
         )
         existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(
-                email=email, phone_number=phone_number, third_party=third_party
+            account_info=AccountInfoInput(
+                email=email,
+                phone_number=phone_number,
+                third_party=third_party,
+                webauthn=webauthn,
             ),
             do_union_of_account_info=True,
             user_context=user_context,
@@ -326,6 +329,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                             (email is not None and lm.has_same_email_as(email))
                             or lm.has_same_phone_number_as(phone_number)
                             or lm.has_same_third_party_info_as(third_party)
+                            or lm.has_same_webauthn_info_as(webauthn)
                         )
                     ),
                     None,

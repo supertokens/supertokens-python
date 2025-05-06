@@ -18,9 +18,10 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
+from supertokens_python.types.base import AccountInfoInput
+
 if TYPE_CHECKING:
     from supertokens_python.types import (
-        AccountInfo,
         RecipeUserId,
         User,
     )
@@ -104,7 +105,7 @@ class RecipeInterface(ABC):
     async def list_users_by_account_info(
         self,
         tenant_id: str,
-        account_info: AccountInfo,
+        account_info: AccountInfoInput,
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
     ) -> List[User]:

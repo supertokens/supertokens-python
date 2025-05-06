@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from typing_extensions import TypeAlias
 
@@ -12,4 +12,8 @@ UserContext: TypeAlias = Dict[str, Any]
 
 
 class WebauthnInfo(CamelCaseBaseModel):
+    credential_ids: List[str]
+
+
+class WebauthnInfoInput(CamelCaseBaseModel):
     credential_id: str
