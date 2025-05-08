@@ -12,7 +12,6 @@ from supertokens_python.recipe.webauthn.emaildelivery.services.backward_compatib
 from supertokens_python.recipe.webauthn.interfaces.api import (
     TypeWebauthnEmailDeliveryInput,
 )
-from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import (
     GetOrigin,
@@ -31,8 +30,11 @@ from supertokens_python.supertokens import AppInfo
 
 
 def validate_and_normalise_user_input(
-    _: WebauthnRecipe, app_info: AppInfo, config: WebauthnConfig
+    app_info: AppInfo, config: Optional[WebauthnConfig]
 ) -> NormalisedWebauthnConfig:
+    if config is None:
+        config = WebauthnConfig()
+
     get_relying_party_id = validate_and_normalise_relying_party_id_config(
         app_info, config.get_relying_party_id
     )
@@ -52,7 +54,7 @@ def validate_and_normalise_user_input(
             apis=config.override.apis,
         )
 
-    async def get_email_delivery_config(
+    def get_email_delivery_config(
         is_in_serverless_env: bool,
     ) -> EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]:
         if config.email_delivery is not None and config.email_delivery.service:

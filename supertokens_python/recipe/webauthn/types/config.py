@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
+from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
@@ -130,7 +131,7 @@ class NormalisedGetEmailDeliveryConfig(Protocol):
     Callable signature for `WebauthnNormalisedConfig.get_email_delivery_config`.
     """
 
-    async def __call__(
+    def __call__(
         self, is_in_serverless_env: bool
     ) -> EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]: ...
 
@@ -163,7 +164,7 @@ class InterfaceOverride(Protocol[InterfaceType]):
     Callable signature for `WebauthnConfig.override.*`.
     """
 
-    async def __call__(
+    def __call__(
         self,
         original_implementation: InterfaceType,
     ) -> InterfaceType: ...
@@ -177,7 +178,7 @@ class OverrideConfig:
     functions: Optional[InterfaceOverride[RecipeInterface]]
     apis: Optional[InterfaceOverride[ApiInterface]]
 
-    async def __init__(
+    def __init__(
         self,
         *,
         functions: Optional[InterfaceOverride[RecipeInterface]] = None,
@@ -189,14 +190,14 @@ class OverrideConfig:
 
 # TODO: Figure out if we want/need pydantic here. Validation errors might be tough to resolve
 class WebauthnConfig(CamelCaseBaseModel):
-    get_relying_party_id: Optional[Union[str, GetRelyingPartyId]]
-    get_relying_party_name: Optional[Union[str, GetRelyingPartyName]]
-    get_origin: Optional[GetOrigin]
+    get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
+    get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
+    get_origin: Optional[GetOrigin] = None
     email_delivery: Optional[
         EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]
-    ]
-    validate_email_address: Optional[ValidateEmailAddress]
-    override: Optional[OverrideConfig]
+    ] = None
+    validate_email_address: Optional[ValidateEmailAddress] = None
+    override: Optional[OverrideConfig] = None
 
 
 class NormalisedWebauthnConfig(CamelCaseBaseModel):
@@ -206,3 +207,9 @@ class NormalisedWebauthnConfig(CamelCaseBaseModel):
     get_email_delivery_config: NormalisedGetEmailDeliveryConfig
     validate_email_address: NormalisedValidateEmailAddress
     override: OverrideConfig
+
+
+class WebauthnIngredients(CamelCaseBaseModel):
+    email_delivery: Optional[
+        EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
+    ] = None
