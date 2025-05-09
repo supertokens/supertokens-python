@@ -298,6 +298,7 @@ class WebauthnRecipe(RecipeModule):
                     config=config,
                     ingredients=WebauthnIngredients(email_delivery=None),
                 )
+                return WebauthnRecipe.__instance
             else:
                 raise_general_exception(
                     "Webauthn recipe has already been initialised. Please check your code for bugs."
