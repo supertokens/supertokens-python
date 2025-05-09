@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
@@ -63,10 +61,15 @@ from supertokens_python.types.base import RecipeUserId, User
 
 if TYPE_CHECKING:
     from supertokens_python.auth_utils import is_fake_email
+    from supertokens_python.recipe.webauthn.interfaces.api import (
+        ApiInterface,
+        APIOptions,
+        TypeWebauthnEmailDeliveryInput,
+    )
 
 
 class WebauthnRecipe(RecipeModule):
-    __instance: Optional[WebauthnRecipe] = None
+    __instance: Optional["WebauthnRecipe"] = None
     recipe_id = "webauthn"
 
     config: NormalisedWebauthnConfig
@@ -277,7 +280,7 @@ class WebauthnRecipe(RecipeModule):
         PostSTInitCallbacks.add_post_init_callback(callback)
 
     @staticmethod
-    def get_instance() -> WebauthnRecipe:
+    def get_instance() -> "WebauthnRecipe":
         if WebauthnRecipe.__instance is not None:
             return WebauthnRecipe.__instance
         raise_general_exception(
@@ -285,7 +288,7 @@ class WebauthnRecipe(RecipeModule):
         )
 
     @staticmethod
-    def get_instance_optional() -> Optional[WebauthnRecipe]:
+    def get_instance_optional() -> Optional["WebauthnRecipe"]:
         return WebauthnRecipe.__instance
 
     @staticmethod
@@ -370,6 +373,7 @@ class WebauthnRecipe(RecipeModule):
         response: BaseResponse,
         user_context: UserContext,
     ) -> Optional[BaseResponse]:
+        APIOptions.model_rebuild()
         options = APIOptions(
             config=self.config,
             recipe_id=self.get_recipe_id(),

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
