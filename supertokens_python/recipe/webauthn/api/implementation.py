@@ -1,14 +1,8 @@
-from typing import Dict, Optional, Union, cast
+from typing import TYPE_CHECKING, Dict, Optional, Union, cast
 
 from typing_extensions import Unpack
 
 from supertokens_python.asyncio import get_user
-from supertokens_python.auth_utils import (
-    get_authenticating_user_and_add_to_current_tenant_if_required,
-    is_fake_email,
-    post_auth_checks,
-    pre_auth_checks,
-)
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import (
     AccountInfoWithRecipeId,
@@ -77,6 +71,14 @@ from supertokens_python.types.response import (
     OkResponseBaseModel,
 )
 from supertokens_python.utils import log_debug_message
+
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import (
+        get_authenticating_user_and_add_to_current_tenant_if_required,
+        is_fake_email,
+        post_auth_checks,
+        pre_auth_checks,
+    )
 
 
 # TODO: Move to a common ST module

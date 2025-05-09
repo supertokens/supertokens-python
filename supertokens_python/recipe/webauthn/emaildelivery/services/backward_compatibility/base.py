@@ -47,11 +47,9 @@ async def create_and_send_email_using_supertokens_service(
 class BackwardCompatibilityService(
     EmailDeliveryInterface[TypeWebauthnEmailDeliveryInput]
 ):
-    _is_in_serverless_env: bool
     _app_info: AppInfo
 
-    def __init__(self, app_info: AppInfo, is_in_serverless_env: bool):
-        self._is_in_serverless_env = is_in_serverless_env
+    def __init__(self, app_info: AppInfo):
         self._app_info = app_info
 
     async def send_email(

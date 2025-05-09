@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -187,7 +189,11 @@ class CustomWebwuthnEmailService(
         user_context: Dict[str, Any],
     ):
         save_webauthn_token(
-            user={"email": user_context["email"], "recover_account_link": "", "token": ""},
+            user={
+                "email": user_context["email"],
+                "recover_account_link": "",
+                "token": "",
+            },
             recover_account_link=template_vars.recover_account_link,
         )
 

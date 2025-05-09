@@ -1,6 +1,5 @@
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.recipe.webauthn.interfaces.api import (
@@ -14,6 +13,9 @@ from supertokens_python.utils import (
     get_normalised_should_try_linking_with_session_user_flag,
     send_200_response,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 
 
 async def sign_in_api(

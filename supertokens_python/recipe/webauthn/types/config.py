@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
+from typing import Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -8,17 +8,13 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
 )
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    ApiInterface,
+    TypeWebauthnEmailDeliveryInput,
+)
 from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.types.response import CamelCaseBaseModel
-
-# These imports are only required for type-hints, not for runtime use
-# Prevents circular import errors
-if TYPE_CHECKING:
-    from supertokens_python.recipe.webauthn.interfaces.api import (
-        ApiInterface,
-        TypeWebauthnEmailDeliveryInput,
-    )
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""
@@ -120,9 +116,7 @@ class GetEmailDeliveryConfig(Protocol):
     Callable signature for `WebauthnNormalisedConfig.get_email_delivery_config`.
     """
 
-    async def __call__(
-        self, is_in_serverless_env: bool
-    ) -> EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]: ...
+    async def __call__(self) -> EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]: ...
 
 
 @runtime_checkable
@@ -132,7 +126,7 @@ class NormalisedGetEmailDeliveryConfig(Protocol):
     """
 
     def __call__(
-        self, is_in_serverless_env: bool
+        self,
     ) -> EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]: ...
 
 

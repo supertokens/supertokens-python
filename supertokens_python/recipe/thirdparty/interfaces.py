@@ -21,10 +21,10 @@ from ...types.response import APIResponse, GeneralErrorResponse
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
-    from supertokens_python.auth_utils import LinkingToSessionUserFailedError
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
     from .types import RawUserInfoFromProvider
     from .utils import ThirdPartyConfig

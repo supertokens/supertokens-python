@@ -11,14 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse
 
-from supertokens_python.auth_utils import (
-    load_session_in_auth_api_if_needed,  # type: ignore
-)
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.passwordless.utils import (
@@ -31,6 +28,11 @@ from supertokens_python.utils import (
     get_normalised_should_try_linking_with_session_user_flag,
     send_200_response,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import (
+        load_session_in_auth_api_if_needed,  # type: ignore
+    )
 
 
 async def create_code(

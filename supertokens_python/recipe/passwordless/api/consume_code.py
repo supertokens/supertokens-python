@@ -11,9 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface,
@@ -25,6 +24,9 @@ from supertokens_python.utils import (
     get_normalised_should_try_linking_with_session_user_flag,
     send_200_response,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 
 
 async def consume_code(

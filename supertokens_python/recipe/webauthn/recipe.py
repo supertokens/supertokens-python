@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
-from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
@@ -62,6 +61,9 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types.base import RecipeUserId, User
 
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import is_fake_email
+
 
 class WebauthnRecipe(RecipeModule):
     __instance: Optional[WebauthnRecipe] = None
@@ -70,19 +72,16 @@ class WebauthnRecipe(RecipeModule):
     config: NormalisedWebauthnConfig
     recipe_implementation: RecipeInterface
     api_implementation: ApiInterface
-    is_in_serverless_env: bool
     email_delivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
 
     def __init__(
         self,
         recipe_id: str,
         app_info: AppInfo,
-        is_in_serverless_env: bool,
         config: Optional[WebauthnConfig],
         ingredients: WebauthnIngredients,
     ):
         super().__init__(recipe_id=recipe_id, app_info=app_info)
-        self.is_in_serverless_env = is_in_serverless_env
         self.config = validate_and_normalise_user_input(
             app_info=app_info, config=config
         )
@@ -110,9 +109,7 @@ class WebauthnRecipe(RecipeModule):
 
         if ingredients.email_delivery is None:
             self.email_delivery = EmailDeliveryIngredient(
-                config=self.config.get_email_delivery_config(
-                    is_in_serverless_env=is_in_serverless_env
-                )
+                config=self.config.get_email_delivery_config()
             )
         else:
             self.email_delivery = ingredients.email_delivery
@@ -293,12 +290,11 @@ class WebauthnRecipe(RecipeModule):
 
     @staticmethod
     def init(config: Optional[WebauthnConfig]):
-        def func(app_info: AppInfo, is_in_serverless_env: bool):
+        def func(app_info: AppInfo):
             if WebauthnRecipe.__instance is None:
                 WebauthnRecipe.__instance = WebauthnRecipe(
                     recipe_id=WebauthnRecipe.recipe_id,
                     app_info=app_info,
-                    is_in_serverless_env=is_in_serverless_env,
                     config=config,
                     ingredients=WebauthnIngredients(email_delivery=None),
                 )
@@ -376,7 +372,6 @@ class WebauthnRecipe(RecipeModule):
         options = APIOptions(
             config=self.config,
             recipe_id=self.get_recipe_id(),
-            is_in_serverless_env=self.is_in_serverless_env,
             recipe_implementation=self.recipe_implementation,
             req=request,
             res=response,

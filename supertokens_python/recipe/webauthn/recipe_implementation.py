@@ -1,11 +1,8 @@
-from typing import Callable, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Callable, List, Optional, Union, cast
 
 from typing_extensions import Unpack
 
 from supertokens_python.asyncio import get_user
-from supertokens_python.auth_utils import (
-    link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
-)
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
@@ -60,6 +57,11 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.types.response import OkResponseBaseModel
+
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import (
+        link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
+    )
 
 
 class RecipeImplementation(RecipeInterface):

@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
     SignUpPostOkResult,
@@ -26,6 +25,7 @@ from ..exceptions import raise_form_field_exception
 from ..types import ErrorFormField
 
 if TYPE_CHECKING:
+    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
     from supertokens_python.recipe.emailpassword.interfaces import (
         APIInterface,
         APIOptions,

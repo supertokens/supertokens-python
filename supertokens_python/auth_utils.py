@@ -36,33 +36,11 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.types.base import AccountInfoInput
-from supertokens_python.types.response import StatusReasonResponseBaseModel
 from supertokens_python.utils import log_debug_message
 
 from .asyncio import get_user
-
-
-class LinkingToSessionUserFailedError(
-    StatusReasonResponseBaseModel[
-        Literal["LINKING_TO_SESSION_USER_FAILED"],
-        Literal[
-            "EMAIL_VERIFICATION_REQUIRED",
-            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "INPUT_USER_IS_NOT_A_PRIMARY_USER",
-        ],
-    ]
-):
-    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
-    reason: Literal[
-        "EMAIL_VERIFICATION_REQUIRED",
-        "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        "INPUT_USER_IS_NOT_A_PRIMARY_USER",
-    ]
 
 
 class OkResponse:

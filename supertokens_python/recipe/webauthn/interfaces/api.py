@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List, Literal, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired, Unpack
 
@@ -23,7 +25,6 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     UserVerification,
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
-from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.response import (
@@ -32,6 +33,9 @@ from supertokens_python.types.response import (
     OkResponseBaseModel,
     StatusReasonResponseBaseModel,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 
 
 class SignUpNotAllowedErrorResponse(
@@ -81,7 +85,6 @@ class APIOptions(CamelCaseBaseModel):
     app_info: AppInfo
     config: NormalisedWebauthnConfig
     recipe_id: str
-    is_in_serverless_env: bool
     req: BaseRequest
     res: BaseResponse
     email_delivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]

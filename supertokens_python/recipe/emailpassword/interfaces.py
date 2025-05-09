@@ -16,9 +16,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 from ...supertokens import AppInfo
 from ...types import (

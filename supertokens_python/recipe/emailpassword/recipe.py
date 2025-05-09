@@ -16,7 +16,6 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -45,6 +44,7 @@ from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
+    from supertokens_python.auth_utils import is_fake_email
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo

@@ -23,15 +23,14 @@ import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse  # type: ignore
 from typing_extensions import Literal
 
-from supertokens_python.recipe.webauthn.types.base import (
-    WebauthnInfo,
-    WebauthnInfoInput,
-)
-
 _T = TypeVar("_T")
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
+    from supertokens_python.recipe.webauthn.types.base import (
+        WebauthnInfo,
+        WebauthnInfoInput,
+    )
 
 
 class RecipeUserId:

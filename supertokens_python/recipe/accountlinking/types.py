@@ -21,12 +21,12 @@ from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
-from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
 from supertokens_python.types import AccountInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
+    from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
     from supertokens_python.types import (
         LoginMethod,
         RecipeUserId,

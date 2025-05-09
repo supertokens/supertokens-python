@@ -11,20 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from supertokens_python.asyncio import get_user
-from supertokens_python.auth_utils import (
-    OkResponse,
-    PostAuthChecksOkResponse,
-    SignInNotAllowedResponse,
-    SignUpNotAllowedResponse,
-    check_auth_type_and_linking_status,
-    filter_out_invalid_first_factors_or_throw_if_all_are_invalid,
-    get_authenticating_user_and_add_to_current_tenant_if_required,
-    post_auth_checks,
-    pre_auth_checks,
-)
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import AccountInfoWithRecipeId
@@ -75,6 +64,19 @@ from supertokens_python.types.response import GeneralErrorResponse
 
 from ...emailverification import EmailVerificationRecipe
 from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult
+
+if TYPE_CHECKING:
+    from supertokens_python.auth_utils import (
+        OkResponse,
+        PostAuthChecksOkResponse,
+        SignInNotAllowedResponse,
+        SignUpNotAllowedResponse,
+        check_auth_type_and_linking_status,
+        filter_out_invalid_first_factors_or_throw_if_all_are_invalid,
+        get_authenticating_user_and_add_to_current_tenant_if_required,
+        post_auth_checks,
+        pre_auth_checks,
+    )
 
 
 class PasswordlessUserResult:

@@ -23,7 +23,6 @@ from mysite.utils import custom_init
 from mysite.utils import setup_core_app as setup_core_app_impl
 from supertokens_python import convert_to_recipe_user_id
 from supertokens_python.asyncio import get_user
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
@@ -70,6 +69,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.types.base import AccountInfoInput
 
 # Load the required functions from the WASM binary
@@ -505,12 +505,12 @@ def get_webauthn_token(request: HttpRequest):
 
 
 def create_credential(
-        register_options: Dict[str, Any],
-        rp_id: str,
-        rp_name: str,
-        origin: str,
-        user_not_present: bool = True,
-        user_not_verified: bool = True,
+    register_options: Dict[str, Any],
+    rp_id: str,
+    rp_name: str,
+    origin: str,
+    user_not_present: bool = True,
+    user_not_verified: bool = True,
 ):
     register_options_str = json.dumps(register_options)
     result = createCredential(  # type: ignore
@@ -531,14 +531,15 @@ def create_credential(
     except Exception:
         raise Exception("Failed to parse credential")
 
+
 def create_and_assert_credential(
-        register_options: Dict[str, Any],
-        sign_in_options: Dict[str, Any],
-        rp_id: str,
-        rp_name: str,
-        origin: str,
-        user_not_present: bool = True,
-        user_not_verified: bool = True,
+    register_options: Dict[str, Any],
+    sign_in_options: Dict[str, Any],
+    rp_id: str,
+    rp_name: str,
+    origin: str,
+    user_not_present: bool = True,
+    user_not_verified: bool = True,
 ):
     register_options_str = json.dumps(register_options)
     sign_in_options_str = json.dumps(sign_in_options)
@@ -557,9 +558,13 @@ def create_and_assert_credential(
 
     try:
         parsed_result: Dict[str, Any] = json.loads(cast(str, result))
-        return {"attestation": parsed_result["attestation"], "assertion": parsed_result["assertion"]}
+        return {
+            "attestation": parsed_result["attestation"],
+            "assertion": parsed_result["assertion"],
+        }
     except Exception:
         raise Exception("Failed to parse result")
+
 
 def webauthn_create_and_assert_credential(request: HttpRequest):
     body = json.loads(request.body)
@@ -589,11 +594,11 @@ def webauthn_create_credential(request: HttpRequest):
     try:
         credential = create_credential(  # type: ignore
             register_options=body["registerOptionsResponse"],
-                rp_id=body["rpId"],
-                rp_name=body["rpName"],
-                origin=body["origin"],
-                user_not_present=False,
-                user_not_verified=False,
+            rp_id=body["rpId"],
+            rp_name=body["rpName"],
+            origin=body["origin"],
+            user_not_present=False,
+            user_not_verified=False,
         )
         return JsonResponse({"credential": credential})
     except Exception as err:

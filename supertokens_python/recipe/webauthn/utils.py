@@ -54,19 +54,16 @@ def validate_and_normalise_user_input(
             apis=config.override.apis,
         )
 
-    def get_email_delivery_config(
-        is_in_serverless_env: bool,
-    ) -> EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]:
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[
+        TypeWebauthnEmailDeliveryInput
+    ]:
         if config.email_delivery is not None and config.email_delivery.service:
             return EmailDeliveryConfigWithService(
                 service=config.email_delivery.service,
                 override=config.email_delivery.override,
             )
 
-        email_service = BackwardCompatibilityService(
-            app_info=app_info,
-            is_in_serverless_env=False,
-        )
+        email_service = BackwardCompatibilityService(app_info=app_info)
         if (
             config.email_delivery is not None
             and config.email_delivery.override is not None
