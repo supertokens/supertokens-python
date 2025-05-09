@@ -13,10 +13,12 @@
 # under the License.
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
+# Python loader for WASM. Allows native imports
+import wasmtime.loader  # type: ignore  # noqa: F401
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from mysite.store import get_codes, get_url_with_token
+from mysite.store import get_codes, get_url_with_token, webauthn_store
 from mysite.utils import custom_init
 from mysite.utils import setup_core_app as setup_core_app_impl
 from supertokens_python import convert_to_recipe_user_id
@@ -67,7 +69,11 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
-from supertokens_python.types import AccountInfo, RecipeUserId
+from supertokens_python.types import RecipeUserId
+from supertokens_python.types.base import AccountInfoInput
+
+# Load the required functions from the WASM binary
+from ..webauthn import createAndAssertCredential, createCredential  # type: ignore
 
 mode = os.environ.get("APP_MODE", "asgi")
 
@@ -142,7 +148,7 @@ if mode == "asgi":
 
         body = json.loads(request.body)
         user = await list_users_by_account_info(
-            "public", AccountInfo(email=body["email"])
+            "public", AccountInfoInput(email=body["email"])
         )
         if len(user) == 0:
             raise Exception("Should not come here")
@@ -194,7 +200,9 @@ else:
         from supertokens_python.syncio import delete_user, list_users_by_account_info
 
         body = json.loads(request.body)
-        user = list_users_by_account_info("public", AccountInfo(email=body["email"]))
+        user = list_users_by_account_info(
+            "public", AccountInfoInput(email=body["email"])
+        )
         if len(user) == 0:
             raise Exception("Should not come here")
         delete_user(user[0].id)
@@ -482,3 +490,111 @@ def setup_st(request: HttpRequest):
 
     custom_init(**body)
     return HttpResponse("")
+
+
+def get_webauthn_token(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    webauthn = webauthn_store.get(body["email"])
+    if webauthn is None:
+        return JsonResponse({"error": "Webauthn not found"}, status=404)
+
+    return JsonResponse({"token": webauthn["token"]})
+
+
+def create_credential(
+        register_options: Dict[str, Any],
+        rp_id: str,
+        rp_name: str,
+        origin: str,
+        user_not_present: bool = True,
+        user_not_verified: bool = True,
+):
+    register_options_str = json.dumps(register_options)
+    result = createCredential(  # type: ignore
+        register_options_str,
+        rp_id,
+        rp_name,
+        origin,
+        user_not_present,
+        user_not_verified,
+    )
+
+    if result is None:
+        raise Exception("Failed to create credential")
+
+    try:
+        credential = json.loads(cast(str, result))
+        return credential
+    except Exception:
+        raise Exception("Failed to parse credential")
+
+def create_and_assert_credential(
+        register_options: Dict[str, Any],
+        sign_in_options: Dict[str, Any],
+        rp_id: str,
+        rp_name: str,
+        origin: str,
+        user_not_present: bool = True,
+        user_not_verified: bool = True,
+):
+    register_options_str = json.dumps(register_options)
+    sign_in_options_str = json.dumps(sign_in_options)
+    result = createAndAssertCredential(  # type: ignore
+        register_options_str,
+        sign_in_options_str,
+        rp_id,
+        rp_name,
+        origin,
+        user_not_present,
+        user_not_verified,
+    )
+
+    if result is None:
+        raise Exception("Failed to create/assert credential")
+
+    try:
+        parsed_result: Dict[str, Any] = json.loads(cast(str, result))
+        return {"attestation": parsed_result["attestation"], "assertion": parsed_result["assertion"]}
+    except Exception:
+        raise Exception("Failed to parse result")
+
+def webauthn_create_and_assert_credential(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    try:
+        credential = create_and_assert_credential(  # type: ignore
+            register_options=body["registerOptionsResponse"],
+            sign_in_options=body["signInOptionsResponse"],
+            rp_id=body["rpId"],
+            rp_name=body["rpName"],
+            origin=body["origin"],
+            user_not_present=False,
+            user_not_verified=False,
+        )
+        return JsonResponse({"credential": credential})
+    except Exception as err:
+        return JsonResponse({"error": str(err)}, status=500)
+
+
+def webauthn_create_credential(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    try:
+        credential = create_credential(  # type: ignore
+            register_options=body["registerOptionsResponse"],
+                rp_id=body["rpId"],
+                rp_name=body["rpName"],
+                origin=body["origin"],
+                user_not_present=False,
+                user_not_verified=False,
+        )
+        return JsonResponse({"credential": credential})
+    except Exception as err:
+        return JsonResponse({"error": str(err)}, status=500)

@@ -78,7 +78,7 @@ class WebauthnRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         is_in_serverless_env: bool,
-        config: WebauthnConfig,
+        config: Optional[WebauthnConfig],
         ingredients: WebauthnIngredients,
     ):
         super().__init__(recipe_id=recipe_id, app_info=app_info)
@@ -292,7 +292,7 @@ class WebauthnRecipe(RecipeModule):
         return WebauthnRecipe.__instance
 
     @staticmethod
-    def init(config: WebauthnConfig):
+    def init(config: Optional[WebauthnConfig]):
         def func(app_info: AppInfo, is_in_serverless_env: bool):
             if WebauthnRecipe.__instance is None:
                 WebauthnRecipe.__instance = WebauthnRecipe(
