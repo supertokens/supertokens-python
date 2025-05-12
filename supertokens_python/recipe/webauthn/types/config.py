@@ -182,9 +182,7 @@ class WebauthnConfig:
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
-    email_delivery: Optional[
-        EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput]
-    ] = None
+    email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
     override: Optional[OverrideConfig] = None
 
