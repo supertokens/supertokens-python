@@ -1,4 +1,7 @@
-from typing import Optional, Protocol, TypeVar, Union, runtime_checkable
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -6,13 +9,14 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
 )
-from supertokens_python.recipe.webauthn.interfaces.api import (
-    ApiInterface,
-    TypeWebauthnEmailDeliveryInput,
-)
-from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.types.base import UserContext
-from supertokens_python.types.response import CamelCaseBaseModel
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.interfaces.api import (
+        ApiInterface,
+        TypeWebauthnEmailDeliveryInput,
+    )
+    from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""
@@ -162,26 +166,19 @@ class InterfaceOverride(Protocol[InterfaceType]):
     ) -> InterfaceType: ...
 
 
+# NOTE: Using dataclasses for these classes since validation is not required
+@dataclass
 class OverrideConfig:
     """
     `WebauthnConfig.override`
     """
 
-    functions: Optional[InterfaceOverride[RecipeInterface]]
-    apis: Optional[InterfaceOverride[ApiInterface]]
-
-    def __init__(
-        self,
-        *,
-        functions: Optional[InterfaceOverride[RecipeInterface]] = None,
-        apis: Optional[InterfaceOverride[ApiInterface]] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+    functions: Optional[InterfaceOverride[RecipeInterface]] = None
+    apis: Optional[InterfaceOverride[ApiInterface]] = None
 
 
-# TODO: Figure out if we want/need pydantic here. Validation errors might be tough to resolve
-class WebauthnConfig(CamelCaseBaseModel):
+@dataclass
+class WebauthnConfig:
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
@@ -192,7 +189,8 @@ class WebauthnConfig(CamelCaseBaseModel):
     override: Optional[OverrideConfig] = None
 
 
-class NormalisedWebauthnConfig(CamelCaseBaseModel):
+@dataclass
+class NormalisedWebauthnConfig:
     get_relying_party_id: NormalisedGetRelyingPartyId
     get_relying_party_name: NormalisedGetRelyingPartyName
     get_origin: NormalisedGetOrigin
@@ -201,7 +199,8 @@ class NormalisedWebauthnConfig(CamelCaseBaseModel):
     override: OverrideConfig
 
 
-class WebauthnIngredients(CamelCaseBaseModel):
+@dataclass
+class WebauthnIngredients:
     email_delivery: Optional[
         EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
     ] = None

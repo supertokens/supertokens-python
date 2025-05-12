@@ -13,9 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.asyncio import get_user
+from supertokens_python.auth_utils import (
+    link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
+)
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
@@ -49,11 +52,6 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.utils import log_debug_message
-
-if TYPE_CHECKING:
-    from supertokens_python.auth_utils import (
-        link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
-    )
 
 
 class RecipeImplementation(RecipeInterface):

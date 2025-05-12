@@ -1,12 +1,9 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional, cast
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
-from supertokens_python.recipe.webauthn.interfaces.api import (
-    ApiInterface,
-    APIOptions,
-    SignInPOSTResponse,
-)
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import (
     get_backwards_compatible_user_info,
@@ -15,7 +12,10 @@ from supertokens_python.utils import (
 )
 
 if TYPE_CHECKING:
-    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
+    from supertokens_python.recipe.webauthn.interfaces.api import (
+        ApiInterface,
+        APIOptions,
+    )
 
 
 async def sign_in_api(
@@ -24,6 +24,9 @@ async def sign_in_api(
     options: APIOptions,
     user_context: UserContext,
 ) -> Optional[BaseResponse]:
+    from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
+    from supertokens_python.recipe.webauthn.interfaces.api import SignInPOSTResponse
+
     if api_implementation.disable_sign_in_post:
         return None
 

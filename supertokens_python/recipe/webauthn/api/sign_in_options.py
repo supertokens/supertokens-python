@@ -1,9 +1,16 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from supertokens_python.framework.response import BaseResponse
-from supertokens_python.recipe.webauthn.interfaces.api import ApiInterface, APIOptions
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import send_200_response
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.interfaces.api import (
+        ApiInterface,
+        APIOptions,
+    )
 
 
 async def sign_in_options_api(

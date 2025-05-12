@@ -16,6 +16,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.asyncio import get_user
+from supertokens_python.auth_utils import (
+    SignInNotAllowedResponse,
+    SignUpNotAllowedResponse,
+    get_authenticating_user_and_add_to_current_tenant_if_required,
+    is_fake_email,
+    post_auth_checks,
+    pre_auth_checks,
+)
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.accountlinking import (
     AccountInfoWithRecipeIdAndUserId,
@@ -61,14 +69,6 @@ from supertokens_python.types.response import GeneralErrorResponse
 from ..utils import get_password_reset_link
 
 if TYPE_CHECKING:
-    from supertokens_python.auth_utils import (
-        SignInNotAllowedResponse,
-        SignUpNotAllowedResponse,
-        get_authenticating_user_and_add_to_current_tenant_if_required,
-        is_fake_email,
-        post_auth_checks,
-        pre_auth_checks,
-    )
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
 from supertokens_python.types import RecipeUserId

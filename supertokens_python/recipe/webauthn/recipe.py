@@ -1,6 +1,7 @@
 import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
+from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
@@ -39,11 +40,6 @@ from supertokens_python.recipe.webauthn.constants import (
     SIGNUP_EMAIL_EXISTS_API,
 )
 from supertokens_python.recipe.webauthn.exceptions import WebauthnError
-from supertokens_python.recipe.webauthn.interfaces.api import (
-    ApiInterface,
-    APIOptions,
-    TypeWebauthnEmailDeliveryInput,
-)
 from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.recipe_implementation import (
     RecipeImplementation,
@@ -60,10 +56,8 @@ from supertokens_python.supertokens import AppInfo
 from supertokens_python.types.base import RecipeUserId, User
 
 if TYPE_CHECKING:
-    from supertokens_python.auth_utils import is_fake_email
     from supertokens_python.recipe.webauthn.interfaces.api import (
         ApiInterface,
-        APIOptions,
         TypeWebauthnEmailDeliveryInput,
     )
 
@@ -74,8 +68,8 @@ class WebauthnRecipe(RecipeModule):
 
     config: NormalisedWebauthnConfig
     recipe_implementation: RecipeInterface
-    api_implementation: ApiInterface
-    email_delivery: EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
+    api_implementation: "ApiInterface"
+    email_delivery: EmailDeliveryIngredient["TypeWebauthnEmailDeliveryInput"]
 
     def __init__(
         self,
@@ -373,7 +367,9 @@ class WebauthnRecipe(RecipeModule):
         response: BaseResponse,
         user_context: UserContext,
     ) -> Optional[BaseResponse]:
-        APIOptions.model_rebuild()
+        from supertokens_python.recipe.webauthn.interfaces.api import APIOptions
+
+        # APIOptions.model_rebuild()
         options = APIOptions(
             config=self.config,
             recipe_id=self.get_recipe_id(),
