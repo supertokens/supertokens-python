@@ -244,7 +244,7 @@ class User:
         emails: List[str],
         phone_numbers: List[str],
         third_party: List[ThirdPartyInfo],
-        webauthn: List[WebauthnInfo],
+        webauthn: WebauthnInfo,
         login_methods: List[LoginMethod],
         time_joined: int,
     ):
@@ -281,7 +281,7 @@ class User:
             "emails": self.emails,
             "phoneNumbers": self.phone_numbers,
             "thirdParty": [tp.to_json() for tp in self.third_party],
-            "webauthn": [w.to_json() for w in self.webauthn],
+            "webauthn": self.webauthn.to_json(),
             "loginMethods": [lm.to_json() for lm in self.login_methods],
             "timeJoined": self.time_joined,
         }
@@ -289,6 +289,7 @@ class User:
     @staticmethod
     def from_json(json: Dict[str, Any]) -> "User":
         from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+        from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
 
         return User(
             user_id=json["id"],
@@ -297,7 +298,7 @@ class User:
             emails=json["emails"],
             phone_numbers=json["phoneNumbers"],
             third_party=[TPI.from_json(tp) for tp in json["thirdParty"]],
-            webauthn=[WebauthnInfo.from_json(w) for w in json["webauthn"]],
+            webauthn=WebauthnInfo.from_json(json["webauthn"]),
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )

@@ -267,11 +267,11 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
     email: Optional[str],
     phone_number: Optional[str],
     third_party: Optional[ThirdPartyInfo],
-    webauthn: Optional["WebauthnInfoInput"],
     tenant_id: str,
     session: Optional[SessionContainer],
     check_credentials_on_tenant: Callable[[str], Awaitable[bool]],
     user_context: Dict[str, Any],
+    webauthn: Optional["WebauthnInfoInput"] = None,
 ) -> Optional[AuthenticatingUserInfo]:
     i = 0
     while i < 300:
