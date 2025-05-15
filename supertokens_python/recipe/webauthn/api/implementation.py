@@ -24,6 +24,9 @@ from supertokens_python.recipe.webauthn.constants import (
     DEFAULT_REGISTER_OPTIONS_TIMEOUT,
     DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
+    DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
+    DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
+    DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
 )
 from supertokens_python.recipe.webauthn.interfaces.api import (
     ApiInterface,
@@ -173,12 +176,12 @@ class ApiImplementation(ApiInterface):
         )
 
         response = await options.recipe_implementation.sign_in_options(
-            user_verification=DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
-            user_presence=DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
+            user_verification=DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
+            user_presence=DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
             origin=origin,
             relying_party_id=relying_party_id,
             relying_party_name=relying_party_name,
-            timeout=DEFAULT_REGISTER_OPTIONS_TIMEOUT,
+            timeout=DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
             tenant_id=tenant_id,
             user_context=user_context,
         )

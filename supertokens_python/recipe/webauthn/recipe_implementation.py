@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 from typing_extensions import Unpack
 
@@ -80,7 +80,7 @@ class RecipeImplementation(RecipeInterface):
         relying_party_name: str,
         origin: str,
         timeout: Optional[int] = None,
-        attestation: Optional[Attestation] = "none",
+        attestation: Optional[Attestation] = None,
         tenant_id: str,
         user_context: UserContext,
         supported_algorithm_ids: Optional[List[int]] = None,
@@ -159,21 +159,30 @@ class RecipeImplementation(RecipeInterface):
         else:
             display_name = email
 
+        query_data: Dict[str, Any] = {
+            "email": email,
+            "displayName": display_name,
+            "relyingPartyName": relying_party_name,
+            "relyingPartyId": relying_party_id,
+            "origin": origin,
+        }
+
+        if timeout is not None:
+            query_data["timeout"] = timeout
+        if attestation is not None:
+            query_data["attestation"] = attestation
+        if supported_algorithm_ids is not None:
+            query_data["supportedAlgorithmIds"] = supported_algorithm_ids
+        if user_verification is not None:
+            query_data["userVerification"] = user_verification
+        if user_presence is not None:
+            query_data["userPresence"] = user_presence
+        if resident_key is not None:
+            query_data["residentKey"] = resident_key
+
         response = await self.querier.send_post_request(
             path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options/register"),
-            data={
-                "email": email,
-                "displayName": display_name,
-                "relyingPartyName": relying_party_name,
-                "relyingPartyId": relying_party_id,
-                "origin": origin,
-                "timeout": timeout,
-                "attestation": attestation,
-                "supportedAlgorithmIds": supported_algorithm_ids,
-                "userVerification": user_verification,
-                "userPresence": user_presence,
-                "residentKey": resident_key,
-            },
+            data=query_data,
             user_context=user_context,
         )
 
@@ -195,22 +204,28 @@ class RecipeImplementation(RecipeInterface):
         relying_party_id: str,
         relying_party_name: str,
         origin: str,
-        timeout: Optional[int],
-        user_verification: Optional[UserVerification],
-        user_presence: Optional[bool],
+        timeout: Optional[int] = None,
+        user_verification: Optional[UserVerification] = None,
+        user_presence: Optional[bool] = None,
         tenant_id: str,
         user_context: UserContext,
     ) -> Union[SignInOptionsResponse, SignInOptionsErrorResponse]:
+        query_data: Dict[str, Any] = {
+            "relyingPartyId": relying_party_id,
+            "relyingPartyName": relying_party_name,
+            "origin": origin,
+        }
+
+        if timeout is not None:
+            query_data["timeout"] = timeout
+        if user_verification is not None:
+            query_data["userVerification"] = user_verification
+        if user_presence is not None:
+            query_data["userPresence"] = user_presence
+
         response = await self.querier.send_post_request(
             path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/options/signin"),
-            data={
-                "userVerification": user_verification,
-                "userPresence": user_presence,
-                "relyingPartyId": relying_party_id,
-                "relyingPartyName": relying_party_name,
-                "origin": origin,
-                "timeout": timeout,
-            },
+            data=query_data,
             user_context=user_context,
         )
 
