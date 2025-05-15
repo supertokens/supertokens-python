@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, cast
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.recipe.webauthn.interfaces.recipe import RegistrationPayload
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import (
     get_backwards_compatible_user_info,
@@ -58,7 +59,7 @@ async def sign_up_api(
 
     result = await api_implementation.sign_up_post(
         webauthn_generated_options_id=webauthn_generated_options_id,
-        credential=credential,
+        credential=RegistrationPayload.from_json(credential),
         tenant_id=tenant_id,
         session=session,
         should_try_linking_with_session_user=should_try_linking_with_session_user,

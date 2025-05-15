@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.recipe.webauthn.interfaces.recipe import RegistrationPayload
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import send_200_response
 
@@ -44,7 +45,7 @@ async def recover_account_api(
 
     result = await api_implementation.recover_account_post(
         webauthn_generated_options_id=webauthn_generated_options_id,
-        credential=credential,
+        credential=RegistrationPayload.from_json(credential),
         token=token,
         tenant_id=tenant_id,
         options=options,

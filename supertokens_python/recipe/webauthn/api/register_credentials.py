@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional
 from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.recipe.webauthn.interfaces.recipe import RegistrationPayload
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import send_200_response
 
@@ -47,7 +48,7 @@ async def register_credential_api(
         )
 
     result = await api_implementation.register_credential_post(
-        credential=credential,
+        credential=RegistrationPayload.from_json(credential),
         webauthn_generated_options_id=webauthn_generated_options_id,
         tenant_id=tenant_id,
         options=options,
