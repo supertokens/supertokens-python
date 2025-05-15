@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 from typing_extensions import Unpack
 
@@ -59,6 +59,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
 )
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
+from supertokens_python.types.base import RecipeUserId, User
 from supertokens_python.types.response import OkResponseBaseModel
 
 
@@ -67,10 +68,10 @@ class RecipeImplementation(RecipeInterface):
         self,
         *,
         querier: Querier,
-        get_webauthn_config: Callable[[], NormalisedWebauthnConfig],
+        config: NormalisedWebauthnConfig,
     ):
         self.querier = querier
-        self.get_webauthn_config = get_webauthn_config
+        self.config = config
 
     async def register_options(
         self,
@@ -137,7 +138,7 @@ class RecipeImplementation(RecipeInterface):
         if email is None:
             return InvalidEmailErrorResponse(err="The email is missing")
 
-        validate_result = await self.get_webauthn_config().validate_email_address(
+        validate_result = await self.config.validate_email_address(
             email=email,
             tenant_id=tenant_id,
             user_context=user_context,
@@ -333,7 +334,8 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/signin"),
             data={
-                "credential": credential,
+                # To allow for JSON encoding
+                "credential": credential.to_json(),
                 "webauthnGeneratedOptionsId": webauthn_generated_options_id,
             },
             user_context=user_context,
@@ -343,7 +345,7 @@ class RecipeImplementation(RecipeInterface):
             if response["status"] == "INVALID_CREDENTIALS_ERROR":
                 return InvalidCredentialsErrorResponse()
             if response["status"] == "INVALID_OPTIONS_ERROR":
-                InvalidOptionsErrorResponse()
+                return InvalidOptionsErrorResponse()
             if response["status"] == "INVALID_AUTHENTICATOR_ERROR":
                 return InvalidAuthenticatorErrorResponse(reason=response["reason"])
             if response["status"] == "CREDENTIAL_NOT_FOUND_ERROR":
@@ -355,7 +357,10 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f"Unknown Error: {response}")
 
-        return VerifyCredentialsResponse.from_json(response)
+        return VerifyCredentialsResponse(
+            user=User.from_json(response["user"]),
+            recipe_user_id=RecipeUserId(response["recipeUserId"]),
+        )
 
     async def create_new_recipe_user(
         self,
@@ -369,7 +374,8 @@ class RecipeImplementation(RecipeInterface):
             path=NormalisedURLPath(f"/{tenant_id}/recipe/webauthn/signup"),
             data={
                 "webauthnGeneratedOptionsId": webauthn_generated_options_id,
-                "credential": credential,
+                # To allow for JSON encoding
+                "credential": credential.to_json(),
             },
             user_context=user_context,
         )
@@ -388,7 +394,10 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f"Unknown Error: {response}")
 
-        return CreateNewRecipeUserResponse.from_json(response)
+        return CreateNewRecipeUserResponse(
+            user=User.from_json(response["user"]),
+            recipe_user_id=RecipeUserId(response["recipeUserId"]),
+        )
 
     async def generate_recover_account_token(
         self,
@@ -452,7 +461,8 @@ class RecipeImplementation(RecipeInterface):
             data={
                 "recipeUserId": recipe_user_id,
                 "webauthnGeneratedOptionsId": webauthn_generated_options_id,
-                "credential": credential,
+                # To allow for JSON encoding
+                "credential": credential.to_json(),
             },
             user_context=user_context,
         )
@@ -493,7 +503,12 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f"Unknown Error: {response}")
 
-        return GetUserFromRecoverAccountTokenResponse.from_json(response)
+        return GetUserFromRecoverAccountTokenResponse(
+            user=User.from_json(response["user"]),
+            recipe_user_id=RecipeUserId(response["recipeUserId"])
+            if "recipeUserId" in response
+            else None,
+        )
 
     async def remove_credential(
         self,
@@ -541,7 +556,12 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f"Unknown Error: {response}")
 
-        return GetCredentialResponse.from_json(response)
+        return GetCredentialResponse.from_json(
+            {
+                **response,
+                "recipeUserId": RecipeUserId(response["recipeUserId"]),
+            }
+        )
 
     async def list_credentials(
         self,

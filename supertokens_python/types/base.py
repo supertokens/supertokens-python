@@ -207,6 +207,7 @@ class LoginMethod(AccountInfo):
     @staticmethod
     def from_json(json: Dict[str, Any]) -> "LoginMethod":
         from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
+        from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
 
         return LoginMethod(
             recipe_id=json["recipeId"],

@@ -83,13 +83,10 @@ class WebauthnRecipe(RecipeModule):
             app_info=app_info, config=config
         )
 
-        def get_webauthn_config():
-            return self.config
-
         querier = Querier.get_instance(rid_to_core=recipe_id)
         recipe_implementation = RecipeImplementation(
             querier=querier,
-            get_webauthn_config=get_webauthn_config,
+            config=self.config,
         )
         self.recipe_implementation = (
             recipe_implementation
@@ -269,7 +266,7 @@ class WebauthnRecipe(RecipeModule):
 
             mt_recipe = MultitenancyRecipe.get_instance_optional()
             if mt_recipe is not None:
-                mt_recipe.all_available_first_factors.append(FactorIds.EMAILPASSWORD)
+                mt_recipe.all_available_first_factors.append(FactorIds.WEBAUTHN)
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 

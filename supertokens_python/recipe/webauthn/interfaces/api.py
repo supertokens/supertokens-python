@@ -67,7 +67,7 @@ class WebauthnRecoverAccountEmailDeliveryUser(CamelCaseBaseModel):
 
 
 class TypeWebauthnRecoverAccountEmailDeliveryInput(CamelCaseBaseModel):
-    type: Literal["RECOVER_ACCOUNT"]
+    type: Literal["RECOVER_ACCOUNT"] = "RECOVER_ACCOUNT"
     user: WebauthnRecoverAccountEmailDeliveryUser
     recover_account_link: str
     tenant_id: str
@@ -111,8 +111,8 @@ class RegisterOptionsPOSTResponse(OkResponseBaseModel):
         user_verification: UserVerification
 
     webauthn_generated_options_id: str
-    created_at: str
-    expires_at: str
+    created_at: int
+    expires_at: int
     rp: RelyingParty
     user: User
     challenge: str
@@ -128,8 +128,8 @@ RegisterOptionsPOSTErrorResponse = RegisterOptionsErrorResponse
 
 class SignInOptionsPOSTResponse(OkResponseBaseModel):
     webauthn_generated_options_id: str
-    created_at: str
-    expires_at: str
+    created_at: int
+    expires_at: int
     rp_id: str
     challenge: str
     timeout: int

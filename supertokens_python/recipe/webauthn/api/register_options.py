@@ -30,8 +30,8 @@ async def register_options_api(
     if body is None:
         raise_bad_input_exception("Please provide a JSON body")
 
-    email = body["email"]
-    recover_account_token = body["recoverAccountToken"]
+    email = body.get("email")
+    recover_account_token = body.get("recoverAccountToken")
 
     if (email is None or not isinstance(email, str)) and (
         recover_account_token is None or not isinstance(recover_account_token, str)

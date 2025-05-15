@@ -186,7 +186,12 @@ class ApiImplementation(ApiInterface):
         if response.status != "OK":
             return response
 
-        return SignInOptionsPOSTResponse.from_json(response.to_json())
+        return SignInOptionsPOSTResponse.from_json(
+            {
+                **response.to_json(),
+                "rp_id": relying_party_id,
+            }
+        )
 
     async def sign_up_post(
         self,
@@ -381,7 +386,6 @@ class ApiImplementation(ApiInterface):
             return True
 
         authenticating_user = (
-            # TODO: Update this method to use `webauthn`
             await get_authenticating_user_and_add_to_current_tenant_if_required(
                 webauthn=WebauthnInfoInput(credential_id=credential.id),
                 user_context=user_context,

@@ -99,7 +99,6 @@ def validate_and_normalise_relying_party_id_config(
                 user_context=user_context,
             )
 
-        # TODO: When will this happen? Why?
         url_string = app_info.api_domain.get_as_string_dangerous()
         url = urlparse(url_string)
 

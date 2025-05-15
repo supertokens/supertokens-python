@@ -95,8 +95,10 @@ class CredentialPayloadBase(CamelCaseBaseModel):
             "platform",
             "cross-platform",
         ]
-    ]
-    clientExtensionResults: Dict[str, Any]
+    ] = None
+    # Default value required since inputs come from users, might omit this
+    # Not provided in the webauthn authenticator used in backend-sdk-testing
+    clientExtensionResults: Dict[str, Any] = Field(default_factory=dict)
     type: Literal["public-key"]
 
 
@@ -104,7 +106,7 @@ class AuthenticatorAssertionResponseJSON(CamelCaseBaseModel):
     clientDataJSON: Base64URLString
     authenticatorData: Base64URLString
     signature: Base64URLString
-    userHandle: Optional[Base64URLString]
+    userHandle: Optional[Base64URLString] = None
 
 
 class AuthenticationPayload(CredentialPayloadBase):
@@ -114,7 +116,7 @@ class AuthenticationPayload(CredentialPayloadBase):
 class AuthenticatorAttestationResponseJSON(CamelCaseBaseModel):
     clientDataJSON: Base64URLString
     attestationObject: Base64URLString
-    authenticatorData: Optional[Base64URLString]
+    authenticatorData: Optional[Base64URLString] = None
     transports: Optional[
         List[
             Literal[
@@ -127,9 +129,9 @@ class AuthenticatorAttestationResponseJSON(CamelCaseBaseModel):
                 "usb",
             ]
         ]
-    ]
-    publicKeyAlgorithm: Optional[COSEAlgorithmIdentifier]
-    publicKey: Optional[Base64URLString]
+    ] = None
+    publicKeyAlgorithm: Optional[COSEAlgorithmIdentifier] = None
+    publicKey: Optional[Base64URLString] = None
 
 
 class RegistrationPayload(CredentialPayloadBase):
@@ -152,7 +154,7 @@ class CredentialPayload(CredentialPayloadBase):
                     "usb",
                 ]
             ]
-        ]
+        ] = None
         user_handle: str
 
     response: Response
@@ -187,7 +189,7 @@ class RegisterOptionsResponse(OkResponseBaseModel):
     class PubKeyCredParams(CamelCaseBaseModel):
         # we will default to [-8, -7, -257] as supported algorithms.
         # See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
-        alg: List[int]
+        alg: int
         type: Literal["public-key"]
 
     class AuthenticatorSelection(CamelCaseBaseModel):
@@ -196,15 +198,15 @@ class RegisterOptionsResponse(OkResponseBaseModel):
         user_verification: UserVerification
 
     webauthn_generated_options_id: str
-    created_at: str
-    expires_at: str
+    created_at: int
+    expires_at: int
     rp: RelyingParty
     user: User
     challenge: str
     timeout: int
     exclude_credentials: List[ExcludeCredentials]
     attestation: Attestation
-    pub_key_cred_params: PubKeyCredParams
+    pub_key_cred_params: List[PubKeyCredParams]
     authenticator_selection: AuthenticatorSelection
 
 
@@ -217,8 +219,8 @@ RegisterOptionsErrorResponse = Union[
 
 class SignInOptionsResponse(OkResponseBaseModel):
     webauthn_generated_options_id: str
-    created_at: str
-    expires_at: str
+    created_at: int
+    expires_at: int
     challenge: str
     timeout: int
     user_verification: UserVerification
@@ -230,6 +232,14 @@ SignInOptionsErrorResponse = InvalidOptionsErrorResponse
 class CreateNewRecipeUserResponse(OkResponseBaseModel):
     user: User
     recipe_user_id: RecipeUserId
+
+    @field_serializer("user")
+    def serialize_user(self, user: User):
+        return user.to_json()
+
+    @field_serializer("recipe_user_id")
+    def serialize_recipe_user_id(self, rui: RecipeUserId):
+        return rui.get_as_string()
 
 
 CreateNewRecipeUserErrorResponse = Union[
@@ -245,6 +255,14 @@ class SignUpReponse(OkResponseBaseModel):
     user: User
     recipe_user_id: RecipeUserId
 
+    @field_serializer("user")
+    def serialize_user(self, user: User):
+        return user.to_json()
+
+    @field_serializer("recipe_user_id")
+    def serialize_recipe_user_id(self, rui: RecipeUserId):
+        return rui.get_as_string()
+
 
 SignUpErrorResponse = Union[
     CreateNewRecipeUserErrorResponse,
@@ -255,6 +273,14 @@ SignUpErrorResponse = Union[
 class VerifyCredentialsResponse(OkResponseBaseModel):
     user: User
     recipe_user_id: RecipeUserId
+
+    @field_serializer("user")
+    def serialize_user(self, user: User):
+        return user.to_json()
+
+    @field_serializer("recipe_user_id")
+    def serialize_recipe_user_id(self, rui: RecipeUserId):
+        return rui.get_as_string()
 
 
 VerifyCredentialsErrorResponse = Union[
@@ -270,6 +296,14 @@ VerifyCredentialsErrorResponse = Union[
 class SignInResponse(OkResponseBaseModel):
     user: User
     recipe_user_id: RecipeUserId
+
+    @field_serializer("user")
+    def serialize_user(self, user: User):
+        return user.to_json()
+
+    @field_serializer("recipe_user_id")
+    def serialize_recipe_user_id(self, rui: RecipeUserId):
+        return rui.get_as_string()
 
 
 SignInErrorResponse = Union[
@@ -305,6 +339,17 @@ class GetUserFromRecoverAccountTokenResponse(OkResponseBaseModel):
     user: User
     recipe_user_id: Optional[RecipeUserId]
 
+    @field_serializer("user")
+    def serialize_user(self, user: User):
+        return user.to_json()
+
+    @field_serializer("recipe_user_id")
+    def serialize_recipe_user_id(self, rui: Optional[RecipeUserId]):
+        if rui is None:
+            return None
+
+        return rui.get_as_string()
+
 
 GetUserFromRecoverAccountTokenErrorResponse = RecoverAccountTokenInvalidErrorResponse
 
@@ -316,6 +361,10 @@ class GetCredentialResponse(OkResponseBaseModel):
     relying_party_id: str
     recipe_user_id: RecipeUserId
     created_at: int
+
+    @field_serializer("recipe_user_id")
+    def serialize_recipe_user_id(self, rui: RecipeUserId):
+        return rui.get_as_string()
 
 
 GetCredentialErrorResponse = CredentialNotFoundErrorResponse
@@ -341,8 +390,8 @@ class GetGeneratedOptionsResponse(OkResponseBaseModel):
     user_verification: UserVerification
     user_presence: bool
     origin: str
-    email: str
-    timeout: str
+    email: Optional[str]
+    timeout: int
     challenge: str
     created_at: int
     expires_at: int
@@ -355,6 +404,10 @@ UpdateUserEmailErrorResponse = Union[
     EmailAlreadyExistsErrorResponse,
     UnknownUserIdErrorResponse,
 ]
+
+
+class CreateRecoverAccountLinkResponse(OkResponseBaseModel):
+    link: str
 
 
 class RecoverAccountTokenInput(TypedDict):
