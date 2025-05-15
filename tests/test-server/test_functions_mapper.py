@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from supertokens_python.asyncio import list_users_by_account_info
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.accountlinking import (
     RecipeLevelUser,
     ShouldAutomaticallyLink,
@@ -46,11 +45,9 @@ from supertokens_python.recipe.thirdparty.types import (
     UserInfo,
     UserInfoEmail,
 )
-from supertokens_python.types import (
-    AccountInfo,
-    RecipeUserId,
-    User,
-)
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 
@@ -680,7 +677,7 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             ):
                 if i.recipe_id == "emailpassword":
                     users = await list_users_by_account_info(
-                        "public", AccountInfo(email=i.email)
+                        "public", AccountInfoInput(email=i.email)
                     )
                     if len(users) <= 1:
                         return ShouldNotAutomaticallyLink()
@@ -868,6 +865,185 @@ def get_func(eval_str: str) -> Callable[..., Any]:
             return EVUnknownUserId()
 
         return get_email_for_recipe_user_id
+
+    if eval_str.startswith("webauthn.init.getOrigin"):
+        if 'async()=>"https://api.supertokens.io"' in eval_str:
+
+            async def origin_fn_1(*_: Any, **__: Any):
+                return "https://api.supertokens.io"
+
+            return origin_fn_1
+
+        if 'async()=>"https://supertokens.io"' in eval_str:
+
+            async def origin_fn_2(*_: Any, **__: Any):
+                return "https://supertokens.io"
+
+            return origin_fn_2
+
+        if '()=>"https://test.testId.com"' in eval_str:
+
+            async def origin_fn_3(*_: Any, **__: Any):
+                return "https://test.testId.com"
+
+            return origin_fn_3
+
+        if '()=>"https://test.testOrigin.com"' in eval_str:
+
+            async def origin_fn_4(*_: Any, **__: Any):
+                return "https://test.testOrigin.com"
+
+            return origin_fn_4
+
+    if eval_str.startswith("webauthn.init.getRelyingPartyId"):
+        if '()=>"testOrigin.com"' in eval_str:
+
+            async def rp_id_fn_1(*_: Any, **__: Any):
+                return "testOrigin.com"
+
+            return rp_id_fn_1
+
+        if 'async()=>"supertokens.io"' in eval_str:
+
+            async def rp_id_fn_2(*_: Any, **__: Any):
+                return "supertokens.io"
+
+            return rp_id_fn_2
+
+    if eval_str.startswith("webauthn.init.getRelyingPartyName"):
+        if '()=>"testName"' in eval_str:
+
+            async def rp_name_fn_1(*_: Any, **__: Any):
+                return "testName"
+
+            return rp_name_fn_1
+
+        if '()=>"SuperTokens"' in eval_str:
+
+            async def rp_name_fn_2(*_: Any, **__: Any):
+                return "SuperTokens"
+
+            return rp_name_fn_2
+
+    # if eval_str.startswith("webauthn.init.validateEmailAddress"):
+
+    #     def validate_email(*, email: str, tenant_id: str, user_context: UserContext):
+    #         if email == "test@example.com":
+    #             return None
+    #         return "Invalid email"
+
+    #     return validate_email
+
+    if eval_str.startswith("webauthn.init.override.functions"):
+        from supertokens_python.recipe.webauthn.recipe_implementation import (
+            RecipeImplementation as WebauthnRecipeImplementation,
+        )
+
+        if (
+            'e=>({...e,registerOptions:r=>e.registerOptions({...r,timeout:1e4,userVerification:"required",relyingPartyId:"testId.com",userPresence:!1})})'
+            in eval_str
+        ):
+
+            def register_options_override_1(
+                original_implementation: WebauthnRecipeImplementation,
+            ) -> WebauthnRecipeImplementation:
+                og_register_options = original_implementation.register_options
+
+                async def register_options(
+                    **kwargs: Dict[str, Any],
+                ):
+                    return await og_register_options(
+                        **{
+                            **kwargs,  # type: ignore
+                            "relying_party_id": "testId.com",
+                            "timeout": 10 * 1000,
+                            "user_verification": "required",
+                            "user_presence": False,
+                        }
+                    )
+
+                original_implementation.register_options = register_options  # type: ignore
+                return original_implementation
+
+            return register_options_override_1
+
+        if (
+            "t=>({...t,registerOptions:async function(e){return t.registerOptions({...e,timeout:50})}})"
+            in eval_str
+        ):
+
+            def register_options_override_2(
+                original_implementation: WebauthnRecipeImplementation,
+            ) -> WebauthnRecipeImplementation:
+                og_register_options = original_implementation.register_options
+
+                async def register_options(
+                    **kwargs: Dict[str, Any],
+                ):
+                    return await og_register_options(
+                        **{
+                            **kwargs,  # type: ignore
+                            "timeout": 50,
+                        }
+                    )
+
+                original_implementation.register_options = register_options  # type: ignore
+                return original_implementation
+
+            return register_options_override_2
+
+        if (
+            "t=>({...t,registerOptions:async function(e){return t.registerOptions({...e,timeout:500})}})"
+            in eval_str
+        ):
+
+            def register_options_override_3(
+                original_implementation: WebauthnRecipeImplementation,
+            ) -> WebauthnRecipeImplementation:
+                og_register_options = original_implementation.register_options
+
+                async def register_options(
+                    **kwargs: Dict[str, Any],
+                ):
+                    return await og_register_options(
+                        **{
+                            **kwargs,  # type: ignore
+                            "timeout": 500,
+                        }
+                    )
+
+                original_implementation.register_options = register_options  # type: ignore
+                return original_implementation
+
+            return register_options_override_3
+
+        if (
+            "n=>({...n,signInOptions:async function(i){return n.signInOptions({...i,timeout:500})}})"
+            in eval_str
+        ):
+
+            def sign_in_options_override_1(
+                original_implementation: WebauthnRecipeImplementation,
+            ) -> WebauthnRecipeImplementation:
+                og_sign_in_options = original_implementation.sign_in_options
+
+                async def sign_in_options(
+                    **kwargs: Dict[str, Any],
+                ):
+                    return await og_sign_in_options(
+                        **{
+                            **kwargs,  # type: ignore
+                            "timeout": 500,
+                        }
+                    )
+
+                original_implementation.sign_in_options = sign_in_options  # type: ignore
+                return original_implementation
+
+            return sign_in_options_override_1
+
+    # if eval_str.startswith("webauthn.init.override.apis"):
+    #     pass
 
     raise Exception("Unknown eval string: " + eval_str)
 

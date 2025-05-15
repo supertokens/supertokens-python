@@ -41,6 +41,7 @@ from supertokens_python.recipe import (
     session,
     thirdparty,
     totp,
+    webauthn,
 )
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.dashboard.recipe import DashboardRecipe
@@ -60,6 +61,8 @@ from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.types import RecipeUserId
 from test_functions_mapper import (  # pylint: disable=import-error
@@ -70,6 +73,7 @@ from test_functions_mapper import (  # pylint: disable=import-error
 from thirdparty import add_thirdparty_routes  # pylint: disable=import-error
 from totp import add_totp_routes  # pylint: disable=import-error
 from usermetadata import add_usermetadata_routes
+from webauthn import add_webauthn_routes
 
 from supertokens import add_supertokens_routes  # pylint: disable=import-error
 
@@ -237,6 +241,7 @@ def st_reset():
     MultiFactorAuthRecipe.reset()
     OAuth2ProviderRecipe.reset()
     OpenIdRecipe.reset()
+    WebauthnRecipe.reset()
 
 
 def init_st(config: Dict[str, Any]):
@@ -286,7 +291,6 @@ def init_st(config: Dict[str, Any]):
                     ),
                 )
             )
-
         elif recipe_id == "session":
 
             async def custom_unauthorised_callback(
@@ -465,7 +469,6 @@ def init_st(config: Dict[str, Any]):
                     ),
                 )
             )
-
         elif recipe_id == "emailverification":
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
 
@@ -622,6 +625,60 @@ def init_st(config: Dict[str, Any]):
                             recipe_config_json.get("override", {}).get("functions"),
                         ),
                     )
+                )
+            )
+        elif recipe_id == "webauthn":
+            from supertokens_python.recipe.webauthn.types.config import (
+                OverrideConfig as WebauthnOverrideConfig,
+            )
+
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            recipe_list.append(
+                webauthn.init(
+                    WebauthnConfig(
+                        get_relying_party_id=callback_with_log(
+                            "WebAuthn.getRelyingPartyId",
+                            recipe_config_json.get("getRelyingPartyId"),
+                        )
+                        if "getRelyingPartyId" in recipe_config_json
+                        else None,
+                        get_relying_party_name=callback_with_log(
+                            "WebAuthn.getRelyingPartyName",
+                            recipe_config_json.get("getRelyingPartyName"),
+                        )
+                        if "getRelyingPartyName" in recipe_config_json
+                        else None,
+                        validate_email_address=callback_with_log(
+                            "WebAuthn.validateEmailAddress",
+                            recipe_config_json.get("validateEmailAddress"),
+                        )
+                        if "validateEmailAddress" in recipe_config_json
+                        else None,
+                        get_origin=callback_with_log(
+                            "WebAuthn.getOrigin",
+                            recipe_config_json.get("getOrigin"),
+                        )
+                        if "getOrigin" in recipe_config_json
+                        else None,
+                        email_delivery=EmailDeliveryConfig(
+                            override=override_builder_with_logging(
+                                "WebAuthn.emailDelivery.override",
+                                recipe_config_json.get("emailDelivery", {}).get(
+                                    "override"
+                                ),
+                            ),
+                        ),
+                        override=WebauthnOverrideConfig(
+                            apis=override_builder_with_logging(
+                                "WebAuthn.override.apis",
+                                recipe_config_json.get("override", {}).get("apis"),
+                            ),
+                            functions=override_builder_with_logging(
+                                "WebAuthn.override.functions",
+                                recipe_config_json.get("override", {}).get("functions"),
+                            ),
+                        ),
+                    ),
                 )
             )
 
@@ -848,6 +905,7 @@ add_supertokens_routes(app)
 add_usermetadata_routes(app)
 add_multifactorauth_routes(app)
 add_oauth2provider_routes(app)
+add_webauthn_routes(app)
 
 if __name__ == "__main__":
     default_st_init()
