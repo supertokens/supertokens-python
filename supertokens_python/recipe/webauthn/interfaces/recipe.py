@@ -9,6 +9,7 @@ from typing import (
     Union,
 )
 
+from pydantic import Field, field_serializer
 from typing_extensions import NotRequired, Unpack
 
 from supertokens_python.recipe.session.interfaces import SessionContainer
