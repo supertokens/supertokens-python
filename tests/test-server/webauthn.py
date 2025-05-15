@@ -68,7 +68,10 @@ def add_webauthn_routes(app: Flask):
         response = sign_up.sync(
             **{
                 **{to_snake(k): v for k, v in request.json.items()},
-                "credential": RegistrationPayload.from_json(request.json["credential"]),
+                # Create model without validation so that we can test edge cases
+                "credential": RegistrationPayload.model_construct(
+                    request.json["credential"]
+                ),
                 "session": session,
             }  # type: ignore
         )
@@ -84,7 +87,8 @@ def add_webauthn_routes(app: Flask):
         response = sign_in.sync(
             **{
                 **{to_snake(k): v for k, v in request.json.items()},
-                "credential": AuthenticationPayload.from_json(
+                # Create model without validation so that we can test edge cases
+                "credential": AuthenticationPayload.model_construct(
                     request.json["credential"]
                 ),
                 "session": session,
@@ -100,7 +104,8 @@ def add_webauthn_routes(app: Flask):
             verify_credentials.sync(
                 {
                     **{to_snake(k): v for k, v in request.json.items()},
-                    "credential": AuthenticationPayload.from_json(
+                    # Create model without validation so that we can test edge cases
+                    "credential": AuthenticationPayload.model_construct(
                         request.json["credential"]
                     ),
                 }  # type: ignore
@@ -138,7 +143,10 @@ def add_webauthn_routes(app: Flask):
         response = register_credential.sync(
             **{
                 **{to_snake(k): v for k, v in request.json.items()},
-                "credential": RegistrationPayload.from_json(request.json["credential"]),
+                # Create model without validation so that we can test edge cases
+                "credential": RegistrationPayload.model_construct(
+                    request.json["credential"]
+                ),
             }  # type: ignore
         )
         return jsonify(response.to_json())
