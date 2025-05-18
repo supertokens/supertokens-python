@@ -48,7 +48,7 @@ async def register_credential_api(
         )
 
     result = await api_implementation.register_credential_post(
-        credential=RegistrationPayload.from_json(credential),
+        credential=RegistrationPayload.model_construct(credential),
         webauthn_generated_options_id=webauthn_generated_options_id,
         tenant_id=tenant_id,
         options=options,

@@ -59,7 +59,7 @@ async def sign_in_api(
 
     result = await api_implementation.sign_in_post(
         webauthn_generated_options_id=webauthn_generated_options_id,
-        credential=AuthenticationPayload.from_json(credential),
+        credential=AuthenticationPayload.model_construct(credential),
         tenant_id=tenant_id,
         session=session,
         should_try_linking_with_session_user=should_try_linking_with_session_user,

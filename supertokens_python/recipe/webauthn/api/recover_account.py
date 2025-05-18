@@ -45,7 +45,7 @@ async def recover_account_api(
 
     result = await api_implementation.recover_account_post(
         webauthn_generated_options_id=webauthn_generated_options_id,
-        credential=RegistrationPayload.from_json(credential),
+        credential=RegistrationPayload.model_construct(credential),
         token=token,
         tenant_id=tenant_id,
         options=options,
