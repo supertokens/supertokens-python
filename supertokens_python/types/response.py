@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, Literal, Protocol, TypeVar, runtime_checkable
 
-from dataclasses_json import DataClassJsonMixin, LetterCase
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from typing_extensions import Self
@@ -22,12 +21,6 @@ class GeneralErrorResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status, "message": self.message}
-
-
-class ApiResponseDataclass(DataClassJsonMixin):
-    dataclass_json_config = {  # type: ignore - library type issues
-        "letter_case": LetterCase.CAMEL,  # type: ignore - library type issues
-    }
 
 
 class CamelCaseBaseModel(APIResponse, BaseModel):
