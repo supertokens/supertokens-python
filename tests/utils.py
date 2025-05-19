@@ -17,7 +17,7 @@ import json
 # Import AsyncMock
 import sys
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from http.cookies import SimpleCookie
 from os import environ
@@ -215,7 +215,11 @@ def assert_info_clears_tokens(info: Dict[str, Any], token_transfer_method: str):
 
 
 def get_unix_timestamp(expiry: str):
-    return int(datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S UTC").timestamp())
+    return int(
+        datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S GMT")
+        .replace(tzinfo=timezone.utc)
+        .timestamp()
+    )
 
 
 def verify_within_5_second_diff(n1: int, n2: int):

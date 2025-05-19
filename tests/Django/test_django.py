@@ -279,7 +279,7 @@ class SupertokensTest(TestCase):
 
         try:
             datetime.strptime(
-                cookies["sAccessToken"]["expires"], "%a, %d %b %Y %H:%M:%S UTC"
+                cookies["sAccessToken"]["expires"], "%a, %d %b %Y %H:%M:%S GMT"
             )
         except ValueError:
             assert False, "cookies expiry time doesn't have the correct format"
