@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
-- Upgrades `pip` and `setuptools` in CI publish job
-- Also upgrades `poetry` and it's dependency - `clikit`
+
+## [0.28.2] - 2025-05-19
+- Fixes cookies being set without expiry in Django
+  - Reverts timezone change from 0.28.0 and uses GMT
 
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)

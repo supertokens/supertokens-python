@@ -51,7 +51,9 @@ class DjangoResponse(BaseResponse):
             key=key,
             value=value,
             expires=datetime.fromtimestamp(ceil(expires / 1000)).strftime(
-                "%a, %d %b %Y %H:%M:%S UTC"
+                # NOTE: This should always be GMT. HTTP only supports GMT in cookies.
+                # If this is not respected, the cookie is always treated as a session cookie.
+                "%a, %d %b %Y %H:%M:%S GMT"
             ),
             path=path,
             domain=domain,
