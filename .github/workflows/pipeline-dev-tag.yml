@@ -117,16 +117,16 @@ jobs:
     needs: mark-dev-tag-as-not-passed
     uses: ./.github/workflows/website-test.yml
 
-  # auth-react-test:
-  #   needs: mark-dev-tag-as-not-passed
-  #   strategy:
-  #     matrix:
-  #       framework:
-  #         - django
-  #         - fastapi
-  #         - flask
+  auth-react-test:
+    needs: mark-dev-tag-as-not-passed
+    strategy:
+      matrix:
+        framework:
+          - django
+          - fastapi
+          - flask
 
-  #   uses: ./.github/workflows/auth-react-test-1-${{ matrix.framework }}.yml
+    uses: ./.github/workflows/auth-react-test-1-${{ matrix.framework }}.yml
 
   mark-as-success:
     runs-on: ubuntu-latest
