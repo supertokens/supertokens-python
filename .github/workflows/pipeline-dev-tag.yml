@@ -2,21 +2,15 @@ name: "Release Pipeline"
 # TODO: Set workflow concurrency to 1 based on the input
 
 on:
-  push:
-    tags:
-      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
-  workflow_call:
+  workflow_dispatch:
     inputs:
       branch:
-        description: The branch to create the release tag on
+        description: The branch to create the dev tag on
         type: string
-        required: false
+        required: true
 
-      # TODO: This will become usable if we use a JS action, easier to work with conditionals
-      sha:
-        description: The commit SHA to create the release tag on
-        type: string
-        required: false
+permissions:
+  contents: write
 
 jobs:
   # TODO: Convert to re-usable action
@@ -52,18 +46,14 @@ jobs:
               exit 1
           fi
 
-      - name: Check commit already tagged
+      - name: Delete tag if already tagged
         # TODO: Allow a way to force-update the tag in the workflow
         # TODO: How do we want to get the commit hash?
         run: |
-          if [[ `git tag -l --points-at $commit_hash` == "" ]]
+          if ! [[ `git tag -l --points-at ${{ github.sha }}` == "" ]]
           then
-            continue=1
-          else
-            echo "This commit already has a tag. Please remove that and re-run."
-            echo "git tag --delete <tagName>"
-            echo "git push --delete origin <tagName>"
-            exit 1
+            git tag --delete <tagName>
+            git push --delete origin <tagName>
           fi
 
       # TODO: I want to move the docs to the release script, instead of the dev script
@@ -74,7 +64,10 @@ jobs:
         run: |
           ./hooks/populate-hook-constants.sh
 
-          git tag dev-v$setupVersion $commit_hash
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git tag dev-v$setupVersion ${{ github.sha }}
           git push --tags
 
 
@@ -135,7 +128,7 @@ jobs:
       - unit-test
       - backend-sdk-test
       - website-test
-      # - auth-react-test
+      - auth-react-test
 
     steps:
       - run: |

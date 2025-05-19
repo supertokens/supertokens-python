@@ -5,7 +5,9 @@
 # - Extracting the version into a match group: `(...)`
 # - Substituting the matched string with the match group: `/\1/`
 constantsVersion=$(sed -n 's/^ *VERSION *= *["]\([0-9\.]*\).*/\1/p' supertokens_python/constants.py)
+constantsVersionXy=$(sed -n 's/^ *VERSION *= *["]\([0-9]*\.[0-9]*\).*/\1/p' supertokens_python/constants.py)
 setupVersion=$(sed -n 's/ *version *= *["]\([0-9\.]*\).*/\1/p' setup.py )
+setupVersionXy=$(sed -n 's/ *version *= *["]\([0-9]*\.[0-9]*\).*/\1/p' setup.py )
 
 newestVersion=$( if [[ "$constantsVersion" > "$setupVersion" ]]; then echo "$constantsVersion"; else echo "$setupVersion"; fi )
 

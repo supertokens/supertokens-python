@@ -1,17 +1,72 @@
 name: "Release Pipeline"
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+"
-  workflow_call:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: The branch to create the release tag on
+        type: string
+        required: true
+
+      force:
+        description: Bypass server checks for safe release of package
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  contents: write
 
 jobs:
   mark-as-success:
     runs-on: ubuntu-latest
 
     steps:
-      - run: |
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+
+      - name: Check tests passed
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          testsPassed = `curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=$setupVersion&name=python" -H 'api-version: 0'`
+
+          if [[ echo $testsPassed | jq .testPassed != "true" ]]
+          then
+            echo "All tests have not passed. Exiting."
+            exit 1
+          fi
+
+      - if: ! inputs.force
+        name: Check if core and frontend released
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=$setupVersion&name=python" -H 'api-version: 0'`
+
+          if [[ echo $canReleaseSafelyResponse | jq .canRelease != "true" ]]
+          then
+            echo "Cannot release. Have you released corresponding core and frontend?"
+            exit 1
+          fi
+
+      - name: Check if current commit is dev-tagged
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          currentTag=`git tag -l --points-at ${{ github.sha }}`
+          expectedTag=dev-v$setupVersion
+
+          if [[ $currentTag != $expectedTag ]]
+          then
+            echo "Commit does not have the correct dev tag for this release"
+            exit 1
+          fi
+
+      - name: Mark for release
+        run: |
           ./hooks/populate-hook-constants.sh
 
           curl --fail-with-body -X PUT \
@@ -19,14 +74,59 @@ jobs:
               -H 'Content-Type: application/json' \
               -H 'api-version: 0' \
               -d "{
-                \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
-                \"version\":\"$setupVersion\",
-                \"name\": \"python\",
-                \"testPassed\": true
+                  \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
+                  \"name\":\"python\",
+                  \"version\":\"$setupVersion\",
+                  \"release\": true
               }"`
+
+      - name: Add Release tag and build docs
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          # Delete current dev tag
+          git tag --delete dev-v$setupVersion
+          git push --delete origin dev-v$setupVersion
+
+          # update docs and commit changes
+          make build-docs
+          git add --all
+          git commit --allow-empty -nm "doc: update docs for v$setupVersion tag"
+          git push
+
+          git tag v$setupVersion
+          git push --tags
+
+      - name: Check API and merge to master
+        run: |
+          ./hooks/populate-hook-constants.sh
+
+          response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=$setupVersion&name=python" -H 'api-version: 0'`
+
+          if [[ $response == "true" ]]
+            git merge master
+            git checkout master
+            git merge ${{ inputs.branch }}
+            git push
+            git checkout ${{ inputs.branch }}
+          fi
 
   publish:
     runs-on: ubuntu-latest
+    needs: mark-as-success
 
     steps:
-      - run: ""
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+
+      - run: |
+          python3 -m pip install ip install pip setuptools packaging poetry clikit --upgrade
+          make dev-install
+          pip install setuptools wheels twine
+          python setup.py sdist bdist_wheel
+          twine upload -u ${{ secrets.RELEASE_USERNAME }} -p ${{ secrets.RELEASE_PASSWORD }} dist/*
