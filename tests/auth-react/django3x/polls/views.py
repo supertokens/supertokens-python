@@ -13,10 +13,9 @@
 # under the License.
 import json
 import os
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List
 
-# Python loader for WASM. Allows native imports
-import wasmtime.loader  # type: ignore  # noqa: F401
+import httpx
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from mysite.store import get_codes, get_url_with_token, webauthn_store
 from mysite.utils import custom_init
@@ -71,9 +70,6 @@ from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
 from supertokens_python.types import RecipeUserId
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.types.base import AccountInfoInput
-
-# Load the required functions from the WASM binary
-from ..webauthn import createAndAssertCredential, createCredential  # type: ignore
 
 mode = os.environ.get("APP_MODE", "asgi")
 
@@ -468,6 +464,7 @@ def test_feature_flags(request: HttpRequest):
                 "recipeConfig",
                 "accountlinking-fixes",
                 "oauth2",
+                "webauthn",
             ]
         }
     )
@@ -493,77 +490,11 @@ def setup_st(request: HttpRequest):
 
 
 def get_webauthn_token(request: HttpRequest):
-    body = json.loads(request.body)
-    if body is None:
-        raise Exception("Invalid request body")
-
-    webauthn = webauthn_store.get(body["email"])
+    webauthn = webauthn_store.get(request.GET.get("email", ""))
     if webauthn is None:
         return JsonResponse({"error": "Webauthn not found"}, status=404)
 
     return JsonResponse({"token": webauthn["token"]})
-
-
-def create_credential(
-    register_options: Dict[str, Any],
-    rp_id: str,
-    rp_name: str,
-    origin: str,
-    user_not_present: bool = True,
-    user_not_verified: bool = True,
-):
-    register_options_str = json.dumps(register_options)
-    result = createCredential(  # type: ignore
-        register_options_str,
-        rp_id,
-        rp_name,
-        origin,
-        user_not_present,
-        user_not_verified,
-    )
-
-    if result is None:
-        raise Exception("Failed to create credential")
-
-    try:
-        credential = json.loads(cast(str, result))
-        return credential
-    except Exception:
-        raise Exception("Failed to parse credential")
-
-
-def create_and_assert_credential(
-    register_options: Dict[str, Any],
-    sign_in_options: Dict[str, Any],
-    rp_id: str,
-    rp_name: str,
-    origin: str,
-    user_not_present: bool = True,
-    user_not_verified: bool = True,
-):
-    register_options_str = json.dumps(register_options)
-    sign_in_options_str = json.dumps(sign_in_options)
-    result = createAndAssertCredential(  # type: ignore
-        register_options_str,
-        sign_in_options_str,
-        rp_id,
-        rp_name,
-        origin,
-        user_not_present,
-        user_not_verified,
-    )
-
-    if result is None:
-        raise Exception("Failed to create/assert credential")
-
-    try:
-        parsed_result: Dict[str, Any] = json.loads(cast(str, result))
-        return {
-            "attestation": parsed_result["attestation"],
-            "assertion": parsed_result["assertion"],
-        }
-    except Exception:
-        raise Exception("Failed to parse result")
 
 
 def webauthn_create_and_assert_credential(request: HttpRequest):
@@ -571,19 +502,13 @@ def webauthn_create_and_assert_credential(request: HttpRequest):
     if body is None:
         raise Exception("Invalid request body")
 
-    try:
-        credential = create_and_assert_credential(  # type: ignore
-            register_options=body["registerOptionsResponse"],
-            sign_in_options=body["signInOptionsResponse"],
-            rp_id=body["rpId"],
-            rp_name=body["rpName"],
-            origin=body["origin"],
-            user_not_present=False,
-            user_not_verified=False,
-        )
-        return JsonResponse({"credential": credential})
-    except Exception as err:
-        return JsonResponse({"error": str(err)}, status=500)
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-and-assert-credential",
+        json=body,
+    )
+
+    return JsonResponse(response.json())
 
 
 def webauthn_create_credential(request: HttpRequest):
@@ -591,15 +516,10 @@ def webauthn_create_credential(request: HttpRequest):
     if body is None:
         raise Exception("Invalid request body")
 
-    try:
-        credential = create_credential(  # type: ignore
-            register_options=body["registerOptionsResponse"],
-            rp_id=body["rpId"],
-            rp_name=body["rpName"],
-            origin=body["origin"],
-            user_not_present=False,
-            user_not_verified=False,
-        )
-        return JsonResponse({"credential": credential})
-    except Exception as err:
-        return JsonResponse({"error": str(err)}, status=500)
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-credential",
+        json=body,
+    )
+
+    return JsonResponse(response.json())

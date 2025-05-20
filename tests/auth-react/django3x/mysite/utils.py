@@ -190,7 +190,7 @@ class CustomWebwuthnEmailService(
     ):
         save_webauthn_token(
             user={
-                "email": user_context["email"],
+                "email": template_vars.user.email,
                 "recover_account_link": "",
                 "token": "",
             },
@@ -529,6 +529,7 @@ def custom_init(
                 if body is not None and "generalErrorMessage" in body:
                     msg = body["generalErrorMessage"]
                 return GeneralErrorResponse(msg)
+
             return await original_sign_in_post(
                 form_fields,
                 tenant_id,
@@ -551,6 +552,7 @@ def custom_init(
             )
             if is_general_error:
                 return GeneralErrorResponse("general error from API sign up")
+
             return await original_sign_up_post(
                 form_fields,
                 tenant_id,
@@ -997,7 +999,7 @@ def custom_init(
                 config=WebauthnConfig(
                     email_delivery=EmailDeliveryConfigWithService[
                         TypeWebauthnEmailDeliveryInput
-                    ](service=CustomWebwuthnEmailService())
+                    ](service=CustomWebwuthnEmailService())  # type: ignore
                 )
             ),
         },

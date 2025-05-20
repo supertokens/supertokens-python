@@ -37,8 +37,16 @@ urlpatterns = [  # type: ignore
     path("test/setup/app", views.setup_core_app),
     path("test/setup/st", views.setup_st),
     path("test/webauthn/get-token", views.get_webauthn_token, name="getWebauthnToken"),
-    path("test/webauth/create-and-assert-credential", views.webauthn_create_and_assert_credential, name="webauthnCreateAndAssertCredential"),
-    path("test/webauthn/create-credential", views.webauthn_create_credential, name="webauthnCreateCredential"),
+    path(
+        "test/webauthn/create-and-assert-credential",
+        views.webauthn_create_and_assert_credential,
+        name="webauthnCreateAndAssertCredential",
+    ),
+    path(
+        "test/webauthn/create-credential",
+        views.webauthn_create_credential,
+        name="webauthnCreateCredential",
+    ),
 ]
 
 mode = os.environ.get("APP_MODE", "asgi")

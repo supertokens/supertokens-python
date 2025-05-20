@@ -14,8 +14,10 @@
 import os
 import time
 import typing
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, TypedDict, Union
+from urllib.parse import parse_qs, urlparse
 
+import httpx
 import requests
 import uvicorn  # type: ignore
 from dotenv import load_dotenv
@@ -36,9 +38,12 @@ from supertokens_python import (
     init,
 )
 from supertokens_python.asyncio import delete_user, get_user, list_users_by_account_info
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfigWithService,
+    EmailDeliveryInterface,
+)
 from supertokens_python.recipe import (
     accountlinking,
     emailpassword,
@@ -51,6 +56,7 @@ from supertokens_python.recipe import (
     thirdparty,
     totp,
     userroles,
+    webauthn,
 )
 from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
@@ -171,11 +177,14 @@ from supertokens_python.recipe.userroles.asyncio import (
     add_role_to_user,
     create_new_role_or_add_permissions,
 )
-from supertokens_python.types import (
-    AccountInfo,
-    RecipeUserId,
-    User,
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    TypeWebauthnEmailDeliveryInput,
 )
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.types.response import GeneralErrorResponse
 from typing_extensions import Literal
 
@@ -187,27 +196,34 @@ os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 
 
 # Uncomment the following for response logging
-# @app.middleware("http")
-# async def log_response(request: Request, call_next):  # type: ignore
-#     response = await call_next(request)  # type: ignore
+@app.middleware("http")
+async def log_response(request: Request, call_next):  # type: ignore
+    response = await call_next(request)  # type: ignore
 
-#     try:
-#         body_bytes = b""
-#         async for chunk in response.body_iterator:  # type: ignore
-#             body_bytes += chunk  # type: ignore
-#         print(f"Response: {body_bytes.decode('utf-8')}")  # type: ignore
-#         response_with_body = Response(
-#             content=body_bytes,
-#             status_code=response.status_code,  # type: ignore
-#             headers=response.headers,  # type: ignore
-#             media_type=response.media_type,  # type: ignore
-#         )
-#         return response_with_body
-#     except:
-#         pass
-#     return response  # type: ignore
+    try:
+        body_bytes = b""
+        async for chunk in response.body_iterator:  # type: ignore
+            body_bytes += chunk  # type: ignore
+        print(f"Response: {body_bytes.decode('utf-8')}")  # type: ignore
+        response_with_body = Response(
+            content=body_bytes,
+            status_code=response.status_code,  # type: ignore
+            headers=response.headers,  # type: ignore
+            media_type=response.media_type,  # type: ignore
+        )
+        return response_with_body
+    except Exception:
+        pass
+    return response  # type: ignore
 
 
+class SaveWebauthnTokenUser(TypedDict):
+    email: str
+    recover_account_link: str
+    token: str
+
+
+webauthn_store: Dict[str, SaveWebauthnTokenUser] = {}
 code_store: Dict[str, List[Dict[str, Any]]] = {}
 accountlinking_config: Dict[str, Any] = {}
 enabled_providers: Optional[List[Any]] = None
@@ -285,6 +301,41 @@ class CustomEPEmailService(
     ) -> None:
         global latest_url_with_token
         latest_url_with_token = template_vars.password_reset_link
+
+
+def save_webauthn_token(user: SaveWebauthnTokenUser, recover_account_link: str):
+    global webauthn_store
+    webauthn = webauthn_store.get(
+        user["email"],
+        {"email": user["email"], "recover_account_link": "", "token": ""},
+    )
+    webauthn["recover_account_link"] = recover_account_link
+
+    # Parse the token from the recoverAccountLink using URL and URLSearchParams
+    url = urlparse(recover_account_link)
+    token = parse_qs(url.query).get("token")
+    if token is not None and len(token) > 0:
+        webauthn["token"] = token[0]
+
+    webauthn_store[user["email"]] = webauthn
+
+
+class CustomWebwuthnEmailService(
+    EmailDeliveryInterface[TypeWebauthnEmailDeliveryInput]
+):
+    async def send_email(
+        self,
+        template_vars: TypeWebauthnEmailDeliveryInput,
+        user_context: Dict[str, Any],
+    ):
+        save_webauthn_token(
+            user={
+                "email": template_vars.user.email,
+                "recover_account_link": "",
+                "token": "",
+            },
+            recover_account_link=template_vars.recover_account_link,
+        )
 
 
 def get_api_port():
@@ -450,6 +501,7 @@ def custom_init(
     MultiFactorAuthRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    WebauthnRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -1042,6 +1094,16 @@ def custom_init(
             ),
         },
         {
+            "id": "webauthn",
+            "init": webauthn.init(
+                config=WebauthnConfig(
+                    email_delivery=EmailDeliveryConfigWithService[
+                        TypeWebauthnEmailDeliveryInput
+                    ](service=CustomWebwuthnEmailService())  # type: ignore
+                )
+            ),
+        },
+        {
             "id": "thirdparty",
             "init": thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
@@ -1437,6 +1499,7 @@ def test_feature_flags(request: Request):
         "recipeConfig",
         "accountlinking-fixes",
         "oauth2",
+        "webauthn",
     ]
     return JSONResponse({"available": available})
 
@@ -1494,11 +1557,46 @@ async def set_role_api(
 @app.post("/deleteUser")
 async def delete_user_api(request: Request):
     body = await request.json()
-    user = await list_users_by_account_info("public", AccountInfo(email=body["email"]))
+    user = await list_users_by_account_info(
+        "public", AccountInfoInput(email=body["email"])
+    )
     if len(user) == 0:
         raise Exception("Should not come here")
     await delete_user(user[0].id)
     return JSONResponse({"status": "OK"})
+
+
+@app.get("/test/webauthn/get-token")
+async def webauth_get_token(request: Request):
+    webauthn = webauthn_store.get(request.query_params.get("email", ""))
+    if webauthn is None:
+        return JSONResponse({"error": "Webauthn not found"}, status_code=404)
+
+    return JSONResponse({"token": webauthn["token"]})
+
+
+@app.post("/test/webauthn/create-and-assert-credential")
+async def webauthn_create_and_assert_credential(request: Request):
+    body = await request.json()
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-and-assert-credential",
+        json=body,
+    )
+
+    return JSONResponse(response.json())
+
+
+@app.post("/test/webauthn/create-credential")
+async def webauthn_create_credential(request: Request):
+    body = await request.json()
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-credential",
+        json=body,
+    )
+
+    return JSONResponse(response.json())
 
 
 async def override_global_claim_validators(
