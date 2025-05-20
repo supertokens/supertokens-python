@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
+from pydantic import ValidationError
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
-from supertokens_python.recipe.webauthn.interfaces.recipe import RegistrationPayload
+from supertokens_python.recipe.webauthn.interfaces.recipe import (
+    InvalidCredentialsErrorResponse,
+    RegistrationPayload,
+)
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import send_200_response
 
@@ -36,6 +41,17 @@ async def recover_account_api(
     if credential is None:
         raise_bad_input_exception("credential is required")
 
+    try:
+        # Try to create an object
+        # If validation fails, return the response expected from the core.
+        # NOTE: Can use `.construct` as an alternative, but the implementation is not stable.
+        credential = RegistrationPayload.from_json(credential)
+    except ValidationError:
+        send_200_response(
+            data_json=InvalidCredentialsErrorResponse().to_json(),
+            response=options.res,
+        )
+
     token = body["token"]
     if token is None:
         raise_bad_input_exception("Please provide the recover account token")
@@ -45,7 +61,7 @@ async def recover_account_api(
 
     result = await api_implementation.recover_account_post(
         webauthn_generated_options_id=webauthn_generated_options_id,
-        credential=RegistrationPayload.model_construct(credential),
+        credential=credential,
         token=token,
         tenant_id=tenant_id,
         options=options,

@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, cast
 
+from pydantic import ValidationError
+
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
-from supertokens_python.recipe.webauthn.interfaces.recipe import RegistrationPayload
+from supertokens_python.recipe.webauthn.interfaces.recipe import (
+    InvalidCredentialsErrorResponse,
+    RegistrationPayload,
+)
 from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.utils import (
     get_backwards_compatible_user_info,
@@ -43,6 +48,17 @@ async def sign_up_api(
     if credential is None:
         raise_bad_input_exception("credential is required")
 
+    try:
+        # Try to create an object
+        # If validation fails, return the response expected from the core.
+        # NOTE: Can use `.construct` as an alternative, but the implementation is not stable.
+        credential = RegistrationPayload.from_json(credential)
+    except ValidationError:
+        send_200_response(
+            data_json=InvalidCredentialsErrorResponse().to_json(),
+            response=options.res,
+        )
+
     should_try_linking_with_session_user = (
         get_normalised_should_try_linking_with_session_user_flag(
             req=options.req, body=body
@@ -59,7 +75,7 @@ async def sign_up_api(
 
     result = await api_implementation.sign_up_post(
         webauthn_generated_options_id=webauthn_generated_options_id,
-        credential=RegistrationPayload.model_construct(credential),
+        credential=credential,
         tenant_id=tenant_id,
         session=session,
         should_try_linking_with_session_user=should_try_linking_with_session_user,
