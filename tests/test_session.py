@@ -644,13 +644,15 @@ async def test_token_cookie_expires(
     for c in response.cookies.jar:
         if c.name == "sAccessToken":  # 100 years (set by the SDK)
             # some time must have elasped since the cookie was set. So less than current time
-            assert datetime.fromtimestamp(c.expires or 0, tz=timezone.utc) - timedelta(
-                days=365.25 * 100
-            ) < datetime.now(tz=timezone.utc)
+            assert datetime.fromtimestamp(
+                c.expires or 0, tz=timezone(timedelta(0), "GMT")
+            ) - timedelta(days=365.25 * 100) < datetime.now(
+                tz=timezone(timedelta(0), "GMT")
+            )
         if c.name == "sRefreshToken":  # 100 days (set by the core)
-            assert datetime.fromtimestamp(c.expires or 0, tz=timezone.utc) - timedelta(
-                days=100
-            ) < datetime.now(tz=timezone.utc)
+            assert datetime.fromtimestamp(
+                c.expires or 0, tz=timezone(timedelta(0), "GMT")
+            ) - timedelta(days=100) < datetime.now(tz=timezone(timedelta(0), "GMT"))
 
     assert response.headers["anti-csrf"] != ""
     assert response.headers["front-token"] != ""
@@ -672,13 +674,15 @@ async def test_token_cookie_expires(
     for c in response.cookies.jar:
         if c.name == "sAccessToken":  # 100 years (set by the SDK)
             # some time must have elasped since the cookie was set. So less than current time
-            assert datetime.fromtimestamp(c.expires or 0, tz=timezone.utc) - timedelta(
-                days=365.25 * 100
-            ) < datetime.now(tz=timezone.utc)
+            assert datetime.fromtimestamp(
+                c.expires or 0, tz=timezone(timedelta(0), "GMT")
+            ) - timedelta(days=365.25 * 100) < datetime.now(
+                tz=timezone(timedelta(0), "GMT")
+            )
         if c.name == "sRefreshToken":  # 100 days (set by the core)
-            assert datetime.fromtimestamp(c.expires or 0, tz=timezone.utc) - timedelta(
-                days=100
-            ) < datetime.now(tz=timezone.utc)
+            assert datetime.fromtimestamp(
+                c.expires or 0, tz=timezone(timedelta(0), "GMT")
+            ) - timedelta(days=100) < datetime.now(tz=timezone(timedelta(0), "GMT"))
 
     assert response.headers["anti-csrf"] != ""
     assert response.headers["front-token"] != ""

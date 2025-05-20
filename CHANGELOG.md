@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [unreleased]
+
+## [0.29.2] - 2025-05-19
+- Fixes cookies being set without expiry in Django
+  - Reverts timezone change from 0.28.0 and uses GMT
+
+### Infrastructure
 - Sets up workflow to run backend-sdk-testing
   - Updates test-servers to work with updated tests
 - Adds workflow to test supertokens-website
@@ -35,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Migrates unit tests from CircleCI to Github Actions
   - Adds lint/format checks to Github Actions
 
+## [0.28.2] - 2025-05-19
+- Fixes cookies being set without expiry in Django
+  - Reverts timezone change from 0.28.0 and uses GMT
 
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)
