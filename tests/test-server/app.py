@@ -672,11 +672,11 @@ def init_st(config: Dict[str, Any]):
                             apis=override_builder_with_logging(
                                 "WebAuthn.override.apis",
                                 recipe_config_json.get("override", {}).get("apis"),
-                            ),
+                            ),  # type: ignore
                             functions=override_builder_with_logging(
                                 "WebAuthn.override.functions",
                                 recipe_config_json.get("override", {}).get("functions"),
-                            ),
+                            ),  # type: ignore
                         ),
                     ),
                 )
