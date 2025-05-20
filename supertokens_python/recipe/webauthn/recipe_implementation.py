@@ -93,13 +93,16 @@ class RecipeImplementation(RecipeInterface):
         has_email_input: bool = False
         has_recover_account_token_input: bool = False
 
-        if "email" in kwargs:
+        if "email" in kwargs and kwargs.get("email") is not None:
             has_email_input = True
             kwargs_obj = DisplayNameEmailInput(
                 email=kwargs["email"],
                 display_name=kwargs.get("display_name"),
             )
-        elif "recover_account_token" in kwargs:
+        elif (
+            "recover_account_token" in kwargs
+            and kwargs.get("recover_account_token") is not None
+        ):
             has_recover_account_token_input = True
             kwargs_obj = RecoverAccountTokenInput(
                 recover_account_token=kwargs["recover_account_token"],
@@ -134,6 +137,10 @@ class RecipeImplementation(RecipeInterface):
                 if login_method.recipe_user_id.get_as_string() == user_id:
                     email = login_method.email
                     break
+        else:
+            raise Exception(
+                "should never come here: Either `email` or `recover_aacount_token` should be specified"
+            )
 
         if email is None:
             return InvalidEmailErrorResponse(err="The email is missing")
