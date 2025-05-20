@@ -41,8 +41,9 @@ async def register_options_api(
         )
 
     if email is not None:
+        email = email.strip()
         validate_error = await options.config.validate_email_address(
-            email=email.strip(), tenant_id=tenant_id, user_context=user_context
+            email=email, tenant_id=tenant_id, user_context=user_context
         )
         if validate_error is not None:
             return send_200_response(
@@ -51,7 +52,7 @@ async def register_options_api(
             )
 
     result = await api_implementation.register_options_post(
-        email=email.strip(),
+        email=email,
         recover_account_token=recover_account_token,
         tenant_id=tenant_id,
         options=options,
