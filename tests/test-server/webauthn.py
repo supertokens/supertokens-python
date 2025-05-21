@@ -29,6 +29,8 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
 )
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     AuthenticationPayload,
+    AuthenticatorAssertionResponseJSON,
+    AuthenticatorAttestationResponseJSON,
     RegistrationPayload,
 )
 from supertokens_python.types.response import StatusResponseBaseModel
@@ -65,12 +67,20 @@ def add_webauthn_routes(app: Flask):
         session = None
         if "session" in request.json:
             session = convert_session_to_container(request.json)
+
         response = sign_up.sync(
             **{
                 **{to_snake(k): v for k, v in request.json.items()},
                 # Create model without validation so that we can test edge cases
                 "credential": RegistrationPayload.model_construct(
-                    request.json["credential"]
+                    **{
+                        k: v
+                        for k, v in request.json["credential"].items()
+                        if k != "response"
+                    },
+                    response=AuthenticatorAttestationResponseJSON.model_construct(
+                        **request.json["credential"]["response"],
+                    ),
                 ),
                 "session": session,
             }  # type: ignore
@@ -89,7 +99,14 @@ def add_webauthn_routes(app: Flask):
                 **{to_snake(k): v for k, v in request.json.items()},
                 # Create model without validation so that we can test edge cases
                 "credential": AuthenticationPayload.model_construct(
-                    request.json["credential"]
+                    **{
+                        k: v
+                        for k, v in request.json["credential"].items()
+                        if k != "response"
+                    },
+                    response=AuthenticatorAssertionResponseJSON.model_construct(
+                        **request.json["credential"]["response"],
+                    ),
                 ),
                 "session": session,
             }  # type: ignore
@@ -106,7 +123,14 @@ def add_webauthn_routes(app: Flask):
                     **{to_snake(k): v for k, v in request.json.items()},
                     # Create model without validation so that we can test edge cases
                     "credential": AuthenticationPayload.model_construct(
-                        request.json["credential"]
+                        **{
+                            k: v
+                            for k, v in request.json["credential"].items()
+                            if k != "response"
+                        },
+                        response=AuthenticatorAssertionResponseJSON.model_construct(
+                            **request.json["credential"]["response"],
+                        ),
                     ),
                 }  # type: ignore
             ),
@@ -145,7 +169,14 @@ def add_webauthn_routes(app: Flask):
                 **{to_snake(k): v for k, v in request.json.items()},
                 # Create model without validation so that we can test edge cases
                 "credential": RegistrationPayload.model_construct(
-                    request.json["credential"]
+                    **{
+                        k: v
+                        for k, v in request.json["credential"].items()
+                        if k != "response"
+                    },
+                    response=AuthenticatorAttestationResponseJSON.model_construct(
+                        **request.json["credential"]["response"],
+                    ),
                 ),
             }  # type: ignore
         )
