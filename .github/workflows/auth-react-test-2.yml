@@ -2,6 +2,11 @@ name: Auth-React Tests - L2
 on:
   workflow_call:
     inputs:
+      ref:
+        description: The git ref to run tests on
+        type: string
+        required: true
+
       artifact-id:
         description: "Matrix artifact ID"
         required: true
@@ -66,6 +71,7 @@ jobs:
     uses: ./.github/workflows/auth-react-test-3.yml
     name: Group ${{ matrix.name }}
     with:
+      ref: ${{ inputs.ref }}
       matrix: ${{ matrix.items }}
       fdi-version: ${{ inputs.artifact-id }}
       AUTH_REACT__LOG_DIR: ${{ inputs.AUTH_REACT__LOG_DIR }}

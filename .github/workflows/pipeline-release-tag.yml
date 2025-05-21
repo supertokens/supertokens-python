@@ -18,20 +18,54 @@ permissions:
   contents: write
 
 jobs:
-  mark-as-success:
+  release:
     runs-on: ubuntu-latest
+
+    outputs:
+      constantsVersion: ${{ steps.versions.outputs.constantsVersion }}
+      constantsVersionXy: ${{ steps.versions.outputs.constantsVersionXy }}
+      setupVersion: ${{ steps.versions.outputs.setupVersion }}
+      setupVersionXy: ${{ steps.versions.outputs.setupVersionXy }}
+      newestVersion: ${{ steps.versions.outputs.newestVersion }}
+      targetBranch: ${{ steps.versions.outputs.targetBranch }}
+      devTag: ${{ steps.versions.outputs.devTag }}
+      releaseTag: ${{ steps.versions.outputs.releaseTag }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
           fetch-tags: true
+          # token: ${{ secrets.repo_PAT }}
 
-      - name: Check tests passed
+      - name: Setup
         run: |
-          ./hooks/populate-hook-constants.sh
+          make dev-install
 
-          testsPassed = `curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=$setupVersion&name=python" -H 'api-version: 0'`
+          # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+          # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Populate variables
+        id: versions
+        run: |
+          . ./hooks/populate-hook-constants.sh
+
+          echo "constantsVersion=$constantsVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "constantsVersionXy=$constantsVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "setupVersion=$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "setupVersionXy=$setupVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+          echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+      - if: ${{ inputs.force == 'false' }}
+        name: Check tests passed
+        run: |
+          testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ steps.versions.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
 
           if [[ echo $testsPassed | jq .testPassed != "true" ]]
           then
@@ -39,12 +73,10 @@ jobs:
             exit 1
           fi
 
-      - if: ! inputs.force
+      - if: ${{ inputs.force == 'false' }}
         name: Check if core and frontend released
         run: |
-          ./hooks/populate-hook-constants.sh
-
-          canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=$setupVersion&name=python" -H 'api-version: 0'`
+          canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ steps.versions.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
 
           if [[ echo $canReleaseSafelyResponse | jq .canRelease != "true" ]]
           then
@@ -54,61 +86,82 @@ jobs:
 
       - name: Check if current commit is dev-tagged
         run: |
-          ./hooks/populate-hook-constants.sh
-
-          currentTag=`git tag -l --points-at ${{ github.sha }}`
-          expectedTag=dev-v$setupVersion
+          currentCommit=$(git log --format="%H" -n 1)
+          currentTag=`git tag -l --points-at $currentCommit`
+          expectedTag="${{ steps.versions.outputs.devTag }}"
 
           if [[ $currentTag != $expectedTag ]]
           then
             echo "Commit does not have the correct dev tag for this release"
+            echo "Current: `$currentTag`"
+            echo "Expected: `$expectedTag`"
             exit 1
           fi
 
       - name: Mark for release
         run: |
-          ./hooks/populate-hook-constants.sh
+          # curl --fail-with-body -X PUT \
+          #     https://api.supertokens.io/0/driver \
+          #     -H 'Content-Type: application/json' \
+          #     -H 'api-version: 0' \
+          #     -d "{
+          #         \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
+          #         \"name\":\"python\",
+          #         \"version\":\"${{ steps.versions.outputs.setupVersion }}\",
+          #         \"release\": true
+          #     }"`
 
-          curl --fail-with-body -X PUT \
-              https://api.supertokens.io/0/driver \
-              -H 'Content-Type: application/json' \
-              -H 'api-version: 0' \
-              -d "{
-                  \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
-                  \"name\":\"python\",
-                  \"version\":\"$setupVersion\",
-                  \"release\": true
-              }"`
-
-      - name: Add Release tag and build docs
+      - name: Build docs
         run: |
-          ./hooks/populate-hook-constants.sh
-
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
-          # Delete current dev tag
-          git tag --delete dev-v$setupVersion
-          git push --delete origin dev-v$setupVersion
-
-          # update docs and commit changes
           make build-docs
+
+      - name: Commit doc changes
+        run: |
           git add --all
-          git commit --allow-empty -nm "doc: update docs for v$setupVersion tag"
+          git commit --allow-empty -nm "doc: update docs for ${{ steps.versions.outputs.releaseTag }} tag"
           git push
 
-          git tag v$setupVersion
+      - name: Create release tag, delete dev tag
+        run: |
+          # Add new release tag
+          git tag ${{ steps.versions.outputs.releaseTag }}
           git push --tags
+
+          # Delete current dev tag
+          git tag --delete ${{ steps.versions.outputs.devTag }}
+          git push --delete origin ${{ steps.versions.outputs.devTag }}
+
+
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+          # token: ${{ secrets.repo_PAT }}
+
+      - name: Setup
+        run: |
+          git fetch origin master --depth 1
+
+          # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+          # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check API and merge to master
         run: |
-          ./hooks/populate-hook-constants.sh
-
-          response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=$setupVersion&name=python" -H 'api-version: 0'`
+          # response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ steps.versions.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+          response=true
 
           if [[ $response == "true" ]]
-            git merge master
-            git checkout master
+          then
+            git merge origin/master
+            git checkout origin/master
             git merge ${{ inputs.branch }}
             git push
             git checkout ${{ inputs.branch }}
@@ -116,17 +169,18 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: mark-as-success
+    needs:
+      - release
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ needs.release.outputs.releaseTag }}
           fetch-tags: true
 
       - run: |
-          python3 -m pip install ip install pip setuptools packaging poetry clikit --upgrade
-          make dev-install
-          pip install setuptools wheels twine
-          python setup.py sdist bdist_wheel
-          twine upload -u ${{ secrets.RELEASE_USERNAME }} -p ${{ secrets.RELEASE_PASSWORD }} dist/*
+          # python3 -m pip install ip install pip setuptools packaging poetry clikit --upgrade
+          # make dev-install
+          # pip install setuptools wheels twine
+          # python setup.py sdist bdist_wheel
+          # twine upload -u ${{ secrets.RELEASE_USERNAME }} -p ${{ secrets.RELEASE_PASSWORD }} dist/*

@@ -6,12 +6,12 @@ on:
       - opened
       - reopened
       - synchronize
-  push:
-    branches:
-      - master
-      - "v[0-9]+.[0-9]+"
-    tags:
-      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+  workflow_call:
+    inputs:
+      ref:
+        description: The git ref to run tests on
+        type: string
+        required: true
 
 jobs:
   define-versions:
@@ -21,7 +21,14 @@ jobs:
       cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
       pyVersions: '["3.8", "3.13"]'
     steps:
-      - uses: actions/checkout@v4
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
       - uses: supertokens/get-supported-versions-action@main
         id: versions
         with:
@@ -83,6 +90,7 @@ jobs:
         fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
     name: FDI ${{ matrix.fdi-version }}
     with:
+      ref: ${{ inputs.ref }}
       artifact-id: ${{ matrix.fdi-version }}
       AUTH_REACT__LOG_DIR: ${{ needs.setup-auth-react.outputs.AUTH_REACT__LOG_DIR }}
       AUTH_REACT__SCREENSHOT_DIR: ${{ needs.setup-auth-react.outputs.AUTH_REACT__SCREENSHOT_DIR }}

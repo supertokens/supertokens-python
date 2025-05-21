@@ -7,6 +7,11 @@ on:
       - reopened
       - synchronize
   workflow_call:
+    inputs:
+      ref:
+        description: The git ref to run tests on
+        type: string
+        required: true
 
 jobs:
   define-versions:
@@ -22,16 +27,25 @@ jobs:
       matrix:
         py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
     steps:
-      - uses: actions/checkout@v4
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py-version }}
+
       - name: Create virtual environment and install dependencies
         run: |
           python3 -m venv venv
           source venv/bin/activate
           python3 -m pip install pip setuptools --upgrade
           make dev-install && rm -rf src
+
       - name: Run checks
         # New steps require sourcing the venv again
         run: |

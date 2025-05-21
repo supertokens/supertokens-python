@@ -7,6 +7,11 @@ on:
       - reopened
       - synchronize
   workflow_call:
+    inputs:
+      ref:
+        description: The git ref to run tests on
+        type: string
+        required: true
 
 jobs:
   define-versions:
@@ -17,7 +22,14 @@ jobs:
       pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
       nodeVersions: '["20"]'
     steps:
-      - uses: actions/checkout@v4
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
       - uses: supertokens/get-supported-versions-action@main
         id: versions
         with:
@@ -42,8 +54,16 @@ jobs:
       SUPERTOKENS_CORE_HOST: localhost
 
     steps:
-      - uses: actions/checkout@v4
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
         with:
+          # Checking out to a custom path since the test repo will also be cloned
+          path: supertokens-python
+
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
           # Checking out to a custom path since the test repo will also be cloned
           path: supertokens-python
 
