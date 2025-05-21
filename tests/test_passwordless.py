@@ -122,6 +122,7 @@ async def test_passwordless_otp(driver_config_client: TestClient):
                     "verified": True,
                 }
             ],
+            "webauthn": [],
         },
     }
 
