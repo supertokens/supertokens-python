@@ -30,14 +30,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
+          # Need a complete fetch to make the master merge check work
+          fetch-depth: 0
           fetch-tags: true
           # token: ${{ secrets.repo_PAT }}
 
       - name: Check if branch needs master merge
         run: |
-          git fetch origin master --depth 1
+          git fetch origin master
 
-          if [[ $(git log origin/master ^HEAD) ]]; then
+          if [[ $(git log origin/master ^HEAD) != "" ]]; then
             echo "You need to merge master into this branch."
             exit 1
           fi
@@ -91,7 +93,7 @@ jobs:
     needs:
       - setup
 
-    uses: ./.github/workflows/unit-test.yml
+    uses: ./.github/workflows/lint-code.yml
     with:
       ref: ${{ needs.setup.outputs.devTag }}
 

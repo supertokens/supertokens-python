@@ -118,7 +118,7 @@ jobs:
       - name: Commit doc changes
         run: |
           git add --all
-          git commit --allow-empty -nm "doc: update docs for ${{ steps.versions.outputs.releaseTag }} tag"
+          git commit --allow-empty -nm "doc: update docs for ${{ steps.versions.outputs.releaseTag }}"
           git push
 
       - name: Create release tag, delete dev tag
@@ -141,6 +141,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
+          # Need a complete fetch to make the master merge work
+          fetch-depth: 0
           fetch-tags: true
           # token: ${{ secrets.repo_PAT }}
 
@@ -160,8 +162,11 @@ jobs:
 
           if [[ $response == "true" ]]
           then
-            git merge origin/master
-            git checkout origin/master
+            git checkout master
+            git checkout ${{ inputs.branch }}
+
+            git merge master
+            git checkout master
             git merge ${{ inputs.branch }}
             git push
             git checkout ${{ inputs.branch }}
