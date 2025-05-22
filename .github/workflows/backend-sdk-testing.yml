@@ -82,10 +82,11 @@ jobs:
         run: |
           source venv/bin/activate
           docker compose up --build --wait
-          python3 tests/test-server/app.py &
+          python3 tests/test-server/app.py &> python.log &
 
       - uses: supertokens/backend-sdk-testing-action@main
         with:
           version: ${{ matrix.fdi-version }}
           check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=${{ matrix.node-version }}]'
           path: backend-sdk-testing
+          app-server-logs: ${{ github.workspace }}/supertokens-python/python.log
