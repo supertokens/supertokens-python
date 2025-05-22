@@ -292,6 +292,11 @@ class User:
         from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo as TPI
         from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
 
+        if "webauthn" in json:
+            webauthn = WebauthnInfo.from_json(json["webauthn"])
+        else:
+            webauthn = WebauthnInfo(credential_ids=[])
+
         return User(
             user_id=json["id"],
             is_primary_user=json["isPrimaryUser"],
@@ -299,7 +304,7 @@ class User:
             emails=json["emails"],
             phone_numbers=json["phoneNumbers"],
             third_party=[TPI.from_json(tp) for tp in json["thirdParty"]],
-            webauthn=WebauthnInfo.from_json(json["webauthn"]),
+            webauthn=webauthn,
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )
