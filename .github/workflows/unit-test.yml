@@ -6,12 +6,9 @@ on:
       - opened
       - reopened
       - synchronize
-  workflow_call:
-    inputs:
-      ref:
-        description: The git ref to run tests on
-        type: string
-        required: true
+  push:
+    tags:
+      - dev-v[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   define-versions:
@@ -23,11 +20,8 @@ jobs:
       pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
 
     steps:
-      - if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - if: github.event_name == 'workflow_dispatch'
-        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
 
@@ -48,13 +42,7 @@ jobs:
         cdi-version: ${{ fromJSON(needs.define-versions.outputs.cdiVersions) }}
 
     steps:
-      - if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
-
-      - if: github.event_name == 'workflow_dispatch'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
+      - uses: actions/checkout@v4
 
       - uses: supertokens/get-versions-action@main
         id: versions

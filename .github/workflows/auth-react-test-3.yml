@@ -2,11 +2,6 @@ name: Auth-React Tests - L3
 on:
   workflow_call:
     inputs:
-      ref:
-        description: The git ref to run tests on
-        type: string
-        required: true
-
       fdi-version:
         description: "FDI Version for this set of tests"
         required: true
@@ -70,16 +65,8 @@ jobs:
       AUTH_REACT__PORT: ${{ inputs.AUTH_REACT__PORT }}
 
     steps:
-      - if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          # Checking out to a custom path since the test repo will also be cloned
-          path: supertokens-python
-
-      - if: github.event_name == 'workflow_dispatch'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
           # Checking out to a custom path since the test repo will also be cloned
           path: supertokens-python
 

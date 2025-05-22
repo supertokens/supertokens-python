@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  setup:
     runs-on: ubuntu-latest
 
     outputs:
@@ -36,16 +36,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-tags: true
-          # token: ${{ secrets.repo_PAT }}
-
-      - name: Setup
-        run: |
-          make dev-install
-
-          # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
-          # See users API: https://api.github.com/users/github-actions%5Bbot%5D
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          token: ${{ secrets.repo_PAT }}
 
       - name: Populate variables
         id: versions
@@ -62,10 +53,103 @@ jobs:
           echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
           echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
 
+  mark-as-success:
+    runs-on: ubuntu-latest
+
+    needs:
+      - setup
+
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install httpx
+
+      - name: Get commit status
+        run: |
+          python3 -c "$(cat << EOF
+
+          from collections import defaultdict
+          import httpx
+          import sys
+
+          url = "https://api.github.com/repos/${{ github.repository }}/commits/tags/${{ needs.setup.outputs.devTag }}/check-runs?per_page=100&page={page}"
+          page = 1
+          total = 0
+
+          status_map = defaultdict(int)
+          conclusion_map = defaultdict(int)
+
+          while True:
+            response = httpx.get(url.format(page=page)).json()
+
+            if len(response["check_runs"]) == 0:
+                break
+
+            for run_info in response["check_runs"]:
+                status_map[run_info["status"]] += 1
+                conclusion_map[run_info["conclusion"]] += 1
+                total += 1
+
+            page += 1
+
+          print(f"{total=}")
+          print(dict(status_map))
+          print(dict(conclusion_map))
+
+          if status_map["completed"] < total:
+              print("Some checks not completed.")
+              print(dict(status_map))
+              sys.exit(1)
+
+          if conclusion_map["success"] < total:
+              print("Some checks not successful.")
+              print(dict(conclusion_map))
+              sys.exit(1)
+
+          EOF
+          )"
+
+      # - run: |
+      #     curl --fail-with-body -X PATCH \
+      #         https://api.supertokens.io/0/driver \
+      #         -H 'Content-Type: application/json' \
+      #         -H 'api-version: 0' \
+      #         -d "{
+      #           \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+      #           \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
+      #           \"name\": \"python\",
+      #           \"testPassed\": true
+      #         }"`
+
+  release:
+    runs-on: ubuntu-latest
+
+    needs:
+      - setup
+      - mark-as-success
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+          token: ${{ secrets.repo_PAT }}
+
+      - name: Setup git
+        run: |
+          # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+          # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - if: ${{ inputs.force == 'false' }}
         name: Check tests passed
         run: |
-          testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ steps.versions.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+          testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
 
           if [[ echo $testsPassed | jq .testPassed != "true" ]]
           then
@@ -76,7 +160,7 @@ jobs:
       - if: ${{ inputs.force == 'false' }}
         name: Check if core and frontend released
         run: |
-          canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ steps.versions.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+          canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
 
           if [[ echo $canReleaseSafelyResponse | jq .canRelease != "true" ]]
           then
@@ -88,7 +172,7 @@ jobs:
         run: |
           currentCommit=$(git log --format="%H" -n 1)
           currentTag=`git tag -l --points-at $currentCommit`
-          expectedTag="${{ steps.versions.outputs.devTag }}"
+          expectedTag="${{ needs.setup.outputs.devTag }}"
 
           if [[ $currentTag != $expectedTag ]]
           then
@@ -107,34 +191,25 @@ jobs:
           #     -d "{
           #         \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
           #         \"name\":\"python\",
-          #         \"version\":\"${{ steps.versions.outputs.setupVersion }}\",
+          #         \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
           #         \"release\": true
           #     }"`
-
-      - name: Build docs
-        run: |
-          make build-docs
-
-      - name: Commit doc changes
-        run: |
-          git add --all
-          git commit --allow-empty -nm "doc: update docs for ${{ steps.versions.outputs.releaseTag }}"
-          git push
 
       - name: Create release tag, delete dev tag
         run: |
           # Add new release tag
-          git tag ${{ steps.versions.outputs.releaseTag }}
+          git tag ${{ needs.setup.outputs.releaseTag }}
           git push --tags
 
           # Delete current dev tag
-          git tag --delete ${{ steps.versions.outputs.devTag }}
-          git push --delete origin ${{ steps.versions.outputs.devTag }}
+          git tag --delete ${{ needs.setup.outputs.devTag }}
+          git push --delete origin ${{ needs.setup.outputs.devTag }}
 
 
   merge:
     runs-on: ubuntu-latest
     needs:
+      - setup
       - release
 
     steps:
@@ -144,12 +219,10 @@ jobs:
           # Need a complete fetch to make the master merge work
           fetch-depth: 0
           fetch-tags: true
-          # token: ${{ secrets.repo_PAT }}
+          token: ${{ secrets.repo_PAT }}
 
-      - name: Setup
+      - name: Setup git
         run: |
-          git fetch origin master --depth 1
-
           # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
           # See users API: https://api.github.com/users/github-actions%5Bbot%5D
           git config user.name "github-actions[bot]"
@@ -157,7 +230,15 @@ jobs:
 
       - name: Check API and merge to master
         run: |
-          # response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ steps.versions.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+          # response=$(curl -s\
+          #   -X GET\
+          #   "https://api.supertokens.io/0/driver/latest/check?\
+          #     password=${{ secrets.SUPERTOKENS_API_KEY }}&\
+          #     version=${{ needs.setup.outputs.setupVersion }}&\
+          #     name=python" \
+          #   -H 'api-version: 0'
+          # )
+          # response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
           response=true
 
           if [[ $response == "true" ]]
@@ -175,12 +256,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs:
+      - setup
       - release
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.release.outputs.releaseTag }}
+          ref: ${{ needs.setup.outputs.releaseTag }}
           fetch-tags: true
 
       - run: |
