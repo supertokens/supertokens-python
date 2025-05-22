@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.recipe.totp.recipe import TOTPRecipe
-    from supertokens_python.types import GeneralErrorResponse
+    from supertokens_python.types.response import GeneralErrorResponse
 
     from .types import (
         CreateDeviceOkResult,

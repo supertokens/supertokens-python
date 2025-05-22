@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from .interfaces import APIInterface, RecipeInterface
 

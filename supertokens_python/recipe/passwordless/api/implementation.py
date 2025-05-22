@@ -67,11 +67,11 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import (
     AccountInfo,
-    GeneralErrorResponse,
     LoginMethod,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ...emailverification import EmailVerificationRecipe
 from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult

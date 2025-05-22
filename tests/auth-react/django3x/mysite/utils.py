@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -5,6 +7,10 @@ import requests
 from dotenv import load_dotenv
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfigWithService,
+    EmailDeliveryInterface,
+)
 from supertokens_python.recipe import (
     accountlinking,
     emailpassword,
@@ -17,6 +23,7 @@ from supertokens_python.recipe import (
     thirdparty,
     totp,
     userroles,
+    webauthn,
 )
 from supertokens_python.recipe.accountlinking import AccountInfoWithRecipeIdAndUserId
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
@@ -81,10 +88,20 @@ from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriI
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
-from supertokens_python.types import GeneralErrorResponse, User
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    TypeWebauthnEmailDeliveryInput,
+)
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.types import User
+from supertokens_python.types.response import GeneralErrorResponse
 from typing_extensions import Literal
 
-from .store import save_code, save_url_with_token
+from .store import (
+    save_code,
+    save_url_with_token,
+    save_webauthn_token,
+)
 
 load_dotenv("../auth-react.env")
 
@@ -161,6 +178,24 @@ class CustomEPEmailService(
         user_context: Dict[str, Any],
     ) -> None:
         save_url_with_token(template_vars.password_reset_link)
+
+
+class CustomWebwuthnEmailService(
+    EmailDeliveryInterface[TypeWebauthnEmailDeliveryInput]
+):
+    async def send_email(
+        self,
+        template_vars: TypeWebauthnEmailDeliveryInput,
+        user_context: Dict[str, Any],
+    ):
+        save_webauthn_token(
+            user={
+                "email": template_vars.user.email,
+                "recover_account_link": "",
+                "token": "",
+            },
+            recover_account_link=template_vars.recover_account_link,
+        )
 
 
 async def validate_age(value: Any, _tenant_id: str):
@@ -364,6 +399,7 @@ def custom_init(
     MultiFactorAuthRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    WebauthnRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -493,6 +529,7 @@ def custom_init(
                 if body is not None and "generalErrorMessage" in body:
                     msg = body["generalErrorMessage"]
                 return GeneralErrorResponse(msg)
+
             return await original_sign_in_post(
                 form_fields,
                 tenant_id,
@@ -515,6 +552,7 @@ def custom_init(
             )
             if is_general_error:
                 return GeneralErrorResponse("general error from API sign up")
+
             return await original_sign_up_post(
                 form_fields,
                 tenant_id,
@@ -953,6 +991,16 @@ def custom_init(
                 override=emailpassword.InputOverrideConfig(
                     apis=override_email_password_apis,
                 ),
+            ),
+        },
+        {
+            "id": "webauthn",
+            "init": webauthn.init(
+                config=WebauthnConfig(
+                    email_delivery=EmailDeliveryConfigWithService[
+                        TypeWebauthnEmailDeliveryInput
+                    ](service=CustomWebwuthnEmailService())  # type: ignore
+                )
             ),
         },
         {

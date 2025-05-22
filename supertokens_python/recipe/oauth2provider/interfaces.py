@@ -20,11 +20,10 @@ from typing_extensions import Literal
 
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import (
-    APIResponse,
-    GeneralErrorResponse,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .oauth2_client import OAuth2Client
 

@@ -27,7 +27,8 @@ from supertokens_python.recipe.passwordless import (
 )
 from supertokens_python.recipe.passwordless.asyncio import signinup
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
-from supertokens_python.types import APIResponse, RecipeUserId, User
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.response import APIResponse
 
 
 class CreatePasswordlessUserOkResponse(APIResponse):

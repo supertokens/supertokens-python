@@ -7,7 +7,7 @@ from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOpti
 from supertokens_python.recipe.userroles.asyncio import add_role_to_user
 from supertokens_python.recipe.userroles.interfaces import AddRoleToUserOkResult
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 
 class OkResponse(APIResponse):

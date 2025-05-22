@@ -15,13 +15,13 @@ import json
 import os
 from typing import Any, Dict, List
 
+import httpx
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from mysite.store import get_codes, get_url_with_token
+from mysite.store import get_codes, get_url_with_token, webauthn_store
 from mysite.utils import custom_init
 from mysite.utils import setup_core_app as setup_core_app_impl
 from supertokens_python import convert_to_recipe_user_id
 from supertokens_python.asyncio import get_user
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
@@ -67,7 +67,9 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
-from supertokens_python.types import AccountInfo, RecipeUserId
+from supertokens_python.types import RecipeUserId
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
 
 mode = os.environ.get("APP_MODE", "asgi")
 
@@ -142,7 +144,7 @@ if mode == "asgi":
 
         body = json.loads(request.body)
         user = await list_users_by_account_info(
-            "public", AccountInfo(email=body["email"])
+            "public", AccountInfoInput(email=body["email"])
         )
         if len(user) == 0:
             raise Exception("Should not come here")
@@ -194,7 +196,9 @@ else:
         from supertokens_python.syncio import delete_user, list_users_by_account_info
 
         body = json.loads(request.body)
-        user = list_users_by_account_info("public", AccountInfo(email=body["email"]))
+        user = list_users_by_account_info(
+            "public", AccountInfoInput(email=body["email"])
+        )
         if len(user) == 0:
             raise Exception("Should not come here")
         delete_user(user[0].id)
@@ -460,6 +464,7 @@ def test_feature_flags(request: HttpRequest):
                 "recipeConfig",
                 "accountlinking-fixes",
                 "oauth2",
+                "webauthn",
             ]
         }
     )
@@ -482,3 +487,39 @@ def setup_st(request: HttpRequest):
 
     custom_init(**body)
     return HttpResponse("")
+
+
+def get_webauthn_token(request: HttpRequest):
+    webauthn = webauthn_store.get(request.GET.get("email", ""))
+    if webauthn is None:
+        return JsonResponse({"error": "Webauthn not found"}, status=404)
+
+    return JsonResponse({"token": webauthn["token"]})
+
+
+def webauthn_create_and_assert_credential(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-and-assert-credential",
+        json=body,
+    )
+
+    return JsonResponse(response.json())
+
+
+def webauthn_create_credential(request: HttpRequest):
+    body = json.loads(request.body)
+    if body is None:
+        raise Exception("Invalid request body")
+
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-credential",
+        json=body,
+    )
+
+    return JsonResponse(response.json())

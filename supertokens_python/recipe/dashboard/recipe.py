@@ -113,7 +113,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
-    from supertokens_python.types import APIResponse
+    from supertokens_python.types.response import APIResponse
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.recipe.dashboard.utils import get_api_path_with_dashboard_base
