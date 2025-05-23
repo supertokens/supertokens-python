@@ -8,8 +8,14 @@ on:
         type: string
         required: true
 
-      force:
-        description: Bypass server checks for safe release of package
+      skip-test-checks:
+        description: Skip tests passed checks
+        type: boolean
+        default: false
+        required: false
+
+      skip-other-version-checks:
+        description: Skip server checks for core and frontend versions
         type: boolean
         default: false
         required: false
@@ -68,7 +74,8 @@ jobs:
         run: |
           pip install httpx
 
-      - name: Get commit status
+      - if: ${{ inputs.skip-test-checks == 'false' }}
+        name: Get commit status
         run: |
           python3 -c "$(cat << EOF
 
@@ -113,17 +120,17 @@ jobs:
           EOF
           )"
 
-      # - run: |
-      #     curl --fail-with-body -X PATCH \
-      #         https://api.supertokens.io/0/driver \
-      #         -H 'Content-Type: application/json' \
-      #         -H 'api-version: 0' \
-      #         -d "{
-      #           \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
-      #           \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
-      #           \"name\": \"python\",
-      #           \"testPassed\": true
-      #         }"`
+      - run: |
+          curl --fail-with-body -X PATCH \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+                \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
+                \"name\": \"python\",
+                \"testPassed\": true
+              }"`
 
   release:
     runs-on: ubuntu-latest
@@ -146,8 +153,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - if: ${{ inputs.force == 'false' }}
-        name: Check tests passed
+      - name: Check tests passed
         run: |
           testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
 
@@ -157,7 +163,7 @@ jobs:
             exit 1
           fi
 
-      - if: ${{ inputs.force == 'false' }}
+      - if: ${{ inputs.skip-other-version-checks == 'false' }}
         name: Check if core and frontend released
         run: |
           canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
@@ -184,16 +190,16 @@ jobs:
 
       - name: Mark for release
         run: |
-          # curl --fail-with-body -X PUT \
-          #     https://api.supertokens.io/0/driver \
-          #     -H 'Content-Type: application/json' \
-          #     -H 'api-version: 0' \
-          #     -d "{
-          #         \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
-          #         \"name\":\"python\",
-          #         \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
-          #         \"release\": true
-          #     }"`
+          curl --fail-with-body -X PUT \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                  \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
+                  \"name\":\"python\",
+                  \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
+                  \"release\": true
+              }"`
 
       - name: Create release tag, delete dev tag
         run: |
@@ -230,16 +236,15 @@ jobs:
 
       - name: Check API and merge to master
         run: |
-          # response=$(curl -s\
-          #   -X GET\
-          #   "https://api.supertokens.io/0/driver/latest/check?\
-          #     password=${{ secrets.SUPERTOKENS_API_KEY }}&\
-          #     version=${{ needs.setup.outputs.setupVersion }}&\
-          #     name=python" \
-          #   -H 'api-version: 0'
-          # )
-          # response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
-          response=true
+          response=$(curl -s\
+            -X GET\
+            "https://api.supertokens.io/0/driver/latest/check?\
+              password=${{ secrets.SUPERTOKENS_API_KEY }}&\
+              version=${{ needs.setup.outputs.setupVersion }}&\
+              name=python" \
+            -H 'api-version: 0'
+          )
+          response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
 
           if [[ $response == "true" ]]
           then
