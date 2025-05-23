@@ -26,8 +26,6 @@ class LitestarRequest(BaseRequest):
         self.request = request
 
     def get_original_url(self) -> str:
-        print(f"The request url is {self.request.url}")
-        print(f"The request url is {self.request.url.from_components()}")
         return str(self.request.url)
 
     def get_query_param(
@@ -63,7 +61,6 @@ class LitestarRequest(BaseRequest):
         self.request.state.supertokens = None
 
     def get_path(self) -> str:
-        print(f"The request url is {self.request.url}")
         return self.request.url.path
 
     async def form_data(self):
