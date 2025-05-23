@@ -13,7 +13,7 @@
 # under the License.
 from typing import Any, Dict, Union
 
-from litestar import Litestar, MediaType, Request, get, post
+from litestar import Litestar, MediaType, Request, Response, get, post
 from litestar.di import Provide
 from litestar.testing import TestClient
 from pytest import fixture, mark
@@ -70,10 +70,14 @@ def driver_config_client() -> TestClient[Litestar]:
         return {"userId": user_id}
 
     @post("/refresh")
-    async def custom_refresh(request: Request[Any, Any, Any]) -> dict[str, Any]:
-        result = await refresh_session(request)
-        print(f"The result is {result}")
-        return {}
+    async def custom_refresh(
+        request: Request[Any, Any, Any],
+    ) -> dict[str, Any] | Response[Any]:
+        try:
+            await refresh_session(request)
+            return Response(content=None)
+        except UnauthorisedError:
+            return Response(content={"message": "Unauthorized"}, status_code=401)
 
     @get("/info")
     async def info_get(request: Request[Any, Any, Any]) -> dict[str, Any]:
@@ -163,6 +167,7 @@ def apis_override_session(param: APIInterface):
     return param
 
 
+#
 # @mark.asyncio
 # async def test_login_refresh(driver_config_client: TestClient[Litestar]):
 #     init(
