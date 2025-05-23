@@ -67,6 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Checking out to a custom path since the test repo will also be cloned
           path: supertokens-python
 
       - uses: actions/setup-python@v5
