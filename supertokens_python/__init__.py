@@ -30,7 +30,7 @@ AppInfo = supertokens.AppInfo
 
 def init(
     app_info: InputAppInfo,
-    framework: Literal["fastapi", "flask", "django"],
+    framework: Literal["fastapi", "flask", "django", "litestar"],
     supertokens_config: SupertokensConfig,
     recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
     mode: Optional[Literal["asgi", "wsgi"]] = None,

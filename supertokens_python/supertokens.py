@@ -127,7 +127,7 @@ class AppInfo:
         app_name: str,
         api_domain: str,
         website_domain: Optional[str],
-        framework: Literal["fastapi", "flask", "django"],
+        framework: Literal["fastapi", "flask", "django", "litestar"],
         api_gateway_path: str,
         api_base_path: str,
         website_base_path: str,
@@ -155,6 +155,8 @@ class AppInfo:
         if mode is not None:
             self.mode = mode
         elif framework == "fastapi":
+            mode = "asgi"
+        elif framework == "litestar":
             mode = "asgi"
         else:
             mode = "wsgi"
@@ -205,7 +207,7 @@ class Supertokens:
     def __init__(
         self,
         app_info: InputAppInfo,
-        framework: Literal["fastapi", "flask", "django"],
+        framework: Literal["fastapi", "flask", "django", "litestar"],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Optional[Literal["asgi", "wsgi"]],
@@ -330,7 +332,7 @@ class Supertokens:
     @staticmethod
     def init(
         app_info: InputAppInfo,
-        framework: Literal["fastapi", "flask", "django"],
+        framework: Literal["fastapi", "flask", "django", "litestar"],
         supertokens_config: SupertokensConfig,
         recipe_list: List[Callable[[AppInfo], RecipeModule]],
         mode: Optional[Literal["asgi", "wsgi"]],
