@@ -11,18 +11,18 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     InvalidCredentialsErrorResponse,
     RegistrationPayload,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
+from supertokens_python.types.base import UserContext
 from supertokens_python.utils import send_200_response
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.interfaces.api import (
-        ApiInterface,
+        APIInterface,
         APIOptions,
     )
 
 
 async def register_credential_api(
-    api_implementation: ApiInterface,
+    api_implementation: APIInterface,
     tenant_id: str,
     options: APIOptions,
     user_context: UserContext,

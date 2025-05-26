@@ -10,7 +10,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     InvalidCredentialsErrorResponse,
     RegistrationPayload,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
+from supertokens_python.types.base import UserContext
 from supertokens_python.utils import (
     get_backwards_compatible_user_info,
     get_normalised_should_try_linking_with_session_user_flag,
@@ -19,13 +19,13 @@ from supertokens_python.utils import (
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.interfaces.api import (
-        ApiInterface,
+        APIInterface,
         APIOptions,
     )
 
 
 async def sign_up_api(
-    api_implementation: ApiInterface,
+    api_implementation: APIInterface,
     tenant_id: str,
     options: APIOptions,
     user_context: UserContext,

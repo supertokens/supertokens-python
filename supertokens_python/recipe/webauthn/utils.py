@@ -12,7 +12,6 @@ from supertokens_python.recipe.webauthn.emaildelivery.services.backward_compatib
 from supertokens_python.recipe.webauthn.interfaces.api import (
     TypeWebauthnEmailDeliveryInput,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import (
     GetOrigin,
     GetRelyingPartyId,
@@ -27,6 +26,7 @@ from supertokens_python.recipe.webauthn.types.config import (
     WebauthnConfig,
 )
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.types.base import UserContext
 
 
 def validate_and_normalise_user_input(

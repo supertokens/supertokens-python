@@ -21,9 +21,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional, TypeVar,
 
 import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse  # type: ignore
-from typing_extensions import Literal
-
-_T = TypeVar("_T")
+from typing_extensions import Literal, TypeAlias
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
@@ -31,6 +29,14 @@ if TYPE_CHECKING:
         WebauthnInfo,
         WebauthnInfoInput,
     )
+
+
+# Generics
+_T = TypeVar("_T")
+MaybeAwaitable = Union[Awaitable[_T], _T]
+
+# Common Types
+UserContext: TypeAlias = Dict[str, Any]
 
 
 class RecipeUserId:
@@ -308,6 +314,3 @@ class User:
             login_methods=[LoginMethod.from_json(lm) for lm in json["loginMethods"]],
             time_joined=json["timeJoined"],
         )
-
-
-MaybeAwaitable = Union[Awaitable[_T], _T]

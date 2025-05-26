@@ -24,9 +24,8 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     UserVerification,
 )
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
-from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.utils import get_recover_account_link
-from supertokens_python.types.base import LoginMethod
+from supertokens_python.types.base import LoginMethod, UserContext
 from supertokens_python.types.response import (
     OkResponseBaseModel,
     StatusResponseBaseModel,

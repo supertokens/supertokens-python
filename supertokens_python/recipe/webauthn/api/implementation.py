@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union, cast
+from typing import Optional, Union, cast
 
 from typing_extensions import Unpack
 
@@ -29,7 +29,7 @@ from supertokens_python.recipe.webauthn.constants import (
     DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
 )
 from supertokens_python.recipe.webauthn.interfaces.api import (
-    ApiInterface,
+    APIInterface,
     APIOptions,
     EmailExistsGetResponse,
     GenerateRecoverAccountTokenPOSTErrorResponse,
@@ -65,7 +65,6 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     UnknownUserIdErrorResponse,
 )
 from supertokens_python.recipe.webauthn.types.base import (
-    UserContext,
     WebauthnInfoInput,
 )
 from supertokens_python.recipe.webauthn.utils import get_recover_account_link
@@ -74,31 +73,19 @@ from supertokens_python.types.base import (
     LoginMethod,
     RecipeUserId,
     User,
+    UserContext,
 )
 from supertokens_python.types.response import (
     GeneralErrorResponse,
     OkResponseBaseModel,
 )
-from supertokens_python.utils import log_debug_message
+from supertokens_python.utils import (
+    get_error_response_reason_from_map,
+    log_debug_message,
+)
 
 
-# TODO: Move to a common ST module
-def get_error_response_reason(
-    response_status: str,
-    error_code_map: Union[
-        Dict[str, Dict[str, str]], Dict[str, str], Dict[str, Union[str, Dict[str, str]]]
-    ],
-) -> str:
-    reason_map_like = error_code_map[response_status]
-    if isinstance(reason_map_like, dict):
-        reason = reason_map_like[response_status]
-    else:
-        reason = reason_map_like
-
-    return reason
-
-
-class ApiImplementation(ApiInterface):
+class APIImplementation(APIInterface):
     async def register_options_post(
         self,
         *,
@@ -271,9 +258,8 @@ class ApiImplementation(ApiInterface):
                         return EmailAlreadyExistsErrorResponse()
 
         if pre_auth_checks_response.status != "OK":
-            # TODO: Do we need to implement a new SignUpPostNotAllowedErrorResponse class?
             return SignUpNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=pre_auth_checks_response.status,
                     error_code_map=error_code_map,
                 )
@@ -301,16 +287,15 @@ class ApiImplementation(ApiInterface):
                 OptionsNotFoundErrorResponse,
             ),
         ):
-            # TODO: Node says this will return a `reason`, but I don't see reason defined in `signUp`'s responses
+            # We should only return the status, because the core also adds a reason for most of these errors
             return sign_up_response
 
-        # TODO: If above snippet is fine, just return this error as well from the same block
         if isinstance(sign_up_response, InvalidAuthenticatorErrorResponse):
             return InvalidAuthenticatorErrorResponse(reason=sign_up_response.reason)
 
         if sign_up_response.status != "OK":
             return SignUpNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=sign_up_response.status,
                     error_code_map=error_code_map,
                 )
@@ -332,7 +317,7 @@ class ApiImplementation(ApiInterface):
             # If it does come here (in case there is a bug), it would make this conditional throw
             # anyway, cause there is no SIGN_IN_NOT_ALLOWED in the errorCodeMap.
             return SignUpNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=post_auth_checks_response.status,
                     error_code_map=error_code_map,
                 )
@@ -451,7 +436,7 @@ class ApiImplementation(ApiInterface):
             )
         if pre_auth_checks_response.status != "OK":
             return SignInNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=pre_auth_checks_response.status,
                     error_code_map=error_code_map,
                 )
@@ -487,7 +472,7 @@ class ApiImplementation(ApiInterface):
 
         if sign_in_response.status != "OK":
             return SignInNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=sign_in_response.status,
                     error_code_map=error_code_map,
                 )
@@ -505,7 +490,7 @@ class ApiImplementation(ApiInterface):
         )
         if post_auth_checks_response.status != "OK":
             return SignInNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=post_auth_checks_response.status,
                     error_code_map=error_code_map,
                 )
@@ -560,7 +545,6 @@ class ApiImplementation(ApiInterface):
                 )
                 return OkResponseBaseModel()
 
-            # TODO: Implement in recipe/webauthn/utils
             recover_account_link = get_recover_account_link(
                 app_info=options.app_info,
                 token=response.token,
@@ -570,7 +554,6 @@ class ApiImplementation(ApiInterface):
             )
 
             log_debug_message(f"Sending recover account email to {email}")
-            # TODO: Implement
             await options.email_delivery.ingredient_interface_impl.send_email(
                 template_vars=TypeWebauthnEmailDeliveryInput(
                     type="RECOVER_ACCOUNT",
@@ -1120,7 +1103,7 @@ class ApiImplementation(ApiInterface):
 
         if register_credential_response.status != "OK":
             return RegisterCredentialNotAllowedErrorResponse(
-                reason=get_error_response_reason(
+                reason=get_error_response_reason_from_map(
                     response_status=register_credential_response.status,
                     error_code_map=error_code_map,
                 )

@@ -9,11 +9,11 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
+from supertokens_python.types.base import UserContext
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.interfaces.api import (
-        ApiInterface,
+        APIInterface,
         TypeWebauthnEmailDeliveryInput,
     )
     from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
@@ -22,7 +22,6 @@ InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""
 
 
-# TODO: Check if we want to use a different naming convention for these types
 @runtime_checkable
 class GetRelyingPartyId(Protocol):
     """
@@ -174,7 +173,7 @@ class OverrideConfig:
     """
 
     functions: Optional[InterfaceOverride[RecipeInterface]] = None
-    apis: Optional[InterfaceOverride[ApiInterface]] = None
+    apis: Optional[InterfaceOverride[APIInterface]] = None
 
 
 @dataclass

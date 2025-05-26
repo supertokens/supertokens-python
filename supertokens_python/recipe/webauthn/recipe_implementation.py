@@ -57,9 +57,8 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     VerifyCredentialsErrorResponse,
     VerifyCredentialsResponse,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
-from supertokens_python.types.base import RecipeUserId, User
+from supertokens_python.types.base import RecipeUserId, User, UserContext
 from supertokens_python.types.response import OkResponseBaseModel
 
 

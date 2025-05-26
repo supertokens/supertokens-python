@@ -24,7 +24,7 @@ from supertokens_python.recipe.webauthn.api.email_exists import email_exists_api
 from supertokens_python.recipe.webauthn.api.generate_recover_account_token import (
     generate_recover_account_token_api,
 )
-from supertokens_python.recipe.webauthn.api.implementation import ApiImplementation
+from supertokens_python.recipe.webauthn.api.implementation import APIImplementation
 from supertokens_python.recipe.webauthn.api.recover_account import recover_account_api
 from supertokens_python.recipe.webauthn.api.register_options import register_options_api
 from supertokens_python.recipe.webauthn.api.sign_in import sign_in_api
@@ -44,7 +44,6 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.recipe_implementation import (
     RecipeImplementation,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import (
     NormalisedWebauthnConfig,
     WebauthnConfig,
@@ -53,11 +52,11 @@ from supertokens_python.recipe.webauthn.types.config import (
 from supertokens_python.recipe.webauthn.utils import validate_and_normalise_user_input
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
-from supertokens_python.types.base import RecipeUserId, User
+from supertokens_python.types.base import RecipeUserId, User, UserContext
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.interfaces.api import (
-        ApiInterface,
+        APIInterface,
         TypeWebauthnEmailDeliveryInput,
     )
 
@@ -68,7 +67,7 @@ class WebauthnRecipe(RecipeModule):
 
     config: NormalisedWebauthnConfig
     recipe_implementation: RecipeInterface
-    api_implementation: "ApiInterface"
+    api_implementation: "APIInterface"
     email_delivery: EmailDeliveryIngredient["TypeWebauthnEmailDeliveryInput"]
 
     def __init__(
@@ -94,7 +93,7 @@ class WebauthnRecipe(RecipeModule):
             else self.config.override.functions(recipe_implementation)
         )
 
-        api_implementation = ApiImplementation()
+        api_implementation = APIImplementation()
         self.api_implementation = (
             api_implementation
             if self.config.override.apis is None

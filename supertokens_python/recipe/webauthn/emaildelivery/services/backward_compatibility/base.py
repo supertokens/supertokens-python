@@ -8,8 +8,8 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
     TypeWebauthnEmailDeliveryInput,
     WebauthnRecoverAccountEmailDeliveryUser,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.types.base import UserContext
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 

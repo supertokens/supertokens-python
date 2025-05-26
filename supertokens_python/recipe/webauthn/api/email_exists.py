@@ -4,18 +4,18 @@ from typing import TYPE_CHECKING, Optional
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
-from supertokens_python.recipe.webauthn.types.base import UserContext
+from supertokens_python.types.base import UserContext
 from supertokens_python.utils import send_200_response
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.interfaces.api import (
-        ApiInterface,
+        APIInterface,
         APIOptions,
     )
 
 
 async def email_exists_api(
-    api_implementation: ApiInterface,
+    api_implementation: APIInterface,
     tenant_id: str,
     options: APIOptions,
     user_context: UserContext,

@@ -22,10 +22,10 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     SignInOptionsErrorResponse,
     UserVerification,
 )
-from supertokens_python.recipe.webauthn.types.base import UserContext
 from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.base import UserContext
 from supertokens_python.types.response import (
     CamelCaseBaseModel,
     GeneralErrorResponse,
@@ -205,7 +205,7 @@ class RegisterOptionsPOSTKwargsInput(TypedDict):
     email: NotRequired[str]
 
 
-class ApiInterface(ABC):
+class APIInterface(ABC):
     disable_register_options_post: bool = False
     disable_sign_in_options_post: bool = False
     disable_sign_up_post: bool = False
