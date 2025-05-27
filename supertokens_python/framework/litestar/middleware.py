@@ -7,8 +7,8 @@ from litestar.middleware import ASGIMiddleware
 from litestar.types import ASGIApp, Message, Receive, Scope, Send
 from supertokens_python import Supertokens
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.litestar.litestar_request import LitestarRequest
-from supertokens_python.framework.litestar.litestar_response import LitestarResponse
+from supertokens_python.framework.litestar.request import LitestarRequest
+from supertokens_python.framework.litestar.response import LitestarResponse
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.supertokens import manage_session_post_response
 from supertokens_python.utils import default_user_context

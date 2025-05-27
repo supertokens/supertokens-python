@@ -1,8 +1,8 @@
 ![SuperTokens banner](https://raw.githubusercontent.com/supertokens/supertokens-logo/master/images/Artboard%20%E2%80%93%2027%402x.png)
 
-# FastAPI example
+# Litestar example
 
-This is an example to show how to use supertokens-python library with FastAPI framework and ThirdpartyEmailpassword recipe.
+This is an example to show how to use supertokens-python library with Litestar framework and ThirdpartyEmailpassword recipe.
 
 This server code can be used to implement social auth using:
 - Google

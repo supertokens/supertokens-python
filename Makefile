@@ -26,6 +26,9 @@ freeze-dev-requirements:
 with-fastapi:
 	pip3 install -e .[fastapi]
 
+with-litestar:
+	pip3 install -e .[litestar]
+
 with-django:
 	pip3 install -e .[django]
 

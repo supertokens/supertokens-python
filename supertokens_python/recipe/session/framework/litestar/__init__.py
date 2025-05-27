@@ -18,16 +18,15 @@ from litestar import Request, Response
 
 from supertokens_python import Supertokens
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.litestar.litestar_request import LitestarRequest
-from supertokens_python.framework.litestar.litestar_response import LitestarResponse
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.framework.litestar.request import LitestarRequest
+from supertokens_python.framework.litestar.response import LitestarResponse
+from supertokens_python.recipe.session import SessionContainer, SessionRecipe
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import (
     default_user_context,
     set_request_in_user_context_if_not_defined,
 )
-
-from ...interfaces import SessionClaimValidator, SessionContainer
 
 
 def verify_session(

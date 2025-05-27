@@ -14,13 +14,13 @@
 from math import ceil
 from typing import Any, Dict, Literal, Optional
 
+from litestar import Response
+from litestar.serialization import encode_json
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.utils import get_timestamp_ms
 
 
 class LitestarResponse(BaseResponse):
-    from litestar import Response
-
     def __init__(self, response: Response[Any]):
         super().__init__({})
         self.response = response
@@ -76,8 +76,6 @@ class LitestarResponse(BaseResponse):
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            from litestar.serialization import encode_json
-
             body = encode_json(
                 content,
             )

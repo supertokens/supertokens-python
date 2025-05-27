@@ -154,9 +154,7 @@ class AppInfo:
         self.website_base_path = NormalisedURLPath(website_base_path)
         if mode is not None:
             self.mode = mode
-        elif framework == "fastapi":
-            mode = "asgi"
-        elif framework == "litestar":
+        elif framework in ["fastapi", "litestar"]:
             mode = "asgi"
         else:
             mode = "wsgi"

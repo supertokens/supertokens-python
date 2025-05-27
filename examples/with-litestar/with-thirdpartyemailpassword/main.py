@@ -12,7 +12,7 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
-from supertokens_python.framework.litestar.litestar_middleware import LitestarMiddleware
+from supertokens_python.framework.litestar.middleware import LitestarMiddleware
 from supertokens_python.recipe import (
     dashboard,
     emailverification,

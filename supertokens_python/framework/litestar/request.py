@@ -11,11 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import json
 from typing import Any, Dict, Union
 from urllib.parse import parse_qsl
 
 from litestar import Request
-from litestar.exceptions import SerializationException
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe.session.interfaces import SessionContainer
 
@@ -36,10 +36,17 @@ class LitestarRequest(BaseRequest):
     def get_query_params(self) -> Dict[str, Any]:
         return dict(self.request.query_params.items())  # type: ignore
 
-    async def json(self) -> Union[Any, None]:
+    async def json(self) -> dict:
+        """
+        Read the entire ASGI stream and JSON-decode it,
+        sidestepping Litestar’s internal max-body-size logic.
+        """
+        body_bytes = b"".join([chunk async for chunk in self.request.stream()])
+        if not body_bytes:
+            return {}
         try:
-            return await self.request.json()
-        except SerializationException:
+            return json.loads(body_bytes)
+        except json.JSONDecodeError:
             return {}
 
     def method(self) -> str:
@@ -61,7 +68,7 @@ class LitestarRequest(BaseRequest):
         self.request.state.supertokens = None
 
     def get_path(self) -> str:
-        return self.request.url.path
+        return self.request.scope["raw_path"].decode("utf-8")
 
     async def form_data(self):
         return dict(parse_qsl((await self.request.body()).decode("utf-8")))

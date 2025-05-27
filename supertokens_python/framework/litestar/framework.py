@@ -11,8 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, Any
 
 from supertokens_python.framework.types import Framework
@@ -23,7 +21,7 @@ if TYPE_CHECKING:
 
 class LitestarFramework(Framework):
     def wrap_request(self, unwrapped: Request[Any, Any, Any]):
-        from supertokens_python.framework.litestar.litestar_request import (
+        from supertokens_python.framework.litestar.request import (
             LitestarRequest,
         )
 

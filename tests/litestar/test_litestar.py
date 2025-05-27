@@ -21,7 +21,7 @@ from litestar.testing import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
-from supertokens_python.framework.litestar.litestar_middleware import LitestarMiddleware
+from supertokens_python.framework.litestar.middleware import LitestarMiddleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session, thirdparty
 from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
@@ -73,21 +73,21 @@ def override_dashboard_functions(original_implementation: RecipeInterface):
 @fixture(scope="function")
 def driver_config_client() -> TestClient[Litestar]:
     @get("/login")
-    async def login(request: Request[Any, Any, Any]) -> dict[str, Any]:
+    async def login(request: Request[Any, Any, Any]) -> Dict[str, Any]:
         user_id = "userId"
         await create_new_session(
-            request,
-            "public",
-            RecipeUserId(user_id),
-            {},
-            {},
+            request=request,
+            tenant_id="public",
+            recipe_user_id=RecipeUserId(user_id),
+            access_token_payload={},
+            session_data_in_database={},
         )
         return {"userId": user_id}
 
     @post("/refresh")
     async def custom_refresh(
         request: Request[Any, Any, Any],
-    ) -> dict[str, Any] | Response[Any]:
+    ) -> Dict[str, Any] | Response[Any]:
         try:
             await refresh_session(request)
             return Response(content=None)
@@ -95,18 +95,18 @@ def driver_config_client() -> TestClient[Litestar]:
             return Response(content={"message": "Unauthorized"}, status_code=401)
 
     @get("/info")
-    async def info_get(request: Request[Any, Any, Any]) -> dict[str, Any]:
+    async def info_get(request: Request[Any, Any, Any]) -> Dict[str, Any]:
         await get_session(request, True)
         return {}
 
     @get("/custom/info", sync_to_thread=True)
-    def custom_info() -> dict[str, Any]:
+    def custom_info() -> Dict[str, Any]:
         return {}
 
     @get("/handle")
     async def handle_get(
         request: Request[Any, Any, Any],
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
@@ -122,13 +122,13 @@ def driver_config_client() -> TestClient[Litestar]:
     )
     async def handle_get_optional(
         session: SessionContainer,
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         if session is None:
             return {"s": "empty session"}
         return {"s": session.get_handle()}
 
     @post("/logout")
-    async def custom_logout(request: Request[Any, Any, Any]) -> dict[str, Any]:
+    async def custom_logout(request: Request[Any, Any, Any]) -> Dict[str, Any]:
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
@@ -138,22 +138,22 @@ def driver_config_client() -> TestClient[Litestar]:
     @post("/create", media_type=MediaType.TEXT)
     async def _create(request: Request[Any, Any, Any]) -> str:
         await create_new_session(
-            request,
-            "public",
-            RecipeUserId("userId"),
-            {},
-            {},
+            request=request,
+            tenant_id="public",
+            recipe_user_id=RecipeUserId("userId"),
+            access_token_payload={},
+            session_data_in_database={},
         )
         return ""
 
     @post("/create-throw")
     async def _create_throw(request: Request[Any, Any, Any]) -> None:
         await create_new_session(
-            request,
-            "public",
-            RecipeUserId("userId"),
-            {},
-            {},
+            request=request,
+            tenant_id="public",
+            recipe_user_id=RecipeUserId("userId"),
+            access_token_payload={},
+            session_data_in_database={},
         )
         raise UnauthorisedError("unauthorised")
 
@@ -418,8 +418,8 @@ async def test_login_handle(driver_config_client: TestClient[Litestar]):
             "sAccessToken": cookies_1["sAccessToken"]["value"],
         },
     )
-    result_dict = json.loads(response_2.content)
-    assert "s" in result_dict
+    result_Dict = json.loads(response_2.content)
+    assert "s" in result_Dict
 
 
 @mark.asyncio
@@ -484,9 +484,9 @@ async def test_custom_response(driver_config_client: TestClient[Litestar]):
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
-            response_dict = {"custom": True}
+            response_Dict = {"custom": True}
             api_options.response.set_status_code(203)
-            api_options.response.set_json_content(response_dict)
+            api_options.response.set_json_content(response_Dict)
             return await original_func(email, tenant_id, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
@@ -514,9 +514,9 @@ async def test_custom_response(driver_config_client: TestClient[Litestar]):
         url="/auth/signup/email/exists?email=test@example.com",
     )
 
-    dict_response = json.loads(response.text)
+    Dict_response = json.loads(response.text)
     assert response.status_code == 203
-    assert dict_response["custom"]
+    assert Dict_response["custom"]
 
 
 @mark.asyncio
@@ -539,9 +539,9 @@ async def test_optional_session(driver_config_client: TestClient[Litestar]):
         url="handle-session-optional",
     )
 
-    dict_response = json.loads(response.text)
+    Dict_response = json.loads(response.text)
     assert response.status_code == 200
-    assert dict_response["s"] == "empty session"
+    assert Dict_response["s"] == "empty session"
 
 
 @mark.parametrize(
@@ -722,7 +722,7 @@ async def test_search_with_email_t(driver_config_client: TestClient[Litestar]):
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
@@ -769,7 +769,7 @@ async def test_search_with_email_multiple_email_entry(
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
@@ -814,7 +814,7 @@ async def test_search_with_email_iresh(driver_config_client: TestClient[Litestar
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
@@ -859,7 +859,7 @@ async def test_search_with_phone_plus_one(driver_config_client: TestClient[Lites
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
@@ -909,7 +909,7 @@ async def test_search_with_phone_one_bracket(
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
@@ -957,7 +957,7 @@ async def test_search_with_provider_google(driver_config_client: TestClient[Lite
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
@@ -1046,7 +1046,7 @@ async def test_search_with_provider_google_and_phone_1(
             website_domain="http://supertokens.io",
             api_base_path="/auth",
         ),
-        framework="flask",
+        framework="litestar",
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
