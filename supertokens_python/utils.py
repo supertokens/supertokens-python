@@ -45,6 +45,8 @@ from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
 
+from .framework.litestar.framework import LitestarFramework
+
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
 
@@ -64,6 +66,7 @@ FRAMEWORKS = {
     "fastapi": FastapiFramework(),
     "flask": FlaskFramework(),
     "django": DjangoFramework(),
+    "litestar": LitestarFramework(),
 }
 
 
