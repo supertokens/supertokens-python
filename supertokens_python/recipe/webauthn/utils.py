@@ -155,6 +155,14 @@ def validate_and_normalise_validate_email_address_config(
     ) -> Optional[str]:
         if isinstance(validate_email_address_config, str):
             return validate_email_address_config
+
+        if callable(validate_email_address_config):
+            return await validate_email_address_config(
+                email=email,
+                tenant_id=tenant_id,
+                user_context=user_context,
+            )
+
         return await default_email_validator(email, tenant_id)
 
     return inner_fn
@@ -165,7 +173,7 @@ def validate_and_normalise_get_origin_config(
     get_origin_config: Optional[GetOrigin],
 ) -> NormalisedGetOrigin:
     async def inner_fn(
-        *, tenant_id: str, request: BaseRequest, user_context: UserContext
+        *, tenant_id: str, request: Optional[BaseRequest], user_context: UserContext
     ) -> str:
         if callable(get_origin_config):
             return await get_origin_config(

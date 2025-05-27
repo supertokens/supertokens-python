@@ -91,7 +91,7 @@ class GetOrigin(Protocol):
         self,
         *,
         tenant_id: str,
-        request: BaseRequest,
+        request: Optional[BaseRequest],
         user_context: UserContext,
     ) -> str: ...
 
@@ -106,7 +106,7 @@ class NormalisedGetOrigin(Protocol):
         self,
         *,
         tenant_id: str,
-        request: BaseRequest,
+        request: Optional[BaseRequest],
         user_context: UserContext,
     ) -> str: ...
 
