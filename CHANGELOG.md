@@ -8,6 +8,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.30.0] - 2025-05-27
+### Adds Webauthn (Passkeys) support
+- Adds Webauthn recipe with support for:
+  - Registration, sign-in, and credential verification flows
+  - Account recovery
+- Adds new API endpoints for WebAuthn operations:
+  - GET `/api/webauthn/email/exists` - Check if email exists in system
+  - POST `/api/webauthn/options/register` - Handle registration options
+  - POST `/api/webauthn/options/signin` - Handle sign-in options
+  - POST `/api/webauthn/signin` - Handle WebAuthn sign-in
+  - POST `/api/webauthn/signup` - Handle WebAuthn sign-up
+  - POST `/api/user/webauthn/reset` - Handle account recovery
+  - POST `/api/user/webauthn/reset/token` - Generate recovery tokens
+- Adds WebAuthn support to account linking functionality:
+  - Support for linking users based on WebAuthn `credential_id`
+  - Updates `AccountInfo` type to `AccountInfoInput` with WebAuthn fields
+  - Adds `has_same_webauthn_info_as` method for credential comparison
+- Adds FDI support for version `4.1`
+- Recipe functions are directly importable from the Webauthn recipe module
+  - ```python
+    from supertokens_python.recipe.webauthn import sign_in
+
+    await sign_in(...) # Async
+    sign_in.sync(...) # Sync
+    ```
+
+### Breaking Changes
+- Updates supported CDI version from `5.2` to `5.3`
+- Changes `AccountInfo` to `AccountInfoInput` in various methods
+  - This is required to allow querying by a single Webauthn `credential_id`, while the Webauthn login method contains an array of `credential_ids`
+  - Affected functions:
+    - `supertokens_python.asyncio.list_users_by_account_info`
+    - `supertokens_python.syncio.list_users_by_account_info`
+    - `supertokens_python.recipe.accountlinking.interface.RecipeInterface.list_users_by_account_info`
+    - `supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.list_users_by_account_info`
+
+
 ## [0.29.2] - 2025-05-19
 - Fixes cookies being set without expiry in Django
   - Reverts timezone change from 0.28.0 and uses GMT
