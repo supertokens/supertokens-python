@@ -30,7 +30,8 @@ from supertokens_python.recipe.passwordless.asyncio import (
 from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserOkResult,
 )
-from supertokens_python.types import AccountInfo, RecipeUserId
+from supertokens_python.types import RecipeUserId
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.utils import is_version_gte
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
@@ -233,7 +234,7 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
     assert isinstance(response, UpdateUserOkResult)
 
     user = await list_users_by_account_info(
-        "public", AccountInfo(phone_number="+919494949494")
+        "public", AccountInfoInput(phone_number="+919494949494")
     )
     assert len(user) == 0
 
@@ -317,7 +318,7 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
     assert isinstance(response, UpdateUserOkResult)
 
     user = await list_users_by_account_info(
-        "public", AccountInfo(email="hello@example.com")
+        "public", AccountInfoInput(email="hello@example.com")
     )
     assert len(user) == 0
 

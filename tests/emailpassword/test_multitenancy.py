@@ -32,7 +32,7 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 from supertokens_python.recipe.multitenancy.interfaces import (
     TenantConfigCreateOrUpdate,
 )
-from supertokens_python.types import AccountInfo
+from supertokens_python.types.base import AccountInfoInput
 
 from tests.utils import (
     get_new_core_app_url,
@@ -105,13 +105,13 @@ async def test_multitenancy_in_emailpassword():
 
     # get user by email:
     by_email_user1 = await list_users_by_account_info(
-        "t1", AccountInfo(email="test@example.com")
+        "t1", AccountInfoInput(email="test@example.com")
     )
     by_email_user2 = await list_users_by_account_info(
-        "t2", AccountInfo(email="test@example.com")
+        "t2", AccountInfoInput(email="test@example.com")
     )
     by_email_user3 = await list_users_by_account_info(
-        "t3", AccountInfo(email="test@example.com")
+        "t3", AccountInfoInput(email="test@example.com")
     )
 
     assert by_email_user1[0] == user1.user

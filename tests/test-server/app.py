@@ -61,6 +61,9 @@ from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    TypeWebauthnEmailDeliveryInput,
+)
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.recipe_module import RecipeModule
@@ -632,6 +635,11 @@ def init_st(config: Dict[str, Any]):
                 OverrideConfig as WebauthnOverrideConfig,
             )
 
+            class WebauthnEmailDeliveryConfig(
+                EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]
+            ):
+                pass
+
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(
                 webauthn.init(
@@ -660,7 +668,7 @@ def init_st(config: Dict[str, Any]):
                         )
                         if "getOrigin" in recipe_config_json
                         else None,
-                        email_delivery=EmailDeliveryConfig(
+                        email_delivery=WebauthnEmailDeliveryConfig(
                             override=override_builder_with_logging(
                                 "WebAuthn.emailDelivery.override",
                                 recipe_config_json.get("emailDelivery", {}).get(

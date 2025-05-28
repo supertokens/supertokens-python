@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `supertokens_python.syncio.list_users_by_account_info`
     - `supertokens_python.recipe.accountlinking.interface.RecipeInterface.list_users_by_account_info`
     - `supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.list_users_by_account_info`
+    - `supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info`
+    - `supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info`
 
 
 ## [0.29.2] - 2025-05-19

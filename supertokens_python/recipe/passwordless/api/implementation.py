@@ -71,6 +71,7 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.types.response import GeneralErrorResponse
 
 from ...emailverification import EmailVerificationRecipe
@@ -89,7 +90,7 @@ class PasswordlessUserResult:
 async def get_passwordless_user_by_account_info(
     tenant_id: str,
     user_context: Dict[str, Any],
-    account_info: AccountInfo,
+    account_info: AccountInfoInput,
 ) -> Optional[PasswordlessUserResult]:
     existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
         tenant_id=tenant_id,
@@ -160,7 +161,7 @@ class APIImplementation(APIInterface):
             },
         }
 
-        account_info = AccountInfo(
+        account_info = AccountInfoInput(
             email=email,
             phone_number=phone_number,
         )
@@ -357,7 +358,7 @@ class APIImplementation(APIInterface):
         user_with_matching_login_method = await get_passwordless_user_by_account_info(
             tenant_id=tenant_id,
             user_context=user_context,
-            account_info=AccountInfo(
+            account_info=AccountInfoInput(
                 email=device_info.email,
                 phone_number=device_info.phone_number,
             ),
@@ -762,7 +763,7 @@ class APIImplementation(APIInterface):
     ) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(email=email),
+            account_info=AccountInfoInput(email=email),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -785,7 +786,7 @@ class APIImplementation(APIInterface):
     ) -> Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(phone_number=phone_number),
+            account_info=AccountInfoInput(phone_number=phone_number),
             do_union_of_account_info=False,
             user_context=user_context,
         )
