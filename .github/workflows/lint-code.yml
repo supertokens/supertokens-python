@@ -16,6 +16,11 @@ jobs:
     outputs:
       pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
 
+    steps:
+      # Required to avoid errors in runs due to no steps
+      - name: Placeholder
+        run: echo "Placeholder"
+
   lint-format:
     name: Check linting and formatting
     runs-on: ubuntu-latest
