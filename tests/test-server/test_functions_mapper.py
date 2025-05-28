@@ -925,14 +925,15 @@ def get_func(eval_str: str) -> Callable[..., Any]:
 
             return rp_name_fn_2
 
-    # if eval_str.startswith("webauthn.init.validateEmailAddress"):
+    if eval_str.startswith("webauthn.init.validateEmailAddress"):
+        if 'e=>"test@example.com"===e?void 0:"Invalid email"' in eval_str:
 
-    #     def validate_email(*, email: str, tenant_id: str, user_context: UserContext):
-    #         if email == "test@example.com":
-    #             return None
-    #         return "Invalid email"
+            async def validate_email_fn_1(*, email: str, **_: Any):
+                if email == "test@example.com":
+                    return None
+                return "Invalid email"
 
-    #     return validate_email
+            return validate_email_fn_1
 
     if eval_str.startswith("webauthn.init.override.functions"):
         from supertokens_python.recipe.webauthn.recipe_implementation import (
