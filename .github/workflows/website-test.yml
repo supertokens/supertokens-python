@@ -44,6 +44,14 @@ jobs:
           - flask-nest-asyncio
 
     steps:
+      - name: Setup ENVs
+        id: envs
+        run: |
+          APP_SERVER_LOG_DIR=${{ github.workspace }}/logs
+          echo "APP_SERVER_LOG_DIR=$APP_SERVER_LOG_DIR" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+          mkdir -p $APP_SERVER_LOG_DIR
+
       - uses: actions/checkout@v4
         with:
           # Checking out to a custom path since the test repo will also be cloned
@@ -87,8 +95,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/django2x
 
-          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> app-server.log &
-          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> app-server-cross-domain.log &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - name: Install dependencies and start servers (django3x)
         if: matrix.framework == 'django3x'
@@ -100,8 +108,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/django3x
 
-          uvicorn mysite.asgi:application --port 8080 &> app-server.log &
-          uvicorn mysite.asgi:application --port 8082 &> app-server-cross-domain.log &
+          uvicorn mysite.asgi:application --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          uvicorn mysite.asgi:application --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - name: Install dependencies and start servers (drf_sync)
         if: matrix.framework == 'drf_sync'
@@ -113,8 +121,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/drf_sync
 
-          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> app-server.log &
-          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> app-server-cross-domain.log &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - name: Install dependencies and start servers (drf_async)
         if: matrix.framework == 'drf_async'
@@ -126,8 +134,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/drf_async
 
-          uvicorn mysite.asgi:application --port 8080 &> app-server.log &
-          uvicorn mysite.asgi:application --port 8082 &> app-server-cross-domain.log &
+          uvicorn mysite.asgi:application --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          uvicorn mysite.asgi:application --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - name: Install dependencies and start servers (fastapi)
         if: matrix.framework == 'fastapi'
@@ -139,8 +147,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/fastapi-server
 
-          uvicorn app:app --host 0.0.0.0 --port 8080 &> app-server.log &
-          uvicorn app:app --host 0.0.0.0 --port 8082 &> app-server-cross-domain.log &
+          uvicorn app:app --host 0.0.0.0 --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          uvicorn app:app --host 0.0.0.0 --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - name: Install dependencies and start servers (flask)
         if: matrix.framework == 'flask'
@@ -152,8 +160,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/flask-server
 
-          python3 app.py --port 8080 &> app-server.log &
-          python3 app.py --port 8082 &> app-server-cross-domain.log &
+          python3 app.py --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          python3 app.py --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - name: Install dependencies and start servers (flask-nest-asyncio)
         if: matrix.framework == 'flask-nest-asyncio'
@@ -166,8 +174,8 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
           cd tests/frontendIntegration/flask-server
 
-          python3 app.py --port 8080 &> app-server.log &
-          python3 app.py --port 8082 &> app-server-cross-domain.log &
+          python3 app.py --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          python3 app.py --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - uses: supertokens/website-testing-action@main
         with:
@@ -175,3 +183,4 @@ jobs:
           node-sdk-version: ${{ steps.versions.outputs.nodeTag }}
           path: supertokens-website
           check-name-suffix: '[Py=${{ matrix.py-version }}][FDI=${{ matrix.fdi-version }}][Framework=${{ matrix.framework }}]'
+          app-server-logs: ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}
