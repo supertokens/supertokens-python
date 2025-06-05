@@ -26,6 +26,7 @@ InputAppInfo = supertokens.InputAppInfo
 Supertokens = supertokens.Supertokens
 SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
+SupertokensExperimentalConfig = supertokens.SupertokensExperimentalConfig
 
 
 def init(
@@ -36,9 +37,17 @@ def init(
     mode: Optional[Literal["asgi", "wsgi"]] = None,
     telemetry: Optional[bool] = None,
     debug: Optional[bool] = None,
+    experimental: Optional[SupertokensExperimentalConfig] = None,
 ):
     return Supertokens.init(
-        app_info, framework, supertokens_config, recipe_list, mode, telemetry, debug
+        app_info,
+        framework,
+        supertokens_config,
+        recipe_list,
+        mode,
+        telemetry,
+        debug,
+        experimental=experimental,
     )
 
 

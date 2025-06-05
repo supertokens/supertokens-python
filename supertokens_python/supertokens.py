@@ -14,8 +14,20 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from os import environ
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+    cast,
+)
 
 from typing_extensions import Literal
 
@@ -24,8 +36,15 @@ from supertokens_python.logger import (
     get_maybe_none_as_str,
     log_debug_message,
 )
+from supertokens_python.plugins import (
+    OverrideMap,
+    PluginRouteHandler,
+    SuperTokensPlugin,
+    SuperTokensPluginInit,
+    SuperTokensPublicPlugin,
+)
 
-from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
+from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, VERSION
 from .exceptions import SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
@@ -91,6 +110,40 @@ class SupertokensConfig:
         self.api_key = api_key
         self.network_interceptor = network_interceptor
         self.disable_core_call_cache = disable_core_call_cache
+
+
+@dataclass
+class SupertokensExperimentalConfig:
+    plugins: Optional[List[SuperTokensPlugin]] = None
+
+
+# TODO: Change to Pydantic?
+
+
+@dataclass
+class SupertokensPublicConfig:
+    app_info: InputAppInfo
+    framework: Literal["fastapi", "flask", "django"]
+    supertokens_config: SupertokensConfig
+    mode: Optional[Literal["asgi", "wsgi"]]
+    telemetry: Optional[bool]
+    debug: Optional[bool]
+
+
+@dataclass
+class SupertokensInputConfig(SupertokensPublicConfig):
+    recipe_list: List[Callable[[AppInfo], RecipeModule]]
+    experimental: Optional[SupertokensExperimentalConfig] = None
+
+    def get_public_config(self) -> SupertokensPublicConfig:
+        return SupertokensPublicConfig(
+            app_info=self.app_info,
+            framework=self.framework,
+            supertokens_config=self.supertokens_config,
+            mode=self.mode,
+            telemetry=self.telemetry,
+            debug=self.debug,
+        )
 
 
 class Host:
@@ -200,7 +253,21 @@ def manage_session_post_response(
 
 
 class Supertokens:
-    __instance = None
+    __instance: Optional[Supertokens] = None
+
+    recipe_modules: List[RecipeModule]
+
+    app_info: AppInfo
+
+    supertokens_config: SupertokensConfig
+
+    _telemetry_status: str
+
+    telemetry: bool
+
+    plugin_route_handlers: List[PluginRouteHandler]
+
+    plugin_list: List[SuperTokensPublicPlugin]
 
     def __init__(
         self,
@@ -211,9 +278,117 @@ class Supertokens:
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
+        experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
+
+        config = SupertokensInputConfig(
+            app_info=app_info,
+            framework=framework,
+            supertokens_config=supertokens_config,
+            recipe_list=recipe_list,
+            mode=mode,
+            telemetry=telemetry,
+            debug=debug,
+            experimental=experimental,
+        )
+        # TODO: Probably just want to define this directly and use it
+        # Can build a input config from the final public config and the additional props
+        public_config = config.get_public_config()
+
+        self.plugin_route_handlers = []
+
+        input_plugin_list = []
+        final_plugin_list: List[SuperTokensPlugin] = []
+
+        if experimental is not None and experimental.plugins is not None:
+            input_plugin_list = experimental.plugins
+
+        print(f"{input_plugin_list=}")
+
+        for plugin in input_plugin_list:
+            if isinstance(plugin.compatible_sdk_versions, list):
+                version_constraints = plugin.compatible_sdk_versions
+            else:
+                version_constraints = [plugin.compatible_sdk_versions]
+
+            if VERSION not in version_constraints:
+                # TODO: Better checks
+                raise Exception("Plugin version mismatch")
+
+            if plugin.dependencies is not None:
+                dep_result = plugin.dependencies(
+                    config=public_config,
+                    plugins_above=[
+                        SuperTokensPublicPlugin.from_plugin(plugin)
+                        for plugin in final_plugin_list
+                    ],
+                    sdk_version=VERSION,
+                )
+
+                if dep_result.status == "ERROR":
+                    raise Exception(dep_result.message)
+
+                if dep_result.plugins_to_add:
+                    final_plugin_list.extend(dep_result.plugins_to_add)
+
+            final_plugin_list.append(plugin)
+
+        self.plugin_list = [
+            SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
+        ]
+        print(f"{self.plugin_list=}")
+        print()
+
+        for plugin_idx, plugin in enumerate(final_plugin_list):
+            print()
+            print(f"{plugin_idx=} {plugin=}")
+
+            if plugin.config is not None:
+                public_config = plugin.config(public_config)
+
+            if plugin.route_handlers is not None:
+                handlers: List[PluginRouteHandler] = []
+
+                if callable(plugin.route_handlers):
+                    handler_result = plugin.route_handlers(
+                        config=public_config,
+                        all_plugins=self.plugin_list,
+                        sdk_version=VERSION,
+                    )
+                    if handler_result.status == "ERROR":
+                        raise Exception(handler_result.message)
+                else:
+                    handlers = plugin.route_handlers
+
+                self.plugin_route_handlers.extend(handlers)
+
+            if plugin.init is not None:
+                print(f"{plugin.init=}")
+                plugin.init(
+                    config=public_config,
+                    all_plugins=self.plugin_list,
+                    sdk_version=VERSION,
+                )
+
+                # TODO: Make this a factory function to avoid weird side-effects?
+                def callback_factory():
+                    # This has to be part of the factory to ensure we pick up the correct plugin
+                    init_fn = cast(SuperTokensPluginInit, plugin.init)
+                    idx = plugin_idx
+
+                    def callback():
+                        init_fn(
+                            config=public_config,
+                            all_plugins=self.plugin_list,
+                            sdk_version=VERSION,
+                        )
+                        self.plugin_list[idx].initialized = True
+
+                    return callback
+
+                PostSTInitCallbacks.add_post_init_callback(callback_factory())
 
         self.app_info = AppInfo(
             app_info.app_name,
@@ -255,6 +430,12 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
+        override_maps = [
+            plugin.override_map
+            for plugin in final_plugin_list
+            if plugin.override_map is not None
+        ]
+
         multitenancy_found = False
         totp_found = False
         user_metadata_found = False
@@ -263,7 +444,9 @@ class Supertokens:
         openid_found = False
         jwt_found = False
 
-        def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
+        def make_recipe(
+            recipe: Callable[[AppInfo, List[OverrideMap]], RecipeModule],
+        ) -> RecipeModule:
             nonlocal \
                 multitenancy_found, \
                 totp_found, \
@@ -272,7 +455,7 @@ class Supertokens:
                 oauth2_found, \
                 openid_found, \
                 jwt_found
-            recipe_module = recipe(self.app_info)
+            recipe_module = recipe(self.app_info, override_maps)
             if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True
             elif recipe_module.get_recipe_id() == "usermetadata":
@@ -336,6 +519,7 @@ class Supertokens:
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
+        experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
@@ -346,6 +530,7 @@ class Supertokens:
                 mode,
                 telemetry,
                 debug,
+                experimental=experimental,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 
@@ -543,11 +728,46 @@ class Supertokens:
     async def middleware(
         self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
     ) -> Union[BaseResponse, None]:
+        from supertokens_python.recipe.session.recipe import SessionRecipe
+
         log_debug_message("middleware: Started")
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
             NormalisedURLPath(request.get_path())
         )
         method = normalise_http_method(request.method())
+
+        handler_from_apis: Optional[PluginRouteHandler] = None
+        for handler in self.plugin_route_handlers:
+            if (
+                handler.path == path.get_as_string_dangerous()
+                and handler.method == method
+            ):
+                log_debug_message(
+                    "middleware: Found matching plugin route handler for path: %s and method: %s",
+                    path.get_as_string_dangerous(),
+                    method,
+                )
+                handler_from_apis = handler
+                break
+
+        if handler_from_apis is not None:
+            session: Optional[SessionContainer] = None
+            if handler_from_apis.verify_session_options is not None:
+                # TODO: Fix verify_session_options type
+                session = await SessionRecipe.get_instance().verify_session(
+                    request=request,
+                    user_context=user_context,
+                    **handler_from_apis.verify_session_options,
+                )
+                handler_from_apis.handler(
+                    request=request,
+                    response=response,
+                    session=session,
+                    user_context=user_context,
+                )
+
+                # TODO: Why do we do this?
+                return None
 
         if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
             log_debug_message(
