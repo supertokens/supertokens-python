@@ -39,7 +39,6 @@ from supertokens_python.logger import (
 )
 from supertokens_python.plugins import (
     OverrideMap,
-    PluginDependenciesErrorResponse,
     PluginRouteHandler,
     SuperTokensPlugin,
     SuperTokensPluginInit,
@@ -309,13 +308,18 @@ class Supertokens:
 
         self.plugin_route_handlers = []
 
-        input_plugin_list = []
+        input_plugin_list: List[SuperTokensPlugin] = []
+        input_plugin_seen_list: Set[str] = set()
         final_plugin_list: List[SuperTokensPlugin] = []
 
         if experimental is not None and experimental.plugins is not None:
             input_plugin_list = experimental.plugins
 
         for plugin in input_plugin_list:
+            if plugin.id in input_plugin_seen_list:
+                log_debug_message(f"Skipping {plugin.id=} as it has already been added")
+                continue
+
             if isinstance(plugin.compatible_sdk_versions, list):
                 version_constraints = plugin.compatible_sdk_versions
             else:
@@ -325,32 +329,14 @@ class Supertokens:
                 # TODO: Better checks
                 raise Exception("Plugin version mismatch")
 
-            def recurse_deps(plugin: SuperTokensPlugin, deps: List[SuperTokensPlugin]):
-                if plugin.dependencies is not None:
-                    # Get all dependencies of the plugin
-                    dep_result = plugin.dependencies(
-                        config=public_config,
-                        plugins_above=[
-                            SuperTokensPublicPlugin.from_plugin(plugin)
-                            for plugin in final_plugin_list
-                        ],
-                        sdk_version=VERSION,
-                    )
-
-                    # Errors fall through
-                    if isinstance(dep_result, PluginDependenciesErrorResponse):
-                        raise Exception(dep_result.message)
-
-                    # Recurse through all dependencies and add the resultant plugins to the list
-                    # Pre-order DFS traversal
-                    for dep_plugin in dep_result.plugins_to_add:
-                        recurse_deps(dep_plugin, deps)
-
-                # Add the current plugin
-                deps.append(plugin)
-                return deps
-
-            final_plugin_list.extend(recurse_deps(plugin, []))
+            # TODO: Overkill, but could topologically sort the plugins based on dependencies
+            dependencies = plugin.get_dependencies(
+                public_config=public_config,
+                plugins_above=final_plugin_list,
+                sdk_version=VERSION,
+            )
+            final_plugin_list.extend(dependencies)
+            input_plugin_seen_list.update({dep.id for dep in dependencies})
 
         self.plugin_list = [
             SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
