@@ -12,28 +12,29 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from typing_extensions import Literal
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.types import RecipeUserId
 
 from . import supertokens
-from .recipe_module import RecipeModule
 
 InputAppInfo = supertokens.InputAppInfo
 Supertokens = supertokens.Supertokens
 SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
 SupertokensExperimentalConfig = supertokens.SupertokensExperimentalConfig
+RecipeModule = RecipeModule
 
 
 def init(
     app_info: InputAppInfo,
     framework: Literal["fastapi", "flask", "django"],
     supertokens_config: SupertokensConfig,
-    recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
+    recipe_list: List[supertokens.RecipeInit],
     mode: Optional[Literal["asgi", "wsgi"]] = None,
     telemetry: Optional[bool] = None,
     debug: Optional[bool] = None,
