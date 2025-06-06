@@ -18,6 +18,7 @@ from .plugins import (
     Plugin2,
     Plugin3Dep1,
     Plugin3Dep2_1,
+    Plugin4Dep1,
     Plugin4Dep2,
     Plugin4Dep3__2_1,
     api_override_factory,
@@ -131,7 +132,7 @@ partial_init = partial(
             True,
             False,
             [Plugin1, Plugin2],
-            outputs(["override", "plugin1", "plugin2", "original"]),
+            outputs(["override", "plugin2", "plugin1", "original"]),
             outputs(["original"]),
             id="fn_ovr=True, api_ovr=False, plugins=[Plugin1, Plugin2], plugin1=[fn], plugin2=[fn]",
         ),
@@ -178,34 +179,47 @@ def test_overrides(
         )
 
 
+# TODO: Figure out a way to add circular dependencies and test them
 @mark.parametrize(
     ("plugins", "recipe_expectation", "api_expectation"),
     [
         param(
-            [Plugin3Dep1],
-            outputs(["plugin1", "plugin3dep1", "original"]),
+            [Plugin1, Plugin1],
+            outputs(["plugin1", "original"]),
             outputs(["original"]),
-            id="3->1",
+            id="1,1 => 1",
+        ),
+        param(
+            [Plugin3Dep1],
+            outputs(["plugin3dep1", "plugin1", "original"]),
+            outputs(["original"]),
+            id="3->1 => 3,1",
         ),
         param(
             [Plugin3Dep2_1],
-            outputs(["plugin2", "plugin1", "plugin3dep2_1", "original"]),
+            outputs(["plugin3dep2_1", "plugin1", "plugin2", "original"]),
             outputs(["original"]),
-            id="3->(2,1)",
+            id="3->(2,1) => 3,2,1",
         ),
         param(
             [Plugin3Dep1, Plugin4Dep2],
-            outputs(["plugin1", "plugin3dep1", "plugin2", "plugin4dep2", "original"]),
+            outputs(["plugin4dep2", "plugin2", "plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
-            id="3->1,4->2",
+            id="3->1,4->2 => 4,2,3,1",
         ),
         param(
             [Plugin4Dep3__2_1],
             outputs(
-                ["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1", "original"]
+                ["plugin4dep3__2_1", "plugin3dep2_1", "plugin1", "plugin2", "original"]
             ),
             outputs(["original"]),
-            id="4->3->(2,1)",
+            id="4->3->(2,1) => 4,3,1,2",
+        ),
+        param(
+            [Plugin3Dep1, Plugin4Dep1],
+            outputs(["plugin4dep1", "plugin3dep1", "plugin1", "original"]),
+            outputs(["original"]),
+            id="3->1,4->1 => 4,3,1",
         ),
     ],
 )

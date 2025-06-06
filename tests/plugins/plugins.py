@@ -106,6 +106,7 @@ Plugin3Dep1 = plugin_factory("plugin3dep1", override_functions=True, deps=[Plugi
 Plugin3Dep2_1 = plugin_factory(
     "plugin3dep2_1", override_functions=True, deps=[Plugin2, Plugin1]
 )
+Plugin4Dep1 = plugin_factory("plugin4dep1", override_functions=True, deps=[Plugin1])
 Plugin4Dep2 = plugin_factory("plugin4dep2", override_functions=True, deps=[Plugin2])
 Plugin4Dep3__2_1 = plugin_factory(
     "plugin4dep3__2_1", override_functions=True, deps=[Plugin3Dep2_1]
