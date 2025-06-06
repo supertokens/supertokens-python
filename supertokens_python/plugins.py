@@ -5,6 +5,7 @@
 #   - APIInterface
 #   - OverrideConfig
 
+from collections import deque
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -13,6 +14,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Set,
     TypeVar,
     Union,
     runtime_checkable,
@@ -234,6 +236,58 @@ class SuperTokensPlugin(SuperTokensPluginBase):
     ] = None
     config: Optional[PluginConfig] = None
 
+    def get_dependencies(
+        self,
+        public_config: "SupertokensPublicConfig",
+        plugins_above: List["SuperTokensPlugin"],
+        sdk_version: str,
+    ):
+        """
+        Pre-order DFS traversal to get all dependencies of a plugin.
+        """
+
+        def recurse_deps(
+            plugin: SuperTokensPlugin,
+            deps: Optional[List[SuperTokensPlugin]] = None,
+            visited: Optional[Set[str]] = None,
+        ) -> List[SuperTokensPlugin]:
+            if deps is None:
+                deps = []
+
+            if visited is None:
+                visited = set()
+
+            if plugin.id in visited:
+                return deps
+            visited.add(plugin.id)
+
+            if plugin.dependencies is not None:
+                # Get all dependencies of the plugin
+                dep_result = plugin.dependencies(
+                    config=public_config,
+                    plugins_above=[
+                        SuperTokensPublicPlugin.from_plugin(plugin)
+                        for plugin in plugins_above
+                    ],
+                    sdk_version=sdk_version,
+                )
+
+                # Errors fall through
+                if isinstance(dep_result, PluginDependenciesErrorResponse):
+                    raise Exception(dep_result.message)
+
+                # Recurse through all dependencies and add the resultant plugins to the list
+                # Pre-order DFS traversal
+                for dep_plugin in dep_result.plugins_to_add:
+                    recurse_deps(dep_plugin, deps)
+
+            # Add the current plugin and mark it as visited
+            deps.append(plugin)
+
+            return deps
+
+        return recurse_deps(self)
+
 
 class SuperTokensPublicPlugin(SuperTokensPluginBase):
     initialized: bool
@@ -272,12 +326,12 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     function_overrides = getattr(config.override, "functions", default_fn_override)
     api_overrides = getattr(config.override, "apis", default_api_override)
 
-    function_layers: list[Any] = []
-    api_layers: list[Any] = []
-    if function_overrides is not None:
-        function_layers.append(function_overrides)
-    if api_overrides is not None:
-        api_layers.append(api_overrides)
+    function_layers: deque[Any] = deque()
+    api_layers: deque[Any] = deque()
+
+    # If we have plugins like 4->3->(2, 1) along with a recipe override,
+    # we want to apply them as: override, 4, 3, 1, 2, original
+    # Order of 1/2 does not matter since they are independent from each other.
 
     for plugin in plugins:
         overrides = plugin[recipe_id]
@@ -290,14 +344,18 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
             if overrides.apis is not None:
                 api_layers.append(overrides.apis)
 
+    if function_overrides is not None:
+        function_layers.append(function_overrides)
+    if api_overrides is not None:
+        api_layers.append(api_overrides)
+
     # Apply overrides in order of definition
     # Plugins: [plugin1, plugin2] would be applied as [override, plugin1, plugin2, original]
     if len(function_layers) > 0:
-        # TODO: Change to recipe_implementation type
+        # TODO: Change to recipe_interface type
         def fn_override(original_implementation: T) -> T:
             # The layers will get called in reversed order
-            # Iteration is reversed to ensure that the required order is maintained
-            for function_layer in reversed(function_layers):
+            for function_layer in function_layers:
                 original_implementation = function_layer(original_implementation)
             return original_implementation
 
@@ -305,9 +363,9 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
 
     # AccountLinking recipe does not have an API implementation
     if len(api_layers) > 0 and recipe_id != "accountlinking":
-        # TODO: Change to api_implementation type
+        # TODO: Change to api_interface type
         def api_override(original_implementation: T) -> T:
-            for api_layer in reversed(api_layers):
+            for api_layer in api_layers:
                 original_implementation = api_layer(original_implementation)
             return original_implementation
 
